@@ -15,18 +15,21 @@ the `.claude/skills/...` and `references/...` paths below resolve.
 
 ## Procedure
 
-1. **Obtain the source.** If given a URL, shallow-clone it and keep the path:
+1. **Obtain the source.** If given a URL, shallow-clone it **into the project**
+   (never `/tmp` — see Rules), using the repo name for the dir:
    ```bash
-   D=$(mktemp -d); git clone --depth 1 <URL> "$D/repo"
+   git clone --depth 1 <URL> repos/<name>
    ```
-   Note the resolved commit: `git -C "$D/repo" rev-parse HEAD`. If given a local
-   path, use it directly.
+   Note the resolved commit: `git -C repos/<name> rev-parse HEAD`. If given a
+   local path (e.g. `repos/<name>` already cloned by the runner), use it directly.
 
 2. **Deterministic metrics (dims 2–4).** Run the code-metrics script and capture
    its JSON — these numbers are the source of truth for language breakdown, LOC
-   (production/test/example), and test counts. Do not recompute them by hand:
+   (production/test/example), and test counts. Do not recompute them by hand.
+   Write the output to a path **inside the project** (the same run directory you
+   will write the report to), never `/tmp`:
    ```bash
-   python3 .claude/skills/code-metrics/scripts/metrics.py --repo "$D/repo" --out metrics.json
+   python3 .claude/skills/code-metrics/scripts/metrics.py --repo repos/<name> --out <runDir>/metrics.json
    ```
 
 3. **Reasoned dimensions (1, 5, 6, 7).** For each, read the corresponding skill
@@ -49,12 +52,19 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `confidence_overall`, and any `warnings` (carry over `_warnings` from the
    fragment). Write it with `Write`.
 
-5. **Clean up & report back.** Remove the temp clone (`rm -rf "$D"`) unless asked
-   to keep it. Return the absolute path to `report.json` plus a concise digest:
-   one-liner, primary language, production-vs-test LOC, test-case count, license,
-   top runtime dependencies, and notable native/platform APIs.
+5. **Report back.** The clone stays under `repos/` (it is gitignored). Return the
+   absolute path to `report.json` plus a concise digest: one-liner, primary
+   language, production-vs-test LOC, test-case count, license, top runtime
+   dependencies, and notable native/platform APIs.
 
 ## Rules
+- The `function_summary` block (summary, category names/descriptions, domain,
+  target_users) and `library.one_liner` must be written in **简体中文**; keep
+  proper nouns (SPDX ids, language/dependency names) in their original form.
+- All files you create — clone, metrics, report, any scratch — must live **inside
+  the project** (prefer the report's run directory). NEVER write to `/tmp` or any
+  path outside the project: the headless runner auto-rejects external directories,
+  which aborts the analysis with no report.
 - Ground every reasoned claim in something you actually read; cite it in the
   `evidence` fields. If evidence is thin, lower the `confidence` and say so.
 - Keep the script's line/test numbers verbatim; your job is interpretation, not

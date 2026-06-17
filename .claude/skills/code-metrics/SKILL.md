@@ -15,6 +15,10 @@ analysis is model-driven.
 python3 .claude/skills/code-metrics/scripts/metrics.py --repo <CHECKOUT> --out metrics.json
 ```
 
+The `--out` path must be **inside the project** (e.g. the current run directory).
+Do not write to `/tmp` or any external directory — under the headless opencode
+runner external paths are auto-rejected, which aborts the analysis.
+
 Outputs a JSON fragment with three keys, ready to drop into the final report:
 - `languages` — dim 2: per-language file/code counts, `primary` implementation language.
 - `code_metrics` — dim 3: `total` / `production` / `test` / `example` line aggregates + `production_by_language`.

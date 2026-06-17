@@ -41,6 +41,11 @@ is judgment work — read the source, don't pattern-match keywords.
 ```
 Also set `library.one_liner` (<=120 chars).
 
+## Language
+- Write `summary`, every category `name`/`description`, `domain`, `target_users`,
+  and `library.one_liner` in **简体中文 (Simplified Chinese)**. Keep proper nouns
+  (library/API/dependency names, language names) in their original form.
+
 ## Rules
 - Ground every claim in something you actually read. Never invent features.
 - If docs and code disagree, trust the code and note it.
