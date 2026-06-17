@@ -46,6 +46,8 @@ navigate();
 // ===========================================================================
 let libsCache = [];
 const selected = new Set();
+let page = 1;
+const PAGE_SIZE = 15;
 
 async function renderDashboard() {
   setHeader('<button class="btn" id="hSettings">⚙ 系统设置</button>' +
@@ -56,21 +58,15 @@ async function renderDashboard() {
   $('#app').innerHTML = `
     <div class="toolbar">
       <div class="search"><input id="search" type="text" placeholder="搜索库名 / 描述…" /></div>
-      <button class="btn sm" id="selAll">全选</button>
       <button class="btn sm primary" id="batchAnalyze" disabled>分析选中</button>
       <button class="btn sm" id="refreshBtn">刷新</button>
     </div>
     <div id="jobsStrip" class="jobs-strip"></div>
-    <div id="grid" class="grid"></div>`;
+    <div id="list"></div>
+    <div id="pager" class="pager"></div>`;
 
   $('#refreshBtn').onclick = loadDash;
-  $('#search').oninput = renderGrid;
-  $('#selAll').onclick = () => {
-    const vis = visibleLibs().filter((l) => l.cloned).map((l) => l.name);
-    const allSel = vis.every((n) => selected.has(n));
-    vis.forEach((n) => (allSel ? selected.delete(n) : selected.add(n)));
-    renderGrid();
-  };
+  $('#search').oninput = () => { page = 1; renderList(); };
   $('#batchAnalyze').onclick = batchAnalyze;
 
   await loadDash();
@@ -83,7 +79,7 @@ async function loadDash() {
     const [{ libraries }, { jobs }] = await Promise.all([api('/api/libraries'), api('/api/jobs')]);
     libsCache = libraries;
     renderJobsStrip(jobs);
-    renderGrid();
+    renderList();
   } catch (_) {}
 }
 
@@ -103,38 +99,57 @@ function libStatus(lib) {
   return { cls: 'gray', label: '未分析' };
 }
 
-function renderGrid() {
-  const grid = $('#grid'); if (!grid) return;
+function renderList() {
+  const box = $('#list'); if (!box) return;
   const libs = visibleLibs();
-  if (!libs.length) { grid.innerHTML = '<div class="empty">还没有库。点击右上角「＋ 克隆库」开始。</div>'; updateBatchBtn(); return; }
-  grid.innerHTML = libs.map((lib) => {
-    const st = libStatus(lib); const s = lib.summary || {};
-    const busy = !!lib.active;
-    return `<div class="card libcard" data-name="${esc(lib.name)}">
-      <div class="top">
-        <input type="checkbox" data-sel="${esc(lib.name)}" ${selected.has(lib.name) ? 'checked' : ''} ${lib.cloned ? '' : 'disabled'} />
-        <div class="name">${esc(lib.name)}</div>
-        <span class="badge ${st.cls}">${st.label}</span>
-      </div>
-      <div class="oneliner">${esc(s.oneLiner || (lib.cloned ? '尚未分析' : '尚未克隆'))}</div>
-      <div class="metrics">
-        <span>语言 <b>${esc(s.primary || '—')}</b></span>
-        <span>代码 <b>${s.prodCode != null ? num(s.prodCode) : '—'}</b></span>
-        <span>测试 <b>${s.testCases != null ? num(s.testCases) : '—'}</b></span>
-        <span>协议 <b>${esc(s.license || '—')}</b></span>
-      </div>
-      <div class="foot">
-        <a class="btn sm ghost" href="#/lib/${enc(lib.name)}">详情</a>
-        <span class="spacer"></span>
-        <button class="btn sm primary" data-act="analyze" data-name="${esc(lib.name)}" ${busy || !lib.cloned ? 'disabled' : ''}>分析</button>
-      </div></div>`;
-  }).join('');
+  if (!libs.length) {
+    box.innerHTML = '<div class="empty">还没有库。点击右上角「＋ 克隆库」开始。</div>';
+    $('#pager').innerHTML = ''; updateBatchBtn(); return;
+  }
+  const pages = Math.max(1, Math.ceil(libs.length / PAGE_SIZE));
+  page = Math.min(page, pages);
+  const slice = libs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const visCloned = libs.filter((l) => l.cloned).map((l) => l.name);
+  const allSel = visCloned.length && visCloned.every((n) => selected.has(n));
 
-  $$('[data-sel]', grid).forEach((cb) => cb.onchange = () => {
+  box.innerHTML = `<table class="libtable">
+    <thead><tr>
+      <th class="c-chk"><input type="checkbox" id="selAll" ${allSel ? 'checked' : ''} title="全选/取消" /></th>
+      <th>名称</th><th class="c-st">状态</th><th>语言</th>
+      <th class="c-num">生产代码</th><th class="c-num">测试</th><th>协议</th><th class="c-act">操作</th>
+    </tr></thead><tbody>${slice.map((lib) => {
+      const st = libStatus(lib); const s = lib.summary || {};
+      return `<tr data-name="${esc(lib.name)}">
+        <td class="c-chk"><input type="checkbox" data-sel="${esc(lib.name)}" ${selected.has(lib.name) ? 'checked' : ''} ${lib.cloned ? '' : 'disabled'} /></td>
+        <td><a class="lname" href="#/lib/${enc(lib.name)}">${esc(lib.name)}</a>
+            <div class="lsub">${esc(s.oneLiner || (lib.cloned ? '尚未分析' : '尚未克隆'))}</div></td>
+        <td class="c-st"><span class="badge ${st.cls}">${st.label}</span></td>
+        <td>${s.primary ? `<span class="chip lang-chip">${esc(s.primary)}</span>` : '—'}</td>
+        <td class="c-num">${s.prodCode != null ? num(s.prodCode) : '—'}</td>
+        <td class="c-num">${s.testCases != null ? num(s.testCases) : '—'}</td>
+        <td>${esc(s.license || '—')}</td>
+        <td class="c-act">
+          <a class="btn sm ghost" href="#/lib/${enc(lib.name)}">详情</a>
+          <button class="btn sm primary" data-act="analyze" data-name="${esc(lib.name)}" ${lib.active || !lib.cloned ? 'disabled' : ''}>分析</button>
+        </td></tr>`;
+    }).join('')}</tbody></table>`;
+
+  $('#selAll').onchange = () => {
+    visCloned.forEach((n) => (allSel ? selected.delete(n) : selected.add(n)));
+    renderList();
+  };
+  $$('[data-sel]', box).forEach((cb) => cb.onchange = () => {
     cb.checked ? selected.add(cb.dataset.sel) : selected.delete(cb.dataset.sel);
     updateBatchBtn();
   });
-  $$('[data-act="analyze"]', grid).forEach((b) => b.onclick = () => analyzeOne(b.dataset.name));
+  $$('[data-act="analyze"]', box).forEach((b) => b.onclick = () => analyzeOne(b.dataset.name));
+
+  $('#pager').innerHTML = `
+    <button class="btn sm" id="pPrev" ${page <= 1 ? 'disabled' : ''}>‹ 上一页</button>
+    <span class="pinfo">第 ${page} / ${pages} 页 · 共 ${libs.length} 个库</span>
+    <button class="btn sm" id="pNext" ${page >= pages ? 'disabled' : ''}>下一页 ›</button>`;
+  $('#pPrev').onclick = () => { if (page > 1) { page--; renderList(); } };
+  $('#pNext').onclick = () => { if (page < pages) { page++; renderList(); } };
   updateBatchBtn();
 }
 
@@ -366,6 +381,7 @@ function renderLog(text, stream) {
 function formatEvent(ev) {
   const p = ev.part || {};
   switch (ev.type) {
+    case 'reasoning': return p.text ? { text: '💭 ' + p.text, cls: 'think' } : null;
     case 'text': return p.text ? { text: p.text, cls: '' } : null;
     case 'tool_use': {
       const s = p.state || {};

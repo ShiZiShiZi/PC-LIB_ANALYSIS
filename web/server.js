@@ -47,6 +47,7 @@ const DEFAULT_SETTINGS = {
   promptTemplate: DEFAULT_PROMPT,
   maxConcurrent: 3,
   printLogs: false,
+  thinking: true,
 };
 
 for (const d of [REPOS, RUNS]) fs.mkdirSync(d, { recursive: true });
@@ -162,9 +163,11 @@ function runsForLib(name) {
     if (!fs.statSync(runDir).isDirectory()) continue;
     let meta = {};
     try { meta = JSON.parse(fs.readFileSync(path.join(runDir, 'meta.json'), 'utf8')); } catch (_) {}
-    out.push({ name, run: ts, status: meta.status || 'unknown', model: meta.model,
-      startedAt: meta.startedAt || ts, endedAt: meta.endedAt,
-      reportAvailable: fs.existsSync(path.join(runDir, 'report.json')) });
+    const reportAvailable = fs.existsSync(path.join(runDir, 'report.json'));
+    // meta.json is written by the server at job end; if it is missing (e.g. the
+    // server was stopped mid-run) fall back to report presence for the status.
+    out.push({ name, run: ts, status: meta.status || (reportAvailable ? 'done' : 'unknown'),
+      model: meta.model, startedAt: meta.startedAt || ts, endedAt: meta.endedAt, reportAvailable });
   }
   return out.sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
 }
@@ -248,6 +251,7 @@ function createAnalyzeJob(opts) {
   if (model) argv.push('-m', model);
   if (opts.agent) argv.push('--agent', opts.agent);
   argv.push('--format', 'json');
+  if (opts.thinking ?? settings.thinking) argv.push('--thinking');  // stream model reasoning
   if (opts.printLogs ?? settings.printLogs) argv.push('--print-logs');
   argv.push(prompt);
 
