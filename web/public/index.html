@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PC 三方库分析 · 控制台</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>PC 三方库分析 <span class="muted">control panel</span></h1>
+    <div class="status" id="conn">●</div>
+  </header>
+
+  <main>
+    <!-- LEFT: configuration -->
+    <section class="col config">
+      <div class="card">
+        <h2>1 · 代码仓 Repository</h2>
+        <label>Git URL
+          <input id="gitUrl" type="text" placeholder="https://github.com/owner/lib.git" />
+        </label>
+        <div class="row">
+          <label class="grow">分支/Tag (可选)
+            <input id="gitRef" type="text" placeholder="main / v1.2.0" />
+          </label>
+          <label class="check"><input id="overwrite" type="checkbox" /> 覆盖</label>
+        </div>
+        <button id="cloneBtn" class="primary">Clone → repos/</button>
+        <div class="sub">已克隆的库（选择一个分析）</div>
+        <div id="repoList" class="list"></div>
+      </div>
+
+      <div class="card">
+        <h2>2 · 分析配置 Analysis</h2>
+        <label>模型 Model</label>
+        <div class="row">
+          <input id="model" type="text" list="modelList" placeholder="provider/model" />
+          <datalist id="modelList"></datalist>
+          <button id="testBtn" class="ghost">Test</button>
+        </div>
+        <div id="testResult" class="hint"></div>
+        <details>
+          <summary>高级 · opencode 命令 / Prompt 模板</summary>
+          <label>opencode 命令
+            <input id="opencodeCmd" type="text" />
+          </label>
+          <label>Agent (可选 · 留空则用下方 prompt)
+            <input id="agent" type="text" placeholder="pc-lib-analyzer" />
+          </label>
+          <label class="check"><input id="printLogs" type="checkbox" /> 调试日志 --print-logs（含 INFO）</label>
+          <label>Prompt 模板
+            <textarea id="prompt" rows="7"></textarea>
+          </label>
+          <p class="hint">占位符：<code>{repoPath}</code> <code>{agentFile}</code> <code>{reportPath}</code> <code>{name}</code></p>
+        </details>
+        <button id="analyzeBtn" class="primary" disabled>Analyze 选中的库 ▶</button>
+        <div id="selInfo" class="hint"></div>
+      </div>
+
+      <div class="card">
+        <h2>历史 History</h2>
+        <div id="runList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: live + result -->
+    <section class="col output">
+      <div class="card grow">
+        <div class="card-head">
+          <h2>实时日志 Live log</h2>
+          <div class="badges"><span id="jobBadge" class="badge">idle</span>
+            <label class="check"><input id="autoscroll" type="checkbox" checked /> 自动滚动</label></div>
+        </div>
+        <div id="console" class="console"></div>
+      </div>
+
+      <div class="card grow">
+        <div class="card-head">
+          <h2>分析结果 Report</h2>
+          <div class="badges">
+            <button id="dlBtn" class="ghost" disabled>下载 JSON</button>
+            <button id="rawBtn" class="ghost" disabled>原始 JSON</button>
+          </div>
+        </div>
+        <div id="report" class="report"><p class="muted">分析完成后在此展示。</p></div>
+        <pre id="rawJson" class="raw hidden"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

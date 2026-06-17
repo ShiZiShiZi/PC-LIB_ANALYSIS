@@ -37,11 +37,43 @@ interpretive dimension is reasoned by the model, guided by a skill prompt:
     native-api-analysis/SKILL.md
 references/
   report_schema.json            # output contract (the agent conforms to this)
+web/
+  server.js                     # zero-dep Node control panel (HTTP + SSE)
+  public/{index.html,app.js,styles.css}
+repos/                          # cloned libraries (gitignored)
+runs/   <lib>/<timestamp>/      # per-run report.json + run.log.jsonl + meta.json (gitignored)
 ```
 
 ## Usage
 
-### As an agent (the intended path)
+### Web control panel (the intended workflow)
+Configure, clone, analyze and view results from a page; opencode's live I/O is
+streamed to the browser **and** persisted per run.
+
+```bash
+npm start          # or: node web/server.js   ->  http://localhost:8765
+```
+
+In the page:
+1. **Repository** — paste a Git URL → *Clone*. The repo lands in `repos/<name>`
+   (gitignored) and git progress streams live.
+2. **Analysis** — pick a library, choose a `model` (dropdown is populated from
+   `opencode models`), optionally tweak the opencode command / prompt template,
+   → *Analyze*. The server runs (default):
+   ```
+   opencode run -m <model> --print-logs "<prompt pointing at .claude/agents/pc-lib-analyzer.md, write report to runs/<name>/<ts>/report.json>"
+   ```
+   Every stdout/stderr line streams to the **Live log** and is appended to
+   `runs/<name>/<ts>/run.log.jsonl` (with timestamps); the input command/prompt
+   is recorded too.
+3. **Report** — when the agent finishes, `report.json` is rendered (summary,
+   language bars, code metrics, tests, license, deps, native API) with raw-JSON
+   and download. **History** lists past runs; click one to replay its log + report.
+
+Run the panel from the project root so opencode (cwd = root) can read `.claude/`.
+Override the port with `PORT=9000 npm start`.
+
+### As an agent (headless / scripted)
 Invoke the agent on a library; it does all 7 dimensions and writes `report.json`.
 From an external script or UI you can drive it headless, e.g.:
 
