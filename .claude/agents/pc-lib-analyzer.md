@@ -51,7 +51,10 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    - Dim 1 function summary → `.claude/skills/function-summary/SKILL.md`
    - Dim 5 license → `.claude/skills/license-detect/SKILL.md`
    - Dim 6 dependencies → `.claude/skills/dependency-analysis/SKILL.md`
-   - Dim 7 native/platform API → `.claude/skills/native-api-analysis/SKILL.md`
+   - Dim 7 system & platform API → `.claude/skills/native-api-analysis/SKILL.md`
+     (classify each group: 标准/特有/系统/ffi/硬件; include managed-language stdlib/system calls)
+   - Dim 8 runtime & build environment → `.claude/skills/runtime-environment/SKILL.md`
+     (fills `runtime_surface` + `build_env`)
    Use `Glob`/`Grep`/`Read` to inspect README, manifests, public headers/API, and
    representative source files. Prefer breadth on large repos. Cross-check the
    script's test framework / language guesses against what you see; refine the
@@ -59,7 +62,8 @@ the `.claude/skills/...` and `references/...` paths below resolve.
 
 4. **Assemble `report.json`.** Merge the script fragment (`languages`,
    `code_metrics`, `tests`) with your reasoned blocks (`function_summary`,
-   `license`, `dependencies`, `native_api`) and the `library` / `meta` headers.
+   `license`, `dependencies`, `native_api`, `runtime_surface`, `build_env`) and
+   the `library` / `meta` headers.
    Conform exactly to `references/report_schema.json`: every top-level key
    present, required sub-fields filled. Fill `meta` with `schema_version: "1.0"`,
    `analyzer: "pc-lib-analyzer"`, `counter_tool` (from the fragment),
@@ -71,18 +75,33 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `rust`, `go`, `dotnet`, `other`. If you are uncertain, use `other`. Write
    `library.package_name` (the distribution/package name from the manifest, which
    may differ from the repo dir name; `null` if none) — the panel uses it to link
-   this library into other libraries' dependency trees.
+   this library into other libraries' dependency trees. Set `library.bindings` —
+   the languages it provides bindings/wrappers for beyond the core ecosystem
+   (e.g. C++ core with Python/Java/C# bindings → `["python","java","dotnet"]`; `[]` if none).
 
-   In `native_api`, include `dynamic_libraries`: runtime-loaded libraries
+   In `native_api`, classify each group by portability — `category`
+   (标准/平台特有/系统内核/硬件/ffi) + `platform` (windows/posix/linux/macos/portable) —
+   and drill down with `apis`: per concrete API give name + 中文 purpose + evidence
+   (file:line) + conditional (#ifdef-guarded). Also
+   include `dynamic_libraries`: runtime-loaded libraries
    (`dlopen`/`LoadLibrary`/`ctypes.CDLL`/`System.loadLibrary`/N-API addons) with
    their resolved name, load mechanism, inferred 简体中文 purpose, and evidence.
    Emit `[]` if there are none. Manifest-declared deps stay in `dependencies`.
+   Write `runtime_surface` (network/filesystem/env_vars/subprocess/devices) and
+   `build_env` (language_standard/runtime_version/build_system/compiler_extensions/
+   platforms) per the runtime-environment skill — descriptive only, `[]` when empty.
 
-   For every entry in `dependencies.dependencies`, set `acquisition` (how the build
-   obtains it: system/vendored/fetchcontent/download_build/submodule/package_manager/
-   prebuilt_binary), `source` (WHERE from — URL / registry / 系统(find_package) / 仓内路径),
-   and `declared_in` (the repo file(s) declaring the integration, e.g. the CMakeLists
-   with find_package/FetchContent/ExternalProject). This distinguishes 本地/远端/系统 依赖.
+   For every entry in `dependencies.dependencies`, set `acquisition` (OPEN vocab — coin a
+   concise value if none of the recommended ones fit), the closed `locality`
+   (local/remote/system/runtime — set explicitly), `source` (WHERE from), and
+   `declared_in` (the repo file(s) declaring the integration). This distinguishes
+   本地/远端/系统 依赖.
+
+   The output contract (`references/report_schema.json`) is the only hard constraint —
+   the taxonomies in the skills are recommended starting sets, not closed lists. When
+   you coin a new value, hit a gap, or face a classification ambiguity, record it in
+   `meta.observations` (`{dimension, field, kind, value, rationale}`) so it can feed back
+   into the skills.
 
 5. **Report back.** The clone stays under `repos/` (it is gitignored). Return the
    absolute path to `report.json` plus a concise digest: one-liner, primary
@@ -104,3 +123,8 @@ the `.claude/skills/...` and `references/...` paths below resolve.
 - If a dimension genuinely doesn't apply (e.g. a pure-Python lib with no native
   API), emit the empty/cross-platform shape the skill specifies — don't omit the key.
 - One library per run. Deterministic blocks must match the script output exactly.
+- **Do the whole analysis yourself in one session — never spawn sub-agents / use a
+  `task` tool.** Sub-agent sessions don't stream to the run log (the panel goes dark)
+  and lose cross-dimension context and the codegraph index. For large repos, get
+  breadth with `codegraph context/query/callers` then targeted `Read`, not by
+  fanning out into research agents.

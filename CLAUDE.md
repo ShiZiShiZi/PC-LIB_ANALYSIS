@@ -24,11 +24,45 @@ dimension by adding a parser — improve its skill prompt instead.
 | 4 | Test file / case counts | script — `code-metrics`, model may refine |
 | 5 | Open-source license | model — `license-detect` skill |
 | 6 | Dependencies | model — `dependency-analysis` skill |
-| 7 | Low-level / platform API (Win32/POSIX/STL/FFI, dynamic-loaded libs) | model — `native-api-analysis` skill |
+| 7 | System & platform API calls (portability classes 标准/平台特有/系统内核/硬件/FFI; per-API name+purpose+call-site) | model — `native-api-analysis` skill |
+| 8 | Runtime & build environment (external-interaction surface + toolchain/platform matrix) | model — `runtime-environment` skill |
 
-Dependencies (dim 6) also carry `acquisition` — how the build obtains each one
-(system/vendored/fetchcontent/download_build/submodule/package_manager/prebuilt_binary)
-— useful for understanding how C libs/.so are pulled in.
+Dependencies (dim 6) carry `acquisition` (how the build obtains each one:
+system/vendored/fetchcontent/download_build/submodule/package_manager/prebuilt_binary)
++ `source` + `declared_in`, distinguishing 本地/远端/系统 deps. Runtime
+dynamically-loaded libs (`native_api.dynamic_libraries`) are also shown under
+dependencies in the panel. `library.bindings` lists the binding languages of a
+polyglot library (e.g. a C++ core with Python/Java bindings). Dim 8 is purely
+descriptive (no adaptation advice).
+
+## Skill authoring convention (principle-first, open-vocabulary, self-capturing)
+
+Maximize the model's reasoning; we only fix the **output contract**. Every
+interpretive skill (dims 1, 5, 6, 7, 8) follows this shape:
+
+1. **主旨与原则 (Goal & principles)** — what the dimension is for and what a good
+   answer looks like, up top. Plus the **meta-rule**: *"The output contract is the
+   only hard constraint. The taxonomy below is a recommended starting set, not a
+   closed list — if a scenario doesn't fit, classify it as best you can, coin a
+   concise lowercase value, and record it in `meta.observations`."*
+2. **输出契约 (Output contract)** — the JSON shape. The one hard requirement.
+3. **思路 (Approach)** — adaptable guidance, NOT mandatory numbered steps.
+4. **常见情形 / 推荐取值 (Common cases / recommended values)** — recall aids
+   (manifest lists, API families, …); explicitly "common, not exhaustive".
+5. **自我发现 (Self-capture)** — record novel values / gaps / ambiguities in
+   `meta.observations`.
+
+**Two-tier vocabulary** — keep classification consumable yet open:
+- **Stable closed axes (model-set)**: `library.ecosystem`/`bindings`,
+  `dependencies[].locality` (local/remote/system/runtime), `native_api.groups[].category`
+  (standard/platform/system/hardware/ffi) and `.platform`. The UI relies on these.
+- **Open detail vocabulary (model may coin)**: `dependencies[].acquisition`,
+  `native_api.groups[].type`, etc. The UI degrades unknown values to the raw string.
+
+`meta.observations` (`{dimension, field, kind, value, rationale}`) is aggregated by
+`/api/observations` and shown on the panel's **模型观察 / 词表反哺** page (`#/observations`)
+for human review — promote recurring coined values into a skill's recommended set
+over time. Do NOT auto-rewrite skills.
 
 ## Layout
 

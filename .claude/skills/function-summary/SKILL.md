@@ -8,6 +8,11 @@ description: Summarize and classify what a third-party library does, by reading 
 Decide what the library *is for* and break its capabilities into categories. This
 is judgment work — read the source, don't pattern-match keywords.
 
+## 主旨与原则
+**输出契约（下方 Output）是唯一硬约束。** 下面的清单与取值是**推荐起点，不是封闭清单** ——
+遇到不匹配的场景，尽力归类，必要时**自造一个简洁的小写值**，并写进 `meta.observations`。
+方法仅是参考思路，可按仓库实际调整；把推理空间留给自己，只要产出符合契约即可。
+
 ## Evidence to gather (in priority order)
 1. **Manifest / package metadata** — the strongest signal for the library's
    ecosystem. Look for:
@@ -74,11 +79,18 @@ Rules:
   "ecosystem": "python"
 }
 ```
-Also set `library.one_liner` (<=120 chars), `library.ecosystem` (one of the
-allowed values above), and `library.package_name` — the **distribution/package
-name** declared in the manifest (`[project].name` / `name` in `package.json` /
-Maven `artifactId` / `Cargo.toml` `name`), which may differ from the repo dir
-name. Set it to `null` if there is no manifest or it is uncertain.
+Also set `library.one_liner` (<=120 chars), `library.ecosystem` (the **core**
+ecosystem, one of the allowed values above), and `library.package_name` — the
+**distribution/package name** declared in the manifest (`[project].name` / `name`
+in `package.json` / Maven `artifactId` / `Cargo.toml` `name`), which may differ
+from the repo dir name. Set it to `null` if there is no manifest or it is uncertain.
+
+Set `library.bindings` — the languages the library exposes **bindings/wrappers**
+for beyond its core ecosystem (so a polyglot library isn't shown as single-language).
+E.g. a C++ core with Boost.Python + SWIG Java/C# bindings → `["python","java","dotnet"]`;
+a JS package with a WASM/native core → list accordingly. Look for binding dirs/tools
+(`*.pyx`/`pybind11`/Boost.Python, `*.i` SWIG, JNI `*Wrappers`, N-API, emscripten/CFFI).
+Use `[]` if it only targets its core ecosystem.
 
 ## Language
 - Write `summary`, every category `name`/`description`, `domain`, `target_users`,
@@ -90,3 +102,8 @@ name. Set it to `null` if there is no manifest or it is uncertain.
 - If docs and code disagree, trust the code and note it.
 - If the library is large, sample breadth over depth — cover all top-level areas
   rather than fully reading one.
+
+## 自我发现（反哺）
+若发现「推荐取值覆盖不到的新场景(new_value) / 契约或分类的盲区(gap) / 难归类的歧义(ambiguity)」，
+追加到顶层 `meta.observations`：`{dimension:"function_summary", field, kind, value, rationale}`，
+供面板「模型观察」页人工反哺 skill。

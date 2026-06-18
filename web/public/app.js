@@ -31,8 +31,22 @@ const ACQ_LOCALITY = {
   fetchcontent: 'remote', download_build: 'remote', submodule: 'remote', package_manager: 'remote',
   system: 'system',
 };
-const LOCALITY_LABELS = { local: '本地', remote: '远端', system: '系统', unknown: '来源未知' };
-const LOCALITY_CLS = { local: 'done', remote: 'running', system: 'queued', unknown: 'gray' };
+const LOCALITY_LABELS = { local: '本地', remote: '远端', system: '系统', runtime: '运行时加载', unknown: '来源未知' };
+const LOCALITY_CLS = { local: 'done', remote: 'running', system: 'queued', runtime: 'error', unknown: 'gray' };
+// short language names for binding chips (avoid the verbose "库" suffix)
+const BIND_LABELS = { python: 'Python', java: 'Java', nodejs: 'Node', cpp: 'C++', dotnet: 'C#/.NET', rust: 'Rust', go: 'Go', other: '其他' };
+const bindingChips = (bindings, primary) => (bindings || [])
+  .filter((b) => b && b !== primary)
+  .map((b) => `<span class="chip bind-chip">+${esc(BIND_LABELS[b] || b)}</span>`).join('');
+// native_api group category — by portability
+const CAT_LABELS = { standard: '标准', platform: '平台特有', system: '系统内核', ffi: 'FFI', hardware: '硬件' };
+const CAT_CLS = { standard: 'done', platform: 'running', system: 'error', ffi: 'queued', hardware: 'gray' };
+const CAT_ORDER = ['standard', 'platform', 'system', 'hardware', 'ffi'];
+const CAT_LEGEND = {
+  standard: '语言标准库/运行时，跨平台', platform: '某 OS 专有(Win32 / POSIX-only 等)',
+  system: '内核/系统调用层(syscall/ioctl//proc/注册表)', hardware: 'GPU/SIMD/加速器', ffi: '互操作桥(ctypes/JNI/N-API)',
+};
+const PLAT_LABELS = { windows: 'Windows', posix: 'POSIX', linux: 'Linux', macos: 'macOS', portable: '跨平台', unknown: '' };
 
 function setHeader(html) { $('#headerActions').innerHTML = html; }
 function toast(msg, kind = '') {
@@ -60,6 +74,7 @@ function navigate() {
   if (es) { es.close(); es = null; }
   const hash = location.hash.slice(1) || '/';
   if (hash.startsWith('/lib/')) renderDetail(decodeURIComponent(hash.slice(5)));
+  else if (hash === '/observations') renderObservations();
   else renderDashboard();
 }
 window.addEventListener('hashchange', navigate);
@@ -74,7 +89,8 @@ let page = 1;
 const PAGE_SIZE = 15;
 
 async function renderDashboard() {
-  setHeader('<button class="btn" id="hSettings">⚙ 系统设置</button>' +
+  setHeader('<a class="btn" href="#/observations">🔭 模型观察</a>' +
+            '<button class="btn" id="hSettings">⚙ 系统设置</button>' +
             '<button class="btn primary" id="hClone">＋ 克隆库</button>');
   $('#hSettings').onclick = openSettings;
   $('#hClone').onclick = openCloneModal;
@@ -159,7 +175,7 @@ function renderList() {
         <td><a class="lname" href="#/lib/${enc(lib.name)}">${esc(lib.name)}</a>
             <div class="lsub">${esc(s.oneLiner || (lib.cloned ? '尚未分析' : '尚未克隆'))}</div></td>
         <td class="c-st"><span class="badge ${st.cls}">${st.label}</span></td>
-        <td>${s.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[s.ecosystem] || s.ecosystem)}</span>` : '—'}</td>
+        <td>${s.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[s.ecosystem] || s.ecosystem)}</span>` : '—'}${bindingChips(s.bindings, s.ecosystem)}</td>
         <td>${s.primary ? `<span class="chip lang-chip">${esc(s.primary)}</span>` : '—'}</td>
         <td class="c-num">${s.prodCode != null ? num(s.prodCode) : '—'}</td>
         <td class="c-num">${s.testCases != null ? num(s.testCases) : '—'}</td>
@@ -287,6 +303,39 @@ async function openSettings() {
 }
 
 // ===========================================================================
+//  OBSERVATIONS (skill 反哺)
+// ===========================================================================
+const OBS_KIND_LABELS = { new_value: '新造值', gap: '盲区', ambiguity: '歧义' };
+const OBS_KIND_CLS = { new_value: 'done', gap: 'running', ambiguity: 'queued' };
+async function renderObservations() {
+  setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>');
+  $('#app').innerHTML = `<div class="detail-head"><h1>🔭 模型观察 / 词表反哺</h1></div>
+    <p class="muted">模型在分析中自造的取值、发现的盲区与分类歧义，跨所有库聚合。高频项可考虑提拔进对应 skill 的推荐取值。</p>
+    <div id="obs"><p class="muted">加载中…</p></div>`;
+  let data;
+  try { data = await api('/api/observations'); } catch { $('#obs').innerHTML = '<div class="hint err">加载失败</div>'; return; }
+  if (!data.items || !data.items.length) {
+    $('#obs').innerHTML = '<div class="empty">暂无观察记录。重新分析库后，模型遇到新场景会记录在这里。</div>';
+    return;
+  }
+  // group by dimension
+  const byDim = {};
+  data.items.forEach((it) => { (byDim[it.dimension] = byDim[it.dimension] || []).push(it); });
+  $('#obs').innerHTML = Object.entries(byDim).map(([dim, items]) => `
+    <div class="card" style="margin-bottom:12px">
+      <div class="section-title">${esc(dim)} (${items.length})</div>
+      <table class="obstable"><thead><tr><th>类型</th><th>字段</th><th>值</th><th class="c-num">次数</th><th>样本库</th><th>说明</th></tr></thead>
+      <tbody>${items.map((it) => `<tr>
+        <td><span class="badge ${OBS_KIND_CLS[it.kind] || 'gray'}">${OBS_KIND_LABELS[it.kind] || it.kind}</span></td>
+        <td><code>${esc(it.field || '—')}</code></td>
+        <td>${it.value ? `<code>${esc(it.value)}</code>` : '—'}</td>
+        <td class="c-num">${it.count}</td>
+        <td>${(it.libs || []).map((n) => `<a href="#/lib/${enc(n)}">${esc(n)}</a>`).join('、')}</td>
+        <td class="muted">${esc(it.rationale || '')}</td></tr>`).join('')}</tbody></table>
+    </div>`).join('');
+}
+
+// ===========================================================================
 //  DETAIL (level 2)
 // ===========================================================================
 let curReport = null;     // {name, run, obj}
@@ -379,11 +428,24 @@ async function reAnalyze(name) {
 function subscribe(jobId, name, onEnd) {
   if (es) es.close();
   clearConsole();
+  // heartbeat: surface liveness when the stream goes quiet (e.g. a long codegraph/Bash step)
+  let lastEvt = Date.now(), hbEl = null;
+  const bump = () => { lastEvt = Date.now(); if (hbEl) { hbEl.remove(); hbEl = null; } };
+  const hbTimer = setInterval(() => {
+    const idle = Date.now() - lastEvt;
+    if (idle < 20000) return;
+    const c = $('#console'); if (!c) return;
+    if (!hbEl) { hbEl = document.createElement('div'); hbEl.className = 'ln sys'; c.appendChild(hbEl); }
+    hbEl.textContent = `…仍在运行（已静默 ${Math.round(idle / 1000)}s，主 agent 可能在执行长任务）`;
+    c.scrollTop = c.scrollHeight;
+  }, 5000);
+  const stopHb = () => { clearInterval(hbTimer); if (hbEl) { hbEl.remove(); hbEl = null; } };
   es = new EventSource('/api/stream?job=' + jobId);
-  es.addEventListener('input', (e) => { const d = JSON.parse(e.data).data; metaLine('$ ' + (d.argv ? d.argv.join(' ') : '')); });
-  es.addEventListener('status', (e) => { const d = JSON.parse(e.data).data; setDStatus(d.status); sysLine('状态：' + statusZh(d.status)); });
-  es.addEventListener('log', (e) => { const { stream, text } = JSON.parse(e.data).data; renderLog(text, stream); });
+  es.addEventListener('input', (e) => { bump(); const d = JSON.parse(e.data).data; metaLine('$ ' + (d.argv ? d.argv.join(' ') : '')); });
+  es.addEventListener('status', (e) => { bump(); const d = JSON.parse(e.data).data; setDStatus(d.status); sysLine('状态：' + statusZh(d.status)); });
+  es.addEventListener('log', (e) => { bump(); const { stream, text } = JSON.parse(e.data).data; renderLog(text, stream); });
   es.addEventListener('end', (e) => {
+    stopHb();
     const d = JSON.parse(e.data).data;
     sysLine(`— 进程结束，退出码 ${d.code}（${statusZh(d.status)}）—`);
     setDStatus(d.status);
@@ -391,11 +453,12 @@ function subscribe(jobId, name, onEnd) {
     if (onEnd) onEnd(d);
   });
   es.onerror = () => {};
-  view.cleanup = () => { if (es) { es.close(); es = null; } };
+  view.cleanup = () => { stopHb(); if (es) { es.close(); es = null; } };
 }
 
 // ---- console --------------------------------------------------------------
-function clearConsole() { const c = $('#console'); if (c) c.innerHTML = ''; }
+const shownTools = new Set();   // dedupe tool_use lines by callID (reset per console clear)
+function clearConsole() { const c = $('#console'); if (c) c.innerHTML = ''; shownTools.clear(); }
 function appendLine(text, cls) {
   const c = $('#console'); if (!c) return;
   const div = document.createElement('div');
@@ -422,9 +485,21 @@ function formatEvent(ev) {
     case 'text': return p.text ? { text: p.text, cls: '' } : null;
     case 'tool_use': {
       const s = p.state || {};
-      if (s.status && s.status !== 'completed' && s.status !== 'error') return null;
-      const label = s.title || (s.input ? JSON.stringify(s.input).slice(0, 100) : '');
-      return { text: `🔧 ${p.tool}${label ? ' · ' + label : ''}${s.status === 'error' ? ' ✖' : ''}`, cls: 'tool' };
+      const id = p.callID || p.id || '';
+      const status = s.status || 'running';
+      const raw = (s.input && s.input.description) || s.title || (s.input ? JSON.stringify(s.input) : '');
+      const label = String(raw).slice(0, 100);
+      // errors: always surface once
+      if (status === 'error') {
+        if (id && shownTools.has('err:' + id)) return null;
+        if (id) shownTools.add('err:' + id);
+        return { text: `🔧 ${p.tool}${label ? ' · ' + label : ''} ✖`, cls: 'stderr' };
+      }
+      // otherwise show one line at first sighting (running → liveness for long tools)
+      if (id && shownTools.has('seen:' + id)) return null;
+      if (id) shownTools.add('seen:' + id);
+      const mark = status === 'completed' ? '' : ' · 运行中…';
+      return { text: `🔧 ${p.tool}${label ? ' · ' + label : ''}${mark}`, cls: 'tool' };
     }
     case 'error': return { text: '✖ ' + (p.message || ev.message || JSON.stringify(ev).slice(0, 200)), cls: 'stderr' };
     default: return null;
@@ -478,7 +553,7 @@ function renderReport(r) {
   parts.push(sec('概览', `<div class="kv">
     <b>名称</b><span>${esc(lib.name)}</span>
     <b>一句话</b><span>${esc(lib.one_liner || fs.summary || '')}</span>
-    <b>生态</b><span>${lib.ecosystem ? esc(ECO_LABELS[lib.ecosystem] || lib.ecosystem) : '—'}</span>
+    <b>生态</b><span>${lib.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[lib.ecosystem] || lib.ecosystem)}</span>` : '—'}${bindingChips(lib.bindings, lib.ecosystem)}</span>
     <b>主语言</b><span>${esc((r.languages || {}).primary || '—')}</span>
     <b>许可证</b><span>${esc(lic.spdx || '—')} <span class="muted">(${esc(lic.confidence || '')})</span></span>
     <b>来源</b><span>${esc(lib.source_url || '')}</span></div>`));
@@ -511,35 +586,109 @@ function renderReport(r) {
     <b>框架</b><span>${(t.frameworks || []).map((f) => `<span class="chip">${esc(f)}</span>`).join('') || '—'}</span></div>`));
 
   const hasDeps = dep.count != null || (dep.dependencies || []).length;
-  if (hasDeps) {
+  const dynlibs = na.dynamic_libraries || [];
+  if (hasDeps || dynlibs.length) {
     const items = (dep.dependencies || []).slice(0, 40).map((d) =>
       `<span class="chip" title="${esc(d.purpose || '')}">${esc(d.name)}${d.scope && d.scope !== 'runtime' ? ` ·${esc(d.scope)}` : ''}</span>`).join('');
+    const treePart = hasDeps
+      ? `<div class="subtitle">依赖关系（面板内连接，离线）</div>
+         <div class="deptree" id="depTree"><p class="muted">加载依赖关系…</p></div>`
+      : '';
+    const dynPart = dynlibs.length
+      ? `<div class="subtitle">运行时动态加载库 (${dynlibs.length})</div><div class="deptree">${dynlibs.map(dynDepRow).join('')}</div>`
+      : '';
     parts.push(sec(`依赖 (${dep.count != null ? dep.count : (dep.dependencies || []).length})`,
-      (items || '<span class="muted">无</span>') + (dep.notes ? `<p class="hint">${esc(dep.notes)}</p>` : '') +
-      `<div class="subtitle">依赖关系（面板内连接，离线）</div>
-       <div class="deptree" id="depTree"><p class="muted">加载依赖关系…</p></div>`));
+      (hasDeps ? (items || '<span class="muted">无</span>') : '') +
+      (dep.notes ? `<p class="hint">${esc(dep.notes)}</p>` : '') + treePart + dynPart));
   }
 
-  if ((na.groups || []).length || na.summary || (na.dynamic_libraries || []).length) {
-    const groups = (na.groups || []).map((g) => {
+  if ((na.groups || []).length || na.summary) {
+    const sortedGroups = (na.groups || []).slice().sort((a, b) =>
+      (CAT_ORDER.indexOf(a.category) + 1 || 99) - (CAT_ORDER.indexOf(b.category) + 1 || 99));
+    const groups = sortedGroups.map((g) => {
+      const cat = g.category ? `<span class="badge ${CAT_CLS[g.category] || 'gray'}">${CAT_LABELS[g.category] || g.category}</span> ` : '';
+      const plat = g.platform && PLAT_LABELS[g.platform] ? `<span class="tag">${PLAT_LABELS[g.platform]}</span>` : '';
+      const head = `<div class="apigroup-h">${cat}<b>${esc(g.type)}</b> ${plat}</div>`;
+      // new per-API table; fall back to old flat symbols for legacy reports
+      if ((g.apis || []).length) {
+        const rows = g.apis.map((a) => {
+          const loc = (a.evidence || []).slice(0, 3).map(esc).join('、');
+          const more = (a.evidence || []).length > 3 ? ` <span class="muted" title="${esc((a.evidence || []).join(', '))}">…</span>` : '';
+          return `<tr><td class="api-n"><code>${esc(a.name)}</code>${a.conditional ? ' <span class="tag">#ifdef</span>' : ''}</td>
+            <td>${esc(a.purpose || '')}</td><td class="api-loc">${loc || '—'}${more}</td></tr>`;
+        }).join('');
+        return `${head}<table class="apitable"><thead><tr><th>API</th><th>用途</th><th>调用位置</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
       const syms = (g.symbols || []).map(esc).join(', ');
-      return `<div class="cat"><b>${esc(g.type)}</b> <span class="syms">${syms || '<i class="muted">—</i>'}</span></div>`;
+      return `${head}<div class="cat"><span class="syms">${syms || '<i class="muted">—</i>'}</span></div>`;
     }).join('');
-    const dyn = (na.dynamic_libraries || []).map((d) =>
-      `<div class="dynlib"><span class="chip lang-chip">${esc(d.name)}</span>` +
-      (d.mechanism ? `<span class="tag">${esc(d.mechanism)}</span>` : '') +
-      (d.optional ? `<span class="tag opt">可选</span>` : '') +
-      `<span class="dynlib-desc" title="${esc((d.evidence || []).join(', '))}">${esc(d.description || '')}</span></div>`).join('');
-    parts.push(sec('底层 / 平台 API', `<p>${esc(na.summary || '')}</p>${groups}` +
-      (dyn ? `<div class="subtitle">动态加载库</div>${dyn}` : '') +
+    const legend = `<div class="api-legend">${CAT_ORDER.filter((c) => sortedGroups.some((g) => g.category === c))
+      .map((c) => `<span><span class="badge ${CAT_CLS[c]}">${CAT_LABELS[c]}</span> ${esc(CAT_LEGEND[c])}</span>`).join('')}</div>`;
+    parts.push(sec('系统 / 平台 API 调用', `<p>${esc(na.summary || '')}</p>${legend}${groups}` +
+      (dynlibs.length ? `<p class="hint">运行时动态加载库见「依赖」区。</p>` : '') +
       (na.platform_dependence ? `<p class="hint">平台依赖：${esc(na.platform_dependence)}</p>` : '')));
+  }
+
+  // 外部交互面 (runtime_surface)
+  const rs = r.runtime_surface || {};
+  const surfRow = (label, arr, fmt) => {
+    const items = (arr || []).map(fmt).join('');
+    return items ? `<div class="subtitle">${label}</div>${items}` : '';
+  };
+  const surfItem = (main, purpose, evidence) =>
+    `<div class="surf"><b>${esc(main)}</b>${purpose ? ` — <span>${esc(purpose)}</span>` : ''}` +
+    `${(evidence || []).length ? ` <span class="muted" title="${esc(evidence.join(', '))}">📄</span>` : ''}</div>`;
+  if ((rs.network || []).length || (rs.filesystem || []).length || (rs.env_vars || []).length ||
+      (rs.subprocess || []).length || (rs.devices || []).length || rs.summary) {
+    parts.push(sec('外部交互面', `${rs.summary ? `<p>${esc(rs.summary)}</p>` : ''}` +
+      surfRow('环境变量', rs.env_vars, (e) => surfItem(e.name, e.purpose, e.evidence)) +
+      surfRow('网络', rs.network, (e) => surfItem(e.detail, e.purpose, e.evidence)) +
+      surfRow('文件系统', rs.filesystem, (e) => surfItem(e.detail, e.purpose, e.evidence)) +
+      surfRow('子进程', rs.subprocess, (e) => surfItem(e.command, e.purpose, e.evidence)) +
+      surfRow('设备', rs.devices, (e) => surfItem(e.detail, e.purpose, e.evidence))));
+  }
+
+  // 构建与平台 (build_env)
+  const be = r.build_env || {};
+  if (be.language_standard || be.build_system || be.runtime_version ||
+      (be.platforms || []).length || (be.compiler_extensions || []).length || be.notes) {
+    const plats = (be.platforms || []).map((p) =>
+      `<span class="chip" title="${esc((p.evidence || []).join(', '))}">${esc(p.os || '')}${p.arch ? ' / ' + esc(p.arch) : ''}</span>`).join('');
+    const exts = (be.compiler_extensions || []).map((e) => surfItem(e.detail, e.purpose, e.evidence)).join('');
+    parts.push(sec('构建与平台', `<div class="kv">
+      <b>语言标准</b><span>${esc(be.language_standard || '—')}</span>
+      <b>运行时版本</b><span>${esc(be.runtime_version || '—')}</span>
+      <b>构建系统</b><span>${esc(be.build_system || '—')}</span></div>` +
+      (plats ? `<div class="subtitle">支持平台</div>${plats}` : '') +
+      (exts ? `<div class="subtitle">编译器特有扩展</div>${exts}` : '') +
+      (be.notes ? `<p class="hint">${esc(be.notes)}</p>` : '')));
   }
 
   const warn = (r.meta || {}).warnings || [];
   if (warn.length) parts.push(sec('警告', warn.map((w) => `<div class="cat">⚠ ${esc(w)}</div>`).join('')));
 
   el.innerHTML = parts.join('');
+  depHlKey = null;
+  el.onclick = depHighlightHandler;   // delegated click-to-highlight for dep tags
   if (hasDeps) loadDepTree(curReport && curReport.name);
+}
+
+// ---- click-to-highlight dependency tags -----------------------------------
+let depHlKey = null;
+function applyDepHighlight(scope, key) {
+  scope.querySelectorAll('.deptree li.leaf, .deptree summary, .dynlib').forEach((row) => {
+    row.classList.remove('hl-on', 'hl-dim');
+    if (key) row.classList.add(row.querySelector(`[data-hl="${key}"]`) ? 'hl-on' : 'hl-dim');
+  });
+  scope.querySelectorAll('[data-hl]').forEach((b) => b.classList.toggle('hl-badge-on', !!key && b.dataset.hl === key));
+}
+function depHighlightHandler(e) {
+  const scope = $('#report'); if (!scope) return;
+  const b = e.target.closest('[data-hl]');
+  if (!b) { if (depHlKey) { depHlKey = null; applyDepHighlight(scope, null); } return; }
+  e.preventDefault();
+  depHlKey = (depHlKey === b.dataset.hl) ? null : b.dataset.hl;
+  applyDepHighlight(scope, depHlKey);
 }
 
 // ---- dependency tree (offline, /api/depgraph) -----------------------------
@@ -559,17 +708,26 @@ function depGroupsHtml(nodes) {
     depTreeHtml(nodes);
 }
 function depNodeLabel(n) {
-  const eco = n.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[n.ecosystem] || n.ecosystem)}</span>` : '';
+  const eco = n.ecosystem ? `<span class="chip eco-chip" data-hl="eco:${esc(n.ecosystem)}">${esc(ECO_LABELS[n.ecosystem] || n.ecosystem)}</span>` : '';
   const ver = n.version ? `<span class="muted">${esc(n.version)}</span>` : '';
-  const scope = n.scope && n.scope !== 'runtime' ? `<span class="tag">${esc(n.scope)}</span>` : '';
-  const loc = n.acquisition ? (ACQ_LOCALITY[n.acquisition] || 'unknown') : null;
-  const locBadge = loc ? `<span class="badge ${LOCALITY_CLS[loc]}" title="${esc(ACQ_LABELS[n.acquisition] || n.acquisition)}">${LOCALITY_LABELS[loc]}</span>` : '';
-  const acq = n.acquisition ? `<span class="tag acq" title="${esc(n.source || '')}">${esc(ACQ_LABELS[n.acquisition] || n.acquisition)}</span>` : '';
+  const scope = n.scope && n.scope !== 'runtime' ? `<span class="tag" data-hl="scope:${esc(n.scope)}">${esc(n.scope)}</span>` : '';
+  const loc = n.locality || (n.acquisition ? (ACQ_LOCALITY[n.acquisition] || 'unknown') : null);
+  const locBadge = loc ? `<span class="badge ${LOCALITY_CLS[loc]}" data-hl="loc:${loc}" title="${esc(ACQ_LABELS[n.acquisition] || n.acquisition)}">${LOCALITY_LABELS[loc]}</span>` : '';
+  const acq = n.acquisition ? `<span class="tag acq" data-hl="acq:${esc(n.acquisition)}" title="${esc(n.source || '')}">${esc(ACQ_LABELS[n.acquisition] || n.acquisition)}</span>` : '';
   let tail;
   if (n.analyzed) tail = `<a class="btn sm ghost" href="#/lib/${enc(n.libName)}">跳转 →</a>`;
   else if (n.ambiguous) tail = `<span class="badge gray" title="面板内有多个同名同生态库，未自动连接">歧义</span>`;
   else tail = `<span class="badge gray">未分析</span>`;
   return `<span class="dep-name" title="${esc(n.purpose || '')}">${esc(n.name)}</span> ${ver} ${eco} ${locBadge} ${acq} ${scope} ${tail}`;
+}
+// runtime dynamically-loaded library, shown in the dependency area as a runtime dep
+function dynDepRow(d) {
+  return `<div class="dynlib">` +
+    `<span class="badge ${LOCALITY_CLS.runtime}" data-hl="loc:runtime">${LOCALITY_LABELS.runtime}</span>` +
+    `<span class="chip lang-chip">${esc(d.name)}</span>` +
+    (d.mechanism ? `<span class="tag">${esc(d.mechanism)}</span>` : '') +
+    (d.optional ? `<span class="tag opt">可选</span>` : '') +
+    `<span class="dynlib-desc" title="${esc((d.evidence || []).join(', '))}">${esc(d.description || '')}</span></div>`;
 }
 function depMetaHtml(n) {
   const bits = [];

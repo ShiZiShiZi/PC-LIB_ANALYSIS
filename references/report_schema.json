@@ -4,7 +4,8 @@
   "description": "Final report produced by the pc-lib-analyzer agent. The languages/code_metrics/tests blocks come verbatim from the code-metrics script (deterministic); every other block is reasoned by the model via its skill.",
   "type": "object",
   "required": ["library", "function_summary", "languages", "code_metrics",
-               "tests", "license", "dependencies", "native_api", "meta"],
+               "tests", "license", "dependencies", "native_api",
+               "runtime_surface", "build_env", "meta"],
   "properties": {
     "library": {
       "type": "object",
@@ -20,7 +21,12 @@
         "ecosystem": {
           "type": "string",
           "enum": ["python", "java", "nodejs", "cpp", "rust", "go", "dotnet", "other"],
-          "description": "库所属语言生态，由模型根据 manifest 与主语言判断。取值：python / java / nodejs / cpp / rust / go / dotnet / other"
+          "description": "库的核心语言生态，由模型根据 manifest 与主语言判断。取值：python / java / nodejs / cpp / rust / go / dotnet / other"
+        },
+        "bindings": {
+          "type": "array",
+          "items": {"type": "string", "enum": ["python", "java", "nodejs", "cpp", "rust", "go", "dotnet", "other"]},
+          "description": "model: 该库在核心生态之外对外提供绑定/包装的语言生态（如 C++ 核心 + Python/Java/C# 绑定 → [python, java, dotnet]）。无则 []。用于多语言库的生态展示。"
         }
       }
     },
@@ -121,8 +127,10 @@
             "version": {"type": ["string", "null"]},
             "purpose": {"type": "string", "description": "model: why it's used"},
             "acquisition": {"type": "string",
-              "enum": ["system", "vendored", "fetchcontent", "download_build", "submodule", "package_manager", "prebuilt_binary", "unknown"],
-              "description": "how the build OBTAINS this dependency (clarifies the real dependency relationship, esp. for C/C++ libs/.so). system=find_package/expected pre-installed; vendored=source copied into the tree (External/, third_party/); fetchcontent=CMake FetchContent; download_build=ExternalProject/custom download-source-and-build (e.g. downloadAndCheckMD5); submodule=git submodule; package_manager=vcpkg/conan/pip/npm/maven; prebuilt_binary=binary .so/.dll/.a/.lib shipped in repo. Locality is derived from this: local←vendored/prebuilt_binary, remote←fetchcontent/download_build/submodule/package_manager, system←system"},
+              "description": "OPEN vocabulary — how the build OBTAINS this dependency. Recommended values: system (find_package/expected pre-installed), vendored (source copied into the tree), fetchcontent (CMake FetchContent), download_build (ExternalProject/custom download-source-and-build), submodule (git submodule), package_manager (vcpkg/conan/pip/npm/maven), prebuilt_binary (binary shipped in repo). If none fits, coin a concise lowercase token (e.g. conda, apt, cpm, git_subtree, runtime_download) AND record it in meta.observations. Also set the closed `locality` field accordingly."},
+            "locality": {"type": "string",
+              "enum": ["local", "remote", "system", "runtime", "unknown"],
+              "description": "STABLE axis (model-set): local=already in repo (vendored/prebuilt); remote=pulled from outside (fetchcontent/download/submodule/registry); system=expected pre-installed via find_package; runtime=loaded at runtime; unknown"},
             "source": {"type": "string", "description": "model: WHERE it is obtained from — download URL / registry / 'system (find_package, must be pre-installed)' / in-tree path, 简体中文"},
             "declared_in": {"type": "array", "items": {"type": "string"},
               "description": "model: repo file(s) that declare how this dependency is integrated, e.g. the CMakeLists.txt with find_package/FetchContent_Declare/ExternalProject_Add/target_link_libraries, a .gitmodules entry, or a requirements/manifest line"}}}},
@@ -140,10 +148,28 @@
           "required": ["type"],
           "properties": {
             "type": {"type": "string",
-              "description": "e.g. win32, posix, cpp_stl, ctypes_ffi, jni, node_native, opengl, directx"},
-            "symbols": {"type": "array", "items": {"type": "string"}},
+              "description": "API family, e.g. win32, posix, cpp_stl, python_stdlib, java_std, node_core, syscall, ctypes_ffi, jni, opengl, directx, arch_simd"},
+            "category": {"type": "string",
+              "enum": ["standard", "platform", "system", "ffi", "hardware"],
+              "description": "按可移植性分类。standard=语言标准库/运行时,到处可用(C++ STL、Python stdlib、JDK标准包、Node内置); platform=某OS专有,换平台即没有(Win32 与 POSIX-only 如 mmap/fork/epoll/<unistd.h> 都属此,再用 platform 字段标 windows/posix/macos); system=内核/系统调用层(裸 syscall、ioctl、/proc、/sys、注册表、WMI、设备); ffi=互操作桥(ctypes/cffi/JNI/N-API); hardware=GPU/SIMD/加速器"},
+            "platform": {"type": "string",
+              "enum": ["windows", "posix", "linux", "macos", "portable", "unknown"],
+              "description": "该组 API 所属平台；portable=跨平台(标准库)"},
+            "apis": {"type": "array",
+              "description": "逐个具体 API（代表性，非穷举）",
+              "items": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {"type": "string", "description": "具体 API/符号名，如 mmap、CreateFileMapping、std::filesystem"},
+                  "purpose": {"type": "string", "description": "中文：该 API 的作用"},
+                  "evidence": {"type": "array", "items": {"type": "string"},
+                    "description": "调用位置 file:line（代表性 1-3 处）"},
+                  "conditional": {"type": "boolean", "description": "是否被 #ifdef / 平台条件守卫"}}}},
+            "symbols": {"type": "array", "items": {"type": "string"},
+              "description": "deprecated: 旧版扁平符号列表，向后兼容；新输出请用 apis"},
             "evidence": {"type": "array", "items": {"type": "string"},
-              "description": "files / includes / call sites"}}}},
+              "description": "group-level files / includes (optional; prefer per-api evidence)"}}}},
         "dynamic_libraries": {
           "type": "array",
           "description": "Libraries loaded at RUNTIME via dynamic loading (not declared in package manifests). Model resolves the loaded library name and infers its purpose.",
@@ -163,6 +189,46 @@
       }
     },
 
+    "runtime_surface": {
+      "type": "object",
+      "description": "Dimension 8a — MODEL (skill: runtime-environment). What the code reaches for in the HOST environment at runtime (beyond linked libraries). Descriptive only. Each array uses [] when empty; prose in 简体中文.",
+      "properties": {
+        "summary": {"type": "string", "description": "中文：运行时对宿主环境依赖的概述"},
+        "network": {"type": "array", "items": {"$ref": "#/definitions/surfaceItem"},
+          "description": "sockets / HTTP clients / bound ports / hard-coded hosts"},
+        "filesystem": {"type": "array", "items": {"$ref": "#/definitions/surfaceItem"},
+          "description": "config/data files, temp dirs, absolute paths read/written at runtime"},
+        "env_vars": {"type": "array", "items": {
+          "type": "object", "required": ["name"],
+          "properties": {"name": {"type": "string"}, "purpose": {"type": "string", "description": "中文"},
+            "evidence": {"type": "array", "items": {"type": "string"}}}}},
+        "subprocess": {"type": "array", "items": {
+          "type": "object",
+          "properties": {"command": {"type": "string"}, "purpose": {"type": "string", "description": "中文"},
+            "evidence": {"type": "array", "items": {"type": "string"}}}}},
+        "devices": {"type": "array", "items": {"$ref": "#/definitions/surfaceItem"},
+          "description": "/dev nodes, GPU, other hardware/device access"}
+      }
+    },
+
+    "build_env": {
+      "type": "object",
+      "description": "Dimension 8b — MODEL (skill: runtime-environment). Toolchain / language-standard requirements and the supported OS/arch matrix. Descriptive only; prose in 简体中文.",
+      "properties": {
+        "language_standard": {"type": "string", "description": "e.g. C++17 / Python>=3.8 / Java 11"},
+        "runtime_version": {"type": "string", "description": "中文：运行时/解释器版本要求"},
+        "build_system": {"type": "string", "description": "e.g. CMake / setuptools / Maven / Cargo"},
+        "compiler_extensions": {"type": "array", "items": {"$ref": "#/definitions/surfaceItem"},
+          "description": "__attribute__ / #pragma / __declspec / GCC|Clang|MSVC-specific features"},
+        "platforms": {"type": "array", "items": {
+          "type": "object",
+          "properties": {"os": {"type": "string"}, "arch": {"type": "string"},
+            "evidence": {"type": "array", "items": {"type": "string"}}}},
+          "description": "supported OS/arch matrix inferred from #ifdef / CI / wheels / manifests"},
+        "notes": {"type": "string", "description": "中文"}
+      }
+    },
+
     "meta": {
       "type": "object",
       "properties": {
@@ -170,12 +236,32 @@
         "analyzer": {"type": "string"},
         "counter_tool": {"type": "string"},
         "warnings": {"type": "array", "items": {"type": "string"}},
-        "confidence_overall": {"type": "string", "enum": ["high", "medium", "low"]}
+        "confidence_overall": {"type": "string", "enum": ["high", "medium", "low"]},
+        "observations": {
+          "type": "array",
+          "description": "Self-capture for skill feedback (反哺): novel values the model coined, gaps in the recommended taxonomy, or classification ambiguities it hit. Reviewed in the panel's 模型观察 page and used to improve skills over time.",
+          "items": {
+            "type": "object",
+            "required": ["dimension", "kind"],
+            "properties": {
+              "dimension": {"type": "string", "description": "which dimension/skill, e.g. dependencies, native_api, license"},
+              "field": {"type": "string", "description": "the field the observation is about, e.g. acquisition, type"},
+              "kind": {"type": "string", "enum": ["new_value", "gap", "ambiguity"]},
+              "value": {"type": "string", "description": "the coined value or short tag"},
+              "rationale": {"type": "string", "description": "中文：为什么这样判断 / 现有取值为何不够"}}}}
       }
     }
   },
 
   "definitions": {
+    "surfaceItem": {
+      "type": "object",
+      "properties": {
+        "detail": {"type": "string"},
+        "purpose": {"type": "string", "description": "中文"},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      }
+    },
     "lineAgg": {
       "type": "object",
       "properties": {

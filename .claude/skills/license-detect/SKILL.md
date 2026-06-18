@@ -8,6 +8,11 @@ description: Determine a third-party library's open-source license by reading an
 A fixed regex table can't cover every license, exception, or dual-licensing
 arrangement — so reason about it. Read the actual license text and decide.
 
+## 主旨与原则
+**输出契约（下方 Output）是唯一硬约束。** 下面的清单与取值是**推荐起点，不是封闭清单** ——
+遇到不匹配的场景（罕见许可、自定义条款、SPDX 表里没有的组合），尽力判断，必要时给出最贴近的
+SPDX 表达式或 `NOASSERTION`，并把疑难写进 `meta.observations`。方法仅是参考思路，可按仓库调整。
+
 ## Where to look (gather all, then reconcile)
 1. **License files** — `LICENSE*`, `COPYING*`, `COPYRIGHT*`, `NOTICE*`,
    `UNLICENSE`, `LICENSES/` dir (REUSE spec). Read the full text, not just the
@@ -48,3 +53,7 @@ arrangement — so reason about it. Read the actual license text and decide.
 - Base `confidence` on evidence strength: `high` = unambiguous full license text;
   `medium` = manifest field or header tag only; `low` = inference.
 - Note when vendored/third-party subtrees carry a different license than the project.
+
+## 自我发现（反哺）
+遇到 SPDX 表难以覆盖的许可/例外/组合，或证据冲突的歧义，追加到顶层 `meta.observations`：
+`{dimension:"license", field, kind, value, rationale}`，供面板「模型观察」页人工反哺 skill。

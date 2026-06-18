@@ -29,7 +29,9 @@ const PORT = process.env.PORT || 8765;
 const DEFAULT_PROMPT =
   'Analyze the PC third-party library checked out at {repoPath}. Follow the ' +
   'method and JSON output contract in {agentFile} and the skills it references. ' +
-  'The source is already cloned — do NOT clone again. {codegraphHint}Run the deterministic ' +
+  'The source is already cloned — do NOT clone again. Do NOT spawn sub-agents or use the ' +
+  '`task` tool — do all evidence-gathering yourself in this single session (codegraph + ' +
+  'Grep/Glob/Read) so every step streams to the live log. {codegraphHint}Run the deterministic ' +
   'code-metrics script with `--out {metricsPath}`, reason through every dimension ' +
   '(function summary, license, dependencies, native/platform API), and write the ' +
   'final report to {reportPath}. Conform to references/report_schema.json. ' +
@@ -194,6 +196,7 @@ function reportSummary(name, run) {
       oneLiner: (r.library && r.library.one_liner) || (r.function_summary && r.function_summary.summary) || '',
       primary: r.languages && r.languages.primary,
       ecosystem: (r.library && r.library.ecosystem) || null,
+      bindings: (r.library && r.library.bindings) || [],
       prodCode: r.code_metrics && r.code_metrics.production && r.code_metrics.production.code,
       testCases: r.tests && r.tests.test_cases,
       license: r.license && r.license.spdx,
@@ -273,7 +276,7 @@ function buildDepTree(rootName, maxDepth) {
       const node = {
         name: d.name, ecosystem: d.ecosystem || null, scope: d.scope || null,
         version: d.version || null, purpose: d.purpose || '',
-        acquisition: d.acquisition || null, source: d.source || '',
+        acquisition: d.acquisition || null, locality: d.locality || null, source: d.source || '',
         declared_in: Array.isArray(d.declared_in) ? d.declared_in : [],
         analyzed, ambiguous: !!(hit && hit.ambiguous),
         libName: analyzed ? hit.libName : null, children: [],
@@ -336,6 +339,10 @@ function createAnalyzeJob(opts) {
   // Robust to stale saved templates that predate the {codegraphHint} placeholder:
   // if codegraph is enabled but the hint didn't land, append it.
   if (codegraphHint && !prompt.includes('codegraph')) prompt = prompt + ' ' + codegraphHint;
+  // Always forbid sub-agents (even for stale saved templates): opencode does not stream
+  // sub-agent (task tool) sessions, so they black-hole the live log. Keep work inline.
+  if (!/sub-agent|`task` tool/.test(prompt))
+    prompt = prompt + ' Do NOT spawn sub-agents or use the `task` tool; do all work yourself in this single session.';
 
   const base = (opts.opencodeCmd || settings.opencodeCmd).trim().split(/\s+/);
   const model = opts.model || settings.model;
@@ -475,6 +482,28 @@ const server = http.createServer(async (req, res) => {
       const hb = setInterval(() => { try { res.write(': ping\n\n'); } catch (_) {} }, 15000);
       req.on('close', () => { clearInterval(hb); job.clients.delete(res); });
       return;
+    }
+
+    if (req.method === 'GET' && pathname === '/api/observations') {
+      // Aggregate meta.observations across all libraries' latest reports (skill 反哺).
+      const groups = new Map();   // key: dimension|field|kind|value -> {..., count, libs:Set}
+      let total = 0;
+      for (const lib of listLibraries()) {
+        if (!lib.latest || !lib.latest.reportAvailable) continue;
+        const rep = latestReport(lib.name);
+        const obs = (rep && rep.meta && rep.meta.observations) || [];
+        for (const o of obs) {
+          total++;
+          const dimension = o.dimension || '其他', field = o.field || '', kind = o.kind || 'gap', value = o.value || '';
+          const key = [dimension, field, kind, value].join('|');
+          let g = groups.get(key);
+          if (!g) { g = { dimension, field, kind, value, rationale: o.rationale || '', count: 0, libs: new Set() }; groups.set(key, g); }
+          g.count++; g.libs.add(lib.name);
+        }
+      }
+      const items = [...groups.values()].map((g) => ({ ...g, libs: [...g.libs] }))
+        .sort((a, b) => b.count - a.count);
+      return send(res, 200, { total, items });
     }
 
     if (req.method === 'GET' && pathname === '/api/depgraph') {
