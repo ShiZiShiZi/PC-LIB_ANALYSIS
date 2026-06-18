@@ -24,7 +24,11 @@ dimension by adding a parser — improve its skill prompt instead.
 | 4 | Test file / case counts | script — `code-metrics`, model may refine |
 | 5 | Open-source license | model — `license-detect` skill |
 | 6 | Dependencies | model — `dependency-analysis` skill |
-| 7 | Low-level / platform API (Win32/POSIX/STL/FFI) | model — `native-api-analysis` skill |
+| 7 | Low-level / platform API (Win32/POSIX/STL/FFI, dynamic-loaded libs) | model — `native-api-analysis` skill |
+
+Dependencies (dim 6) also carry `acquisition` — how the build obtains each one
+(system/vendored/fetchcontent/download_build/submodule/package_manager/prebuilt_binary)
+— useful for understanding how C libs/.so are pulled in.
 
 ## Layout
 

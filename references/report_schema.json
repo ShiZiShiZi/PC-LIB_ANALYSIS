@@ -11,10 +11,17 @@
       "required": ["name", "source_url"],
       "properties": {
         "name": {"type": "string"},
+        "package_name": {"type": ["string", "null"],
+          "description": "model: distribution/package name from the manifest (PyPI/npm/Maven artifact/crate name), may differ from the repo dir name. Used to link this library into other libraries' dependency trees. Null if none/uncertain."},
         "source_url": {"type": ["string", "null"]},
         "analyzed_at": {"type": "string", "description": "ISO-8601 UTC"},
         "commit": {"type": ["string", "null"]},
-        "one_liner": {"type": "string", "description": "model: <=120 char tagline"}
+        "one_liner": {"type": "string", "description": "model: <=120 char tagline"},
+        "ecosystem": {
+          "type": "string",
+          "enum": ["python", "java", "nodejs", "cpp", "rust", "go", "dotnet", "other"],
+          "description": "库所属语言生态，由模型根据 manifest 与主语言判断。取值：python / java / nodejs / cpp / rust / go / dotnet / other"
+        }
       }
     },
 
@@ -112,7 +119,13 @@
             "ecosystem": {"type": "string"},
             "scope": {"type": "string", "description": "runtime/dev/test/optional/build"},
             "version": {"type": ["string", "null"]},
-            "purpose": {"type": "string", "description": "model: why it's used"}}}},
+            "purpose": {"type": "string", "description": "model: why it's used"},
+            "acquisition": {"type": "string",
+              "enum": ["system", "vendored", "fetchcontent", "download_build", "submodule", "package_manager", "prebuilt_binary", "unknown"],
+              "description": "how the build OBTAINS this dependency (clarifies the real dependency relationship, esp. for C/C++ libs/.so). system=find_package/expected pre-installed; vendored=source copied into the tree (External/, third_party/); fetchcontent=CMake FetchContent; download_build=ExternalProject/custom download-source-and-build (e.g. downloadAndCheckMD5); submodule=git submodule; package_manager=vcpkg/conan/pip/npm/maven; prebuilt_binary=binary .so/.dll/.a/.lib shipped in repo. Locality is derived from this: local←vendored/prebuilt_binary, remote←fetchcontent/download_build/submodule/package_manager, system←system"},
+            "source": {"type": "string", "description": "model: WHERE it is obtained from — download URL / registry / 'system (find_package, must be pre-installed)' / in-tree path, 简体中文"},
+            "declared_in": {"type": "array", "items": {"type": "string"},
+              "description": "model: repo file(s) that declare how this dependency is integrated, e.g. the CMakeLists.txt with find_package/FetchContent_Declare/ExternalProject_Add/target_link_libraries, a .gitmodules entry, or a requirements/manifest line"}}}},
         "notes": {"type": "string"}
       }
     },
@@ -131,6 +144,20 @@
             "symbols": {"type": "array", "items": {"type": "string"}},
             "evidence": {"type": "array", "items": {"type": "string"},
               "description": "files / includes / call sites"}}}},
+        "dynamic_libraries": {
+          "type": "array",
+          "description": "Libraries loaded at RUNTIME via dynamic loading (not declared in package manifests). Model resolves the loaded library name and infers its purpose.",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {"type": "string", "description": "loaded library name, e.g. 'libssl.so', 'kernel32.dll', 'libcudart' (keep as written; '<dynamic>' if computed at runtime)"},
+              "mechanism": {"type": "string",
+                "description": "how it is loaded: dlopen / LoadLibrary / ctypes.CDLL / ctypes.WinDLL / cffi.dlopen / JNI System.loadLibrary / node N-API addon"},
+              "description": {"type": "string", "description": "model-inferred purpose of the loaded library, 简体中文"},
+              "optional": {"type": "boolean", "description": "true if load failure is handled gracefully (feature is optional)"},
+              "evidence": {"type": "array", "items": {"type": "string"},
+                "description": "file + call site"}}}},
         "platform_dependence": {"type": "string",
           "enum": ["cross-platform", "windows-only", "posix-only", "mixed", "unknown"]}
       }

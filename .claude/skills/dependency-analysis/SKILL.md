@@ -33,6 +33,27 @@ deps, and ecosystem-specific quirks — reason about them.
    project itself, etc. are build plumbing — mark scope `build` or drop.
 5. Note **vendored** dependencies (copied into the tree) and **git submodules**
    separately — they won't appear in a package manifest.
+6. For each dep determine **`acquisition`** — HOW the build obtains it (important
+   for understanding the real dependency relationships, esp. for C/C++ libs/.so):
+   - `find_package(X)` / expected pre-installed system lib → `system`
+   - CMake `FetchContent_*` → `fetchcontent`
+   - `ExternalProject_Add` with a download URL, or a custom download-source-and-build
+     helper (e.g. RDKit's `downloadAndCheckMD5`) → `download_build`
+   - listed in `.gitmodules` → `submodule`
+   - source copied into the tree (`External/`, `third_party/`, `extern/`) → `vendored`
+   - vcpkg/conan/pip/npm/maven coordinate → `package_manager`
+   - a binary `.so`/`.dll`/`.a`/`.lib` shipped in the repo → `prebuilt_binary`
+   - otherwise `unknown`.
+   This determines **locality**: `local` (vendored/prebuilt_binary, already in the
+   repo), `remote` (fetchcontent/download_build/submodule/package_manager, pulled
+   from outside), or `system` (find_package — expected pre-installed, the repo does
+   NOT fetch it, e.g. Qt via `find_package(Qt6 ...)`).
+7. Fill **`source`** — WHERE it is obtained from: the download URL, the registry,
+   `"系统(find_package，需预装)"`, or the in-tree path (中文).
+8. Fill **`declared_in`** — the repo file(s) that declare how it is integrated:
+   the CMakeLists with `find_package` / `FetchContent_Declare` / `ExternalProject_Add`
+   / `target_link_libraries`, a `.gitmodules` entry, or a requirements/manifest line.
+   This answers "仓库里有没有声明它是怎么集成进来的".
 
 ## Output (fills report `dependencies`)
 ```json
@@ -41,8 +62,16 @@ deps, and ecosystem-specific quirks — reason about them.
   "manifests": ["pyproject.toml", "requirements-dev.txt"],
   "by_ecosystem": {"python": ["urllib3", "certifi"]},
   "dependencies": [
-    {"name": "urllib3", "ecosystem": "python", "scope": "runtime",
-     "version": ">=1.21.1", "purpose": "low-level HTTP connection pooling"}
+    {"name": "Qt6", "ecosystem": "cpp", "scope": "optional", "version": null,
+     "purpose": "MolDraw2D Qt 后端", "acquisition": "system",
+     "source": "系统(find_package，需预装 Qt6)", "declared_in": ["Code/GraphMol/MolDraw2D/Qt/CMakeLists.txt"]},
+    {"name": "coordgen", "ecosystem": "cpp", "scope": "optional", "version": "3.0.2",
+     "purpose": "2D coordinate generation", "acquisition": "download_build",
+     "source": "https://github.com/schrodinger/coordgenlibs（未找到时 downloadAndCheckMD5 下载源码内嵌编译）",
+     "declared_in": ["External/CoordGen/CMakeLists.txt"]},
+    {"name": "AvalonTools", "ecosystem": "cpp", "scope": "optional", "version": "2.0.5-pre.3",
+     "purpose": "额外指纹与结构检查", "acquisition": "vendored",
+     "source": "仓库内 External/AvalonTools", "declared_in": ["External/AvalonTools/CMakeLists.txt"]}
   ],
   "notes": "Also vendors 'chardet' under src/; pytest is dev-only."
 }

@@ -32,6 +32,20 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    python3 .claude/skills/code-metrics/scripts/metrics.py --repo repos/<name> --out <runDir>/metrics.json
    ```
 
+2b. **(Optional) Build a structural index with codegraph.** Only if codegraph is
+   installed — guard it: `command -v codegraph` (and only when the run prompt says
+   codegraph is enabled). Then index the checkout (the `.codegraph/` dir lands
+   inside `repos/<name>`, which is gitignored — safe, not `/tmp`):
+   ```bash
+   command -v codegraph && codegraph index repos/<name>
+   ```
+   If this fails or times out, skip it, add a `meta.warnings` note, and continue
+   with grep/Read. When it succeeds, prefer it for the structural lookups in
+   dims 1 and 7: `codegraph context "<task>" -p repos/<name>`,
+   `codegraph query <symbol> -p repos/<name> -j`,
+   `codegraph callers/callees <symbol> -p repos/<name>`. grep/Read remain the
+   fallback and the way to read literal text (strings, headers, manifests).
+
 3. **Reasoned dimensions (1, 5, 6, 7).** For each, read the corresponding skill
    file for the full method, then read the actual source to fill in the block:
    - Dim 1 function summary → `.claude/skills/function-summary/SKILL.md`
@@ -52,10 +66,28 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `confidence_overall`, and any `warnings` (carry over `_warnings` from the
    fragment). Write it with `Write`.
 
+   Also write `library.ecosystem` using the value you determined in step 3
+   (function summary). It must be one of: `python`, `java`, `nodejs`, `cpp`,
+   `rust`, `go`, `dotnet`, `other`. If you are uncertain, use `other`. Write
+   `library.package_name` (the distribution/package name from the manifest, which
+   may differ from the repo dir name; `null` if none) — the panel uses it to link
+   this library into other libraries' dependency trees.
+
+   In `native_api`, include `dynamic_libraries`: runtime-loaded libraries
+   (`dlopen`/`LoadLibrary`/`ctypes.CDLL`/`System.loadLibrary`/N-API addons) with
+   their resolved name, load mechanism, inferred 简体中文 purpose, and evidence.
+   Emit `[]` if there are none. Manifest-declared deps stay in `dependencies`.
+
+   For every entry in `dependencies.dependencies`, set `acquisition` (how the build
+   obtains it: system/vendored/fetchcontent/download_build/submodule/package_manager/
+   prebuilt_binary), `source` (WHERE from — URL / registry / 系统(find_package) / 仓内路径),
+   and `declared_in` (the repo file(s) declaring the integration, e.g. the CMakeLists
+   with find_package/FetchContent/ExternalProject). This distinguishes 本地/远端/系统 依赖.
+
 5. **Report back.** The clone stays under `repos/` (it is gitignored). Return the
    absolute path to `report.json` plus a concise digest: one-liner, primary
-   language, production-vs-test LOC, test-case count, license, top runtime
-   dependencies, and notable native/platform APIs.
+   language, ecosystem, production-vs-test LOC, test-case count, license, top
+   runtime dependencies, and notable native/platform APIs.
 
 ## Rules
 - The `function_summary` block (summary, category names/descriptions, domain,

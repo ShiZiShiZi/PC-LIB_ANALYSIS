@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 8765;
 const DEFAULT_PROMPT =
   'Analyze the PC third-party library checked out at {repoPath}. Follow the ' +
   'method and JSON output contract in {agentFile} and the skills it references. ' +
-  'The source is already cloned — do NOT clone again. Run the deterministic ' +
+  'The source is already cloned — do NOT clone again. {codegraphHint}Run the deterministic ' +
   'code-metrics script with `--out {metricsPath}`, reason through every dimension ' +
   '(function summary, license, dependencies, native/platform API), and write the ' +
   'final report to {reportPath}. Conform to references/report_schema.json. ' +
@@ -48,7 +48,17 @@ const DEFAULT_SETTINGS = {
   maxConcurrent: 3,
   printLogs: false,
   thinking: true,
+  useCodegraph: true,
 };
+
+// codegraph is optional: probe once at startup. The analyze prompt only mentions
+// codegraph when it is BOTH installed and enabled in settings; otherwise the
+// agent falls back to grep/Read.
+let codegraphAvailable = false;
+execFile('codegraph', ['--version'], { timeout: 5000 }, (err) => {
+  codegraphAvailable = !err;
+  console.log(`  codegraph: ${codegraphAvailable ? 'available' : 'not found (analyses fall back to grep)'}`);
+});
 
 for (const d of [REPOS, RUNS]) fs.mkdirSync(d, { recursive: true });
 
@@ -183,6 +193,7 @@ function reportSummary(name, run) {
     return {
       oneLiner: (r.library && r.library.one_liner) || (r.function_summary && r.function_summary.summary) || '',
       primary: r.languages && r.languages.primary,
+      ecosystem: (r.library && r.library.ecosystem) || null,
       prodCode: r.code_metrics && r.code_metrics.production && r.code_metrics.production.code,
       testCases: r.tests && r.tests.test_cases,
       license: r.license && r.license.spdx,
@@ -205,6 +216,76 @@ function listLibraries() {
       summary: latest && latest.reportAvailable ? reportSummary(name, latest.run) : null,
     };
   });
+}
+
+// ---------------------------------------------------------------- dependency tree (offline)
+function normName(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+// Normalize ecosystem aliases to the report enum so cross-language same-name
+// deps (e.g. python 'click' vs another ecosystem's 'click') never collide.
+function ecoNorm(s) {
+  const e = String(s || '').toLowerCase().trim();
+  if (/^(node|nodejs|npm|js|javascript|ts|typescript)$/.test(e)) return 'nodejs';
+  if (/^(py|python|pypi)$/.test(e)) return 'python';
+  if (/^(c|c\+\+|cpp|cxx|cc)$/.test(e)) return 'cpp';
+  if (/^(java|maven|jvm|gradle)$/.test(e)) return 'java';
+  if (/^(rust|cargo|crate|crates)$/.test(e)) return 'rust';
+  if (/^(go|golang)$/.test(e)) return 'go';
+  if (/^(dotnet|net|csharp|nuget)$/.test(e)) return 'dotnet';
+  return e;
+}
+function latestReport(name) {
+  const latest = runsForLib(name).find((r) => r.reportAvailable);
+  if (!latest) return null;
+  try { return JSON.parse(fs.readFileSync(path.join(RUNS, name, latest.run, 'report.json'), 'utf8')); }
+  catch { return null; }
+}
+// Index analyzed libraries by `ecosystem + ':' + normalized(name)`, preferring the
+// report's package_name over the repo dir name. Keys that resolve to >1 library
+// are flagged ambiguous (we won't auto-link them).
+function buildLibIndex(getRep) {
+  const index = new Map();
+  for (const lib of listLibraries()) {
+    if (!lib.latest || !lib.latest.reportAvailable) continue;
+    const rep = getRep(lib.name);
+    if (!rep) continue;
+    const eco = ecoNorm(rep.library && rep.library.ecosystem);
+    const pkg = (rep.library && rep.library.package_name) || lib.name;
+    for (const nm of new Set([pkg, lib.name])) {
+      const key = eco + ':' + normName(nm);
+      const cur = index.get(key);
+      if (!cur) index.set(key, { libName: lib.name, ambiguous: false });
+      else if (cur.libName !== lib.name) cur.ambiguous = true;
+    }
+  }
+  return index;
+}
+function buildDepTree(rootName, maxDepth) {
+  const repCache = new Map();
+  const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
+  const index = buildLibIndex(getRep);
+  const seen = new Set([rootName]);
+  const expand = (libName, depth) => {
+    const rep = getRep(libName);
+    const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
+    return deps.map((d) => {
+      const hit = index.get(ecoNorm(d.ecosystem) + ':' + normName(d.name));
+      const analyzed = !!hit && !hit.ambiguous && hit.libName !== libName;
+      const node = {
+        name: d.name, ecosystem: d.ecosystem || null, scope: d.scope || null,
+        version: d.version || null, purpose: d.purpose || '',
+        acquisition: d.acquisition || null, source: d.source || '',
+        declared_in: Array.isArray(d.declared_in) ? d.declared_in : [],
+        analyzed, ambiguous: !!(hit && hit.ambiguous),
+        libName: analyzed ? hit.libName : null, children: [],
+      };
+      if (analyzed && depth < maxDepth && !seen.has(hit.libName)) {
+        seen.add(hit.libName);
+        node.children = expand(hit.libName, depth + 1);
+      }
+      return node;
+    });
+  };
+  return expand(rootName, 1);
 }
 
 // ---------------------------------------------------------------- clone
@@ -238,12 +319,23 @@ function createAnalyzeJob(opts) {
   fs.mkdirSync(runDir, { recursive: true });
   const reportPath = path.join(runDir, 'report.json');
 
-  const prompt = (opts.promptTemplate || settings.promptTemplate || DEFAULT_PROMPT)
+  const codegraphOn = codegraphAvailable && (opts.useCodegraph ?? settings.useCodegraph);
+  const codegraphHint = codegraphOn
+    ? `codegraph is installed and enabled: first build a structural index with ` +
+      `\`codegraph index repos/${name}\`, then prefer ` +
+      `\`codegraph context/query/callers -p repos/${name} -j\` for the function-summary ` +
+      `and native/platform-API dimensions (fall back to grep/Read if any codegraph call fails). `
+    : '';
+  let prompt = (opts.promptTemplate || settings.promptTemplate || DEFAULT_PROMPT)
+    .replaceAll('{codegraphHint}', codegraphHint)
     .replaceAll('{repoPath}', `repos/${name}`)
     .replaceAll('{agentFile}', AGENT_FILE)
     .replaceAll('{reportPath}', path.relative(ROOT, reportPath))
     .replaceAll('{metricsPath}', path.relative(ROOT, path.join(runDir, 'metrics.json')))
     .replaceAll('{name}', name);
+  // Robust to stale saved templates that predate the {codegraphHint} placeholder:
+  // if codegraph is enabled but the hint didn't land, append it.
+  if (codegraphHint && !prompt.includes('codegraph')) prompt = prompt + ' ' + codegraphHint;
 
   const base = (opts.opencodeCmd || settings.opencodeCmd).trim().split(/\s+/);
   const model = opts.model || settings.model;
@@ -335,7 +427,7 @@ const server = http.createServer(async (req, res) => {
         startedAt: j.startedAt, exitCode: j.exitCode })) });
 
     if (req.method === 'GET' && pathname === '/api/settings')
-      return send(res, 200, { settings, defaults: DEFAULT_SETTINGS });
+      return send(res, 200, { settings, defaults: DEFAULT_SETTINGS, codegraphAvailable });
     if (req.method === 'POST' && pathname === '/api/settings') {
       const body = await readBody(req);
       return send(res, 200, { settings: saveSettings(body) });
@@ -383,6 +475,14 @@ const server = http.createServer(async (req, res) => {
       const hb = setInterval(() => { try { res.write(': ping\n\n'); } catch (_) {} }, 15000);
       req.on('close', () => { clearInterval(hb); job.clients.delete(res); });
       return;
+    }
+
+    if (req.method === 'GET' && pathname === '/api/depgraph') {
+      const name = query.name;
+      if (!name) return send(res, 400, { error: 'name required' });
+      if (!latestReport(name)) return send(res, 404, { error: 'no report for library' });
+      const depth = Math.min(Math.max(parseInt(query.depth, 10) || 3, 1), 5);
+      return send(res, 200, { root: name, depth, tree: buildDepTree(name, depth) });
     }
 
     if (req.method === 'GET' && pathname === '/api/report') {
