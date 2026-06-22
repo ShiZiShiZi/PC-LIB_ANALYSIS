@@ -34,6 +34,11 @@ deps, and ecosystem-specific quirks — reason about them.
 1. Find every manifest (record their paths in `manifests`).
 2. Extract each declared dependency with its **ecosystem**, **scope**
    (runtime / dev / test / optional / build / peer) and **version constraint**.
+   `ecosystem` is the **language world only** (cpp/c/python/java/nodejs/rust/go/dotnet/other) —
+   use `other` for non-language deps (data files, generic tools). Do NOT put role
+   values like `tool`/`data` in `ecosystem`; a dep being a **build tool**
+   (SWIG/Bison/Flex/codegen) is expressed by `scope: build` (its ecosystem is its
+   implementation language or `other`).
 3. For notable runtime deps, add a short **purpose** ("HTTP transport",
    "JSON parsing", "test framework") inferred from name + how it's imported/used.
 4. Separate the project's **own** name and standard-library/system packages from

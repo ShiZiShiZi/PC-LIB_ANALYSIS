@@ -36,10 +36,28 @@ the `platform` field:
 
 ## Drill down to individual APIs (`apis`)
 For each group, fill `apis` with the **specific APIs actually called** — representative,
-not every call site. Each entry: `name`, a one-line 简体中文 `purpose`, `evidence`
-(`file:line`, 1-3 representative sites), and `conditional` (true if guarded by
-`#ifdef`/platform branch). This turns the dimension into a concrete, drill-down
-inventory of which API is called and where.
+not every call site. Each entry: `name`, a one-line 简体中文 `purpose`, `count`
+(how many call sites / occurrences — approximate via `grep -c` or codegraph callers),
+`evidence` (`file:line`, 1-3 representative sites), and `conditional` (true if guarded
+by `#ifdef`/platform branch). This turns the dimension into a concrete, drill-down
+inventory of which API is called, how often, and where.
+
+**One entry = one concrete API.** Do NOT bundle several calls into one `name`
+(`mmap / munmap`, `open / fstat / close`, `std::async / std::future`,
+`PyObject / Py_INCREF`). List tightly-related variants as **separate entries** so each
+carries its own `count` and `evidence` — bundling defeats the per-API count. `count`
+is **required** for every entry.
+
+**Pseudo-file / pseudo-interface APIs** (procfs/sysfs, Windows registry, WMI-style
+queries, device handles): these ARE system APIs — a `/proc/cpuinfo` read is a kernel
+query, the Linux equivalent of a syscall — so keep them in `category: system`. But
+don't list a **bare path** as the `name`; write it as **`family (specific node)`** so it
+reads like an API, not a data file — e.g. `procfs (/proc/cpuinfo)`,
+`sysfs (/sys/class/net)`, `registry (HKLM\\...\\BIOS)`. In `purpose`, name the **access
+mechanism** (e.g. "经 `fs.readFileSync` 读取的内核伪文件接口"). The portable read call
+(`fs.readFileSync`, `open`) belongs to its `standard` group; the platform-coupled
+interface target (the path) belongs to the `system` group — these are two lenses on the
+same call site and listing both is intentional, **not** a duplicate.
 
 ## What to look for
 - **Win32 / Windows**: `#include <windows.h>` and friends (`winsock2`, `wininet`,
@@ -62,8 +80,13 @@ inventory of which API is called and where.
     `child_process`/`process.binding` (`system`).
 - **System / kernel level**: raw syscalls (`syscall(2)`, `prctl`, `clone`), `ioctl`,
   `/proc`·`/sys` reads, Windows registry (`RegOpenKeyEx`)/WMI/device handles.
-- **FFI / interop bridges**: Python `ctypes`/`cffi`; Java JNI (`native` methods,
-  `System.loadLibrary`, `JNIEXPORT`); Node `ffi-napi`/N-API/`node-gyp`/native addons.
+- **FFI / interop bridges** — list only **real interop API calls**: Python C-API
+  (`PyObject`, `Py_INCREF`, `PyBytes_*`, `boost::python` call sites), JNI functions
+  (`JNIEnv`, `GetMethodID`, actual `JNIEXPORT` implementations), N-API (`napi_*`).
+  Do NOT list **binding-generator directives / build tooling** — SWIG `%module`/`%include`,
+  `EMSCRIPTEN_BINDINGS`, bare `extern "C"` declarations — those are bindings, already
+  captured by dependencies (dim 6), `library.bindings`, and `dynamic_libraries`. If a
+  library only has binding tooling and no direct C-API calls, omit the `ffi` group.
 - **Graphics / device / accelerator APIs**: OpenGL, Vulkan, DirectX/Direct3D,
   Metal, CUDA, OpenCL, audio/video device APIs.
 - **Architecture-specific code (`arch_simd` group)**: x86/x64 SIMD intrinsics
@@ -94,6 +117,10 @@ inventory of which API is called and where.
    is computed at runtime, record `<dynamic>` and note what you can infer), and
    **infer its purpose in 简体中文** (e.g. `libssl.so` → "OpenSSL，提供 TLS/加密"). Note
    whether the load is `optional` (failure handled gracefully → an optional feature).
+   Also infer, for the loaded lib, **`acquisition` (怎么获取)** and **`source` (是什么库/出处)** —
+   crucially decide whether it is a **`self_build`** artifact built from THIS repo (a
+   CFFI/JNI/SWIG wrapper like `librdkitcffi.so` / `GraphMolWrap`) or an external
+   `system`/`third_party`/`bundled` library (like a proprietary `depict32.dll`).
 5. Judge **platform dependence**: are platform calls guarded by `#ifdef` (→
    cross-platform with backends) or unconditional (→ windows-only / posix-only)?
 
@@ -110,17 +137,25 @@ inventory of which API is called and where.
       {"name": "CreateFileMapping", "purpose": "Windows 内存映射文件", "evidence": ["src/io/mmap_win.cpp:31"], "conditional": true}
     ]},
     {"type": "posix", "category": "platform", "platform": "posix", "apis": [
-      {"name": "mmap", "purpose": "POSIX 内存映射文件读取", "evidence": ["src/io/mmap_posix.cpp:40"], "conditional": true},
-      {"name": "epoll_wait", "purpose": "Linux 事件多路复用", "evidence": ["src/net/loop.cpp:88"], "conditional": true}
+      {"name": "mmap", "purpose": "POSIX 内存映射文件读取", "count": 4, "evidence": ["src/io/mmap_posix.cpp:40"], "conditional": true},
+      {"name": "epoll_wait", "purpose": "Linux 事件多路复用", "count": 2, "evidence": ["src/net/loop.cpp:88"], "conditional": true}
     ]},
     {"type": "syscall", "category": "system", "platform": "linux", "apis": [
       {"name": "ioctl", "purpose": "设备控制", "evidence": ["src/dev/tty.c:12"]}
+    ]},
+    {"type": "linux_sysfs", "category": "system", "platform": "linux", "apis": [
+      {"name": "procfs (/proc/cpuinfo)", "purpose": "经 fs.readFileSync 读取的内核伪文件接口，获取 CPU 详情", "count": 4, "evidence": ["lib/util.js:640"], "conditional": true},
+      {"name": "sysfs (/sys/class/net)", "purpose": "经 fs.readFileSync 读取的内核伪文件接口，获取网卡属性", "count": 3, "evidence": ["lib/network.js:943"], "conditional": true}
     ]}
   ],
   "dynamic_libraries": [
     {"name": "libssl.so", "mechanism": "dlopen", "optional": true,
+     "acquisition": "system", "source": "外部 OpenSSL，需系统/运行环境提供",
      "description": "OpenSSL，按需加载以提供 TLS/加密；缺失时降级为明文。",
-     "evidence": ["src/net/tls.c:42"]}
+     "evidence": ["src/net/tls.c:42"]},
+    {"name": "libfoocffi.so", "mechanism": "ctypes.CDLL", "optional": false,
+     "acquisition": "self_build", "source": "本仓 CFFI 构建产物（MinimalLib）",
+     "description": "本库的 CFFI 包装，供 Python 调用 C++ 接口。", "evidence": ["bindings/cffi/simple.py:3"]}
   ],
   "platform_dependence": "cross-platform"
 }
@@ -128,6 +163,14 @@ inventory of which API is called and where.
 
 ## Rules
 - Confirm by reading; don't report a symbol you only matched by regex.
+- **Dimension boundary** — `native_api` records OS/runtime **API call sites** only.
+  Environment variables belong to `runtime_surface` (dim 8); linked or runtime-loaded
+  libraries belong to `dependencies` (dim 6) / `dynamic_libraries`. Don't duplicate them here.
+- **Two lenses, not duplication** — for a pseudo-file interface, the portable read
+  call (`fs.readFileSync`/`open`, in a `standard` group) and the platform-coupled
+  interface it targets (the `/proc`·`/sys`/registry path, in a `system` group) may both
+  appear; that is intentional. (The same path may also surface in `runtime_surface`
+  (dim 8) as an external-interaction resource — also fine, different dimension.)
 - `dynamic_libraries` is for runtime-loaded libs only; libraries declared in package
   manifests belong to dependency-analysis (dim 6), not here. Emit `[]` when none.
   These ARE runtime dependencies — whenever you see an FFI/dynamic loader symbol

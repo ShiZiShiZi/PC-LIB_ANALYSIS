@@ -24,6 +24,8 @@ const ACQ_LABELS = {
   system: '系统/find_package', vendored: '内嵌源码', fetchcontent: 'FetchContent',
   download_build: '下载源码编译', submodule: 'git 子模块', package_manager: '包管理器',
   prebuilt_binary: '预编译二进制', unknown: '获取方式未知',
+  // dynamic-lib provenance
+  self_build: '本仓构建产物', bundled: '仓内自带', third_party: '第三方',
 };
 // locality (本地/远端/系统) derived from acquisition — single source of truth
 const ACQ_LOCALITY = {
@@ -47,6 +49,13 @@ const CAT_LEGEND = {
   system: '内核/系统调用层(syscall/ioctl//proc/注册表)', hardware: 'GPU/SIMD/加速器', ffi: '互操作桥(ctypes/JNI/N-API)',
 };
 const PLAT_LABELS = { windows: 'Windows', posix: 'POSIX', linux: 'Linux', macos: 'macOS', portable: '跨平台', unknown: '' };
+// harmony_adaptation (dim 9) — closed axes
+const FEAS_LABELS = { feasible: '可行', feasible_with_effort: '可行（需投入）', hard: '困难', infeasible: '不可行' };
+const FEAS_CLS = { feasible: 'done', feasible_with_effort: 'running', hard: 'sev-major', infeasible: 'error' };
+const DIFF_LABELS = { low: '低', medium: '中', high: '高', very_high: '很高' };
+const DIFF_CLS = { low: 'done', medium: 'running', high: 'sev-major', very_high: 'error' };
+const SEV_LABELS = { blocker: '阻塞', major: '主要', minor: '次要' };
+const SEV_CLS = { blocker: 'error', major: 'sev-major', minor: 'gray' };
 
 function setHeader(html) { $('#headerActions').innerHTML = html; }
 function toast(msg, kind = '') {
@@ -75,6 +84,7 @@ function navigate() {
   const hash = location.hash.slice(1) || '/';
   if (hash.startsWith('/lib/')) renderDetail(decodeURIComponent(hash.slice(5)));
   else if (hash === '/observations') renderObservations();
+  else if (hash === '/pending-deps') renderPendingDeps();
   else renderDashboard();
 }
 window.addEventListener('hashchange', navigate);
@@ -89,7 +99,8 @@ let page = 1;
 const PAGE_SIZE = 15;
 
 async function renderDashboard() {
-  setHeader('<a class="btn" href="#/observations">🔭 模型观察</a>' +
+  setHeader('<a class="btn" href="#/pending-deps">📦 待分析依赖</a>' +
+            '<a class="btn" href="#/observations">🔭 模型观察</a>' +
             '<button class="btn" id="hSettings">⚙ 系统设置</button>' +
             '<button class="btn primary" id="hClone">＋ 克隆库</button>');
   $('#hSettings').onclick = openSettings;
@@ -229,6 +240,116 @@ async function analyzeOne(name) {
   const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify({ name }) });
   if (r.jobs && r.jobs[0] && r.jobs[0].jobId) location.hash = '#/lib/' + enc(name);
   else toast((r.jobs && r.jobs[0] && r.jobs[0].error) || '启动失败', 'err');
+}
+
+// ===========================================================================
+//  PENDING DEPENDENCIES (level 1.5) — 未分析的「三方库依赖的三方库」
+// ===========================================================================
+let pdepCloneableOnly = false;
+const pdepUrlEdits = {};            // key -> user-typed URL (survives polling re-render)
+const pdepKey = (it) => `${it.ecosystem || ''}|${it.name}`;
+
+async function renderPendingDeps() {
+  setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>');
+  $('#app').innerHTML = `<div class="detail-head"><h1>📦 待分析依赖库</h1></div>
+    <p class="muted">已分析库所依赖、但自身尚未被分析的三方库，跨所有库聚合。把某个依赖「加入分析列表」即克隆入库；克隆完成后就地点「分析」。分析完成后它会自动从此列表消失。</p>
+    <div class="toolbar">
+      <label class="pdep-toggle"><input type="checkbox" id="pdepCloneable" ${pdepCloneableOnly ? 'checked' : ''} /> 只看可克隆（有候选仓库 URL / 远端来源）</label>
+      <button class="btn sm" id="pdepRefresh">刷新</button>
+    </div>
+    <div id="pdeps"><p class="muted">加载中…</p></div>`;
+  $('#pdepCloneable').onchange = (e) => { pdepCloneableOnly = e.target.checked; loadPendingDeps(); };
+  $('#pdepRefresh').onclick = loadPendingDeps;
+  await loadPendingDeps();
+  const timer = setInterval(loadPendingDeps, 4000);
+  view.cleanup = () => clearInterval(timer);
+}
+
+async function loadPendingDeps() {
+  const box = $('#pdeps');
+  if (!box) return;
+  // Don't clobber a URL the user is actively typing.
+  if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('pdep-url')) return;
+  let data, libs;
+  try { [data, { libraries: libs }] = await Promise.all([api('/api/pending-deps'), api('/api/libraries')]); }
+  catch { box.innerHTML = '<div class="hint err">加载失败</div>'; return; }
+  const libMap = {};
+  (libs || []).forEach((l) => { libMap[l.name] = l; });
+  let items = data.items || [];
+  if (pdepCloneableOnly) items = items.filter((it) => it.candidateUrl || it.locality === 'remote');
+  if (!items.length) {
+    box.innerHTML = `<div class="empty">${pdepCloneableOnly ? '没有带候选仓库 URL 的待分析依赖。' : '暂无待分析依赖。分析更多库后，它们的依赖会出现在这里。'}</div>`;
+    return;
+  }
+  // group by ecosystem
+  const byEco = {};
+  items.forEach((it) => { (byEco[it.ecosystem || 'other'] = byEco[it.ecosystem || 'other'] || []).push(it); });
+  box.innerHTML = Object.entries(byEco).map(([eco, list]) => `
+    <div class="card" style="margin-bottom:12px">
+      <div class="section-title">${esc(ECO_LABELS[eco] || eco)} (${list.length})</div>
+      ${list.map((it) => pdepRowHtml(it, libMap)).join('')}
+    </div>`).join('');
+  // wire actions
+  $$('[data-pdep-clone]', box).forEach((b) => b.onclick = () => {
+    const key = b.dataset.pdepClone;
+    const input = box.querySelector(`input.pdep-url[data-key="${cssAttr(key)}"]`);
+    promoteDep(input ? input.value.trim() : '', key);
+  });
+  $$('[data-pdep-analyze]', box).forEach((b) => b.onclick = () => analyzeOne(b.dataset.pdepAnalyze));
+  $$('input.pdep-url', box).forEach((inp) => inp.oninput = () => { pdepUrlEdits[inp.dataset.key] = inp.value; });
+}
+
+function pdepRowHtml(it, libMap) {
+  const key = pdepKey(it);
+  const eco = it.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[it.ecosystem] || it.ecosystem)}</span>` : '';
+  const loc = it.locality ? `<span class="badge ${LOCALITY_CLS[it.locality] || 'gray'}">${LOCALITY_LABELS[it.locality] || it.locality}</span>` : '';
+  const scopes = (it.scopes || []).filter((s) => s && s !== 'runtime').map((s) => `<span class="tag">${esc(s)}</span>`).join('');
+  const acq = it.acquisition ? `<span class="tag acq">${esc(ACQ_LABELS[it.acquisition] || it.acquisition)}</span>` : '';
+  const seen = new Set();
+  const deps = (it.dependents || []).filter((d) => !seen.has(d.lib) && seen.add(d.lib))
+    .map((d) => `<a href="#/lib/${enc(d.lib)}" title="${esc(d.purpose || '')}">${esc(d.lib)}</a>`).join('、');
+  const purpose = (it.dependents || []).map((d) => d.purpose).find(Boolean) || '';
+  // action area depends on clone/analyze state
+  const lib = it.repoName ? libMap[it.repoName] : null;
+  const analyzed = lib && lib.latest && lib.latest.reportAvailable;
+  const active = it.active || (lib && lib.active);
+  let action;
+  if (active) {
+    action = `<span class="muted">处理中…</span> <a class="btn sm ghost" href="#/lib/${enc(it.repoName)}">查看</a>`;
+  } else if (analyzed) {
+    action = `<a class="btn sm ghost" href="#/lib/${enc(it.repoName)}">已分析 →</a>`;
+  } else if (lib && lib.cloned) {
+    action = `<span class="badge gray" title="已克隆，待分析">已入库</span> <button class="btn sm primary" data-pdep-analyze="${esc(it.repoName)}">分析</button>`;
+  } else {
+    const url = pdepUrlEdits[key] != null ? pdepUrlEdits[key] : (it.candidateUrl || '');
+    action = `<input class="pdep-url" type="text" data-key="${esc(key)}" value="${esc(url)}" placeholder="Git URL" />
+      <button class="btn sm primary" data-pdep-clone="${esc(key)}">加入列表</button>`;
+  }
+  return `<div class="pdep-row">
+    <div class="pdep-info">
+      <div class="pdep-name"><b>${esc(it.name)}</b> ${eco} ${loc} ${scopes} ${acq}</div>
+      <div class="muted pdep-meta">被 ${it.count} 个库依赖：${deps || '—'}${purpose ? ` · ${esc(purpose)}` : ''}</div>
+    </div>
+    <div class="pdep-act">${action}</div>
+  </div>`;
+}
+
+// escape a string for use inside a [data-...="..."] attribute selector
+function cssAttr(s) { return String(s).replace(/["\\]/g, '\\$&'); }
+
+async function promoteDep(url, key) {
+  if (!url) return toast('请输入 Git URL', 'err');
+  let r;
+  try { r = await api('/api/clone', { method: 'POST', headers: JSONH, body: JSON.stringify({ urls: [url] }) }); }
+  catch { return toast('克隆请求失败', 'err'); }
+  const job = (r.jobs || [])[0];
+  if (job && job.jobId) {
+    toast(`已开始克隆 ${job.name || url}`, 'ok');
+    delete pdepUrlEdits[key];
+    loadPendingDeps();
+  } else {
+    toast((job && job.error) || '克隆失败', 'err');
+  }
 }
 
 async function batchAnalyze() {
@@ -576,8 +697,19 @@ function renderReport(r) {
   const langs = (r.languages || {}).breakdown || [];
   if (langs.length) {
     const max = Math.max(...langs.map((l) => l.code), 1);
-    parts.push(sec('语言分布', langs.slice(0, 8).map((l) =>
-      `<div class="barrow"><span>${esc(l.language)}</span><span><span class="bar" style="width:${Math.max(3, 100 * l.code / max)}%"></span></span><span>${num(l.code)} (${l.pct}%)</span></div>`).join('')));
+    const hasSplit = langs.some((l) => l.production || l.test || l.example);
+    const seg = (n, cls, label) => (n && n.code)
+      ? `<span class="bar ${cls}" style="width:${100 * n.code / max}%" title="${label} ${num(n.code)} 行 / ${num(n.files)} 文件"></span>` : '';
+    const rows = langs.slice(0, 8).map((l) => {
+      const bar = hasSplit
+        ? `<span class="barwrap">${seg(l.production, 'prod', '生产')}${seg(l.test, 'test', '测试')}${seg(l.example, 'example', '样例')}</span>`
+        : `<span class="bar" style="width:${Math.max(3, 100 * l.code / max)}%"></span>`;
+      return `<div class="barrow"><span>${esc(l.language)}</span><span>${bar}</span><span>${num(l.code)} (${l.pct}%)</span></div>`;
+    }).join('');
+    const legend = hasSplit
+      ? `<div class="lang-legend"><span><span class="bar prod"></span> 生产</span><span><span class="bar test"></span> 测试</span><span><span class="bar example"></span> 样例</span></div>`
+      : '';
+    parts.push(sec('语言分布', legend + rows));
   }
 
   parts.push(sec('测试', `<div class="kv">
@@ -597,7 +729,11 @@ function renderReport(r) {
     const dynPart = dynlibs.length
       ? `<div class="subtitle">运行时动态加载库 (${dynlibs.length})</div><div class="deptree">${dynlibs.map(dynDepRow).join('')}</div>`
       : '';
-    parts.push(sec(`依赖 (${dep.count != null ? dep.count : (dep.dependencies || []).length})`,
+    const auxN = (dep.dependencies || []).filter((d) =>
+      ['build', 'test', 'dev'].includes(String(d.scope || '').toLowerCase())).length;
+    const runN = dep.count != null ? dep.count : ((dep.dependencies || []).length - auxN);
+    const depTitle = auxN ? `依赖 (${runN} 运行时 · ${auxN} 开发/测试/构建)` : `依赖 (${runN})`;
+    parts.push(sec(depTitle,
       (hasDeps ? (items || '<span class="muted">无</span>') : '') +
       (dep.notes ? `<p class="hint">${esc(dep.notes)}</p>` : '') + treePart + dynPart));
   }
@@ -614,7 +750,8 @@ function renderReport(r) {
         const rows = g.apis.map((a) => {
           const loc = (a.evidence || []).slice(0, 3).map(esc).join('、');
           const more = (a.evidence || []).length > 3 ? ` <span class="muted" title="${esc((a.evidence || []).join(', '))}">…</span>` : '';
-          return `<tr><td class="api-n"><code>${esc(a.name)}</code>${a.conditional ? ' <span class="tag">#ifdef</span>' : ''}</td>
+          const cnt = (a.count != null) ? ` <span class="api-cnt" title="调用次数">×${num(a.count)}</span>` : '';
+          return `<tr><td class="api-n"><code>${esc(a.name)}</code>${cnt}${a.conditional ? ' <span class="tag">#ifdef</span>' : ''}</td>
             <td>${esc(a.purpose || '')}</td><td class="api-loc">${loc || '—'}${more}</td></tr>`;
         }).join('');
         return `${head}<table class="apitable"><thead><tr><th>API</th><th>用途</th><th>调用位置</th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -664,6 +801,46 @@ function renderReport(r) {
       (be.notes ? `<p class="hint">${esc(be.notes)}</p>` : '')));
   }
 
+  // 鸿蒙适配评估 (harmony_adaptation, dim 9)
+  const ha = r.harmony_adaptation || {};
+  if (ha.feasibility || ha.summary || (ha.blockers || []).length ||
+      ha.recommended_path || (ha.key_tasks || []).length) {
+    const feasBadge = ha.feasibility
+      ? `<span class="badge ${FEAS_CLS[ha.feasibility] || 'gray'}">${FEAS_LABELS[ha.feasibility] || esc(ha.feasibility)}</span>` : '—';
+    const diffBadge = ha.overall_difficulty
+      ? `<span class="badge ${DIFF_CLS[ha.overall_difficulty] || 'gray'}">${DIFF_LABELS[ha.overall_difficulty] || esc(ha.overall_difficulty)}</span>` : '—';
+    const blockRows = (ha.blockers || []).map((b) => {
+      const sev = b.severity
+        ? `<span class="badge ${SEV_CLS[b.severity] || 'gray'}">${SEV_LABELS[b.severity] || esc(b.severity)}</span>` : '';
+      const status = b.harmony_status ? `<span class="tag">${esc(b.harmony_status)}</span>` : '';
+      const cat = b.category ? ` <code>${esc(b.category)}</code>` : '';
+      const src = b.source_dimension ? ` <span class="muted">·${esc(b.source_dimension)}</span>` : '';
+      const ev = (b.evidence || []).slice(0, 3).map(esc).join('、');
+      const more = (b.evidence || []).length > 3
+        ? ` <span class="muted" title="${esc((b.evidence || []).join(', '))}">…</span>` : '';
+      return `<tr><td class="api-n">${sev}${cat}${src}</td>
+        <td><b>${esc(b.issue || '')}</b>${b.remediation ? `<br><span class="muted">${esc(b.remediation)}</span>` : ''}</td>
+        <td class="api-loc">${status}${ev ? `<div>${ev}${more}</div>` : ''}</td></tr>`;
+    }).join('');
+    const blockers = blockRows
+      ? `<div class="subtitle">移植阻碍点</div><table class="apitable"><thead><tr><th>严重度 / 类别</th><th>问题与改造建议</th><th>鸿蒙状态 / 证据</th></tr></thead><tbody>${blockRows}</tbody></table>`
+      : '';
+    const compat = (ha.compatible || []).map((c) => surfItem(c.aspect, c.note, c.evidence)).join('');
+    const tasks = (ha.key_tasks || []).length
+      ? `<div class="subtitle">关键工作项</div><ul class="ha-tasks">${ha.key_tasks.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : '';
+    parts.push(sec('鸿蒙适配评估', `<div class="kv">
+      <b>可行性</b><span>${feasBadge}</span>
+      <b>整体难度</b><span>${diffBadge}</span>
+      <b>工作量</b><span>${ha.effort_estimate ? esc(ha.effort_estimate) : '—'}</span>
+      <b>推荐路径</b><span>${ha.recommended_path ? `<code>${esc(ha.recommended_path)}</code>` : '—'}</span>
+      <b>目标平台</b><span>${esc(ha.target || '—')}</span></div>` +
+      (ha.summary ? `<p>${esc(ha.summary)}</p>` : '') +
+      blockers +
+      (compat ? `<div class="subtitle">可平滑移植</div>${compat}` : '') +
+      tasks +
+      (ha.notes ? `<p class="hint">${esc(ha.notes)}</p>` : '')));
+  }
+
   const warn = (r.meta || {}).warnings || [];
   if (warn.length) parts.push(sec('警告', warn.map((w) => `<div class="cat">⚠ ${esc(w)}</div>`).join('')));
 
@@ -699,13 +876,24 @@ async function loadDepTree(name) {
     box.innerHTML = (tree && tree.length) ? depGroupsHtml(tree) : '<p class="muted">无可连接的依赖关系。</p>';
   } catch { box.innerHTML = '<p class="muted">依赖关系不可用。</p>'; }
 }
-// Top level: group direct dependencies by ecosystem; each group is collapsible.
+// Top level: runtime deps grouped by ecosystem (language); aux deps (build / test /
+// dev scope) split into their OWN collapsed groups by scope — a test framework or a
+// docs generator isn't a build "toolchain", so don't lump them into one bucket.
+const SCOPE_GROUP = { build: '🛠 构建', test: '🧪 测试', dev: '🔧 开发 / 工具' };
 function depGroupsHtml(nodes) {
-  const groups = {};
-  nodes.forEach((n) => { const k = n.ecosystem || 'other'; (groups[k] = groups[k] || []).push(n); });
-  return Object.entries(groups).map(([eco, ns]) =>
-    `<details class="depgroup" open><summary>${esc(ECO_LABELS[eco] || eco)} <span class="muted">(${ns.length})</span></summary>${depTreeHtml(ns)}</details>`).join('') ||
-    depTreeHtml(nodes);
+  const grp = (label, ns, open) =>
+    `<details class="depgroup"${open ? ' open' : ''}><summary>${label} <span class="muted">(${ns.length})</span></summary>${depTreeHtml(ns)}</details>`;
+  const isAux = (n) => Object.prototype.hasOwnProperty.call(SCOPE_GROUP, String(n.scope || '').toLowerCase());
+  const aux = nodes.filter(isAux);
+  const rest = nodes.filter((n) => !isAux(n));
+  const eco = {};
+  rest.forEach((n) => { const k = n.ecosystem || 'other'; (eco[k] = eco[k] || []).push(n); });
+  let html = Object.entries(eco).map(([k, ns]) => grp(esc(ECO_LABELS[k] || k), ns, true)).join('');
+  ['build', 'test', 'dev'].forEach((s) => {
+    const ns = aux.filter((n) => String(n.scope || '').toLowerCase() === s);
+    if (ns.length) html += grp(SCOPE_GROUP[s], ns, false);
+  });
+  return html || depTreeHtml(nodes);
 }
 function depNodeLabel(n) {
   const eco = n.ecosystem ? `<span class="chip eco-chip" data-hl="eco:${esc(n.ecosystem)}">${esc(ECO_LABELS[n.ecosystem] || n.ecosystem)}</span>` : '';
@@ -722,12 +910,14 @@ function depNodeLabel(n) {
 }
 // runtime dynamically-loaded library, shown in the dependency area as a runtime dep
 function dynDepRow(d) {
+  const acq = d.acquisition ? `<span class="tag acq">${esc(ACQ_LABELS[d.acquisition] || d.acquisition)}</span>` : '';
+  const meta = (d.source) ? `<div class="dep-meta">来源：${esc(d.source)}</div>` : '';
   return `<div class="dynlib">` +
     `<span class="badge ${LOCALITY_CLS.runtime}" data-hl="loc:runtime">${LOCALITY_LABELS.runtime}</span>` +
     `<span class="chip lang-chip">${esc(d.name)}</span>` +
-    (d.mechanism ? `<span class="tag">${esc(d.mechanism)}</span>` : '') +
+    (d.mechanism ? `<span class="tag">${esc(d.mechanism)}</span>` : '') + acq +
     (d.optional ? `<span class="tag opt">可选</span>` : '') +
-    `<span class="dynlib-desc" title="${esc((d.evidence || []).join(', '))}">${esc(d.description || '')}</span></div>`;
+    `<span class="dynlib-desc" title="${esc((d.evidence || []).join(', '))}">${esc(d.description || '')}</span></div>` + meta;
 }
 function depMetaHtml(n) {
   const bits = [];

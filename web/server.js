@@ -161,6 +161,33 @@ function repoNameFromUrl(u) {
   const base = u.replace(/\/+$/, '').split('/').pop() || 'repo';
   return base.replace(/\.git$/i, '').replace(/[^A-Za-z0-9._-]/g, '_');
 }
+// Best-effort extraction of a clonable git URL from a dependency's free-text
+// `source` / `version` (e.g. "通过 FetchContent 从 https://github.com/x/y.git 获取"
+// or a pip `git+https://host/x@ref`). Returns a cleaned URL or null — many deps
+// (system libs, registry packages) legitimately have none.
+function extractGitUrl(...texts) {
+  for (const raw of texts) {
+    const t = String(raw || '');
+    if (!t) continue;
+    // pip/npm style: git+https://...(@ref)
+    let m = t.match(/git\+(https?:\/\/[^\s'"<>)]+)/i);
+    if (m) return m[1].replace(/@[^/@]+$/, '').replace(/[.,;]+$/, '');
+    // explicit .git URL anywhere in the text
+    m = t.match(/https?:\/\/[^\s'"<>)]+?\.git\b/i);
+    if (m) return m[0];
+    // bare URL on a known git host
+    m = t.match(/https?:\/\/(?:www\.)?(?:github\.com|gitlab\.com|gitee\.com|bitbucket\.org)\/[^\s'"<>)]+/i);
+    if (m) return m[0].replace(/[.,;]+$/, '');
+    // "owner/repo" shorthand: the model often writes "GitHub owner/repo …" /
+    // "Gitee owner/repo" instead of a full URL — synthesize the canonical URL.
+    m = t.match(/\b(github|gitlab|gitee)\b[\s:：/]*([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)/i);
+    if (m) {
+      const host = { github: 'github.com', gitlab: 'gitlab.com', gitee: 'gitee.com' }[m[1].toLowerCase()];
+      return `https://${host}/${m[2].replace(/\.git$/i, '').replace(/[.,;]+$/, '')}.git`;
+    }
+  }
+  return null;
+}
 function listRepos() {
   return fs.readdirSync(REPOS, { withFileTypes: true })
     .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
@@ -504,6 +531,54 @@ const server = http.createServer(async (req, res) => {
       const items = [...groups.values()].map((g) => ({ ...g, libs: [...g.libs] }))
         .sort((a, b) => b.count - a.count);
       return send(res, 200, { total, items });
+    }
+
+    if (req.method === 'GET' && pathname === '/api/pending-deps') {
+      // Aggregate, across every analyzed library, the dependencies that are NOT
+      // themselves an analyzed library — the "third-party libs depended on but not
+      // yet analyzed". Reuses the same ecosystem+name index as the dep tree.
+      const repCache = new Map();
+      const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
+      const index = buildLibIndex(getRep);
+      const repos = new Set(listRepos());
+      const groups = new Map();   // key: eco:normname -> aggregated dep
+      for (const lib of listLibraries()) {
+        if (!lib.latest || !lib.latest.reportAvailable) continue;
+        const rep = getRep(lib.name);
+        const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
+        for (const d of deps) {
+          if (!d || !d.name) continue;
+          const eco = ecoNorm(d.ecosystem);
+          const key = eco + ':' + normName(d.name);
+          if (index.has(key)) continue;          // already an analyzed library
+          let g = groups.get(key);
+          if (!g) {
+            g = { name: d.name, ecosystem: d.ecosystem || null, count: 0,
+              dependents: [], scopes: new Set(), locality: d.locality || null,
+              acquisition: d.acquisition || null, source: d.source || '', candidateUrl: null };
+            groups.set(key, g);
+          }
+          g.count++;
+          g.dependents.push({ lib: lib.name, purpose: d.purpose || '', scope: d.scope || null });
+          if (d.scope) g.scopes.add(d.scope);
+          if (!g.locality && d.locality) g.locality = d.locality;
+          if (!g.acquisition && d.acquisition) g.acquisition = d.acquisition;
+          if (!g.candidateUrl) g.candidateUrl = extractGitUrl(d.source, d.version);
+          if (!g.source && d.source) g.source = d.source;
+        }
+      }
+      const items = [...groups.values()].map((g) => {
+        const repoName = g.candidateUrl ? repoNameFromUrl(g.candidateUrl) : null;
+        return {
+          name: g.name, ecosystem: g.ecosystem, count: g.count,
+          dependents: g.dependents, scopes: [...g.scopes],
+          locality: g.locality, acquisition: g.acquisition,
+          source: g.source, candidateUrl: g.candidateUrl, repoName,
+          cloned: !!repoName && repos.has(repoName),
+          active: repoName ? activeJobFor(repoName) : null,
+        };
+      }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+      return send(res, 200, { total: items.length, items });
     }
 
     if (req.method === 'GET' && pathname === '/api/depgraph') {

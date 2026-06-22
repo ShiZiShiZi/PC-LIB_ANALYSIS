@@ -46,7 +46,7 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `codegraph callers/callees <symbol> -p repos/<name>`. grep/Read remain the
    fallback and the way to read literal text (strings, headers, manifests).
 
-3. **Reasoned dimensions (1, 5, 6, 7).** For each, read the corresponding skill
+3. **Reasoned dimensions (1, 5, 6, 7, 8).** For each, read the corresponding skill
    file for the full method, then read the actual source to fill in the block:
    - Dim 1 function summary → `.claude/skills/function-summary/SKILL.md`
    - Dim 5 license → `.claude/skills/license-detect/SKILL.md`
@@ -60,10 +60,18 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    script's test framework / language guesses against what you see; refine the
    `tests.notes` / `tests.frameworks` if the script was fooled by an odd layout.
 
+3b. **Synthesis dimension 9 — HarmonyOS PC adaptation.** AFTER the reasoned blocks
+   above exist, read `.claude/skills/harmony-adaptation/SKILL.md` and fill
+   `harmony_adaptation` (feasibility / difficulty / path / blockers / effort of
+   porting to HarmonyOS NEXT PC). This is a **synthesis** pass: do NOT re-scan the
+   source — reason over the already-filled `library.ecosystem`, `native_api`,
+   `runtime_surface`, `dependencies`, and `build_env`, and **reuse their `evidence`**.
+   Do it inline in this same session (never spawn a sub-agent).
+
 4. **Assemble `report.json`.** Merge the script fragment (`languages`,
    `code_metrics`, `tests`) with your reasoned blocks (`function_summary`,
-   `license`, `dependencies`, `native_api`, `runtime_surface`, `build_env`) and
-   the `library` / `meta` headers.
+   `license`, `dependencies`, `native_api`, `runtime_surface`, `build_env`,
+   `harmony_adaptation`) and the `library` / `meta` headers.
    Conform exactly to `references/report_schema.json`: every top-level key
    present, required sub-fields filled. Fill `meta` with `schema_version: "1.0"`,
    `analyzer: "pc-lib-analyzer"`, `counter_tool` (from the fragment),
@@ -90,6 +98,10 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    Write `runtime_surface` (network/filesystem/env_vars/subprocess/devices) and
    `build_env` (language_standard/runtime_version/build_system/compiler_extensions/
    platforms) per the runtime-environment skill — descriptive only, `[]` when empty.
+   Write `harmony_adaptation` per the harmony-adaptation skill: the closed axes
+   (`feasibility`/`overall_difficulty`/`effort_estimate`/`blockers[].severity`) must use
+   schema enum values; `recommended_path`/`blockers[].category`/`harmony_status` are open
+   vocab; each blocker carries its `source_dimension` + reused `evidence`.
 
    For every entry in `dependencies.dependencies`, set `acquisition` (OPEN vocab — coin a
    concise value if none of the recommended ones fit), the closed `locality`

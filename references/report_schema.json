@@ -5,7 +5,7 @@
   "type": "object",
   "required": ["library", "function_summary", "languages", "code_metrics",
                "tests", "license", "dependencies", "native_api",
-               "runtime_surface", "build_env", "meta"],
+               "runtime_surface", "build_env", "harmony_adaptation", "meta"],
   "properties": {
     "library": {
       "type": "object",
@@ -64,9 +64,13 @@
         "all": {"type": "array", "items": {"type": "string"}},
         "breakdown": {"type": "array", "items": {
           "type": "object",
+          "description": "per-language totals; production/test/example split the same files by category",
           "properties": {
             "language": {"type": "string"}, "files": {"type": "integer"},
-            "code": {"type": "integer"}, "pct": {"type": "number"}}}}
+            "code": {"type": "integer"}, "pct": {"type": "number"},
+            "production": {"type": "object", "properties": {"files": {"type": "integer"}, "code": {"type": "integer"}}},
+            "test": {"type": "object", "properties": {"files": {"type": "integer"}, "code": {"type": "integer"}}},
+            "example": {"type": "object", "properties": {"files": {"type": "integer"}, "code": {"type": "integer"}}}}}}
       }
     },
 
@@ -122,7 +126,7 @@
           "required": ["name", "ecosystem"],
           "properties": {
             "name": {"type": "string"},
-            "ecosystem": {"type": "string"},
+            "ecosystem": {"type": "string", "description": "LANGUAGE ecosystem only: cpp/c/python/java/nodejs/rust/go/dotnet/other. Use 'other' for non-language deps (data files, generic tools); do NOT put role values like 'tool'/'data' here — a dependency's build-tool nature belongs in scope:build."},
             "scope": {"type": "string", "description": "runtime/dev/test/optional/build"},
             "version": {"type": ["string", "null"]},
             "purpose": {"type": "string", "description": "model: why it's used"},
@@ -161,8 +165,9 @@
                 "type": "object",
                 "required": ["name"],
                 "properties": {
-                  "name": {"type": "string", "description": "具体 API/符号名，如 mmap、CreateFileMapping、std::filesystem"},
+                  "name": {"type": "string", "description": "单个具体 API/符号名（如 mmap、CreateFileMapping、std::filesystem）。不要把多个调用并进一个 name（如 'mmap / munmap'），否则 count 失去意义"},
                   "purpose": {"type": "string", "description": "中文：该 API 的作用"},
+                  "count": {"type": "integer", "description": "调用次数/出现次数（代表性近似，grep -c 或 codegraph callers）"},
                   "evidence": {"type": "array", "items": {"type": "string"},
                     "description": "调用位置 file:line（代表性 1-3 处）"},
                   "conditional": {"type": "boolean", "description": "是否被 #ifdef / 平台条件守卫"}}}},
@@ -180,6 +185,9 @@
               "name": {"type": "string", "description": "loaded library name, e.g. 'libssl.so', 'kernel32.dll', 'libcudart' (keep as written; '<dynamic>' if computed at runtime)"},
               "mechanism": {"type": "string",
                 "description": "how it is loaded: dlopen / LoadLibrary / ctypes.CDLL / ctypes.WinDLL / cffi.dlopen / JNI System.loadLibrary / node N-API addon"},
+              "acquisition": {"type": "string",
+                "description": "OPEN vocab — HOW the loaded lib is obtained: self_build (built from THIS repo, e.g. a CFFI/JNI/SWIG wrapper), system (external/OS-provided), bundled (shipped in repo), third_party, unknown"},
+              "source": {"type": "string", "description": "中文：是什么库 / 出处（身份与来源），如「本仓 MinimalLib 的 CFFI 构建产物」「外部专有 DLL，需 COMBICHEM_ROOT 提供」"},
               "description": {"type": "string", "description": "model-inferred purpose of the loaded library, 简体中文"},
               "optional": {"type": "boolean", "description": "true if load failure is handled gracefully (feature is optional)"},
               "evidence": {"type": "array", "items": {"type": "string"},
@@ -226,6 +234,45 @@
             "evidence": {"type": "array", "items": {"type": "string"}}}},
           "description": "supported OS/arch matrix inferred from #ifdef / CI / wheels / manifests"},
         "notes": {"type": "string", "description": "中文"}
+      }
+    },
+
+    "harmony_adaptation": {
+      "type": "object",
+      "description": "Dimension 9 — MODEL (skill: harmony-adaptation). SYNTHESIS dimension: feasibility / difficulty / path of porting the library to HarmonyOS NEXT PC (self-kernel, ArkTS app layer, OHOS NDK native layer, Node-API bridge — NO Linux ABI). Derived by reasoning over the already-filled native_api / runtime_surface / dependencies / build_env / library blocks, reusing their evidence. Prose in 简体中文.",
+      "properties": {
+        "target": {"type": "string", "description": "中文/英文：评估所针对的鸿蒙平台口径（HarmonyOS NEXT PC 等）"},
+        "feasibility": {"type": "string", "enum": ["feasible", "feasible_with_effort", "hard", "infeasible"],
+          "description": "闭轴：整体可行性"},
+        "overall_difficulty": {"type": "string", "enum": ["low", "medium", "high", "very_high"],
+          "description": "闭轴：整体难度"},
+        "effort_estimate": {"type": "string", "enum": ["XS", "S", "M", "L", "XL"],
+          "description": "闭轴：T 恤码工作量估计"},
+        "recommended_path": {"type": "string",
+          "description": "开放词：推荐适配路径，如 recompile_napi / cross_compile / arkts_rewrite / wrap_ffi / find_alternative / abandon"},
+        "summary": {"type": "string", "description": "中文：总体判断与为何选这条路径"},
+        "blockers": {"type": "array", "items": {
+          "type": "object",
+          "required": ["issue"],
+          "properties": {
+            "issue": {"type": "string", "description": "中文：阻碍点描述"},
+            "severity": {"type": "string", "enum": ["blocker", "major", "minor"], "description": "闭轴：严重度"},
+            "category": {"type": "string", "description": "开放词：如 subprocess_unavailable / win32_api / sysfs_procfs / registry_wmi / node_core_module / ffi_bridge / native_dependency / toolchain"},
+            "source_dimension": {"type": "string", "description": "来源维度：native_api / runtime_surface / dependencies / build_env / library"},
+            "harmony_status": {"type": "string", "description": "开放词：unavailable / partial / needs_permission / replace_with_ohos"},
+            "remediation": {"type": "string", "description": "中文：改造建议"},
+            "evidence": {"type": "array", "items": {"type": "string"}, "description": "复用来源维度的 file:line"}}},
+          "description": "从前序维度推导的移植阻碍点"},
+        "compatible": {"type": "array", "items": {
+          "type": "object",
+          "properties": {
+            "aspect": {"type": "string", "description": "中文：可平滑移植的方面"},
+            "note": {"type": "string", "description": "中文：说明"},
+            "evidence": {"type": "array", "items": {"type": "string"}}}},
+          "description": "可较顺利移植的部分"},
+        "key_tasks": {"type": "array", "items": {"type": "string"},
+          "description": "中文：落地推荐路径的关键工作项"},
+        "notes": {"type": "string", "description": "中文：假设、局限、置信度补充"}
       }
     },
 

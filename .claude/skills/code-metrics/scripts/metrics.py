@@ -45,11 +45,19 @@ def _languages(cloc: ClocResult) -> dict:
     for f in cloc.files:
         by_lang[f.language].append(f)
     total = sum(f.code for f in cloc.files) or 1
+
+    def _cat(files: list[FileStat], cat: str) -> dict:
+        sub = [f for f in files if f.category == cat]
+        return {"files": len(sub), "code": sum(f.code for f in sub)}
+
     breakdown = [{
         "language": lang,
         "files": len(files),
         "code": sum(f.code for f in files),
         "pct": round(100.0 * sum(f.code for f in files) / total, 2),
+        "production": _cat(files, "production"),
+        "test": _cat(files, "test"),
+        "example": _cat(files, "example"),
     } for lang, files in by_lang.items()]
     breakdown.sort(key=lambda x: x["code"], reverse=True)
     primary = next((b["language"] for b in breakdown

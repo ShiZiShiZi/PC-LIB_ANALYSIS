@@ -26,19 +26,34 @@ dimension by adding a parser — improve its skill prompt instead.
 | 6 | Dependencies | model — `dependency-analysis` skill |
 | 7 | System & platform API calls (portability classes 标准/平台特有/系统内核/硬件/FFI; per-API name+purpose+call-site) | model — `native-api-analysis` skill |
 | 8 | Runtime & build environment (external-interaction surface + toolchain/platform matrix) | model — `runtime-environment` skill |
+| 9 | HarmonyOS PC adaptation assessment (可行性/难度/路径/工作量) — **synthesis** of dims 1/6/7/8 | model — `harmony-adaptation` skill |
 
 Dependencies (dim 6) carry `acquisition` (how the build obtains each one:
 system/vendored/fetchcontent/download_build/submodule/package_manager/prebuilt_binary)
-+ `source` + `declared_in`, distinguishing 本地/远端/系统 deps. Runtime
-dynamically-loaded libs (`native_api.dynamic_libraries`) are also shown under
-dependencies in the panel. `library.bindings` lists the binding languages of a
++ `source` + `declared_in`, distinguishing 本地/远端/系统 deps. `ecosystem` is a
+**language only** (build-tool nature goes in `scope:build`; the panel groups
+build/test-scope deps under 构建/工具链). Runtime dynamically-loaded libs
+(`native_api.dynamic_libraries`, each with `acquisition`/`source` — e.g. self_build
+wrappers vs external libs) are also shown under dependencies in the panel.
+`native_api.groups[].apis[].count` gives per-API call-site counts. `library.bindings` lists the binding languages of a
 polyglot library (e.g. a C++ core with Python/Java bindings). Dim 8 is purely
-descriptive (no adaptation advice).
+descriptive (no adaptation advice). Dim 9 (`harmony_adaptation`) is the opposite —
+**prescriptive and a synthesis**: it reasons over the already-filled dims (ecosystem,
+native_api, runtime_surface, dependencies, build_env) to produce a HarmonyOS PC
+porting plan (feasibility/difficulty/path/blockers/effort), reusing their `evidence`
+rather than re-scanning source. **Default口径: HarmonyOS PC with already-ported
+language runtimes** (Python/Node.js/Java/Rust/Go/Julia are ported) — a pure-script
+library runs on the ported runtime (`run_on_ported_runtime`), so the runtime itself
+is NOT a blocker and such libs are NOT auto-`infeasible`; the real work is native
+extensions / C deps / platform APIs. The strict ArkTS-sandbox model is a secondary口径
+used only when the target is an ArkTS app. Its closed axes are `feasibility`/`overall_difficulty`/
+`effort_estimate`/`blockers[].severity`; open vocab is `recommended_path`/
+`blockers[].category`/`harmony_status`.
 
 ## Skill authoring convention (principle-first, open-vocabulary, self-capturing)
 
 Maximize the model's reasoning; we only fix the **output contract**. Every
-interpretive skill (dims 1, 5, 6, 7, 8) follows this shape:
+interpretive skill (dims 1, 5, 6, 7, 8, 9) follows this shape:
 
 1. **主旨与原则 (Goal & principles)** — what the dimension is for and what a good
    answer looks like, up top. Plus the **meta-rule**: *"The output contract is the
@@ -56,8 +71,11 @@ interpretive skill (dims 1, 5, 6, 7, 8) follows this shape:
 - **Stable closed axes (model-set)**: `library.ecosystem`/`bindings`,
   `dependencies[].locality` (local/remote/system/runtime), `native_api.groups[].category`
   (standard/platform/system/hardware/ffi) and `.platform`. The UI relies on these.
+  Plus dim 9's `harmony_adaptation.feasibility`/`overall_difficulty`/`effort_estimate`/
+  `blockers[].severity`.
 - **Open detail vocabulary (model may coin)**: `dependencies[].acquisition`,
-  `native_api.groups[].type`, etc. The UI degrades unknown values to the raw string.
+  `native_api.groups[].type`, `harmony_adaptation.recommended_path`/`blockers[].category`/
+  `blockers[].harmony_status`, etc. The UI degrades unknown values to the raw string.
 
 `meta.observations` (`{dimension, field, kind, value, rationale}`) is aggregated by
 `/api/observations` and shown on the panel's **模型观察 / 词表反哺** page (`#/observations`)
@@ -73,6 +91,7 @@ over time. Do NOT auto-rewrite skills.
     code-metrics/                # ONLY script-backed skill (deterministic)
       scripts/{metrics.py, common.py, tests.py}
     function-summary/  license-detect/  dependency-analysis/  native-api-analysis/  # model-driven prompt skills
+    runtime-environment/  harmony-adaptation/                                       # (dim 8 + dim 9 synthesis)
 references/report_schema.json    # output contract — the report MUST conform
 web/
   server.js                      # zero-dep Node control panel (http + SSE)
@@ -101,11 +120,19 @@ and `opencode` with a configured model.
   batch + concurrent clone and analyze, system settings.
 - **Level 2 (detail, `#/lib/<name>`):** run history, live log (SSE, parses
   opencode `--format json` events), rendered report.
+- **待分析依赖 (`#/pending-deps`):** cross-library aggregation of dependencies that
+  analyzed libraries depend on but that are NOT themselves analyzed yet (matched via
+  the same `ecosystem+name` index as the dep tree). Each row can be cloned into
+  `repos/` ("加入列表") — best-effort prefilling a git URL extracted from the dep's
+  `source`/`version` — and then analyzed in place. Drives the iterative "analyze the
+  deps of the deps" loop. A dep leaves this list once analyzed.
+- **模型观察 (`#/observations`):** see the two-tier vocabulary section above.
 - **Backend (`web/server.js`):** REST + SSE. Analyses go through a concurrency
   queue capped by `settings.maxConcurrent`; clones run concurrently. Endpoints:
   `/api/libraries`, `/api/library`, `/api/jobs`, `/api/clone` (batch),
   `/api/analyze` (batch), `/api/stream` (SSE), `/api/report`, `/api/runlog`,
-  `/api/settings`, `/api/models`, `/api/testmodel`.
+  `/api/depgraph`, `/api/observations`, `/api/pending-deps`, `/api/settings`,
+  `/api/models`, `/api/testmodel`.
 
 ## Gotchas (learned the hard way)
 
