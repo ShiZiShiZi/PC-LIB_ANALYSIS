@@ -97,6 +97,9 @@ deps, and ecosystem-specific quirks — reason about them.
 
 ## Rules
 - Prefer runtime deps in the headline `count`; keep dev/test/build but scoped.
+- `dependencies[].harmony_adapted` / `harmony_adapted_source` are **script-stamped**
+  (`scripts/harmony_adapted.js`, an OpenHarmony-PC-mirror lookup) — leave them to the
+  script, do NOT set them from guesses.
 - Don't list transitive deps unless lockfiles are the only source and the user
   needs them — say so in `notes` if you do.
 

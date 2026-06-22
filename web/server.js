@@ -18,6 +18,8 @@ const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
 const { spawn, execFile } = require('child_process');
+const resolve = require('./resolve');
+const harmonyMirror = require('./harmony-mirror');
 
 const ROOT = path.resolve(__dirname, '..');         // project root (holds .claude/)
 const PUBLIC = path.join(__dirname, 'public');
@@ -53,6 +55,8 @@ const DEFAULT_SETTINGS = {
   thinking: true,
   useCodegraph: true,
   pruneGitAfterAnalyze: true,
+  enableNetworkResolve: true,
+  enableHarmonyMirror: true,
 };
 
 // codegraph is optional: probe once at startup. The analyze prompt only mentions
@@ -174,6 +178,28 @@ function repoNameFromUrl(u) {
   const base = u.replace(/\/+$/, '').split('/').pop() || 'repo';
   return base.replace(/\.git$/i, '').replace(/[^A-Za-z0-9._-]/g, '_');
 }
+// Turn a pasted *web* URL into a clonable git URL. Users often paste browser URLs
+// (esp. GitLab `…/-/tree/main`, subgroup paths, or a bare repo URL with no `.git`),
+// which `git clone` can't use. Known hosts get cleaned; unknown hosts pass through.
+const KNOWN_GIT_HOSTS = /^(?:www\.)?(github\.com|gitlab\.com|gitee\.com|gitcode\.(?:com|net)|bitbucket\.org|codeberg\.org)$/i;
+function normalizeCloneUrl(raw) {
+  let u = String(raw || '').trim();
+  if (!u) return u;
+  u = u.split('#')[0].replace(/\?.*$/, '');
+  const scp = u.match(/^[\w.-]+@([\w.-]+):(.+)$/);          // git@host:owner/repo(.git)
+  if (scp) u = `https://${scp[1]}/${scp[2]}`;
+  u = u.replace(/^git:\/\//i, 'https://').replace(/^ssh:\/\/(?:git@)?/i, 'https://');
+  let m;
+  try { m = new URL(u); } catch { return u; }
+  if (!KNOWN_GIT_HOSTS.test(m.hostname)) return u;           // don't second-guess other hosts
+  let p = m.pathname;
+  const dash = p.indexOf('/-/');                             // GitLab non-repo separator
+  if (dash >= 0) p = p.slice(0, dash);
+  else p = p.replace(/\/(?:tree|blob|commits?|releases|tags|raw|wikis?|issues|merge_requests|pulls?)\b.*$/i, '');
+  p = p.replace(/\/+$/, '').replace(/\.git$/i, '');
+  if (!p || p === '') return u;
+  return `https://${m.hostname.replace(/^www\./i, '')}${p}.git`;
+}
 // Best-effort extraction of a clonable git URL from a dependency's free-text
 // `source` / `version` (e.g. "通过 FetchContent 从 https://github.com/x/y.git 获取"
 // or a pip `git+https://host/x@ref`). Returns a cleaned URL or null — many deps
@@ -244,6 +270,15 @@ function reportSummary(name, run) {
     };
   } catch { return null; }
 }
+// run id like "2026-06-21T15-42-06-494Z" isn't valid ISO (time uses '-'); restore it.
+function runIdToMs(ts) {
+  const iso = String(ts || '').replace(/T(\d\d)-(\d\d)-(\d\d)-(\d\d\d)Z$/, 'T$1:$2:$3.$4Z');
+  const ms = Date.parse(iso);
+  return Number.isNaN(ms) ? null : ms;
+}
+function birthtimeMs(p) {
+  try { const s = fs.statSync(p); return s.birthtimeMs || s.ctimeMs || null; } catch { return null; }
+}
 function listLibraries() {
   const repos = new Set(listRepos());
   const names = new Set([...repos]);
@@ -253,9 +288,13 @@ function listLibraries() {
   return [...names].sort().map((name) => {
     const runs = runsForLib(name);
     const latest = runs[0] || null;
+    const analyzedAt = latest ? (Date.parse(latest.endedAt || latest.startedAt) || runIdToMs(latest.run)) : null;
+    const addedAt = (repos.has(name) ? birthtimeMs(path.join(REPOS, name)) : null)
+      || birthtimeMs(path.join(RUNS, name));
     return {
       name, cloned: repos.has(name), runCount: runs.length,
       latest, active: activeJobFor(name),
+      analyzedAt: analyzedAt || null, addedAt,
       summary: latest && latest.reportAvailable ? reportSummary(name, latest.run) : null,
     };
   });
@@ -332,7 +371,8 @@ function buildDepTree(rootName, maxDepth) {
 }
 
 // ---------------------------------------------------------------- clone
-function startClone({ url: gitUrl, ref, overwrite }) {
+function startClone({ url: rawUrl, ref, overwrite }) {
+  const gitUrl = normalizeCloneUrl(rawUrl);
   const name = repoNameFromUrl(gitUrl);
   const dest = path.join(REPOS, name);
   if (fs.existsSync(dest)) {
@@ -345,7 +385,10 @@ function startClone({ url: gitUrl, ref, overwrite }) {
   const job = new Job('clone', { name, argv: ['git', ...args], url: gitUrl });
   job.emit('input', { argv: job.meta.argv });
   // stdin 'ignore' (EOF): opencode/tools block on an open stdin pipe.
-  pipeProcess(job, spawn('git', args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }));
+  // GIT_TERMINAL_PROMPT=0: a private/auth-required URL fails fast instead of hanging
+  // on a credential prompt the headless clone can never answer.
+  pipeProcess(job, spawn('git', args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } }));
   return job;
 }
 
@@ -606,6 +649,30 @@ const server = http.createServer(async (req, res) => {
       const file = path.join(RUNS, query.name || '', query.run || '', 'report.json');
       if (!file.startsWith(RUNS) || !fs.existsSync(file)) return send(res, 404, { error: 'report not found' });
       return send(res, 200, fs.readFileSync(file, 'utf8'));
+    }
+
+    if (req.method === 'GET' && pathname === '/api/harmony-status') {
+      if (!settings.enableHarmonyMirror) return send(res, 200, { disabled: true, results: {} });
+      const names = (query.names ? String(query.names).split(',') : []).map((s) => s.trim()).filter(Boolean);
+      if (!names.length) return send(res, 200, { results: {}, adaptedCount: 0, total: 0 });
+      try {
+        const r = await harmonyMirror.statusFor(ecoNorm(query.ecosystem), names);
+        return send(res, 200, r);
+      } catch (e) {
+        return send(res, 200, { results: {}, error: String(e.message || e) });
+      }
+    }
+
+    if (req.method === 'GET' && pathname === '/api/resolve-repo') {
+      if (!query.name) return send(res, 400, { error: 'name required' });
+      if (!settings.enableNetworkResolve)
+        return send(res, 200, { url: null, disabled: true });
+      try {
+        const r = await resolve.resolveRepo(ecoNorm(query.ecosystem), query.name);
+        return send(res, 200, { name: query.name, ecosystem: query.ecosystem || null, ...r });
+      } catch (e) {
+        return send(res, 200, { url: null, error: String(e.message || e) });
+      }
     }
 
     if (req.method === 'GET' && pathname === '/api/export') {

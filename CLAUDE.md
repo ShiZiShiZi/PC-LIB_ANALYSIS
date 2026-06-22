@@ -95,8 +95,11 @@ over time. Do NOT auto-rewrite skills.
 references/report_schema.json    # output contract — the report MUST conform
 web/
   server.js                      # zero-dep Node control panel (http + SSE)
+  resolve.js                     # zero-dep repo-URL resolver (registry APIs) for /api/resolve-repo
+  harmony-mirror.js              # zero-dep OpenHarmony-PC-mirror adapted-package check
   public/{index.html, app.js, styles.css}   # two-level light-theme SPA
 scripts/export_xlsx.py           # summary .xlsx export (openpyxl); panel /api/export spawns it
+scripts/harmony_adapted.js       # CLI over harmony-mirror.js; agent stamps deps[].harmony_adapted
 requirements.txt                 # python deps (openpyxl, for export only)
 repos/   <lib>/                  # cloned libraries (gitignored)
 runs/    <lib>/<ts>/             # per-run report.json + run.log.jsonl + meta.json (gitignored)
@@ -128,14 +131,36 @@ and `opencode` with a configured model. Excel export additionally needs
   the same `ecosystem+name` index as the dep tree). Each row can be cloned into
   `repos/` ("加入列表") — best-effort prefilling a git URL extracted from the dep's
   `source`/`version` — and then analyzed in place. Drives the iterative "analyze the
-  deps of the deps" loop. A dep leaves this list once analyzed.
+  deps of the deps" loop. A dep leaves this list once analyzed. The git URL can also be
+  **resolved online** from the package registry (per-row 🔎 or 「一键填充全部」) via
+  `/api/resolve-repo` → `web/resolve.js` (zero-dep `https`): PyPI/npm/crates.io/Maven
+  Central, with a GitHub-search fallback for C/C++/unknown (low confidence). Results
+  cache to `.resolve-cache.json` (gitignored, 7-day TTL); gated by the
+  `enableNetworkResolve` setting.
 - **模型观察 (`#/observations`):** see the two-tier vocabulary section above.
 - **Backend (`web/server.js`):** REST + SSE. Analyses go through a concurrency
   queue capped by `settings.maxConcurrent`; clones run concurrently. Endpoints:
   `/api/libraries`, `/api/library`, `/api/jobs`, `/api/clone` (batch),
   `/api/analyze` (batch), `/api/stream` (SSE), `/api/report`, `/api/runlog`,
   `/api/depgraph`, `/api/observations`, `/api/pending-deps`, `/api/settings`,
-  `/api/models`, `/api/testmodel`, `/api/export` (xlsx).
+  `/api/models`, `/api/testmodel`, `/api/export` (xlsx), `/api/resolve-repo`,
+  `/api/harmony-status`.
+- **已鸿蒙化检测 (`/api/harmony-status`):** `web/harmony-mirror.js` (zero-dep, Node
+  `https`) checks whether a dependency is already ported to HarmonyOS PC, per ecosystem:
+  - **Python** ('simple'): the OpenHarmony PC PyPI mirror (pypi.cnb.cool/
+    OpenHarmonyPCDeveloper) is a full PyPI proxy with no listable root (404s), so we
+    probe each package page on demand — the port signal is a native **`ohos` wheel**
+    (e.g. numpy `*-ohos_aarch64.whl`), not mere presence. Cached per-package.
+  - **C/C++** ('list'): the cmd-pkgs README (gitcode.com/OpenHarmonyPCDeveloper/
+    cmd-pkgs) lists every prebuilt package in its install commands (`sh -s -- <name>
+    <ver>`, ~1245 pkgs: zlib/openssl/boost/eigen/cairo/…); membership (with name
+    variants — strip/add `lib`, drop trailing digits) ⇒ adapted. The list is cached.
+  Both cache to `.harmony-mirror-cache.json` (gitignored). The
+  panel badges 🟢 已鸿蒙化 on deps (report dep list, dep tree, pending-deps) + shows
+  N/M counts + a 「只看未鸿蒙化」filter; gated by the `enableHarmonyMirror` setting.
+  For dim 9: `scripts/harmony_adapted.js` (same module) stamps
+  `dependencies[].harmony_adapted` so an adapted dep is **not** a blocker — this
+  extends the earlier "ported runtimes" 口径 from language runtimes to individual libs.
 - **导出 Excel (`/api/export`):** dashboard 「导出 Excel」按钮 → server spawns
   `scripts/export_xlsx.py` (Python + **openpyxl**) which flattens every library's
   latest `report.json` into one multi-sheet summary workbook (汇总 + 依赖/系统平台API/

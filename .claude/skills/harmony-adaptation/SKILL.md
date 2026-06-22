@@ -93,6 +93,11 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
      仅为通用 shell-out 且鸿蒙有等价工具的 `minor`/`partial`（模型 B 沙箱下统一更严，多 `blocker`）。
    - `runtime_surface.filesystem/devices` 里的 `/proc`·`/sys`·`/dev`、注册表路径 → 阻碍。
    - `dependencies`：每个 `native`/`remote`/`system` 依赖须自身可移植；不可移植 → 阻碍。
+     **但先看是否已鸿蒙化**：依赖若带 `harmony_adapted: true`（已在 OpenHarmony PC 官方源提供
+     移植产物——**Python** 包在 pypi.cnb.cool/OpenHarmonyPCDeveloper 有 `*-ohos_*.whl`，如
+     numpy/scipy/pandas；**C/C++** 库在 cmd-pkgs 预编译清单里，如 zlib/openssl/boost/eigen/
+     cairo/freetype）→ **不计阻碍**，直接用鸿蒙版；这类依赖越多，难度/工作量越低。仅对**未**
+     鸿蒙化且不可移植的依赖才记 `blocker`/`major`。
    - `build_env`：工具链(CMake/musl 兼容性)、`compiler_extensions`(MSVC/GCC 特有)、
      是否覆盖 arm64/x86_64 → 阻碍或注意点。
 3. **判每条阻碍的 `harmony_status` 与 `remediation`**：能用 `@ohos.*` 平替的写

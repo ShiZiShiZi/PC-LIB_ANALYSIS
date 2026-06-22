@@ -57,6 +57,42 @@ const DIFF_CLS = { low: 'done', medium: 'running', high: 'sev-major', very_high:
 const SEV_LABELS = { blocker: '阻塞', major: '主要', minor: '次要' };
 const SEV_CLS = { blocker: 'error', major: 'sev-major', minor: 'gray' };
 
+// HarmonyOS-PC mirror adaptation status (already-ported packages), cached client-side.
+const harmonyMemo = new Map();   // `${eco}:${name}` -> {adapted, source}
+async function harmonyStatus(eco, names) {
+  const k = (n) => `${eco || ''}:${n}`;
+  const need = [...new Set(names)].filter((n) => !harmonyMemo.has(k(n)));
+  if (need.length) {
+    try {
+      const r = await api(`/api/harmony-status?ecosystem=${enc(eco || '')}&names=${enc(need.join(','))}`);
+      const res = (r && r.results) || {};
+      need.forEach((n) => harmonyMemo.set(k(n), res[n] || { adapted: false }));
+    } catch { need.forEach((n) => harmonyMemo.set(k(n), { adapted: false })); }
+  }
+  const out = {};
+  names.forEach((n) => (out[n] = harmonyMemo.get(k(n)) || { adapted: false }));
+  return out;
+}
+// Append a 🟢 已鸿蒙化 badge to any element carrying data-hname/data-heco (once).
+async function decorateHarmonyBadges(scope) {
+  const els = [...(scope || document).querySelectorAll('[data-hname]:not([data-hdone])')];
+  if (!els.length) return;
+  const byEco = new Map();
+  els.forEach((el) => { const e = el.dataset.heco || ''; if (!byEco.has(e)) byEco.set(e, []); byEco.get(e).push(el); });
+  for (const [eco, group] of byEco) {
+    const st = await harmonyStatus(eco, group.map((el) => el.dataset.hname));
+    group.forEach((el) => {
+      el.dataset.hdone = '1';
+      const s = st[el.dataset.hname];
+      if (s && s.adapted) {
+        const b = document.createElement('span');
+        b.className = 'badge harmony'; b.textContent = '🟢 已鸿蒙化'; b.title = s.source || '';
+        el.appendChild(b);
+      }
+    });
+  }
+}
+
 function setHeader(html) { $('#headerActions').innerHTML = html; }
 function toast(msg, kind = '') {
   const t = document.createElement('div');
@@ -120,6 +156,16 @@ async function renderDashboard() {
           ${Object.entries(ECO_LABELS).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}
         </select>
       </div>
+      <div class="filter">
+        <select id="statusFilter">
+          <option value="">全部状态</option>
+          <option value="analyzed">已分析</option>
+          <option value="failed">失败</option>
+          <option value="unanalyzed">未分析</option>
+          <option value="uncloned">未克隆</option>
+          <option value="active">进行中</option>
+        </select>
+      </div>
       <button class="btn sm primary" id="batchAnalyze" disabled>分析选中</button>
       <button class="btn sm" id="refreshBtn">刷新</button>
     </div>
@@ -130,6 +176,7 @@ async function renderDashboard() {
   $('#refreshBtn').onclick = loadDash;
   $('#search').oninput = () => { page = 1; renderList(); };
   $('#ecoFilter').onchange = () => { page = 1; renderList(); };
+  $('#statusFilter').onchange = () => { page = 1; renderList(); };
   $('#batchAnalyze').onclick = batchAnalyze;
 
   await loadDash();
@@ -149,12 +196,25 @@ async function loadDash() {
 function visibleLibs() {
   const q = ($('#search') ? $('#search').value : '').trim().toLowerCase();
   const eco = ($('#ecoFilter') ? $('#ecoFilter').value : '');
-  return libsCache.filter((l) => {
+  const stf = ($('#statusFilter') ? $('#statusFilter').value : '');
+  const filtered = libsCache.filter((l) => {
     const matchesSearch = !q || l.name.toLowerCase().includes(q) ||
       ((l.summary && l.summary.oneLiner) || '').toLowerCase().includes(q);
     const matchesEco = !eco || (l.summary && l.summary.ecosystem === eco);
-    return matchesSearch && matchesEco;
+    const matchesStatus = !stf || statusKey(l) === stf;
+    return matchesSearch && matchesEco && matchesStatus;
   });
+  // 默认排序：最近一次分析时间倒序；无分析时间者按添加（克隆）时间。
+  const sortKey = (l) => (l.analyzedAt != null ? l.analyzedAt : (l.addedAt != null ? l.addedAt : 0));
+  return filtered.sort((a, b) => sortKey(b) - sortKey(a));
+}
+
+// Stable status bucket for filtering (aligns with libStatus()).
+function statusKey(lib) {
+  if (lib.active) return 'active';
+  if (!lib.cloned) return 'uncloned';
+  if (lib.latest) return lib.latest.status === 'error' ? 'failed' : 'analyzed';
+  return 'unanalyzed';
 }
 
 function libStatus(lib) {
@@ -251,8 +311,28 @@ async function analyzeOne(name) {
 //  PENDING DEPENDENCIES (level 1.5) — 未分析的「三方库依赖的三方库」
 // ===========================================================================
 let pdepCloneableOnly = false;
+let pdepHideAdapted = false;        // 只看未鸿蒙化
 const pdepUrlEdits = {};            // key -> user-typed URL (survives polling re-render)
+let pdepItems = [];                 // last-rendered items (for 一键填充全部)
 const pdepKey = (it) => `${it.ecosystem || ''}|${it.name}`;
+
+// Resolve one dep's repo URL online; fill its input + pdepUrlEdits on hit.
+// Returns the resolved url or null. `btn` (optional) gets a transient busy state.
+async function resolveDepUrl(eco, name, key, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  let r;
+  try { r = await api(`/api/resolve-repo?ecosystem=${enc(eco || '')}&name=${enc(name)}`); }
+  catch { r = null; }
+  if (btn) { btn.disabled = false; btn.textContent = '🔎'; }
+  if (r && r.disabled) { toast('联网解析已在设置中关闭', 'err'); return null; }
+  if (r && r.url) {
+    pdepUrlEdits[key] = r.url;
+    const inp = $(`input.pdep-url[data-key="${cssAttr(key)}"]`);
+    if (inp) inp.value = r.url;
+    return r.url;
+  }
+  return null;
+}
 
 async function renderPendingDeps() {
   setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>');
@@ -260,10 +340,15 @@ async function renderPendingDeps() {
     <p class="muted">已分析库所依赖、但自身尚未被分析的三方库，跨所有库聚合。把某个依赖「加入分析列表」即克隆入库；克隆完成后就地点「分析」。分析完成后它会自动从此列表消失。</p>
     <div class="toolbar">
       <label class="pdep-toggle"><input type="checkbox" id="pdepCloneable" ${pdepCloneableOnly ? 'checked' : ''} /> 只看可克隆（有候选仓库 URL / 远端来源）</label>
+      <label class="pdep-toggle"><input type="checkbox" id="pdepHideAdapted" ${pdepHideAdapted ? 'checked' : ''} /> 只看未鸿蒙化</label>
+      <span id="pdepHarmonySummary" class="muted"></span>
+      <button class="btn sm" id="pdepResolveAll">🔎 一键填充全部</button>
       <button class="btn sm" id="pdepRefresh">刷新</button>
     </div>
     <div id="pdeps"><p class="muted">加载中…</p></div>`;
   $('#pdepCloneable').onchange = (e) => { pdepCloneableOnly = e.target.checked; loadPendingDeps(); };
+  $('#pdepHideAdapted').onchange = (e) => { pdepHideAdapted = e.target.checked; loadPendingDeps(); };
+  $('#pdepResolveAll').onclick = resolveAllPendingDeps;
   $('#pdepRefresh').onclick = loadPendingDeps;
   await loadPendingDeps();
   const timer = setInterval(loadPendingDeps, 4000);
@@ -282,6 +367,7 @@ async function loadPendingDeps() {
   (libs || []).forEach((l) => { libMap[l.name] = l; });
   let items = data.items || [];
   if (pdepCloneableOnly) items = items.filter((it) => it.candidateUrl || it.locality === 'remote');
+  pdepItems = items;
   if (!items.length) {
     box.innerHTML = `<div class="empty">${pdepCloneableOnly ? '没有带候选仓库 URL 的待分析依赖。' : '暂无待分析依赖。分析更多库后，它们的依赖会出现在这里。'}</div>`;
     return;
@@ -301,7 +387,56 @@ async function loadPendingDeps() {
     promoteDep(input ? input.value.trim() : '', key);
   });
   $$('[data-pdep-analyze]', box).forEach((b) => b.onclick = () => analyzeOne(b.dataset.pdepAnalyze));
+  $$('[data-pdep-resolve]', box).forEach((b) => b.onclick = async () => {
+    const url = await resolveDepUrl(b.dataset.eco, b.dataset.name, b.dataset.pdepResolve, b);
+    toast(url ? `已填充：${url}` : '未找到仓库地址，请手动填写', url ? 'ok' : 'err');
+  });
   $$('input.pdep-url', box).forEach((inp) => inp.oninput = () => { pdepUrlEdits[inp.dataset.key] = inp.value; });
+  decoratePendingHarmony(box);
+}
+
+// 已鸿蒙化: badge each row, show "X/Y 已鸿蒙化" summary, optionally hide adapted rows.
+async function decoratePendingHarmony(box) {
+  await decorateHarmonyBadges(box);
+  const items = pdepItems || [];
+  const adapted = items.filter((it) => {
+    const s = harmonyMemo.get(`${it.ecosystem || ''}:${it.name}`);
+    return s && s.adapted;
+  }).length;
+  const sum = $('#pdepHarmonySummary');
+  if (sum) sum.textContent = adapted ? `🟢 ${adapted}/${items.length} 依赖已鸿蒙化` : '';
+  if (pdepHideAdapted) {
+    box.querySelectorAll('.pdep-name[data-hname]').forEach((el) => {
+      const s = harmonyMemo.get(`${el.dataset.heco || ''}:${el.dataset.hname}`);
+      const row = el.closest('.pdep-row');
+      if (row && s && s.adapted) row.style.display = 'none';
+    });
+  }
+}
+
+// 一键填充全部: resolve repo URLs for every un-cloned row that has no URL yet,
+// with a small concurrency pool so we don't fan out to registries all at once.
+async function resolveAllPendingDeps() {
+  const btn = $('#pdepResolveAll');
+  const targets = (pdepItems || []).filter((it) => {
+    const key = pdepKey(it);
+    const hasUrl = (pdepUrlEdits[key] != null ? pdepUrlEdits[key] : it.candidateUrl) || '';
+    return !it.cloned && !it.active && !hasUrl;
+  });
+  if (!targets.length) return toast('没有需要填充的依赖', 'ok');
+  if (btn) btn.disabled = true;
+  let done = 0, hit = 0, i = 0;
+  const worker = async () => {
+    while (i < targets.length) {
+      const it = targets[i++];
+      const url = await resolveDepUrl(it.ecosystem, it.name, pdepKey(it), null);
+      done++; if (url) hit++;
+      if (btn) btn.textContent = `🔎 解析中 ${done}/${targets.length}`;
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(4, targets.length) }, worker));
+  if (btn) { btn.disabled = false; btn.textContent = '🔎 一键填充全部'; }
+  toast(`已解析 ${hit}/${targets.length} 个仓库地址`, hit ? 'ok' : 'err');
 }
 
 function pdepRowHtml(it, libMap) {
@@ -328,11 +463,12 @@ function pdepRowHtml(it, libMap) {
   } else {
     const url = pdepUrlEdits[key] != null ? pdepUrlEdits[key] : (it.candidateUrl || '');
     action = `<input class="pdep-url" type="text" data-key="${esc(key)}" value="${esc(url)}" placeholder="Git URL" />
+      <button class="btn sm" data-pdep-resolve="${esc(key)}" data-eco="${esc(it.ecosystem || '')}" data-name="${esc(it.name)}" title="联网查询仓库地址">🔎</button>
       <button class="btn sm primary" data-pdep-clone="${esc(key)}">加入列表</button>`;
   }
   return `<div class="pdep-row">
     <div class="pdep-info">
-      <div class="pdep-name"><b>${esc(it.name)}</b> ${eco} ${loc} ${scopes} ${acq}</div>
+      <div class="pdep-name" data-hname="${esc(it.name)}" data-heco="${esc(it.ecosystem || '')}"><b>${esc(it.name)}</b> ${eco} ${loc} ${scopes} ${acq}</div>
       <div class="muted pdep-meta">被 ${it.count} 个库依赖：${deps || '—'}${purpose ? ` · ${esc(purpose)}` : ''}</div>
     </div>
     <div class="pdep-act">${action}</div>
@@ -408,6 +544,8 @@ async function openSettings() {
     <label><input id="sLogs" type="checkbox" ${s.printLogs ? 'checked' : ''} /> 记录 opencode 调试日志（--print-logs）</label>
     <label><input id="sCodegraph" type="checkbox" ${s.useCodegraph ? 'checked' : ''} ${cg ? '' : 'disabled'} /> 启用 codegraph 结构化分析${cg ? '' : '<span class="hint err" style="display:inline"> — 未检测到 codegraph，将回退 grep</span>'}</label>
     <label><input id="sPruneGit" type="checkbox" ${s.pruneGitAfterAnalyze ? 'checked' : ''} /> 分析完成后删除 repos/&lt;库&gt;/.git 省磁盘 <span class="hint" style="display:inline">（重新分析将读不到 commit）</span></label>
+    <label><input id="sNetResolve" type="checkbox" ${s.enableNetworkResolve ? 'checked' : ''} /> 待分析依赖页允许联网解析仓库地址 <span class="hint" style="display:inline">（PyPI/npm/crates/Maven，C/C++ 走 GitHub 搜索）</span></label>
+    <label><input id="sHarmonyMirror" type="checkbox" ${s.enableHarmonyMirror ? 'checked' : ''} /> 联网检测依赖是否已鸿蒙化 <span class="hint" style="display:inline">（OpenHarmony PC 镜像，有 ohos wheel 即已移植）</span></label>
     <details><summary class="hint" style="cursor:pointer">Prompt 模板（高级）</summary>
       <textarea id="sPrompt" rows="9">${esc(s.promptTemplate)}</textarea>
       <p class="hint">占位符：{repoPath} {agentFile} {reportPath} {metricsPath} {name}</p></details>
@@ -425,6 +563,7 @@ async function openSettings() {
       model: $('#sModel').value.trim(), opencodeCmd: $('#sCmd').value.trim(),
       maxConcurrent: Number($('#sConc').value) || 3, printLogs: $('#sLogs').checked,
       useCodegraph: $('#sCodegraph').checked, pruneGitAfterAnalyze: $('#sPruneGit').checked,
+      enableNetworkResolve: $('#sNetResolve').checked, enableHarmonyMirror: $('#sHarmonyMirror').checked,
       promptTemplate: $('#sPrompt').value }) });
     closeModal(); toast('设置已保存', 'ok');
   };
@@ -728,7 +867,7 @@ function renderReport(r) {
   const dynlibs = na.dynamic_libraries || [];
   if (hasDeps || dynlibs.length) {
     const items = (dep.dependencies || []).slice(0, 40).map((d) =>
-      `<span class="chip" title="${esc(d.purpose || '')}">${esc(d.name)}${d.scope && d.scope !== 'runtime' ? ` ·${esc(d.scope)}` : ''}</span>`).join('');
+      `<span class="chip" data-hname="${esc(d.name)}" data-heco="${esc(d.ecosystem || '')}" title="${esc(d.purpose || '')}">${esc(d.name)}${d.scope && d.scope !== 'runtime' ? ` ·${esc(d.scope)}` : ''}</span>`).join('');
     const treePart = hasDeps
       ? `<div class="subtitle">依赖关系（面板内连接，离线）</div>
          <div class="deptree" id="depTree"><p class="muted">加载依赖关系…</p></div>`
@@ -739,7 +878,8 @@ function renderReport(r) {
     const auxN = (dep.dependencies || []).filter((d) =>
       ['build', 'test', 'dev'].includes(String(d.scope || '').toLowerCase())).length;
     const runN = dep.count != null ? dep.count : ((dep.dependencies || []).length - auxN);
-    const depTitle = auxN ? `依赖 (${runN} 运行时 · ${auxN} 开发/测试/构建)` : `依赖 (${runN})`;
+    const depTitle = (auxN ? `依赖 (${runN} 运行时 · ${auxN} 开发/测试/构建)` : `依赖 (${runN})`)
+      + ' <span id="depHarmonyCount" class="muted"></span>';
     parts.push(sec(depTitle,
       (hasDeps ? (items || '<span class="muted">无</span>') : '') +
       (dep.notes ? `<p class="hint">${esc(dep.notes)}</p>` : '') + treePart + dynPart));
@@ -855,6 +995,19 @@ function renderReport(r) {
   depHlKey = null;
   el.onclick = depHighlightHandler;   // delegated click-to-highlight for dep tags
   if (hasDeps) loadDepTree(curReport && curReport.name);
+  decorateHarmonyBadges(el).then(() => updateDepHarmonyCount(r));
+}
+
+// "X/Y 已鸿蒙化" in the dependency section title, from the cached status.
+function updateDepHarmonyCount(r) {
+  const span = $('#depHarmonyCount'); if (!span) return;
+  const deps = ((r.dependencies || {}).dependencies) || [];
+  if (!deps.length) return;
+  const adapted = deps.filter((d) => {
+    const s = harmonyMemo.get(`${d.ecosystem || ''}:${d.name}`);
+    return s && s.adapted;
+  }).length;
+  span.textContent = adapted ? `· 🟢 ${adapted}/${deps.length} 已鸿蒙化` : '';
 }
 
 // ---- click-to-highlight dependency tags -----------------------------------
@@ -881,6 +1034,7 @@ async function loadDepTree(name) {
   try {
     const { tree } = await api('/api/depgraph?name=' + enc(name));
     box.innerHTML = (tree && tree.length) ? depGroupsHtml(tree) : '<p class="muted">无可连接的依赖关系。</p>';
+    decorateHarmonyBadges(box);
   } catch { box.innerHTML = '<p class="muted">依赖关系不可用。</p>'; }
 }
 // Top level: runtime deps grouped by ecosystem (language); aux deps (build / test /
@@ -913,7 +1067,7 @@ function depNodeLabel(n) {
   if (n.analyzed) tail = `<a class="btn sm ghost" href="#/lib/${enc(n.libName)}">跳转 →</a>`;
   else if (n.ambiguous) tail = `<span class="badge gray" title="面板内有多个同名同生态库，未自动连接">歧义</span>`;
   else tail = `<span class="badge gray">未分析</span>`;
-  return `<span class="dep-name" title="${esc(n.purpose || '')}">${esc(n.name)}</span> ${ver} ${eco} ${locBadge} ${acq} ${scope} ${tail}`;
+  return `<span class="dep-name" data-hname="${esc(n.name)}" data-heco="${esc(n.ecosystem || '')}" title="${esc(n.purpose || '')}">${esc(n.name)}</span> ${ver} ${eco} ${locBadge} ${acq} ${scope} ${tail}`;
 }
 // runtime dynamically-loaded library, shown in the dependency area as a runtime dep
 function dynDepRow(d) {

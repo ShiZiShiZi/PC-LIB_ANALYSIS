@@ -60,13 +60,27 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    script's test framework / language guesses against what you see; refine the
    `tests.notes` / `tests.frameworks` if the script was fooled by an odd layout.
 
+3a. **Stamp已鸿蒙化 on dependencies (factual, scripted).** After dim 6 dependencies
+   are listed, find which are already adapted to HarmonyOS PC by checking the
+   OpenHarmony PC mirror — run the script per ecosystem (it caches; needs network,
+   skip on failure with a `meta.warnings` note):
+   ```bash
+   node scripts/harmony_adapted.js --ecosystem <eco> --names <comma-separated dep names>
+   ```
+   It returns `{name:{adapted,source}}`. Set `dependencies[].harmony_adapted` (bool)
+   and `harmony_adapted_source` from it. Do NOT guess this — it is a factual mirror
+   lookup. (Alternatively, after writing report.json in step 4, run
+   `node scripts/harmony_adapted.js --report <runDir>/report.json` to stamp in place —
+   but doing it BEFORE dim 9 lets the assessment use it.)
+
 3b. **Synthesis dimension 9 — HarmonyOS PC adaptation.** AFTER the reasoned blocks
    above exist, read `.claude/skills/harmony-adaptation/SKILL.md` and fill
    `harmony_adaptation` (feasibility / difficulty / path / blockers / effort of
    porting to HarmonyOS NEXT PC). This is a **synthesis** pass: do NOT re-scan the
    source — reason over the already-filled `library.ecosystem`, `native_api`,
-   `runtime_surface`, `dependencies`, and `build_env`, and **reuse their `evidence`**.
-   Do it inline in this same session (never spawn a sub-agent).
+   `runtime_surface`, `dependencies` (incl. their `harmony_adapted` flags from 3a —
+   adapted deps are NOT blockers and lower difficulty/effort), and `build_env`, and
+   **reuse their `evidence`**. Do it inline in this same session (never spawn a sub-agent).
 
 4. **Assemble `report.json`.** Merge the script fragment (`languages`,
    `code_metrics`, `tests`) with your reasoned blocks (`function_summary`,
