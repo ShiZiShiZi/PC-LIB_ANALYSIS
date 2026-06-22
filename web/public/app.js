@@ -101,8 +101,13 @@ const PAGE_SIZE = 15;
 async function renderDashboard() {
   setHeader('<a class="btn" href="#/pending-deps">📦 待分析依赖</a>' +
             '<a class="btn" href="#/observations">🔭 模型观察</a>' +
+            '<button class="btn" id="hExport">⬇ 导出 Excel</button>' +
             '<button class="btn" id="hSettings">⚙ 系统设置</button>' +
             '<button class="btn primary" id="hClone">＋ 克隆库</button>');
+  $('#hExport').onclick = () => {
+    const q = selected.size ? '?names=' + encodeURIComponent([...selected].join(',')) : '';
+    window.location = '/api/export' + q;
+  };
   $('#hSettings').onclick = openSettings;
   $('#hClone').onclick = openCloneModal;
 
@@ -402,6 +407,7 @@ async function openSettings() {
     <label>最大并发分析数 <input id="sConc" type="number" min="1" max="10" value="${s.maxConcurrent}" /></label>
     <label><input id="sLogs" type="checkbox" ${s.printLogs ? 'checked' : ''} /> 记录 opencode 调试日志（--print-logs）</label>
     <label><input id="sCodegraph" type="checkbox" ${s.useCodegraph ? 'checked' : ''} ${cg ? '' : 'disabled'} /> 启用 codegraph 结构化分析${cg ? '' : '<span class="hint err" style="display:inline"> — 未检测到 codegraph，将回退 grep</span>'}</label>
+    <label><input id="sPruneGit" type="checkbox" ${s.pruneGitAfterAnalyze ? 'checked' : ''} /> 分析完成后删除 repos/&lt;库&gt;/.git 省磁盘 <span class="hint" style="display:inline">（重新分析将读不到 commit）</span></label>
     <details><summary class="hint" style="cursor:pointer">Prompt 模板（高级）</summary>
       <textarea id="sPrompt" rows="9">${esc(s.promptTemplate)}</textarea>
       <p class="hint">占位符：{repoPath} {agentFile} {reportPath} {metricsPath} {name}</p></details>
@@ -418,7 +424,8 @@ async function openSettings() {
     await api('/api/settings', { method: 'POST', headers: JSONH, body: JSON.stringify({
       model: $('#sModel').value.trim(), opencodeCmd: $('#sCmd').value.trim(),
       maxConcurrent: Number($('#sConc').value) || 3, printLogs: $('#sLogs').checked,
-      useCodegraph: $('#sCodegraph').checked, promptTemplate: $('#sPrompt').value }) });
+      useCodegraph: $('#sCodegraph').checked, pruneGitAfterAnalyze: $('#sPruneGit').checked,
+      promptTemplate: $('#sPrompt').value }) });
     closeModal(); toast('设置已保存', 'ok');
   };
 }

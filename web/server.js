@@ -13,6 +13,7 @@
 
 const http = require('http');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
@@ -51,6 +52,7 @@ const DEFAULT_SETTINGS = {
   printLogs: false,
   thinking: true,
   useCodegraph: true,
+  pruneGitAfterAnalyze: true,
 };
 
 // codegraph is optional: probe once at startup. The analyze prompt only mentions
@@ -113,11 +115,22 @@ class Job {
     else this.status = code === 0 ? 'done' : 'error';
     this.exitCode = code;
     this.endedAt = new Date().toISOString();
+    if (this.type === 'analyze' && this.status === 'done' && settings.pruneGitAfterAnalyze)
+      this.pruneGit();
     this.emit('end', { code, status: this.status, reportAvailable });
     if (this.logStream) this.logStream.end();
     this.persistMeta();
     if (this.onDone) this.onDone();
     setTimeout(() => { for (const r of this.clients) { try { r.end(); } catch (_) {} } }, 250);
+  }
+  pruneGit() {
+    const gitDir = path.join(REPOS, this.meta.name, '.git');
+    try {
+      if (fs.existsSync(gitDir)) {
+        fs.rmSync(gitDir, { recursive: true, force: true });
+        this.log('stdout', `[prune] 已删除 repos/${this.meta.name}/.git 以回收磁盘`);
+      }
+    } catch (e) { this.log('stderr', `[prune] 删除 .git 失败：${e.message}`); }
   }
   persistMeta() {
     if (!this.meta.runDir) return;
@@ -593,6 +606,27 @@ const server = http.createServer(async (req, res) => {
       const file = path.join(RUNS, query.name || '', query.run || '', 'report.json');
       if (!file.startsWith(RUNS) || !fs.existsSync(file)) return send(res, 404, { error: 'report not found' });
       return send(res, 200, fs.readFileSync(file, 'utf8'));
+    }
+
+    if (req.method === 'GET' && pathname === '/api/export') {
+      const tmp = path.join(os.tmpdir(), `pc-lib-export-${Date.now()}.xlsx`);
+      const args = [path.join('scripts', 'export_xlsx.py'), '--runs', RUNS, '--out', tmp];
+      if (query.names) args.push('--names', String(query.names));
+      return execFile('python3', args, { cwd: ROOT, timeout: 120000 }, (err, _o, stderr) => {
+        if (err || !fs.existsSync(tmp)) {
+          fs.unlink(tmp, () => {});
+          return send(res, 500, { error: 'export failed', detail: String(stderr || err || '').slice(0, 2000) });
+        }
+        let buf;
+        try { buf = fs.readFileSync(tmp); } catch (e) { return send(res, 500, { error: 'export read failed', detail: String(e) }); }
+        finally { fs.unlink(tmp, () => {}); }
+        res.writeHead(200, {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="pc-lib-analysis-${new Date().toISOString().slice(0, 10)}.xlsx"`,
+          'Content-Length': buf.length,
+        });
+        res.end(buf);
+      });
     }
 
     if (req.method === 'GET' && pathname === '/api/runlog') {

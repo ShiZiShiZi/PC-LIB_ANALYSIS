@@ -96,6 +96,8 @@ references/report_schema.json    # output contract — the report MUST conform
 web/
   server.js                      # zero-dep Node control panel (http + SSE)
   public/{index.html, app.js, styles.css}   # two-level light-theme SPA
+scripts/export_xlsx.py           # summary .xlsx export (openpyxl); panel /api/export spawns it
+requirements.txt                 # python deps (openpyxl, for export only)
 repos/   <lib>/                  # cloned libraries (gitignored)
 runs/    <lib>/<ts>/             # per-run report.json + run.log.jsonl + meta.json (gitignored)
 .panel-settings.json             # panel settings (gitignored)
@@ -112,7 +114,8 @@ runs/    <lib>/<ts>/             # per-run report.json + run.log.jsonl + meta.js
   `opencode run -m <model> --format json "<prompt → .claude/agents/pc-lib-analyzer.md>"`
 
 Requires: `git`, `python3` (3.11+ for `tomllib`), `cloc` (preferred) or `tokei`,
-and `opencode` with a configured model.
+and `opencode` with a configured model. Excel export additionally needs
+`openpyxl` (`pip install -r requirements.txt`).
 
 ## Web panel architecture
 
@@ -132,7 +135,13 @@ and `opencode` with a configured model.
   `/api/libraries`, `/api/library`, `/api/jobs`, `/api/clone` (batch),
   `/api/analyze` (batch), `/api/stream` (SSE), `/api/report`, `/api/runlog`,
   `/api/depgraph`, `/api/observations`, `/api/pending-deps`, `/api/settings`,
-  `/api/models`, `/api/testmodel`.
+  `/api/models`, `/api/testmodel`, `/api/export` (xlsx).
+- **导出 Excel (`/api/export`):** dashboard 「导出 Excel」按钮 → server spawns
+  `scripts/export_xlsx.py` (Python + **openpyxl**) which flattens every library's
+  latest `report.json` into one multi-sheet summary workbook (汇总 + 依赖/系统平台API/
+  动态加载库/鸿蒙阻碍点/语言分布/… detail sheets, one row per nested item), streamed back
+  as a download. `?names=a,b` exports only selected libs. The script is standalone
+  (CI/offline) too; openpyxl is the **only** third-party dep (web/ stays zero-dep).
 
 ## Gotchas (learned the hard way)
 
@@ -153,6 +162,10 @@ and `opencode` with a configured model.
 
 - Keep `web/server.js` and `web/public/*` **zero-dependency** (Node stdlib +
   vanilla JS, no build step).
+- Repos are **shallow-cloned** (`git clone --depth 1`). After a **successful** analyze,
+  the server prunes `repos/<name>/.git` to save disk (setting `pruneGitAfterAnalyze`,
+  default on). The working tree stays, so cloc / re-analyze still work — but a
+  re-analyze can't read `library.commit` unless you re-clone; turn the setting off to keep `.git`.
 - The `languages` / `code_metrics` / `tests` report blocks come verbatim from
   `metrics.py`; don't recompute them by hand. Everything else is model-reasoned.
 - To extend: test idioms → `code-metrics/scripts/tests.py`; classification rules
