@@ -109,7 +109,15 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
    大量 `blocker` + `arkts_rewrite` ⇒ `hard`/`very_high`/`L`|`XL`。**不要因为是 Python/Java/JS
    就判 `infeasible`——运行时已移植。** 对 FFI/ctypes 型库，**动态加载的平台库是否有鸿蒙
    等价才是定档 feasibility/难度的主因**（运行时已移植不再是主阻碍）。
-5. **`compatible` 与 `key_tasks`**：列可顺利移植的部分(纯算法/数据结构/标准库逻辑)、
+5. **定 `porting_class`（闭轴，依赖拓扑图用）** —— 把本库归入 4 类之一，与上面自洽：
+   - `no_adaptation`：纯脚本（Python/Java/JS…）跑在已移植运行时上，无原生扩展、无平台耦合
+     （≈ `feasible`/`run_on_ported_runtime`/无 blocker）。
+   - `recompile_only`：C/C++ 等只需经 OHOS NDK **重新编译**即可，不依赖平台/底层 API、无平台差异
+     （≈ `recompile_napi`/`cross_compile`，阻碍仅 native_dependency/posix 子集/toolchain 等 ≤major）。
+   - `needs_adaptation`：依赖底层/平台 API 或有平台差异，需改造（≈ 有 `blocker` 或 win32/x11/
+     coregraphics/sysfs/注册表/系统调用等平台类阻碍；`feasible_with_effort`/`hard`）。
+   - `infeasible`：依赖特定硬件或无解（≈ `feasibility: infeasible`）。
+6. **`compatible` 与 `key_tasks`**：列可顺利移植的部分(纯算法/数据结构/标准库逻辑)、
    落地推荐路径的关键工作项。
 
 ## Output (fills report `harmony_adaptation`)
@@ -120,6 +128,7 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   "feasibility": "feasible_with_effort",
   "overall_difficulty": "medium",
   "effort_estimate": "M",
+  "porting_class": "recompile_only",
   "recommended_path": "run_on_ported_runtime",
   "summary": "该库为 Python 库，鸿蒙 PC 已移植 Python 3.12 运行时，纯 Python 部分可直接运行；唯一工作量在其依赖的 C 库（经 cffi 绑定），需用 OHOS NDK 交叉编译该 C 库并重新生成绑定。无外部命令调用与平台特有系统接口，整体可行。",
   "blockers": [
@@ -155,8 +164,9 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
 ## Rules
 - **只综合,不重扫源码** —— 结论与 `evidence` 都来自前序维度;每条 `blocker` 标
   `source_dimension` 并复用其 `file:line`。
-- 闭轴(`feasibility`/`overall_difficulty`/`effort_estimate`/`blockers[].severity`)取值
-  **必须**落在 schema enum 内;开放词(`recommended_path`/`category`/`harmony_status`)按实际写。
+- 闭轴(`feasibility`/`overall_difficulty`/`effort_estimate`/`porting_class`/`blockers[].severity`)
+  取值**必须**落在 schema enum 内;开放词(`recommended_path`/`category`/`harmony_status`)按实际写。
+  `porting_class` 必须与 `feasibility`/难度/路径自洽（见 How-to 第 5 步的映射）。
 - 闭轴之间须自洽:大量 `blocker` 不能配 `feasibility: feasible` / `low` 难度；反之
   **纯脚本库（运行时已移植 + 无原生扩展 + 无平台耦合）不能配 `infeasible`**——应是
   `feasible`/`low`。

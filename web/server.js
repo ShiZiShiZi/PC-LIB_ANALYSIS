@@ -27,6 +27,7 @@ const REPOS = path.join(ROOT, 'repos');
 const RUNS = path.join(ROOT, 'runs');
 const SETTINGS_FILE = path.join(ROOT, '.panel-settings.json');
 const AGENT_FILE = '.claude/agents/pc-lib-analyzer.md';
+const RESOLVE_AGENT_DIR = path.join(ROOT, '.resolve-agent');   // scratch for repo-resolver job results
 const PORT = process.env.PORT || 8765;
 
 const DEFAULT_PROMPT =
@@ -57,6 +58,7 @@ const DEFAULT_SETTINGS = {
   pruneGitAfterAnalyze: true,
   enableNetworkResolve: true,
   enableHarmonyMirror: true,
+  enableAgentResolve: true,
 };
 
 // codegraph is optional: probe once at startup. The analyze prompt only mentions
@@ -68,7 +70,7 @@ execFile('codegraph', ['--version'], { timeout: 5000 }, (err) => {
   console.log(`  codegraph: ${codegraphAvailable ? 'available' : 'not found (analyses fall back to grep)'}`);
 });
 
-for (const d of [REPOS, RUNS]) fs.mkdirSync(d, { recursive: true });
+for (const d of [REPOS, RUNS, RESOLVE_AGENT_DIR]) fs.mkdirSync(d, { recursive: true });
 
 let settings = loadSettings();
 function loadSettings() {
@@ -341,16 +343,49 @@ function buildLibIndex(getRep) {
   }
   return index;
 }
+// Companion to buildLibIndex keyed by the analyzed library's REPO identity, so a
+// dependency can be matched by its source-URL repo name even when its declared
+// `name` differs (e.g. rdkit's dep "AvalonTools" == analyzed repo "ava-formake").
+function buildLibUrlIndex(getRep) {
+  const index = new Map();
+  const add = (key, libName) => {
+    const cur = index.get(key);
+    if (!cur) index.set(key, { libName, ambiguous: false });
+    else if (cur.libName !== libName) cur.ambiguous = true;
+  };
+  for (const lib of listLibraries()) {
+    if (!lib.latest || !lib.latest.reportAvailable) continue;
+    const rep = getRep(lib.name);
+    if (!rep) continue;
+    const eco = ecoNorm(rep.library && rep.library.ecosystem);
+    const repoNames = new Set([lib.name]);
+    const su = rep.library && rep.library.source_url;
+    if (su) repoNames.add(repoNameFromUrl(su));
+    for (const rn of repoNames) if (rn) add(eco + ':' + normName(rn), lib.name);
+  }
+  return index;
+}
+// Match a dependency to an analyzed library: by ecosystem+name first, then by the
+// repo identity resolved from its source URL (mirrors the panel's repoName logic).
+function resolveDepLib(d, byName, byRepo) {
+  const eco = ecoNorm(d.ecosystem);
+  let hit = byName.get(eco + ':' + normName(d.name));
+  if (hit) return hit;
+  const url = extractGitUrl(d.source, d.version);
+  if (url) hit = byRepo.get(eco + ':' + normName(repoNameFromUrl(url)));
+  return hit;
+}
 function buildDepTree(rootName, maxDepth) {
   const repCache = new Map();
   const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
   const index = buildLibIndex(getRep);
+  const urlIndex = buildLibUrlIndex(getRep);
   const seen = new Set([rootName]);
   const expand = (libName, depth) => {
     const rep = getRep(libName);
     const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
     return deps.map((d) => {
-      const hit = index.get(ecoNorm(d.ecosystem) + ':' + normName(d.name));
+      const hit = resolveDepLib(d, index, urlIndex);
       const analyzed = !!hit && !hit.ambiguous && hit.libName !== libName;
       const node = {
         name: d.name, ecosystem: d.ecosystem || null, scope: d.scope || null,
@@ -368,6 +403,87 @@ function buildDepTree(rootName, maxDepth) {
     });
   };
   return expand(rootName, 1);
+}
+
+// HarmonyOS porting class (4-way) for the dep-topology page. Prefers the agent's
+// explicit harmony_adaptation.porting_class; else derives from the existing dim-9 fields
+// so 存量 reports are classified without a re-run.
+const PLATFORM_BLOCKER_RE = /win32|x11|xcb|cocoa|coregraphics|iokit|registry|wmi|sysfs|procfs|gpu|cuda|opencl|vulkan|device|driver|kernel|syscall|ioctl|permission|hardware|_api\b|api_unavailable|platform/i;
+function derivePortingClass(report) {
+  const ha = (report && report.harmony_adaptation) || null;
+  if (!ha) return null;
+  if (ha.porting_class) return ha.porting_class;          // explicit (agent)
+  if (ha.feasibility === 'infeasible') return 'infeasible';
+  const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
+  const cats = blk.map((b) => String(b.category || '').toLowerCase());
+  const hasBlocker = blk.some((b) => b.severity === 'blocker');
+  const platformish = cats.some((c) => PLATFORM_BLOCKER_RE.test(c));
+  if (hasBlocker || platformish) return 'needs_adaptation';
+  const path = String(ha.recommended_path || '').toLowerCase();
+  const native = cats.some((c) => /native_dependency|ffi|toolchain|posix/.test(c));
+  if (/run_on_ported_runtime/.test(path) && !native) return 'no_adaptation';
+  if (native) return 'recompile_only';
+  // pure script, no native work, no blockers → nothing to adapt
+  return 'no_adaptation';
+}
+
+// Runtime-relevant dep (for the topology): runtime/optional (or unscoped), not local.
+function isRuntimeDep(d) {
+  if (String(d.locality || '').toLowerCase() === 'local') return false;
+  const sc = String(d.scope || '').toLowerCase();
+  if (sc && !['runtime', 'optional', 'peer'].includes(sc)) return false;
+  return true;
+}
+
+// Build a runtime-only transitive dependency DAG (nodes + edges) rooted at an analyzed
+// library, each node carrying its HarmonyOS status (harmonized / 4 porting classes /
+// unanalyzed). harmony_adapted is filled per-node from the shared mirror cache later.
+function buildDepTopology(rootName, maxDepth = 6, maxNodes = 300) {
+  const repCache = new Map();
+  const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
+  const index = buildLibIndex(getRep);
+  const urlIndex = buildLibUrlIndex(getRep);
+  const nodes = new Map();   // id -> node
+  const edges = [];
+  const edgeSeen = new Set();
+  const rootRep = getRep(rootName);
+  const rootEco = ecoNorm(rootRep && rootRep.library && rootRep.library.ecosystem);
+  const rootId = 'lib:' + rootName;
+  nodes.set(rootId, { id: rootId, label: rootName, ecosystem: rootEco, analyzed: true,
+    libName: rootName, isRoot: true });
+  const queue = [{ libName: rootName, id: rootId, depth: 0 }];
+  while (queue.length) {
+    const cur = queue.shift();
+    if (cur.depth >= maxDepth || nodes.size >= maxNodes) continue;
+    const rep = getRep(cur.libName);
+    const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
+    for (const d of deps) {
+      if (!d || !d.name || !isRuntimeDep(d)) continue;
+      const hit = resolveDepLib(d, index, urlIndex);
+      const analyzed = !!hit && !hit.ambiguous;
+      const id = analyzed ? 'lib:' + hit.libName : 'dep:' + ecoNorm(d.ecosystem) + ':' + normName(d.name);
+      if (!nodes.has(id)) {
+        if (nodes.size >= maxNodes) continue;
+        nodes.set(id, { id, label: d.name, ecosystem: ecoNorm(d.ecosystem), analyzed,
+          libName: analyzed ? hit.libName : null,
+          harmonyAdaptedStamp: d.harmony_adapted === true });
+        if (analyzed && hit.libName !== cur.libName) queue.push({ libName: hit.libName, id, depth: cur.depth + 1 });
+      }
+      const ek = cur.id + '>' + id;
+      if (cur.id !== id && !edgeSeen.has(ek)) { edgeSeen.add(ek); edges.push({ source: cur.id, target: id }); }
+    }
+  }
+  // classify each node
+  for (const node of nodes.values()) {
+    if (node.analyzed) {
+      const rep = getRep(node.libName);
+      node.portingClass = derivePortingClass(rep);
+      const ha = (rep && rep.harmony_adaptation) || {};
+      node.feasibility = ha.feasibility || null;
+      node.summary = ha.summary || '';
+    }
+  }
+  return { root: rootName, nodes: [...nodes.values()], edges };
 }
 
 // ---------------------------------------------------------------- clone
@@ -459,6 +575,93 @@ function spawnAnalyze(job) {
   job.emit('input', { argv: job.meta.argv, prompt: job.meta.prompt, runDir: path.relative(ROOT, job.meta.runDir) });
   const argv = job.meta.argv;
   pipeProcess(job, spawn(argv[0], argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }));
+}
+
+// ---------------------------------------------------------------- agent repo-resolver (queued)
+const agentResolveQueue = [];
+let runningAgentResolve = 0;
+const AGENT_RESOLVE_MAX = 2;
+
+function lsRemoteOk(url, cb) {
+  if (!url) return cb(false);
+  execFile('git', ['ls-remote', '--heads', url], { timeout: 25000, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } },
+    (err, out) => cb(!err && !!String(out || '').trim()));
+}
+
+function createAgentResolveJob(ctx) {
+  const eco = ecoNorm(ctx.ecosystem);
+  const name = String(ctx.name || '').trim();
+  if (!name) throw new Error('name required');
+  const job = new Job('resolve', { name, ecosystem: eco });
+  job.meta.outFile = path.join(RESOLVE_AGENT_DIR, job.id + '.json');
+  job.meta.resolveDone = false;
+  // dependent checkouts that actually exist (the agent greps them for the integration point)
+  const dependents = (ctx.dependents || []).filter((n) => n && fs.existsSync(path.join(REPOS, n)));
+  const ctxLines = [
+    `name: ${name}`, `ecosystem: ${eco}`, `scope: ${ctx.scope || ''}`,
+    `locality: ${ctx.locality || ''}`, `acquisition: ${ctx.acquisition || ''}`,
+    `source: ${ctx.source || ''}`, `purpose: ${ctx.purpose || ''}`,
+    `dependent libraries (checkouts to grep): ${dependents.map((n) => 'repos/' + n).join(', ') || '(none cloned locally)'}`,
+  ].join('\n');
+  const prompt =
+    `Resolve the upstream source-repository URL of this third-party dependency. Follow the ` +
+    `method and JSON output contract in .claude/agents/repo-resolver.md.\n\nContext:\n${ctxLines}\n\n` +
+    `OUT_FILE (write your one-line JSON verdict here, inside the project): ${path.relative(ROOT, job.meta.outFile)}\n` +
+    `Do all work yourself in this single session; do NOT spawn sub-agents or use the \`task\` tool.`;
+  const base = settings.opencodeCmd.trim().split(/\s+/);
+  const argv = [...base];
+  if (settings.model) argv.push('-m', settings.model);
+  argv.push('--agent', 'repo-resolver', '--format', 'json', prompt);
+  job.meta.argv = argv;
+  job.setStatus('queued');
+  agentResolveQueue.push(job);
+  pumpAgentResolve();
+  return job;
+}
+
+function pumpAgentResolve() {
+  while (runningAgentResolve < AGENT_RESOLVE_MAX && agentResolveQueue.length) {
+    const job = agentResolveQueue.shift();
+    runningAgentResolve++;
+    job.onDone = () => { runningAgentResolve--; finishAgentResolve(job); pumpAgentResolve(); };
+    job.setStatus('running');
+    job.emit('input', { argv: job.meta.argv });
+    pipeProcess(job, spawn(job.meta.argv[0], job.meta.argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }));
+  }
+}
+
+// After the agent exits: read its JSON verdict, verify the URL, cache it, mark done.
+function finishAgentResolve(job) {
+  let v = null;
+  try { v = JSON.parse(fs.readFileSync(job.meta.outFile, 'utf8')); } catch (_) {}
+  fs.unlink(job.meta.outFile, () => {});
+  if (!v || typeof v !== 'object') {
+    job.meta.result = { url: null, source: 'agent', confidence: null, candidates: [], is_system: false,
+      reasoning: '解析失败：agent 未产出有效结果' };
+    job.meta.resolveDone = true;
+    return;
+  }
+  const result = {
+    url: v.is_system ? null : (v.url || null), source: 'agent',
+    confidence: v.confidence || null, reasoning: v.reasoning || '',
+    is_system: !!v.is_system, candidates: Array.isArray(v.candidates) ? v.candidates : [],
+  };
+  const done = () => {
+    resolve.cachePut(job.meta.ecosystem, job.meta.name, result);
+    job.meta.result = result;
+    job.meta.resolveDone = true;
+  };
+  if (result.url) lsRemoteOk(result.url, (ok) => {
+    if (!ok) {   // unreachable → demote to a candidate, clear the auto-fill url
+      if (!result.candidates.some((c) => (c.url || c) === result.url))
+        result.candidates.unshift({ name: result.url, url: result.url });
+      result.url = null;
+      result.confidence = 'low';
+      result.reasoning = (result.reasoning ? result.reasoning + ' ' : '') + '（注：该 URL ls-remote 不可达，已降级为候选）';
+    }
+    done();
+  });
+  else done();
 }
 
 /** Quick liveness probe for a model: tiny prompt, short timeout. */
@@ -596,6 +799,7 @@ const server = http.createServer(async (req, res) => {
       const repCache = new Map();
       const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
       const index = buildLibIndex(getRep);
+      const urlIndex = buildLibUrlIndex(getRep);
       const repos = new Set(listRepos());
       const groups = new Map();   // key: eco:normname -> aggregated dep
       for (const lib of listLibraries()) {
@@ -606,7 +810,7 @@ const server = http.createServer(async (req, res) => {
           if (!d || !d.name) continue;
           const eco = ecoNorm(d.ecosystem);
           const key = eco + ':' + normName(d.name);
-          if (index.has(key)) continue;          // already an analyzed library
+          if (resolveDepLib(d, index, urlIndex)) continue;   // already an analyzed library (by name or source-URL repo)
           let g = groups.get(key);
           if (!g) {
             g = { name: d.name, ecosystem: d.ecosystem || null, count: 0,
@@ -645,6 +849,36 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { root: name, depth, tree: buildDepTree(name, depth) });
     }
 
+    if (req.method === 'GET' && pathname === '/api/dep-topology') {
+      const name = query.name;
+      if (!name) return send(res, 400, { error: 'name required' });
+      if (!latestReport(name)) return send(res, 404, { error: 'no report for library' });
+      const topo = buildDepTopology(name);
+      // per-node 已鸿蒙化: query the OpenHarmony mirror in batch (per ecosystem) when enabled;
+      // else fall back to the parent-stamped harmony_adapted flag.
+      if (settings.enableHarmonyMirror) {
+        const byEco = new Map();
+        for (const n of topo.nodes) { if (!byEco.has(n.ecosystem)) byEco.set(n.ecosystem, new Set()); byEco.get(n.ecosystem).add(n.label); }
+        for (const [eco, names] of byEco) {
+          try { const r = await harmonyMirror.statusFor(eco, [...names]); for (const n of topo.nodes) if (n.ecosystem === eco) n.harmonyAdapted = !!(r.results[n.label] && r.results[n.label].adapted); }
+          catch (_) { for (const n of topo.nodes) if (n.ecosystem === eco) n.harmonyAdapted = !!n.harmonyAdaptedStamp; }
+        }
+      } else {
+        for (const n of topo.nodes) n.harmonyAdapted = !!n.harmonyAdaptedStamp;
+      }
+      // final status per node: harmonized > (analyzed ? porting_class : unanalyzed)
+      const counts = {};
+      for (const n of topo.nodes) {
+        n.status = n.isRoot && !n.harmonyAdapted && n.portingClass ? n.portingClass
+          : n.harmonyAdapted ? 'harmonized'
+          : n.analyzed ? (n.portingClass || 'unanalyzed')
+          : 'unanalyzed';
+        delete n.harmonyAdaptedStamp;
+        counts[n.status] = (counts[n.status] || 0) + 1;
+      }
+      return send(res, 200, { ...topo, counts });
+    }
+
     if (req.method === 'GET' && pathname === '/api/report') {
       const file = path.join(RUNS, query.name || '', query.run || '', 'report.json');
       if (!file.startsWith(RUNS) || !fs.existsSync(file)) return send(res, 404, { error: 'report not found' });
@@ -673,6 +907,25 @@ const server = http.createServer(async (req, res) => {
       } catch (e) {
         return send(res, 200, { url: null, error: String(e.message || e) });
       }
+    }
+
+    if (req.method === 'POST' && pathname === '/api/resolve-repo-agent') {
+      if (!settings.enableAgentResolve) return send(res, 200, { disabled: true });
+      const body = await readBody(req);
+      if (!body.name) return send(res, 400, { error: 'name required' });
+      try {
+        const job = createAgentResolveJob(body);
+        return send(res, 200, { jobId: job.id });
+      } catch (e) {
+        return send(res, 500, { error: String(e.message || e) });
+      }
+    }
+    if (req.method === 'GET' && pathname === '/api/resolve-repo-agent') {
+      const job = jobs.get(query.job);
+      if (!job || job.type !== 'resolve') return send(res, 404, { error: 'unknown job' });
+      if (job.meta.resolveDone) return send(res, 200, { status: 'done', result: job.meta.result });
+      if (job.status === 'error') return send(res, 200, { status: 'error' });
+      return send(res, 200, { status: job.status });   // queued | running
     }
 
     if (req.method === 'GET' && pathname === '/api/export') {

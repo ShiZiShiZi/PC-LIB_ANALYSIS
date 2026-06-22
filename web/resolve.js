@@ -149,6 +149,91 @@ async function resolveJava(name) {
   }
 }
 
+// ── C/C++: no central registry, and CMake find_package names are interface/module
+// names, not repo names. Layered: curated map → vcpkg port homepage → GitHub search.
+function cppNormalize(name) { return String(name || '').replace(/[-_.]+/g, '').trim().toLowerCase(); }
+
+const gh = (slug) => `https://github.com/${slug}.git`;
+const gl = (slug) => `https://gitlab.com/${slug}.git`;
+// Curated CMake-name → repo / interface. Keys are cppNormalize()'d.
+const CPP_KNOWN = {
+  // interface / virtual packages: a standard with many implementations, or system/
+  // compiler/driver provided — there is no single source repo.
+  blas: { interface: true, note: 'BLAS 是接口标准，多实现', candidates: [
+    { name: 'OpenBLAS', url: gh('OpenMathLib/OpenBLAS') },
+    { name: 'Reference BLAS/LAPACK', url: gh('Reference-LAPACK/lapack') },
+    { name: 'BLIS', url: gh('flame/blis') }] },
+  lapack: { interface: true, note: 'LAPACK 是接口标准，多实现', candidates: [
+    { name: 'Reference LAPACK', url: gh('Reference-LAPACK/lapack') },
+    { name: 'OpenBLAS (含 LAPACK)', url: gh('OpenMathLib/OpenBLAS') }] },
+  opengl: { interface: true, note: 'OpenGL 由系统/显卡驱动提供；Mesa 为开源实现', candidates: [
+    { name: 'Mesa 3D', url: gl('mesa/mesa') }] },
+  openmp: { interface: true, note: 'OpenMP 由编译器提供（GCC/Clang/MSVC）；无单一源码仓', candidates: [
+    { name: 'LLVM OpenMP runtime', url: gh('llvm/llvm-project') }] },
+  threads: { interface: true, note: 'CMake Threads 为系统线程能力（pthreads/Win32），非第三方库', candidates: [] },
+  x11: { interface: true, note: 'X11 由 X.Org 提供，多个库组成', candidates: [
+    { name: 'libX11 (X.Org)', url: 'https://gitlab.freedesktop.org/xorg/lib/libx11.git' }] },
+  vulkan: { interface: true, note: 'Vulkan 由 GPU 驱动/SDK 提供', candidates: [
+    { name: 'Vulkan-Loader', url: gh('KhronosGroup/Vulkan-Loader') }] },
+  cuda: { interface: true, note: 'CUDA 由 NVIDIA 闭源 SDK 提供，无源码仓', candidates: [] },
+  opencl: { interface: true, note: 'OpenCL 由 GPU 驱动/SDK 提供', candidates: [
+    { name: 'OpenCL-SDK', url: gh('KhronosGroup/OpenCL-SDK') }] },
+  // name → repo (CMake module name differs from repo, or homepage isn't a git URL)
+  zlib: { url: gh('madler/zlib') }, png: { url: gh('pnggroup/libpng') },
+  jpeg: { url: gh('libjpeg-turbo/libjpeg-turbo') }, jpegturbo: { url: gh('libjpeg-turbo/libjpeg-turbo') },
+  eigen: { url: gl('libeigen/eigen') }, eigen3: { url: gl('libeigen/eigen') },
+  boost: { url: gh('boostorg/boost') }, openssl: { url: gh('openssl/openssl') },
+  curl: { url: gh('curl/curl') }, libcurl: { url: gh('curl/curl') },
+  sqlite3: { url: gh('sqlite/sqlite'), note: '官方仓为 sqlite.org（Fossil）；GitHub 为镜像' },
+  tbb: { url: gh('uxlfoundation/oneTBB') }, onetbb: { url: gh('uxlfoundation/oneTBB') },
+  freetype: { url: gh('freetype/freetype') }, tiff: { url: gh('libsdl-org/libtiff') },
+  libtiff: { url: gh('libsdl-org/libtiff') }, zstd: { url: gh('facebook/zstd') },
+  bzip2: { url: gh('libarchive/bzip2') }, lz4: { url: gh('lz4/lz4') },
+  fmt: { url: gh('fmtlib/fmt') }, spdlog: { url: gh('gabime/spdlog') },
+  protobuf: { url: gh('protocolbuffers/protobuf') }, grpc: { url: gh('grpc/grpc') },
+  gtest: { url: gh('google/googletest') }, googletest: { url: gh('google/googletest') },
+  catch2: { url: gh('catchorg/Catch2') }, benchmark: { url: gh('google/benchmark') },
+  opencv: { url: gh('opencv/opencv') }, glew: { url: gh('nigels-com/glew') },
+  glfw: { url: gh('glfw/glfw') }, glfw3: { url: gh('glfw/glfw') }, sdl2: { url: gh('libsdl-org/SDL') },
+  glog: { url: gh('google/glog') }, gflags: { url: gh('gflags/gflags') },
+  abseil: { url: gh('abseil/abseil-cpp') }, absl: { url: gh('abseil/abseil-cpp') },
+  nlohmannjson: { url: gh('nlohmann/json') }, jsoncpp: { url: gh('open-source-parsers/jsoncpp') },
+  yamlcpp: { url: gh('jbeder/yaml-cpp') }, expat: { url: gh('libexpat/libexpat') },
+  libxml2: { url: gh('GNOME/libxml2') }, hdf5: { url: gh('HDFGroup/hdf5') },
+  gmp: { url: 'https://gmplib.org/', note: 'GMP 官方在 gmplib.org（无 git 仓，多为镜像）' },
+};
+
+async function resolveVcpkg(name) {
+  for (const v of new Set([cppNormalize(name), String(name).toLowerCase(),
+    String(name).toLowerCase().replace(/^lib/, ''), 'lib' + String(name).toLowerCase(),
+    String(name).toLowerCase().replace(/\d+$/, '')])) {
+    if (!v) continue;
+    let port;
+    try { port = JSON.parse(await httpText(
+      `https://raw.githubusercontent.com/microsoft/vcpkg/master/ports/${v}/vcpkg.json`)); }
+    catch { continue; }
+    const desc = Array.isArray(port.description) ? port.description.join(' ') : (port.description || '');
+    if (/metapackage/i.test(desc))
+      return { url: null, source: 'vcpkg', confidence: null, interface: true, note: desc, candidates: [] };
+    const url = normalizeRepoUrl(port.homepage);
+    if (url) return { url, source: 'vcpkg', confidence: 'medium' };
+    if (port.homepage) return { url: null, source: 'vcpkg', confidence: null, note: `vcpkg homepage: ${port.homepage}` };
+  }
+  return null;
+}
+
+async function resolveCpp(name) {
+  const known = CPP_KNOWN[cppNormalize(name)];
+  if (known) return { source: 'curated', confidence: known.url ? 'high' : null, url: known.url || null,
+    interface: !!known.interface, note: known.note || null, candidates: known.candidates || [] };
+  const vk = await resolveVcpkg(name);
+  if (vk && (vk.url || vk.interface)) return vk;
+  const gs = await resolveGithubSearch(name);
+  // carry forward a vcpkg homepage note if GitHub search came up empty
+  if (!gs.url && vk && vk.note) gs.note = vk.note;
+  return gs;
+}
+
 async function resolveGithubSearch(name) {
   // Last-resort heuristic for C/C++ and unknown ecosystems: search GitHub by name.
   // Unauthenticated: 60 req/h — cached hard. Low confidence; surface candidates.
@@ -165,37 +250,61 @@ const RESOLVERS = {
   rust: resolveRust,
   go: resolveGo,
   java: resolveJava,
+  cpp: resolveCpp,
+  c: resolveCpp,
 };
+// ecosystems whose resolver already does its own layered fallback — don't add the
+// generic GitHub-search fallback on top (it would clobber interface/curated results).
+const SELF_CONTAINED = new Set(['go', 'cpp', 'c']);
 
 async function resolveRepo(ecoCanon, name) {
   const eco = String(ecoCanon || '').toLowerCase();
   const nm = String(name || '').trim();
-  const empty = { url: null, source: null, confidence: null, candidates: [] };
+  const empty = { url: null, source: null, confidence: null, candidates: [], interface: false, note: null };
   if (!nm) return empty;
 
   const c = loadCache();
   const key = `${eco}:${nm}`;
   const hit = c[key];
   if (hit && Date.now() - (hit.ts || 0) < CACHE_TTL_MS) {
-    return { url: hit.url, source: hit.source, confidence: hit.confidence, candidates: hit.candidates || [], cached: true };
+    return { url: hit.url, source: hit.source, confidence: hit.confidence, candidates: hit.candidates || [],
+      interface: !!hit.interface, note: hit.note || null, cached: true };
   }
 
   let out = empty;
   try {
     const fn = RESOLVERS[eco] || resolveGithubSearch;
     let r = await fn(nm);
-    // ecosystem registry found nothing → GitHub search fallback (except go).
-    if ((!r || !r.url) && fn !== resolveGithubSearch && eco !== 'go') {
+    // ecosystem registry found nothing → GitHub search fallback (except self-contained).
+    if ((!r || !r.url) && fn !== resolveGithubSearch && !SELF_CONTAINED.has(eco)) {
       try { const fb = await resolveGithubSearch(nm); if (fb.url) r = fb; } catch (_) {}
     }
-    out = { url: (r && r.url) || null, source: r && r.source, confidence: r && r.confidence, candidates: (r && r.candidates) || [] };
+    out = { url: (r && r.url) || null, source: r && r.source, confidence: r && r.confidence,
+      candidates: (r && r.candidates) || [], interface: !!(r && r.interface), note: (r && r.note) || null };
   } catch (e) {
     out = { ...empty, error: String(e.message || e) };
   }
 
-  c[key] = { url: out.url, source: out.source, confidence: out.confidence, candidates: out.candidates, ts: Date.now() };
+  c[key] = { url: out.url, source: out.source, confidence: out.confidence, candidates: out.candidates,
+    interface: out.interface, note: out.note, ts: Date.now() };
   saveCache();
   return out;
 }
 
-module.exports = { resolveRepo, normalizeRepoUrl, httpText };
+// Merge an externally-produced result (e.g. the repo-resolver agent) into the shared
+// cache so subsequent instant 🔎 lookups return it too. eco is canonical (server ecoNorm).
+function cachePut(ecoCanon, name, partial) {
+  const eco = String(ecoCanon || '').toLowerCase();
+  const nm = String(name || '').trim();
+  if (!nm) return;
+  const c = loadCache();
+  c[`${eco}:${nm}`] = {
+    url: partial.url || null, source: partial.source || 'agent',
+    confidence: partial.confidence || null, candidates: partial.candidates || [],
+    interface: !!partial.interface, note: partial.note || partial.reasoning || null,
+    ts: Date.now(),
+  };
+  saveCache();
+}
+
+module.exports = { resolveRepo, normalizeRepoUrl, httpText, cachePut };

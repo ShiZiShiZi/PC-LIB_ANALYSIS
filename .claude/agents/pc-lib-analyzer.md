@@ -75,8 +75,9 @@ the `.claude/skills/...` and `references/...` paths below resolve.
 
 3b. **Synthesis dimension 9 — HarmonyOS PC adaptation.** AFTER the reasoned blocks
    above exist, read `.claude/skills/harmony-adaptation/SKILL.md` and fill
-   `harmony_adaptation` (feasibility / difficulty / path / blockers / effort of
-   porting to HarmonyOS NEXT PC). This is a **synthesis** pass: do NOT re-scan the
+   `harmony_adaptation` (feasibility / difficulty / path / blockers / effort +
+   the `porting_class` closed axis — no_adaptation / recompile_only / needs_adaptation /
+   infeasible — of porting to HarmonyOS NEXT PC). This is a **synthesis** pass: do NOT re-scan the
    source — reason over the already-filled `library.ecosystem`, `native_api`,
    `runtime_surface`, `dependencies` (incl. their `harmony_adapted` flags from 3a —
    adapted deps are NOT blockers and lower difficulty/effort), and `build_env`, and

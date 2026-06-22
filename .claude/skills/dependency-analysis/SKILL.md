@@ -17,6 +17,10 @@ deps, and ecosystem-specific quirks — reason about them.
 `locality`(本地/远端/系统) 是**稳定闭轴，必须显式给**，保证新造的 acquisition 仍能正确归类展示。
 方法仅是参考思路，可按仓库实际调整。
 
+**粒度硬规则：一个可独立安装的包 = 一条依赖。** `name` 必须是**单一规范包名**（manifest/
+registry 里的样子），**禁止**用 `/`、`,`、`+`、`、` 把多个不同的包拼进一个 `name`（下游的
+已鸿蒙化查询/仓库解析/依赖聚合/依赖树/导出都以 `name` 为单一包名）。
+
 ## Manifests by ecosystem
 - **Python**: `requirements*.txt`, `pyproject.toml` (`[project].dependencies`,
   `[project.optional-dependencies]`, poetry/PDM tables), `setup.py`
@@ -32,8 +36,11 @@ deps, and ecosystem-specific quirks — reason about them.
 
 ## How to analyze
 1. Find every manifest (record their paths in `manifests`).
-2. Extract each declared dependency with its **ecosystem**, **scope**
+2. Extract **each** declared dependency with its **ecosystem**, **scope**
    (runtime / dev / test / optional / build / peer) and **version constraint**.
+   **每行/每个声明一个包 = 一条**：requirements 里钉版本的 7 个 `pytest-*` 插件 = **7 条**，
+   不要因为"都属测试/同族"就合并成一条；要表达归属就写在各自的 `purpose`（如"pytest 并发
+   插件"），而不是把多个包名合进一个 `name`。
    `ecosystem` is the **language world only** (cpp/c/python/java/nodejs/rust/go/dotnet/other) —
    use `other` for non-language deps (data files, generic tools). Do NOT put role
    values like `tool`/`data` in `ecosystem`; a dep being a **build tool**
@@ -96,6 +103,12 @@ deps, and ecosystem-specific quirks — reason about them.
 ```
 
 ## Rules
+- **一包一条，`name` 不拼接**：
+  - ❌ 错：`{"name": "pytest / pytest-asyncio / pytest-cov / pytest-repeat / pytest-rerunfailures / pytest-timeout / pytest-xdist"}`（7 个独立包拼成一条）。
+  - ✅ 对：拆成 `pytest`、`pytest-asyncio`、`pytest-cov`… 各一条，各带自己的 `version`。
+  - **例外**：`name` 里出现 `/` 仅在它表示**同一个依赖的可选版本/形态**时允许，**不是**多个不同包——
+    如 `Qt5/Qt6`（二选一的同一可选依赖）、`Java JDK / JNI`（JDK 经 JNI 访问，仍是一个东西）。
+    判据：**各自有独立版本号 / 各自在 registry 单独存在 ⇒ 必须拆**；仅是"同一依赖的别名/可选实现" ⇒ 可合并为一条。
 - Prefer runtime deps in the headline `count`; keep dev/test/build but scoped.
 - `dependencies[].harmony_adapted` / `harmony_adapted_source` are **script-stamped**
   (`scripts/harmony_adapted.js`, an OpenHarmony-PC-mirror lookup) — leave them to the

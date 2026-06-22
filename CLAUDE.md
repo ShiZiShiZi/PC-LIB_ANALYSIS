@@ -47,7 +47,8 @@ library runs on the ported runtime (`run_on_ported_runtime`), so the runtime its
 is NOT a blocker and such libs are NOT auto-`infeasible`; the real work is native
 extensions / C deps / platform APIs. The strict ArkTS-sandbox model is a secondary口径
 used only when the target is an ArkTS app. Its closed axes are `feasibility`/`overall_difficulty`/
-`effort_estimate`/`blockers[].severity`; open vocab is `recommended_path`/
+`effort_estimate`/`porting_class` (no_adaptation/recompile_only/needs_adaptation/infeasible —
+the dep-topology page's 4-way bucket)/`blockers[].severity`; open vocab is `recommended_path`/
 `blockers[].category`/`harmony_status`.
 
 ## Skill authoring convention (principle-first, open-vocabulary, self-capturing)
@@ -87,6 +88,7 @@ over time. Do NOT auto-rewrite skills.
 ```
 .claude/
   agents/pc-lib-analyzer.md      # orchestrator agent — clones, runs metrics, reasons, writes report.json
+  agents/repo-resolver.md        # on-demand agent — judges a C/C++ dep's source-repo URL (or system/no-repo)
   skills/
     code-metrics/                # ONLY script-backed skill (deterministic)
       scripts/{metrics.py, common.py, tests.py}
@@ -98,6 +100,7 @@ web/
   resolve.js                     # zero-dep repo-URL resolver (registry APIs) for /api/resolve-repo
   harmony-mirror.js              # zero-dep OpenHarmony-PC-mirror adapted-package check
   public/{index.html, app.js, styles.css}   # two-level light-theme SPA
+  public/vendor/cytoscape.min.js  # vendored graph lib (dep-topology page only; no build step)
 scripts/export_xlsx.py           # summary .xlsx export (openpyxl); panel /api/export spawns it
 scripts/harmony_adapted.js       # CLI over harmony-mirror.js; agent stamps deps[].harmony_adapted
 requirements.txt                 # python deps (openpyxl, for export only)
@@ -134,9 +137,26 @@ and `opencode` with a configured model. Excel export additionally needs
   deps of the deps" loop. A dep leaves this list once analyzed. The git URL can also be
   **resolved online** from the package registry (per-row 🔎 or 「一键填充全部」) via
   `/api/resolve-repo` → `web/resolve.js` (zero-dep `https`): PyPI/npm/crates.io/Maven
-  Central, with a GitHub-search fallback for C/C++/unknown (low confidence). Results
-  cache to `.resolve-cache.json` (gitignored, 7-day TTL); gated by the
-  `enableNetworkResolve` setting.
+  Central by registry API. **C/C++** has no central registry and CMake `find_package`
+  names are interface/module names, not repos — so it resolves in layers: a curated
+  `CPP_KNOWN` map (common CMake names → repo, e.g. ZLIB→madler/zlib, PNG→libpng) which
+  also flags **interface/virtual packages** (BLAS/LAPACK/OpenGL/Threads…) as
+  `interface:true` with implementation candidates rather than one wrong repo → then a
+  **vcpkg** port-homepage lookup (detects "Metapackage" interfaces) → then GitHub
+  search (low confidence). The panel shows a per-row candidate picker for interface /
+  multi-candidate results instead of auto-filling. Results cache to `.resolve-cache.json`
+  (gitignored, 7-day TTL); gated by the `enableNetworkResolve` setting.
+  On C/C++ rows a second **「🤖 智能解析」** button escalates to an **LLM agent**
+  (`.claude/agents/repo-resolver.md`, spawned via `opencode --agent repo-resolver`):
+  it reads the dep's description/context (scope/locality/purpose + the dependent libs'
+  checkouts) and `curl`s GitHub search to judge odd names a blind search can't — and
+  recognises **system/platform libs with no repo** (e.g. a generic `log` → Android NDK
+  `liblog`, `is_system:true`). `POST /api/resolve-repo-agent` queues the job (cap 2,
+  separate from analyses) → `GET …?job=<id>` polls; the server verifies the URL with
+  `git ls-remote` (demotes unreachable to a candidate) and merges the verdict (with
+  中文 `reasoning`) into `.resolve-cache.json` via `resolve.cachePut`, so a later 🔎
+  hits it too. Scratch results live in `.resolve-agent/` (gitignored); gated by
+  `enableAgentResolve`.
 - **模型观察 (`#/observations`):** see the two-tier vocabulary section above.
 - **Backend (`web/server.js`):** REST + SSE. Analyses go through a concurrency
   queue capped by `settings.maxConcurrent`; clones run concurrently. Endpoints:
@@ -144,7 +164,21 @@ and `opencode` with a configured model. Excel export additionally needs
   `/api/analyze` (batch), `/api/stream` (SSE), `/api/report`, `/api/runlog`,
   `/api/depgraph`, `/api/observations`, `/api/pending-deps`, `/api/settings`,
   `/api/models`, `/api/testmodel`, `/api/export` (xlsx), `/api/resolve-repo`,
-  `/api/harmony-status`.
+  `/api/harmony-status`, `/api/resolve-repo-agent` (POST start / GET poll),
+  `/api/dep-topology`.
+- **依赖拓扑 (`#/topology`):** pick an analyzed library → a **runtime-only transitive
+  dependency graph** (Cytoscape.js, breadthfirst layout), each node colored by HarmonyOS
+  status: **已鸿蒙化** (mirror) / **未分析** / one of 4 未鸿蒙化 classes — **无需适配**
+  (pure script), **仅需重新编译** (C/C++, no platform API), **需要适配** (low-level/platform
+  API or platform diffs), **无法适配** (specific hardware). `/api/dep-topology?name=`
+  builds the DAG via `buildDepTopology` (runtime/optional + non-local deps, `resolveDepLib`
+  for alias matching) and sets each node's class from `harmony_adaptation.porting_class`
+  (closed axis the agent emits) or `derivePortingClass()` — a serve-time derivation from the
+  existing feasibility/difficulty/path/blockers, so **存量 reports are classified without a
+  re-run** (re-analyze upgrades to the agent's value). Indirect deps are only visible for
+  deps that are themselves analyzed (else 未分析). Cytoscape is **vendored** as a single
+  `web/public/vendor/cytoscape.min.js` and lazy-loaded only on this page — a deliberate,
+  scoped exception to the panel's zero-dep rule (still no build step / no npm).
 - **已鸿蒙化检测 (`/api/harmony-status`):** `web/harmony-mirror.js` (zero-dep, Node
   `https`) checks whether a dependency is already ported to HarmonyOS PC, per ecosystem:
   - **Python** ('simple'): the OpenHarmony PC PyPI mirror (pypi.cnb.cool/

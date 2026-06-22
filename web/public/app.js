@@ -57,6 +57,17 @@ const DIFF_CLS = { low: 'done', medium: 'running', high: 'sev-major', very_high:
 const SEV_LABELS = { blocker: '阻塞', major: '主要', minor: '次要' };
 const SEV_CLS = { blocker: 'error', major: 'sev-major', minor: 'gray' };
 
+// dep-topology node status — label + color (HarmonyOS porting state)
+const TOPO_STATUS = {
+  harmonized:       { label: '已鸿蒙化', color: '#1f9d55' },
+  no_adaptation:    { label: '无需适配', color: '#3b6cf6' },
+  recompile_only:   { label: '仅需重新编译', color: '#0ea5a5' },
+  needs_adaptation: { label: '需要适配', color: '#e0a458' },
+  infeasible:       { label: '无法适配', color: '#d65745' },
+  unanalyzed:       { label: '未分析', color: '#9aa4b2' },
+};
+const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adaptation', 'infeasible', 'unanalyzed'];
+
 // HarmonyOS-PC mirror adaptation status (already-ported packages), cached client-side.
 const harmonyMemo = new Map();   // `${eco}:${name}` -> {adapted, source}
 async function harmonyStatus(eco, names) {
@@ -121,10 +132,13 @@ function navigate() {
   if (hash.startsWith('/lib/')) renderDetail(decodeURIComponent(hash.slice(5)));
   else if (hash === '/observations') renderObservations();
   else if (hash === '/pending-deps') renderPendingDeps();
+  else if (hash.startsWith('/topology')) renderTopology(hash.startsWith('/topology/') ? decodeURIComponent(hash.slice(10)) : null);
   else renderDashboard();
 }
 window.addEventListener('hashchange', navigate);
-navigate();
+// NOTE: the initial navigate() call lives at the very BOTTOM of this file so that all
+// module-level `let`/`const` state (e.g. pdep* below) is initialized before a view
+// renders — otherwise loading directly on #/pending-deps hits a TDZ ReferenceError.
 
 // ===========================================================================
 //  DASHBOARD (level 1)
@@ -136,6 +150,7 @@ const PAGE_SIZE = 15;
 
 async function renderDashboard() {
   setHeader('<a class="btn" href="#/pending-deps">📦 待分析依赖</a>' +
+            '<a class="btn" href="#/topology">🕸 依赖拓扑</a>' +
             '<a class="btn" href="#/observations">🔭 模型观察</a>' +
             '<button class="btn" id="hExport">⬇ 导出 Excel</button>' +
             '<button class="btn" id="hSettings">⚙ 系统设置</button>' +
@@ -258,6 +273,7 @@ function renderList() {
         <td>${esc(s.license || '—')}</td>
         <td class="c-act">
           <a class="btn sm ghost" href="#/lib/${enc(lib.name)}">详情</a>
+          ${lib.latest && lib.latest.reportAvailable ? `<a class="btn sm ghost" href="#/topology/${enc(lib.name)}" title="在依赖拓扑中查看">🕸 拓扑</a>` : ''}
           <button class="btn sm primary" data-act="analyze" data-name="${esc(lib.name)}" ${lib.active || !lib.cloned ? 'disabled' : ''}>分析</button>
         </td></tr>`;
     }).join('')}</tbody></table>`;
@@ -312,26 +328,118 @@ async function analyzeOne(name) {
 // ===========================================================================
 let pdepCloneableOnly = false;
 let pdepHideAdapted = false;        // 只看未鸿蒙化
+let pdepMustPort = false;           // 只看必须鸿蒙化（运行时·非本地；排除 test/dev/build + 本地）
+const PDEP_TOOLING = new Set(['test', 'dev', 'build']);
+// A dep "must be ported" if it's a real runtime/optional dep that isn't already local
+// (vendored/in-tree) and isn't purely tooling (test/dev/build — not shipped).
+function pdepIsMustPort(it) {
+  if (it.locality === 'local') return false;
+  const sc = (it.scopes || []).filter(Boolean);
+  if (sc.length && sc.every((s) => PDEP_TOOLING.has(String(s).toLowerCase()))) return false;
+  return true;
+}
 const pdepUrlEdits = {};            // key -> user-typed URL (survives polling re-render)
+const pdepResolved = {};            // key -> last resolve result (re-applied after re-render)
 let pdepItems = [];                 // last-rendered items (for 一键填充全部)
+let pdepHlKey = null;               // active tag-highlight key (survives polling re-render)
+// Click a tag on a pending-dep row → highlight all rows with the same tag (like the
+// report dep-tree). Delegated on #pdeps; re-applied after each 4s poll re-render.
+function pdepHighlightHandler(e) {
+  const scope = $('#pdeps'); if (!scope) return;
+  const b = e.target.closest('[data-hl]');
+  if (!b) { if (pdepHlKey) { pdepHlKey = null; applyTagHighlight(scope, null, '.pdep-row'); } return; }
+  e.preventDefault();
+  pdepHlKey = (pdepHlKey === b.dataset.hl) ? null : b.dataset.hl;
+  applyTagHighlight(scope, pdepHlKey, '.pdep-row');
+}
 const pdepKey = (it) => `${it.ecosystem || ''}|${it.name}`;
 
-// Resolve one dep's repo URL online; fill its input + pdepUrlEdits on hit.
-// Returns the resolved url or null. `btn` (optional) gets a transient busy state.
+// Write a resolved URL into a row's input + pdepUrlEdits (survives polling re-render).
+function fillRowUrl(key, url) {
+  pdepUrlEdits[key] = url;
+  const inp = $(`input.pdep-url[data-key="${cssAttr(key)}"]`);
+  if (inp) inp.value = url;
+}
+// Render a per-row candidate picker for interface / multi-implementation results.
+// Candidates may be {name,url} (curated) or bare url strings (github search).
+function renderDepCandidates(btn, key, r) {
+  const row = btn.closest('.pdep-row'); if (!row) return;
+  const info = row.querySelector('.pdep-info'); if (!info) return;
+  let box = info.querySelector('.pdep-cands');
+  const cands = (r && r.candidates) || [];
+  const detail = r && (r.note || r.reasoning);
+  const show = r && (r.interface || r.is_system || cands.length > 1 || detail);
+  if (!show) { if (box) box.remove(); return; }
+  if (!box) { box = document.createElement('div'); box.className = 'pdep-cands'; info.appendChild(box); }
+  const norm = cands.map((c) => (typeof c === 'string') ? { url: c, name: c } : c).filter((c) => c && c.url);
+  const conf = r.confidence ? `<span class="muted">置信度 ${esc(r.confidence)}</span> ` : '';
+  const tag = r.is_system ? '<span class="badge gray">系统/平台库 · 无独立仓</span>'
+    : r.interface ? '<span class="badge gray">接口/多实现</span>'
+    : (cands.length > 1 ? '<span class="muted">多个候选</span>' : '');
+  const chosen = pdepUrlEdits[key];   // re-highlight the chip matching the filled URL
+  box.innerHTML = `${tag} ${conf}` + (detail ? `<span class="muted">${esc(r.reasoning || r.note)}</span>` : '')
+    + (norm.length ? '<br>' + norm.map((c) =>
+        `<button class="pdep-cand${c.url === chosen ? ' sel' : ''}" data-url="${esc(c.url)}">${esc(c.name || c.url)}</button>`).join('')
+      : (r.is_system ? '' : ' <span class="muted">（无可克隆候选，请手动填写）</span>'));
+  box.querySelectorAll('.pdep-cand').forEach((b) => b.onclick = () => {
+    fillRowUrl(key, b.dataset.url);
+    box.querySelectorAll('.pdep-cand').forEach((x) => x.classList.remove('sel'));
+    b.classList.add('sel');
+  });
+}
+// Resolve one dep's repo online. Returns the full result {url, interface, candidates,
+// note, ...} or null. Auto-fills the input ONLY for a single concrete repo — interface
+// packages (BLAS…) or multi-candidate results are left for the user to pick.
 async function resolveDepUrl(eco, name, key, btn) {
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
   let r;
   try { r = await api(`/api/resolve-repo?ecosystem=${enc(eco || '')}&name=${enc(name)}`); }
   catch { r = null; }
   if (btn) { btn.disabled = false; btn.textContent = '🔎'; }
-  if (r && r.disabled) { toast('联网解析已在设置中关闭', 'err'); return null; }
-  if (r && r.url) {
-    pdepUrlEdits[key] = r.url;
-    const inp = $(`input.pdep-url[data-key="${cssAttr(key)}"]`);
-    if (inp) inp.value = r.url;
-    return r.url;
+  if (r && r.disabled) { toast('联网解析已在设置中关闭', 'err'); return r; }
+  const cands = (r && r.candidates) || [];
+  if (r && r.url && !r.interface && cands.length <= 1) fillRowUrl(key, r.url);
+  return r;
+}
+
+const pdepItemByKey = (key) => (pdepItems || []).find((it) => pdepKey(it) === key);
+// 🤖 agent resolve: read the dep's description/context + search, judge the repo (or that
+// it's a system/platform lib). Spawns a server-side opencode job; poll until done.
+async function runAgentResolve(key, btn) {
+  const it = pdepItemByKey(key); if (!it) return;
+  const orig = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '🤖…'; }
+  const restore = () => { if (btn) { btn.disabled = false; btn.textContent = orig || '🤖'; } };
+  const dependents = [...new Set((it.dependents || []).map((d) => d.lib))];
+  const purpose = (it.dependents || []).map((d) => d.purpose).find(Boolean) || '';
+  let start;
+  try {
+    start = await api('/api/resolve-repo-agent', { method: 'POST', headers: JSONH, body: JSON.stringify({
+      ecosystem: it.ecosystem, name: it.name, scope: (it.scopes || []).join(','),
+      locality: it.locality, acquisition: it.acquisition, source: it.source, purpose, dependents }) });
+  } catch { restore(); return toast('智能解析请求失败', 'err'); }
+  if (start && start.disabled) { restore(); return toast('智能解析已在设置中关闭', 'err'); }
+  if (!start || !start.jobId) { restore(); return toast((start && start.error) || '智能解析启动失败', 'err'); }
+  // poll for completion (LLM job: up to ~3min)
+  for (let i = 0; i < 90; i++) {
+    await new Promise((res) => setTimeout(res, 2000));
+    let s;
+    try { s = await api('/api/resolve-repo-agent?job=' + enc(start.jobId)); } catch { continue; }
+    if (s.status === 'error') { restore(); return toast('智能解析失败', 'err'); }
+    if (s.status === 'done') {
+      restore();
+      const r = s.result || {};
+      pdepResolved[key] = r;
+      const b = $(`[data-pdep-agent="${cssAttr(key)}"]`) || btn;
+      if (b) renderDepCandidates(b, key, r);
+      if (r.is_system) toast(`「${it.name}」判为系统/平台库，无独立仓`, 'ok');
+      else if (r.url) { fillRowUrl(key, r.url); toast(`已填充：${r.url}`, 'ok'); }
+      else if ((r.candidates || []).length) toast('给出候选，请选择', 'ok');
+      else toast(r.reasoning || '未能确定仓库地址', 'err');
+      return;
+    }
   }
-  return null;
+  restore(); toast('智能解析超时，请稍后重试', 'err');
 }
 
 async function renderPendingDeps() {
@@ -341,6 +449,7 @@ async function renderPendingDeps() {
     <div class="toolbar">
       <label class="pdep-toggle"><input type="checkbox" id="pdepCloneable" ${pdepCloneableOnly ? 'checked' : ''} /> 只看可克隆（有候选仓库 URL / 远端来源）</label>
       <label class="pdep-toggle"><input type="checkbox" id="pdepHideAdapted" ${pdepHideAdapted ? 'checked' : ''} /> 只看未鸿蒙化</label>
+      <label class="pdep-toggle"><input type="checkbox" id="pdepMustPort" ${pdepMustPort ? 'checked' : ''} /> 只看必须鸿蒙化（排除 test/dev/build 与本地依赖）</label>
       <span id="pdepHarmonySummary" class="muted"></span>
       <button class="btn sm" id="pdepResolveAll">🔎 一键填充全部</button>
       <button class="btn sm" id="pdepRefresh">刷新</button>
@@ -348,8 +457,11 @@ async function renderPendingDeps() {
     <div id="pdeps"><p class="muted">加载中…</p></div>`;
   $('#pdepCloneable').onchange = (e) => { pdepCloneableOnly = e.target.checked; loadPendingDeps(); };
   $('#pdepHideAdapted').onchange = (e) => { pdepHideAdapted = e.target.checked; loadPendingDeps(); };
+  $('#pdepMustPort').onchange = (e) => { pdepMustPort = e.target.checked; loadPendingDeps(); };
   $('#pdepResolveAll').onclick = resolveAllPendingDeps;
   $('#pdepRefresh').onclick = loadPendingDeps;
+  pdepHlKey = null;
+  $('#pdeps').onclick = pdepHighlightHandler;   // delegated tag click-to-highlight (survives poll re-render)
   await loadPendingDeps();
   const timer = setInterval(loadPendingDeps, 4000);
   view.cleanup = () => clearInterval(timer);
@@ -367,9 +479,11 @@ async function loadPendingDeps() {
   (libs || []).forEach((l) => { libMap[l.name] = l; });
   let items = data.items || [];
   if (pdepCloneableOnly) items = items.filter((it) => it.candidateUrl || it.locality === 'remote');
+  if (pdepMustPort) items = items.filter(pdepIsMustPort);
   pdepItems = items;
   if (!items.length) {
-    box.innerHTML = `<div class="empty">${pdepCloneableOnly ? '没有带候选仓库 URL 的待分析依赖。' : '暂无待分析依赖。分析更多库后，它们的依赖会出现在这里。'}</div>`;
+    const filtered = pdepCloneableOnly || pdepMustPort;
+    box.innerHTML = `<div class="empty">${filtered ? '没有符合筛选条件的待分析依赖。' : '暂无待分析依赖。分析更多库后，它们的依赖会出现在这里。'}</div>`;
     return;
   }
   // group by ecosystem
@@ -388,10 +502,29 @@ async function loadPendingDeps() {
   });
   $$('[data-pdep-analyze]', box).forEach((b) => b.onclick = () => analyzeOne(b.dataset.pdepAnalyze));
   $$('[data-pdep-resolve]', box).forEach((b) => b.onclick = async () => {
-    const url = await resolveDepUrl(b.dataset.eco, b.dataset.name, b.dataset.pdepResolve, b);
-    toast(url ? `已填充：${url}` : '未找到仓库地址，请手动填写', url ? 'ok' : 'err');
+    const key = b.dataset.pdepResolve;
+    const r = await resolveDepUrl(b.dataset.eco, b.dataset.name, key, b);
+    if (r && r.disabled) return;
+    pdepResolved[key] = r;            // persist so the 4s poll re-render can re-apply
+    const cands = (r && r.candidates) || [];
+    const multi = r && (r.interface || cands.length > 1);
+    renderDepCandidates(b, key, r);   // clears or fills the per-row picker
+    if (multi) {
+      toast(r.interface ? `「${b.dataset.name}」是接口/多实现，请从候选中选择` : '有多个候选仓库，请选择', 'ok');
+    } else if (r && r.url) {
+      toast(`已填充：${r.url}` + (r.note ? `（${r.note}）` : ''), 'ok');
+    } else {
+      toast((r && r.note) ? r.note : '未找到仓库地址，请手动填写', 'err');
+    }
   });
+  $$('[data-pdep-agent]', box).forEach((b) => b.onclick = () => runAgentResolve(b.dataset.pdepAgent, b));
   $$('input.pdep-url', box).forEach((inp) => inp.oninput = () => { pdepUrlEdits[inp.dataset.key] = inp.value; });
+  // Re-apply candidate pickers wiped by this re-render (the 4s poll rebuilds innerHTML).
+  $$('[data-pdep-resolve]', box).forEach((b) => {
+    const r = pdepResolved[b.dataset.pdepResolve];
+    if (r) renderDepCandidates(b, b.dataset.pdepResolve, r);
+  });
+  if (pdepHlKey) applyTagHighlight(box, pdepHlKey, '.pdep-row');   // re-apply tag highlight after re-render
   decoratePendingHarmony(box);
 }
 
@@ -429,22 +562,25 @@ async function resolveAllPendingDeps() {
   const worker = async () => {
     while (i < targets.length) {
       const it = targets[i++];
-      const url = await resolveDepUrl(it.ecosystem, it.name, pdepKey(it), null);
-      done++; if (url) hit++;
+      const r = await resolveDepUrl(it.ecosystem, it.name, pdepKey(it), null);
+      if (r) pdepResolved[pdepKey(it)] = r;   // surface pickers on next render
+      done++; if (r && r.url && !r.interface) hit++;
       if (btn) btn.textContent = `🔎 解析中 ${done}/${targets.length}`;
     }
   };
   await Promise.all(Array.from({ length: Math.min(4, targets.length) }, worker));
   if (btn) { btn.disabled = false; btn.textContent = '🔎 一键填充全部'; }
+  // refresh once so candidate pickers (interface/multi) render for batch results.
+  loadPendingDeps();
   toast(`已解析 ${hit}/${targets.length} 个仓库地址`, hit ? 'ok' : 'err');
 }
 
 function pdepRowHtml(it, libMap) {
   const key = pdepKey(it);
-  const eco = it.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[it.ecosystem] || it.ecosystem)}</span>` : '';
-  const loc = it.locality ? `<span class="badge ${LOCALITY_CLS[it.locality] || 'gray'}">${LOCALITY_LABELS[it.locality] || it.locality}</span>` : '';
-  const scopes = (it.scopes || []).filter((s) => s && s !== 'runtime').map((s) => `<span class="tag">${esc(s)}</span>`).join('');
-  const acq = it.acquisition ? `<span class="tag acq">${esc(ACQ_LABELS[it.acquisition] || it.acquisition)}</span>` : '';
+  const eco = it.ecosystem ? `<span class="chip eco-chip" data-hl="eco:${esc(it.ecosystem)}">${esc(ECO_LABELS[it.ecosystem] || it.ecosystem)}</span>` : '';
+  const loc = it.locality ? `<span class="badge ${LOCALITY_CLS[it.locality] || 'gray'}" data-hl="loc:${esc(it.locality)}">${LOCALITY_LABELS[it.locality] || it.locality}</span>` : '';
+  const scopes = (it.scopes || []).filter((s) => s && s !== 'runtime').map((s) => `<span class="tag" data-hl="scope:${esc(s)}">${esc(s)}</span>`).join('');
+  const acq = it.acquisition ? `<span class="tag acq" data-hl="acq:${esc(it.acquisition)}">${esc(ACQ_LABELS[it.acquisition] || it.acquisition)}</span>` : '';
   const seen = new Set();
   const deps = (it.dependents || []).filter((d) => !seen.has(d.lib) && seen.add(d.lib))
     .map((d) => `<a href="#/lib/${enc(d.lib)}" title="${esc(d.purpose || '')}">${esc(d.lib)}</a>`).join('、');
@@ -462,8 +598,11 @@ function pdepRowHtml(it, libMap) {
     action = `<span class="badge gray" title="已克隆，待分析">已入库</span> <button class="btn sm primary" data-pdep-analyze="${esc(it.repoName)}">分析</button>`;
   } else {
     const url = pdepUrlEdits[key] != null ? pdepUrlEdits[key] : (it.candidateUrl || '');
+    const agentBtn = ['cpp', 'c'].includes(String(it.ecosystem || '').toLowerCase())
+      ? `<button class="btn sm" data-pdep-agent="${esc(key)}" title="用 agent 读描述+检索判断仓库地址（较慢）">🤖</button>` : '';
     action = `<input class="pdep-url" type="text" data-key="${esc(key)}" value="${esc(url)}" placeholder="Git URL" />
       <button class="btn sm" data-pdep-resolve="${esc(key)}" data-eco="${esc(it.ecosystem || '')}" data-name="${esc(it.name)}" title="联网查询仓库地址">🔎</button>
+      ${agentBtn}
       <button class="btn sm primary" data-pdep-clone="${esc(key)}">加入列表</button>`;
   }
   return `<div class="pdep-row">
@@ -546,6 +685,7 @@ async function openSettings() {
     <label><input id="sPruneGit" type="checkbox" ${s.pruneGitAfterAnalyze ? 'checked' : ''} /> 分析完成后删除 repos/&lt;库&gt;/.git 省磁盘 <span class="hint" style="display:inline">（重新分析将读不到 commit）</span></label>
     <label><input id="sNetResolve" type="checkbox" ${s.enableNetworkResolve ? 'checked' : ''} /> 待分析依赖页允许联网解析仓库地址 <span class="hint" style="display:inline">（PyPI/npm/crates/Maven，C/C++ 走 GitHub 搜索）</span></label>
     <label><input id="sHarmonyMirror" type="checkbox" ${s.enableHarmonyMirror ? 'checked' : ''} /> 联网检测依赖是否已鸿蒙化 <span class="hint" style="display:inline">（OpenHarmony PC 镜像，有 ohos wheel 即已移植）</span></label>
+    <label><input id="sAgentResolve" type="checkbox" ${s.enableAgentResolve ? 'checked' : ''} /> 待分析依赖页 C/C++ 「🤖 智能解析」 <span class="hint" style="display:inline">（用 LLM agent 读描述+检索判断仓库地址，较慢/耗模型额度）</span></label>
     <details><summary class="hint" style="cursor:pointer">Prompt 模板（高级）</summary>
       <textarea id="sPrompt" rows="9">${esc(s.promptTemplate)}</textarea>
       <p class="hint">占位符：{repoPath} {agentFile} {reportPath} {metricsPath} {name}</p></details>
@@ -564,6 +704,7 @@ async function openSettings() {
       maxConcurrent: Number($('#sConc').value) || 3, printLogs: $('#sLogs').checked,
       useCodegraph: $('#sCodegraph').checked, pruneGitAfterAnalyze: $('#sPruneGit').checked,
       enableNetworkResolve: $('#sNetResolve').checked, enableHarmonyMirror: $('#sHarmonyMirror').checked,
+      enableAgentResolve: $('#sAgentResolve').checked,
       promptTemplate: $('#sPrompt').value }) });
     closeModal(); toast('设置已保存', 'ok');
   };
@@ -1012,12 +1153,17 @@ function updateDepHarmonyCount(r) {
 
 // ---- click-to-highlight dependency tags -----------------------------------
 let depHlKey = null;
-function applyDepHighlight(scope, key) {
-  scope.querySelectorAll('.deptree li.leaf, .deptree summary, .dynlib').forEach((row) => {
+// Click a tag → highlight rows carrying the same data-hl, dim the rest. Shared by the
+// report dep-tree and the pending-deps page (different row selectors).
+function applyTagHighlight(scope, key, rowSel) {
+  scope.querySelectorAll(rowSel).forEach((row) => {
     row.classList.remove('hl-on', 'hl-dim');
     if (key) row.classList.add(row.querySelector(`[data-hl="${key}"]`) ? 'hl-on' : 'hl-dim');
   });
   scope.querySelectorAll('[data-hl]').forEach((b) => b.classList.toggle('hl-badge-on', !!key && b.dataset.hl === key));
+}
+function applyDepHighlight(scope, key) {
+  applyTagHighlight(scope, key, '.deptree li.leaf, .deptree summary, .dynlib');
 }
 function depHighlightHandler(e) {
   const scope = $('#report'); if (!scope) return;
@@ -1091,3 +1237,116 @@ function depTreeHtml(nodes) {
     ? `<li><details><summary>${depNodeLabel(n)}</summary>${depMetaHtml(n)}${depTreeHtml(n.children)}</details></li>`
     : `<li class="leaf">${depNodeLabel(n)}${depMetaHtml(n)}</li>`).join('') + '</ul>';
 }
+
+// ===========================================================================
+//  DEPENDENCY TOPOLOGY (level 2.5) — runtime dep graph colored by HarmonyOS status
+// ===========================================================================
+let cyInstance = null;
+let topoCurrent = null;       // currently-loaded lib (avoid redundant reloads)
+let topoHidden = new Set();   // statuses toggled off via the legend
+function ensureCytoscape() {
+  if (window.cytoscape) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = '/vendor/cytoscape.min.js';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('无法加载 cytoscape.min.js'));
+    document.head.appendChild(s);
+  });
+}
+
+async function renderTopology(preselect) {
+  setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>');
+  let libs = [];
+  try { libs = (await api('/api/libraries')).libraries.filter((l) => l.latest && l.latest.reportAvailable); } catch (_) {}
+  const names = new Set(libs.map((l) => l.name));
+  const opts = libs.map((l) => `<option value="${esc(l.name)}"></option>`).join('');
+  const initial = preselect && names.has(preselect) ? preselect : (libs[0] && libs[0].name) || '';
+  $('#app').innerHTML = `<div class="detail-head"><h1>🕸 依赖拓扑</h1></div>
+    <p class="muted">选中一个已分析库，展示它的<strong>运行时依赖</strong>拓扑（直接 + 间接），节点按鸿蒙化状态着色。间接依赖只对已分析的依赖可见。</p>
+    <div class="toolbar">
+      <label class="pdep-toggle">库：<input id="topoLib" list="topoLibList" placeholder="搜索库名…" value="${esc(initial)}" autocomplete="off" />
+        <datalist id="topoLibList">${opts}</datalist></label>
+      <span id="topoLegend" class="topo-legend"></span>
+    </div>
+    <div class="topo-wrap"><div id="topoGraph" class="topo-graph"><p class="muted" style="padding:16px">${libs.length ? '加载中…' : '（无已分析库）'}</p></div>
+      <div id="topoDetail" class="topo-detail"><p class="muted">点击节点查看详情。</p></div></div>`;
+  const onpick = () => { const v = $('#topoLib').value.trim(); if (names.has(v)) loadTopology(v); };
+  $('#topoLib').onchange = onpick;
+  $('#topoLib').oninput = () => { if (names.has($('#topoLib').value.trim())) onpick(); };  // datalist selection
+  cyInstance = null; topoCurrent = null; topoHidden = new Set();
+  view.cleanup = () => { if (cyInstance) { try { cyInstance.destroy(); } catch (_) {} cyInstance = null; } };
+  if (initial) loadTopology(initial);
+}
+
+async function loadTopology(name) {
+  if (!name || name === topoCurrent) return;   // skip reloading the same lib (input+change both fire)
+  topoCurrent = name;
+  const box = $('#topoGraph'); if (box) box.innerHTML = '<p class="muted" style="padding:16px">加载中…</p>';
+  let data;
+  try { data = await api('/api/dep-topology?name=' + enc(name)); }
+  catch { if (box) box.innerHTML = '<p class="hint err" style="padding:16px">加载失败</p>'; return; }
+  try { await ensureCytoscape(); }
+  catch (e) { if (box) box.innerHTML = `<p class="hint err" style="padding:16px">${esc(e.message)}</p>`; return; }
+  renderTopoLegend(data.counts || {});
+  drawTopology(data);
+}
+
+function renderTopoLegend(counts) {
+  const el = $('#topoLegend'); if (!el) return;
+  el.innerHTML = TOPO_ORDER.map((s) => {
+    const st = TOPO_STATUS[s]; const n = counts[s] || 0;
+    const off = topoHidden.has(s) ? ' off' : '';
+    return `<button class="topo-leg${off}" data-st="${s}"><span class="dot" style="background:${st.color}"></span>${st.label} <b>${n}</b></button>`;
+  }).join('');
+  el.querySelectorAll('.topo-leg').forEach((b) => b.onclick = () => {
+    const s = b.dataset.st;
+    if (topoHidden.has(s)) topoHidden.delete(s); else topoHidden.add(s);
+    b.classList.toggle('off');
+    if (cyInstance) cyInstance.nodes().forEach((n) => n.style('display', topoHidden.has(n.data('status')) ? 'none' : 'element'));
+  });
+}
+
+function drawTopology(data) {
+  const box = $('#topoGraph'); if (!box) return;
+  box.innerHTML = '';
+  const elements = [];
+  for (const n of data.nodes) elements.push({ data: {
+    id: n.id, label: n.label, status: n.status, ecosystem: n.ecosystem,
+    analyzed: n.analyzed, libName: n.libName, feasibility: n.feasibility || '',
+    summary: n.summary || '', isRoot: !!n.isRoot } });
+  for (const e of data.edges) elements.push({ data: { source: e.source, target: e.target } });
+  cyInstance = window.cytoscape({
+    container: box, elements, wheelSensitivity: 0.2,
+    style: [
+      { selector: 'node', style: {
+        'background-color': (n) => (TOPO_STATUS[n.data('status')] || TOPO_STATUS.unanalyzed).color,
+        label: 'data(label)', color: '#1b2430', 'font-size': 11, 'text-valign': 'bottom',
+        'text-margin-y': 3, width: 18, height: 18, 'border-width': (n) => n.data('isRoot') ? 3 : 0,
+        'border-color': '#1b2430' } },
+      { selector: 'edge', style: {
+        width: 1, 'line-color': '#c2cad6', 'target-arrow-color': '#c2cad6',
+        'target-arrow-shape': 'triangle', 'curve-style': 'bezier', 'arrow-scale': 0.8 } },
+      { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#3b6cf6' } },
+    ],
+    layout: { name: 'breadthfirst', directed: true, roots: ['lib:' + data.root], spacingFactor: 1.15, padding: 20 },
+  });
+  cyInstance.on('tap', 'node', (ev) => showTopoDetail(ev.target.data()));
+  cyInstance.nodes().forEach((n) => n.style('display', topoHidden.has(n.data('status')) ? 'none' : 'element'));
+}
+
+function showTopoDetail(d) {
+  const el = $('#topoDetail'); if (!el) return;
+  const st = TOPO_STATUS[d.status] || TOPO_STATUS.unanalyzed;
+  el.innerHTML = `<div class="topo-d-name"><b>${esc(d.label)}</b> ${d.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[d.ecosystem] || d.ecosystem)}</span>` : ''}</div>
+    <div class="kv">
+      <b>状态</b><span><span class="dot" style="background:${st.color}"></span> ${st.label}</span>
+      <b>是否已分析</b><span>${d.analyzed ? '是' : '否（未分析）'}</span>
+      ${d.feasibility ? `<b>可行性</b><span>${esc(FEAS_LABELS[d.feasibility] || d.feasibility)}</span>` : ''}
+    </div>
+    ${d.summary ? `<p class="muted">${esc(d.summary)}</p>` : ''}
+    ${d.analyzed && d.libName ? `<a class="btn sm primary" href="#/lib/${enc(d.libName)}">查看报告 →</a>` : '<p class="hint">该依赖尚未分析，去「待分析依赖」分析它以解锁其子依赖与分级。</p>'}`;
+}
+
+// Initial route render — kept last so all module-level state above is initialized.
+navigate();
