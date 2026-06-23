@@ -29,19 +29,16 @@ ctypes/dlopen/LoadLibrary/JNA 动态加载的库), `runtime_surface`
 PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」，运行时本身**不是阻碍**，
 真正的移植工作只在它的**原生扩展 / C 依赖 / 平台特有 API**。
 
-**鸿蒙 PC 已移植运行时（推理依据；版本会更新，以社区为准）：**
+**目标平台能力是单一事实源：`references/harmony-pc-capabilities.json`**（机器权威源；`.md` 是它的
+渲染视图）。评估前必读——它维护鸿蒙 PC 的语言运行时、JDK 内部模块开放性、桌面 GUI/窗口栈、桌面集成、
+进程/安全模型、应用交付模型、架构等能力及其状态（available/partial/unavailable/**unknown**）。
+**该画像对库与应用通用**（目标事实与被分析对象无关：一个 Qt **库**与一个 Qt **应用**同样受「Qt 是否
+已鸿蒙化」这条事实约束）。基调：**主流语言运行时已移植**（Node/Python/Java/Rust/Go/Julia），所以一个
+**库**的运行时本身不是阻碍；但**应用**能否跑还取决于 GUI/进程/交付等目标能力。**先看「该语言是否有
+已移植运行时」，有就别假设没有、别据此判 `infeasible`。**
 
-| 运行时 | 鸿蒙 PC 版本 | 说明 |
-|--------|--------------|------|
-| Node.js | 24.13.0（已回合主社区） | JS/TS 库可直接跑 |
-| Python | 3.12.9 / 3.9.x | 纯 Python 库可直接跑 |
-| Java | JDK 17.0.x / JDK 8 | JVM 库可直接跑 |
-| Rust | 1.89+ | 有 ohos target |
-| Go | 1.24+ / 1.22 | OpenHarmony 社区 |
-| Julia | 1.10.6 | — |
-
-来源：OpenHarmonyPCDeveloper/docs「运行时」开源运行时汇总。**定基调时先看「该语言是否
-有已移植运行时」，有就别假设没有、别据此判 `infeasible`。**
+**准确性 = match(源所需能力, 目标能力)。结论必须建立在参考里的目标事实上，未核实(unknown)的不要臆测**
+（见下「目标匹配」步）。
 
 **两种部署模型（评估口径）：**
 - **模型 A（默认，命令行 / 桌面库）**：库跑在上表的已移植运行时上。运行时**不是阻碍**；
@@ -52,6 +49,19 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   **不是 Node.js**），ArkTS↔C/C++ 经 **Node-API（napi）** 桥接，应用沙箱化、硬件/系统访问
   受权限(ACL)管控；此口径下 Node 核心模块不可用、需 `@ohos.*` 平替。**仅当目标确为 ArkTS
   应用时才用此口径**，并在 `notes` 注明结论是按模型 B 收紧的。
+- **模型 C（整包桌面应用，当 `library.kind == application`）**：被分析对象是**终端用户启动运行
+  的应用**（如 VisualVM 这类桌面工具），移植问题 = 「能否在鸿蒙 PC 上**打包并启动运行**」。
+  运行时（JRE/Node 等）已移植可复用、不是阻碍；按这些维度判阻碍：
+  - **GUI 工具包在 OHOS 是否可用**：Swing/AWT 取决于鸿蒙 JDK 的 AWT/桌面支持；JavaFX/SWT/Qt/
+    GTK/Electron 各自判（无对应即重度阻碍）；RCP 平台（NetBeans `org.openide`/Eclipse）要整套
+    窗口/模块系统都能跑。
+  - **窗口系统 / 桌面集成**：多窗口/docking、系统托盘、文件对话框、拖拽、剪贴板、全局快捷键 ——
+    鸿蒙桌面有无对应能力。
+  - **启动器与打包**：原生 launcher（`*.exe`/C++ 启动器）需重编；分发格式 → 鸿蒙应用包。
+  - **运行期服务**（`runtime_surface.services`）：进程 attach、jvmstat/jstatd、JMX、JNI 原生
+    agent —— 若依赖各平台预编译二进制且**无 OHOS 版**（如 VisualVM 的 `libprofilerinterface`），
+    列入 `unadaptable_apis`/`blockers`。
+  应用走模型 C，**不要**套用「重编 + Node-API 暴露给 ArkTS」的库口径（那是把库链接进别的代码）。
 
 **无论哪种模型，下列仍是真实阻碍点：**
 - **外部命令 shell-out**：`dmidecode`/`lspci`/`wmic`/`powershell`/`ioreg`/`smartctl`
@@ -64,6 +74,21 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   `http`/`process` —— 跑在鸿蒙 Node.js 上时（模型 A）这些基本可用，无需改写。
 
 ## How to assess
+0. **先按 `library.kind` 选模型**：`application` → **模型 C（整包桌面应用）**，据
+   GUI 工具包 / 窗口·桌面集成 / 启动器·打包 / 运行期服务（见上）判阻碍与分级；其它（库）→
+   模型 A（默认）/ 仅当目标是 ArkTS 应用才 B。下面的「由 ecosystem 定基调」对两类都适用
+   （决定运行时是否已移植），但**应用的阻碍重心在 GUI/打包/服务，而非「被链接进别的代码」**。
+0b. **目标匹配（关键，决定准确性）—— 读 `references/harmony-pc-capabilities.json`，把本项目「所需的
+   目标能力」逐项对照目标状态**，并把每一项写进 `target_assumptions[]`（`{capability, required,
+   target_status, impact, source}`）：
+   - 需列出的「所需能力」：（应用尤其）所用 **GUI 工具包**(Swing/AWT/JavaFX/Qt…) 与窗口/桌面集成项、
+     所需 **JDK 内部模块**(jdk.attach/jvmstat/JVMTI…)、**进程/attach 模型**、**应用交付形态**；
+     （库）通常只有「该语言运行时已移植」一条。
+   - 据 `target_status` 处置：`available`→不计阻碍；`partial`→记 `partial` 阻碍；`unavailable`→记
+     `blocker`/进 `unadaptable_apis`；**`unknown`→`target_assumptions` 记一条且若 `required` 则
+     **下调 `meta.confidence_overall`**、在 `notes` 注明「结论依赖未核实的目标事实：…」——禁止据
+     unknown 臆断为 `feasible`/`no_adaptation`**。
+   - 一项 `required:true` 且 `unavailable` ⇒ 该形态多半 `infeasible` 或需换形态（在 summary 说清）。
 1. **由 `library.ecosystem` 定基调与默认路径**（默认走模型 A：跑在已移植运行时上）：
    - `python` → 默认 `run_on_ported_runtime`：跑在鸿蒙 Python 3.12 上。**纯 Python 无原生
      扩展 → `feasible`/`low`/`S`**；含 C 扩展（cffi/ctypes/C-API，如 cairocffi/pypdfium2）
@@ -122,6 +147,10 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
      `unadaptable_apis` 非空）。
    - `infeasible`：核心不可适配 / 依赖特定硬件 / 无解（≈ `feasibility: infeasible`）。
    - （旧值 `needs_adaptation` 仍兼容，等同 partial 档；新输出请用 full/partial 二选一。）
+   - **应用（模型 C）下重新诠释**：`no_adaptation`=纯运行时应用且 GUI 工具包鸿蒙已具备、直接跑；
+     `recompile_only`=仅原生启动器/JNI agent 需重编；`needs_adaptation_full`=GUI/窗口/桌面集成需改
+     但都能适配；`needs_adaptation_partial`=部分功能（如依赖无 OHOS 版的预编译 agent、特定桌面能力）
+     无法适配并列入 `unadaptable_apis`；`infeasible`=核心依赖鸿蒙缺失的桌面环境/硬件且无替代。
 5b. **填 `unadaptable_apis`（API 粒度，父库综合用）** —— 仅当本库存在**确实无法在鸿蒙适配**的底层
    API 时列出；这是自底向上综合的关键：服务端会把**父库的 `dependencies[].used_symbols` 与子库此清单的
    `public_entry` 求交**，命中才把该子计为父的阻碍——所以 `public_entry`（本库对外、会路由到该不支持
@@ -155,6 +184,7 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
      "evidence": ["src/native/io.c:88"]}
   ],
   "unadaptable_apis": [],
+  "target_assumptions": [],
   "compatible": [
     {"aspect": "纯 Python 逻辑（解析、API 封装、数据整形）", "note": "鸿蒙 Python 3.12 直接运行，无需改动", "evidence": []}
   ],
@@ -170,6 +200,12 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   `feasibility: feasible`、`low`/`XS`–`S`，`blockers` 为空或仅打包/路径类 `minor`。
 - **C/C++ 库**：`recommended_path: "recompile_napi"`、难度 medium、`blockers` 多为个别
   POSIX 子集缺口或 Win32 分支,`compatible` 含 STL/算法核心。
+- **应用 + 目标假设示例（VisualVM 类桌面 profiler，模型 C）**：`target_assumptions` 形如
+  `[{"capability":"headful Swing/AWT","required":true,"target_status":"unknown","impact":"不支持则整个 GUI 无法运行","source":"harmony-pc-capabilities.json#gui.swing"},`
+  `{"capability":"跨进程 attach (Attach API/JVMTI)","required":true,"target_status":"unknown","impact":"profiler 核心功能依赖","source":"…#5"},`
+  `{"capability":"jdk.internal.jvmstat/sun.tools.attach 开放","required":true,"target_status":"unknown","impact":"性能计数器/attach 启动依赖","source":"…#2"}]`；
+  这些 `required+unknown` ⇒ **下调 `confidence_overall`、notes 注明依赖未核实事实**；其各平台预编译
+  JNI agent `libprofilerinterface` 无 OHOS 版 → 进 `unadaptable_apis`/`blocker`。
 - **部分功能不可适配的库（partial 档示例）**：如某图形库的 GPU 加速路径走 `cuLaunchKernel`/特定
   设备 `ioctl`，鸿蒙无对应 → `porting_class: needs_adaptation_partial`，且
   `unadaptable_apis: [{"api":"cuLaunchKernel","public_entry":"foo_gpu_render","reason":"鸿蒙无 CUDA 运行时，无替代","blocking_native_api":"cuLaunchKernel","category":"hardware","evidence":["src/gpu.c:120"]}]`；
@@ -180,6 +216,10 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
 ## Rules
 - **只综合,不重扫源码** —— 结论与 `evidence` 都来自前序维度;每条 `blocker` 标
   `source_dimension` 并复用其 `file:line`。
+- **生产范围** —— 因 dims 6/7/8 已限定生产代码（排除测试/示例/演示），`blockers` 与
+  `unadaptable_apis` 自然也是：**只在测试/示例里用到的平台 API 不是迁移阻碍**，不要列入。
+  若整仓是**示例/教程集合**（生产代码≈0），据库本体收敛——`porting_class` 不按 demo 定档，
+  `unadaptable_apis` 近空，`notes` 注明「本仓为示例集合，平台 API 仅见于示例」。
 - 闭轴(`feasibility`/`overall_difficulty`/`effort_estimate`/`porting_class`/`blockers[].severity`)
   取值**必须**落在 schema enum 内;开放词(`recommended_path`/`category`/`harmony_status`)按实际写。
   `porting_class` 必须与 `feasibility`/难度/路径自洽（见 How-to 第 5 步的映射），并与 `unadaptable_apis`

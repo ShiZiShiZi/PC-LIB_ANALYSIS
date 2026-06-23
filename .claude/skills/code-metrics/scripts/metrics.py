@@ -67,6 +67,35 @@ def _languages(cloc: ClocResult) -> dict:
             "breakdown": breakdown}
 
 
+def _top_dirs(cloc: ClocResult, cap: int = 40) -> tuple[list[dict], dict]:
+    """Per top-level directory: code lines split by category, so the model can see
+    which dirs are test/example (token-classified) and recognise demo-collection
+    layouts. `category` is the MAJORITY category of the dir (production wins ties),
+    and `by_category` keeps the split so mixed dirs (e.g. a prod tree with nested
+    tests) are visible. test_example_dirs lists the dirs whose majority is test or
+    example — note token-based classification misses demo dirs named by feature
+    (the model补判 those)."""
+    dirs: dict[str, dict] = {}
+    for f in cloc.files:
+        norm = f.path.replace("\\", "/")
+        top = norm.split("/", 1)[0] if "/" in norm else "."
+        d = dirs.setdefault(top, {"production": 0, "test": 0, "example": 0})
+        d[f.category] = d.get(f.category, 0) + f.code
+    rows = []
+    for name, d in dirs.items():
+        code = d["production"] + d["test"] + d["example"]
+        # majority category; production wins ties so a mixed dir isn't flagged test/example
+        cat = max(("production", "example", "test"), key=lambda c: d[c])
+        if d[cat] == d["production"]:
+            cat = "production"
+        rows.append({"dir": name, "code": code, "category": cat,
+                     "by_category": {k: v for k, v in d.items() if v}})
+    rows.sort(key=lambda r: r["code"], reverse=True)
+    te = {"test": [r["dir"] for r in rows if r["category"] == "test"],
+          "example": [r["dir"] for r in rows if r["category"] == "example"]}
+    return rows[:cap], te
+
+
 def _code_metrics(cloc: ClocResult) -> dict:
     cats = {c: cloc.by_category(c) for c in ("production", "test", "example")}
     by_lang_prod: dict[str, dict] = {}
@@ -74,6 +103,7 @@ def _code_metrics(cloc: ClocResult) -> dict:
         d = by_lang_prod.setdefault(f.language, {"files": 0, "code": 0})
         d["files"] += 1
         d["code"] += f.code
+    top_dirs, test_example_dirs = _top_dirs(cloc)
     return {
         "tool": cloc.tool,
         "total": _agg(cloc.files),
@@ -82,6 +112,8 @@ def _code_metrics(cloc: ClocResult) -> dict:
         "example": _agg(cats["example"]),
         "production_by_language": dict(sorted(
             by_lang_prod.items(), key=lambda kv: kv[1]["code"], reverse=True)),
+        "top_dirs": top_dirs,
+        "test_example_dirs": test_example_dirs,
     }
 
 

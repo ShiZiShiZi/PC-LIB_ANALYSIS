@@ -5,8 +5,16 @@ description: Summarize and classify what a third-party library does, by reading 
 
 # Function summary & classification (model-driven)
 
-Decide what the library *is for* and break its capabilities into categories. This
+Decide what the subject *is for* and break its capabilities into categories. This
 is judgment work — read the source, don't pattern-match keywords.
+
+**先判 `library.kind`（被分析对象是库还是应用）。** 这关系到后续维度（尤其 dim-9 鸿蒙口径）：
+- `library`：被别的代码以 **API 调用**、经包管理器分发（有 public API / 导出符号 / 包名）。
+- `application`：被**终端用户启动运行**——有启动器/入口、打包分发、GUI 或 CLI 界面（如 VisualVM
+  这类桌面工具）。其它：`framework`/`tool`/`cli`/`service`/`plugin`/`other`。信号：有 `main`/
+  启动器脚本/原生 launcher/打包目标(installer/zip)/品牌化/GUI 工具包 ⇒ 多半是 application。
+把判断写进 `library.kind`。**对 application，summary 与 categories 按「终端用户能用它做什么、
+有哪些功能模块」描述，而不是当作被调用的 API**（应用通常没有稳定对外 API）。
 
 ## 主旨与原则
 **输出契约（下方 Output）是唯一硬约束。** 下面的清单与取值是**推荐起点，不是封闭清单** ——
@@ -33,8 +41,14 @@ is judgment work — read the source, don't pattern-match keywords.
    `codegraph files -p repos/<name>` to map the symbol/module surface fast; fall
    back to grep/Read when it isn't.
 4. **Module / directory layout** — top-level dirs often map to feature areas.
+   借 `metrics.json` 的 `code_metrics.top_dirs` 看结构。
 5. **A few key implementation files** — open the largest or most central
    production files to confirm what the API actually does.
+
+**描述库本体（生产代码），不要把测试/示例当成库的能力。** 当一个仓库其实是**示例/教程
+集合**（无可安装包；顶层目录基本都是按功能命名、各自独立可运行的 demo——如 PyQt 的
+`QLabel/`/`QThread/`/`QAxWidget/`，外加 `Demo/`/`Test/`），如实说明它是「示例/教程集合，
+非可发布生产库」，能力分类围绕「它演示了什么」而非把每个 demo 的平台用法当作库的特性。
 
 ## Determine the ecosystem
 Before classifying capabilities, decide which ecosystem the library belongs to.

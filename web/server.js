@@ -20,6 +20,7 @@ const crypto = require('crypto');
 const { spawn, execFile } = require('child_process');
 const resolve = require('./resolve');
 const harmonyMirror = require('./harmony-mirror');
+const harmonyCaps = require('../scripts/harmony_caps');   // HarmonyOS PC 目标能力画像（读/同步/人工策展）
 
 const ROOT = path.resolve(__dirname, '..');         // project root (holds .claude/)
 const PUBLIC = path.join(__dirname, 'public');
@@ -31,7 +32,8 @@ const RESOLVE_AGENT_DIR = path.join(ROOT, '.resolve-agent');   // scratch for re
 const PORT = process.env.PORT || 8765;
 
 const DEFAULT_PROMPT =
-  'Analyze the PC third-party library checked out at {repoPath}. Follow the ' +
+  'Analyze the PC open-source software project (a third-party library OR an application) ' +
+  'checked out at {repoPath}. First decide library.kind (library/application/...). Follow the ' +
   'method and JSON output contract in {agentFile} and the skills it references. ' +
   'The source is already cloned — do NOT clone again. Do NOT spawn sub-agents or use the ' +
   '`task` tool — do all evidence-gathering yourself in this single session (codegraph + ' +
@@ -1269,6 +1271,22 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    if (req.method === 'GET' && pathname === '/api/harmony-caps') {
+      try { return send(res, 200, harmonyCaps.load()); }
+      catch (e) { return send(res, 500, { error: String(e.message || e) }); }
+    }
+    if (req.method === 'POST' && pathname === '/api/harmony-caps/sync') {
+      if (!settings.enableHarmonyMirror) return send(res, 200, { disabled: true });
+      try { const summary = await harmonyCaps.sync(); return send(res, 200, { ...summary, caps: harmonyCaps.load() }); }
+      catch (e) { return send(res, 500, { error: String(e.message || e) }); }
+    }
+    if (req.method === 'POST' && pathname === '/api/harmony-caps/row') {
+      const body = await readBody(req);
+      if (!body.id) return send(res, 400, { error: 'id required' });
+      try { const row = harmonyCaps.patchRow(body.id, { status: body.status, source: body.source, note: body.note }); return send(res, 200, { row, caps: harmonyCaps.load() }); }
+      catch (e) { return send(res, 400, { error: String(e.message || e) }); }
+    }
+
     if (req.method === 'GET' && pathname === '/api/resolve-repo') {
       if (!query.name) return send(res, 400, { error: 'name required' });
       if (!settings.enableNetworkResolve)
@@ -1335,6 +1353,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`pc-lib-analysis control panel → http://localhost:${PORT}`);
+  console.log(`PC 开源软件分析 control panel → http://localhost:${PORT}`);
   console.log(`  project root: ${ROOT}  ·  max concurrent analyses: ${settings.maxConcurrent}`);
 });

@@ -12,6 +12,8 @@
       "required": ["name", "source_url"],
       "properties": {
         "name": {"type": "string"},
+        "kind": {"type": "string",
+          "description": "model: 被分析对象的性质。推荐取值（开放，可扩并记入 meta.observations）：library（被 API 调用的三方库）/ application（终端用户启动运行的应用，如桌面/CLI）/ framework / tool / cli / service / plugin / other。缺省/旧报告按 library 处理。决定 dim-9 鸿蒙口径：library→模型A/B（重编+链接/桥接），application→模型C（整包应用打包并启动）。"},
         "package_name": {"type": ["string", "null"],
           "description": "model: distribution/package name from the manifest (PyPI/npm/Maven artifact/crate name), may differ from the repo dir name. Used to link this library into other libraries' dependency trees. Null if none/uncertain."},
         "source_url": {"type": ["string", "null"]},
@@ -219,7 +221,9 @@
           "properties": {"command": {"type": "string"}, "purpose": {"type": "string", "description": "中文"},
             "evidence": {"type": "array", "items": {"type": "string"}}}}},
         "devices": {"type": "array", "items": {"$ref": "#/definitions/surfaceItem"},
-          "description": "/dev nodes, GPU, other hardware/device access"}
+          "description": "/dev nodes, GPU, other hardware/device access"},
+        "services": {"type": "array", "items": {"$ref": "#/definitions/surfaceItem"},
+          "description": "外部服务/守护进程的集成（多见于应用）：attach 其他 JVM、JMX、jstatd、数据库/消息队列/IPC 等。[] when none"}
       }
     },
 
@@ -237,6 +241,16 @@
           "properties": {"os": {"type": "string"}, "arch": {"type": "string"},
             "evidence": {"type": "array", "items": {"type": "string"}}}},
           "description": "supported OS/arch matrix inferred from #ifdef / CI / wheels / manifests"},
+        "entry_points": {"type": "array", "items": {
+          "type": "object", "required": ["name"],
+          "properties": {
+            "type": {"type": "string", "description": "launcher / main / console_script / service / framework_startup"},
+            "name": {"type": "string", "description": "启动器脚本/可执行/main 类/控制台脚本名，如 launcher/visualvm、visualvm.exe、org.x.Main"},
+            "command": {"type": "string", "description": "中文：如何启动/作用"},
+            "evidence": {"type": "array", "items": {"type": "string"}}}},
+          "description": "应用如何被启动（启动器脚本、原生 launcher、main 类、框架托管启动、console_scripts）。库通常为 []"},
+        "packaging": {"type": "string",
+          "description": "中文：如何构建/打包/分发给终端用户——installer / zip / AppImage / 容器镜像 / 应用商店包 / 无（库）；含是否捆绑运行时（JRE/Node）。"},
         "notes": {"type": "string", "description": "中文"}
       }
     },
@@ -263,6 +277,17 @@
             "category": {"type": "string", "enum": ["platform", "system", "hardware", "ffi"], "description": "复用 native_api 分类口径"},
             "evidence": {"type": "array", "items": {"type": "string"}, "description": "复用 native_api 的调用点 file:line"}}},
           "description": "API 粒度的不可适配清单（dim-9 自底向上综合用：子库的此清单与父库 used_symbols 求交，命中才阻塞父）。porting_class 须自洽：非空且核心可用→needs_adaptation_partial。"},
+        "target_assumptions": {"type": "array", "items": {
+          "type": "object",
+          "required": ["capability"],
+          "properties": {
+            "capability": {"type": "string", "description": "结论所依赖的鸿蒙 PC 目标能力（如 headful Swing/AWT、跨进程 attach、jdk.internal.jvmstat 开放、传统桌面应用交付）"},
+            "required": {"type": "boolean", "description": "该能力是否为本项目可移植的必需前提"},
+            "target_status": {"type": "string", "enum": ["available", "partial", "unavailable", "unknown"],
+              "description": "目标平台对该能力的支持状态，取自 references/harmony-pc-capabilities.md"},
+            "impact": {"type": "string", "description": "中文：该目标事实如何影响结论（如「不支持则整体不可运行」）"},
+            "source": {"type": "string", "description": "事实来源，通常 references/harmony-pc-capabilities.md 的对应条目"}}},
+          "description": "结论所依赖的目标平台能力假设（来自 references/harmony-pc-capabilities.md 的匹配）。target_status=unknown 的项表示结论依赖未核实事实——应同时下调 meta.confidence_overall 并在 notes 说明，不得据 unknown 臆断为可行。库通常为空或仅运行时一条。"},
         "effort_estimate": {"type": "string", "enum": ["XS", "S", "M", "L", "XL"],
           "description": "闭轴：T 恤码工作量估计"},
         "recommended_path": {"type": "string",

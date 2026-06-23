@@ -33,6 +33,12 @@ registry 里的样子），**禁止**用 `/`、`,`、`+`、`、` 把多个不同
   (`implementation`/`api`/`testImplementation`/`compileOnly`), `ivy.xml`.
 - **JS/TS**: `package.json` (`dependencies` / `devDependencies` /
   `peerDependencies` / `optionalDependencies`), workspace/monorepo manifests.
+- **应用（application）的依赖栈常不是单一 manifest**：要额外找——模块图（NetBeans
+  `nbproject/project.xml` 的 `<module-dependencies>`/`<code-name-base>`）、构建期下载清单
+  (`binaries-list`)、捆绑/随包分发的 jar/so/dll（`release/modules/ext/*.jar`、`lib/`、`external/`）、
+  vendored 库、捆绑运行时(JRE/Node)。把应用**运行时实际捆绑/加载**的第三方库作为 `scope: runtime`
+  依赖收录（locality 据来源：local 内嵌 / remote 下载 / system 预装），这样递归分析与依赖拓扑
+  能照常下钻这些库。
 
 ## How to analyze
 1. Find every manifest (record their paths in `manifests`).
@@ -51,6 +57,10 @@ registry 里的样子），**禁止**用 `/`、`,`、`+`、`、` 把多个不同
 4. Separate the project's **own** name and standard-library/system packages from
    real third-party deps. C/C++ `find_package(Threads)`, `PkgConfig`, the
    project itself, etc. are build plumbing — mark scope `build` or drop.
+   **生产范围**：只被**测试或示例/演示代码** import 的依赖**不是 runtime** —— scope 记
+   `test`/`dev`，或（仅示例用、与库本体无关时）不收。借 `metrics.json` 的
+   `top_dirs`/`test_example_dirs` 判断目录归属，并补判按功能命名的 demo 目录。整仓为示例/
+   教程集合时，runtime 依赖据库本体认定（通常只剩框架本身）。
 5. Note **vendored** dependencies (copied into the tree) and **git submodules**
    separately — they won't appear in a package manifest.
 5b. **C/C++ first-level completeness** — deps aren't only in `find_package`/`FetchContent`.

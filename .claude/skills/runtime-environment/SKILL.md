@@ -30,6 +30,8 @@ vendored/third-party subtrees and test fixtures — report the library's OWN nee
 - **subprocess**: `exec*`/`posix_spawn`/`system`, Python `subprocess`/`os.system`,
   Java `Runtime.exec`/`ProcessBuilder`, Node `child_process`, Win32 `CreateProcess`.
 - **devices**: `/dev/*`, GPU/accelerator handles, serial/USB, camera/audio.
+- **services**（多见于 **application**）：应用集成/对接的外部服务或守护进程——attach 其他 JVM
+  (`com.sun.tools.attach`)、JMX、jstatd、数据库/消息队列连接、本机 IPC/socket 服务。库通常 []。
 
 ## build_env — what to look for
 - **language_standard**: `CMAKE_CXX_STANDARD`/`-std=c++NN`, `python_requires`,
@@ -41,6 +43,11 @@ vendored/third-party subtrees and test fixtures — report the library's OWN nee
 - **platforms**: OS/arch the project supports — infer from `#ifdef _WIN32`/`__APPLE__`/
   `__linux__` branches, CI matrices (`.github/workflows`), packaged wheels
   (`cp3x-*_x86_64` / `aarch64`), and manifest classifiers.
+- **entry_points**（应用必填，库通常 []）：应用如何被启动——启动器脚本(`bin/*.sh`/`*.bat`)、
+  原生 launcher(`*.exe`/C++ launcher 源码)、`main`/`Main` 类、框架托管启动模块（如 NetBeans
+  startup）、Python `console_scripts`、systemd/service 单元。标 `type` 与 `evidence`。
+- **packaging**（应用）：如何构建/打包/分发给终端用户——installer / zip 分发(如 Ant `build-zip`) /
+  AppImage / 容器镜像 / 应用商店包 / 无（库）；是否**捆绑运行时**(JRE/Node)。
 
 ## Output (fills report `runtime_surface` + `build_env`)
 ```json
@@ -52,7 +59,8 @@ vendored/third-party subtrees and test fixtures — report the library's OWN nee
       "evidence": ["rdkit/RDPaths.py"]}],
     "env_vars": [{"name": "RDBASE", "purpose": "定位数据/资源根目录", "evidence": ["rdkit/RDPaths.py:12"]}],
     "subprocess": [],
-    "devices": []
+    "devices": [],
+    "services": []
   },
   "build_env": {
     "language_standard": "C++17",
@@ -64,10 +72,15 @@ vendored/third-party subtrees and test fixtures — report the library's OWN nee
       {"os": "windows", "arch": "x86_64", "evidence": ["#ifdef _WIN32 分支"]},
       {"os": "macos", "arch": "arm64", "evidence": ["cibuildwheel 配置"]}
     ],
+    "entry_points": [],
+    "packaging": "",
     "notes": "三大桌面平台 + x86_64/arm64。"
   }
 }
 ```
+对 **application**（如 VisualVM）则形如：`services` 列 attach/jvmstat/JMX；`entry_points` 列
+`{type:"launcher", name:"launcher/visualvm", ...}`、原生 `visualvm.exe`、framework_startup 模块；
+`packaging` 写「Ant build-zip 产出 zip 分发 + 各平台原生 launcher，运行依赖外部 JDK」。
 
 ## Rules
 - Descriptive only — list what the code needs/touches, never give porting/adaptation advice.

@@ -284,6 +284,21 @@ HEAD_UNADAPTABLE = [
 ]
 
 
+def rows_target_assumptions(name, r):
+    out = []
+    for a in _g(r, "harmony_adaptation", "target_assumptions", default=[]) or []:
+        out.append([
+            name, a.get("capability", ""), "是" if a.get("required") else "否",
+            a.get("target_status", ""), a.get("impact", ""), a.get("source", ""),
+        ])
+    return out
+
+
+HEAD_TARGET_ASSUMPTIONS = [
+    "库名", "目标能力", "必需", "目标状态", "影响", "来源",
+]
+
+
 def rows_observations(name, r):
     out = []
     for o in _g(r, "meta", "observations", default=[]) or []:
@@ -307,6 +322,7 @@ SHEETS = [
     ("运行时交互面", HEAD_SURFACE, rows_surface),
     ("鸿蒙阻碍点", HEAD_BLOCKERS, rows_blockers),
     ("不支持API清单", HEAD_UNADAPTABLE, rows_unadaptable),
+    ("鸿蒙目标假设", HEAD_TARGET_ASSUMPTIONS, rows_target_assumptions),
     ("模型观察", HEAD_OBSERVATIONS, rows_observations),
 ]
 

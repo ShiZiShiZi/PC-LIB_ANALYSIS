@@ -19,6 +19,10 @@ const ECO_LABELS = {
   other: '其他库',
 };
 const statusZh = (s) => ({ running: '运行中', queued: '排队中', done: '完成', error: '失败', unknown: '未知' }[s] || s);
+// library.kind — what the analyzed subject is (library vs application vs ...)
+const KIND_LABELS = { library: '库', application: '应用', framework: '框架', tool: '工具',
+  cli: '命令行', service: '服务', plugin: '插件', other: '其他' };
+const kindLabel = (k) => k ? (KIND_LABELS[k] || k) : null;
 // dependency acquisition labels (how the build obtains each dep)
 const ACQ_LABELS = {
   system: '系统/find_package', vendored: '内嵌源码', fetchcontent: 'FetchContent',
@@ -56,6 +60,9 @@ const DIFF_LABELS = { low: '低', medium: '中', high: '高', very_high: '很高
 const DIFF_CLS = { low: 'done', medium: 'running', high: 'sev-major', very_high: 'error' };
 const SEV_LABELS = { blocker: '阻塞', major: '主要', minor: '次要' };
 const SEV_CLS = { blocker: 'error', major: 'sev-major', minor: 'gray' };
+// target_assumptions[].target_status — HarmonyOS PC 目标能力是否满足
+const TGT_LABELS = { available: '已支持', partial: '部分支持', unavailable: '不支持', unknown: '未核实' };
+const TGT_CLS = { available: 'done', partial: 'running', unavailable: 'error', unknown: 'gray' };
 
 // dep-topology node status — label + color (HarmonyOS porting state, 5-way)
 const TOPO_STATUS = {
@@ -136,6 +143,7 @@ function navigate() {
   else if (hash.startsWith('/recursive/')) renderRecursive(decodeURIComponent(hash.slice(11)));
   else if (hash === '/observations') renderObservations();
   else if (hash === '/pending-deps') renderPendingDeps();
+  else if (hash === '/harmony-caps') renderHarmonyCaps();
   else if (hash.startsWith('/topology')) renderTopology(hash.startsWith('/topology/') ? decodeURIComponent(hash.slice(10)) : null);
   else renderDashboard();
 }
@@ -155,6 +163,7 @@ const PAGE_SIZE = 15;
 async function renderDashboard() {
   setHeader('<a class="btn" href="#/pending-deps">📦 待分析依赖</a>' +
             '<a class="btn" href="#/topology">🕸 依赖拓扑</a>' +
+            '<a class="btn" href="#/harmony-caps">🧭 鸿蒙目标能力</a>' +
             '<a class="btn" href="#/observations">🔭 模型观察</a>' +
             '<button class="btn" id="hExport">⬇ 导出 Excel</button>' +
             '<button class="btn" id="hSettings">⚙ 系统设置</button>' +
@@ -449,7 +458,7 @@ async function runAgentResolve(key, btn) {
 async function renderPendingDeps() {
   setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>');
   $('#app').innerHTML = `<div class="detail-head"><h1>📦 待分析依赖库</h1></div>
-    <p class="muted">已分析库所依赖、但自身尚未被分析的三方库，跨所有库聚合。把某个依赖「加入分析列表」即克隆入库；克隆完成后就地点「分析」。分析完成后它会自动从此列表消失。</p>
+    <p class="muted">已分析项目所依赖、但自身尚未被分析的第三方库，跨所有项目聚合。把某个依赖「加入分析列表」即克隆入库；克隆完成后就地点「分析」。分析完成后它会自动从此列表消失。</p>
     <div class="toolbar">
       <label class="pdep-toggle"><input type="checkbox" id="pdepCloneable" ${pdepCloneableOnly ? 'checked' : ''} /> 只看可克隆（有候选仓库 URL / 远端来源）</label>
       <label class="pdep-toggle"><input type="checkbox" id="pdepHideAdapted" ${pdepHideAdapted ? 'checked' : ''} /> 只看未鸿蒙化</label>
@@ -747,6 +756,75 @@ async function renderObservations() {
         <td>${(it.libs || []).map((n) => `<a href="#/lib/${enc(n)}">${esc(n)}</a>`).join('、')}</td>
         <td class="muted">${esc(it.rationale || '')}</td></tr>`).join('')}</tbody></table>
     </div>`).join('');
+}
+
+// ===========================================================================
+//  HARMONY PC TARGET CAPABILITIES (#/harmony-caps) — 目标能力画像策展
+// ===========================================================================
+const STALE_DAYS = 90;
+function capStale(r) {
+  if (!r.checked_at) return true;
+  const t = Date.parse(r.checked_at);
+  return isNaN(t) || (Date.now() - t) > STALE_DAYS * 86400 * 1000;
+}
+async function renderHarmonyCaps() {
+  setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>' +
+    '<button class="btn" id="capSync">🔄 联网同步(包清单)</button>');
+  $('#app').innerHTML = `<div class="detail-head"><h1>🧭 鸿蒙 PC 目标能力画像</h1><span id="capSynced" class="muted"></span></div>
+    <p class="muted">鸿蒙适配判定的<strong>目标侧事实源</strong>（库与应用通用）。带「检查源」的行可一键联网同步（复用 cmd-pkgs/PyPI）；其余需人工核实——把社区已确认的能力内联标记为已支持并填来源。<span class="hint" style="display:inline">未核实 / 过期(>${STALE_DAYS}天) 的行高亮。</span></p>
+    <div id="caps"><p class="muted">加载中…</p></div>`;
+  $('#capSync').onclick = async () => {
+    const btn = $('#capSync'); btn.disabled = true; btn.textContent = '同步中…';
+    try {
+      const r = await api('/api/harmony-caps/sync', { method: 'POST', headers: JSONH, body: '{}' });
+      if (r.disabled) toast('已关闭「联网检测已鸿蒙化」设置，无法同步', 'err');
+      else { toast(`同步完成：核对 ${r.checked} 项，翻转 ${r.flipped} 项`, 'ok'); drawCaps(r.caps); }
+    } catch { toast('同步失败', 'err'); }
+    btn.disabled = false; btn.textContent = '🔄 联网同步(包清单)';
+  };
+  try { drawCaps(await api('/api/harmony-caps')); }
+  catch { $('#caps').innerHTML = '<div class="hint err">加载失败</div>'; }
+}
+function drawCaps(data) {
+  const synced = $('#capSynced'); if (synced) synced.textContent = data.synced_at ? `最近联网同步：${fmtTime(data.synced_at)}` : '尚未联网同步';
+  $('#caps').innerHTML = (data.sections || []).map((sec) => `
+    <div class="card" style="margin-bottom:12px">
+      <div class="section-title">${esc(sec.title)}</div>
+      <table class="obstable"><thead><tr><th>能力</th><th>状态</th><th>来源</th><th>核对时间</th><th>说明</th><th></th></tr></thead>
+      <tbody>${(sec.rows || []).map((r) => {
+    const st = r.status || 'unknown';
+    const warn = (st === 'unknown' || capStale(r)) ? ' style="background:var(--warn-soft)"' : '';
+    return `<tr data-id="${esc(r.id)}"${warn}>
+        <td>${esc(r.capability)}${r.check ? ' <span class="chip" title="可联网同步">🔄</span>' : ''}</td>
+        <td><span class="badge ${TGT_CLS[st] || 'gray'}">${TGT_LABELS[st] || esc(st)}</span></td>
+        <td class="muted">${esc(r.source || '')}</td>
+        <td class="muted">${esc(r.checked_at || '—')}</td>
+        <td class="muted">${esc(r.note || '')}</td>
+        <td><button class="btn sm ghost cap-edit" data-id="${esc(r.id)}">编辑</button></td></tr>`;
+  }).join('')}</tbody></table>
+    </div>`).join('');
+  $$('.cap-edit').forEach((b) => b.onclick = () => capEdit(b.dataset.id, data));
+}
+function capEdit(id, data) {
+  let row = null;
+  for (const s of data.sections) { const r = (s.rows || []).find((x) => x.id === id); if (r) { row = r; break; } }
+  if (!row) return;
+  const opts = ['available', 'partial', 'unavailable', 'unknown']
+    .map((v) => `<option value="${v}" ${row.status === v ? 'selected' : ''}>${TGT_LABELS[v]}</option>`).join('');
+  showModal(`<h2>核实能力：${esc(row.capability)}</h2>
+    <label>状态 <select id="capStatus">${opts}</select></label>
+    <label>来源（社区链接 / 文档，建议填）<input id="capSource" type="text" value="${esc(row.source || '')}" placeholder="https://gitcode.com/OpenHarmonyPCDeveloper/..." /></label>
+    <label>说明 <input id="capNote" type="text" value="${esc(row.note || '')}" /></label>
+    <div class="actions"><button class="btn" data-close>取消</button>
+      <button class="btn primary" id="capSave">保存（标记已核实）</button></div>`);
+  $('#capSave').onclick = async () => {
+    try {
+      const r = await api('/api/harmony-caps/row', { method: 'POST', headers: JSONH, body: JSON.stringify({
+        id, status: $('#capStatus').value, source: $('#capSource').value.trim(), note: $('#capNote').value.trim() }) });
+      if (r.error) return toast(r.error, 'err');
+      closeModal(); toast('已保存并标记已核实', 'ok'); drawCaps(r.caps);
+    } catch { toast('保存失败', 'err'); }
+  };
 }
 
 // ===========================================================================
@@ -1089,7 +1167,7 @@ async function exportReportHtml() {
 .export-head{margin-bottom:18px}.export-head h1{margin:0 0 4px;font-size:20px}</style>
 </head><body>
 <div class="export-head"><h1>${esc(name)} 分析报告</h1>
-<div class="muted">导出时间 ${esc(fmtTime(Date.now()))} · 由「PC 三方库分析控制台」生成</div></div>
+<div class="muted">导出时间 ${esc(fmtTime(Date.now()))} · 由「PC 开源软件分析控制台」生成</div></div>
 ${report.outerHTML}
 </body></html>`;
     const blob = new Blob([doc], { type: 'text/html' });
@@ -1112,7 +1190,7 @@ function renderReport(r) {
     t = r.tests || {}, lic = r.license || {}, dep = r.dependencies || {}, na = r.native_api || {};
 
   parts.push(sec('概览', `<div class="kv">
-    <b>名称</b><span>${esc(lib.name)}</span>
+    <b>名称</b><span>${esc(lib.name)}${kindLabel(lib.kind) ? ` <span class="badge ${lib.kind === 'application' ? 'running' : 'gray'}">${esc(kindLabel(lib.kind))}</span>` : ''}</span>
     <b>一句话</b><span>${esc(lib.one_liner || fs.summary || '')}</span>
     <b>生态</b><span>${lib.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[lib.ecosystem] || lib.ecosystem)}</span>` : '—'}${bindingChips(lib.bindings, lib.ecosystem)}</span>
     <b>主语言</b><span>${esc((r.languages || {}).primary || '—')}</span>
@@ -1217,26 +1295,32 @@ function renderReport(r) {
     `<div class="surf"><b>${esc(main)}</b>${purpose ? ` — <span>${esc(purpose)}</span>` : ''}` +
     `${(evidence || []).length ? ` <span class="muted" title="${esc(evidence.join(', '))}">📄</span>` : ''}</div>`;
   if ((rs.network || []).length || (rs.filesystem || []).length || (rs.env_vars || []).length ||
-      (rs.subprocess || []).length || (rs.devices || []).length || rs.summary) {
+      (rs.subprocess || []).length || (rs.devices || []).length || (rs.services || []).length || rs.summary) {
     parts.push(sec('外部交互面', `${rs.summary ? `<p>${esc(rs.summary)}</p>` : ''}` +
       surfRow('环境变量', rs.env_vars, (e) => surfItem(e.name, e.purpose, e.evidence)) +
       surfRow('网络', rs.network, (e) => surfItem(e.detail, e.purpose, e.evidence)) +
       surfRow('文件系统', rs.filesystem, (e) => surfItem(e.detail, e.purpose, e.evidence)) +
       surfRow('子进程', rs.subprocess, (e) => surfItem(e.command, e.purpose, e.evidence)) +
+      surfRow('外部服务', rs.services, (e) => surfItem(e.detail, e.purpose, e.evidence)) +
       surfRow('设备', rs.devices, (e) => surfItem(e.detail, e.purpose, e.evidence))));
   }
 
   // 构建与平台 (build_env)
   const be = r.build_env || {};
-  if (be.language_standard || be.build_system || be.runtime_version ||
-      (be.platforms || []).length || (be.compiler_extensions || []).length || be.notes) {
+  if (be.language_standard || be.build_system || be.runtime_version || be.packaging ||
+      (be.platforms || []).length || (be.compiler_extensions || []).length ||
+      (be.entry_points || []).length || be.notes) {
     const plats = (be.platforms || []).map((p) =>
       `<span class="chip" title="${esc((p.evidence || []).join(', '))}">${esc(p.os || '')}${p.arch ? ' / ' + esc(p.arch) : ''}</span>`).join('');
     const exts = (be.compiler_extensions || []).map((e) => surfItem(e.detail, e.purpose, e.evidence)).join('');
+    const eps = (be.entry_points || []).map((e) =>
+      surfItem(e.name + (e.type ? ` (${e.type})` : ''), e.command, e.evidence)).join('');
     parts.push(sec('构建与平台', `<div class="kv">
       <b>语言标准</b><span>${esc(be.language_standard || '—')}</span>
       <b>运行时版本</b><span>${esc(be.runtime_version || '—')}</span>
-      <b>构建系统</b><span>${esc(be.build_system || '—')}</span></div>` +
+      <b>构建系统</b><span>${esc(be.build_system || '—')}</span>` +
+      (be.packaging ? `<b>打包分发</b><span>${esc(be.packaging)}</span>` : '') + `</div>` +
+      (eps ? `<div class="subtitle">入口 / 启动器</div>${eps}` : '') +
       (plats ? `<div class="subtitle">支持平台</div>${plats}` : '') +
       (exts ? `<div class="subtitle">编译器特有扩展</div>${exts}` : '') +
       (be.notes ? `<p class="hint">${esc(be.notes)}</p>` : '')));
@@ -1246,7 +1330,8 @@ function renderReport(r) {
   const ha = r.harmony_adaptation || {};
   if (ha.feasibility || ha.summary || (ha.blockers || []).length ||
       ha.recommended_path || (ha.key_tasks || []).length ||
-      ha.porting_class || (ha.unadaptable_apis || []).length) {
+      ha.porting_class || (ha.unadaptable_apis || []).length ||
+      (ha.target_assumptions || []).length) {
     const feasBadge = ha.feasibility
       ? `<span class="badge ${FEAS_CLS[ha.feasibility] || 'gray'}">${FEAS_LABELS[ha.feasibility] || esc(ha.feasibility)}</span>` : '—';
     const diffBadge = ha.overall_difficulty
@@ -1283,6 +1368,20 @@ function renderReport(r) {
     const compat = (ha.compatible || []).map((c) => surfItem(c.aspect, c.note, c.evidence)).join('');
     const tasks = (ha.key_tasks || []).length
       ? `<div class="subtitle">关键工作项</div><ul class="ha-tasks">${ha.key_tasks.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : '';
+    // 目标平台能力假设（结论依赖哪些鸿蒙 PC 目标事实、哪些未核实）
+    const ta = ha.target_assumptions || [];
+    const unverified = ta.filter((a) => a.required && a.target_status === 'unknown').length;
+    const taRows = ta.map((a) => {
+      const st = a.target_status || 'unknown';
+      return `<tr><td>${esc(a.capability || '')}</td>
+        <td>${a.required ? '<b>必需</b>' : '可选'}</td>
+        <td><span class="badge ${TGT_CLS[st] || 'gray'}">${TGT_LABELS[st] || esc(st)}</span></td>
+        <td class="muted">${esc(a.impact || '')}</td></tr>`;
+    }).join('');
+    const assumptions = taRows
+      ? (unverified ? `<div class="hint err" style="margin:6px 0">⚠ 结论依赖 ${unverified} 项未核实的鸿蒙 PC 目标能力，准确性受限——见下表「未核实」项，请人工核实后重评。</div>` : '')
+        + `<div class="subtitle">目标平台能力假设</div><table class="apitable"><thead><tr><th>目标能力</th><th>必需性</th><th>目标状态</th><th>影响</th></tr></thead><tbody>${taRows}</tbody></table>`
+      : '';
     parts.push(sec('鸿蒙适配评估', `<div class="kv">
       <b>移植分级</b><span>${pcBadge}</span>
       <b>可行性</b><span>${feasBadge}</span>
@@ -1291,6 +1390,7 @@ function renderReport(r) {
       <b>推荐路径</b><span>${ha.recommended_path ? `<code>${esc(ha.recommended_path)}</code>` : '—'}</span>
       <b>目标平台</b><span>${esc(ha.target || '—')}</span></div>` +
       (ha.summary ? `<p>${esc(ha.summary)}</p>` : '') +
+      assumptions +
       unadaptable +
       blockers +
       (compat ? `<div class="subtitle">可平滑移植</div>${compat}` : '') +

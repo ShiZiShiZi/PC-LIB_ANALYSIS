@@ -4,10 +4,18 @@ Guidance for Claude Code when working in this repo.
 
 ## What this is
 
-An **agent + skill harness** that analyzes a PC third-party library from its git
-source and emits one JSON report, plus a **web control panel** to drive it.
-Input: a git URL (or local checkout) of a Python / C-C++ / Java / JS-TS library.
-Output: `report.json` covering 7 dimensions.
+An **agent + skill harness** that analyzes a PC open-source software project — a
+third-party **library OR an application** (e.g. VisualVM) — from its git source and
+emits one JSON report, plus a **web control panel** to drive it.
+Input: a git URL (or local checkout) of a Python / C-C++ / Java / JS-TS project.
+Output: `report.json` covering the dimensions below.
+
+**库 vs 应用（`library.kind`）**：库被别的代码以 API 调用、靠重编/链接移植；应用被终端用户
+启动运行——其应用画像归入既有维度：入口/启动器/打包 → `build_env.entry_points`/`packaging`，
+集成的运行期服务（attach/JMX/IPC）→ `runtime_surface.services`，GUI 工具包与 JDK 内部/Attach
+API → `native_api`。`library.kind` 还决定 dim-9 鸿蒙口径：库走模型 A/B（重编+链接/桥接），
+应用走**模型 C**（整包桌面应用——按 GUI 工具包/窗口·桌面集成/启动器·打包/运行期服务判可移植性）。
+内部标识（agent 文件名 `pc-lib-analyzer`、`/api/library` 路由、package name）沿用旧名不影响。
 
 ## Core principle: model-driven, scripts only for counting
 
@@ -15,6 +23,15 @@ Only the mechanical, must-be-reproducible measurement (line counts, language
 breakdown, test tallies) is hard-coded in a script. Every interpretive dimension
 is reasoned by the model, guided by a skill prompt. Don't "fix" an interpretive
 dimension by adding a parser — improve its skill prompt instead.
+
+**生产范围（贯穿解释维度 1/6/7/8/9）**：结论只覆盖**生产代码**，排除测试与示例/演示代码——
+一个只在 `tests/`、`examples/`、`demo/` 里出现的平台 API/依赖/阻碍点**不进** `native_api` /
+`dependencies` / `harmony_adaptation` 结论。`code-metrics` 按目录名 token 分类并在
+`metrics.json` 暴露 `code_metrics.top_dirs`（每个顶层目录 {dir,code,category}）+
+`test_example_dirs` 作为基线；但 token **会漏判按功能命名的 demo 目录**（如 PyQt 的
+`QLabel/`/`QThread/`/`QAxWidget/`），模型据结构/README **补判**为示例。仓库若是**示例/教程
+集合**（生产代码≈0）则如实判定并收敛——不把 demo 的 Win32/COM/DLL 当作库的迁移阻碍。
+此为模型产出口径，**存量报告需重新分析才生效**。
 
 | # | Dimension | Owner |
 |---|-----------|-------|
@@ -64,6 +81,22 @@ is non-empty (else it falls back to dependency scope — optional/peer non-block
 are sealed leaves; an unanalyzed child sets `rollup_uncertain`. This is serve-time/derivational
 (like `derivePortingClass`) — **存量 reports get self+rollup classes without a re-run**; only the new
 `unadaptable_apis`/`used_symbols` model outputs need a re-analyze (the recursive driver covers the tree).
+
+**目标平台能力 + 假设显式化（准确性核心）.** 鸿蒙判定的准确性 = match(**源所需能力**, **目标
+平台能力**)。目标侧事实的**权威源是 `references/harmony-pc-capabilities.json`**（`.md` 是其渲染视图，
+勿手改 .md）——运行时、JDK 内部模块、桌面 GUI/窗口栈、桌面集成、进程/安全模型、应用交付形态、arch；
+状态 available/partial/unavailable/**unknown**。**该画像对库与应用通用**（目标事实与被分析对象无关）。
+**补充/更新机制**：① Tier1 自动同步——`node scripts/harmony_caps.js sync`（或面板「�wildcard」按钮）对带
+`check{via:'cmd-pkgs'|'pypi'}` 的行复用 `web/harmony-mirror.js` 联网核对（面板「🔄 联网同步」按钮亦可；命中⇒available+来源+日期；
+未命中不降级），与 `dependencies[].harmony_adapted` 同一数据源；② Tier3 人工策展——面板
+`#/harmony-caps` 页（`/api/harmony-caps` GET/sync/row）展示并高亮 unknown/过期行，可内联「标记已核实」
+写回 JSON（并自动 `render` 出 .md）。dim-9 把项目所需目标能力逐项对照该参考，写入 `harmony_adaptation.target_assumptions[]`
+（`{capability, required, target_status, impact, source}`）：`available`→不阻碍，`partial`→partial 阻碍，
+`unavailable`→blocker/unadaptable_apis，**`unknown` 且 required → 记假设 + 下调 `meta.confidence_overall`
++ notes 说明，禁止据未知臆断为可行**。对**应用**尤为关键（GUI 工具包/headful AWT、跨进程 attach、
+JDK 内部模块开放性、应用交付形态多为决定性且常 unknown）。面板鸿蒙段展示假设表 + 「N 项未核实」
+提示；xlsx 有「鸿蒙目标假设」sheet。参考文件是**人工维护的事实源**——把核实到的事实填回去，下次
+分析即受益（验证：把某项 unknown 改成 available 重分析，对应假设翻转、阻碍降级、置信回升）。
 
 ## Skill authoring convention (principle-first, open-vocabulary, self-capturing)
 

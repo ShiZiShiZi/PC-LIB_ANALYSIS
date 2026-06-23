@@ -34,6 +34,11 @@ the `platform` field:
 - **hardware** — GPU / SIMD / accelerators: OpenGL/Vulkan/DirectX/Metal/CUDA/OpenCL,
   x86/ARM SIMD intrinsics. → `platform` usually the OS or `portable`.
 
+> **应用（application）尤需关注**：桌面 GUI 工具包（Swing/AWT、JavaFX、SWT、Qt、GTK、Electron）
+> 与 RCP 平台（NetBeans `org.openide`/`org.netbeans`、Eclipse）是应用的平台相关面，按 `platform`
+> 归类；JDK 内部/`sun.*`/Attach API（`com.sun.tools.attach`）、JNI 原生 agent 同样要列入——它们
+> 是 dim-9 判断应用能否在鸿蒙跑起来的关键。
+
 ## Drill down to individual APIs (`apis`)
 For each group, fill `apis` with the **specific APIs actually called** — representative,
 not every call site. Each entry: `name`, a one-line 简体中文 `purpose`, `count`
@@ -114,7 +119,11 @@ same call site and listing both is intentional, **not** a duplicate.
    `codegraph callers/callees -p repos/<name>` to confirm call sites — and fall back
    to grep/Read when it isn't.
 2. Open representative hits and confirm real usage (ignore comments, strings,
-   third-party/vendored subtrees, test fixtures).
+   third-party/vendored subtrees). **限定生产代码 —— 排除测试与示例/演示代码。** 用
+   `metrics.json` 的 `code_metrics.top_dirs`/`test_example_dirs` 作基线，并对**按功能命名的
+   demo 目录**（脚本 token 漏判的，如 `QLabel/`、`QThread/`、`QAxWidget/`——独立可运行示例）
+   用判断补判为 example。**只在 test/example 里出现的 API 不是库的平台依赖，不要列入** ——
+   每条 evidence 必须来自生产代码。若整仓是示例/教程集合，平台 API 据库本体收敛（通常近空）。
 3. Group findings by API family with concrete **evidence** (file + include/symbol).
    **List the concrete API symbols you actually saw — not just the family name.**
 4. For each dynamic-loading call site, **resolve the loaded library name** (read the

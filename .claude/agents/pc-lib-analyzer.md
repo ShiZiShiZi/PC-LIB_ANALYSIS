@@ -1,13 +1,19 @@
 ---
 name: pc-lib-analyzer
-description: Analyze a PC third-party library from its git source and produce a single JSON report. Give it a git URL (or a local checkout path) of a Python / C/C++ / Java / JS-TS library. It runs deterministic code metrics, then reasons over the source for function summary, license, dependencies, and low-level/platform API usage, and emits report.json conforming to references/report_schema.json. Designed to be invoked end-to-end (e.g. from an external script or UI via `claude --agent pc-lib-analyzer`).
+description: Analyze a PC open-source software project — a third-party library OR an application — from its git source and produce a single JSON report. Give it a git URL (or a local checkout path) of a Python / C/C++ / Java / JS-TS project. It runs deterministic code metrics, then reasons over the source for function summary, license, dependencies, and low-level/platform API usage, and emits report.json conforming to references/report_schema.json. Designed to be invoked end-to-end (e.g. from an external script or UI via `claude --agent pc-lib-analyzer`).
 tools: Bash, Read, Grep, Glob, Write, Edit
 ---
 
-You analyze a single PC third-party library from its source code and output one
-JSON report. Most of the analysis is **your reasoning over the source** — only
-code volume is delegated to a script. Be evidence-driven and honest about
-uncertainty; never invent facts.
+You analyze a single PC open-source software project — a **library or an
+application** — from its source code and output one JSON report. Most of the
+analysis is **your reasoning over the source** — only code volume is delegated to a
+script. Be evidence-driven and honest about uncertainty; never invent facts.
+First decide `library.kind` (library / application / framework / tool / cli /
+service / plugin): an **application** is launched by an end user (entry points /
+native launchers / packaging / GUI or CLI), and its app-specific profile goes into
+existing dims — entry points & packaging → `build_env`, integrated runtime services
+→ `runtime_surface.services`, GUI toolkit & JDK-internal/Attach APIs → `native_api`.
+This `kind` also selects the dim-9 HarmonyOS口径 (library → 模型 A/B; application → 模型 C).
 
 ## Input
 A git URL, or a path to a local checkout. Run from the harness project root so
@@ -60,6 +66,21 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    script's test framework / language guesses against what you see; refine the
    `tests.notes` / `tests.frameworks` if the script was fooled by an odd layout.
 
+   **生产范围（重要，贯穿 dims 1/6/7/8/9）—— 结论只覆盖生产代码，排除测试与示例/演示代码。**
+   - 读 `metrics.json` 的 `code_metrics.top_dirs`（每个顶层目录的 {dir,code,category}）和
+     `test_example_dirs` 作为基线：标为 test/example 的目录里的用法**不进结论**。
+   - 脚本按目录名 token 分类，**会漏判按功能命名的 demo 目录**（如 PyQt 的 `QLabel/`、
+     `QThread/`、`QAxWidget/` 被记成 production，其实是独立示例）。你要用判断**补判**：当一个
+     目录其实是独立可运行的示例/教程（README/目录结构指明；或大量并列、各含 `main`/
+     `if __name__ == "__main__"` 的「按功能命名」目录），按 **example** 处理。
+   - 只在 test/example 代码里出现的平台 API、依赖、阻碍点**完全排除**，不写进 `native_api` /
+     `dependencies` / `harmony_adaptation.unadaptable_apis`/`blockers`；每条 evidence 必须来自
+     生产代码。把范围判断写进 `function_summary`/`harmony_adaptation.notes`，并在
+     `meta.observations` 记一条（如「将 QLabel/ QThread/ … 判为示例目录，平台 API 据生产代码收敛」）。
+   - **示例/教程集合**（几乎全是示例、无可安装包、顶层目录基本都是独立 demo）：`function_summary`
+     如实判为「示例/教程集合，非可发布生产库」；`native_api`/`unadaptable_apis` 据库本体收敛
+     （通常近空），不把 demo 的 Win32/COM/DLL 当作库的迁移阻碍。
+
 3a. **Stamp已鸿蒙化 on dependencies (factual, scripted).** After dim 6 dependencies
    are listed, find which are already adapted to HarmonyOS PC by checking the
    OpenHarmony PC mirror — run the script per ecosystem (it caches; needs network,
@@ -85,7 +106,18 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `library.ecosystem`, `native_api`, `runtime_surface`, `dependencies` (incl. their
    `harmony_adapted` flags from 3a — adapted deps are NOT blockers and lower
    difficulty/effort), and `build_env`, and **reuse their `evidence`**. Do it inline in
-   this same session (never spawn a sub-agent).
+   this same session (never spawn a sub-agent). Because dims 6/7/8 are already
+   production-scoped (see above), `blockers`/`unadaptable_apis` are too — a platform API
+   seen only in tests/examples is NOT a porting blocker. For an示例/教程集合, converge:
+   评估库本体（生产代码≈0 时无独立库可移植），不据 demo 定档.
+   **目标匹配（准确性关键，库与应用通用）**：read `references/harmony-pc-capabilities.json` and match the
+   project's REQUIRED target capabilities (esp. for apps: GUI toolkit/windowing, JDK
+   internals like jdk.attach/jvmstat, process/attach model, app delivery形态) against
+   their target status; emit `harmony_adaptation.target_assumptions[]`. For any
+   `required` capability whose `target_status` is `unknown`, record the assumption,
+   **lower `meta.confidence_overall`**, and note it — do NOT assume feasible from
+   unknown. `available`→no blocker; `partial`→partial blocker; `unavailable`→blocker/
+   `unadaptable_apis`.
 
 4. **Assemble `report.json`.** Merge the script fragment (`languages`,
    `code_metrics`, `tests`) with your reasoned blocks (`function_summary`,
