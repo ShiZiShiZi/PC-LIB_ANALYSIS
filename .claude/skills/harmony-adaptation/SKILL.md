@@ -109,14 +109,25 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
    大量 `blocker` + `arkts_rewrite` ⇒ `hard`/`very_high`/`L`|`XL`。**不要因为是 Python/Java/JS
    就判 `infeasible`——运行时已移植。** 对 FFI/ctypes 型库，**动态加载的平台库是否有鸿蒙
    等价才是定档 feasibility/难度的主因**（运行时已移植不再是主阻碍）。
-5. **定 `porting_class`（闭轴，依赖拓扑图用）** —— 把本库归入 4 类之一，与上面自洽：
+5. **定 `porting_class`（闭轴，依赖拓扑图用）** —— 把本库归入 5 类之一，与上面自洽：
    - `no_adaptation`：纯脚本（Python/Java/JS…）跑在已移植运行时上，无原生扩展、无平台耦合
      （≈ `feasible`/`run_on_ported_runtime`/无 blocker）。
    - `recompile_only`：C/C++ 等只需经 OHOS NDK **重新编译**即可，不依赖平台/底层 API、无平台差异
      （≈ `recompile_napi`/`cross_compile`，阻碍仅 native_dependency/posix 子集/toolchain 等 ≤major）。
-   - `needs_adaptation`：依赖底层/平台 API 或有平台差异，需改造（≈ 有 `blocker` 或 win32/x11/
-     coregraphics/sysfs/注册表/系统调用等平台类阻碍；`feasible_with_effort`/`hard`）。
-   - `infeasible`：依赖特定硬件或无解（≈ `feasibility: infeasible`）。
+   - `needs_adaptation_full`（**全部可适配**）：需改造，但**用到的功能全部能在鸿蒙适配/有替代**，
+     无因平台/硬件 API 而彻底无法适配的功能（≈ 有平台类 `blocker`/`major` 但都给得出 `remediation`；
+     `unadaptable_apis` 为空）。
+   - `needs_adaptation_partial`（**部分可适配**）：**部分功能因平台/硬件 API 无对应实现而无法适配**
+     （这些必须逐个列入 `unadaptable_apis`），但核心仍可用（≈ `feasible_with_effort`/`hard`，
+     `unadaptable_apis` 非空）。
+   - `infeasible`：核心不可适配 / 依赖特定硬件 / 无解（≈ `feasibility: infeasible`）。
+   - （旧值 `needs_adaptation` 仍兼容，等同 partial 档；新输出请用 full/partial 二选一。）
+5b. **填 `unadaptable_apis`（API 粒度，父库综合用）** —— 仅当本库存在**确实无法在鸿蒙适配**的底层
+   API 时列出；这是自底向上综合的关键：服务端会把**父库的 `dependencies[].used_symbols` 与子库此清单的
+   `public_entry` 求交**，命中才把该子计为父的阻碍——所以 `public_entry`（本库对外、会路由到该不支持
+   API 的公共函数/符号）要尽量填准，父库不调用到就不阻塞父的迁移。每项 `{api, public_entry, reason,
+   blocking_native_api, category(platform/system/hardware/ffi), evidence}`，证据复用 `native_api` 的调用点。
+   纯脚本 / 仅需重编 / 全部可适配 的库此项为空。
 6. **`compatible` 与 `key_tasks`**：列可顺利移植的部分(纯算法/数据结构/标准库逻辑)、
    落地推荐路径的关键工作项。
 
@@ -143,6 +154,7 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
      "remediation": "musl/OHOS 的 POSIX 子集多数 mmap 可用；逐项核对涉及的 ioctl 命令字是否被 OHOS 支持，缺失项做条件编译降级。",
      "evidence": ["src/native/io.c:88"]}
   ],
+  "unadaptable_apis": [],
   "compatible": [
     {"aspect": "纯 Python 逻辑（解析、API 封装、数据整形）", "note": "鸿蒙 Python 3.12 直接运行，无需改动", "evidence": []}
   ],
@@ -158,6 +170,10 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   `feasibility: feasible`、`low`/`XS`–`S`，`blockers` 为空或仅打包/路径类 `minor`。
 - **C/C++ 库**：`recommended_path: "recompile_napi"`、难度 medium、`blockers` 多为个别
   POSIX 子集缺口或 Win32 分支,`compatible` 含 STL/算法核心。
+- **部分功能不可适配的库（partial 档示例）**：如某图形库的 GPU 加速路径走 `cuLaunchKernel`/特定
+  设备 `ioctl`，鸿蒙无对应 → `porting_class: needs_adaptation_partial`，且
+  `unadaptable_apis: [{"api":"cuLaunchKernel","public_entry":"foo_gpu_render","reason":"鸿蒙无 CUDA 运行时，无替代","blocking_native_api":"cuLaunchKernel","category":"hardware","evidence":["src/gpu.c:120"]}]`；
+  其 CPU 路径（`foo_render`）仍可适配 → 父库若只调 `foo_render` 不调 `foo_gpu_render` 则不受此阻塞。
 - **目标确为 ArkTS 沙箱应用的 JS 库**：才用 `arkts_rewrite`，Node 核心模块 → `@ohos.*`，
   并在 `notes` 注明是按模型 B 评估。
 
@@ -166,7 +182,9 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   `source_dimension` 并复用其 `file:line`。
 - 闭轴(`feasibility`/`overall_difficulty`/`effort_estimate`/`porting_class`/`blockers[].severity`)
   取值**必须**落在 schema enum 内;开放词(`recommended_path`/`category`/`harmony_status`)按实际写。
-  `porting_class` 必须与 `feasibility`/难度/路径自洽（见 How-to 第 5 步的映射）。
+  `porting_class` 必须与 `feasibility`/难度/路径自洽（见 How-to 第 5 步的映射），并与 `unadaptable_apis`
+  自洽：`unadaptable_apis` 非空 ⇒ `porting_class: needs_adaptation_partial`（或 `infeasible`）；
+  为空且仍需改造 ⇒ `needs_adaptation_full`。
 - 闭轴之间须自洽:大量 `blocker` 不能配 `feasibility: feasible` / `low` 难度；反之
   **纯脚本库（运行时已移植 + 无原生扩展 + 无平台耦合）不能配 `infeasible`**——应是
   `feasible`/`low`。

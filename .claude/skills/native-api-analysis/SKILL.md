@@ -42,6 +42,11 @@ not every call site. Each entry: `name`, a one-line 简体中文 `purpose`, `cou
 by `#ifdef`/platform branch). This turns the dimension into a concrete, drill-down
 inventory of which API is called, how often, and where.
 
+> **喂给 dim-9（鸿蒙适配）**：这里标为 `platform`/`system`/`hardware` 且鸿蒙无对应实现的具体
+> API，正是 dim-9 `harmony_adaptation.unadaptable_apis[]` 的来源（按 API 名 + 调用点证据）。本维度
+> 只做"是什么 API、在哪、可移植性如何"的客观清点，是否"无法适配"由 dim-9 综合判定——但务必把
+> 这些 API 的 `name`/`evidence` 列准，dim-9 与父库 `used_symbols` 求交都依赖它。
+
 **One entry = one concrete API.** Do NOT bundle several calls into one `name`
 (`mmap / munmap`, `open / fstat / close`, `std::async / std::future`,
 `PyObject / Py_INCREF`). List tightly-related variants as **separate entries** so each

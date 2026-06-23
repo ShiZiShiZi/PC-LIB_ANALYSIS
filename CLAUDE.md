@@ -47,9 +47,23 @@ library runs on the ported runtime (`run_on_ported_runtime`), so the runtime its
 is NOT a blocker and such libs are NOT auto-`infeasible`; the real work is native
 extensions / C deps / platform APIs. The strict ArkTS-sandbox model is a secondary口径
 used only when the target is an ArkTS app. Its closed axes are `feasibility`/`overall_difficulty`/
-`effort_estimate`/`porting_class` (no_adaptation/recompile_only/needs_adaptation/infeasible —
-the dep-topology page's 4-way bucket)/`blockers[].severity`; open vocab is `recommended_path`/
+`effort_estimate`/`porting_class` (no_adaptation/recompile_only/**needs_adaptation_full**(全部可适配)/
+**needs_adaptation_partial**(部分可适配)/infeasible — the dep-topology page's 5-way bucket; legacy
+`needs_adaptation` kept as a partial alias)/`blockers[].severity`; open vocab is `recommended_path`/
 `blockers[].category`/`harmony_status`.
+
+**API-granular un-adaptability + bottom-up roll-up.** When some functionality is truly
+unportable, dim 9 lists it at **API granularity** in `harmony_adaptation.unadaptable_apis[]`
+(`{api, public_entry, reason, blocking_native_api, category, evidence}`) — `public_entry` is the
+library's own public function that routes to the unsupported native API. Dim 6 records, per
+dependency, the symbols this library actually calls in `dependencies[].used_symbols[]`. The panel
+then computes each node's **effective (含依赖) adaptation class bottom-up** at serve time
+(`rollupAdaptation` in `web/server.js`, deepest-first worst-wins over the dep DAG): a child's
+un-adaptable API only drags the parent up if `parent.used_symbols ∩ child.unadaptable_apis[].public_entry`
+is non-empty (else it falls back to dependency scope — optional/peer non-blocking). harmonized deps
+are sealed leaves; an unanalyzed child sets `rollup_uncertain`. This is serve-time/derivational
+(like `derivePortingClass`) — **存量 reports get self+rollup classes without a re-run**; only the new
+`unadaptable_apis`/`used_symbols` model outputs need a re-analyze (the recursive driver covers the tree).
 
 ## Skill authoring convention (principle-first, open-vocabulary, self-capturing)
 
@@ -168,14 +182,18 @@ and `opencode` with a configured model. Excel export additionally needs
   `/api/dep-topology`.
 - **依赖拓扑 (`#/topology`):** pick an analyzed library → a **runtime-only transitive
   dependency graph** (Cytoscape.js, breadthfirst layout), each node colored by HarmonyOS
-  status: **已鸿蒙化** (mirror) / **未分析** / one of 4 未鸿蒙化 classes — **无需适配**
-  (pure script), **仅需重新编译** (C/C++, no platform API), **需要适配** (low-level/platform
-  API or platform diffs), **无法适配** (specific hardware). `/api/dep-topology?name=`
+  status: **已鸿蒙化** (mirror) / **未分析** / one of 5 未鸿蒙化 classes — **无需适配**
+  (pure script), **仅需重新编译** (C/C++, no platform API), **全部可适配** (needs work but all
+  used functionality portable), **部分可适配** (some APIs unportable — listed in `unadaptable_apis`),
+  **无法适配** (core/specific hardware). `/api/dep-topology?name=`
   builds the DAG via `buildDepTopology` (runtime/optional + non-local deps, `resolveDepLib`
   for alias matching) and sets each node's class from `harmony_adaptation.porting_class`
   (closed axis the agent emits) or `derivePortingClass()` — a serve-time derivation from the
-  existing feasibility/difficulty/path/blockers, so **存量 reports are classified without a
-  re-run** (re-analyze upgrades to the agent's value). Indirect deps are only visible for
+  existing feasibility/difficulty/path/blockers/unadaptable_apis, so **存量 reports are classified
+  without a re-run** (re-analyze upgrades to the agent's value). The page has a **本体 / 含依赖(综合)**
+  toggle: 含依赖 colors by the bottom-up `rollupClass` (`rollupAdaptation`, see dim-9 above), with a
+  「含未分析依赖」flag and a per-node list of which child deps (via which symbols) raised the class.
+  Indirect deps are only visible for
   deps that are themselves analyzed (else 未分析). Cytoscape is **vendored** as a single
   `web/public/vendor/cytoscape.min.js` and lazy-loaded only on this page — a deliberate,
   scoped exception to the panel's zero-dep rule (still no build step / no npm).
@@ -198,7 +216,7 @@ and `opencode` with a configured model. Excel export additionally needs
 - **导出 Excel (`/api/export`):** dashboard 「导出 Excel」按钮 → server spawns
   `scripts/export_xlsx.py` (Python + **openpyxl**) which flattens every library's
   latest `report.json` into one multi-sheet summary workbook (汇总 + 依赖/系统平台API/
-  动态加载库/鸿蒙阻碍点/语言分布/… detail sheets, one row per nested item), streamed back
+  动态加载库/鸿蒙阻碍点/不支持API清单/语言分布/… detail sheets, one row per nested item), streamed back
   as a download. `?names=a,b` exports only selected libs. The script is standalone
   (CI/offline) too; openpyxl is the **only** third-party dep (web/ stays zero-dep).
 

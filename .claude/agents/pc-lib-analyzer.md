@@ -76,12 +76,16 @@ the `.claude/skills/...` and `references/...` paths below resolve.
 3b. **Synthesis dimension 9 — HarmonyOS PC adaptation.** AFTER the reasoned blocks
    above exist, read `.claude/skills/harmony-adaptation/SKILL.md` and fill
    `harmony_adaptation` (feasibility / difficulty / path / blockers / effort +
-   the `porting_class` closed axis — no_adaptation / recompile_only / needs_adaptation /
-   infeasible — of porting to HarmonyOS NEXT PC). This is a **synthesis** pass: do NOT re-scan the
-   source — reason over the already-filled `library.ecosystem`, `native_api`,
-   `runtime_surface`, `dependencies` (incl. their `harmony_adapted` flags from 3a —
-   adapted deps are NOT blockers and lower difficulty/effort), and `build_env`, and
-   **reuse their `evidence`**. Do it inline in this same session (never spawn a sub-agent).
+   the `porting_class` closed axis — no_adaptation / recompile_only /
+   needs_adaptation_full（全部可适配）/ needs_adaptation_partial（部分可适配）/ infeasible —
+   of porting to HarmonyOS NEXT PC) plus, when some functionality is truly unportable,
+   the API-granular `unadaptable_apis[]` ({api, public_entry, reason, blocking_native_api,
+   category, evidence} — drives the panel's bottom-up parent roll-up). This is a
+   **synthesis** pass: do NOT re-scan the source — reason over the already-filled
+   `library.ecosystem`, `native_api`, `runtime_surface`, `dependencies` (incl. their
+   `harmony_adapted` flags from 3a — adapted deps are NOT blockers and lower
+   difficulty/effort), and `build_env`, and **reuse their `evidence`**. Do it inline in
+   this same session (never spawn a sub-agent).
 
 4. **Assemble `report.json`.** Merge the script fragment (`languages`,
    `code_metrics`, `tests`) with your reasoned blocks (`function_summary`,
@@ -122,7 +126,9 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    concise value if none of the recommended ones fit), the closed `locality`
    (local/remote/system/runtime — set explicitly), `source` (WHERE from), and
    `declared_in` (the repo file(s) declaring the integration). This distinguishes
-   本地/远端/系统 依赖.
+   本地/远端/系统 依赖. For non-system, analyzable deps also fill `used_symbols`
+   (best-effort: the dep's public APIs this library actually calls) — the dim-9
+   parent roll-up intersects it with the dep's `unadaptable_apis`.
 
    The output contract (`references/report_schema.json`) is the only hard constraint —
    the taxonomies in the skills are recommended starting sets, not closed lists. When

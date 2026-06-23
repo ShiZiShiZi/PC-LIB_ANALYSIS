@@ -57,16 +57,19 @@ const DIFF_CLS = { low: 'done', medium: 'running', high: 'sev-major', very_high:
 const SEV_LABELS = { blocker: '阻塞', major: '主要', minor: '次要' };
 const SEV_CLS = { blocker: 'error', major: 'sev-major', minor: 'gray' };
 
-// dep-topology node status — label + color (HarmonyOS porting state)
+// dep-topology node status — label + color (HarmonyOS porting state, 5-way)
 const TOPO_STATUS = {
-  harmonized:       { label: '已鸿蒙化', color: '#1f9d55' },
-  no_adaptation:    { label: '无需适配', color: '#3b6cf6' },
-  recompile_only:   { label: '仅需重新编译', color: '#0ea5a5' },
-  needs_adaptation: { label: '需要适配', color: '#e0a458' },
-  infeasible:       { label: '无法适配', color: '#d65745' },
-  unanalyzed:       { label: '未分析', color: '#9aa4b2' },
+  harmonized:               { label: '已鸿蒙化', color: '#1f9d55' },
+  no_adaptation:            { label: '无需适配', color: '#3b6cf6' },
+  recompile_only:           { label: '仅需重新编译', color: '#0ea5a5' },
+  needs_adaptation_full:    { label: '全部可适配', color: '#e0a458' },
+  needs_adaptation_partial: { label: '部分可适配', color: '#dd7a33' },
+  needs_adaptation:         { label: '需要适配', color: '#e0a458' },   // legacy alias
+  infeasible:               { label: '无法适配', color: '#d65745' },
+  unanalyzed:               { label: '未分析', color: '#9aa4b2' },
 };
-const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adaptation', 'infeasible', 'unanalyzed'];
+const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'needs_adaptation', 'infeasible', 'unanalyzed'];
+const topoStatusMeta = (s) => TOPO_STATUS[s] || { label: s || '未知', color: '#9aa4b2' };
 
 // HarmonyOS-PC mirror adaptation status (already-ported packages), cached client-side.
 const harmonyMemo = new Map();   // `${eco}:${name}` -> {adapted, source}
@@ -130,6 +133,7 @@ function navigate() {
   if (es) { es.close(); es = null; }
   const hash = location.hash.slice(1) || '/';
   if (hash.startsWith('/lib/')) renderDetail(decodeURIComponent(hash.slice(5)));
+  else if (hash.startsWith('/recursive/')) renderRecursive(decodeURIComponent(hash.slice(11)));
   else if (hash === '/observations') renderObservations();
   else if (hash === '/pending-deps') renderPendingDeps();
   else if (hash.startsWith('/topology')) renderTopology(hash.startsWith('/topology/') ? decodeURIComponent(hash.slice(10)) : null);
@@ -686,6 +690,7 @@ async function openSettings() {
     <label><input id="sNetResolve" type="checkbox" ${s.enableNetworkResolve ? 'checked' : ''} /> 待分析依赖页允许联网解析仓库地址 <span class="hint" style="display:inline">（PyPI/npm/crates/Maven，C/C++ 走 GitHub 搜索）</span></label>
     <label><input id="sHarmonyMirror" type="checkbox" ${s.enableHarmonyMirror ? 'checked' : ''} /> 联网检测依赖是否已鸿蒙化 <span class="hint" style="display:inline">（OpenHarmony PC 镜像，有 ohos wheel 即已移植）</span></label>
     <label><input id="sAgentResolve" type="checkbox" ${s.enableAgentResolve ? 'checked' : ''} /> 待分析依赖页 C/C++ 「🤖 智能解析」 <span class="hint" style="display:inline">（用 LLM agent 读描述+检索判断仓库地址，较慢/耗模型额度）</span></label>
+    <label><input id="sRecursive" type="checkbox" ${s.recursiveAfterAnalyze ? 'checked' : ''} /> 分析完成后自动递归分析其依赖 <span class="hint" style="display:inline">（克隆并分析运行时依赖，系统库作叶子不下钻）</span></label>
     <details><summary class="hint" style="cursor:pointer">Prompt 模板（高级）</summary>
       <textarea id="sPrompt" rows="9">${esc(s.promptTemplate)}</textarea>
       <p class="hint">占位符：{repoPath} {agentFile} {reportPath} {metricsPath} {name}</p></details>
@@ -705,6 +710,7 @@ async function openSettings() {
       useCodegraph: $('#sCodegraph').checked, pruneGitAfterAnalyze: $('#sPruneGit').checked,
       enableNetworkResolve: $('#sNetResolve').checked, enableHarmonyMirror: $('#sHarmonyMirror').checked,
       enableAgentResolve: $('#sAgentResolve').checked,
+      recursiveAfterAnalyze: $('#sRecursive').checked,
       promptTemplate: $('#sPrompt').value }) });
     closeModal(); toast('设置已保存', 'ok');
   };
@@ -757,6 +763,7 @@ async function renderDetail(name) {
       <span id="dStatus"></span>
       <span class="spacer"></span>
       <button class="btn sm" id="dTest">Test 模型</button>
+      <button class="btn sm" id="dRecurse">🌳 递归分析依赖</button>
       <button class="btn primary sm" id="dAnalyze">重新分析</button>
     </div>
     <div class="cols">
@@ -770,6 +777,7 @@ async function renderDetail(name) {
             <div class="section-title" style="margin:0">分析报告</div>
             <div class="row" style="gap:6px">
               <button class="btn sm ghost" id="rawBtn" disabled>原始 JSON</button>
+              <button class="btn sm ghost" id="htmlBtn" disabled>导出 HTML</button>
               <button class="btn sm ghost" id="dlBtn" disabled>下载</button></div>
           </div>
           <div id="report"><p class="muted">选择一次运行以查看报告。</p></div>
@@ -784,7 +792,9 @@ async function renderDetail(name) {
     toast(r.ok ? `模型可用 (${r.ms}ms)` : `模型不可用：${r.error}`, r.ok ? 'ok' : 'err');
   };
   $('#dAnalyze').onclick = () => reAnalyze(name);
+  $('#dRecurse').onclick = () => startRecurse(name);
   $('#rawBtn').onclick = () => { $('#rawJson').classList.toggle('hidden'); $('#report').classList.toggle('hidden'); };
+  $('#htmlBtn').onclick = exportReportHtml;
   $('#dlBtn').onclick = downloadReport;
 
   await loadDetail(name);
@@ -864,6 +874,107 @@ function subscribe(jobId, name, onEnd) {
   view.cleanup = () => { stopHb(); if (es) { es.close(); es = null; } };
 }
 
+// ===========================================================================
+//  RECURSIVE DEPENDENCY ANALYSIS (session view)
+// ===========================================================================
+// per-decision state → {label, badge-class}. Leaves (system/prebuilt/interface)
+// and no-source are intentionally NOT recursed into.
+const RC_STATE = {
+  pending: { t: '待处理', c: 'gray' }, resolving: { t: '解析地址中', c: 'queued' }, resolved: { t: '待克隆', c: 'queued' },
+  cloning: { t: '克隆中', c: 'running' }, analyzing: { t: '分析中', c: 'running' }, analyzed: { t: '已分析', c: 'done' },
+  leaf_system: { t: '系统库 (叶子)', c: 'queued' }, leaf_prebuilt: { t: '预编译 (叶子)', c: 'queued' },
+  leaf_interface: { t: '接口/系统 (叶子)', c: 'queued' }, leaf_no_source: { t: '无源码 · 待人工', c: 'gray' },
+  ambiguous: { t: '歧义 · 待确认', c: 'gray' }, failed: { t: '失败', c: 'error' }, capped: { t: '超出上限', c: 'gray' },
+};
+const RC_SESSION_ZH = { running: '运行中', done: '完成', stopped: '已停止' };
+const RC_SESSION_CLS = { running: 'running', done: 'done', stopped: 'queued' };
+
+async function startRecurse(name) {
+  let r;
+  try { r = await api('/api/recurse', { method: 'POST', headers: JSONH, body: JSON.stringify({ name }) }); }
+  catch { return toast('启动失败', 'err'); }
+  if (r.error) return toast(r.error, 'err');
+  toast(r.existing ? '已有进行中的递归会话' : '已开始递归分析', 'ok');
+  if (location.hash === '#/recursive/' + enc(name)) renderRecursive(name);   // same hash → no hashchange
+  else location.hash = '#/recursive/' + enc(name);
+}
+
+async function renderRecursive(name) {
+  setHeader(`<a class="btn ghost" href="#/lib/${enc(name)}">← 返回 ${esc(name)}</a>` +
+    `<a class="btn" href="#/topology/${enc(name)}">🕸 依赖拓扑</a>`);
+  $('#app').innerHTML = `
+    <div class="detail-head">
+      <h1>🌳 递归依赖分析 · ${esc(name)}</h1>
+      <span id="rcStatus"></span>
+      <span class="spacer"></span>
+      <button class="btn sm" id="rcStart">▶ 新建会话</button>
+      <button class="btn sm" id="rcStop" disabled>■ 停止</button>
+    </div>
+    <div id="rcBar" class="rc-bar"></div>
+    <div class="card"><div id="rcTable"></div></div>`;
+  $('#rcStart').onclick = () => startRecurse(name);
+  let sessionId = null;
+  try { const { sessions } = await api('/api/recurse'); const s = (sessions || []).find((x) => x.root === name); if (s) sessionId = s.id; }
+  catch (_) {}
+  if (!sessionId) {
+    $('#rcTable').innerHTML = '<div class="hint">尚无递归会话。点击「新建会话」从该库出发，递归克隆并分析其运行时依赖——系统库 / 无源码库作为叶子不再下钻。</div>';
+    return;
+  }
+  openRecurseStream(sessionId);
+}
+
+function openRecurseStream(id) {
+  if (es) { es.close(); es = null; }
+  const stopBtn = $('#rcStop');
+  if (stopBtn) {
+    stopBtn.disabled = false;
+    stopBtn.onclick = async () => {
+      await api('/api/recurse/stop', { method: 'POST', headers: JSONH, body: JSON.stringify({ session: id }) });
+      toast('已请求停止（在途任务将自然结束）', 'ok');
+    };
+  }
+  es = new EventSource('/api/recurse/stream?session=' + enc(id));
+  es.addEventListener('update', (e) => { try { renderRecurseSnap(JSON.parse(e.data).data); } catch (_) {} });
+  es.onerror = () => {};
+  view.cleanup = () => { if (es) { es.close(); es = null; } };
+}
+
+function renderRecurseSnap(snap) {
+  const stEl = $('#rcStatus');
+  if (stEl) stEl.innerHTML = `<span class="badge ${RC_SESSION_CLS[snap.status] || 'gray'}">${RC_SESSION_ZH[snap.status] || snap.status}</span>`;
+  if (snap.status !== 'running' && es) { es.close(); es = null; }
+  const stopBtn = $('#rcStop'); if (stopBtn) stopBtn.disabled = snap.status !== 'running';
+  const c = snap.counts || {};
+  const g = (keys) => keys.reduce((n, k) => n + (c[k] || 0), 0);
+  const bar = [
+    ['已分析', c.analyzed || 0, 'done'],
+    ['处理中', g(['pending', 'resolving', 'resolved', 'cloning', 'analyzing']), 'running'],
+    ['系统/无源码叶子', g(['leaf_system', 'leaf_prebuilt', 'leaf_interface']), 'queued'],
+    ['待人工解析', c.leaf_no_source || 0, 'gray'],
+    ['歧义', c.ambiguous || 0, 'gray'],
+    ['失败', c.failed || 0, 'error'],
+  ];
+  if (c.capped) bar.push(['超出上限', c.capped, 'gray']);
+  $('#rcBar').innerHTML = bar.map(([t, n, cl]) => `<span class="rc-chip"><span class="badge ${cl}">${num(n)}</span>${t}</span>`).join('');
+  const rows = snap.decisions || [];
+  if (!rows.length) {
+    $('#rcTable').innerHTML = '<div class="hint">尚无运行时依赖（该库可能只有系统/本地依赖），会话已完成。</div>';
+    return;
+  }
+  $('#rcTable').innerHTML = `<table class="obstable"><thead><tr>
+      <th>依赖</th><th>生态</th><th>深度</th><th>状态</th><th>说明</th></tr></thead>
+    <tbody>${rows.map(rcRow).join('')}</tbody></table>`;
+}
+
+function rcRow(d) {
+  const s = RC_STATE[d.state] || { t: d.state, c: 'gray' };
+  const nm = d.libName ? `<a href="#/lib/${enc(d.libName)}">${esc(d.name)}</a>` : esc(d.name);
+  const repo = d.repoName && d.repoName !== d.name ? ` <span class="muted">→ ${esc(d.repoName)}</span>` : '';
+  const eco = ECO_LABELS[d.ecosystem] || d.ecosystem || '';
+  return `<tr><td>${nm}${repo}</td><td>${esc(eco)}</td><td>${d.depth}</td>` +
+    `<td><span class="badge ${s.c}">${esc(s.t)}</span></td><td class="muted">${esc(d.reason || '')}</td></tr>`;
+}
+
 // ---- console --------------------------------------------------------------
 const shownTools = new Set();   // dedupe tool_use lines by callID (reset per console clear)
 function clearConsole() { const c = $('#console'); if (c) c.innerHTML = ''; shownTools.clear(); }
@@ -923,10 +1034,10 @@ async function loadRun(name, run) {
     curReport = { name, run, obj };
     renderReport(obj);
     $('#rawJson').textContent = JSON.stringify(obj, null, 2);
-    $('#rawBtn').disabled = $('#dlBtn').disabled = false;
+    $('#rawBtn').disabled = $('#htmlBtn').disabled = $('#dlBtn').disabled = false;
   } catch (_) {
     $('#report').innerHTML = '<p class="muted">本次运行没有报告（可能未完成或失败）。</p>';
-    $('#rawBtn').disabled = $('#dlBtn').disabled = true;
+    $('#rawBtn').disabled = $('#htmlBtn').disabled = $('#dlBtn').disabled = true;
   }
   // also replay this run's persisted log if not currently streaming live
   if (!es) {
@@ -949,6 +1060,48 @@ function downloadReport() {
   const blob = new Blob([JSON.stringify(curReport.obj, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = `${curReport.name}.report.json`; a.click();
+}
+
+// Export the currently-rendered report as a single, offline, self-contained HTML file —
+// identical to what's on screen. We capture the live #report DOM (so the async-loaded dep
+// tree + 已鸿蒙化 badges are included) and inline styles.css; no external assets are used.
+async function exportReportHtml() {
+  if (!curReport) return;
+  const name = curReport.name;
+  const btn = $('#htmlBtn'); if (btn) { btn.disabled = true; btn.textContent = '导出中…'; }
+  try {
+    // make sure the (idempotent) dep tree is loaded before we snapshot the DOM
+    const hasDeps = ((curReport.obj.dependencies || {}).dependencies || []).length ||
+      (curReport.obj.dependencies || {}).count != null;
+    if (hasDeps) { try { await loadDepTree(name); } catch (_) {} }
+    const css = await fetch('/styles.css').then((r) => r.text());
+    const src = $('#report');
+    const report = src.cloneNode(true);
+    // drop transient interaction state (click-to-highlight) so the export is clean
+    report.querySelectorAll('.hl-on, .hl-dim, .hl-badge-on')
+      .forEach((el) => el.classList.remove('hl-on', 'hl-dim', 'hl-badge-on'));
+    report.classList.remove('hidden');
+    const doc = `<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(name)} · 分析报告</title>
+<style>${css}</style>
+<style>body{max-width:980px;margin:0 auto;padding:28px 24px 60px}
+.export-head{margin-bottom:18px}.export-head h1{margin:0 0 4px;font-size:20px}</style>
+</head><body>
+<div class="export-head"><h1>${esc(name)} 分析报告</h1>
+<div class="muted">导出时间 ${esc(fmtTime(Date.now()))} · 由「PC 三方库分析控制台」生成</div></div>
+${report.outerHTML}
+</body></html>`;
+    const blob = new Blob([doc], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `${name}.report.html`; a.click();
+    URL.revokeObjectURL(a.href);
+    toast('已导出 HTML', 'ok');
+  } catch (e) {
+    toast('导出失败：' + (e && e.message || e), 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '导出 HTML'; }
+  }
 }
 
 function renderReport(r) {
@@ -1092,7 +1245,8 @@ function renderReport(r) {
   // 鸿蒙适配评估 (harmony_adaptation, dim 9)
   const ha = r.harmony_adaptation || {};
   if (ha.feasibility || ha.summary || (ha.blockers || []).length ||
-      ha.recommended_path || (ha.key_tasks || []).length) {
+      ha.recommended_path || (ha.key_tasks || []).length ||
+      ha.porting_class || (ha.unadaptable_apis || []).length) {
     const feasBadge = ha.feasibility
       ? `<span class="badge ${FEAS_CLS[ha.feasibility] || 'gray'}">${FEAS_LABELS[ha.feasibility] || esc(ha.feasibility)}</span>` : '—';
     const diffBadge = ha.overall_difficulty
@@ -1113,16 +1267,31 @@ function renderReport(r) {
     const blockers = blockRows
       ? `<div class="subtitle">移植阻碍点</div><table class="apitable"><thead><tr><th>严重度 / 类别</th><th>问题与改造建议</th><th>鸿蒙状态 / 证据</th></tr></thead><tbody>${blockRows}</tbody></table>`
       : '';
+    const pcMeta = ha.porting_class ? topoStatusMeta(ha.porting_class) : null;
+    const pcBadge = pcMeta
+      ? `<span class="badge" style="background:${pcMeta.color};color:#fff">${pcMeta.label}</span>` : '—';
+    const unRows = (ha.unadaptable_apis || []).map((u) => {
+      const cat = u.category ? `<code>${esc(u.category)}</code>` : '';
+      const ev = (u.evidence || []).slice(0, 3).map(esc).join('、');
+      return `<tr><td class="api-n"><code>${esc(u.api || '')}</code>${u.public_entry ? `<br><span class="muted">入口 <code>${esc(u.public_entry)}</code></span>` : ''}</td>
+        <td>${esc(u.reason || '')}${u.blocking_native_api && u.blocking_native_api !== u.api ? `<br><span class="muted">根源 <code>${esc(u.blocking_native_api)}</code></span>` : ''}</td>
+        <td class="api-loc">${cat}${ev ? `<div>${ev}</div>` : ''}</td></tr>`;
+    }).join('');
+    const unadaptable = unRows
+      ? `<div class="subtitle">无法适配的 API（父库调用到才阻塞其迁移）</div><table class="apitable"><thead><tr><th>API / 公共入口</th><th>原因</th><th>类别 / 证据</th></tr></thead><tbody>${unRows}</tbody></table>`
+      : '';
     const compat = (ha.compatible || []).map((c) => surfItem(c.aspect, c.note, c.evidence)).join('');
     const tasks = (ha.key_tasks || []).length
       ? `<div class="subtitle">关键工作项</div><ul class="ha-tasks">${ha.key_tasks.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : '';
     parts.push(sec('鸿蒙适配评估', `<div class="kv">
+      <b>移植分级</b><span>${pcBadge}</span>
       <b>可行性</b><span>${feasBadge}</span>
       <b>整体难度</b><span>${diffBadge}</span>
       <b>工作量</b><span>${ha.effort_estimate ? esc(ha.effort_estimate) : '—'}</span>
       <b>推荐路径</b><span>${ha.recommended_path ? `<code>${esc(ha.recommended_path)}</code>` : '—'}</span>
       <b>目标平台</b><span>${esc(ha.target || '—')}</span></div>` +
       (ha.summary ? `<p>${esc(ha.summary)}</p>` : '') +
+      unadaptable +
       blockers +
       (compat ? `<div class="subtitle">可平滑移植</div>${compat}` : '') +
       tasks +
@@ -1244,6 +1413,10 @@ function depTreeHtml(nodes) {
 let cyInstance = null;
 let topoCurrent = null;       // currently-loaded lib (avoid redundant reloads)
 let topoHidden = new Set();   // statuses toggled off via the legend
+let topoData = null;          // last-loaded /api/dep-topology payload (for view toggle)
+let topoView = 'rollup';      // 'self' (本体) | 'rollup' (含依赖综合)
+// the status field a node uses under the current view
+const nodeStatus = (n) => topoView === 'rollup' ? (n.rollupStatus || n.status) : n.status;
 function ensureCytoscape() {
   if (window.cytoscape) return Promise.resolve();
   return new Promise((resolve, reject) => {
@@ -1267,6 +1440,8 @@ async function renderTopology(preselect) {
     <div class="toolbar">
       <label class="pdep-toggle">库：<input id="topoLib" list="topoLibList" placeholder="搜索库名…" value="${esc(initial)}" autocomplete="off" />
         <datalist id="topoLibList">${opts}</datalist></label>
+      <span class="topo-view-toggle">视角：
+        <button class="btn sm" id="topoViewSelf">本体</button><button class="btn sm" id="topoViewRollup">含依赖(综合)</button></span>
       <span id="topoLegend" class="topo-legend"></span>
     </div>
     <div class="topo-wrap"><div id="topoGraph" class="topo-graph"><p class="muted" style="padding:16px">${libs.length ? '加载中…' : '（无已分析库）'}</p></div>
@@ -1274,7 +1449,15 @@ async function renderTopology(preselect) {
   const onpick = () => { const v = $('#topoLib').value.trim(); if (names.has(v)) loadTopology(v); };
   $('#topoLib').onchange = onpick;
   $('#topoLib').oninput = () => { if (names.has($('#topoLib').value.trim())) onpick(); };  // datalist selection
-  cyInstance = null; topoCurrent = null; topoHidden = new Set();
+  const syncViewBtns = () => {
+    $('#topoViewSelf').classList.toggle('primary', topoView === 'self');
+    $('#topoViewRollup').classList.toggle('primary', topoView === 'rollup');
+  };
+  const setView = (v) => { if (topoView === v || !topoData) { topoView = v; syncViewBtns(); return; } topoView = v; syncViewBtns(); redrawTopology(); };
+  $('#topoViewSelf').onclick = () => setView('self');
+  $('#topoViewRollup').onclick = () => setView('rollup');
+  syncViewBtns();
+  cyInstance = null; topoCurrent = null; topoHidden = new Set(); topoData = null;
   view.cleanup = () => { if (cyInstance) { try { cyInstance.destroy(); } catch (_) {} cyInstance = null; } };
   if (initial) loadTopology(initial);
 }
@@ -1288,14 +1471,22 @@ async function loadTopology(name) {
   catch { if (box) box.innerHTML = '<p class="hint err" style="padding:16px">加载失败</p>'; return; }
   try { await ensureCytoscape(); }
   catch (e) { if (box) box.innerHTML = `<p class="hint err" style="padding:16px">${esc(e.message)}</p>`; return; }
-  renderTopoLegend(data.counts || {});
-  drawTopology(data);
+  topoData = data;
+  redrawTopology();
+}
+
+// re-render legend + graph from the cached topoData under the current view (no refetch)
+function redrawTopology() {
+  if (!topoData) return;
+  const counts = (topoView === 'rollup' ? topoData.rollupCounts : topoData.counts) || {};
+  renderTopoLegend(counts);
+  drawTopology(topoData);
 }
 
 function renderTopoLegend(counts) {
   const el = $('#topoLegend'); if (!el) return;
-  el.innerHTML = TOPO_ORDER.map((s) => {
-    const st = TOPO_STATUS[s]; const n = counts[s] || 0;
+  el.innerHTML = TOPO_ORDER.filter((s) => counts[s]).map((s) => {
+    const st = topoStatusMeta(s); const n = counts[s] || 0;
     const off = topoHidden.has(s) ? ' off' : '';
     return `<button class="topo-leg${off}" data-st="${s}"><span class="dot" style="background:${st.color}"></span>${st.label} <b>${n}</b></button>`;
   }).join('');
@@ -1312,15 +1503,16 @@ function drawTopology(data) {
   box.innerHTML = '';
   const elements = [];
   for (const n of data.nodes) elements.push({ data: {
-    id: n.id, label: n.label, status: n.status, ecosystem: n.ecosystem,
-    analyzed: n.analyzed, libName: n.libName, feasibility: n.feasibility || '',
-    summary: n.summary || '', isRoot: !!n.isRoot } });
+    id: n.id, label: n.label, status: nodeStatus(n), selfStatus: n.status, rollupStatus: n.rollupStatus || n.status,
+    ecosystem: n.ecosystem, analyzed: n.analyzed, libName: n.libName, feasibility: n.feasibility || '',
+    summary: n.summary || '', isRoot: !!n.isRoot,
+    rollupUncertain: !!n.rollupUncertain, blockingChildren: n.blockingChildren || [] } });
   for (const e of data.edges) elements.push({ data: { source: e.source, target: e.target } });
   cyInstance = window.cytoscape({
     container: box, elements, wheelSensitivity: 0.2,
     style: [
       { selector: 'node', style: {
-        'background-color': (n) => (TOPO_STATUS[n.data('status')] || TOPO_STATUS.unanalyzed).color,
+        'background-color': (n) => topoStatusMeta(n.data('status')).color,
         label: 'data(label)', color: '#1b2430', 'font-size': 11, 'text-valign': 'bottom',
         'text-margin-y': 3, width: 18, height: 18, 'border-width': (n) => n.data('isRoot') ? 3 : 0,
         'border-color': '#1b2430' } },
@@ -1337,13 +1529,25 @@ function drawTopology(data) {
 
 function showTopoDetail(d) {
   const el = $('#topoDetail'); if (!el) return;
-  const st = TOPO_STATUS[d.status] || TOPO_STATUS.unanalyzed;
+  const selfM = topoStatusMeta(d.selfStatus), rollM = topoStatusMeta(d.rollupStatus);
+  const dot = (m) => `<span class="dot" style="background:${m.color}"></span> ${m.label}`;
+  const differs = d.rollupStatus && d.rollupStatus !== d.selfStatus;
+  const blockers = Array.isArray(d.blockingChildren) ? d.blockingChildren : [];
+  const blockHtml = blockers.length ? `<div class="topo-block"><b>因依赖拉高分级：</b><ul>${blockers.map((b) => {
+    const via = (b.viaSymbols || []).length ? `经 <code>${b.viaSymbols.map(esc).join('</code> <code>')}</code>`
+      : b.basis === 'scope' ? '（按依赖范围保守计入）' : '';
+    const link = b.libName ? `<a href="#/lib/${enc(b.libName)}">${esc(b.child)}</a>` : esc(b.child);
+    return `<li>${link} → ${esc(topoStatusMeta(b.childClass).label)} ${via}</li>`;
+  }).join('')}</ul></div>` : '';
   el.innerHTML = `<div class="topo-d-name"><b>${esc(d.label)}</b> ${d.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[d.ecosystem] || d.ecosystem)}</span>` : ''}</div>
     <div class="kv">
-      <b>状态</b><span><span class="dot" style="background:${st.color}"></span> ${st.label}</span>
+      <b>本体分级</b><span>${dot(selfM)}</span>
+      <b>含依赖(综合)</b><span>${dot(rollM)}${d.rollupUncertain ? ' <span class="badge gray" title="存在未分析的子依赖，综合结论可能偏乐观">含未分析依赖</span>' : ''}</span>
       <b>是否已分析</b><span>${d.analyzed ? '是' : '否（未分析）'}</span>
       ${d.feasibility ? `<b>可行性</b><span>${esc(FEAS_LABELS[d.feasibility] || d.feasibility)}</span>` : ''}
     </div>
+    ${differs ? '<p class="hint">综合分级高于本体，因为它（用到的）依赖的适配等级更高，见下。</p>' : ''}
+    ${blockHtml}
     ${d.summary ? `<p class="muted">${esc(d.summary)}</p>` : ''}
     ${d.analyzed && d.libName ? `<a class="btn sm primary" href="#/lib/${enc(d.libName)}">查看报告 →</a>` : '<p class="hint">该依赖尚未分析，去「待分析依赖」分析它以解锁其子依赖与分级。</p>'}`;
 }

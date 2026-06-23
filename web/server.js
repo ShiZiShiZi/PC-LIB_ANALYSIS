@@ -59,6 +59,7 @@ const DEFAULT_SETTINGS = {
   enableNetworkResolve: true,
   enableHarmonyMirror: true,
   enableAgentResolve: true,
+  recursiveAfterAnalyze: false,   // auto-start recursive dep analysis after a manual analyze
 };
 
 // codegraph is optional: probe once at startup. The analyze prompt only mentions
@@ -88,6 +89,9 @@ function saveSettings(patch) {
 // ---------------------------------------------------------------- job registry
 /** @type {Map<string, Job>} */
 const jobs = new Map();
+// Notified after every job ends (clone/analyze/resolve). The recursion driver
+// subscribes here instead of fighting pumpAnalyze for job.onDone (which it owns).
+const jobEndListeners = new Set();
 
 class Job {
   constructor(type, meta) {
@@ -127,6 +131,7 @@ class Job {
     if (this.logStream) this.logStream.end();
     this.persistMeta();
     if (this.onDone) this.onDone();
+    for (const fn of jobEndListeners) { try { fn(this); } catch (_) {} }
     setTimeout(() => { for (const r of this.clients) { try { r.end(); } catch (_) {} } }, 250);
   }
   pruneGit() {
@@ -405,26 +410,111 @@ function buildDepTree(rootName, maxDepth) {
   return expand(rootName, 1);
 }
 
-// HarmonyOS porting class (4-way) for the dep-topology page. Prefers the agent's
+// HarmonyOS porting class (5-way) for the dep-topology page. Prefers the agent's
 // explicit harmony_adaptation.porting_class; else derives from the existing dim-9 fields
 // so 存量 reports are classified without a re-run.
 const PLATFORM_BLOCKER_RE = /win32|x11|xcb|cocoa|coregraphics|iokit|registry|wmi|sysfs|procfs|gpu|cuda|opencl|vulkan|device|driver|kernel|syscall|ioctl|permission|hardware|_api\b|api_unavailable|platform/i;
 function derivePortingClass(report) {
   const ha = (report && report.harmony_adaptation) || null;
   if (!ha) return null;
-  if (ha.porting_class) return ha.porting_class;          // explicit (agent)
+  if (ha.porting_class) return ha.porting_class;          // explicit (agent) — incl. new 5-way values
   if (ha.feasibility === 'infeasible') return 'infeasible';
+  const unadaptable = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
   const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
   const cats = blk.map((b) => String(b.category || '').toLowerCase());
   const hasBlocker = blk.some((b) => b.severity === 'blocker');
   const platformish = cats.some((c) => PLATFORM_BLOCKER_RE.test(c));
-  if (hasBlocker || platformish) return 'needs_adaptation';
+  if (unadaptable.length) return 'needs_adaptation_partial';     // some APIs cannot be adapted
+  if (hasBlocker || platformish) return 'needs_adaptation_full'; // needs work but nothing flagged unadaptable
   const path = String(ha.recommended_path || '').toLowerCase();
   const native = cats.some((c) => /native_dependency|ffi|toolchain|posix/.test(c));
   if (/run_on_ported_runtime/.test(path) && !native) return 'no_adaptation';
   if (native) return 'recompile_only';
   // pure script, no native work, no blockers → nothing to adapt
   return 'no_adaptation';
+}
+
+// ---- bottom-up adaptation rollup (serve-time, API-granular) ----------------
+// worst-wins lattice over porting classes. Legacy `needs_adaptation` ≡ partial.
+const CLASS_RANK = { no_adaptation: 0, recompile_only: 1, needs_adaptation_full: 2,
+  needs_adaptation: 3, needs_adaptation_partial: 3, infeasible: 4 };
+const RANK_CLASS = ['no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'infeasible'];
+const rankOf = (cls) => (cls in CLASS_RANK ? CLASS_RANK[cls] : 0);
+const classOfRank = (r) => RANK_CLASS[Math.min(Math.max(r, 0), 4)];
+// normalize a symbol for cross-library matching: lowercase + also keep the last
+// segment after a . / :: / -> so numpy.ndarray ~ ndarray, cv::Mat ~ mat.
+function symKeys(s) {
+  const low = String(s || '').toLowerCase().trim();
+  if (!low) return [];
+  const tail = low.split(/::|->|\./).pop();
+  return tail && tail !== low ? [low, tail] : [low];
+}
+
+// Compute each node's EFFECTIVE adaptation class from its own class + its analyzed
+// children's, where a child's un-adaptable APIs only block the parent if the parent
+// actually calls them (used_symbols ∩ child.unadaptable public_entry). Falls back to
+// dependency scope when used_symbols is absent. Mutates topo.nodes in place.
+function rollupAdaptation(topo) {
+  const byId = new Map(topo.nodes.map((n) => [n.id, n]));
+  const out = new Map();   // id -> [{edge fields}]
+  for (const e of topo.edges) { if (!out.has(e.source)) out.set(e.source, []); out.get(e.source).push(e); }
+  // a node's own class for rollup purposes (harmonized ⇒ already ported ⇒ no work)
+  const selfClassOf = (n) => n.harmonyAdapted ? 'no_adaptation'
+    : !n.analyzed ? 'unanalyzed'
+    : (n.selfClass || 'no_adaptation');
+  const state = new Map();  // 0/undef unvisited, 1 visiting, 2 done
+  const memo = new Map();
+  const eff = (id) => {
+    const n = byId.get(id);
+    if (!n) return { rank: null, uncertain: false };
+    if (state.get(id) === 2) return memo.get(id);
+    const self = selfClassOf(n);
+    if (state.get(id) === 1)   // cycle: use this node's own class only, no deeper recursion
+      return self === 'unanalyzed' ? { rank: null, uncertain: true } : { rank: rankOf(self), uncertain: false };
+    state.set(id, 1);
+    // harmonized ⇒ official OHOS build already subsumes its deps → sealed leaf, no roll-up
+    if (n.harmonyAdapted) { const r = { rank: 0, uncertain: false, blockingChildren: [] }; state.set(id, 2); memo.set(id, r); return r; }
+    if (self === 'unanalyzed') { const r = { rank: null, uncertain: true }; state.set(id, 2); memo.set(id, r); return r; }
+    let worst = rankOf(self), uncertain = false;
+    const blockingChildren = [];
+    for (const e of (out.get(id) || [])) {
+      const child = byId.get(e.target);
+      if (!child) continue;
+      const ce = eff(e.target);
+      if (ce.rank == null) { uncertain = true; continue; }   // child unknown → can't lower, marks uncertain
+      uncertain = uncertain || ce.uncertain;
+      // child's un-adaptable surface (public entry preferred, api fallback)
+      const unAdaptKeys = new Set();
+      for (const u of (child.unadaptableApis || [])) for (const k of symKeys(u.public_entry || u.api)) unAdaptKeys.add(k);
+      const used = Array.isArray(e.usedSymbols) ? e.usedSymbols : [];
+      const usedKeys = new Set(); for (const s of used) for (const k of symKeys(s)) usedKeys.add(k);
+      const hit = [...usedKeys].filter((k) => unAdaptKeys.has(k));
+      let contrib;
+      if (unAdaptKeys.size === 0) contrib = ce.rank;                 // child fully adaptable → inherit its (low) class
+      else if (hit.length) contrib = ce.rank;                       // parent hits the un-adaptable part → full child class
+      else if (used.length) contrib = Math.min(ce.rank, CLASS_RANK.recompile_only); // uses child but not the bad part
+      else {                                                        // unknown usage → scope fallback
+        const sc = String(e.scope || '').toLowerCase();
+        contrib = (sc === 'optional' || sc === 'peer') ? Math.min(ce.rank, CLASS_RANK.recompile_only) : ce.rank;
+      }
+      if (contrib > rankOf(self)) blockingChildren.push({
+        child: child.label, libName: child.libName || null,
+        childClass: classOfRank(ce.rank), contribClass: classOfRank(contrib),
+        viaSymbols: hit, basis: hit.length ? 'used_api' : (used.length ? 'used_other' : 'scope') });
+      if (contrib > worst) worst = contrib;
+    }
+    const r = { rank: worst, uncertain, blockingChildren };
+    state.set(id, 2); memo.set(id, r);
+    return r;
+  };
+  for (const n of topo.nodes) {
+    const r = eff(n.id);
+    if (!n.analyzed && !n.harmonyAdapted) { n.rollupClass = null; n.rollupUncertain = false; continue; }
+    n.rollupClass = r.rank == null ? null : classOfRank(r.rank);
+    n.rollupUncertain = !!r.uncertain;
+    n.blockingChildren = r.blockingChildren || [];
+  }
+  return topo;
 }
 
 // Runtime-relevant dep (for the topology): runtime/optional (or unscoped), not local.
@@ -470,17 +560,23 @@ function buildDepTopology(rootName, maxDepth = 6, maxNodes = 300) {
         if (analyzed && hit.libName !== cur.libName) queue.push({ libName: hit.libName, id, depth: cur.depth + 1 });
       }
       const ek = cur.id + '>' + id;
-      if (cur.id !== id && !edgeSeen.has(ek)) { edgeSeen.add(ek); edges.push({ source: cur.id, target: id }); }
+      if (cur.id !== id && !edgeSeen.has(ek)) {
+        edgeSeen.add(ek);
+        edges.push({ source: cur.id, target: id,
+          usedSymbols: Array.isArray(d.used_symbols) ? d.used_symbols : [],
+          scope: d.scope || null });
+      }
     }
   }
-  // classify each node
+  // classify each node (self porting class + the un-adaptable API surface for rollup)
   for (const node of nodes.values()) {
     if (node.analyzed) {
       const rep = getRep(node.libName);
-      node.portingClass = derivePortingClass(rep);
+      node.portingClass = node.selfClass = derivePortingClass(rep);
       const ha = (rep && rep.harmony_adaptation) || {};
       node.feasibility = ha.feasibility || null;
       node.summary = ha.summary || '';
+      node.unadaptableApis = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
     }
   }
   return { root: rootName, nodes: [...nodes.values()], edges };
@@ -553,7 +649,8 @@ function createAnalyzeJob(opts) {
   if (opts.printLogs ?? settings.printLogs) argv.push('--print-logs');
   argv.push(prompt);
 
-  const job = new Job('analyze', { name, model, runDir, reportPath, argv, prompt });
+  const job = new Job('analyze', { name, model, runDir, reportPath, argv, prompt,
+    recursionSession: opts.recursionSession || null });
   job.setStatus('queued');
   analyzeQueue.push(job);
   pumpAnalyze();
@@ -576,6 +673,231 @@ function spawnAnalyze(job) {
   const argv = job.meta.argv;
   pipeProcess(job, spawn(argv[0], argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }));
 }
+
+// ---------------------------------------------------------------- recursive analysis (sessions)
+// Drive the "analyze a library, then recursively clone+analyze its runtime deps"
+// loop. System / no-source libs are leaves (not recursed). Level-triggered: every
+// tick() recomputes the frontier from on-disk state (repos/ + runs/ reports) and
+// advances each dep one step, so it dedupes identically to the dep-topology page,
+// never re-analyzes an already-analyzed lib, and survives a server restart.
+const recursionSessions = new Map();   // id -> RecursionSession
+const CLONE_MAX = 3;                   // cap concurrent clones a session launches
+const TERMINAL = new Set(['analyzed', 'leaf_system', 'leaf_prebuilt', 'leaf_interface',
+  'leaf_no_source', 'ambiguous', 'failed', 'capped']);
+const ACTIVE = new Set(['pending', 'resolving', 'resolved', 'cloning', 'analyzing']);
+
+class RecursionSession {
+  constructor(root, opts = {}) {
+    this.id = crypto.randomBytes(6).toString('hex');
+    this.root = root;
+    this.opts = {
+      maxDepth: Math.min(Math.max(parseInt(opts.maxDepth, 10) || 6, 1), 8),
+      maxNodes: Math.min(Math.max(parseInt(opts.maxNodes, 10) || 150, 1), 500),
+    };
+    this.status = 'running';                  // running | stopped | done
+    this.decisions = new Map();               // depKey -> decision
+    this.events = [];
+    this.clients = new Set();
+    this.createdAt = new Date().toISOString();
+    this._changed = false;
+  }
+
+  _set(dec, state, reason, libName) {
+    if (dec.state !== state || (reason !== undefined && dec.reason !== reason)) this._changed = true;
+    dec.state = state;
+    if (reason !== undefined) dec.reason = reason;
+    if (libName) dec.libName = libName;
+  }
+  _inflightClones() { let n = 0; for (const d of this.decisions.values()) if (d.state === 'cloning') n++; return n; }
+  _workCount() { let n = 0; for (const d of this.decisions.values()) if (['cloning', 'analyzing', 'analyzed'].includes(d.state)) n++; return n; }
+
+  // Resolve a clonable repo URL for a dep (async, fire-and-forget → re-ticks).
+  async _resolve(dec, d) {
+    dec.resolving = true;
+    this._set(dec, 'resolving');
+    this._flush();
+    let url = extractGitUrl(d.source, d.version);
+    let leaf = null;
+    if (!url && settings.enableNetworkResolve) {
+      try {
+        const r = await resolve.resolveRepo(ecoNorm(d.ecosystem), d.name);
+        if (r && (r.interface || r.is_system)) leaf = 'leaf_interface';
+        else if (r && r.url) url = r.url;
+      } catch (_) {}
+    }
+    dec.resolving = false;
+    if (this.status !== 'running') return;
+    if (url) { dec.url = url; dec.repoName = repoNameFromUrl(url); this._set(dec, 'resolved'); }
+    else if (leaf) this._set(dec, 'leaf_interface', '系统/接口库，无单一源码仓库');
+    else this._set(dec, 'leaf_no_source', '解析不出仓库 URL，需人工解析');
+    this._flush();
+    this.tick();
+  }
+
+  // Advance one dependency by a single step based on current disk state.
+  _advance(dec, d, repos) {
+    if (TERMINAL.has(dec.state)) return;
+    if (dec.ambiguous) return this._set(dec, 'ambiguous', '匹配到多个已分析库，需人工确认');
+    if (d.locality === 'system' || d.acquisition === 'system')
+      return this._set(dec, 'leaf_system', '系统库（find_package/预装），无源码');
+    if (d.acquisition === 'prebuilt_binary')
+      return this._set(dec, 'leaf_prebuilt', '预编译二进制，无源码');
+
+    // need a repo URL first
+    if (!dec.repoName) {
+      if (dec.state !== 'resolving') this._resolve(dec, d);   // async; re-ticks
+      return;
+    }
+    const repoName = dec.repoName;
+    // already analyzed?
+    if (latestReport(repoName)) return this._set(dec, 'analyzed', '', repoName);
+
+    const cloned = repos.has(repoName) || fs.existsSync(path.join(REPOS, repoName));
+    // a clone/analyze job we launched may have just ended — react to its outcome
+    if (dec.state === 'analyzing') {
+      const j = jobs.get(dec.jobId);
+      if (j && (j.status === 'running' || j.status === 'queued')) return;   // still going
+      return this._set(dec, 'failed', '分析未产出 report.json');
+    }
+    if (dec.state === 'cloning') {
+      const j = jobs.get(dec.jobId);
+      if (j && (j.status === 'running' || j.status === 'queued')) return;   // still going
+      if (!cloned) return this._set(dec, 'failed', '克隆失败');
+      // cloned ok → fall through to start analyze
+    }
+
+    if (!cloned) {
+      if ((dec.cloneAttempts || 0) >= 1) return this._set(dec, 'failed', '克隆失败');
+      if (this._inflightClones() >= CLONE_MAX) return;            // slot busy → retry next tick
+      if (this._workCount() >= this.opts.maxNodes) return this._set(dec, 'capped', '达到节点上限');
+      try {
+        const job = startClone({ url: dec.url });
+        job.meta.recursionSession = this.id;
+        dec.jobId = job.id; dec.cloneAttempts = (dec.cloneAttempts || 0) + 1;
+        this._set(dec, 'cloning', '克隆中');
+      } catch (e) {
+        if (!fs.existsSync(path.join(REPOS, repoName))) this._set(dec, 'failed', '克隆出错: ' + e.message);
+      }
+      return;
+    }
+    // cloned but not analyzed → start analyze (queued under maxConcurrent)
+    if ((dec.analyzeAttempts || 0) >= 1) return this._set(dec, 'failed', '分析失败');
+    if (this._workCount() >= this.opts.maxNodes) return this._set(dec, 'capped', '达到节点上限');
+    try {
+      const job = createAnalyzeJob({ name: repoName, recursionSession: this.id });
+      dec.jobId = job.id; dec.analyzeAttempts = (dec.analyzeAttempts || 0) + 1;
+      this._set(dec, 'analyzing', '分析中');
+    } catch (e) { this._set(dec, 'failed', '分析启动失败: ' + e.message); }
+  }
+
+  // Recompute the frontier from disk and advance every pending dependency once.
+  tick() {
+    if (this.status !== 'running') return;
+    this._changed = false;
+    const repCache = new Map();
+    const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
+    const index = buildLibIndex(getRep);
+    const urlIndex = buildLibUrlIndex(getRep);
+    const repos = new Set(listRepos());
+
+    // BFS over analyzed reports → collect unanalyzed runtime deps + their depth.
+    const seen = new Set([this.root]);
+    const frontier = new Map();   // depKey -> { d, depth, ambiguous }
+    const queue = [{ libName: this.root, depth: 0 }];
+    while (queue.length) {
+      const cur = queue.shift();
+      if (cur.depth >= this.opts.maxDepth) continue;
+      const rep = getRep(cur.libName);
+      const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
+      for (const d of deps) {
+        if (!d || !d.name || !isRuntimeDep(d)) continue;
+        const hit = resolveDepLib(d, index, urlIndex);
+        if (hit && !hit.ambiguous) {                       // analyzed → recurse into it
+          if (!seen.has(hit.libName)) { seen.add(hit.libName); queue.push({ libName: hit.libName, depth: cur.depth + 1 }); }
+          continue;
+        }
+        const depKey = ecoNorm(d.ecosystem) + ':' + normName(d.name);
+        const prev = frontier.get(depKey);
+        if (!prev || cur.depth + 1 < prev.depth)
+          frontier.set(depKey, { d, depth: cur.depth + 1, ambiguous: !!(hit && hit.ambiguous) });
+      }
+    }
+
+    // advance each frontier dependency
+    for (const [depKey, f] of frontier) {
+      let dec = this.decisions.get(depKey);
+      if (!dec) {
+        dec = { key: depKey, name: f.d.name, ecosystem: ecoNorm(f.d.ecosystem),
+          depth: f.depth, state: 'pending', reason: '', ambiguous: f.ambiguous };
+        this.decisions.set(depKey, dec);
+        this._changed = true;
+      } else { dec.depth = Math.min(dec.depth, f.depth); dec.ambiguous = dec.ambiguous || f.ambiguous; }
+      this._advance(dec, f.d, repos);
+    }
+    // reconcile in-flight decisions that completed but left the frontier
+    for (const dec of this.decisions.values()) {
+      if (TERMINAL.has(dec.state)) continue;
+      if (dec.repoName && latestReport(dec.repoName)) this._set(dec, 'analyzed', '', dec.repoName);
+    }
+    // done when nothing is active anymore
+    if (![...this.decisions.values()].some((d) => ACTIVE.has(d.state))) {
+      if (this.status === 'running') { this.status = 'done'; this._changed = true; }
+    }
+    this._flush();
+  }
+
+  stop() { if (this.status === 'running') { this.status = 'stopped'; this.emit('update', this.snapshot()); } }
+
+  _counts() {
+    const c = {};
+    for (const d of this.decisions.values()) c[d.state] = (c[d.state] || 0) + 1;
+    return c;
+  }
+  snapshot() {
+    return {
+      id: this.id, root: this.root, status: this.status, opts: this.opts,
+      createdAt: this.createdAt, counts: this._counts(),
+      decisions: [...this.decisions.values()]
+        .sort((a, b) => a.depth - b.depth || a.name.localeCompare(b.name))
+        .map((d) => ({ name: d.name, ecosystem: d.ecosystem, depth: d.depth, state: d.state,
+          reason: d.reason || '', repoName: d.repoName || null, libName: d.libName || null, url: d.url || null })),
+    };
+  }
+  _flush() { if (this._changed) { this._changed = false; this.emit('update', this.snapshot()); } }
+  emit(event, data) {
+    const payload = { event, data, t: new Date().toISOString() };
+    this.events.push(payload);
+    if (this.events.length > 2000) this.events.shift();
+    const frame = `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`;
+    for (const res of this.clients) { try { res.write(frame); } catch (_) {} }
+  }
+}
+
+function startRecursionSession(root, opts = {}) {
+  const s = new RecursionSession(root, opts);
+  recursionSessions.set(s.id, s);
+  // keep memory bounded — drop oldest finished sessions
+  if (recursionSessions.size > 30) {
+    const old = [...recursionSessions.values()].filter((x) => x.status !== 'running')
+      .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1))[0];
+    if (old) recursionSessions.delete(old.id);
+  }
+  s.tick();
+  return s;
+}
+
+// Level-trigger: re-tick every running session after any job ends, and optionally
+// auto-start recursion after a user-initiated analyze (one not already part of a session).
+jobEndListeners.add((job) => {
+  for (const s of recursionSessions.values()) if (s.status === 'running') s.tick();
+  if (job.type === 'analyze' && job.status === 'done' && !job.meta.recursionSession
+      && settings.recursiveAfterAnalyze) {
+    const root = job.meta.name;
+    if (latestReport(root)
+        && ![...recursionSessions.values()].some((s) => s.root === root && s.status === 'running'))
+      startRecursionSession(root);
+  }
+});
 
 // ---------------------------------------------------------------- agent repo-resolver (queued)
 const agentResolveQueue = [];
@@ -866,17 +1188,67 @@ const server = http.createServer(async (req, res) => {
       } else {
         for (const n of topo.nodes) n.harmonyAdapted = !!n.harmonyAdaptedStamp;
       }
-      // final status per node: harmonized > (analyzed ? porting_class : unanalyzed)
-      const counts = {};
+      // bottom-up roll-up: each node's effective class incl. the deps it actually uses
+      rollupAdaptation(topo);
+      // status per node, two views — self (本体) and rollup (含依赖综合).
+      // harmonized > (analyzed ? class : unanalyzed); root keeps its own class.
+      const statusFor = (n, cls) => n.isRoot && !n.harmonyAdapted && cls ? cls
+        : n.harmonyAdapted ? 'harmonized'
+        : n.analyzed ? (cls || 'unanalyzed')
+        : 'unanalyzed';
+      const counts = {}, rollupCounts = {};
       for (const n of topo.nodes) {
-        n.status = n.isRoot && !n.harmonyAdapted && n.portingClass ? n.portingClass
-          : n.harmonyAdapted ? 'harmonized'
-          : n.analyzed ? (n.portingClass || 'unanalyzed')
-          : 'unanalyzed';
+        n.status = statusFor(n, n.portingClass);
+        n.rollupStatus = statusFor(n, n.rollupClass);
         delete n.harmonyAdaptedStamp;
         counts[n.status] = (counts[n.status] || 0) + 1;
+        rollupCounts[n.rollupStatus] = (rollupCounts[n.rollupStatus] || 0) + 1;
       }
-      return send(res, 200, { ...topo, counts });
+      return send(res, 200, { ...topo, counts, rollupCounts });
+    }
+
+    if (req.method === 'POST' && pathname === '/api/recurse') {
+      const body = await readBody(req);
+      const name = body.name;
+      if (!name) return send(res, 400, { error: 'name required' });
+      if (!latestReport(name)) return send(res, 404, { error: 'root library not analyzed yet' });
+      const existing = [...recursionSessions.values()].find((s) => s.root === name && s.status === 'running');
+      if (existing) return send(res, 200, { sessionId: existing.id, existing: true });
+      const s = startRecursionSession(name, body);
+      return send(res, 200, { sessionId: s.id });
+    }
+
+    if (req.method === 'GET' && pathname === '/api/recurse/stream') {
+      const s = recursionSessions.get(query.session);
+      if (!s) return send(res, 404, { error: 'unknown session' });
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+      res.write('retry: 2000\n\n');
+      res.write(`event: update\ndata: ${JSON.stringify({ event: 'update', data: s.snapshot() })}\n\n`);
+      if (s.status !== 'running') { res.end(); return; }
+      s.clients.add(res);
+      const hb = setInterval(() => { try { res.write(': ping\n\n'); } catch (_) {} }, 15000);
+      req.on('close', () => { clearInterval(hb); s.clients.delete(res); });
+      return;
+    }
+
+    if (req.method === 'POST' && pathname === '/api/recurse/stop') {
+      const body = await readBody(req);
+      const s = recursionSessions.get(body.session);
+      if (!s) return send(res, 404, { error: 'unknown session' });
+      s.stop();
+      return send(res, 200, { status: s.status });
+    }
+
+    if (req.method === 'GET' && pathname === '/api/recurse') {
+      if (query.session) {
+        const s = recursionSessions.get(query.session);
+        if (!s) return send(res, 404, { error: 'unknown session' });
+        return send(res, 200, s.snapshot());
+      }
+      const sessions = [...recursionSessions.values()]
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+        .map((s) => ({ id: s.id, root: s.root, status: s.status, counts: s._counts(), createdAt: s.createdAt }));
+      return send(res, 200, { sessions });
     }
 
     if (req.method === 'GET' && pathname === '/api/report') {

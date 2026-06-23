@@ -79,6 +79,12 @@ registry 里的样子），**禁止**用 `/`、`,`、`+`、`、` 把多个不同
    the CMakeLists with `find_package` / `FetchContent_Declare` / `ExternalProject_Add`
    / `target_link_libraries`, a `.gitmodules` entry, or a requirements/manifest line.
    This answers "仓库里有没有声明它是怎么集成进来的".
+9. Fill **`used_symbols`** (best-effort, 选填) — 本库**实际调用到**的该依赖的公共符号/API
+   名（如 `cairo_create`、`BIO_new`、`numpy.ndarray`）。用 codegraph（`callees`/`search`）或
+   grep 该依赖的头文件/导出符号在本仓的调用点取一组代表性符号即可，不必穷举。这是 dim-9
+   **自底向上综合**用：服务端把它与该依赖（子库）`harmony_adaptation.unadaptable_apis[].public_entry`
+   求交，命中才把子库的不可适配计为本库阻碍——**本库没调到子库的不可适配 API 就不阻塞本库迁移**。
+   只对**非系统、可分析**的依赖填；系统库 / 拿不准用法时留空（综合会回退到依赖 scope）。
 
 ## Output (fills report `dependencies`)
 ```json
@@ -93,7 +99,7 @@ registry 里的样子），**禁止**用 `/`、`,`、`+`、`、` 把多个不同
     {"name": "coordgen", "ecosystem": "cpp", "scope": "optional", "version": "3.0.2",
      "purpose": "2D coordinate generation", "acquisition": "download_build", "locality": "remote",
      "source": "https://github.com/schrodinger/coordgenlibs（未找到时 downloadAndCheckMD5 下载源码内嵌编译）",
-     "declared_in": ["External/CoordGen/CMakeLists.txt"]},
+     "declared_in": ["External/CoordGen/CMakeLists.txt"], "used_symbols": ["sketcherMinimize", "CoordgenMinimizer"]},
     {"name": "AvalonTools", "ecosystem": "cpp", "scope": "optional", "version": "2.0.5-pre.3",
      "purpose": "额外指纹与结构检查", "acquisition": "vendored", "locality": "local",
      "source": "仓库内 External/AvalonTools", "declared_in": ["External/AvalonTools/CMakeLists.txt"]}

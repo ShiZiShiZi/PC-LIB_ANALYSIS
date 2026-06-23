@@ -136,12 +136,14 @@ def rows_overview(name, r):
         be.get("language_standard", ""),
         be.get("runtime_version", ""),
         _join(be.get("platforms", []) or []),
+        ha.get("porting_class", ""),
         ha.get("feasibility", ""),
         ha.get("overall_difficulty", ""),
         ha.get("effort_estimate", ""),
         ha.get("recommended_path", ""),
         ha.get("summary", ""),
         len(ha.get("blockers", []) or []),
+        len(ha.get("unadaptable_apis", []) or []),
         _join(ha.get("key_tasks", []) or []),
         _g(r, "meta", "confidence_overall", default=""),
     ]]
@@ -152,8 +154,8 @@ HEAD_OVERVIEW = [
     "功能摘要", "领域", "目标用户", "总代码", "生产代码", "测试代码", "样例代码",
     "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度",
     "运行时依赖数", "依赖总数", "API摘要", "平台依赖", "动态库数", "构建系统",
-    "语言标准", "运行时版本", "支持平台", "鸿蒙可行性", "鸿蒙难度", "工作量",
-    "推荐路径", "鸿蒙总结", "阻碍点数", "关键任务", "整体置信度",
+    "语言标准", "运行时版本", "支持平台", "移植分级", "鸿蒙可行性", "鸿蒙难度", "工作量",
+    "推荐路径", "鸿蒙总结", "阻碍点数", "不支持API数", "关键任务", "整体置信度",
 ]
 
 
@@ -189,13 +191,14 @@ def rows_deps(name, r):
             name, d.get("name", ""), d.get("ecosystem", ""), d.get("scope", ""),
             d.get("version", ""), d.get("locality", ""), d.get("acquisition", ""),
             d.get("source", ""), d.get("purpose", ""), _join(d.get("declared_in", []) or []),
+            _join(d.get("used_symbols", []) or []),
         ])
     return out
 
 
 HEAD_DEPS = [
     "库名", "名称", "生态", "作用域", "版本", "本地/远端", "获取方式", "来源", "用途",
-    "声明位置",
+    "声明位置", "调用符号",
 ]
 
 
@@ -265,6 +268,22 @@ HEAD_BLOCKERS = [
 ]
 
 
+def rows_unadaptable(name, r):
+    out = []
+    for u in _g(r, "harmony_adaptation", "unadaptable_apis", default=[]) or []:
+        out.append([
+            name, u.get("api", ""), u.get("public_entry", ""), u.get("reason", ""),
+            u.get("blocking_native_api", ""), u.get("category", ""),
+            _join(u.get("evidence", []) or []),
+        ])
+    return out
+
+
+HEAD_UNADAPTABLE = [
+    "库名", "不支持API", "公共入口", "原因", "阻碍根源API", "类别", "证据",
+]
+
+
 def rows_observations(name, r):
     out = []
     for o in _g(r, "meta", "observations", default=[]) or []:
@@ -287,6 +306,7 @@ SHEETS = [
     ("动态加载库", HEAD_DYNLIBS, rows_dynlibs),
     ("运行时交互面", HEAD_SURFACE, rows_surface),
     ("鸿蒙阻碍点", HEAD_BLOCKERS, rows_blockers),
+    ("不支持API清单", HEAD_UNADAPTABLE, rows_unadaptable),
     ("模型观察", HEAD_OBSERVATIONS, rows_observations),
 ]
 
