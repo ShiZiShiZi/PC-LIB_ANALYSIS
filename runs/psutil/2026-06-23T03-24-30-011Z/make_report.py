@@ -1,0 +1,346 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Assemble the psutil analysis report."""
+
+import json
+import os
+from pathlib import Path
+
+RUN_DIR = Path(__file__).resolve().parent
+METRICS_PATH = RUN_DIR / "metrics.json"
+REPORT_PATH = RUN_DIR / "report.json"
+
+with open(METRICS_PATH, "r", encoding="utf-8") as f:
+    metrics = json.load(f)
+
+# Keep deterministic block verbatim, but expose it under the schema key "notes".
+tests_block = dict(metrics["tests"])
+tests_block["notes"] = tests_block.pop("note", tests_block.get("notes", ""))
+
+deps = [
+    {"name": "setuptools", "ecosystem": "python", "scope": "build", "version": ">=43", "purpose": "构建后端与 PEP 517 构建依赖", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:255-256", "setup.py:25-27"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "psleak", "ecosystem": "python", "scope": "test", "version": None, "purpose": "内存泄漏测试辅助", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:66"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pytest", "ecosystem": "python", "scope": "test", "version": None, "purpose": "测试框架", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:67"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pytest-instafail", "ecosystem": "python", "scope": "test", "version": None, "purpose": "pytest 即时失败插件", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:68"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pytest-xdist", "ecosystem": "python", "scope": "test", "version": None, "purpose": "pytest 并行执行插件", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:69"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pywin32", "ecosystem": "python", "scope": "test", "version": None, "purpose": "Windows 测试所需的 Win32 API 绑定", "acquisition": "package_manager", "locality": "remote", "source": "PyPI（Windows 限定）", "declared_in": ["setup.py:71"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "wheel", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "构建 wheel 分发包", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:72", "setup.py:104"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "wmi", "ecosystem": "python", "scope": "test", "version": None, "purpose": "Windows 测试所需的 WMI 绑定", "acquisition": "package_manager", "locality": "remote", "source": "PyPI（Windows 限定）", "declared_in": ["setup.py:73"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "black", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "代码格式化", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:79"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "rstwrap", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "reStructuredText 行宽格式化", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:80"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "ruff", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "Python linter", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:81"], "used_symbols": [], "harmony_adapted": True, "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"},
+    {"name": "sphinx-lint", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "Sphinx 文档 lint", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:82"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "toml-sort", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "TOML 文件排序", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:83"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "abi3audit", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "ABI3 兼容性审计", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:91"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "check-manifest", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "MANIFEST 检查", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:92"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "coverage", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "代码覆盖率", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:93"], "used_symbols": [], "harmony_adapted": True, "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"},
+    {"name": "packaging", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "版本解析", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:94"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pylint", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "静态分析", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:95"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pyperf", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "性能基准测试", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:96"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pypinfo", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "PyPI 下载统计", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:97"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pytest-cov", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "pytest 覆盖率插件", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:98"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "requests", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "HTTP 请求（内部脚本/发布）", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:99"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "twine", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "PyPI 发布", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:100"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "validate-pyproject", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "pyproject.toml 校验（声明含 extras [all]）", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:101"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "virtualenv", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "虚拟环境管理", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:102"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "vulture", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "死代码检测", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["setup.py:103"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "colorama", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "Windows 终端着色", "acquisition": "package_manager", "locality": "remote", "source": "PyPI（Windows 限定）", "declared_in": ["setup.py:105"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+    {"name": "pyreadline3", "ecosystem": "python", "scope": "dev", "version": None, "purpose": "Windows readline 支持", "acquisition": "package_manager", "locality": "remote", "source": "PyPI（Windows 限定）", "declared_in": ["setup.py:106"], "used_symbols": [], "harmony_adapted": False, "harmony_adapted_source": None},
+]
+
+by_ecosystem = {"python": [d["name"] for d in deps]}
+
+report = {
+    "library": {
+        "name": "psutil",
+        "package_name": "psutil",
+        "source_url": "https://github.com/giampaolo/psutil",
+        "analyzed_at": "2026-06-23T03:24:30.011Z",
+        "commit": "7b6a9a63d829682342c0bffdefbd7455ba343989",
+        "one_liner": "跨平台 Python 进程与系统资源监控库，提供 CPU、内存、磁盘、网络、传感器及进程管理接口。",
+        "ecosystem": "python",
+        "bindings": [],
+    },
+    "function_summary": {
+        "summary": "psutil 是一个跨平台的 Python 进程与系统资源监控库，提供 CPU、内存、磁盘、网络、传感器以及进程信息的查询与管理接口。它通过 Python 封装加平台专属 C 扩展，将 ps、top、free、netstat、lsof 等命令行工具的能力以编程方式暴露给开发者，广泛用于系统监控、性能分析、进程管理和资源限制场景。",
+        "categories": [
+            {"name": "CPU 与系统负载", "description": "查询 CPU 时间片、使用率、核心数、频率以及系统平均负载。", "evidence": ["psutil/__init__.py:172-174", "psutil/_pslinux.py:439-503", "psutil/arch/linux/cpu.c"]},
+            {"name": "内存与交换分区", "description": "读取物理内存、可用内存、缓存及交换分区使用情况。", "evidence": ["psutil/_pslinux.py:246-400", "psutil/arch/linux/mem.c"]},
+            {"name": "磁盘与 I/O", "description": "枚举磁盘分区、计算磁盘使用率、统计块设备 I/O。", "evidence": ["psutil/_pslinux.py:982-1162", "psutil/arch/linux/disk.c"]},
+            {"name": "网络接口与连接", "description": "获取网卡地址、状态、流量统计以及 TCP/UDP/Unix 套接字连接信息。", "evidence": ["psutil/_pslinux.py:894-946", "psutil/arch/posix/net.c", "psutil/arch/linux/net.c"]},
+            {"name": "进程信息与管理", "description": "枚举进程、查询进程属性（PID、PPID、CPU、内存、打开文件、连接等）并支持设置优先级、CPU 亲和性与 I/O 优先级。", "evidence": ["psutil/__init__.py:168-171", "psutil/_pslinux.py:1474-2233", "psutil/arch/posix/proc.c", "psutil/arch/linux/proc.c"]},
+            {"name": "传感器与电池", "description": "读取温度传感器、风扇转速与电池状态（主要依赖 Linux sysfs）。", "evidence": ["psutil/_pslinux.py:1206-1400"]},
+            {"name": "用户与会话", "description": "查询登录用户与会话信息。", "evidence": ["psutil/_pslinux.py:1447", "psutil/arch/posix/users.c"]},
+        ],
+        "domain": "系统监控与进程管理",
+        "target_users": "Python 开发者、系统管理员、DevOps 与监控平台构建者",
+    },
+    "languages": metrics["languages"],
+    "code_metrics": metrics["code_metrics"],
+    "tests": tests_block,
+    "license": {
+        "spdx": "BSD-3-Clause",
+        "name": "BSD 3-Clause License",
+        "confidence": "high",
+        "is_dual_licensed": False,
+        "license_files": ["LICENSE"],
+        "evidence": "LICENSE 文件与 BSD-3-Clause 文本一致；setup.py 中 license='BSD-3-Clause'；README.rst License 节标注 BSD-3。",
+        "notes": "宽松型许可，需保留版权声明；无 copyleft 义务。",
+    },
+    "dependencies": {
+        "count": len(deps),
+        "manifests": ["pyproject.toml", "setup.py"],
+        "by_ecosystem": by_ecosystem,
+        "dependencies": deps,
+        "notes": "无运行时依赖；所有声明依赖均为构建、测试、lint 或开发工具。setuptools、wheel 在多个作用域中出现，按最主要作用域归类。",
+    },
+    "native_api": {
+        "summary": "psutil 大量使用 Python 标准库与 C 标准库，并通过平台专属后端调用 POSIX、Linux procfs/sysfs/ioctl/syscall、Windows Win32/NT API、macOS sysctl/mach/IOKit 等；Windows 与 Linux 还动态加载系统 DLL/so。",
+        "groups": [
+            {
+                "type": "python_stdlib",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "os.sysconf", "purpose": "读取系统配置常量（SC_CLK_TCK、_SC_PAGESIZE 等）", "count": 2, "evidence": ["psutil/_pslinux.py:64", "psutil/_psposix.py:314"]},
+                    {"name": "os.readlink", "purpose": "读取 /proc/PID/exe 等符号链接目标", "count": 3, "evidence": ["psutil/_pslinux.py:128", "psutil/_pslinux.py:1609"]},
+                    {"name": "os.stat / os.lstat", "purpose": "检查进程目录与文件存在性", "count": 5, "evidence": ["psutil/_pslinux.py:697", "psutil/_psposix.py:314"]},
+                    {"name": "os.listdir / os.walk", "purpose": "遍历 /proc、/sys/block 等目录", "count": 9, "evidence": ["psutil/_pslinux.py:1034", "psutil/_pslinux.py:1220"]},
+                    {"name": "glob.glob / glob.iglob", "purpose": "枚举 sysfs 传感器与 CPU 拓扑节点", "count": 11, "evidence": ["psutil/_pslinux.py:527", "psutil/_pslinux.py:1220"]},
+                    {"name": "re.compile", "purpose": "解析 /proc 与 sysfs 文本内容", "count": 17, "evidence": ["psutil/_pslinux.py:1234"]},
+                    {"name": "resource.prlimit", "purpose": "获取/设置进程资源限制", "count": 2, "evidence": ["psutil/_pslinux.py:2160"]},
+                    {"name": "os.waitpid", "purpose": "等待子进程结束并解析退出状态", "count": 3, "evidence": ["psutil/_psposix.py:144", "psutil/_psposix.py:168"]},
+                    {"name": "select.poll / select.kqueue", "purpose": "通过 pidfd 或 kqueue 等待进程退出", "count": 2, "evidence": ["psutil/_psposix.py:194", "psutil/_psposix.py:209"]},
+                    {"name": "os.pidfd_open", "purpose": "Linux 5.3+ pidfd 接口等待进程退出", "count": 1, "evidence": ["psutil/_psposix.py:182"]},
+                ],
+            },
+            {
+                "type": "python_c_api",
+                "category": "ffi",
+                "platform": "portable",
+                "apis": [
+                    {"name": "PyArg_ParseTuple", "purpose": "解析从 Python 传入 C 扩展的参数", "count": 20, "evidence": ["psutil/arch/linux/proc.c:47", "psutil/arch/linux/net.c:68"]},
+                    {"name": "Py_BuildValue", "purpose": "将 C 数据构造为 Python 对象返回", "count": 20, "evidence": ["psutil/arch/linux/proc.c:54", "psutil/arch/linux/mem.c:20"]},
+                    {"name": "PyModule_Create", "purpose": "创建 _psutil_linux 等扩展模块", "count": 1, "evidence": ["psutil/_psutil_linux.c:64"]},
+                    {"name": "PyCFunction_NewEx", "purpose": "注册 C 函数到扩展模块", "count": 1, "evidence": ["psutil/arch/posix/init.c:70"]},
+                    {"name": "PyErr_SetString", "purpose": "设置 Python 异常", "count": 10, "evidence": ["psutil/arch/linux/net.c:106"]},
+                    {"name": "PyList_New", "purpose": "构造返回列表", "count": 5, "evidence": ["psutil/arch/posix/net.c:127"]},
+                    {"name": "PyLong_FromLong", "purpose": "将 C 整数转为 Python int", "count": 10, "evidence": ["psutil/arch/linux/proc.c:128"]},
+                ],
+            },
+            {
+                "type": "c_standard_lib",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "sysconf", "purpose": "查询页大小等 POSIX 配置", "count": 4, "evidence": ["psutil/arch/posix/init.c:27", "psutil/arch/sunos/mem.c:..."]},
+                    {"name": "getpagesize", "purpose": "获取内存页大小", "count": 1, "evidence": ["psutil/arch/posix/init.c:33"]},
+                    {"name": "kill", "purpose": "检查 PID 是否存在（发送信号 0）", "count": 3, "evidence": ["psutil/arch/posix/pids.c:44", "psutil/_psposix.py:39"]},
+                    {"name": "getpriority", "purpose": "获取进程 nice 值", "count": 2, "evidence": ["psutil/arch/posix/proc.c:63"]},
+                    {"name": "setpriority", "purpose": "设置进程 nice 值", "count": 2, "evidence": ["psutil/arch/posix/proc.c:84"]},
+                    {"name": "setmntent / getmntent / endmntent", "purpose": "读取 /proc/self/mounts 等挂载表", "count": 3, "evidence": ["psutil/arch/linux/disk.c:31", "psutil/arch/linux/disk.c:39"]},
+                    {"name": "mallinfo / mallinfo2", "purpose": "获取 glibc 堆分配统计", "count": 2, "evidence": ["psutil/arch/linux/heap.c:42", "psutil/arch/linux/heap.c:68"]},
+                    {"name": "malloc_trim", "purpose": "释放未使用堆内存", "count": 1, "evidence": ["psutil/arch/linux/heap.c:86"]},
+                    {"name": "memset", "purpose": "初始化结构体内存", "count": 8, "evidence": ["psutil/arch/linux/net.c:78"]},
+                    {"name": "fprintf", "purpose": "调试日志输出", "count": 5, "evidence": ["psutil/arch/all/init.h:111"]},
+                ],
+            },
+            {
+                "type": "posix",
+                "category": "platform",
+                "platform": "posix",
+                "apis": [
+                    {"name": "getifaddrs / freeifaddrs", "purpose": "枚举网络接口地址", "count": 2, "evidence": ["psutil/arch/posix/net.c:135", "psutil/arch/posix/net.c:200"]},
+                    {"name": "getnameinfo", "purpose": "将 sockaddr 转为可读的 IP 字符串", "count": 1, "evidence": ["psutil/arch/posix/net.c:69"]},
+                    {"name": "socket", "purpose": "创建套接字用于 ethtool/ioctl 查询", "count": 2, "evidence": ["psutil/arch/linux/net.c:71"]},
+                    {"name": "ioctl", "purpose": "通用设备控制（网卡标志/MTU/双工速度）", "count": 7, "evidence": ["psutil/arch/posix/net.c:...", "psutil/arch/linux/net.c:81"]},
+                    {"name": "sched_getaffinity", "purpose": "获取进程 CPU 亲和性", "count": 1, "evidence": ["psutil/arch/linux/proc.c:105"]},
+                    {"name": "sched_setaffinity", "purpose": "设置进程 CPU 亲和性", "count": 1, "evidence": ["psutil/arch/linux/proc.c:185"]},
+                    {"name": "signal / sigaction", "purpose": "信号处理与发送", "count": 3, "evidence": ["psutil/arch/posix/proc.c:8", "psutil/arch/posix/pids.c:8"]},
+                ],
+            },
+            {
+                "type": "linux",
+                "category": "system",
+                "platform": "linux",
+                "apis": [
+                    {"name": "procfs (/proc/meminfo)", "purpose": "读取内存统计", "count": 2, "evidence": ["psutil/_pslinux.py:256", "psutil/_pslinux.py:376"]},
+                    {"name": "procfs (/proc/cpuinfo)", "purpose": "CPU 信息回退读取", "count": 1, "evidence": ["psutil/_pslinux.py:494"]},
+                    {"name": "procfs (/proc/stat)", "purpose": "CPU 时间片与系统统计", "count": 1, "evidence": ["psutil/_pslinux.py:503"]},
+                    {"name": "procfs (/proc/diskstats)", "purpose": "块设备 I/O 统计", "count": 1, "evidence": ["psutil/_pslinux.py:988"]},
+                    {"name": "procfs (/proc/net/tcp|udp|unix)", "purpose": "网络连接信息", "count": 3, "evidence": ["psutil/_pslinux.py:785", "psutil/_pslinux.py:828"]},
+                    {"name": "procfs (/proc/PID/stat)", "purpose": "进程状态、CPU/内存时间", "count": 1, "evidence": ["psutil/_pslinux.py:1626"]},
+                    {"name": "procfs (/proc/PID/status)", "purpose": "进程内存峰值、UID/GID、状态", "count": 1, "evidence": ["psutil/_pslinux.py:1848"]},
+                    {"name": "procfs (/proc/PID/smaps|smaps_rollup)", "purpose": "进程详细内存映射与 PSS", "count": 2, "evidence": ["psutil/_pslinux.py:1871"]},
+                    {"name": "procfs (/proc/PID/io)", "purpose": "进程磁盘 I/O 计数", "count": 1, "evidence": ["psutil/_pslinux.py:1743"]},
+                    {"name": "sysfs (/sys/class/hwmon)", "purpose": "温度传感器数据", "count": 2, "evidence": ["psutil/_pslinux.py:1220"]},
+                    {"name": "sysfs (/sys/class/thermal)", "purpose": "温度传感器回退", "count": 1, "evidence": ["psutil/_pslinux.py:1276"]},
+                    {"name": "sysfs (/sys/class/power_supply)", "purpose": "电池状态", "count": 1, "evidence": ["psutil/_pslinux.py:1357"]},
+                    {"name": "sysfs (/sys/block)", "purpose": "块设备列表与属性", "count": 2, "evidence": ["psutil/_pslinux.py:1034", "psutil/_pslinux.py:1050"]},
+                    {"name": "sysfs (/sys/devices/system/cpu)", "purpose": "CPU 拓扑与频率", "count": 2, "evidence": ["psutil/_pslinux.py:527", "psutil/_pslinux.py:593"]},
+                    {"name": "sysfs (/sys/dev/block)", "purpose": "块设备主/次设备号映射", "count": 1, "evidence": ["psutil/_pslinux.py:1116"]},
+                    {"name": "ioprio_get / ioprio_set (syscall)", "purpose": "获取/设置进程 I/O 优先级", "count": 2, "evidence": ["psutil/arch/linux/proc.c:26", "psutil/arch/linux/proc.c:31"]},
+                    {"name": "sysinfo (syscall)", "purpose": "读取总内存/交换/启动时间", "count": 1, "evidence": ["psutil/arch/linux/mem.c:17"]},
+                    {"name": "SIOCETHTOOL ioctl", "purpose": "查询网卡双工与速率", "count": 1, "evidence": ["psutil/arch/linux/net.c:81"]},
+                    {"name": "pidfd_open (Linux)", "purpose": "Linux 5.3+ pidfd 等待进程退出", "count": 1, "evidence": ["psutil/_psposix.py:182"]},
+                ],
+            },
+            {
+                "type": "win32",
+                "category": "platform",
+                "platform": "windows",
+                "apis": [
+                    {"name": "CreateToolhelp32Snapshot / Process32First/Next", "purpose": "枚举进程/线程快照", "count": 2, "evidence": ["psutil/arch/windows/proc.c:529", "psutil/arch/windows/proc.c:1136"]},
+                    {"name": "EnumProcesses", "purpose": "枚举所有 PID", "count": 1, "evidence": ["psutil/arch/windows/pids.c"]},
+                    {"name": "OpenProcess", "purpose": "打开进程句柄", "count": 2, "evidence": ["psutil/arch/windows/proc.c:94", "psutil/arch/windows/proc.c:842"]},
+                    {"name": "VirtualQueryEx / ReadProcessMemory", "purpose": "查询/读取进程虚拟内存", "count": 2, "evidence": ["psutil/arch/windows/proc_info.c", "psutil/arch/windows/proc.c:1081"]},
+                    {"name": "GetProcessMemoryInfo", "purpose": "获取进程内存统计", "count": 1, "evidence": ["psutil/arch/windows/proc.c:326"]},
+                    {"name": "NtQuerySystemInformation", "purpose": "查询系统级进程/处理器信息", "count": 3, "evidence": ["psutil/arch/windows/proc.c:234", "psutil/arch/windows/init.c:189"]},
+                    {"name": "NtQueryInformationProcess / NtSetInformationProcess", "purpose": "查询/设置进程信息", "count": 2, "evidence": ["psutil/arch/windows/init.c:194", "psutil/arch/windows/proc.c:842"]},
+                    {"name": "GetExtendedTcpTable / GetExtendedUdpTable", "purpose": "获取 TCP/UDP 连接表", "count": 2, "evidence": ["psutil/arch/windows/init.c:212"]},
+                    {"name": "WTSEnumerateSessionsW / WTSQuerySessionInformationW", "purpose": "查询登录用户会话", "count": 3, "evidence": ["psutil/arch/windows/init.c:267"]},
+                    {"name": "QueryFullProcessImageNameW", "purpose": "获取进程可执行文件路径", "count": 1, "evidence": ["psutil/arch/windows/proc_utils.c"]},
+                    {"name": "GetLogicalDriveStringsW / GetDiskFreeSpaceExW", "purpose": "磁盘分区与使用率", "count": 2, "evidence": ["psutil/arch/windows/disk.c"]},
+                    {"name": "PDH API (PdhOpenQuery 等)", "purpose": "CPU/内存性能计数器", "count": 5, "evidence": ["psutil/arch/windows/cpu.c", "psutil/arch/windows/mem.c"]},
+                    {"name": "PowerProf (CallNtPowerInformation)", "purpose": "CPU 频率信息", "count": 2, "evidence": ["psutil/arch/windows/cpu.c"]},
+                ],
+            },
+            {
+                "type": "macos",
+                "category": "platform",
+                "platform": "macos",
+                "apis": [
+                    {"name": "sysctl / sysctlnametomib", "purpose": "查询 CPU/内存/启动时间等系统参数", "count": 5, "evidence": ["psutil/arch/osx/sys.c", "psutil/arch/osx/cpu.c:71", "psutil/arch/osx/mem.c:33"]},
+                    {"name": "host_statistics / host_statistics64", "purpose": "获取主机 VM/CPU 负载信息", "count": 2, "evidence": ["psutil/arch/osx/cpu.c:71", "psutil/arch/osx/mem.c:33"]},
+                    {"name": "mach_task_self / task_for_pid", "purpose": "获取任务端口以读取进程信息", "count": 2, "evidence": ["psutil/arch/osx/proc_utils.c:161"]},
+                    {"name": "proc_pidinfo / proc_pidpath", "purpose": "读取进程详情与可执行路径", "count": 5, "evidence": ["psutil/arch/osx/proc_utils.c:124", "psutil/arch/osx/proc_utils.c:204"]},
+                    {"name": "IOKit (IOServiceMatching, IORegistryEntry)", "purpose": "磁盘与电池/电源信息", "count": 3, "evidence": ["psutil/arch/osx/disk.c:16", "psutil/arch/osx/sensors.c:16"]},
+                    {"name": "kqueue / kevent", "purpose": "BSD/macOS 上等待进程退出", "count": 1, "evidence": ["psutil/_psposix.py:209"]},
+                ],
+            },
+        ],
+        "dynamic_libraries": [
+            {"name": "ntdll.dll", "mechanism": "LoadLibrary/GetProcAddress", "acquisition": "system", "source": "Windows 系统核心 DLL", "description": "Windows NT 原生 API（进程/系统信息查询）", "optional": False, "evidence": ["psutil/arch/windows/init.c:189"]},
+            {"name": "iphlpapi.dll", "mechanism": "LoadLibrary/GetProcAddress", "acquisition": "system", "source": "Windows IP 辅助 API DLL", "description": "TCP/UDP 连接表查询", "optional": False, "evidence": ["psutil/arch/windows/init.c:212"]},
+            {"name": "kernel32.dll", "mechanism": "GetModuleHandle/GetProcAddress", "acquisition": "system", "source": "Windows 核心 DLL", "description": "获取处理器数量、逻辑处理器信息等", "optional": False, "evidence": ["psutil/arch/windows/init.c:243"]},
+            {"name": "kernelbase.dll", "mechanism": "LoadLibrary/GetProcAddress", "acquisition": "system", "source": "Windows Base API DLL", "description": "QueryInterruptTime 等可选 API", "optional": True, "evidence": ["psutil/arch/windows/init.c:255"]},
+            {"name": "wtsapi32.dll", "mechanism": "LoadLibrary/GetProcAddress", "acquisition": "system", "source": "Windows Terminal Services API", "description": "查询用户会话信息", "optional": True, "evidence": ["psutil/arch/windows/init.c:267"]},
+            {"name": "libc.so.6", "mechanism": "dlopen/dlsym", "acquisition": "system", "source": "Linux glibc", "description": "运行时获取 mallinfo2 堆统计，缺失时回退到 mallinfo", "optional": True, "evidence": ["psutil/arch/linux/heap.c:40"]},
+        ],
+        "platform_dependence": "mixed",
+    },
+    "runtime_surface": {
+        "summary": "运行期主要读取 Linux procfs/sysfs 伪文件和 POSIX 系统调用；通过 subprocess 模块封装用户子进程；受环境变量控制调试/测试模式；无外部网络连接。",
+        "network": [],
+        "filesystem": [
+            {"detail": "/proc/meminfo", "purpose": "系统虚拟内存与交换分区统计", "evidence": ["psutil/_pslinux.py:256", "psutil/_pslinux.py:376"]},
+            {"detail": "/proc/stat", "purpose": "CPU 时间片与系统统计", "evidence": ["psutil/_pslinux.py:503"]},
+            {"detail": "/proc/cpuinfo", "purpose": "CPU 信息回退读取", "evidence": ["psutil/_pslinux.py:494"]},
+            {"detail": "/proc/diskstats", "purpose": "块设备 I/O 统计", "evidence": ["psutil/_pslinux.py:988"]},
+            {"detail": "/proc/net/tcp|udp|unix", "purpose": "网络连接信息", "evidence": ["psutil/_pslinux.py:785", "psutil/_pslinux.py:828"]},
+            {"detail": "/proc/PID/{stat,status,smaps,smaps_rollup,io,cmdline,exe}", "purpose": "各进程属性数据", "evidence": ["psutil/_pslinux.py:1626", "psutil/_pslinux.py:1848", "psutil/_pslinux.py:1871", "psutil/_pslinux.py:1743"]},
+            {"detail": "/proc/self/mounts", "purpose": "磁盘分区列表", "evidence": ["psutil/arch/linux/disk.c:31"]},
+            {"detail": "/sys/class/hwmon", "purpose": "温度传感器数据", "evidence": ["psutil/_pslinux.py:1220"]},
+            {"detail": "/sys/class/thermal", "purpose": "温度传感器回退", "evidence": ["psutil/_pslinux.py:1276"]},
+            {"detail": "/sys/class/power_supply", "purpose": "电池状态", "evidence": ["psutil/_pslinux.py:1357"]},
+            {"detail": "/sys/block", "purpose": "块设备列表与属性", "evidence": ["psutil/_pslinux.py:1034", "psutil/_pslinux.py:1050"]},
+            {"detail": "/sys/devices/system/cpu", "purpose": "CPU 拓扑与频率", "evidence": ["psutil/_pslinux.py:527", "psutil/_pslinux.py:593"]},
+            {"detail": "/sys/dev/block", "purpose": "块设备主/次设备号映射", "evidence": ["psutil/_pslinux.py:1116"]},
+        ],
+        "env_vars": [
+            {"name": "PSUTIL_DEBUG", "purpose": "开启 C 扩展与 Python 层的调试日志", "evidence": ["psutil/arch/all/init.c:47", "psutil/_common.py:33"]},
+            {"name": "PSUTIL_TESTING", "purpose": "标记测试模式，调整部分行为", "evidence": ["psutil/arch/all/init.c:49"]},
+        ],
+        "subprocess": [
+            {"command": "<user-provided>", "purpose": "Popen 类封装 Python subprocess.Popen，供用户启动并监控任意子进程", "evidence": ["psutil/__init__.py:1593"]},
+        ],
+        "devices": [
+            {"detail": "/sys/class/hwmon 与 /sys/class/thermal", "purpose": "读取温度传感器", "evidence": ["psutil/_pslinux.py:1220", "psutil/_pslinux.py:1276"]},
+            {"detail": "/sys/class/power_supply/BAT*", "purpose": "读取电池状态", "evidence": ["psutil/_pslinux.py:1357"]},
+            {"detail": "/dev/tty* 与 /dev/pts/*", "purpose": "将终端设备号映射为路径（Process.terminal）", "evidence": ["psutil/_psposix.py:349"]},
+        ],
+    },
+    "build_env": {
+        "language_standard": "Python >= 3.7（CPython/PyPy）；C 扩展未显式指定 C 标准，依赖编译器默认（通常为 C99/C11）",
+        "runtime_version": "CPython 3.7+ 或 PyPy（setup.py python_requires=\">=3.7\"）",
+        "build_system": "setuptools（setup.py + pyproject.toml [build-system] requires setuptools>=43）",
+        "compiler_extensions": [
+            {"detail": "大量 #ifdef PSUTIL_LINUX / PSUTIL_WINDOWS / PSUTIL_OSX 等平台条件编译", "evidence": ["setup.py:113-414", "psutil/arch/all/init.h:15-36"]},
+            {"detail": "Py_LIMITED_API 稳定 ABI 支持（Linux/macOS/Windows 特定 Python 版本）", "evidence": ["setup.py:137-146"]},
+            {"detail": "#pragma GCC diagnostic ignored 抑制 mallinfo 弃用警告", "evidence": ["psutil/arch/linux/heap.c:66-67"]},
+        ],
+        "platforms": [
+            {"os": "linux", "arch": "x86_64", "evidence": [".github/workflows/build.yml:30"]},
+            {"os": "linux", "arch": "aarch64", "evidence": [".github/workflows/build.yml:31"]},
+            {"os": "macos", "arch": "x86_64", "evidence": [".github/workflows/build.yml:32"]},
+            {"os": "macos", "arch": "arm64", "evidence": [".github/workflows/build.yml:33"]},
+            {"os": "windows", "arch": "x86_64", "evidence": [".github/workflows/build.yml:34"]},
+            {"os": "windows", "arch": "arm64", "evidence": [".github/workflows/build.yml:35"]},
+            {"os": "freebsd", "arch": "unknown", "evidence": ["setup.py:318-332", ".github/workflows/bsd.yml"]},
+            {"os": "openbsd", "arch": "unknown", "evidence": ["setup.py:334-348"]},
+            {"os": "netbsd", "arch": "unknown", "evidence": ["setup.py:350-364"]},
+            {"os": "sunos", "arch": "unknown", "evidence": ["setup.py:383-396"]},
+            {"os": "aix", "arch": "unknown", "evidence": ["setup.py:398-411"]},
+        ],
+        "notes": "构建需要对应平台编译器（gcc/MSVC/Xcode）、Python 头文件与若干系统库（Windows advapi32/kernel32/psapi 等，macOS CoreFoundation/IOKit，FreeBSD devstat，SunOS kstat/socket 等）。",
+    },
+    "harmony_adaptation": {
+        "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；自研内核，无 Linux ABI）",
+        "feasibility": "hard",
+        "overall_difficulty": "very_high",
+        "effort_estimate": "XL",
+        "porting_class": "needs_adaptation_partial",
+        "recommended_path": "add_harmony_backend",
+        "summary": "psutil 是 Python 生态内的系统监控库，鸿蒙 PC 已移植 Python 运行时，纯 Python 逻辑可直接运行；但核心功能依赖 Linux 内核的 procfs/sysfs 伪文件、ioprio 等系统调用以及 ethtool ioctl，且 C 扩展需用 OHOS NDK 重新编译。由于鸿蒙 PC 自研内核与 Linux ABI 不兼容，Linux 后端无法直接工作，需要为鸿蒙新增独立后端或大量改写，整体难度极高、工作量巨大，部分功能（如基于 /proc/net 的连接明细、/proc/PID/smaps 内存映射、ioprio、ethtool 速率等）在鸿蒙上缺乏直接等价接口，属于部分可适配。",
+        "unadaptable_apis": [
+            {"api": "procfs (/proc/meminfo)", "public_entry": "virtual_memory", "reason": "鸿蒙内核的 /proc 布局与 Linux 不同，无直接等价接口", "blocking_native_api": "procfs (/proc/meminfo)", "category": "system", "evidence": ["psutil/_pslinux.py:256"]},
+            {"api": "procfs (/proc/stat)", "public_entry": "cpu_times", "reason": "鸿蒙无 Linux 版 /proc/stat", "blocking_native_api": "procfs (/proc/stat)", "category": "system", "evidence": ["psutil/_pslinux.py:503"]},
+            {"api": "procfs (/proc/diskstats)", "public_entry": "disk_io_counters", "reason": "鸿蒙块设备统计接口不同", "blocking_native_api": "procfs (/proc/diskstats)", "category": "system", "evidence": ["psutil/_pslinux.py:988"]},
+            {"api": "procfs (/proc/net/tcp|udp|unix)", "public_entry": "net_connections", "reason": "鸿蒙网络连接伪文件格式/路径不同", "blocking_native_api": "procfs (/proc/net/tcp|udp|unix)", "category": "system", "evidence": ["psutil/_pslinux.py:785", "psutil/_pslinux.py:828"]},
+            {"api": "procfs (/proc/PID/smaps|smaps_rollup)", "public_entry": "Process.memory_maps", "reason": "鸿蒙进程内存映射接口不同", "blocking_native_api": "procfs (/proc/PID/smaps|smaps_rollup)", "category": "system", "evidence": ["psutil/_pslinux.py:1871"]},
+            {"api": "sysfs (/sys/class/hwmon)", "public_entry": "sensors_temperatures", "reason": "鸿蒙传感器 sysfs 节点不同", "blocking_native_api": "sysfs (/sys/class/hwmon)", "category": "system", "evidence": ["psutil/_pslinux.py:1220"]},
+            {"api": "sysfs (/sys/class/power_supply)", "public_entry": "sensors_battery", "reason": "鸿蒙电池信息接口不同", "blocking_native_api": "sysfs (/sys/class/power_supply)", "category": "system", "evidence": ["psutil/_pslinux.py:1357"]},
+            {"api": "ioprio_get / ioprio_set (syscall)", "public_entry": "Process.ionice", "reason": "鸿蒙无 ioprio 系统调用", "blocking_native_api": "ioprio_get / ioprio_set (syscall)", "category": "system", "evidence": ["psutil/arch/linux/proc.c:26"]},
+            {"api": "SIOCETHTOOL ioctl", "public_entry": "net_if_stats", "reason": "鸿蒙网卡双工/速率查询 ioctl 不同", "blocking_native_api": "SIOCETHTOOL ioctl", "category": "system", "evidence": ["psutil/arch/linux/net.c:81"]},
+            {"api": "libc.so.6 (mallinfo2)", "public_entry": "heap_info", "reason": "glibc 专有堆统计在 musl/OHOS 不可用", "blocking_native_api": "libc.so.6 (mallinfo2)", "category": "system", "evidence": ["psutil/arch/linux/heap.c:40"]},
+        ],
+        "blockers": [
+            {"issue": "C 扩展需用 OHOS NDK 重新编译且当前无鸿蒙后端", "severity": "major", "category": "native_dependency", "source_dimension": "build_env", "harmony_status": "replace_with_ohos", "remediation": "为鸿蒙新增 psutil/arch/harmony 后端，使用 OHOS NDK 的 ohos.toolchain.cmake 编译，定义 PSUTIL_HARMONY 宏并在 setup.py 中添加分支", "evidence": ["setup.py:366-381", "psutil/__init__.py:148-150"]},
+            {"issue": "核心功能依赖 Linux procfs/sysfs 伪文件，鸿蒙内核布局不同", "severity": "blocker", "category": "sysfs_procfs", "source_dimension": "native_api", "harmony_status": "replace_with_ohos", "remediation": "将 /proc、/sys 读取替换为鸿蒙系统能力（@ohos.process、@ohos.systemCapability 等）或在鸿蒙后端中直接读取其等效内核接口；无法替换的功能裁剪或返回 NotImplementedError", "evidence": ["psutil/_pslinux.py:256", "psutil/_pslinux.py:1220", "psutil/_pslinux.py:1357"]},
+            {"issue": "Linux 特有系统调用与 ioctl（ioprio、ethtool、pidfd_open）在鸿蒙无直接等价", "severity": "blocker", "category": "linux_syscall_ioctl", "source_dimension": "native_api", "harmony_status": "unavailable", "remediation": "使用鸿蒙提供的进程/IO/网络能力替代，缺失功能标记为不支持", "evidence": ["psutil/arch/linux/proc.c:26", "psutil/arch/linux/net.c:81", "psutil/_psposix.py:182"]},
+            {"issue": "glibc 专有堆统计（mallinfo2 动态加载 libc.so.6）在 musl/OHOS 不可用", "severity": "major", "category": "posix_subset_gap", "source_dimension": "native_api", "harmony_status": "unavailable", "remediation": "在鸿蒙后端中移除或替换为 musl 支持的 malloc 统计接口；heap_info 等 API 可标记为不支持", "evidence": ["psutil/arch/linux/heap.c:40"]},
+            {"issue": "Windows/macOS 后端对鸿蒙无意义，需要新增后端而非复用", "severity": "minor", "category": "platform_backend", "source_dimension": "library", "harmony_status": "replace_with_ohos", "remediation": "保留 Windows/macOS/BSD 后端不变，新增 arch/harmony 后端并在 __init__.py 中按 sys.platform 选择", "evidence": ["psutil/__init__.py:111-150"]},
+            {"issue": "单元测试与构建依赖大量未鸿蒙化的 Python 开发/测试包", "severity": "minor", "category": "dev_dependency", "source_dimension": "dependencies", "harmony_status": "partial", "remediation": "运行时无依赖；测试包只需在鸿蒙 Python 上重新安装，ruff/coverage 已有鸿蒙镜像包", "evidence": ["setup.py:65-107"]},
+        ],
+        "compatible": [
+            {"aspect": "纯 Python 的 API 封装与数据结构", "note": "鸿蒙 Python 3.12 可直接解释执行，无需改动", "evidence": ["psutil/__init__.py:250-600"]},
+            {"aspect": "跨平台错误类型与公共工具函数", "note": "Error/NoSuchProcess/AccessDenied 等异常和 _common.py 中工具不依赖平台 API", "evidence": ["psutil/_common.py:107-130"]},
+            {"aspect": "C 扩展构建框架", "note": "setuptools + Extension 模式可被 OHOS NDK 的 clang 复用", "evidence": ["setup.py:366-381"]},
+        ],
+        "key_tasks": [
+            "为鸿蒙 PC 新增 psutil/arch/harmony C 后端与 _psharmony.py Python 实现",
+            "用 OHOS NDK 交叉编译 C 扩展，适配 musl libc，移除 glibc 专有调用",
+            "将 Linux procfs/sysfs 读取替换为鸿蒙系统能力或等效接口，无法替换的功能做降级处理",
+            "更新 setup.py 平台检测分支与 CI 矩阵，加入鸿蒙 arm64/x86_64 构建与测试",
+            "跑通核心功能测试，标记不可适配 API 并补充文档",
+        ],
+        "notes": "评估按 HarmonyOS PC 默认口径（库跑在已移植 Python 运行时上）进行；若目标为 ArkTS 沙箱应用，则 Python 运行时不存在，需整体用 Node-API 重写或放弃。当前未实测鸿蒙 PC 内核接口，/proc/sysfs 的不可适配结论基于鸿蒙自研内核、非 Linux ABI 的公开信息；若鸿蒙实际提供兼容 procfs，则难度可降为 needs_adaptation_full。",
+    },
+    "meta": {
+        "schema_version": "1.0",
+        "analyzer": "pc-lib-analyzer",
+        "counter_tool": metrics["code_metrics"]["tool"],
+        "confidence_overall": "high",
+        "warnings": [],
+        "observations": [
+            {"dimension": "dependencies", "field": "scope", "kind": "ambiguity", "value": "单一包多作用域", "rationale": "setuptools、wheel 同时出现在 build-system、test、dev 依赖中；schema 的 scope 为单字符串，本报告按最主要作用域拆分/归类，并在 notes 说明。"},
+            {"dimension": "native_api", "field": "category", "kind": "new_value", "value": "pseudo_filesystem", "rationale": "procfs/sysfs 是内核伪文件系统接口，按 skill 归为 system 类别，但在可移植性上与纯文件读取不同；未来可考虑新增 pseudo_filesystem 子类。"},
+            {"dimension": "harmony_adaptation", "field": "recommended_path", "kind": "new_value", "value": "add_harmony_backend", "rationale": "psutil 这类强平台绑定库需要新增独立后端，现有 recompile_only/run_on_ported_runtime 无法准确描述其适配路径。"},
+        ],
+    },
+}
+
+with open(REPORT_PATH, "w", encoding="utf-8") as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+
+print(f"Wrote {REPORT_PATH}")
