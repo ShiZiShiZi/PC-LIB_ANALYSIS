@@ -1,0 +1,1376 @@
+{
+  "library": {
+    "name": "python-mss",
+    "package_name": "mss",
+    "source_url": "https://github.com/BoboTiG/python-mss",
+    "analyzed_at": "2026-06-21T15:42:06.494Z",
+    "commit": "d7a906492c37cd81672f64ca2d7253f85c9dee9f",
+    "one_liner": "纯 Python 跨平台截屏库，通过 ctypes 调用 Windows/macOS/Linux 原生图形 API 捕获屏幕像素并输出 PNG。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "python-mss（mss）是一个无第三方运行时依赖的纯 Python 截屏库。它对外暴露统一的 MSS 接口，在运行时根据 platform.system() 选择对应后端：Windows 使用 GDI32/User32，macOS 使用 CoreGraphics，GNU/Linux 使用 XCB（默认，含 MIT-SHM 加速与 XGetImage 回退）或遗留 Xlib。除截图外，还提供多显示器枚举、鼠标光标合成、BGRA→RGB 转换、PNG 编码与命令行工具，常用于计算机视觉、自动化测试与游戏辅助场景。",
+    "categories": [
+      {
+        "name": "屏幕截图捕获",
+        "description": "按显示器或自定义矩形区域抓取屏幕像素，底层分别调用 Win32 BitBlt/CreateDIBSection、macOS CGWindowListCreateImage、Linux XCB XGetImage/XShmGetImage。",
+        "evidence": [
+          "src/mss/windows/gdi.py:359-406",
+          "src/mss/darwin.py:227-265",
+          "src/mss/linux/xshmgetimage.py:145-191",
+          "src/mss/linux/base.py:427-467"
+        ]
+      },
+      {
+        "name": "多显示器枚举",
+        "description": "枚举物理/逻辑显示器及其几何位置、主屏标记、输出名称与 EDID 信息，Windows 用 EnumDisplayMonitors，macOS 用 CGGetActiveDisplayList，Linux 用 XRandR。",
+        "evidence": [
+          "src/mss/windows/gdi.py:270-342",
+          "src/mss/darwin.py:176-225",
+          "src/mss/linux/base.py:138-178"
+        ]
+      },
+      {
+        "name": "鼠标光标捕获",
+        "description": "在 GNU/Linux 上通过 XFixes 扩展读取当前光标图像，并与屏幕截图 alpha 混合；Windows 与 macOS 后端暂不支持。",
+        "evidence": [
+          "src/mss/linux/base.py:394-425",
+          "src/mss/linux/xlib.py:613-642",
+          "src/mss/base.py:440-486"
+        ]
+      },
+      {
+        "name": "图像格式转换与数组接口",
+        "description": "将后端返回的 BGRx 原始字节转换为 RGB、BGRA 或像素元组列表，并提供 __array_interface__ 以兼容 NumPy、OpenCV、PyTorch 等库。",
+        "evidence": [
+          "src/mss/screenshot.py:55-158"
+        ]
+      },
+      {
+        "name": "PNG 编码与文件保存",
+        "description": "使用 Python 标准库 struct/zlib 手写 PNG（IHDR/IDAT/IEND）编码，支持压缩级别，并通过 MSS.save()/shot() 直接落盘。",
+        "evidence": [
+          "src/mss/tools.py:145-198",
+          "src/mss/base.py:384-438"
+        ]
+      },
+      {
+        "name": "命令行工具",
+        "description": "提供 `mss` 入口脚本，支持指定显示器、区域坐标、输出文件名、PNG 压缩级别与后端选择。",
+        "evidence": [
+          "src/mss/__main__.py:32-117",
+          "pyproject.toml:68-69"
+        ]
+      }
+    ],
+    "domain": "graphics",
+    "target_users": "Python 开发者、计算机视觉/自动化测试/游戏辅助工具开发者，以及需要在不同桌面平台快速截图的终端用户。"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "XML",
+      "Markdown",
+      "reStructuredText",
+      "TOML",
+      "YAML",
+      "JSON",
+      "Text"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 62,
+        "code": 7306,
+        "pct": 45.21
+      },
+      {
+        "language": "XML",
+        "files": 5,
+        "code": 7192,
+        "pct": 44.5
+      },
+      {
+        "language": "Markdown",
+        "files": 52,
+        "code": 765,
+        "pct": 4.73
+      },
+      {
+        "language": "reStructuredText",
+        "files": 10,
+        "code": 518,
+        "pct": 3.21
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 176,
+        "pct": 1.09
+      },
+      {
+        "language": "YAML",
+        "files": 5,
+        "code": 167,
+        "pct": 1.03
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 23,
+        "pct": 0.14
+      },
+      {
+        "language": "Text",
+        "files": 1,
+        "code": 5,
+        "pct": 0.03
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 1,
+        "code": 5,
+        "pct": 0.03
+      },
+      {
+        "language": "PowerShell",
+        "files": 1,
+        "code": 4,
+        "pct": 0.02
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 139,
+      "code": 16161,
+      "comment": 3180,
+      "blank": 3670,
+      "total_lines": 23011
+    },
+    "production": {
+      "files": 98,
+      "code": 13156,
+      "comment": 1655,
+      "blank": 2574,
+      "total_lines": 17385
+    },
+    "test": {
+      "files": 23,
+      "code": 1884,
+      "comment": 312,
+      "blank": 684,
+      "total_lines": 2880
+    },
+    "example": {
+      "files": 18,
+      "code": 1121,
+      "comment": 1213,
+      "blank": 412,
+      "total_lines": 2746
+    },
+    "production_by_language": {
+      "XML": {
+        "files": 5,
+        "code": 7192
+      },
+      "Python": {
+        "files": 21,
+        "code": 4301
+      },
+      "Markdown": {
+        "files": 52,
+        "code": 765
+      },
+      "reStructuredText": {
+        "files": 10,
+        "code": 518
+      },
+      "TOML": {
+        "files": 1,
+        "code": 176
+      },
+      "YAML": {
+        "files": 5,
+        "code": 167
+      },
+      "JSON": {
+        "files": 1,
+        "code": 23
+      },
+      "Text": {
+        "files": 1,
+        "code": 5
+      },
+      "Bourne Shell": {
+        "files": 1,
+        "code": 5
+      },
+      "PowerShell": {
+        "files": 1,
+        "code": 4
+      }
+    }
+  },
+  "tests": {
+    "test_files": 23,
+    "test_cases": 116,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 23,
+        "cases": 116
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates. Linux tests cover XCB/Xlib backends plus pyvirtualdisplay; Windows/macOS tests are platform-specific."
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "LICENSE.txt 包含完整 MIT 许可证文本；pyproject.toml classifiers 声明 'License :: OSI Approved :: MIT License'，与文件内容一致。",
+    "notes": "宽松许可，需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "build",
+        "lxml",
+        "mypy",
+        "ruff",
+        "twine",
+        "typing_extensions",
+        "myst-parser",
+        "shibuya",
+        "sphinx",
+        "sphinx-copybutton",
+        "sphinx-new-tab-link",
+        "numpy",
+        "pillow",
+        "pytest",
+        "pytest-cov",
+        "pytest-rerunfailures",
+        "pyvirtualdisplay",
+        "hatchling"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "hatchling",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": "1.30.1",
+        "purpose": "PEP 517 构建后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:1-3"
+        ]
+      },
+      {
+        "name": "build",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "1.5.0",
+        "purpose": "构建 wheel/sdist 工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:73"
+        ]
+      },
+      {
+        "name": "lxml",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "6.1.1",
+        "purpose": "可能用于 XCB XML 协议生成或类型检查辅助",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:74"
+        ]
+      },
+      {
+        "name": "mypy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "1.20.2",
+        "purpose": "静态类型检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:75"
+        ]
+      },
+      {
+        "name": "ruff",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "0.15.17",
+        "purpose": "代码格式与 lint",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:76"
+        ]
+      },
+      {
+        "name": "twine",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "6.2.0",
+        "purpose": "PyPI 发布上传",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:77"
+        ]
+      },
+      {
+        "name": "typing_extensions",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "4.15.0",
+        "purpose": "类型提示兼容扩展",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:78"
+        ]
+      },
+      {
+        "name": "myst-parser",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "5.0.0",
+        "purpose": "文档构建（Markdown 解析）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:81"
+        ]
+      },
+      {
+        "name": "shibuya",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "2026.5.19",
+        "purpose": "文档主题",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:82"
+        ]
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "9.1.0",
+        "purpose": "文档构建",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:83"
+        ]
+      },
+      {
+        "name": "sphinx-copybutton",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "0.5.2",
+        "purpose": "文档复制按钮扩展",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:84"
+        ]
+      },
+      {
+        "name": "sphinx-new-tab-link",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "0.8.1",
+        "purpose": "文档外部链接新标签页扩展",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:85"
+        ]
+      },
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "2.4.3",
+        "purpose": "测试用数组接口验证",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（仅在 linux + python_version == 3.13 时声明）",
+        "declared_in": [
+          "pyproject.toml:88"
+        ]
+      },
+      {
+        "name": "pillow",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "12.2.0",
+        "purpose": "测试用图像对比",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（仅在 linux + python_version == 3.13 时声明）",
+        "declared_in": [
+          "pyproject.toml:89"
+        ]
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "9.1.0",
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:90"
+        ]
+      },
+      {
+        "name": "pytest-cov",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "7.1.0",
+        "purpose": "测试覆盖率",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:91"
+        ]
+      },
+      {
+        "name": "pytest-rerunfailures",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "16.3",
+        "purpose": "失败用例重跑",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:92"
+        ]
+      },
+      {
+        "name": "pyvirtualdisplay",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "3.0",
+        "purpose": "Linux CI 虚拟显示器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（仅在 linux 时声明）",
+        "declared_in": [
+          "pyproject.toml:93"
+        ]
+      }
+    ],
+    "notes": "无运行时第三方依赖；pyproject.toml 中所有依赖均为 dev/tests/docs/build 作用域。实际截图依赖的 libX11/libxcb/CoreGraphics/user32/gdi32 等通过 ctypes 在运行时动态加载系统库，未在包清单中声明。"
+  },
+  "native_api": {
+    "summary": "库本身为纯 Python，但重度依赖 ctypes FFI 在运行时加载并调用各平台原生图形 API；不同平台后端互斥存在，因此整体 platform_dependence 为 mixed。无编译期链接，所有原生库均为运行时动态加载。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "platform.system",
+            "purpose": "运行时检测操作系统以选择后端",
+            "count": 3,
+            "evidence": [
+              "src/mss/base.py:141",
+              "src/mss/base.py:211",
+              "src/mss/__main__.py:16"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys.getwindowsversion",
+            "purpose": "判断 Windows 版本以选择 DPI 感知 API",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:258"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "sys.maxsize",
+            "purpose": "在 macOS 区分 32/64 位以选择 CGFloat 类型",
+            "count": 1,
+            "evidence": [
+              "src/mss/darwin.py:70"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "struct.pack / zlib.compress / zlib.crc32",
+            "purpose": "PNG 编码的 chunk 打包与 IDAT 压缩",
+            "count": 6,
+            "evidence": [
+              "src/mss/tools.py:159-182"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.environ",
+            "purpose": "Xlib 后端读取 $DISPLAY 环境变量",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:427"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "ctypes_ffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ctypes.util.find_library",
+            "purpose": "定位系统原生共享库路径",
+            "count": 8,
+            "evidence": [
+              "src/mss/linux/xlib.py:263-265",
+              "src/mss/linux/xcbhelpers.py:457",
+              "src/mss/darwin.py:158"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "ctypes.cdll.LoadLibrary",
+            "purpose": "加载 Xlib/XCB/CoreGraphics 等动态库",
+            "count": 6,
+            "evidence": [
+              "src/mss/linux/xlib.py:295",
+              "src/mss/linux/xlib.py:443",
+              "src/mss/linux/xcbhelpers.py:453-461",
+              "src/mss/darwin.py:167"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "ctypes.WinDLL",
+            "purpose": "加载 Windows user32/gdi32 DLL",
+            "count": 2,
+            "evidence": [
+              "src/mss/windows/gdi.py:217-218"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ctypes.windll",
+            "purpose": "调用 Windows shcore.SetProcessDpiAwareness",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:265"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ctypes.byref / ctypes.cast / ctypes.sizeof",
+            "purpose": "ctypes 传参、指针转换与结构体大小计算",
+            "count": 30,
+            "evidence": [
+              "src/mss/windows/gdi.py:296",
+              "src/mss/linux/xlib.py:543",
+              "src/mss/darwin.py:192"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "BitBlt",
+            "purpose": "将屏幕 DC 内容复制到 DIB 内存",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:395"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CreateDIBSection",
+            "purpose": "创建可直接访问像素的 32 位 DIB",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:376"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CreateCompatibleDC",
+            "purpose": "创建兼容内存 DC",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:361"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "DeleteDC / DeleteObject / ReleaseDC",
+            "purpose": "释放 GDI 资源",
+            "count": 5,
+            "evidence": [
+              "src/mss/windows/gdi.py:243",
+              "src/mss/windows/gdi.py:371",
+              "src/mss/windows/gdi.py:404",
+              "src/mss/windows/gdi.py:406"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "EnumDisplayMonitors",
+            "purpose": "枚举显示器并获取 RECT 与主屏标记",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:340"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "EnumDisplayDevicesW",
+            "purpose": "获取显示器友好名称与设备接口 ID",
+            "count": 2,
+            "evidence": [
+              "src/mss/windows/gdi.py:308",
+              "src/mss/windows/gdi.py:318"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetMonitorInfoW",
+            "purpose": "获取显示器信息（含主屏标志）",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:296"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetSystemMetrics",
+            "purpose": "获取虚拟屏幕坐标与尺寸",
+            "count": 4,
+            "evidence": [
+              "src/mss/windows/gdi.py:280-283"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetWindowDC",
+            "purpose": "获取桌面窗口设备上下文",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:359"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SelectObject",
+            "purpose": "将 DIB 选入内存 DC",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:392"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GdiFlush",
+            "purpose": "刷新当前线程 GDI 批处理，确保 DIB 内存已更新",
+            "count": 1,
+            "evidence": [
+              "src/mss/windows/gdi.py:398"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SetProcessDpiAwareness / SetProcessDPIAware",
+            "purpose": "设置 Hi-DPI 感知以捕获完整分辨率",
+            "count": 2,
+            "evidence": [
+              "src/mss/windows/gdi.py:265-268"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "x11_xlib",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "XOpenDisplay",
+            "purpose": "打开 X11 显示连接",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:463"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XCloseDisplay",
+            "purpose": "关闭 X11 显示连接",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:478"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XDefaultRootWindow",
+            "purpose": "获取根窗口 drawable",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:468"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XGetImage",
+            "purpose": "通过 Xlib 读取屏幕像素",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:584-593"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XDestroyImage",
+            "purpose": "释放 XImage",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:609"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XGetWindowAttributes",
+            "purpose": "获取根窗口属性",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:543"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XRRQueryVersion / XRRGetScreenResources / XRRGetScreenResourcesCurrent / XRRGetCrtcInfo",
+            "purpose": "XRandR 版本查询与显示器/CRTC 枚举",
+            "count": 5,
+            "evidence": [
+              "src/mss/linux/xlib.py:539-562"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XRRFreeCrtcInfo / XRRFreeScreenResources",
+            "purpose": "释放 XRandR 资源",
+            "count": 3,
+            "evidence": [
+              "src/mss/linux/xlib.py:564",
+              "src/mss/linux/xlib.py:575-576"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XFixesGetCursorImage",
+            "purpose": "XFixes 扩展读取光标图像",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:620"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XSetErrorHandler",
+            "purpose": "安装自定义 X11 错误处理函数，避免解释器崩溃",
+            "count": 2,
+            "evidence": [
+              "src/mss/linux/xlib.py:461",
+              "src/mss/linux/xlib.py:491"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XQueryExtension",
+            "purpose": "查询 X 扩展是否启用",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xlib.py:505-511"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "xcb",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "xcb_connect / xcb_disconnect / xcb_connection_has_error",
+            "purpose": "建立/断开 XCB 连接并检测错误",
+            "count": 5,
+            "evidence": [
+              "src/mss/linux/xcb.py:347-387"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "xcb_get_setup / xcb_setup_roots / xcb_screen_allowed_depths / xcb_depth_visuals",
+            "purpose": "读取 X 服务器 setup、屏幕、深度与 visual 信息",
+            "count": 4,
+            "evidence": [
+              "src/mss/linux/base.py:57-117"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "xcb_get_image / xcb_get_image_data",
+            "purpose": "XCB GetImage 请求读取屏幕像素",
+            "count": 2,
+            "evidence": [
+              "src/mss/linux/base.py:442-454",
+              "src/mss/linux/xcbgen.py:787"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "xcb_intern_atom",
+            "purpose": "查询 EDID 等原子名称",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xcb.py:285"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "xcb_randr_get_screen_resources_current / xcb_randr_get_crtc_info / xcb_randr_get_monitors",
+            "purpose": "XRandR 显示器枚举",
+            "count": 5,
+            "evidence": [
+              "src/mss/linux/base.py:305-348"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "xcb_shm_query_version / xcb_shm_attach_fd / xcb_shm_get_image / xcb_shm_detach",
+            "purpose": "MIT-SHM 共享内存扩展查询、附加与截图",
+            "count": 4,
+            "evidence": [
+              "src/mss/linux/xshmgetimage.py:76-143",
+              "src/mss/linux/xshmgetimage.py:162-173"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "xcb_xfixes_get_cursor_image",
+            "purpose": "XCB XFixes 光标图像捕获",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/base.py:412"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "coregraphics",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "CGGetActiveDisplayList",
+            "purpose": "枚举活动显示器 ID",
+            "count": 1,
+            "evidence": [
+              "src/mss/darwin.py:192"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CGDisplayBounds / CGRectStandardize / CGRectUnion",
+            "purpose": "获取显示器边界并计算全部显示器包围盒",
+            "count": 3,
+            "evidence": [
+              "src/mss/darwin.py:195-215"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CGDisplayRotation",
+            "purpose": "检测显示器旋转角度并交换宽高",
+            "count": 1,
+            "evidence": [
+              "src/mss/darwin.py:202"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CGWindowListCreateImage",
+            "purpose": "捕获指定矩形区域的屏幕图像",
+            "count": 1,
+            "evidence": [
+              "src/mss/darwin.py:232"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CGImageGetWidth / CGImageGetHeight / CGImageGetBytesPerRow / CGImageGetBitsPerPixel",
+            "purpose": "读取图像元数据以处理行填充",
+            "count": 4,
+            "evidence": [
+              "src/mss/darwin.py:237-250"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CGImageGetDataProvider / CGDataProviderCopyData / CFDataGetBytePtr / CFDataGetLength",
+            "purpose": "从 CGImage 提取原始像素数据",
+            "count": 4,
+            "evidence": [
+              "src/mss/darwin.py:241-244"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CFRelease",
+            "purpose": "释放 CoreFoundation 对象",
+            "count": 2,
+            "evidence": [
+              "src/mss/darwin.py:262-263"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "os.memfd_create",
+            "purpose": "创建匿名文件作为 MIT-SHM 共享内存后端",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xshmgetimage.py:100"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "os.ftruncate",
+            "purpose": "调整 memfd 大小以容纳屏幕缓冲",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xshmgetimage.py:103"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "mmap",
+            "purpose": "将 memfd 映射到进程地址空间只读访问",
+            "count": 1,
+            "evidence": [
+              "src/mss/linux/xshmgetimage.py:106"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "user32.dll",
+        "mechanism": "ctypes.WinDLL",
+        "acquisition": "system",
+        "source": "Windows 系统 DLL",
+        "description": "提供 EnumDisplayMonitors、GetMonitorInfoW、GetWindowDC、ReleaseDC、SetProcessDPIAware 等窗口与显示器 API",
+        "optional": false,
+        "evidence": [
+          "src/mss/windows/gdi.py:217"
+        ]
+      },
+      {
+        "name": "gdi32.dll",
+        "mechanism": "ctypes.WinDLL",
+        "acquisition": "system",
+        "source": "Windows 系统 DLL",
+        "description": "提供 BitBlt、CreateDIBSection、CreateCompatibleDC、DeleteDC、DeleteObject、GdiFlush、SelectObject 等 GDI API",
+        "optional": false,
+        "evidence": [
+          "src/mss/windows/gdi.py:218"
+        ]
+      },
+      {
+        "name": "shcore.dll",
+        "mechanism": "ctypes.windll",
+        "acquisition": "system",
+        "source": "Windows 系统 DLL",
+        "description": "提供 Windows 8.1+ 的 SetProcessDpiAwareness 高 DPI 感知 API",
+        "optional": true,
+        "evidence": [
+          "src/mss/windows/gdi.py:265"
+        ]
+      },
+      {
+        "name": "libX11.so.6",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统 Xlib 库",
+        "description": "遗留 Xlib 后端的 X11 协议客户端库",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xlib.py:263",
+          "src/mss/linux/xlib.py:443"
+        ]
+      },
+      {
+        "name": "libXrandr.so.2",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统 Xrandr 扩展库",
+        "description": "Xlib 后端的 XRandR 显示器扩展",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xlib.py:265",
+          "src/mss/linux/xlib.py:449"
+        ]
+      },
+      {
+        "name": "libXfixes.so.3",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统 Xfixes 扩展库",
+        "description": "Xlib 后端的光标捕获扩展",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xlib.py:264",
+          "src/mss/linux/xlib.py:454"
+        ]
+      },
+      {
+        "name": "libxcb.so.1",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统 XCB 协议库",
+        "description": "默认 Linux 后端的 XCB 核心库",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xcbhelpers.py:457-461"
+        ]
+      },
+      {
+        "name": "libxcb-randr.so.0",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统 XCB RandR 扩展库",
+        "description": "XCB 后端的显示器枚举扩展",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xcbhelpers.py:490-494"
+        ]
+      },
+      {
+        "name": "libxcb-render.so.0",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统 XCB Render 扩展库",
+        "description": "XCB Render 扩展（当前主要为协议生成所需）",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xcbhelpers.py:497-501"
+        ]
+      },
+      {
+        "name": "libxcb-shm.so.0",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统 XCB MIT-SHM 扩展库",
+        "description": "XCB 后端共享内存截图加速扩展",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xcbhelpers.py:504-508"
+        ]
+      },
+      {
+        "name": "libxcb-xfixes.so.0",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统 XCB Xfixes 扩展库",
+        "description": "XCB 后端光标捕获扩展",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xcbhelpers.py:511-515"
+        ]
+      },
+      {
+        "name": "libxcb-errors.so.0",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Linux 系统可选 XCB 错误诊断库",
+        "description": "为 XCB 协议错误提供可读的名称（开发者辅助，缺失时降级）",
+        "optional": true,
+        "evidence": [
+          "src/mss/linux/xcbhelpers.py:520-523"
+        ]
+      },
+      {
+        "name": "CoreGraphics.framework/Versions/Current/CoreGraphics",
+        "mechanism": "ctypes.cdll.LoadLibrary",
+        "acquisition": "system",
+        "source": "macOS 系统 CoreGraphics 框架",
+        "description": "macOS 后端的屏幕捕获与显示器枚举框架",
+        "optional": true,
+        "evidence": [
+          "src/mss/darwin.py:158-167"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要依赖平台图形栈与少量环境变量；无网络、子进程或特殊设备访问。输出文件写入调用方指定路径。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "PNG 截图文件写入当前工作目录或用户指定路径",
+        "purpose": "保存屏幕截图",
+        "evidence": [
+          "src/mss/tools.py:189-197",
+          "src/mss/__main__.py:105-112"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "DISPLAY",
+        "purpose": "Xlib 与 XCB 后端连接 X11 显示服务器",
+        "evidence": [
+          "src/mss/linux/xlib.py:425-430",
+          "src/mss/linux/base.py:48-54"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "CPython 或 PyPy，支持 3.10/3.11/3.12/3.13/3.14",
+    "build_system": "hatchling",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml:27"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64 / arm64",
+        "evidence": [
+          "pyproject.toml:26",
+          "src/mss/darwin.py:69-70"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64 / arm64",
+        "evidence": [
+          "pyproject.toml:28",
+          "src/mss/linux/xshmgetimage.py:96-106"
+        ]
+      }
+    ],
+    "notes": "纯 Python 包，无需 C/C++ 编译器；构建仅依赖 hatchling。安装后运行时按需加载系统原生图形库。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（ArkTS 应用层 + OHOS NDK/musl 原生层 + Node-API 桥接；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "infeasible",
+    "overall_difficulty": "very_high",
+    "effort_estimate": "XL",
+    "recommended_path": "arkts_rewrite",
+    "summary": "python-mss 是重度绑定桌面平台图形栈的纯 Python 库。HarmonyOS NEXT PC 没有 Python 运行时，且 Win32/GDI、X11/XCB、macOS CoreGraphics 均不可用；ctypes 动态加载系统库的能力在 ArkTS 应用层亦不存在的等价物。若要在鸿蒙上获得同等能力，基本需以 ArkTS/NDK 原生能力重写截屏与显示器枚举逻辑，仅可复用 PNG 编码、BGRA→RGB 转换等算法思想。",
+    "blockers": [
+      {
+        "issue": "Python 运行时在 HarmonyOS NEXT 应用层不是一等公民，无法直接运行 ctypes 纯 Python 库",
+        "severity": "blocker",
+        "category": "python_runtime_unavailable",
+        "source_dimension": "library",
+        "harmony_status": "unavailable",
+        "remediation": "无法直接移植；需将核心算法用 ArkTS/ArkUI 或 OHOS NDK C/C++ 重写，再经 Node-API 暴露。",
+        "evidence": [
+          "pyproject.toml:29-30",
+          "src/mss/__init__.py:10-12"
+        ]
+      },
+      {
+        "issue": "ctypes FFI 动态加载系统库（user32/gdi32/libxcb/CoreGraphics 等）在 ArkTS 中无等价机制",
+        "severity": "blocker",
+        "category": "ffi_bridge",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "ArkTS 无法使用 ctypes；截屏能力需改用 @ohos.multimedia.screenshot 或 NDK 原生 API，不能复用现有 FFI 代码。",
+        "evidence": [
+          "src/mss/windows/gdi.py:217-218",
+          "src/mss/linux/xcbhelpers.py:453-461",
+          "src/mss/darwin.py:167"
+        ]
+      },
+      {
+        "issue": "Win32 GDI/X11 XCB/CoreGraphics 等平台专有截屏 API 在鸿蒙上不存在",
+        "severity": "blocker",
+        "category": "platform_api_unavailable",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "使用 HarmonyOS 系统能力替代：应用层可尝试 @ohos.multimedia.screenshot，NDK 层使用 OHOS 图形/窗口相关接口；显示器枚举需查找鸿蒙对应 API。",
+        "evidence": [
+          "src/mss/windows/gdi.py:157-184",
+          "src/mss/linux/xcbhelpers.py:457-515",
+          "src/mss/darwin.py:105-121"
+        ]
+      },
+      {
+        "issue": "Linux 后端依赖 $DISPLAY 环境变量与 X11 服务器连接",
+        "severity": "major",
+        "category": "display_server_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unavailable",
+        "remediation": "鸿蒙无 X11/wayland 显示服务器模型；删除 X11 相关逻辑，改用鸿蒙窗口/屏幕合成接口。",
+        "evidence": [
+          "src/mss/linux/xlib.py:425-430",
+          "src/mss/linux/base.py:48-54"
+        ]
+      },
+      {
+        "issue": "MIT-SHM 共享内存截图依赖 memfd_create/mmap 等 POSIX 特性，且需要 X server 配合",
+        "severity": "major",
+        "category": "posix_subsystem_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "musl/OHOS 可能支持 memfd/mmap，但 XCB MIT-SHM 协议本身不可用；需改用鸿蒙原生截图路径。",
+        "evidence": [
+          "src/mss/linux/xshmgetimage.py:96-115"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "PNG 编码与文件保存逻辑",
+        "note": "to_png 使用 Python struct/zlib 手写 PNG，思想可在 ArkTS/NDK 中用类似二进制打包+压缩库复现",
+        "evidence": [
+          "src/mss/tools.py:145-198"
+        ]
+      },
+      {
+        "aspect": "BGRA→RGB 像素转换",
+        "note": "纯字节切片与重组，无平台依赖，可在任何语言中重写",
+        "evidence": [
+          "src/mss/screenshot.py:134-158"
+        ]
+      },
+      {
+        "aspect": "显示器信息数据结构",
+        "note": "monitor 字典中的 left/top/width/height/primary 等字段可保留，仅数据源需替换",
+        "evidence": [
+          "src/mss/models.py:9-11",
+          "src/mss/base.py:329-382"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "调研 HarmonyOS NEXT PC 上可用的截屏系统能力（@ohos.multimedia.screenshot 或 NDK 原生接口）及其权限模型",
+      "用 ArkTS/NDK 重写显示器枚举、屏幕捕获、光标合成主流程",
+      "重新实现 PNG 编码、BGRA→RGB 转换等纯算法模块",
+      "移除所有 Win32/X11/XCB/CoreGraphics/ctypes 相关代码与动态库加载逻辑",
+      "针对 Hi-DPI 与多显示器场景在鸿蒙上做等价测试"
+    ],
+    "notes": "本评估基于 HarmonyOS NEXT 应用沙箱模型。若目标为具备系统级权限的特权进程，部分结论可放宽，但 Python/ctypes 路径仍然不可行。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "xcb",
+        "rationale": "该库包含大量自动生成的 XCB 协议绑定（src/mss/linux/xcbgen.py 约 1000+ 行），应作为独立的 API 家族 'xcb' 列出，与 x11_xlib 区分。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "category",
+        "kind": "new_value",
+        "value": "python_runtime_unavailable",
+        "rationale": " HarmonyOS NEXT 应用层没有 Python 运行时，这是 Python 库迁移时的一类严重阻碍，现有推荐取值未覆盖。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "category",
+        "kind": "new_value",
+        "value": "display_server_unavailable",
+        "rationale": "该库后端绑定 X11/Wayland/Win32 桌面显示服务器模型，与鸿蒙图形栈完全不同，属于跨平台 GUI/截屏库的特有阻碍。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "runtime_system_load",
+        "rationale": "原生库未在 pyproject.toml 声明，而是通过 ctypes 在运行时发现并加载系统预装的 so/dll/framework；现有 acquisition 取值未明确覆盖这种'运行时系统加载'模式。"
+      }
+    ]
+  }
+}

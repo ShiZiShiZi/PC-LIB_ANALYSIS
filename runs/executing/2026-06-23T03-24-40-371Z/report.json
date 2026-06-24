@@ -1,0 +1,716 @@
+{
+  "library": {
+    "name": "executing",
+    "package_name": "executing",
+    "source_url": "https://github.com/alexmojaki/executing",
+    "analyzed_at": "2026-06-23T03:24:40.371Z",
+    "commit": "0dc8a1c8ba6baed4a57bd0255afcfd8d4d0c7798",
+    "one_liner": "获取当前执行帧所对应的 AST 节点，用于调试与 traceback 增强。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "executing 是一个轻量级 Python 工具库，用于在运行时获取某个帧（frame）当前正在执行的 AST 节点。它通过比对字节码指令与抽象语法树，识别 Call、Attribute、Subscript、BinOp、UnaryOp、Compare 等常见表达式节点，常被 traceback 美化、调试器和源码分析工具用作底层依赖。",
+    "categories": [
+      {
+        "name": "AST 节点定位",
+        "description": "根据 frame.f_lasti 与字节码指令，结合 AST 匹配算法，定位当前正在执行的具体 AST 节点；支持普通 Python 代码与 IPython/Jupyter cell。",
+        "evidence": [
+          "executing/executing.py:Source.executing",
+          "executing/_position_node_finder.py:PositionNodeFinder.find_node"
+        ]
+      },
+      {
+        "name": "字节码分析与验证",
+        "description": "使用 dis 模块解析字节码，并在修改 AST 后重新编译，通过比较指令序列验证节点映射的正确性；包含针对各 Python 版本的字节码差异处理。",
+        "evidence": [
+          "executing/executing.py:SentinelNodeFinder.matching_nodes",
+          "executing/_utils.py:get_instructions"
+        ]
+      },
+      {
+        "name": "源码文本提取",
+        "description": "在可选安装 asttokens 后，可获取 AST 节点对应的源代码文本片段（text/text_range），或返回 ASTTokens/ASTText 对象供下游使用。",
+        "evidence": [
+          "executing/executing.py:Source.asttokens",
+          "executing/executing.py:Executing.text"
+        ]
+      },
+      {
+        "name": "限定名推断",
+        "description": "遍历 AST 并维护类/函数嵌套栈，为 code object 模拟生成 __qualname__，便于在 traceback 中显示完整路径。",
+        "evidence": [
+          "executing/executing.py:QualnameVisitor",
+          "executing/executing.py:Source.code_qualname"
+        ]
+      },
+      {
+        "name": "IPython 与 pytest 兼容",
+        "description": "识别 IPython cell 文件名与代码对象名，处理 pytest assert 重写后的字节码，保证在交互式环境与测试框架下的可用性。",
+        "evidence": [
+          "executing/executing.py:is_ipython_cell_code",
+          "executing/executing.py:is_rewritten_by_pytest",
+          "executing/_pytest_utils.py:is_pytest_compatible"
+        ]
+      }
+    ],
+    "domain": "开发工具 / 调试 / 源码分析",
+    "target_users": "Python 开发者、调试与 traceback 增强库作者、Jupyter/IPython 生态工具开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "JSON",
+      "Python",
+      "Markdown",
+      "TOML",
+      "YAML",
+      "INI",
+      "Bourne Shell",
+      "Text"
+    ],
+    "breakdown": [
+      {
+        "language": "JSON",
+        "files": 158,
+        "code": 557647,
+        "pct": 98.13,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 158,
+          "code": 557647
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 194,
+        "code": 10297,
+        "pct": 1.81,
+        "production": {
+          "files": 6,
+          "code": 1502
+        },
+        "test": {
+          "files": 188,
+          "code": 8795
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 128,
+        "pct": 0.02,
+        "production": {
+          "files": 2,
+          "code": 128
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 63,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 63
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 56,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 56
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 1,
+        "code": 35,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 35
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 1,
+        "code": 24,
+        "pct": 0,
+        "production": {
+          "files": 1,
+          "code": 24
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 18,
+        "pct": 0,
+        "production": {
+          "files": 1,
+          "code": 17
+        },
+        "test": {
+          "files": 1,
+          "code": 1
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 360,
+      "code": 568268,
+      "comment": 3375,
+      "blank": 2680,
+      "total_lines": 574323
+    },
+    "production": {
+      "files": 13,
+      "code": 1825,
+      "comment": 390,
+      "blank": 517,
+      "total_lines": 2732
+    },
+    "test": {
+      "files": 347,
+      "code": 566443,
+      "comment": 2985,
+      "blank": 2163,
+      "total_lines": 571591
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 6,
+        "code": 1502
+      },
+      "Markdown": {
+        "files": 2,
+        "code": 128
+      },
+      "TOML": {
+        "files": 1,
+        "code": 63
+      },
+      "YAML": {
+        "files": 1,
+        "code": 56
+      },
+      "INI": {
+        "files": 1,
+        "code": 35
+      },
+      "Bourne Shell": {
+        "files": 1,
+        "code": 24
+      },
+      "Text": {
+        "files": 1,
+        "code": 17
+      }
+    }
+  },
+  "tests": {
+    "test_files": 347,
+    "test_cases": 79,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 188,
+        "cases": 79
+      },
+      "JSON": {
+        "files": 158,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "测试代码量主要由 tests/samples 与 tests/small_samples 下的 JSON 样例数据（约 55.8 万行）构成；实际 Python 测试逻辑约 8795 行，使用 pytest 与 unittest.TestCase 混合编写。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "Top-level LICENSE.txt matches MIT text; pyproject.toml declares license = {text = \"MIT\"}.",
+    "notes": "Permissive license; copyright held by Alex Hall."
+  },
+  "dependencies": {
+    "count": 11,
+    "manifests": [
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "setuptools",
+        "wheel",
+        "setuptools_scm",
+        "asttokens",
+        "pysource-minimize",
+        "ipython",
+        "pytest",
+        "coverage",
+        "coverage-enable-subprocess",
+        "littleutils",
+        "rich"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=68",
+        "purpose": "构建后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "wheel",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建 wheel 分发包",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools_scm",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=8",
+        "purpose": "基于 git 标签动态管理版本号",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "asttokens",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": ">=2.1.0",
+        "purpose": "可选运行时依赖，用于获取 AST 节点对应的源码文本",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "used_symbols": [
+          "ASTTokens",
+          "ASTText",
+          "ASTTextBase.get_text",
+          "ASTTextBase.get_text_range"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pysource-minimize",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=0.10.1",
+        "purpose": "生成/最小化失败样例的测试辅助工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ipython",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "IPython 相关测试",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "coverage",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "[toml]",
+        "purpose": "代码覆盖率测量（含 toml 配置支持）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "coverage-enable-subprocess",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "支持子进程覆盖率收集",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "littleutils",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试辅助小工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "rich",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "python_version >= '3.11'",
+        "purpose": "在 Python>=3.11 的测试输出中使用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "无强制运行时依赖；asttokens 是唯一与运行时功能相关的可选依赖，但当前在 OpenHarmony PC PyPI 镜像中未找到其 ohos 构建。"
+  },
+  "native_api": {
+    "summary": "纯 Python 实现，仅使用 Python 标准库 API；无操作系统专有、系统内核或硬件调用。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ast.parse",
+            "purpose": "解析源码为 AST",
+            "count": 3,
+            "evidence": [
+              "executing/executing.py:121",
+              "executing/_position_node_finder.py:996"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "ast.walk",
+            "purpose": "遍历 AST 节点",
+            "count": 3,
+            "evidence": [
+              "executing/executing.py:125",
+              "executing/_utils.py:91"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "dis.get_instructions",
+            "purpose": "获取字节码指令序列",
+            "count": 2,
+            "evidence": [
+              "executing/_utils.py:81",
+              "executing/_position_node_finder.py:32"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "compile",
+            "purpose": "编译修改后的 AST 以对比字节码",
+            "count": 1,
+            "evidence": [
+              "executing/executing.py:440"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "linecache.getlines",
+            "purpose": "读取源码文件行",
+            "count": 1,
+            "evidence": [
+              "executing/executing.py:153"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "linecache.checkcache",
+            "purpose": "刷新源码缓存",
+            "count": 1,
+            "evidence": [
+              "executing/executing.py:157"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "inspect.iscode",
+            "purpose": "判断常量是否为 code object",
+            "count": 1,
+            "evidence": [
+              "executing/executing.py:729"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys.version_info",
+            "purpose": "按 Python 版本进行条件分支",
+            "count": 26,
+            "evidence": [
+              "executing/executing.py:640",
+              "executing/_position_node_finder.py:315"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "threading.RLock",
+            "purpose": "节点查找过程的线程锁",
+            "count": 2,
+            "evidence": [
+              "executing/executing.py:967",
+              "executing/executing.py:535"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "functools.lru_cache",
+            "purpose": "缓存 Source 与语句查找结果",
+            "count": 3,
+            "evidence": [
+              "executing/executing.py:54",
+              "executing/_position_node_finder.py:30"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要通过 Python linecache 读取被分析 Python 文件的源码内容；无网络访问、无子进程、无环境变量读取、无设备访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "被分析 Python 文件的源码行",
+        "purpose": "通过 linecache 获取并缓存源码，用于解析 AST 与字节码匹配",
+        "evidence": [
+          "executing/executing.py:153",
+          "executing/executing.py:157",
+          "executing/executing.py:182"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.8",
+    "runtime_version": "CPython 3.8+ / PyPy（tox 配置包含 py38–py314-dev、pypy35、pypy36）",
+    "build_system": "setuptools",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml classifiers",
+          "tox.ini"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml classifiers"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "pyproject.toml classifiers"
+        ]
+      }
+    ],
+    "notes": "纯 Python 包，无需原生编译；源码包含 py.typed 类型标记。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible",
+    "overall_difficulty": "low",
+    "effort_estimate": "XS",
+    "porting_class": "no_adaptation",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "executing 为纯 Python 包，仅依赖 Python 标准库与可选的 asttokens（亦为纯 Python）。鸿蒙 PC 已移植 Python 运行时，因此无需任何原生改造即可直接运行。",
+    "unadaptable_apis": [],
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "全部纯 Python 逻辑",
+        "note": "ast、dis、inspect、linecache 等标准库在鸿蒙 Python 上均可用，无需修改",
+        "evidence": [
+          "executing/executing.py",
+          "executing/_utils.py"
+        ]
+      },
+      {
+        "aspect": "可选依赖 asttokens",
+        "note": "asttokens 为纯 Python，安装后源码文本提取功能可直接工作",
+        "evidence": [
+          "executing/executing.py:278"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 环境中 pip install executing 验证导入",
+      "可选安装 asttokens 后验证 text()/text_range() 功能"
+    ],
+    "notes": "按默认模型 A（库跑在鸿蒙已移植 Python 运行时上）评估；若目标为 ArkTS 沙箱应用（模型 B），则 Python 运行时不存在，需改用其他实现或 Node-API 重写，结论会完全不同。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "scope",
+        "kind": "ambiguity",
+        "value": "optional_runtime_in_test_extras",
+        "rationale": "asttokens 在 pyproject.toml 的 [project.optional-dependencies] tests 中声明，但 README 与源码显示其为可选运行时功能（text()/text_range()/asttokens()），并非仅用于测试。此处按 optional 作用域记录。"
+      }
+    ]
+  }
+}

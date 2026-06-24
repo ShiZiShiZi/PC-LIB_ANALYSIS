@@ -1,0 +1,946 @@
+{
+  "library": {
+    "name": "yaehmop",
+    "package_name": "yaehmop",
+    "source_url": "https://github.com/greglandrum/yaehmop.git",
+    "analyzed_at": "2026-06-22T02:55:12.022Z",
+    "commit": "4ded45bb2bb7a2d38d2527c991debce9226a9066",
+    "one_liner": "扩展休克尔分子轨道计算包，用于分子与周期性体系的电子结构计算及结果可视化。",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "YAeHMOP 是一个基于扩展休克尔理论（EHT）的紧束缚计算程序包，由 Greg Landrum 在 Cornell 大学 Hoffmann 组期间开发。它包含 tightbind 命令行计算引擎与 viewkel 可视化工具，可处理分子、一维/二维/三维周期性体系，构建 Hamiltonian 与重叠矩阵、求解能带结构、生成态密度（DOS）与晶体轨道重叠布居（COOP/COHP），并提供 X11/Mac/TEK 多端可视化。",
+    "categories": [
+      {
+        "name": "扩展休克尔紧束缚计算",
+        "description": "读取原子坐标与参数，为分子和周期性体系构建扩展休克尔 Hamiltonian 与重叠矩阵。",
+        "evidence": [
+          "tightbind/R_hamil.c",
+          "tightbind/R_overlap_mat.c",
+          "tightbind/K_hamil.c",
+          "tightbind/K_overlap_mat.c",
+          "tightbind/mov.c"
+        ]
+      },
+      {
+        "name": "能带结构与 k 点采样",
+        "description": "在倒空间生成 k 点网格或高对称路径，计算周期性体系的能带与布里渊区采样。",
+        "evidence": [
+          "tightbind/kpoints.c",
+          "tightbind/bands.c",
+          "tightbind/recip_space.c",
+          "tightbind/driver.c:loop_over_k_points"
+        ]
+      },
+      {
+        "name": "态密度与晶体轨道重叠布居",
+        "description": "计算总态密度、投影态密度（PDOS）以及 COOP/COHP，用于分析成键与反键特征。",
+        "evidence": [
+          "tightbind/DOS_stuff.c",
+          "tightbind/COOP_stuff.c",
+          "tightbind/postprocess.c"
+        ]
+      },
+      {
+        "name": "片段分子轨道分析",
+        "description": "将体系拆分为片段，构建片段分子轨道（FMO）基下的 Hamiltonian、重叠矩阵与电荷矩阵。",
+        "evidence": [
+          "tightbind/FMO_stuff.c",
+          "tightbind/prototypes.h:FMO_frag_type"
+        ]
+      },
+      {
+        "name": "对称性与 Walsh 图",
+        "description": "检测点群/空间群对称操作，跟踪轨道对称性，并沿几何参数扫描生成 Walsh 图。",
+        "evidence": [
+          "tightbind/symmetry.c",
+          "tightbind/solid_symmetry.c",
+          "tightbind/walsh.c"
+        ]
+      },
+      {
+        "name": "电荷迭代与自洽参数优化",
+        "description": "支持电荷迭代和 Muller 迭代方案，自洽调整 Slater 轨道指数与 Coulomb 积分。",
+        "evidence": [
+          "tightbind/chg_it.c",
+          "tightbind/muller.c",
+          "tightbind/zetas.c"
+        ]
+      },
+      {
+        "name": "结果可视化",
+        "description": "viewkel 提供分子、能带、态密度、Walsh 图等交互式可视化，支持 X11、Mac 与 Tektronix 后端。",
+        "evidence": [
+          "viewkel/main.c",
+          "viewkel/xstuff.c",
+          "viewkel/graphics.c",
+          "viewkel/interface.c"
+        ]
+      }
+    ],
+    "domain": "computational_chemistry",
+    "target_users": "计算化学、材料科学与量子化学领域的研究人员及软件开发者"
+  },
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "Fortran 77",
+      "C/C++ Header",
+      "TeX",
+      "CMake",
+      "make",
+      "Text",
+      "Markdown"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 109,
+        "code": 40058,
+        "pct": 79.7,
+        "production": {
+          "files": 108,
+          "code": 39995
+        },
+        "test": {
+          "files": 1,
+          "code": 63
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Fortran 77",
+        "files": 5,
+        "code": 4367,
+        "pct": 8.69,
+        "production": {
+          "files": 5,
+          "code": 4367
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 29,
+        "code": 3452,
+        "pct": 6.87,
+        "production": {
+          "files": 29,
+          "code": 3452
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TeX",
+        "files": 23,
+        "code": 2116,
+        "pct": 4.21,
+        "production": {
+          "files": 23,
+          "code": 2116
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CMake",
+        "files": 1,
+        "code": 133,
+        "pct": 0.26,
+        "production": {
+          "files": 1,
+          "code": 133
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 3,
+        "code": 111,
+        "pct": 0.22,
+        "production": {
+          "files": 3,
+          "code": 111
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 1,
+        "code": 22,
+        "pct": 0.04,
+        "production": {
+          "files": 1,
+          "code": 22
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 3,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 3
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 172,
+      "code": 50262,
+      "comment": 23535,
+      "blank": 11424,
+      "total_lines": 85221
+    },
+    "production": {
+      "files": 171,
+      "code": 50199,
+      "comment": 23503,
+      "blank": 11393,
+      "total_lines": 85095
+    },
+    "test": {
+      "files": 1,
+      "code": 63,
+      "comment": 32,
+      "blank": 31,
+      "total_lines": 126
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "C": {
+        "files": 108,
+        "code": 39995
+      },
+      "Fortran 77": {
+        "files": 5,
+        "code": 4367
+      },
+      "C/C++ Header": {
+        "files": 29,
+        "code": 3452
+      },
+      "TeX": {
+        "files": 23,
+        "code": 2116
+      },
+      "CMake": {
+        "files": 1,
+        "code": 133
+      },
+      "make": {
+        "files": 3,
+        "code": 111
+      },
+      "Text": {
+        "files": 1,
+        "code": 22
+      },
+      "Markdown": {
+        "files": 1,
+        "code": 3
+      }
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "C": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "Counts are regex-based idiom matches; treat as close estimates. 仓库中存在 tightbind/test_driver.c，但未识别到标准测试用例结构。"
+  },
+  "license": {
+    "spdx": "BSD-2-Clause",
+    "name": "BSD 2-Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "license.txt",
+      "tightbind/license.txt",
+      "viewkel/license.txt"
+    ],
+    "evidence": "顶层 license.txt 与两个子目录 license.txt 均包含完整的 BSD 2-Clause 条款文本；README.md 第 5 行明确声明已更新为 standard BSD 2-clause license。",
+    "notes": "宽松许可证，需保留版权声明与免责声明。所有子目录采用相同许可证。"
+  },
+  "dependencies": {
+    "count": 10,
+    "manifests": [
+      "tightbind/CMakeLists.txt",
+      "tightbind/Makefile",
+      "viewkel/Makefile"
+    ],
+    "by_ecosystem": {
+      "cpp": [
+        "libm",
+        "BLAS",
+        "LAPACK",
+        "netCDF",
+        "X11",
+        "readline",
+        "history",
+        "termcap",
+        "libgfortran",
+        "libquadmath"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "libm",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "C 数学函数（sin、cos、exp、sqrt 等）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 C 数学库，由编译器/链接器默认提供",
+        "declared_in": [
+          "tightbind/CMakeLists.txt:97",
+          "tightbind/Makefile:27"
+        ]
+      },
+      {
+        "name": "BLAS",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选加速矩阵乘法",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装的 BLAS 库，通过 USE_BLAS_LAPACK 开启",
+        "declared_in": [
+          "tightbind/CMakeLists.txt:49-151",
+          "tightbind/Makefile:29"
+        ]
+      },
+      {
+        "name": "LAPACK",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选复 Hermitian 广义特征值求解（zhegv/zheev）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装的 LAPACK 库，通过 USE_BLAS_LAPACK 开启",
+        "declared_in": [
+          "tightbind/CMakeLists.txt:49-151",
+          "tightbind/prototypes.h:376-382"
+        ]
+      },
+      {
+        "name": "netCDF",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选输出二进制 netCDF 文件供后处理",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装的 netCDF-C 库，通过 INCLUDE_NETCDF_SUPPORT 开启",
+        "declared_in": [
+          "tightbind/bind.h:83-85",
+          "tightbind/netCDF_support.c:42"
+        ]
+      },
+      {
+        "name": "X11",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "viewkel 的 X Window System GUI 显示与事件处理",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 X11 开发库（libX11）",
+        "declared_in": [
+          "viewkel/Makefile:27-34",
+          "viewkel/viewkel.h:55-61"
+        ]
+      },
+      {
+        "name": "readline",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "viewkel 交互式命令行文件名输入与编辑",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 readline 库",
+        "declared_in": [
+          "viewkel/Makefile:27",
+          "viewkel/prototypes.h:442"
+        ]
+      },
+      {
+        "name": "history",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "viewkel 命令行历史记录",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 readline/history 库",
+        "declared_in": [
+          "viewkel/Makefile:27"
+        ]
+      },
+      {
+        "name": "termcap",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "viewkel 终端能力库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 termcap 库",
+        "declared_in": [
+          "viewkel/Makefile:27"
+        ]
+      },
+      {
+        "name": "libgfortran",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "静态链接 LAPACK/BLAS 时需要的 Fortran 运行时",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 gfortran 运行时静态库",
+        "declared_in": [
+          "tightbind/CMakeLists.txt:135-138"
+        ]
+      },
+      {
+        "name": "libquadmath",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "静态链接时 gfortran 所需的 quadmath 运行时",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libquadmath 静态库",
+        "declared_in": [
+          "tightbind/CMakeLists.txt:135-138"
+        ]
+      }
+    ],
+    "notes": "所有依赖均为系统库或可选系统库，无包管理器声明。默认构建不依赖 Fortran 编译器，使用内置 C 版本（abfns.c、lovlap.c、cboris.c、diag.c）。"
+  },
+  "native_api": {
+    "summary": "核心计算引擎以 ANSI C 标准库为主，跨平台性较好；viewkel 可视化模块深度依赖 X11 与 readline，构成主要平台耦合点。",
+    "groups": [
+      {
+        "type": "c_standard",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "fopen/fclose",
+            "purpose": "流式文件打开与关闭（输入/输出/参数文件）",
+            "count": 68,
+            "evidence": [
+              "tightbind/fileio.c:458",
+              "tightbind/driver.c:637-665",
+              "viewkel/fileio.c:127"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fprintf/sprintf",
+            "purpose": "格式化输出到文件或字符串（结果写入、错误信息）",
+            "count": 1632,
+            "evidence": [
+              "tightbind/main.c:70",
+              "tightbind/driver.c:669",
+              "viewkel/genutil.c:154"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "malloc/calloc/free",
+            "purpose": "动态内存分配与释放",
+            "count": 182,
+            "evidence": [
+              "tightbind/driver.c:631-632",
+              "tightbind/memory.c",
+              "viewkel/main.c:140-142"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "signal",
+            "purpose": "注册 SIGINT 中断处理函数",
+            "count": 4,
+            "evidence": [
+              "tightbind/main.c:94",
+              "tightbind/test_driver.c:108",
+              "viewkel/implicit_polyg.c:346"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "exit",
+            "purpose": "异常或正常退出程序",
+            "count": 12,
+            "evidence": [
+              "tightbind/main.c:71",
+              "viewkel/genutil.c:93"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "posix_file_io",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "open",
+            "purpose": "POSIX 文件描述符打开二进制文件",
+            "count": 8,
+            "evidence": [
+              "viewkel/triangles.c:359",
+              "viewkel/MO_conts.c:254",
+              "viewkel/fileio.c:421"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "read",
+            "purpose": "POSIX 二进制数据读取",
+            "count": 10,
+            "evidence": [
+              "viewkel/triangles.c:432",
+              "viewkel/fileio.c:427",
+              "tightbind/utils/matrix_view.c:65-97"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "write",
+            "purpose": "POSIX 二进制数据写入",
+            "count": 12,
+            "evidence": [
+              "viewkel/triangles.c:366",
+              "viewkel/MO_conts.c:198",
+              "viewkel/fileio.c:375"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "close",
+            "purpose": "POSIX 文件描述符关闭",
+            "count": 15,
+            "evidence": [
+              "viewkel/triangles.c:380",
+              "viewkel/fileio.c:398",
+              "tightbind/utils/matrix_view.c:171"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "x11",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "XOpenDisplay",
+            "purpose": "连接 X Window 显示服务器",
+            "count": 2,
+            "evidence": [
+              "viewkel/main.c:89",
+              "viewkel/xstuff.c:90"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XCreateSimpleWindow",
+            "purpose": "创建 X11 窗口",
+            "count": 1,
+            "evidence": [
+              "viewkel/xstuff.c:123"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XDrawLine",
+            "purpose": "在 X11 窗口绘制线段",
+            "count": 23,
+            "evidence": [
+              "viewkel/graphics.c:141",
+              "viewkel/graphics.c:209"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XDrawString",
+            "purpose": "在 X11 窗口绘制文本",
+            "count": 8,
+            "evidence": [
+              "viewkel/graphics.c:291",
+              "viewkel/graphics.c:2409"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XNextEvent",
+            "purpose": "读取 X11 事件循环中的下一条事件",
+            "count": 3,
+            "evidence": [
+              "viewkel/interface.c:771",
+              "viewkel/interface.c:815"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "tightbind 为命令行批处理程序，通过文件 I/O 读取输入与参数并写出结果；viewkel 依赖 X11 显示与 readline 交互输入，并读取环境变量定位显示与参数文件。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "输入文件（.bind 或任意扩展名）",
+        "purpose": "tightbind 读取几何、计算选项与作业参数",
+        "evidence": [
+          "tightbind/main.c:82-84",
+          "tightbind/driver.c:635-643"
+        ]
+      },
+      {
+        "detail": "eht_parms.dat 扩展休克尔参数文件",
+        "purpose": "提供原子 Slater 轨道参数，可在编译时或运行时定位",
+        "evidence": [
+          "tightbind/fileio.c:450-458",
+          "tightbind/CMakeLists.txt:69-72"
+        ]
+      },
+      {
+        "detail": "输出文件 .out、.status、.walsh、.band、.FMO",
+        "purpose": "写入计算结果、进度状态与专项分析输出",
+        "evidence": [
+          "tightbind/driver.c:651-693"
+        ]
+      },
+      {
+        "detail": "viewkel 读取的数据文件与保存的 PostScript/VRML/Rayshade 文件",
+        "purpose": "可视化数据输入与导出图像/场景",
+        "evidence": [
+          "viewkel/fileio.c:127-230",
+          "viewkel/enhpost.c:681"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "DISPLAY",
+        "purpose": "viewkel 通过 X11 连接显示服务器",
+        "evidence": [
+          "viewkel/main.c:89",
+          "viewkel/xstuff.c:90"
+        ]
+      },
+      {
+        "name": "BIND_PARM_FILE",
+        "purpose": "tightbind 运行时覆盖扩展休克尔参数文件路径",
+        "evidence": [
+          "tightbind/fileio.c:451"
+        ]
+      },
+      {
+        "name": "VIEWKEL_PARM_FILE",
+        "purpose": "viewkel 运行时覆盖原子参数文件路径",
+        "evidence": [
+          "viewkel/molecule.c:1174"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "/home/landrum/bin/aix3.x/rotate",
+        "purpose": "可选外部分子旋转工具（USE_LASSP_ROTATE）",
+        "evidence": [
+          "viewkel/interface.c:548-559"
+        ]
+      }
+    ],
+    "devices": [
+      {
+        "detail": "X11 显示设备",
+        "purpose": "viewkel 图形可视化依赖 X Window 显示",
+        "evidence": [
+          "viewkel/main.c:89",
+          "viewkel/xstuff.c:90"
+        ]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "ANSI C（C89/C90），使用 C99 stdbool.h",
+    "runtime_version": "无解释器要求；编译为原生可执行文件",
+    "build_system": "CMake 3.10+ 或 Make",
+    "compiler_extensions": [
+      {
+        "detail": "平台条件编译宏 X_GRAPHICS / MAC_GRAPHICS / TEK_GRAPHICS",
+        "evidence": [
+          "viewkel/viewkel.h:55-71",
+          "viewkel/main.c:58-98"
+        ]
+      },
+      {
+        "detail": "Fortran 名称修饰兼容宏 UNDERSCORE_FORTRAN",
+        "evidence": [
+          "tightbind/CMakeLists.txt:75",
+          "tightbind/bind.h:260-263"
+        ]
+      },
+      {
+        "detail": "MSVC 条件分支（#ifndef _MSC_VER 等）",
+        "evidence": [
+          "tightbind/bind.h:77-79",
+          "tightbind/CMakeLists.txt:80-82"
+        ]
+      },
+      {
+        "detail": "bzero/bcopy 兼容性宏",
+        "evidence": [
+          "tightbind/bind.h:267-274"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "tightbind/Makefile:25-29"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "tightbind/CMakeLists.txt:119-132"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "tightbind/CMakeLists.txt:80-82",
+          "tightbind/bind.h:77-79"
+        ]
+      }
+    ],
+    "notes": "默认构建使用 C 实现（abfns.c、lovlap.c、cboris.c、diag.c），无需 Fortran 编译器；仅当启用 LAPACK/BLAS 静态链接或构建原始 Fortran 源码时才需要 Fortran 工具链。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（OHOS NDK 原生层，自研内核无 Linux ABI；命令行/桌面库口径）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "high",
+    "effort_estimate": "L",
+    "recommended_path": "recompile_napi",
+    "summary": "YAeHMOP 是纯 C 计算库，核心算法不依赖解释器，可经 OHOS NDK 交叉编译为 arm64/x86_64 .so 或可执行文件。主要移植工作量来自 viewkel 的 X11 GUI 与 readline 依赖（鸿蒙 PC 无原生 X Server），以及可选 LAPACK/BLAS/netCDF 等系统库需要获取或关闭。若仅使用 tightbind 命令行计算引擎，难度可降至 medium/effort M。",
+    "blockers": [
+      {
+        "issue": "viewkel 深度依赖 X11 窗口系统与事件循环",
+        "severity": "blocker",
+        "category": "x11_gui",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "若必须保留 GUI，需将 X11 绘图与事件循环替换为鸿蒙 @ohos.graphics 或 ArkUI/ArkTS 原生图形能力；若仅保留批处理计算，可直接禁用 viewkel。",
+        "evidence": [
+          "viewkel/xstuff.c:90",
+          "viewkel/interface.c:771",
+          "viewkel/graphics.c:141"
+        ]
+      },
+      {
+        "issue": "viewkel 依赖 readline/history/termcap 终端库",
+        "severity": "major",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "使用 libedit 或鸿蒙终端/输入能力替换 readline；对命令行工具可改用简单 fgets 输入。",
+        "evidence": [
+          "viewkel/Makefile:27",
+          "viewkel/prototypes.h:442"
+        ]
+      },
+      {
+        "issue": "可选 LAPACK/BLAS 与 netCDF 需在鸿蒙上重新编译或禁用",
+        "severity": "major",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "在 OHOS NDK 下交叉编译 LAPACK/BLAS/netCDF，或关闭 USE_BLAS_LAPACK 与 INCLUDE_NETCDF_SUPPORT 使用内置 C 对角化与文本输出。",
+        "evidence": [
+          "tightbind/CMakeLists.txt:49-151",
+          "tightbind/bind.h:83-85"
+        ]
+      },
+      {
+        "issue": "USE_LASSP_ROTATE 分支调用外部 rotate 可执行文件",
+        "severity": "minor",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unavailable",
+        "remediation": "该功能为可选硬编码外部工具，移植时应直接禁用 USE_LASSP_ROTATE 宏或移除该分支。",
+        "evidence": [
+          "viewkel/interface.c:548-559"
+        ]
+      },
+      {
+        "issue": "VIEWKEL_PARM_FILE / BIND_PARM_FILE 等环境变量读取与硬编码路径",
+        "severity": "minor",
+        "category": "filesystem_env",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "partial",
+        "remediation": "鸿蒙应用沙箱中需使用应用私有目录或 OHOS 文件选择能力；命令行下可直接通过命令行参数指定参数文件。",
+        "evidence": [
+          "tightbind/fileio.c:451",
+          "viewkel/molecule.c:1174"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "tightbind 核心计算逻辑（EHT 矩阵构建、对角化、DOS/COOP）",
+        "note": "纯 C 算法与标准数学库，可经 OHOS NDK 直接交叉编译",
+        "evidence": [
+          "tightbind/driver.c",
+          "tightbind/R_hamil.c",
+          "tightbind/DOS_stuff.c"
+        ]
+      },
+      {
+        "aspect": "内置 C 版对角化与重叠积分例程",
+        "note": "默认不依赖 LAPACK，无需 Fortran 运行时即可运行",
+        "evidence": [
+          "tightbind/cboris.c",
+          "tightbind/diag.c",
+          "tightbind/abfns.c",
+          "tightbind/lovlap.c"
+        ]
+      },
+      {
+        "aspect": "标准 C 文件 I/O 与信号处理",
+        "note": "musl/OHOS POSIX 子集支持 fopen/fprintf/signal 等接口",
+        "evidence": [
+          "tightbind/main.c:94",
+          "tightbind/fileio.c"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK（ohos.toolchain.cmake）交叉编译 tightbind，关闭 X11 与可选系统库",
+      "如需保留可视化，将 viewkel 的 X11 绘图与事件循环替换为鸿蒙原生图形/输入能力",
+      "获取或交叉编译可选依赖 LAPACK/BLAS/netCDF，或关闭对应编译开关",
+      "移除或禁用 USE_LASSP_ROTATE 外部 rotate 工具调用",
+      "在鸿蒙 PC 上运行示例输入并验证 .out 输出与已知结果一致"
+    ],
+    "notes": "评估按 HarmonyOS PC 原生命令行/桌面库口径（模型 A）。若目标是 ArkTS 沙箱应用，则整个 viewkel 与 tightbind 命令行模式均不适用，需要以 Node-API 封装核心算法并在 ArkTS 层重写 UI，难度升至 very_high/effort XL。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "domain",
+        "kind": "new_value",
+        "value": "computational_chemistry",
+        "rationale": "YAeHMOP 属于量子化学/计算化学领域，推荐 domain 列表中未直接覆盖，故 coined 该值。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "gap",
+        "value": "legacy_makefile_hardcoded",
+        "rationale": "viewkel/Makefile 使用硬编码绝对路径（/usr/X11R6/lib、/home/glandrum/...），不属于常规 system/fetchcontent/vendored，建议在技能中增加对 legacy Makefile 硬编码路径依赖的说明。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "x11",
+        "rationale": "X11 属于跨 Unix 窗口系统 API，不是严格 OS-specific 的 Win32/POSIX，但鸿蒙无原生 X Server，作为独立 API 家族列出更清晰。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,1494 @@
+{
+  "library": {
+    "name": "OpenBLAS",
+    "package_name": "OpenBLAS",
+    "source_url": "https://github.com/OpenMathLib/OpenBLAS.git",
+    "analyzed_at": "2026-06-22T07:37:43.663Z",
+    "commit": "f986fd33223463cb4422938b5664ed4f5b15e343",
+    "one_liner": "基于 GotoBLAS2 的高性能开源 BLAS/LAPACK 线性代数库",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "OpenBLAS 是基于 GotoBLAS2 1.13 BSD 版本优化的 BLAS（Basic Linear Algebra Subprograms）库，同时集成了参考 LAPACK 实现以及 CBLAS/LAPACKE C 语言封装接口。它通过针对 x86、ARM、POWER、RISC-V、LoongArch 等 CPU 架构的手写汇编与 SIMD 内核提供高性能矩阵/向量运算，主要面向科学计算、机器学习、数据分析及其他需要稠密线性代数能力的上层库与终端开发者。",
+    "categories": [
+      {
+        "name": "BLAS 核心例程",
+        "description": "提供 Level 1/2/3 的稠密矩阵与向量运算，包括 GEMM、GEMV、AXPY、DOT、TRSM 等标准 BLAS 接口。",
+        "evidence": [
+          "interface/gemm.c",
+          "interface/gemv.c",
+          "interface/axpy.c",
+          "driver/level2",
+          "driver/level3"
+        ]
+      },
+      {
+        "name": "CBLAS C 语言接口",
+        "description": "在 BLAS Fortran 命名规范之上提供 C 语言封装（cblas_xxx）与运行时线程/配置查询函数。",
+        "evidence": [
+          "cblas.h",
+          "interface/cblas",
+          "driver/others/openblas_set_num_threads.c",
+          "driver/others/openblas_get_config.c"
+        ]
+      },
+      {
+        "name": "LAPACK 线性代数求解器",
+        "description": "集成参考 LAPACK 与 OpenBLAS 优化版线性方程、特征值、SVD 等高层数值例程。",
+        "evidence": [
+          "lapack/",
+          "lapack-netlib/SRC",
+          "relapack/src"
+        ]
+      },
+      {
+        "name": "LAPACKE C 接口",
+        "description": "为 LAPACK 例程提供 C 语言调用接口（lapacke_xxx）。",
+        "evidence": [
+          "lapack-netlib/LAPACKE/include/lapacke.h",
+          "lapack-netlib/LAPACKE/src"
+        ]
+      },
+      {
+        "name": "CPU 架构优化内核",
+        "description": "针对不同 CPU 微架构（x86_64、arm64、POWER、RISC-V、LoongArch、zarch）手写汇编与 SIMD 微内核。",
+        "evidence": [
+          "kernel/x86_64/",
+          "kernel/arm64/",
+          "kernel/power/",
+          "kernel/riscv64/",
+          "cpuid_x86.c",
+          "cpuid_arm64.c"
+        ]
+      },
+      {
+        "name": "多线程并行与线程管理",
+        "description": "基于 POSIX pthreads 或 Windows 线程实现内部线程池，提供线程数设置与回调扩展。",
+        "evidence": [
+          "driver/others/blas_server.c",
+          "driver/others/blas_server_win32.c",
+          "driver/others/init.c",
+          "driver/others/openblas_set_num_threads.c"
+        ]
+      },
+      {
+        "name": "动态架构探测",
+        "description": "DYNAMIC_ARCH 模式下在运行时通过 cpuid、/proc/cpuinfo、sysctl 等识别 CPU 并选择最优内核。",
+        "evidence": [
+          "driver/others/dynamic.c",
+          "driver/others/dynamic_arm64.c",
+          "cpuid_x86.c",
+          "cpuid_arm64.c"
+        ]
+      }
+    ],
+    "domain": "scientific computing",
+    "target_users": "科学计算、机器学习、数值分析等领域的 C/C++/Fortran 开发者及上层库（如 NumPy、SciPy、R、MATLAB）"
+  },
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "Assembly",
+      "Fortran 77",
+      "C/C++ Header",
+      "make",
+      "CMake",
+      "Fortran 90",
+      "Bourne Shell"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 6706,
+        "code": 1995650,
+        "pct": 51.6,
+        "production": {
+          "files": 6502,
+          "code": 1923558
+        },
+        "test": {
+          "files": 196,
+          "code": 71729
+        },
+        "example": {
+          "files": 8,
+          "code": 363
+        }
+      },
+      {
+        "language": "Assembly",
+        "files": 1249,
+        "code": 1083834,
+        "pct": 28.02,
+        "production": {
+          "files": 1249,
+          "code": 1083834
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Fortran 77",
+        "files": 3819,
+        "code": 663815,
+        "pct": 17.16,
+        "production": {
+          "files": 2579,
+          "code": 373210
+        },
+        "test": {
+          "files": 1240,
+          "code": 290605
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 86,
+        "code": 61094,
+        "pct": 1.58,
+        "production": {
+          "files": 78,
+          "code": 60230
+        },
+        "test": {
+          "files": 7,
+          "code": 858
+        },
+        "example": {
+          "files": 1,
+          "code": 6
+        }
+      },
+      {
+        "language": "make",
+        "files": 58,
+        "code": 18966,
+        "pct": 0.49,
+        "production": {
+          "files": 49,
+          "code": 17420
+        },
+        "test": {
+          "files": 7,
+          "code": 1500
+        },
+        "example": {
+          "files": 2,
+          "code": 46
+        }
+      },
+      {
+        "language": "CMake",
+        "files": 66,
+        "code": 16336,
+        "pct": 0.42,
+        "production": {
+          "files": 56,
+          "code": 15234
+        },
+        "test": {
+          "files": 8,
+          "code": 1084
+        },
+        "example": {
+          "files": 2,
+          "code": 18
+        }
+      },
+      {
+        "language": "Fortran 90",
+        "files": 22,
+        "code": 5408,
+        "pct": 0.14,
+        "production": {
+          "files": 18,
+          "code": 3306
+        },
+        "test": {
+          "files": 4,
+          "code": 2102
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 8,
+        "code": 4825,
+        "pct": 0.12,
+        "production": {
+          "files": 8,
+          "code": 4825
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Perl",
+        "files": 4,
+        "code": 4595,
+        "pct": 0.12,
+        "production": {
+          "files": 4,
+          "code": 4595
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 22,
+        "code": 2970,
+        "pct": 0.08,
+        "production": {
+          "files": 21,
+          "code": 2931
+        },
+        "test": {
+          "files": 1,
+          "code": 39
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 22,
+        "code": 2877,
+        "pct": 0.07,
+        "production": {
+          "files": 22,
+          "code": 2877
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 10,
+        "code": 2771,
+        "pct": 0.07,
+        "production": {
+          "files": 10,
+          "code": 2771
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 21,
+        "code": 1834,
+        "pct": 0.05,
+        "production": {
+          "files": 21,
+          "code": 1834
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TeX",
+        "files": 1,
+        "code": 1264,
+        "pct": 0.03,
+        "production": {
+          "files": 1,
+          "code": 1264
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 1,
+        "code": 450,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 450
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "MATLAB",
+        "files": 10,
+        "code": 401,
+        "pct": 0.01,
+        "production": {
+          "files": 10,
+          "code": 401
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 3,
+        "code": 320,
+        "pct": 0.01,
+        "production": {
+          "files": 3,
+          "code": 320
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 1,
+        "code": 182,
+        "pct": 0.0,
+        "production": {
+          "files": 1,
+          "code": 182
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "R",
+        "files": 3,
+        "code": 113,
+        "pct": 0.0,
+        "production": {
+          "files": 3,
+          "code": 113
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Meson",
+        "files": 5,
+        "code": 107,
+        "pct": 0.0,
+        "production": {
+          "files": 5,
+          "code": 107
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Prolog",
+        "files": 1,
+        "code": 54,
+        "pct": 0.0,
+        "production": {
+          "files": 1,
+          "code": 54
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Groovy",
+        "files": 1,
+        "code": 19,
+        "pct": 0.0,
+        "production": {
+          "files": 1,
+          "code": 19
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Again Shell",
+        "files": 4,
+        "code": 10,
+        "pct": 0.0,
+        "production": {
+          "files": 4,
+          "code": 10
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "diff",
+        "files": 1,
+        "code": 4,
+        "pct": 0.0,
+        "production": {
+          "files": 1,
+          "code": 4
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "BitBake",
+        "files": 1,
+        "code": 3,
+        "pct": 0.0,
+        "production": {
+          "files": 1,
+          "code": 3
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 12125,
+      "code": 3867902,
+      "comment": 1868624,
+      "blank": 583939,
+      "total_lines": 6320465
+    },
+    "production": {
+      "files": 10649,
+      "code": 3499552,
+      "comment": 1515310,
+      "blank": 569164,
+      "total_lines": 5584026
+    },
+    "test": {
+      "files": 1463,
+      "code": 367917,
+      "comment": 353104,
+      "blank": 14656,
+      "total_lines": 735677
+    },
+    "example": {
+      "files": 13,
+      "code": 433,
+      "comment": 210,
+      "blank": 119,
+      "total_lines": 762
+    },
+    "production_by_language": {
+      "C": {
+        "files": 6502,
+        "code": 1923558
+      },
+      "Assembly": {
+        "files": 1249,
+        "code": 1083834
+      },
+      "Fortran 77": {
+        "files": 2579,
+        "code": 373210
+      },
+      "C/C++ Header": {
+        "files": 78,
+        "code": 60230
+      },
+      "make": {
+        "files": 49,
+        "code": 17420
+      },
+      "CMake": {
+        "files": 56,
+        "code": 15234
+      },
+      "Bourne Shell": {
+        "files": 8,
+        "code": 4825
+      },
+      "Perl": {
+        "files": 4,
+        "code": 4595
+      },
+      "Fortran 90": {
+        "files": 18,
+        "code": 3306
+      },
+      "Markdown": {
+        "files": 21,
+        "code": 2931
+      },
+      "YAML": {
+        "files": 22,
+        "code": 2877
+      },
+      "Text": {
+        "files": 10,
+        "code": 2771
+      },
+      "Python": {
+        "files": 21,
+        "code": 1834
+      },
+      "TeX": {
+        "files": 1,
+        "code": 1264
+      },
+      "SVG": {
+        "files": 1,
+        "code": 450
+      },
+      "MATLAB": {
+        "files": 10,
+        "code": 401
+      },
+      "C++": {
+        "files": 3,
+        "code": 320
+      },
+      "XML": {
+        "files": 1,
+        "code": 182
+      },
+      "R": {
+        "files": 3,
+        "code": 113
+      },
+      "Meson": {
+        "files": 5,
+        "code": 107
+      },
+      "Prolog": {
+        "files": 1,
+        "code": 54
+      },
+      "Groovy": {
+        "files": 1,
+        "code": 19
+      },
+      "Bourne Again Shell": {
+        "files": 4,
+        "code": 10
+      },
+      "diff": {
+        "files": 1,
+        "code": 4
+      },
+      "BitBake": {
+        "files": 1,
+        "code": 3
+      }
+    }
+  },
+  "tests": {
+    "test_files": 1463,
+    "test_cases": 60,
+    "frameworks": [
+      "googletest"
+    ],
+    "by_language": {
+      "C": {
+        "files": 196,
+        "cases": 59
+      },
+      "C/C++ Header": {
+        "files": 7,
+        "cases": 1
+      },
+      "Fortran 77": {
+        "files": 1240,
+        "cases": 0
+      },
+      "Fortran 90": {
+        "files": 4,
+        "cases": 0
+      },
+      "make": {
+        "files": 7,
+        "cases": 0
+      },
+      "CMake": {
+        "files": 8,
+        "cases": 0
+      },
+      "Markdown": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates.",
+    "notes": "测试文件包括 BLAS/LAPACK 一致性测试（test、ctest、lapack-netlib/TESTING）以及基于 googletest 的单元测试（utest）。计数为基于正则的近似值；大量 Fortran 测试文件未匹配到用例数。"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE",
+      "GotoBLAS_00License.txt"
+    ],
+    "evidence": "顶层 LICENSE 为 3 条款 BSD；GotoBLAS_00License.txt 为原始 GotoBLAS2 的 2 条款 BSD。vendored 的 lapack-netlib/CBLAS 等代码遵循各自 BSD 类声明。",
+    "notes": "非 copyleft，需保留版权声明。项目包含部分源自 GotoBLAS2（BSD-2-Clause）以及 vendored Netlib LAPACK/CBLAS 代码。"
+  },
+  "dependencies": {
+    "count": 5,
+    "manifests": [
+      "CMakeLists.txt",
+      "Makefile.system",
+      "cmake/system.cmake",
+      "exports/Makefile"
+    ],
+    "by_ecosystem": {
+      "cpp": [
+        "libm",
+        "pthread",
+        "OpenMP",
+        "gfortran",
+        "advapi32"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "libm",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "标准数学库（链接时使用）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装的数学库（Linux/Android/AIX/BSD 上 -lm）",
+        "declared_in": [
+          "Makefile.system:467-481",
+          "CMakeLists.txt:318-325"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pthread",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "POSIX 线程支持（SMP 多线程后端）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 POSIX 线程库（非 Windows/Android 平台 -lpthread）",
+        "declared_in": [
+          "Makefile.system:536-542",
+          "CMakeLists.txt:433-447"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "OpenMP",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选的 OpenMP 线程后端",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统/编译器提供的 OpenMP 运行时（libgomp/libomp）",
+        "declared_in": [
+          "cmake/system.cmake:454-472",
+          "CMakeLists.txt:327-342"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gfortran",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Fortran 运行时库，用于链接 Fortran LAPACK 代码",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "GCC/系统提供的 Fortran 运行时（-lgfortran）",
+        "declared_in": [
+          "exports/Makefile:61,74",
+          "Makefile.system:1210"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "advapi32",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Windows 系统 API（特权调整，大页内存）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Windows 系统库（-defaultlib:advapi32）",
+        "declared_in": [
+          "Makefile.system:485-489"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "OpenBLAS 主要依赖系统级 C/POSIX/线程/数学库；除 vendored 的 lapack-netlib 外，无第三方可安装包依赖。Fortran 与 OpenMP 可通过构建选项关闭。"
+  },
+  "native_api": {
+    "summary": "OpenBLAS 是重度依赖底层平台能力的 native 库：核心算法使用 C 标准库与大量 CPU 架构相关的汇编/SIMD 内联，线程层在 POSIX (pthreads) 与 Win32 之间二选一，内存管理使用 mmap/VirtualAlloc，CPU 数量与型号探测使用 sysconf、sched_getaffinity、/proc/cpuinfo、sysctl 等系统接口。所有平台相关代码基本都被 #ifdef/OS 宏条件守卫。",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "malloc",
+            "purpose": "堆内存分配",
+            "count": 83,
+            "evidence": [
+              "driver/others/memory.c:7"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "free",
+            "purpose": "释放堆内存",
+            "count": 84,
+            "evidence": [
+              "driver/others/memory.c:6"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "memset",
+            "purpose": "内存清零/初始化",
+            "count": 60,
+            "evidence": [
+              "driver/level3/level3_thread.c:1"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "memcpy",
+            "purpose": "内存拷贝",
+            "count": 17,
+            "evidence": [
+              "kernel/power/gemm_common.c:4"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fprintf",
+            "purpose": "错误与日志输出",
+            "count": 255,
+            "evidence": [
+              "driver/others/blas_server.c:30",
+              "driver/others/memory.c:20"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "snprintf",
+            "purpose": "格式化构建配置与核心名称字符串",
+            "count": 19,
+            "evidence": [
+              "driver/others/openblas_get_config.c:1",
+              "driver/others/dynamic_arm64.c:4"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fopen",
+            "purpose": "打开 /proc/cpuinfo 等运行时信息文件",
+            "count": 8,
+            "evidence": [
+              "cpuid_arm64.c:165",
+              "driver/others/parameter.c:2"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "pthread_create",
+            "purpose": "创建内部计算线程",
+            "count": 9,
+            "evidence": [
+              "driver/others/blas_server.c:588"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "pthread_mutex_init",
+            "purpose": "初始化线程状态锁",
+            "count": 3,
+            "evidence": [
+              "driver/others/blas_server.c:584"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "pthread_cond_init",
+            "purpose": "初始化线程条件变量",
+            "count": 3,
+            "evidence": [
+              "driver/others/blas_server.c:585"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "mmap",
+            "purpose": "大块内存/缓冲区匿名映射",
+            "count": 19,
+            "evidence": [
+              "driver/others/memory.c:653"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "munmap",
+            "purpose": "释放匿名映射内存",
+            "count": 12,
+            "evidence": [
+              "driver/others/memory.c:640"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "sysconf",
+            "purpose": "查询在线/配置 CPU 数量",
+            "count": 16,
+            "evidence": [
+              "getarch.c:1990",
+              "driver/others/memory.c:249"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "sched_getaffinity",
+            "purpose": "获取当前进程 CPU 亲和性掩码",
+            "count": 12,
+            "evidence": [
+              "driver/others/memory.c:274"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "sched_setaffinity",
+            "purpose": "设置 OpenBLAS 内部线程 CPU 亲和性",
+            "count": 4,
+            "evidence": [
+              "driver/others/init.c:784"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "CreateThread",
+            "purpose": "Windows 下创建内部线程",
+            "count": 2,
+            "evidence": [
+              "driver/others/blas_server_win32.c:378"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "InitializeCriticalSection",
+            "purpose": "初始化临界区",
+            "count": 4,
+            "evidence": [
+              "driver/others/blas_server_win32.c:370"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "EnterCriticalSection",
+            "purpose": "进入临界区加锁",
+            "count": 4,
+            "evidence": [
+              "driver/others/blas_server_win32.c:239"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "WaitForSingleObject",
+            "purpose": "等待线程/事件完成",
+            "count": 2,
+            "evidence": [
+              "driver/others/blas_server_win32.c:453"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "VirtualAlloc",
+            "purpose": "Windows 下大块内存分配（含大页）",
+            "count": 5,
+            "evidence": [
+              "driver/others/memory.c:879"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "VirtualFree",
+            "purpose": "释放 VirtualAlloc 内存",
+            "count": 4,
+            "evidence": [
+              "driver/others/memory.c:872"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetSystemInfo",
+            "purpose": "获取 Windows 系统处理器信息",
+            "count": 3,
+            "evidence": [
+              "driver/others/memory.c:352"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "OpenProcessToken",
+            "purpose": "获取进程令牌以调整大页特权",
+            "count": 2,
+            "evidence": [
+              "driver/others/memory.c:1038"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "linux_procfs",
+        "category": "system",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "procfs (/proc/cpuinfo)",
+            "purpose": "经 fopen 读取的内核伪文件接口，用于 arm/MIPS/POWER/RISC-V 等架构的 CPU 型号与特性探测",
+            "count": 24,
+            "evidence": [
+              "cpuid_arm64.c:165",
+              "driver/others/dynamic_arm64.c:378"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "bsd_sysctl",
+        "category": "system",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "sysctl",
+            "purpose": "BSD/macOS 内核参数查询接口，用于获取 CPU 数量与缓存信息",
+            "count": 8,
+            "evidence": [
+              "getarch.c:2003",
+              "driver/others/memory.c:375"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "sysctlbyname",
+            "purpose": "按名称查询 Darwin 系统 CPU/缓存特性",
+            "count": 14,
+            "evidence": [
+              "cpuid_arm64.c:393",
+              "driver/others/memory.c:389"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "arch_simd",
+        "category": "hardware",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "cpuid (x86)",
+            "purpose": "x86/x86_64 下通过 CPUID 指令识别处理器特性与选择内核",
+            "count": 30,
+            "evidence": [
+              "cpuid_x86.c:105",
+              "driver/others/dynamic.c:330"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "x86 SSE/AVX/AVX-512 intrinsics",
+            "purpose": "x86_64 微内核中的向量化计算",
+            "count": 2000,
+            "evidence": [
+              "kernel/simd/intrin_sse.h",
+              "kernel/simd/intrin_avx.h",
+              "kernel/x86_64/dgemm_kernel_8x8_skylakex.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ARM NEON/SVE intrinsics",
+            "purpose": "ARM64 微内核中的向量化计算",
+            "count": 800,
+            "evidence": [
+              "common_arm64.h",
+              "kernel/arm64/sgemm_direct_arm64_sme1.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "RISC-V RVV intrinsics",
+            "purpose": "RISC-V Vector 扩展微内核",
+            "count": 300,
+            "evidence": [
+              "kernel/riscv64/gemmkernel_rvv_v1x8.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "POWER VSX intrinsics",
+            "purpose": "IBM POWER 微内核向量化",
+            "count": 200,
+            "evidence": [
+              "kernel/power/dgemv_n_microk_power8.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "LoongArch LASX intrinsics",
+            "purpose": "LoongArch 256-bit 向量扩展微内核",
+            "count": 100,
+            "evidence": [
+              "kernel/loongarch64/somatcopy_ct_lasx.c"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要读取环境变量控制线程数与调试，读取 /proc/cpuinfo（Linux）或 sysctl（macOS/BSD）进行 CPU 型号/核心数探测；无网络访问、无子进程调用。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "/proc/cpuinfo",
+        "purpose": "Linux 下运行时读取 CPU 型号与特性（主要在 arm64/MIPS/POWER/RISC-V 路径）",
+        "evidence": [
+          "cpuid_arm64.c:165",
+          "driver/others/dynamic_arm64.c:378"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "OPENBLAS_NUM_THREADS",
+        "purpose": "设置 OpenBLAS 使用的线程数",
+        "evidence": [
+          "driver/others/init.c:834"
+        ]
+      },
+      {
+        "name": "GOTO_NUM_THREADS",
+        "purpose": "兼容 GotoBLAS 的线程数设置",
+        "evidence": [
+          "driver/others/init.c:835"
+        ]
+      },
+      {
+        "name": "OMP_NUM_THREADS",
+        "purpose": "OpenMP 模式下的线程数",
+        "evidence": [
+          "driver/others/init.c:838"
+        ]
+      },
+      {
+        "name": "OPENBLAS_DEFAULT_NUM_THREADS",
+        "purpose": "默认线程数兜底",
+        "evidence": [
+          "driver/others/init.c:840"
+        ]
+      },
+      {
+        "name": "OPENBLAS_MAIN_FREE",
+        "purpose": "控制是否在主线程释放资源",
+        "evidence": [
+          "driver/others/init.c:991"
+        ]
+      },
+      {
+        "name": "GOTOBLAS_MAIN_FREE",
+        "purpose": "兼容 GotoBLAS 的资源释放开关",
+        "evidence": [
+          "driver/others/init.c:991"
+        ]
+      },
+      {
+        "name": "OPENBLAS_CORETYPE",
+        "purpose": "强制指定 CPU 目标核心类型（覆盖自动探测）",
+        "evidence": [
+          "driver/others/dynamic.c:1145",
+          "driver/others/dynamic_arm64.c:564"
+        ]
+      },
+      {
+        "name": "OPENBLAS_VERBOSE",
+        "purpose": "控制运行时详细输出级别",
+        "evidence": [
+          "driver/others/openblas_env.c:55"
+        ]
+      },
+      {
+        "name": "OPENBLAS_BLOCK_FACTOR",
+        "purpose": "调整分块因子",
+        "evidence": [
+          "driver/others/openblas_env.c:60"
+        ]
+      },
+      {
+        "name": "OPENBLAS_THREAD_TIMEOUT",
+        "purpose": "设置线程超时",
+        "evidence": [
+          "driver/others/openblas_env.c:65"
+        ]
+      },
+      {
+        "name": "OPENBLAS_L2_SIZE",
+        "purpose": "手动指定 L2 缓存大小（字节）",
+        "evidence": [
+          "kernel/setparam-ref.c:1489"
+        ]
+      },
+      {
+        "name": "GET_OPENBLAS_CORETYPE",
+        "purpose": "调试开关，用于获取核心类型信息",
+        "evidence": [
+          "driver/others/dynamic_power.c:352"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "C with GNU extensions（通过 _GNU_SOURCE 启用，依赖编译器默认 C99/C11）；启用 LAPACK 时需要 Fortran 77/90 编译器",
+    "runtime_version": "无解释器/运行时版本要求（原生 C/Fortran 库）",
+    "build_system": "CMake 3.16+（实验性）与 GNU Make",
+    "compiler_extensions": [
+      {
+        "detail": "_GNU_SOURCE 与 GNU 扩展（如 sched_setaffinity、CPU_SET）",
+        "purpose": "启用 Linux/GNU 特定接口",
+        "evidence": [
+          "common.h:48",
+          "driver/others/init.c:83"
+        ]
+      },
+      {
+        "detail": "内联汇编与 CPUID 指令",
+        "purpose": "x86 架构特性探测与底层优化",
+        "evidence": [
+          "cpuid_x86.c:105",
+          "common_x86_64.h:125"
+        ]
+      },
+      {
+        "detail": "编译器内置函数与 SIMD 内联（SSE/AVX/NEON/SVE/RVV/LASX/VSX）",
+        "purpose": "各架构向量化微内核",
+        "evidence": [
+          "kernel/simd/intrin_sse.h",
+          "kernel/x86_64/dgemm_kernel_8x8_skylakex.c",
+          "common_arm64.h"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/dynamic_arch.yml",
+          "Makefile.system:466"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "arm64",
+        "evidence": [
+          ".github/workflows/arm64_graviton.yml",
+          "Makefile.system:37-38"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [
+          "Makefile.riscv64",
+          "driver/others/dynamic_riscv64.c"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "power",
+        "evidence": [
+          "Makefile.power",
+          "driver/others/dynamic_power.c"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "driver/others/blas_server_win32.c",
+          "Makefile.system:485"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "arm64",
+        "evidence": [
+          "README.md:32"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/apple_m.yml"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          ".github/workflows/apple_m.yml",
+          "cpuid_arm64.c:393"
+        ]
+      }
+    ],
+    "notes": "DYNAMIC_ARCH 选项可在 x86_64/aarch64/ppc/RISCV64 上实现运行时 CPU 目标选择；交叉编译需显式指定 TARGET。CMakeLists.txt 第 123 行明确指出 CMake 支持为实验性。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（OHOS NDK / musl libc / arm64、x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "effort_estimate": "M",
+    "recommended_path": "cross_compile",
+    "summary": "OpenBLAS 是 C/Fortran 原生数学库，不依赖托管运行时。其核心算法与 arm64/x86_64 优化内核可直接在 OHOS NDK 上交叉编译；主要工作量在于适配 CPU 探测（/proc/cpuinfo/sysctl 在鸿蒙内核上可能不存在或不完整）、确保 Fortran/OpenMP 可用或回退到 C_LAPACK/pthreads，以及验证线程亲和性等 POSIX 子集行为。",
+    "blockers": [
+      {
+        "issue": "Fortran 运行时/编译器在 OHOS NDK 中可能缺失",
+        "severity": "major",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "partial",
+        "remediation": "使用 CMake -DC_LAPACK=1 将 LAPACK 编译为 C 源码，或 -DBUILD_WITHOUT_LAPACK=1 仅构建 BLAS/CBLAS，避免依赖 gfortran。",
+        "evidence": [
+          "CMakeLists.txt:34",
+          "cmake/system.cmake:439-451",
+          "Makefile.system:1210"
+        ]
+      },
+      {
+        "issue": "非 x86 架构的动态 CPU 型号探测依赖 /proc/cpuinfo 或 sysctl，鸿蒙内核未必提供等价接口",
+        "severity": "major",
+        "category": "sysfs_procfs",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "x86_64 仍可使用 cpuid 指令；arm64 下若 /proc/cpuinfo 不可用，需改用 OHOS 系统能力读取 CPU 特性，或关闭 DYNAMIC_ARCH、在编译时固定 TARGET。",
+        "evidence": [
+          "cpuid_arm64.c:165",
+          "driver/others/dynamic_arm64.c:378"
+        ]
+      },
+      {
+        "issue": "POSIX 线程亲和性（sched_setaffinity/sched_getaffinity）在 OHOS POSIX 子集中可能受限",
+        "severity": "minor",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "CMake 中 NO_AFFINITY 默认在 Linux 上开启，可在鸿蒙上显式启用 -DNO_AFFINITY=1 屏蔽亲和性相关代码。",
+        "evidence": [
+          "CMakeLists.txt:55-59",
+          "driver/others/init.c:784"
+        ]
+      },
+      {
+        "issue": "可选 OpenMP 运行时需鸿蒙侧提供兼容版本，否则构建失败",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "默认使用 pthreads 后端，不启用 USE_OPENMP；如需 OpenMP，需确保 libomp/libgomp 已移植并可用。",
+        "evidence": [
+          "cmake/system.cmake:454-472",
+          "CMakeLists.txt:327-342"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "arm64/x86_64 优化汇编内核",
+        "note": "OpenBLAS 已包含大量 arm64、x86_64 手写内核，可在 NDK 下直接编译",
+        "evidence": [
+          "kernel/arm64",
+          "kernel/x86_64"
+        ]
+      },
+      {
+        "aspect": "标准 C/POSIX 线程/数学库依赖",
+        "note": "musl 提供 pthread、libm、sysconf、mmap 等基础接口",
+        "evidence": [
+          "Makefile.system:467-542"
+        ]
+      },
+      {
+        "aspect": "CBLAS/LAPACKE C 接口",
+        "note": "C 接口不依赖 Fortran 运行时，便于上层调用",
+        "evidence": [
+          "cblas.h",
+          "lapack-netlib/LAPACKE/include/lapacke.h"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK（ohos.toolchain.cmake）配置交叉编译，指定 TARGET 或开启 DYNAMIC_ARCH",
+      "验证 OHOS 上 /proc/cpuinfo 或等效 CPU 特性接口的存在性；如缺失则固定 TARGET 或实现 OHOS 探测路径",
+      "决定是否启用 LAPACK：优先尝试 C_LAPACK=1 规避 Fortran，或确认 gfortran 在 OHOS 可用",
+      "关闭 OpenMP、确认 NO_AFFINITY=1，构建并运行 utest/test 验证功能与性能",
+      "在 arm64/x86_64 两种架构上分别跑通单元测试与 BLAS/LAPACK 一致性测试"
+    ],
+    "notes": "评估按原生 C/C++ 库口径（模型 A）；若目标是通过 ArkTS/Node-API 暴露给应用层，还需额外编写 napi 封装。未考虑 HarmonyOS PC 是否实际提供 /proc/cpuinfo 或 Fortran 编译器，建议先做可行性验证构建。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "platform",
+        "kind": "ambiguity",
+        "value": "arch_simd / portable",
+        "rationale": "CPU 架构相关的 SIMD 内联/汇编并不跨所有 CPU，但 schema 的 platform 轴只能表达 OS 或 portable/unknown，无法精确描述 CPU 架构耦合，暂用 portable 表示其不绑定特定 OS。"
+      }
+    ]
+  }
+}

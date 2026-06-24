@@ -1,0 +1,617 @@
+{
+  "library": {
+    "name": "ptyprocess",
+    "package_name": "ptyprocess",
+    "source_url": "https://github.com/pexpect/ptyprocess",
+    "analyzed_at": "2026-06-23T03:33:29.949Z",
+    "commit": "97f068c80952c702873d801d2c8b262b79685d38",
+    "one_liner": "在伪终端中启动并交互式控制子进程的 Python 库",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "ptyprocess 是一个 Python 库，用于在伪终端（pseudo terminal, pty）中启动子进程，并提供类似文件的读写接口与子进程交互。它主要面向需要自动化交互式命令行程序的场景（如密码提示、curses 界面、输出行为随终端变化的程序），也是 pexpect 等上层终端自动化库的底层依赖。",
+    "categories": [
+      {
+        "name": "伪终端子进程管理",
+        "description": "通过 PtyProcess.spawn 在 pty 中 fork 并 exec 子进程，支持指定工作目录、环境变量、预执行回调以及要保留的文件描述符。",
+        "evidence": ["ptyprocess/ptyprocess.py:PtyProcess.spawn", "ptyprocess/ptyprocess.py:236-241", "ptyprocess/_fork_pty.py:15-56"]
+      },
+      {
+        "name": "终端属性控制",
+        "description": "获取与设置伪终端的回显（ECHO）和窗口大小（TIOCSWINSZ/TIOCGWINSZ），以模拟真实终端行为。",
+        "evidence": ["ptyprocess/ptyprocess.py:_setecho", "ptyprocess/ptyprocess.py:_setwinsize", "ptyprocess/ptyprocess.py:setecho", "ptyprocess/ptyprocess.py:setwinsize"]
+      },
+      {
+        "name": "进程生命周期管理",
+        "description": "等待子进程结束、轮询存活状态、发送信号（SIGHUP/SIGCONT/SIGINT/SIGKILL）以及关闭连接。",
+        "evidence": ["ptyprocess/ptyprocess.py:wait", "ptyprocess/ptyprocess.py:isalive", "ptyprocess/ptyprocess.py:terminate", "ptyprocess/ptyprocess.py:kill"]
+      },
+      {
+        "name": "数据读写与编码",
+        "description": "通过 BufferedRWPair 对 pty 主设备进行阻塞读写；PtyProcessUnicode 在之上提供 unicode 编解码包装。",
+        "evidence": ["ptyprocess/ptyprocess.py:read", "ptyprocess/ptyprocess.py:write", "ptyprocess/ptyprocess.py:PtyProcessUnicode"]
+      },
+      {
+        "name": "跨平台 pty 派生兼容",
+        "description": "在 Solaris 或缺少 os.login_tty 的平台上使用自备的 _fork_pty 实现，手动完成 openpty/fork/setsid/控制终端切换。",
+        "evidence": ["ptyprocess/ptyprocess.py:26-42", "ptyprocess/_fork_pty.py:pty_make_controlling_tty"]
+      }
+    ],
+    "domain": "terminal automation / process control",
+    "target_users": "需要自动化交互式命令行程序的 Python 开发者、测试工具作者以及系统管理员工具开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "SVG",
+      "make",
+      "reStructuredText",
+      "YAML",
+      "TOML"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 10,
+        "code": 780,
+        "pct": 44.12,
+        "production": {
+          "files": 5,
+          "code": 577
+        },
+        "test": {
+          "files": 5,
+          "code": 203
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 1,
+        "code": 757,
+        "pct": 42.82,
+        "production": {
+          "files": 1,
+          "code": 757
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 143,
+        "pct": 8.09,
+        "production": {
+          "files": 1,
+          "code": 143
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 3,
+        "code": 40,
+        "pct": 2.26,
+        "production": {
+          "files": 3,
+          "code": 40
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 26,
+        "pct": 1.47,
+        "production": {
+          "files": 2,
+          "code": 26
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 22,
+        "pct": 1.24,
+        "production": {
+          "files": 1,
+          "code": 22
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 18,
+      "code": 1768,
+      "comment": 612,
+      "blank": 374,
+      "total_lines": 2754
+    },
+    "production": {
+      "files": 13,
+      "code": 1565,
+      "comment": 523,
+      "blank": 315,
+      "total_lines": 2403
+    },
+    "test": {
+      "files": 5,
+      "code": 203,
+      "comment": 89,
+      "blank": 59,
+      "total_lines": 351
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "SVG": {
+        "files": 1,
+        "code": 757
+      },
+      "Python": {
+        "files": 5,
+        "code": 577
+      },
+      "make": {
+        "files": 1,
+        "code": 143
+      },
+      "reStructuredText": {
+        "files": 3,
+        "code": 40
+      },
+      "YAML": {
+        "files": 2,
+        "code": 26
+      },
+      "TOML": {
+        "files": 1,
+        "code": 22
+      }
+    }
+  },
+  "tests": {
+    "test_files": 5,
+    "test_cases": 15,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 5,
+        "cases": 15
+      }
+    },
+    "notes": "CI 使用 pytest + pytest-timeout；无 unittest 显式引用，测试文件采用 pytest 风格。"
+  },
+  "license": {
+    "spdx": "ISC",
+    "name": "ISC License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件包含完整 ISC License 文本；pyproject.toml 中 classifier 'License :: OSI Approved :: ISC License (ISCL)' 佐证。",
+    "notes": "宽松许可，OSI/FSF 认可且与 GPL 兼容；需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [
+      {
+        "name": "flit_core",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=2,<4",
+        "purpose": "构建后端，用于生成 wheel/sdist",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（构建时由 pip 安装）",
+        "declared_in": [
+          "pyproject.toml:1-3"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "库本身无运行时依赖；测试仅依赖 pytest、pytest-timeout（见 .github/workflows/test.yml），未写入任何 manifest。"
+  },
+  "native_api": {
+    "summary": "ptyprocess 是纯 Python 封装，但核心能力完全依赖 Python 标准库中对 POSIX 伪终端与 Unix 进程控制 API 的封装；Windows 不在支持范围内。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "io.open",
+            "purpose": "以无缓冲二进制模式打开 pty 主设备文件描述符",
+            "count": 2,
+            "evidence": ["ptyprocess/ptyprocess.py:167-168"]
+          },
+          {
+            "name": "io.BufferedRWPair",
+            "purpose": "将读写文件对象包装为可双向读写的流",
+            "count": 1,
+            "evidence": ["ptyprocess/ptyprocess.py:169"]
+          },
+          {
+            "name": "codecs.getincrementaldecoder",
+            "purpose": "为 PtyProcessUnicode 构造增量 unicode 解码器",
+            "count": 1,
+            "evidence": ["ptyprocess/ptyprocess.py:834"]
+          },
+          {
+            "name": "struct.pack / struct.unpack",
+            "purpose": "打包/解包 winsize 结构体（rows, cols, xpixel, ypixel）",
+            "count": 4,
+            "evidence": ["ptyprocess/ptyprocess.py:132", "ptyprocess/ptyprocess.py:804-806"]
+          },
+          {
+            "name": "time.sleep",
+            "purpose": "在关闭或终止子进程后等待内核更新进程状态",
+            "count": 4,
+            "evidence": ["ptyprocess/ptyprocess.py:410", "ptyprocess/ptyprocess.py:652"]
+          },
+          {
+            "name": "os.environ.get",
+            "purpose": "在 util.which 回退实现中读取 PATH/PATHEXT",
+            "count": 2,
+            "evidence": ["ptyprocess/util.py:33", "ptyprocess/util.py:44"]
+          },
+          {
+            "name": "errno",
+            "purpose": "使用标准 errno 常量进行错误判断",
+            "count": 8,
+            "evidence": ["ptyprocess/ptyprocess.py:107", "ptyprocess/ptyprocess.py:251", "ptyprocess/ptyprocess.py:348", "ptyprocess/_fork_pty.py:72"]
+          }
+        ]
+      },
+      {
+        "type": "posix_pty",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "pty.fork",
+            "purpose": "在伪终端中 fork 子进程（默认非 Solaris 路径）",
+            "count": 1,
+            "evidence": ["ptyprocess/ptyprocess.py:237"]
+          },
+          {
+            "name": "os.openpty",
+            "purpose": "创建伪终端主从设备对（_fork_pty 路径）",
+            "count": 1,
+            "evidence": ["ptyprocess/_fork_pty.py:38"]
+          },
+          {
+            "name": "os.fork",
+            "purpose": "在 openpty 之后 fork 子进程（_fork_pty 路径）",
+            "count": 1,
+            "evidence": ["ptyprocess/_fork_pty.py:42"]
+          },
+          {
+            "name": "os.ttyname",
+            "purpose": "获取从设备路径以重新打开为控制终端",
+            "count": 1,
+            "evidence": ["ptyprocess/_fork_pty.py:63"]
+          },
+          {
+            "name": "os.setsid",
+            "purpose": "创建新会话，使后续打开的 pty 成为控制终端",
+            "count": 1,
+            "evidence": ["ptyprocess/_fork_pty.py:75"]
+          },
+          {
+            "name": "os.dup2",
+            "purpose": "将子进程 stdin/stdout/stderr 重定向到 pty 从设备",
+            "count": 3,
+            "evidence": ["ptyprocess/_fork_pty.py:48-50"]
+          },
+          {
+            "name": "os.execv / os.execvpe",
+            "purpose": "在子进程中替换为待执行的命令",
+            "count": 2,
+            "evidence": ["ptyprocess/ptyprocess.py:296-298"]
+          },
+          {
+            "name": "os._exit",
+            "purpose": "子进程 exec 失败或 preexec_fn 抛错时直接退出",
+            "count": 2,
+            "evidence": ["ptyprocess/ptyprocess.py:292", "ptyprocess/ptyprocess.py:307"]
+          },
+          {
+            "name": "os.waitpid",
+            "purpose": "等待或轮询子进程状态",
+            "count": 4,
+            "evidence": ["ptyprocess/ptyprocess.py:690", "ptyprocess/ptyprocess.py:731", "ptyprocess/ptyprocess.py:749"]
+          },
+          {
+            "name": "os.kill",
+            "purpose": "向子进程发送信号",
+            "count": 5,
+            "evidence": ["ptyprocess/ptyprocess.py:651", "ptyprocess/ptyprocess.py:655", "ptyprocess/ptyprocess.py:659", "ptyprocess/ptyprocess.py:664", "ptyprocess/ptyprocess.py:798"]
+          },
+          {
+            "name": "os.pipe",
+            "purpose": "创建 exec 错误传递管道",
+            "count": 1,
+            "evidence": ["ptyprocess/ptyprocess.py:234"]
+          },
+          {
+            "name": "os.close / os.read / os.write / os.chdir",
+            "purpose": "关闭/读写 fd、切换子进程工作目录",
+            "count": 10,
+            "evidence": ["ptyprocess/ptyprocess.py:264", "ptyprocess/ptyprocess.py:279", "ptyprocess/ptyprocess.py:321-323", "ptyprocess/_fork_pty.py:45", "ptyprocess/_fork_pty.py:54"]
+          },
+          {
+            "name": "termios.tcgetattr / termios.tcsetattr",
+            "purpose": "获取/设置终端属性（回显、特殊字符）",
+            "count": 4,
+            "evidence": ["ptyprocess/ptyprocess.py:105", "ptyprocess/ptyprocess.py:119", "ptyprocess/ptyprocess.py:473", "ptyprocess/ptyprocess.py:480"]
+          },
+          {
+            "name": "fcntl.ioctl",
+            "purpose": "通过 TIOCSWINSZ/TIOCGWINSZ 设置/获取终端窗口大小",
+            "count": 3,
+            "evidence": ["ptyprocess/ptyprocess.py:133", "ptyprocess/ptyprocess.py:805", "ptyprocess/ptyprocess.py:816"]
+          },
+          {
+            "name": "fcntl.fcntl",
+            "purpose": "设置 exec 错误管道的 close-on-exec 标志",
+            "count": 1,
+            "evidence": ["ptyprocess/ptyprocess.py:265"]
+          },
+          {
+            "name": "resource.getrlimit",
+            "purpose": "获取进程可打开文件描述符上限以关闭继承的 fd",
+            "count": 1,
+            "evidence": ["ptyprocess/ptyprocess.py:273"]
+          },
+          {
+            "name": "signal.SIGHUP / SIGCONT / SIGINT / SIGKILL",
+            "purpose": "终止子进程时按序发送 Unix 信号",
+            "count": 4,
+            "evidence": ["ptyprocess/ptyprocess.py:651", "ptyprocess/ptyprocess.py:655", "ptyprocess/ptyprocess.py:659", "ptyprocess/ptyprocess.py:664"]
+          }
+        ]
+      },
+      {
+        "type": "posix_system",
+        "category": "system",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "/dev/tty",
+            "purpose": "通过打开/关闭 /dev/tty 判断与控制当前控制终端（仅 POSIX 会话模型）",
+            "count": 4,
+            "evidence": ["ptyprocess/_fork_pty.py:69", "ptyprocess/_fork_pty.py:80", "ptyprocess/_fork_pty.py:88", "ptyprocess/_fork_pty.py:92"]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "posix-only"
+  },
+  "runtime_surface": {
+    "summary": "运行时重度依赖 POSIX 伪终端子系统与进程控制；除 PATH 外不读取特殊环境变量，无网络访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "/dev/tty",
+        "purpose": "判断与控制当前会话的控制终端",
+        "evidence": ["ptyprocess/_fork_pty.py:69-92"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "PATH",
+        "purpose": "在 shutil.which 不可用时，util.which 回退实现中用于查找可执行命令路径",
+        "evidence": ["ptyprocess/util.py:33"]
+      },
+      {
+        "name": "PATHEXT",
+        "purpose": "仅在 Windows 分支读取可执行扩展名列表；本库不支持 Windows",
+        "evidence": ["ptyprocess/util.py:38-44"]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "<user-provided command>",
+        "purpose": "通过 os.execv/execvpe 在 fork 出的 pty 子进程中启动用户指定命令",
+        "evidence": ["ptyprocess/ptyprocess.py:296-298"]
+      }
+    ],
+    "devices": [
+      {
+        "detail": "/dev/tty (controlling terminal)",
+        "purpose": "POSIX 控制终端设备，用于会话与控制终端验证",
+        "evidence": ["ptyprocess/_fork_pty.py:69-92"]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "Python >=3.7",
+    "runtime_version": "Python 3.7+",
+    "build_system": "flit_core",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/test.yml:14"]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64 / arm64",
+        "evidence": [".github/workflows/test.yml:14", "pyproject.toml:19"]
+      }
+    ],
+    "notes": "pyproject.toml classifiers 明确声明 Operating System :: POSIX / MacOS :: MacOS X，未声明 Windows 支持。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（跑在已移植的 Python 运行时上；自研内核，无 Linux ABI；OHOS NDK POSIX 子集）",
+    "feasibility": "hard",
+    "overall_difficulty": "very_high",
+    "effort_estimate": "XL",
+    "porting_class": "needs_adaptation_partial",
+    "recommended_path": "evaluate_ohos_pty_or_rewrite",
+    "summary": "ptyprocess 是纯 Python 库，但核心功能完全建立在 POSIX 伪终端与 Unix 进程控制 API（pty.fork、termios、fcntl.ioctl、/dev/tty、setsid 等）之上。鸿蒙 PC 已有 Python 运行时，但 OHOS NDK/musl 的 POSIX 子集未必提供对等的 pty/会话/控制终端能力；若底层不支持，核心 spawn 功能将无法直接运行，需要基于鸿蒙系统能力（如 @ohos.process）重写或寻找替代方案。",
+    "blockers": [
+      {
+        "issue": "POSIX 伪终端与 fork/exec 模型是库的核心假设",
+        "severity": "blocker",
+        "category": "posix_pty_model",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "首先验证鸿蒙 PC Python 的 os/pty 模块是否支持 openpty/fork/exec；若不支持，需使用鸿蒙进程 API 或 ArkTS/Node-API 方案重写 spawn 核心。",
+        "evidence": ["ptyprocess/ptyprocess.py:236-241", "ptyprocess/_fork_pty.py:15-56"]
+      },
+      {
+        "issue": "终端属性控制（termios、fcntl TIOCSWINSZ/TIOCGWINSZ）依赖 POSIX TTY 子系统",
+        "severity": "major",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "若鸿蒙无 termios/fcntl 对应实现，setecho/getecho/setwinsize/getwinsize 需裁剪或改用鸿蒙终端能力。",
+        "evidence": ["ptyprocess/ptyprocess.py:101-124", "ptyprocess/ptyprocess.py:125-134", "ptyprocess/ptyprocess.py:800-816"]
+      },
+      {
+        "issue": "会话与控制终端模型（setsid、/dev/tty）为 POSIX 特有",
+        "severity": "major",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "_fork_pty 中的 setsid 与 /dev/tty 控制终端逻辑在鸿蒙上需要等价替代，否则备用派生路径同样不可用。",
+        "evidence": ["ptyprocess/_fork_pty.py:58-93"]
+      },
+      {
+        "issue": "signal 模型（SIGHUP/SIGCONT/SIGINT/SIGKILL）用于终止子进程",
+        "severity": "minor",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "鸿蒙进程信号子集可能缺少部分 Unix 信号，需用鸿蒙 IPC/进程管理 API 重新实现 terminate/wait/isalive。",
+        "evidence": ["ptyprocess/ptyprocess.py:642-680", "ptyprocess/ptyprocess.py:711-786"]
+      }
+    ],
+    "unadaptable_apis": [
+      {
+        "api": "pty.fork / os.openpty / _fork_pty.fork_pty",
+        "public_entry": "PtyProcess.spawn",
+        "reason": "库的唯一入口即通过 POSIX pty fork 派生子进程；鸿蒙 PC 若无等价 pty/会话模型，则公共 spawn 能力无法直接适配。",
+        "blocking_native_api": "pty.fork",
+        "category": "platform",
+        "evidence": ["ptyprocess/ptyprocess.py:237", "ptyprocess/_fork_pty.py:15-56"]
+      },
+      {
+        "api": "termios.tcgetattr / termios.tcsetattr / fcntl.ioctl(TIOCSWINSZ/TIOCGWINSZ)",
+        "public_entry": "PtyProcess.setecho / PtyProcess.getecho / PtyProcess.setwinsize / PtyProcess.getwinsize",
+        "reason": "终端回显与窗口大小控制完全依赖 POSIX termios/fcntl ioctl；鸿蒙若无对应 TTY 子系统，则这些公共方法无法工作。",
+        "blocking_native_api": "fcntl.ioctl",
+        "category": "platform",
+        "evidence": ["ptyprocess/ptyprocess.py:101-124", "ptyprocess/ptyprocess.py:125-134", "ptyprocess/ptyprocess.py:463-481", "ptyprocess/ptyprocess.py:800-816"]
+      },
+      {
+        "api": "os.setsid + /dev/tty 控制终端",
+        "public_entry": "_fork_pty.fork_pty（被 PtyProcess.spawn 在 Solaris/AIX 路径调用）",
+        "reason": "会话建立与控制终端切换是 POSIX 特有机制；鸿蒙无 /dev/tty 及 setsid 语义时备用派生路径失效。",
+        "blocking_native_api": "/dev/tty",
+        "category": "system",
+        "evidence": ["ptyprocess/_fork_pty.py:58-93"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 高层封装",
+        "note": "读写接口、unicode 编解码、命令查找等逻辑不依赖平台原生 API，可在鸿蒙 Python 上直接复用。",
+        "evidence": ["ptyprocess/ptyprocess.py:520-607", "ptyprocess/ptyprocess.py:819-862", "ptyprocess/util.py:1-67"]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 上验证 Python os/pty/termios/fcntl/signal/resource 模块的可用性及语义一致性",
+      "若 POSIX pty API 可用，跑通现有测试套件；若不可用，则基于鸿蒙进程/终端能力重写 spawn 核心",
+      "为 setecho/getecho/setwinsize/getwinsize 提供鸿蒙兼容实现或降级策略",
+      "重新实现 terminate/wait/isalive 中的信号与进程状态轮询逻辑"
+    ],
+    "notes": "评估按模型 A（库跑在已移植的鸿蒙 Python 运行时上）。本库本身无原生扩展，但它是 POSIX 伪终端 API 的薄封装；鸿蒙适配的关键不在于 Python 运行时，而在于 OHOS NDK/musl 是否暴露 pty/会话/控制终端能力。当前未在鸿蒙镜像中找到 ptyprocess 的 ohos wheel（scripts/harmony_adapted.js 返回 adapted:false）。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "evaluate_ohos_pty_or_rewrite",
+        "rationale": "ptyprocess 并非简单重编或跑在已移植运行时即可，需要先验证鸿蒙 PC 是否提供 POSIX pty/会话能力，再决定重写策略；现有推荐路径列表未覆盖此情形。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "scope",
+        "kind": "gap",
+        "value": "test-only deps in CI but not in manifests",
+        "rationale": "pytest、pytest-timeout 仅在 .github/workflows/test.yml 中安装，未写入 pyproject.toml 等 manifest；当前 schema 的 dependencies 列表反映 manifest 声明，CI-only 测试依赖需在 notes 中说明。"
+      }
+    ]
+  }
+}

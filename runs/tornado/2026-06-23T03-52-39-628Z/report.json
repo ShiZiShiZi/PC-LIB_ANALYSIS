@@ -1,0 +1,957 @@
+{
+  "library": {
+    "name": "tornado",
+    "package_name": "tornado",
+    "source_url": "https://github.com/tornadoweb/tornado",
+    "analyzed_at": "2026-06-23T03:52:39.628Z",
+    "commit": "6d2bf68618bf9542b8ea1cfe647771bcfafec866",
+    "one_liner": "Python Web 框架与异步网络库，基于非阻塞 I/O 提供 HTTP 服务器、WebSocket、HTTP 客户端及事件循环封装。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "Tornado 是一个 Python Web 框架和异步网络库，最初由 FriendFeed 开发。它以单线程非阻塞 I/O 为核心，支持高并发长连接场景，如长轮询（long polling）和 WebSocket。Tornado 6.x 基于 asyncio 事件循环构建，提供 HTTP 服务器/客户端、TCP 服务器/客户端、路由、模板、认证、进程管理、测试工具等完整 Web 服务基础设施，主要面向需要高性能并发连接的 Python 后端开发者。",
+    "categories": [
+      {
+        "name": "HTTP 服务器与路由",
+        "description": "提供非阻塞 HTTP/1.x 服务器（HTTPServer）、请求处理基类（RequestHandler）、URL 路由（Application/Routing）以及静态文件服务。",
+        "evidence": ["tornado/httpserver.py", "tornado/web.py", "tornado/routing.py"]
+      },
+      {
+        "name": "异步 I/O 与事件循环",
+        "description": "封装 asyncio 事件循环为 IOLoop，提供基于文件描述符的事件监听、定时回调、PeriodicCallback 以及跨线程回调能力。",
+        "evidence": ["tornado/ioloop.py", "tornado/platform/asyncio.py"]
+      },
+      {
+        "name": "网络流与 TCP 通信",
+        "description": "基于 socket 的非阻塞流抽象（IOStream、PipeIOStream）以及 TCP 服务器/客户端（TCPServer、TCPClient），支撑高并发连接读写。",
+        "evidence": ["tornado/iostream.py", "tornado/tcpserver.py", "tornado/tcpclient.py"]
+      },
+      {
+        "name": "HTTP 客户端",
+        "description": "提供异步 HTTP 客户端 AsyncHTTPClient，默认使用纯 Python 实现（simple_httpclient），可选 pycurl/libcurl 后端（curl_httpclient）。",
+        "evidence": ["tornado/httpclient.py", "tornado/simple_httpclient.py", "tornado/curl_httpclient.py"]
+      },
+      {
+        "name": "WebSocket",
+        "description": "实现 RFC 6455 WebSocket 协议，提供服务器端 WebSocketHandler 与客户端 WebSocketClientConnection，支持数据帧编解码与掩码加速。",
+        "evidence": ["tornado/websocket.py", "tornado/speedups.c"]
+      },
+      {
+        "name": "认证与授权",
+        "description": "内置 OAuth/OpenID、安全 Cookie、XSRF 防护、HTTP 基本认证等 Web 应用安全机制。",
+        "evidence": ["tornado/auth.py", "tornado/web.py"]
+      },
+      {
+        "name": "模板与国际化",
+        "description": "提供类似 Django/Jinja 语法的模板引擎（Template）以及基于 gettext 的本地化支持（locale）。",
+        "evidence": ["tornado/template.py", "tornado/locale.py"]
+      },
+      {
+        "name": "进程与子进程管理",
+        "description": "提供 Unix 多进程预派生（fork_processes）和基于 IOStream 的子进程封装（Subprocess），支持 SIGCHLD 信号处理。",
+        "evidence": ["tornado/process.py"]
+      },
+      {
+        "name": "工具与测试支持",
+        "description": "提供命令行选项解析（options）、日志（log）、自动重载（autoreload）、异步测试基类（testing）及异步原语（locks、queues、gen、concurrent）。",
+        "evidence": ["tornado/options.py", "tornado/log.py", "tornado/autoreload.py", "tornado/testing.py", "tornado/locks.py", "tornado/queues.py", "tornado/gen.py", "tornado/concurrent.py"]
+      }
+    ],
+    "domain": "networking",
+    "target_users": "需要高并发非阻塞 I/O 的 Python Web 后端开发者、构建实时推送/WebSocket 服务的团队，以及将 Tornado 作为异步网络基础设施的其他 Python 库。"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "reStructuredText",
+      "INI",
+      "YAML",
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "Text"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 106,
+        "code": 28226,
+        "pct": 79.72,
+        "production": {
+          "files": 47,
+          "code": 13191
+        },
+        "test": {
+          "files": 48,
+          "code": 14265
+        },
+        "example": {
+          "files": 11,
+          "code": 770
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 114,
+        "code": 5436,
+        "pct": 15.35,
+        "production": {
+          "files": 113,
+          "code": 5414
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 22
+        }
+      },
+      {
+        "language": "INI",
+        "files": 9,
+        "code": 266,
+        "pct": 0.75,
+        "production": {
+          "files": 5,
+          "code": 219
+        },
+        "test": {
+          "files": 4,
+          "code": 47
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 6,
+        "code": 251,
+        "pct": 0.71,
+        "production": {
+          "files": 5,
+          "code": 236
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 15
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 15,
+        "code": 241,
+        "pct": 0.68,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 2,
+          "code": 2
+        },
+        "example": {
+          "files": 13,
+          "code": 239
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 3,
+        "code": 210,
+        "pct": 0.59,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 3,
+          "code": 210
+        }
+      },
+      {
+        "language": "JavaScript",
+        "files": 2,
+        "code": 156,
+        "pct": 0.44,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 2,
+          "code": 156
+        }
+      },
+      {
+        "language": "Text",
+        "files": 4,
+        "code": 148,
+        "pct": 0.42,
+        "production": {
+          "files": 1,
+          "code": 139
+        },
+        "test": {
+          "files": 2,
+          "code": 4
+        },
+        "example": {
+          "files": 1,
+          "code": 5
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 9,
+        "code": 107,
+        "pct": 0.3,
+        "production": {
+          "files": 7,
+          "code": 79
+        },
+        "test": {
+          "files": 2,
+          "code": 28
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 1,
+        "code": 84,
+        "pct": 0.24,
+        "production": {
+          "files": 1,
+          "code": 84
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 3,
+        "code": 64,
+        "pct": 0.18,
+        "production": {
+          "files": 2,
+          "code": 41
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 23
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 2,
+        "code": 51,
+        "pct": 0.14,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 2,
+          "code": 51
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 2,
+        "code": 49,
+        "pct": 0.14,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 23
+        },
+        "example": {
+          "files": 1,
+          "code": 26
+        }
+      },
+      {
+        "language": "PO File",
+        "files": 1,
+        "code": 32,
+        "pct": 0.09,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 32
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 22,
+        "pct": 0.06,
+        "production": {
+          "files": 1,
+          "code": 22
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Cython",
+        "files": 1,
+        "code": 20,
+        "pct": 0.06,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 20
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SQL",
+        "files": 1,
+        "code": 19,
+        "pct": 0.05,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 19
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 15,
+        "pct": 0.04,
+        "production": {
+          "files": 1,
+          "code": 15
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Dockerfile",
+        "files": 1,
+        "code": 8,
+        "pct": 0.02,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 8
+        }
+      },
+      {
+        "language": "CSV",
+        "files": 1,
+        "code": 1,
+        "pct": 0.0,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 1
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 283,
+      "code": 35406,
+      "comment": 11996,
+      "blank": 9545,
+      "total_lines": 56947
+    },
+    "production": {
+      "files": 183,
+      "code": 19440,
+      "comment": 9500,
+      "blank": 6042,
+      "total_lines": 34982
+    },
+    "test": {
+      "files": 64,
+      "code": 14473,
+      "comment": 2249,
+      "blank": 3175,
+      "total_lines": 19897
+    },
+    "example": {
+      "files": 36,
+      "code": 1493,
+      "comment": 247,
+      "blank": 328,
+      "total_lines": 2068
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 47,
+        "code": 13191
+      },
+      "reStructuredText": {
+        "files": 113,
+        "code": 5414
+      },
+      "YAML": {
+        "files": 5,
+        "code": 236
+      },
+      "INI": {
+        "files": 5,
+        "code": 219
+      },
+      "Text": {
+        "files": 1,
+        "code": 139
+      },
+      "C": {
+        "files": 1,
+        "code": 84
+      },
+      "Bourne Shell": {
+        "files": 7,
+        "code": 79
+      },
+      "Markdown": {
+        "files": 2,
+        "code": 41
+      },
+      "make": {
+        "files": 1,
+        "code": 22
+      },
+      "TOML": {
+        "files": 1,
+        "code": 15
+      }
+    }
+  },
+  "tests": {
+    "test_files": 64,
+    "test_cases": 1022,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 48,
+        "cases": 1022
+      },
+      "JSON": {
+        "files": 2,
+        "cases": 0
+      },
+      "PO File": {
+        "files": 1,
+        "cases": 0
+      },
+      "XML": {
+        "files": 1,
+        "cases": 0
+      },
+      "Cython": {
+        "files": 1,
+        "cases": 0
+      },
+      "Bourne Shell": {
+        "files": 2,
+        "cases": 0
+      },
+      "INI": {
+        "files": 4,
+        "cases": 0
+      },
+      "Text": {
+        "files": 2,
+        "cases": 0
+      },
+      "CSV": {
+        "files": 1,
+        "cases": 0
+      },
+      "HTML": {
+        "files": 2,
+        "cases": 0
+      }
+    },
+    "notes": "框架为 unittest 风格，由 pytest 收集执行；测试数量由正则估算。"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "仓库根目录 LICENSE 包含完整的 Apache-2.0 文本；setup.py 中 license 字段声明为 Apache-2.0；源文件头亦引用 Apache License。",
+    "notes": "宽松许可证，需保留 NOTICE/版权声明；无 copyleft 义务。"
+  },
+  "dependencies": {
+    "count": 12,
+    "manifests": ["setup.py", "pyproject.toml", "requirements.in", "requirements.txt"],
+    "by_ecosystem": {
+      "python": ["pycurl", "pycares", "twisted", "setuptools", "black", "flake8", "mypy", "pip-tools", "sphinx", "sphinx-rtd-theme", "tox", "types-pycurl"]
+    },
+    "dependencies": [
+      {
+        "name": "pycurl",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选的 curl_httpclient 后端，通过 libcurl 提供高性能 HTTP 客户端、代理和指定网络接口等能力。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pycurl），运行时需要系统 libcurl",
+        "declared_in": ["tornado/curl_httpclient.py"],
+        "used_symbols": ["pycurl.Curl", "pycurl.CurlMulti", "pycurl.M_TIMERFUNCTION", "pycurl.M_SOCKETFUNCTION", "pycurl.socket_action", "pycurl.setopt"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "pycares",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选的 C-Ares 异步 DNS 解析器后端（CaresResolver，已弃用）。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pycares），运行时需要 c-ares 库",
+        "declared_in": ["tornado/platform/caresresolver.py"],
+        "used_symbols": ["pycares.Channel", "pycares.errno.strerror"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "twisted",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Twisted 与 Tornado 的桥接（tornado.platform.twisted），允许在 Tornado 中处理 Twisted Deferred。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（Twisted）",
+        "declared_in": ["tornado/platform/twisted.py"],
+        "used_symbols": ["twisted.internet.defer.Deferred", "twisted.python.failure.Failure", "twisted.internet.asyncioreactor.install"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建后端，用于构建可选的 C 扩展 speedups 并打包分发。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（setuptools）",
+        "declared_in": ["pyproject.toml", "setup.py"],
+        "used_symbols": ["setuptools.Extension", "setuptools.setup"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "black",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "代码格式化工具。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["requirements.in", "requirements.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "flake8",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Python 代码风格与错误检查。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["requirements.in", "requirements.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mypy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=0.941",
+        "purpose": "静态类型检查。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["requirements.in", "requirements.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pip-tools",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "依赖锁定工具，用于生成 requirements.txt。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["requirements.in", "requirements.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档构建工具。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["requirements.in", "requirements.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-rtd-theme",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Sphinx Read the Docs 主题。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["requirements.in", "requirements.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "tox",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "多版本测试环境管理。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["requirements.in", "requirements.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "types-pycurl",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pycurl 的类型存根，用于 mypy 静态检查。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["requirements.in", "requirements.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "setup.py 未声明任何强制运行时依赖；核心库仅使用 Python 标准库。运行时可选扩展包括 pycurl（已鸿蒙化）、pycares（未鸿蒙化）、Twisted（未鸿蒙化）。"
+  },
+  "native_api": {
+    "summary": "Tornado 核心为纯 Python，基于 asyncio、socket、ssl 等标准库实现跨平台异步网络。平台相关代码主要集中在 Unix 多进程（fork/wait/pipe/SIGCHLD）、Windows 兼容性分支，以及一个可选的 C 扩展 speedups.c（WebSocket 掩码加速）。无动态加载的外部原生库。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "asyncio", "purpose": "事件循环、Future、任务调度，Tornado IOLoop 的底层基础", "count": 1, "evidence": ["tornado/ioloop.py:28", "tornado/platform/asyncio.py:25"]},
+          {"name": "socket", "purpose": "TCP/Unix socket 创建、绑定、监听与非阻塞 I/O", "count": 1, "evidence": ["tornado/netutil.py:22", "tornado/iostream.py:41"]},
+          {"name": "ssl", "purpose": "TLS/SSL 上下文创建与 SSLSocket 包装", "count": 1, "evidence": ["tornado/netutil.py:23", "tornado/simple_httpclient.py:14"]},
+          {"name": "select", "purpose": "在 Windows ProactorEventLoop 后台选择线程中执行 I/O 多路复用", "count": 1, "evidence": ["tornado/platform/asyncio.py:31", "tornado/platform/asyncio.py:596"]},
+          {"name": "subprocess", "purpose": "子进程封装 Subprocess 的基础 Popen 调用", "count": 1, "evidence": ["tornado/process.py:24", "tornado/process.py:231"]},
+          {"name": "multiprocessing", "purpose": "cpu_count 检测可用处理器数量", "count": 1, "evidence": ["tornado/process.py:21", "tornado/process.py:49"]},
+          {"name": "concurrent.futures", "purpose": "线程池执行器，用于 run_in_executor 和 Resolver", "count": 1, "evidence": ["tornado/ioloop.py:29", "tornado/netutil.py:19"]}
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "os.fork", "purpose": "Unix 多进程预派生（fork_processes）", "count": 1, "evidence": ["tornado/process.py:120"], "conditional": true},
+          {"name": "os.wait", "purpose": "等待子进程退出并收集状态", "count": 1, "evidence": ["tornado/process.py:137"], "conditional": true},
+          {"name": "os.waitpid", "purpose": "非阻塞轮询子进程退出（WNOHANG）", "count": 1, "evidence": ["tornado/process.py:337"], "conditional": true},
+          {"name": "os.pipe", "purpose": "为 Subprocess.STREAM 创建父子进程通信管道", "count": 3, "evidence": ["tornado/process.py:213", "tornado/process.py:219", "tornado/process.py:225"], "conditional": true},
+          {"name": "os.set_blocking", "purpose": "将管道文件描述符设为非阻塞", "count": 1, "evidence": ["tornado/iostream.py:1573"], "conditional": true},
+          {"name": "socket.AF_UNIX", "purpose": "Unix 域套接字监听（bind_unix_socket）", "count": 1, "evidence": ["tornado/netutil.py:190"], "conditional": true}
+        ]
+      },
+      {
+        "type": "signal",
+        "category": "system",
+        "platform": "posix",
+        "apis": [
+          {"name": "signal.setitimer", "purpose": "自动重载前清除 ITIMER_REAL 定时器", "count": 1, "evidence": ["tornado/autoreload.py:209"], "conditional": true},
+          {"name": "signal.SIGCHLD", "purpose": "子进程退出信号处理（Subprocess）", "count": 2, "evidence": ["tornado/process.py:317", "tornado/process.py:326"], "conditional": true}
+        ]
+      },
+      {
+        "type": "windows",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "sys.platform == 'win32'", "purpose": "Windows 平台分支，禁用 fork、PipeIOStream 等功能", "count": 4, "evidence": ["tornado/process.py:106", "tornado/iostream.py:1566", "tornado/autoreload.py:100", "tornado/platform/asyncio.py:398"], "conditional": true},
+          {"name": "asyncio.ProactorEventLoop", "purpose": "Windows 默认 Proactor 事件循环检测", "count": 1, "evidence": ["tornado/platform/asyncio.py:101"], "conditional": true},
+          {"name": "AddThreadSelectorEventLoop", "purpose": "在 Windows ProactorEventLoop 上通过后台线程模拟 selector 接口", "count": 1, "evidence": ["tornado/platform/asyncio.py:105", "tornado/platform/asyncio.py:685"], "conditional": true},
+          {"name": "asyncio.WindowsSelectorEventLoopPolicy", "purpose": "Windows 下选择器事件循环策略", "count": 1, "evidence": ["tornado/platform/asyncio.py:399"], "conditional": true}
+        ]
+      },
+      {
+        "type": "python_c_api",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {"name": "PyArg_ParseTuple", "purpose": "C 扩展 speedups.c 解析 WebSocket mask 与 data 参数", "count": 1, "evidence": ["tornado/speedups.c:17"]},
+          {"name": "PyBytes_FromStringAndSize", "purpose": "分配结果 bytes 缓冲区", "count": 1, "evidence": ["tornado/speedups.c:30"]},
+          {"name": "PyModuleDef_Init", "purpose": "初始化 speedups 模块", "count": 1, "evidence": ["tornado/speedups.c:96"]}
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要与网络套接字、HTTP 服务端口、模板/静态文件路径以及环境变量交互；部分功能（fork_processes、Subprocess、autoreload）会创建子进程或重新执行自身。",
+    "network": [
+      {"detail": "TCP 监听端口（HTTP/HTTPS 服务器）", "purpose": "HTTPServer/TCPServer 绑定并监听客户端连接", "evidence": ["tornado/netutil.py:56", "tornado/httpserver.py:41"]},
+      {"detail": "出站 HTTP/HTTPS 连接", "purpose": "AsyncHTTPClient 发起远程请求", "evidence": ["tornado/simple_httpclient.py:1", "tornado/curl_httpclient.py:16"]},
+      {"detail": "WebSocket 连接", "purpose": "双向长连接通信", "evidence": ["tornado/websocket.py:1"]},
+      {"detail": "Unix 域套接字", "purpose": "本地 IPC 监听（bind_unix_socket，Unix 限定）", "evidence": ["tornado/netutil.py:192"]}
+    ],
+    "filesystem": [
+      {"detail": "模板文件（*.html）", "purpose": "模板引擎加载并编译模板", "evidence": ["tornado/template.py:249"]},
+      {"detail": "静态文件目录", "purpose": "web.Application static_path 提供静态资源", "evidence": ["tornado/web.py"]},
+      {"detail": "自动重载监视的源文件", "purpose": "autoreload 通过 os.stat 检测文件修改时间", "evidence": ["tornado/autoreload.py:189"]},
+      {"detail": "SSL 证书/密钥文件", "purpose": "HTTPS 服务加载 certfile/keyfile", "evidence": ["tornado/netutil.py:621"]}
+    ],
+    "env_vars": [
+      {"name": "TORNADO_NO_EXTENSION", "purpose": "强制禁用 C 扩展 speedups，回退纯 Python 实现", "evidence": ["tornado/util.py:420"]},
+      {"name": "TORNADO_EXTENSION", "purpose": "控制 C 扩展构建与运行时加载（0 禁用，1 强制）", "evidence": ["tornado/util.py:420", "tornado/setup.py:37"]},
+      {"name": "ASYNC_TEST_TIMEOUT", "purpose": "测试框架读取异步测试超时秒数", "evidence": ["tornado/testing.py:75"]}
+    ],
+    "subprocess": [
+      {"command": "subprocess.Popen(*args, **kwargs)", "purpose": "Subprocess 类封装子进程并提供 IOStream 管道交互", "evidence": ["tornado/process.py:231"]},
+      {"command": "os.execv(sys.executable, [sys.executable] + argv)", "purpose": "autoreload 在源文件变更后重新执行当前进程", "evidence": ["tornado/autoreload.py:236"]},
+      {"command": "subprocess.Popen([sys.executable] + argv)", "purpose": "Windows 下 autoreload 用子进程重启替代 execv", "evidence": ["tornado/autoreload.py:233"]}
+    ],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "CPython >= 3.10 或兼容的 PyPy",
+    "build_system": "setuptools",
+    "compiler_extensions": [],
+    "platforms": [
+      {"os": "linux", "arch": "x86_64", "evidence": ["pyproject.toml:18", "pyproject.toml:30"]},
+      {"os": "linux", "arch": "aarch64", "evidence": ["pyproject.toml:30"]},
+      {"os": "macos", "arch": "universal2", "evidence": ["pyproject.toml:23"]},
+      {"os": "windows", "arch": "x86_64", "evidence": ["pyproject.toml:25"]}
+    ],
+    "notes": "setup.py 中的 C 扩展 tornado.speedups 为可选，构建失败时自动回退纯 Python；使用 Py_LIMITED_API 保证 wheel 跨 Python 3.10+ 兼容。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "porting_class": "needs_adaptation_full",
+    "effort_estimate": "M",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "Tornado 主体为纯 Python，可直接运行在鸿蒙 PC 已移植的 Python 3.12 上；唯一原生工作是可选项 C 扩展 speedups.c 需用 OHOS NDK 重新编译。fork/wait/pipe/SIGCHLD 等 Unix 特性在 OHOS POSIX 子集中可能受限，但均属可选功能（fork_processes、Subprocess.STREAM），核心 HTTP/WebSocket 服务不依赖它们。pycurl 已有鸿蒙 PyPI 镜像，pycares/Twisted 等可选依赖需单独评估。",
+    "blockers": [
+      {
+        "issue": "可选 C 扩展 tornado.speedups 需在鸿蒙上重新编译",
+        "severity": "major",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 speedups.c 为 arm64/x86_64 的 .so；失败时可设置 TORNADO_EXTENSION=0 回退纯 Python websocket_mask。",
+        "evidence": ["tornado/speedups.c:1", "tornado/util.py:420", "setup.py:58"]
+      },
+      {
+        "issue": "Unix 多进程 API（fork/wait/pipe/SIGCHLD）在 OHOS POSIX 子集可能受限",
+        "severity": "major",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "运行测试验证 fork_processes 与 Subprocess 行为；若 fork 不可用，弃用多进程预派生模式，改用外部进程管理器；对 PipeIOStream 提供条件编译/平台分支。",
+        "evidence": ["tornado/process.py:120", "tornado/process.py:137", "tornado/process.py:317", "tornado/iostream.py:1560"]
+      },
+      {
+        "issue": "自动重载依赖 os.execv/subprocess.Popen 重新启动进程",
+        "severity": "minor",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "partial",
+        "remediation": "开发模式下验证 sys.executable 与 argv 重建是否正常工作；生产环境通常关闭 autoreload，不影响部署。",
+        "evidence": ["tornado/autoreload.py:233", "tornado/autoreload.py:236"]
+      },
+      {
+        "issue": "可选 DNS 解析器 pycares（c-ares）尚未鸿蒙化",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "默认 Resolver 已改为基于 asyncio 的线程/Loop 解析器，无需 pycares；如必须使用 CaresResolver，需单独移植 c-ares 与 pycares。",
+        "evidence": ["tornado/platform/caresresolver.py:6"]
+      },
+      {
+        "issue": "可选 Twisted 桥接依赖 Twisted，未在鸿蒙镜像中适配",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "Twisted 集成已标记为弃用，新项目应避免使用；旧项目需自行评估 Twisted 在鸿蒙上的可移植性。",
+        "evidence": ["tornado/platform/twisted.py:17"]
+      }
+    ],
+    "unadaptable_apis": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python 核心（HTTP 服务器、路由、WebSocket、HTTP 客户端、模板）",
+        "note": "基于 asyncio/socket/ssl 标准库，鸿蒙 Python 3.12 可直接运行",
+        "evidence": ["tornado/web.py", "tornado/websocket.py", "tornado/httpclient.py", "tornado/simple_httpclient.py"]
+      },
+      {
+        "aspect": "IOLoop 与 asyncio 桥接",
+        "note": "Tornado 6.x 已完全基于 asyncio，无需自定义事件循环后端",
+        "evidence": ["tornado/ioloop.py:18", "tornado/platform/asyncio.py:1"]
+      },
+      {
+        "aspect": "可选 pycurl HTTP 客户端后端",
+        "note": "pycurl 已在 OpenHarmony PC PyPI 镜像提供 ohos wheel，可直接使用",
+        "evidence": ["tornado/curl_httpclient.py:29"]
+      }
+    ],
+    "key_tasks": [
+      "用 OHOS NDK 交叉编译 tornado.speedups 并在鸿蒙 Python 上验证 WebSocket 掩码加速",
+      "设置 TORNADO_EXTENSION=0 验证纯 Python 回退路径可用性",
+      "在鸿蒙 Python 上运行 tornado 测试套件，重点验证 fork_processes、Subprocess、autoreload 的 POSIX 行为",
+      "确认默认 asyncio-based Resolver 在鸿蒙网络环境下工作正常，避免依赖 pycares",
+      "评估是否需要保留 Twisted 桥接，如不需要可移除相关 import 路径"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。Tornado 核心不依赖 Linux 特有系统调用，跨平台分支对 Windows/Unix 已有较好抽象；主要风险集中在可选 C 扩展编译和 OHOS POSIX 子集对 fork/pipe/SIGCHLD 的支持程度。未将 fork/wait 等列为不可适配 API，因为当前信息不足以确认 OHOS 完全缺失这些调用，且它们都是可选功能。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "scope",
+        "kind": "new_value",
+        "value": "optional",
+        "rationale": "Tornado 没有强制运行时依赖，pycurl/pycares/Twisted 都是运行时可选扩展；虽然 schema 的 scope 枚举未显式列出 optional，但依赖分析 skill 明确允许 optional 取值，此处用于准确表达这些包的可选性质。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "signal",
+        "rationale": "将 signal.setitimer/SIGCHLD 单独列为 signal 类型，比归到 posix 更清晰，因为它们是进程级信号控制而非普通 POSIX 文件/网络 API。"
+      }
+    ]
+  }
+}

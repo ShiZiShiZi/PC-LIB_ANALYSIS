@@ -1,0 +1,624 @@
+{
+  "library": {
+    "name": "RingDecomposerLib",
+    "package_name": "RingDecomposerLib",
+    "source_url": "https://github.com/rareylab/RingDecomposerLib.git",
+    "analyzed_at": "2026-06-22T02:54:23.010Z",
+    "commit": "3a7ff93de0d9c4f6a5661508549c6063573f39c7",
+    "one_liner": "用于计算分子图唯一环族（URF）、相关环（RC）与最小环基（SSSR）的 ANSI C 算法库，并带可选 Python 封装。",
+    "ecosystem": "cpp",
+    "bindings": ["python"]
+  },
+  "function_summary": {
+    "summary": "RingDecomposerLib 是一个面向化学信息学与图论应用的 ANSI C 算法库，用于从无向图中计算唯一环族（Unique Ring Families, URF）、相关环（Relevant Cycles, RC）、相关环族（RCF）以及最小环基（SSSR，Smallest Set of Smallest Rings）。核心流程先用 Tarjan 算法分解双连通分量，再求解全源最短路径并应用 Vismara 算法发现环族，最后判断 URF 关系。库提供清晰的 C API 与可选的 Cython/Python 封装，方便在 Python 生态中调用。",
+    "categories": [
+      {
+        "name": "图构建 API",
+        "description": "初始化图结构并添加无向边，为环分解准备输入数据。",
+        "evidence": ["src/RingDecomposerLib/RingDecomposerLib.h:141-161", "src/RingDecomposerLib/RingDecomposerLib.c:57-66"]
+      },
+      {
+        "name": "环与环族计算",
+        "description": "执行完整的环分解流程：Tarjan 双连通分量分解、全源最短路径、Vismara RCF 发现、URF 关系判定，生成可查询的计算结果对象。",
+        "evidence": ["src/RingDecomposerLib/RingDecomposerLib.c:69-186", "src/RingDecomposerLib/RDLtarjan.c", "src/RingDecomposerLib/RDLapsp.c", "src/RingDecomposerLib/RDLcycleFams.c", "src/RingDecomposerLib/RDLrelation.c"]
+      },
+      {
+        "name": "结果查询 API",
+        "description": "获取 URF/RCF/环体系的数量、权重、节点、边以及成员关系等计算结果。",
+        "evidence": ["src/RingDecomposerLib/RingDecomposerLib.h:181-395", "src/RingDecomposerLib/RingDecomposerLib.c:214-684"]
+      },
+      {
+        "name": "相关环迭代器",
+        "description": "提供基于迭代器的相关环枚举接口，避免一次性生成大量环。",
+        "evidence": ["src/RingDecomposerLib/RingDecomposerLib.h:437-471", "src/RingDecomposerLib/RDLhandler.c"]
+      },
+      {
+        "name": "环体系（2-连通分量）查询",
+        "description": "识别并返回图的 2-连通分量（环体系）及其包含的节点与边。",
+        "evidence": ["src/RingDecomposerLib/RingDecomposerLib.h:683-745", "src/RingDecomposerLib/RingDecomposerLib.c:1589-1703"]
+      },
+      {
+        "name": "DIMACS 文件输入",
+        "description": "解析 DIMACS 格式的图与参考环定义文件，用于测试与验证。",
+        "evidence": ["src/RingDecomposerLib/RDLdimacs.c", "src/RingDecomposerLib/RDLdimacs.h"]
+      },
+      {
+        "name": "Python 封装",
+        "description": "基于 Cython 将 C 核心库包装为 py_rdl 包，提供 Graph、Calculator、Cycle 等 Pythonic 接口。",
+        "evidence": ["src/python/py_rdl/Graph.py", "src/python/py_rdl/Calculator.py", "src/python/py_rdl/wrapper/DataInternal.pyx", "src/python/py_rdl/wrapper/cRingDecomposerLib.pxd"]
+      }
+    ],
+    "domain": "化学信息学 / 图论 / 计算化学",
+    "target_users": "化学信息学开发者、分子建模应用开发者，以及需要在 Python 或 C/C++ 中进行环体系分析的研究人员"
+  },
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "Python",
+      "C++",
+      "C/C++ Header",
+      "Cython",
+      "CMake",
+      "Markdown",
+      "YAML"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 17,
+        "code": 5301,
+        "pct": 73.97,
+        "production": {
+          "files": 14,
+          "code": 4999
+        },
+        "test": {
+          "files": 3,
+          "code": 302
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 9,
+        "code": 566,
+        "pct": 7.9,
+        "production": {
+          "files": 8,
+          "code": 323
+        },
+        "test": {
+          "files": 1,
+          "code": 243
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 1,
+        "code": 404,
+        "pct": 5.64,
+        "production": {
+          "files": 1,
+          "code": 404
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 17,
+        "code": 400,
+        "pct": 5.58,
+        "production": {
+          "files": 15,
+          "code": 388
+        },
+        "test": {
+          "files": 2,
+          "code": 12
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Cython",
+        "files": 2,
+        "code": 298,
+        "pct": 4.16,
+        "production": {
+          "files": 2,
+          "code": 298
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CMake",
+        "files": 7,
+        "code": 144,
+        "pct": 2.01,
+        "production": {
+          "files": 5,
+          "code": 118
+        },
+        "test": {
+          "files": 2,
+          "code": 26
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 25,
+        "pct": 0.35,
+        "production": {
+          "files": 1,
+          "code": 25
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 20,
+        "pct": 0.28,
+        "production": {
+          "files": 1,
+          "code": 20
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 1,
+        "code": 8,
+        "pct": 0.11,
+        "production": {
+          "files": 1,
+          "code": 8
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 56,
+      "code": 7166,
+      "comment": 2732,
+      "blank": 1620,
+      "total_lines": 11518
+    },
+    "production": {
+      "files": 48,
+      "code": 6583,
+      "comment": 2513,
+      "blank": 1524,
+      "total_lines": 10620
+    },
+    "test": {
+      "files": 8,
+      "code": 583,
+      "comment": 219,
+      "blank": 96,
+      "total_lines": 898
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "C": {
+        "files": 14,
+        "code": 4999
+      },
+      "C++": {
+        "files": 1,
+        "code": 404
+      },
+      "C/C++ Header": {
+        "files": 15,
+        "code": 388
+      },
+      "Python": {
+        "files": 8,
+        "code": 323
+      },
+      "Cython": {
+        "files": 2,
+        "code": 298
+      },
+      "CMake": {
+        "files": 5,
+        "code": 118
+      },
+      "Markdown": {
+        "files": 1,
+        "code": 25
+      },
+      "YAML": {
+        "files": 1,
+        "code": 20
+      },
+      "reStructuredText": {
+        "files": 1,
+        "code": 8
+      }
+    }
+  },
+  "tests": {
+    "test_files": 8,
+    "test_cases": 7,
+    "frameworks": [
+      "custom C harness",
+      "unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 1,
+        "cases": 7
+      },
+      "C": {
+        "files": 3,
+        "cases": 0
+      },
+      "CMake": {
+        "files": 2,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 2,
+        "cases": 0
+      }
+    },
+    "notes": "脚本计数为基于正则的近似值。C 层使用自定义测试可执行文件（Test.c / TestDemo.c / TestValidate.c）与 DIMACS 用例；Python 层使用 unittest（src/python/test/test.py），通过命令行传入不同输入动态生成测试类。"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件包含 BSD 3-Clause 完整文本（保留版权声明、再分发条件、无背书条款）；README.md 与 README 均声明为 BSD 3-Clause / BSD New。",
+    "notes": "宽松型许可，需保留版权声明；无 copyleft 义务。"
+  },
+  "dependencies": {
+    "count": 5,
+    "manifests": [
+      "CMakeLists.txt",
+      "src/RingDecomposerLib/CMakeLists.txt",
+      "src/python/CMakeLists.txt",
+      "src/python/setup.py.in",
+      "src/RDKitBenchmark/CMakeLists.txt"
+    ],
+    "by_ecosystem": {
+      "c": ["libm"],
+      "cpp": ["Boost", "RDKit"],
+      "python": ["Python", "Cython"]
+    },
+    "dependencies": [
+      {
+        "name": "libm",
+        "ecosystem": "c",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "C 数学库，非 Windows 平台链接 -lm",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（编译时通过 target_link_libraries 链接 -lm）",
+        "declared_in": ["src/RingDecomposerLib/CMakeLists.txt:19"]
+      },
+      {
+        "name": "Python",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": ">=2.7 或 >=3.3",
+        "purpose": "构建可选 Python 封装时需要 Python 解释器与头文件",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（预装 Python，仅当 BUILD_PYTHON_WRAPPER=ON）",
+        "declared_in": ["CMakeLists.txt:16-22", "src/python/CMakeLists.txt:1", "INSTALL:78-80"]
+      },
+      {
+        "name": "Cython",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "将 .pyx 封装编译为 Python C 扩展",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（pip/包管理器安装 Cython，仅 BUILD_PYTHON_WRAPPER=ON）",
+        "declared_in": ["src/python/setup.py.in:11"]
+      },
+      {
+        "name": "Boost",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">=1.45",
+        "purpose": "RDKit 基准测试可执行文件使用 Boost program_options 解析命令行",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（find_package(Boost COMPONENTS program_options)，仅 BUILD_RDKIT_BENCHMARK=ON）",
+        "declared_in": ["src/RDKitBenchmark/CMakeLists.txt:4"]
+      },
+      {
+        "name": "RDKit",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">=2016.03.01",
+        "purpose": "可选 C++ 基准测试工具依赖 RDKit 读取分子文件并调用本库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（预装 RDKit 头文件/库，仅 BUILD_RDKIT_BENCHMARK=ON）",
+        "declared_in": ["src/RDKitBenchmark/CMakeLists.txt:2-15", "INSTALL:142-158"]
+      }
+    ],
+    "notes": "核心库仅依赖 C 标准库与 libm；Python、Cython、Boost、RDKit 均为可选构建依赖。仓库没有使用包管理器（vcpkg/conan/pip 清单），依赖通过 CMake find_package / find_library 要求系统预装。"
+  },
+  "native_api": {
+    "summary": "核心库为纯 ANSI C 实现，仅调用 C 标准库；无 POSIX/Win32 专有系统调用、无动态加载、无网络/子进程/设备访问。",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "malloc",
+            "purpose": "分配动态内存",
+            "count": 184,
+            "evidence": ["src/RingDecomposerLib/RingDecomposerLib.c:86", "src/RingDecomposerLib/RDLtarjan.c:61", "src/RingDecomposerLib/RDLrelation.c:19"]
+          },
+          {
+            "name": "realloc",
+            "purpose": "重新分配动态内存",
+            "count": 34,
+            "evidence": ["src/RingDecomposerLib/RingDecomposerLib.c:351", "src/RingDecomposerLib/RDLgraph.c:203", "src/RingDecomposerLib/RDLtarjan.c:220"]
+          },
+          {
+            "name": "free",
+            "purpose": "释放动态内存",
+            "count": 193,
+            "evidence": ["src/RingDecomposerLib/RingDecomposerLib.c:200", "src/RingDecomposerLib/RDLgraph.c:125", "src/RingDecomposerLib/RDLtarjan.c:20"]
+          },
+          {
+            "name": "memset",
+            "purpose": "初始化内存区域",
+            "count": 25,
+            "evidence": ["src/RingDecomposerLib/RingDecomposerLib.c:305", "src/RingDecomposerLib/RDLrelation.c", "src/RingDecomposerLib/RDLdimacs.c:91"]
+          },
+          {
+            "name": "memcpy",
+            "purpose": "拷贝内存区域",
+            "count": 9,
+            "evidence": ["src/RingDecomposerLib/RDLhandler.c", "src/RingDecomposerLib/RDLrelation.c", "src/RingDecomposerLib/RDLtesting.c"]
+          },
+          {
+            "name": "qsort",
+            "purpose": "对环/数组进行排序",
+            "count": 7,
+            "evidence": ["src/RingDecomposerLib/RDLdimacs.c:250", "src/RingDecomposerLib/RDLcycleFams.c", "src/RingDecomposerLib/RDLtesting.c"]
+          },
+          {
+            "name": "printf",
+            "purpose": "向 stdout 输出调试/示例信息",
+            "count": 11,
+            "evidence": ["src/RingDecomposerLib/RDLutility.c:77", "src/RingDecomposerLib/RDLgraph.c", "src/MinimalExample/MinimalExample.c"]
+          },
+          {
+            "name": "fprintf",
+            "purpose": "向 stderr 输出测试/错误信息",
+            "count": 119,
+            "evidence": ["src/RingDecomposerLib/RDLtesting.c:471", "src/Test/Test.c:110", "src/Test/TestValidate.c:79"]
+          },
+          {
+            "name": "sprintf",
+            "purpose": "格式化日志前缀字符串",
+            "count": 1,
+            "evidence": ["src/RingDecomposerLib/RDLutility.c:130"]
+          },
+          {
+            "name": "vfprintf",
+            "purpose": "可变参数日志输出到 stderr",
+            "count": 1,
+            "evidence": ["src/RingDecomposerLib/RDLutility.c:134"]
+          },
+          {
+            "name": "sscanf",
+            "purpose": "解析 DIMACS 文件与命令行参数",
+            "count": 3,
+            "evidence": ["src/RingDecomposerLib/RDLdimacs.c:87", "src/RingDecomposerLib/RDLdimacs.c:114", "src/RingDecomposerLib/RDLdimacs.c:145"]
+          },
+          {
+            "name": "fgets",
+            "purpose": "按行读取 DIMACS 文件",
+            "count": 1,
+            "evidence": ["src/RingDecomposerLib/RDLdimacs.c:82"]
+          },
+          {
+            "name": "fopen",
+            "purpose": "打开 DIMACS 输入文件",
+            "count": 1,
+            "evidence": ["src/RingDecomposerLib/RDLdimacs.c:69"]
+          },
+          {
+            "name": "fclose",
+            "purpose": "关闭 DIMACS 输入文件",
+            "count": 1,
+            "evidence": ["src/RingDecomposerLib/RDLdimacs.c:228"]
+          },
+          {
+            "name": "time",
+            "purpose": "为测试超时检查提供时间戳",
+            "count": 2,
+            "evidence": ["src/RingDecomposerLib/RDLtesting.c:49", "src/RingDecomposerLib/RDLtesting.c:56"]
+          },
+          {
+            "name": "assert",
+            "purpose": "内部不变式检查",
+            "count": 16,
+            "evidence": ["src/RingDecomposerLib/RingDecomposerLib.c:154", "src/RingDecomposerLib/RDLgraph.c:120", "src/RingDecomposerLib/RDLtarjan.c:23"]
+          },
+          {
+            "name": "sqrt",
+            "purpose": "计算计数上界时求平方根",
+            "count": 2,
+            "evidence": ["src/RingDecomposerLib/RingDecomposerLib.c", "src/RingDecomposerLib/RDLtesting.c"]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "库核心为内存内算法，不访问网络、环境变量、子进程或设备；唯一运行时外部交互是通过 DIMACS 文件读取器按用户传入路径读取本地文件。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "DIMACS 图文件",
+        "purpose": "按用户指定路径读取 DIMACS 格式的图和参考环数据，用于 RDL_dimacsGraph_read 解析",
+        "evidence": ["src/RingDecomposerLib/RDLdimacs.c:69", "src/RingDecomposerLib/RDLdimacs.c:82"]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "ANSI C / C90（CMAKE_C_STANDARD 90）",
+    "runtime_version": "核心无运行时要求；可选 Python 封装需要 Python >=2.7 或 >=3.3",
+    "build_system": "CMake（>=3.1）",
+    "compiler_extensions": [
+      {
+        "detail": "Windows 导出符号 __declspec(dllexport)",
+        "purpose": "在 MSVC 构建时导出动态库符号",
+        "evidence": ["src/RingDecomposerLib/RingDecomposerLib.h:30-32"]
+      },
+      {
+        "detail": "GCC/Clang 默认可见性 __attribute__((visibility(\"default\")))",
+        "purpose": "在 ELF 平台控制动态库符号可见性",
+        "evidence": ["src/RingDecomposerLib/RingDecomposerLib.h:33-34"]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": null,
+        "evidence": ["INSTALL:24-32", ".travis.yml:3-4"]
+      },
+      {
+        "os": "macos",
+        "arch": null,
+        "evidence": ["INSTALL:24-32"]
+      },
+      {
+        "os": "windows",
+        "arch": null,
+        "evidence": ["INSTALL:52-68", "src/RingDecomposerLib/RingDecomposerLib.h:30-32"]
+      }
+    ],
+    "notes": "项目未声明特定 CPU 架构；代码为纯 ANSI C，不依赖 SIMD 或内联汇编。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（默认按命令行/桌面库模型评估；核心 C 库可经 OHOS NDK 重编；Python 封装跑在已移植 Python 运行时上）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "low",
+    "effort_estimate": "S",
+    "recommended_path": "recompile_napi",
+    "summary": "RingDecomposerLib 是纯 ANSI C 算法库，仅使用 C 标准库与 libm，无 POSIX/Win32 专有调用、无动态加载、无外部命令。HarmonyOS PC 已移植 Python，若使用 Python 封装，主要工作是用 OHOS NDK 重新编译 C 核心并在鸿蒙 Python 上重建 Cython 扩展；若作为 C 库直接使用，用 OHOS NDK 交叉编译为 .so 即可。整体移植难度低。",
+    "blockers": [
+      {
+        "issue": "Cython 扩展需随鸿蒙 Python 重新编译",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "在 OHOS NDK（musl libc + clang）下编译 RingDecomposerLib 静态库，再用鸿蒙 Python 重新构建 py_rdl.wrapper.DataInternal 扩展；确认 setup.py.in 中 extra_objects 指向 OHOS 产物。",
+        "evidence": ["src/python/setup.py.in:18-24", "src/python/CMakeLists.txt:14-21"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 ANSI C 算法核心",
+        "note": "仅使用 C 标准库，musl/OHOS 支持完整，无需改动源代码",
+        "evidence": ["src/RingDecomposerLib/RingDecomposerLib.c", "src/RingDecomposerLib/RDLtarjan.c", "src/RingDecomposerLib/RDLapsp.c"]
+      },
+      {
+        "aspect": "无平台专有系统调用",
+        "note": "未使用 Win32/POSIX 特有 API、/proc/sys、注册表或外部命令",
+        "evidence": ["src/RingDecomposerLib/*.c", "src/RingDecomposerLib/*.h"]
+      },
+      {
+        "aspect": "Python 封装逻辑",
+        "note": "py_rdl 为纯 Python + Cython 封装，无额外原生平台依赖，可跑在已移植 Python 上",
+        "evidence": ["src/python/py_rdl/Calculator.py", "src/python/py_rdl/Graph.py"]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 RingDecomposerLib 为 arm64/x86_64 .so 或静态库",
+      "若启用 Python 封装，用鸿蒙 Python 重新生成并安装 Cython 扩展",
+      "运行核心 C 测试与 Python 测试验证环分解结果正确"
+    ],
+    "notes": "评估按默认模型 A（库跑在已移植运行时或直接作为 C 库使用）。若目标为 ArkTS 沙箱应用（模型 B），需要额外编写 Node-API 封装层，工作量上升至 M，结论相应收紧。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": []
+  }
+}

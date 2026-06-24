@@ -1,0 +1,988 @@
+{
+  "library": {
+    "name": "keyring",
+    "package_name": "keyring",
+    "source_url": "https://github.com/jaraco/keyring",
+    "analyzed_at": "2026-06-22T08:37:25.199Z",
+    "commit": "7603e7cadc254b4c6e3fc2b2f0916a005e78087d",
+    "one_liner": "跨平台 Python 系统密钥环访问库，统一封装 macOS Keychain、Windows Credential Locker、Linux Secret Service/KWallet 等后端。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "keyring 是一个 Python 库，为应用提供统一、安全的密码/凭据存储与读取接口。它通过插件化后端自动适配 macOS Keychain、Windows Credential Locker、Linux Freedesktop Secret Service 及 KDE KWallet 等系统密钥环服务，并附带命令行工具与第三方后端扩展入口。主要面向需要在桌面平台安全存取密码的 Python 应用开发者和 CLI 工具作者。",
+    "categories": [
+      {
+        "name": "核心密码操作 API",
+        "description": "提供 set_password、get_password、delete_password、get_credential 等统一入口，封装后端差异。",
+        "evidence": ["keyring/__init__.py", "keyring/core.py:63-82"]
+      },
+      {
+        "name": "后端发现与优先级调度",
+        "description": "基于 KeyringBackend 抽象基类、元类注册与 priority/viable 机制，自动发现并选择当前环境可用的密钥环后端。",
+        "evidence": ["keyring/backend.py:65-107", "keyring/backends/chainer.py:11-45"]
+      },
+      {
+        "name": "macOS Keychain 后端",
+        "description": "通过 ctypes 调用 Security / CoreServices / Foundation 框架，实现 macOS 系统钥匙串的密码读写。",
+        "evidence": ["keyring/backends/macOS/__init__.py", "keyring/backends/macOS/api.py:25-184"]
+      },
+      {
+        "name": "Windows Credential Locker 后端",
+        "description": "借助 pywin32-ctypes / pywin32 封装 win32cred，读写 Windows 凭据管理器。",
+        "evidence": ["keyring/backends/Windows.py:14-168"]
+      },
+      {
+        "name": "Linux Secret Service 后端",
+        "description": "通过 secretstorage 库访问 Freedesktop Secret Service（GNOME Keyring 等），并支持 libsecret 备选路径。",
+        "evidence": ["keyring/backends/SecretService.py", "keyring/backends/libsecret.py"]
+      },
+      {
+        "name": "KDE KWallet 后端",
+        "description": "通过 dbus 与 KDE KWallet 服务交互，支持 KWallet 4/5。",
+        "evidence": ["keyring/backends/kwallet.py:29-161"]
+      },
+      {
+        "name": "命令行工具与 shell 补全",
+        "description": "提供 keyring CLI（get/set/del/diagnose/list-backends）及可选的 bash/zsh 补全脚本。",
+        "evidence": ["keyring/cli.py", "keyring/completion.py"]
+      }
+    ],
+    "domain": "security / credential management",
+    "target_users": "Python 应用开发者、CLI 工具作者及需要跨桌面平台安全存储密码的下游库",
+    "ecosystem": "python"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "reStructuredText",
+      "YAML",
+      "TOML",
+      "INI",
+      "Markdown",
+      "Bourne Again Shell",
+      "zsh"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 42,
+        "code": 1932,
+        "pct": 50.5,
+        "production": {
+          "files": 27,
+          "code": 1410
+        },
+        "test": {
+          "files": 15,
+          "code": 522
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 4,
+        "code": 1488,
+        "pct": 38.89,
+        "production": {
+          "files": 4,
+          "code": 1488
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 5,
+        "code": 138,
+        "pct": 3.61,
+        "production": {
+          "files": 5,
+          "code": 138
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 3,
+        "code": 115,
+        "pct": 3.01,
+        "production": {
+          "files": 3,
+          "code": 115
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 4,
+        "code": 107,
+        "pct": 2.8,
+        "production": {
+          "files": 4,
+          "code": 107
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 29,
+        "pct": 0.76,
+        "production": {
+          "files": 2,
+          "code": 29
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Again Shell",
+        "files": 1,
+        "code": 10,
+        "pct": 0.26,
+        "production": {
+          "files": 1,
+          "code": 10
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "zsh",
+        "files": 1,
+        "code": 7,
+        "pct": 0.18,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 62,
+      "code": 3826,
+      "comment": 642,
+      "blank": 1347,
+      "total_lines": 5815
+    },
+    "production": {
+      "files": 47,
+      "code": 3304,
+      "comment": 549,
+      "blank": 1163,
+      "total_lines": 5016
+    },
+    "test": {
+      "files": 15,
+      "code": 522,
+      "comment": 93,
+      "blank": 184,
+      "total_lines": 799
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "reStructuredText": {
+        "files": 4,
+        "code": 1488
+      },
+      "Python": {
+        "files": 27,
+        "code": 1410
+      },
+      "YAML": {
+        "files": 5,
+        "code": 138
+      },
+      "TOML": {
+        "files": 3,
+        "code": 115
+      },
+      "INI": {
+        "files": 4,
+        "code": 107
+      },
+      "Markdown": {
+        "files": 2,
+        "code": 29
+      },
+      "Bourne Again Shell": {
+        "files": 1,
+        "code": 10
+      },
+      "zsh": {
+        "files": 1,
+        "code": 7
+      }
+    }
+  },
+  "tests": {
+    "test_files": 15,
+    "test_cases": 39,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 15,
+        "cases": 39
+      }
+    },
+    "notes": "框架由 pytest.ini 与 conftest.py 确认；metrics.py 的测试用例数为正则估算。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "medium",
+    "is_dual_licensed": false,
+    "license_files": [],
+    "evidence": "pyproject.toml [project] 声明 license = \"MIT\"；仓库根目录无独立 LICENSE 文件，源码文件头也无 SPDX 标识。",
+    "notes": "宽松许可。由于缺少独立 LICENSE 文本，confidence 取 medium；建议保留 pyproject.toml 中的声明。"
+  },
+  "dependencies": {
+    "count": 22,
+    "manifests": [
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "pywin32-ctypes",
+        "SecretStorage",
+        "jeepney",
+        "importlib_metadata",
+        "jaraco.classes",
+        "jaraco.functools",
+        "jaraco.context",
+        "pytest",
+        "pyfakefs",
+        "sphinx",
+        "jaraco.packaging",
+        "rst.linker",
+        "furo",
+        "sphinx-lint",
+        "jaraco.tidelift",
+        "pytest-checkdocs",
+        "pytest-ruff",
+        "pytest-cov",
+        "pytest-enabler",
+        "pytest-mypy",
+        "pygobject-stubs",
+        "shtab",
+        "types-pywin32"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "pywin32-ctypes",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=0.2.0",
+        "purpose": "Windows 后端：封装 win32cred 凭据管理器 API",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:29"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "SecretStorage",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=3.2",
+        "purpose": "Linux Secret Service 后端：通过 D-Bus 访问 GNOME Keyring 等",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:30"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jeepney",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=0.4.2",
+        "purpose": "Linux D-Bus 底层传输（SecretStorage 的依赖之一，keyring 显式声明）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:31"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "importlib_metadata",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=4.11.4",
+        "purpose": "Python < 3.12 时提供 entry_points() 以加载后端插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:32"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.classes",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供 classproperty 等辅助装饰器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:33"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.functools",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供 once 等函数式辅助工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:34"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.context",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供 ExceptionTrap 等上下文管理工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:35"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=6, !=8.1.*",
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:45"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pyfakefs",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试中用 fake 文件系统隔离文件 I/O",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:48"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=3.5",
+        "purpose": "文档构建",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:53"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.packaging",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=9.3",
+        "purpose": "文档构建辅助",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:54"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "rst.linker",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=1.9",
+        "purpose": "RST 文档链接处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:55"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "furo",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Sphinx 文档主题",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:56"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-lint",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "RST 文档静态检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:57"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.tidelift",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=1.4",
+        "purpose": "文档中展示 Tidelift 企业支持信息",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:60"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-checkdocs",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=2.14",
+        "purpose": "pytest 插件：检查文档长描述可渲染",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:66"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-ruff",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=0.2.1",
+        "purpose": "pytest 插件：集成 ruff 代码风格检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:67"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-cov",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pytest 覆盖率插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:71"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-enabler",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=3.4",
+        "purpose": "pytest 插件：按 extras 自动启用其他插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:75"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-mypy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=1.0.1",
+        "purpose": "pytest 插件：集成 mypy 类型检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:82"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pygobject-stubs",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "libsecret/gi 的类型 stub",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:85"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "shtab",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.1.0",
+        "purpose": "可选：生成 shell 补全脚本",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:90"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "types-pywin32",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pywin32 的类型 stub",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:87"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "pywin32-ctypes / SecretStorage / jeepney 为平台条件依赖（仅 Windows/Linux）；importlib_metadata 仅在 Python < 3.12 需要；shtab 为可选 completion extra。所有依赖均未在 OpenHarmony PC 官方源找到预构建包。"
+  },
+  "native_api": {
+    "summary": "keyring 是跨平台纯 Python 库，核心逻辑仅使用 Python 标准库；平台耦合集中在各后端：Windows 通过 pywin32 调用 Win32 凭据 API，macOS 通过 ctypes 调用 Security/CoreServices/Foundation 框架，Linux 通过 secretstorage/dbus/gi 调用 D-Bus 与 libsecret。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "os.environ / os.getenv",
+            "purpose": "读取运行时环境变量与配置路径",
+            "count": 8,
+            "evidence": ["keyring/backend.py:191", "keyring/core.py:153", "keyring/util/platform_.py:9-34"]
+          },
+          {
+            "name": "configparser.RawConfigParser",
+            "purpose": "解析 keyringrc.cfg 配置文件",
+            "count": 3,
+            "evidence": ["keyring/core.py:171-201"]
+          },
+          {
+            "name": "importlib.metadata.entry_points",
+            "purpose": "发现 keyring.backends 入口点以加载第三方后端",
+            "count": 2,
+            "evidence": ["keyring/backend.py:241", "keyring/compat/py312.py:7"]
+          },
+          {
+            "name": "pathlib.Path.home / os.path.expanduser",
+            "purpose": "定位用户级配置与数据目录",
+            "count": 2,
+            "evidence": ["keyring/util/platform_.py:19-34", "keyring/core.py:200"]
+          },
+          {
+            "name": "os.makedirs / open",
+            "purpose": "创建配置目录并写入 keyringrc.cfg",
+            "count": 2,
+            "evidence": ["keyring/core.py:52-60"]
+          }
+        ]
+      },
+      {
+        "type": "ctypes_ffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ctypes.CDLL",
+            "purpose": "在 macOS 后端动态加载 Security / CoreServices / Foundation 框架",
+            "count": 3,
+            "evidence": ["keyring/backends/macOS/api.py:25-27"]
+          },
+          {
+            "name": "ctypes.util.find_library",
+            "purpose": "查找 macOS 框架库路径",
+            "count": 3,
+            "evidence": ["keyring/backends/macOS/api.py:25-27"]
+          },
+          {
+            "name": "ctypes.string_at",
+            "purpose": "从 CFData 指针读取密码字节",
+            "count": 1,
+            "evidence": ["keyring/backends/macOS/api.py:106"]
+          }
+        ]
+      },
+      {
+        "type": "win32_cred",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "win32cred.CredRead",
+            "purpose": "读取 Windows 凭据管理器中的通用凭据",
+            "count": 1,
+            "evidence": ["keyring/backends/Windows.py:114"]
+          },
+          {
+            "name": "win32cred.CredWrite",
+            "purpose": "写入 Windows 凭据管理器",
+            "count": 1,
+            "evidence": ["keyring/backends/Windows.py:145"]
+          },
+          {
+            "name": "win32cred.CredDelete",
+            "purpose": "删除 Windows 凭据管理器中的凭据",
+            "count": 1,
+            "evidence": ["keyring/backends/Windows.py:160"]
+          }
+        ],
+        "conditional": true
+      },
+      {
+        "type": "macos_security",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "SecItemAdd",
+            "purpose": "向 macOS Keychain 添加通用密码项",
+            "count": 1,
+            "evidence": ["keyring/backends/macOS/api.py:172"]
+          },
+          {
+            "name": "SecItemCopyMatching",
+            "purpose": "从 macOS Keychain 查询密码项",
+            "count": 1,
+            "evidence": ["keyring/backends/macOS/api.py:151"]
+          },
+          {
+            "name": "SecItemDelete",
+            "purpose": "从 macOS Keychain 删除密码项",
+            "count": 1,
+            "evidence": ["keyring/backends/macOS/api.py:183"]
+          },
+          {
+            "name": "CFDictionaryCreate / CFStringCreateWithCString / CFNumberCreate / CFDataGetBytePtr / CFDataGetLength",
+            "purpose": "构建 CoreFoundation 字典与字符串，读取密码数据",
+            "count": 5,
+            "evidence": ["keyring/backends/macOS/api.py:29-67", "keyring/backends/macOS/api.py:106"]
+          }
+        ],
+        "conditional": true
+      },
+      {
+        "type": "linux_secret_service",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "secretstorage.dbus_init / Collection / get_default_collection / create_item / search_items",
+            "purpose": "通过 D-Bus 与 Freedesktop Secret Service 交互",
+            "count": 6,
+            "evidence": ["keyring/backends/SecretService.py:42-92"]
+          },
+          {
+            "name": "gi.repository.Secret / GLib / Gio",
+            "purpose": "libsecret 备选后端，同步存取密码",
+            "count": 8,
+            "evidence": ["keyring/backends/libsecret.py:15-124"]
+          }
+        ],
+        "conditional": true
+      },
+      {
+        "type": "kwallet_dbus",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "dbus.SessionBus / dbus.Interface",
+            "purpose": "通过 D-Bus 会话总线与 KDE KWallet 服务通信",
+            "count": 4,
+            "evidence": ["keyring/backends/kwallet.py:44-97"]
+          }
+        ],
+        "conditional": true
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "Security.framework",
+        "mechanism": "ctypes.CDLL(find_library)",
+        "acquisition": "system",
+        "source": "macOS 系统框架，随 macOS 提供",
+        "description": "macOS Keychain 安全服务，提供 SecItemAdd/CopyMatching/Delete 等密码读写能力。",
+        "optional": true,
+        "evidence": ["keyring/backends/macOS/api.py:25"]
+      },
+      {
+        "name": "CoreServices.framework",
+        "mechanism": "ctypes.CDLL(find_library)",
+        "acquisition": "system",
+        "source": "macOS 系统框架，随 macOS 提供",
+        "description": "macOS CoreServices，macOS Keychain 后端加载但当前调用较少。",
+        "optional": true,
+        "evidence": ["keyring/backends/macOS/api.py:26"]
+      },
+      {
+        "name": "Foundation.framework",
+        "mechanism": "ctypes.CDLL(find_library)",
+        "acquisition": "system",
+        "source": "macOS 系统框架，随 macOS 提供",
+        "description": "macOS Foundation，提供 CoreFoundation 字典/字符串/数据类型构建能力。",
+        "optional": true,
+        "evidence": ["keyring/backends/macOS/api.py:27"]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要依赖环境变量决定后端选择与配置/数据目录；无外网访问、无子进程调用、无设备节点访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "keyringrc.cfg",
+        "purpose": "用户级配置文件，存储默认后端等设置",
+        "evidence": ["keyring/core.py:158-193", "keyring/util/platform_.py"]
+      },
+      {
+        "detail": "XDG_CONFIG_HOME / XDG_DATA_HOME / LOCALAPPDATA / ProgramData / Library/Application Support 等平台相关目录",
+        "purpose": "定位配置根目录与数据根目录",
+        "evidence": ["keyring/util/platform_.py:6-40"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "PYTHON_KEYRING_BACKEND",
+        "purpose": "强制指定默认 keyring 后端类路径",
+        "evidence": ["keyring/core.py:150-155"]
+      },
+      {
+        "name": "KEYCHAIN_PATH",
+        "purpose": "macOS 后端中指定自定义 keychain 路径（当前被忽略并报警告）",
+        "evidence": ["keyring/backends/macOS/__init__.py:29"]
+      },
+      {
+        "name": "KEYRING_PROPERTY_*",
+        "purpose": "后端初始化时自动映射为后端实例属性",
+        "evidence": ["keyring/backend.py:183-193"]
+      },
+      {
+        "name": "XDG_DATA_HOME / XDG_CONFIG_HOME",
+        "purpose": "Linux/类 Unix 平台下覆盖默认数据/配置目录",
+        "evidence": ["keyring/util/platform_.py:19-35"]
+      },
+      {
+        "name": "LOCALAPPDATA / ProgramData",
+        "purpose": "Windows 平台下定位配置/数据目录",
+        "evidence": ["keyring/util/platform_.py:8-11"]
+      },
+      {
+        "name": "XDG_CURRENT_DESKTOP",
+        "purpose": "KWallet 后端判断当前桌面环境是否为 KDE",
+        "evidence": ["keyring/backends/kwallet.py:54"]
+      }
+    ],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "Python >= 3.10（PyPy3.10 亦在 CI 中测试）",
+    "build_system": "setuptools + setuptools_scm",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/main.yml"]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64/arm64",
+        "evidence": [".github/workflows/main.yml"]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/main.yml"]
+      }
+    ],
+    "notes": "纯 Python 包，无 C 扩展；构建仅依赖 setuptools/setuptools_scm。CI 覆盖 ubuntu-latest、macos-latest、windows-latest 及多个 Python 版本。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "effort_estimate": "M",
+    "porting_class": "needs_adaptation",
+    "recommended_path": "run_on_ported_runtime + implement_harmony_backend",
+    "summary": "keyring 主体为纯 Python，鸿蒙 PC 已移植 Python 运行时，核心与 CLI 可直接运行；但现有 macOS/Windows/Linux 后端均依赖桌面平台特有的密钥环服务或框架，在鸿蒙上不可用。要使其真正可用，需要新增一个基于鸿蒙系统密钥环/Keystore 能力的后端。",
+    "blockers": [
+      {
+        "issue": "Windows 后端依赖 Win32 凭据管理器 API（pywin32/pywin32-ctypes）",
+        "severity": "major",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "在鸿蒙上禁用 Windows 后端；通过新增鸿蒙后端替代。",
+        "evidence": ["keyring/backends/Windows.py:14-168"]
+      },
+      {
+        "issue": "macOS 后端通过 ctypes 调用 Security / CoreServices / Foundation 框架",
+        "severity": "major",
+        "category": "macos_framework",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "在鸿蒙上禁用 macOS 后端；新增鸿蒙 Keystore 后端。",
+        "evidence": ["keyring/backends/macOS/api.py:25-184"]
+      },
+      {
+        "issue": "Linux Secret Service / libsecret / KWallet 后端依赖 D-Bus 与 Linux 桌面密钥环服务",
+        "severity": "major",
+        "category": "linux_desktop_service",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "在鸿蒙上禁用 SecretService / libsecret / KWallet 后端；使用鸿蒙原生密钥管理服务。",
+        "evidence": ["keyring/backends/SecretService.py:17-120", "keyring/backends/libsecret.py:15-155", "keyring/backends/kwallet.py:11-161"]
+      },
+      {
+        "issue": "所有运行时依赖均未在 OpenHarmony PC 官方源找到预构建包",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "这些依赖均为可选平台依赖；鸿蒙上无需安装。若新增鸿蒙后端需要额外 Python 包，再单独评估其可移植性。",
+        "evidence": ["pyproject.toml:28-36"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 核心（backend/core/cli/credentials/errors 等）",
+        "note": "鸿蒙 Python 3.12 可直接运行，无需改动",
+        "evidence": ["keyring/__init__.py", "keyring/core.py", "keyring/cli.py"]
+      },
+      {
+        "aspect": "后端发现与优先级机制",
+        "note": "KeyringBackend 抽象与 entry_points 扩展机制保持可用",
+        "evidence": ["keyring/backend.py:65-261"]
+      },
+      {
+        "aspect": "Null / fail 退化行为",
+        "note": "在未实现鸿蒙后端前，库可安全退化到 fail 后端并抛出 NoKeyringError，不会崩溃",
+        "evidence": ["keyring/backends/fail.py"]
+      }
+    ],
+    "key_tasks": [
+      "调研鸿蒙 PC 提供的密钥环/Keystore 系统能力（如 @ohos.security.crypto 或底层 OHOS NDK API）",
+      "实现 keyring.backends.harmony.Keyring，提供 get_password / set_password / delete_password / get_credential",
+      "在 pyproject.toml 的 [project.entry-points.\"keyring.backends\"] 中注册新的鸿蒙后端",
+      "在鸿蒙 Python 环境下跑通现有测试，并补充鸿蒙后端单元/集成测试",
+      "评估鸿蒙后端是否需要新增原生扩展；如仅需 Python 层调用系统 API，则保持纯脚本"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。keyring 可在无改动情况下导入并退化运行，但要发挥其功能必须新增鸿蒙后端；工作量主要取决于鸿蒙 Keystore API 的封装复杂度。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "license",
+        "field": "license_files",
+        "kind": "gap",
+        "value": "manifest_only_license",
+        "rationale": "仓库根目录缺少独立 LICENSE 文件，仅 pyproject.toml 声明 MIT；建议补充 LICENSE 文本以提升置信度。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,1094 @@
+{
+  "library": {
+    "name": "auditwheel",
+    "package_name": "auditwheel",
+    "source_url": "https://github.com/pypa/auditwheel.git",
+    "analyzed_at": "2026-06-22T07:05:57.612Z",
+    "commit": "624aa37d28c2f542f61da2fd23a8b9d97bd6a413",
+    "one_liner": "审计并修复 Linux/Android Python wheel，使其符合 manylinux/musllinux/android 平台标签",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "auditwheel 是 PyPA 维护的命令行工具，用于审计和修复包含原生二进制扩展的 Linux/Android Python wheel。它解析 wheel 中的 ELF 文件及其 DT_NEEDED 依赖树，对照 PEP 600/513/571/599/738 定义的 manylinux/musllinux/android 策略（白名单、符号版本、黑名单、ISA 扩展）检查兼容性，并通过 repair 子命令将外部共享库打包进 wheel、重写 SONAME/RPATH，从而生成兼容性更好的平台 wheel。主要面向 Python 包发布者和 CI/CD 维护人员。",
+    "categories": [
+      {
+        "name": "Wheel 文件解析与平台标签识别",
+        "description": "解析 wheel 文件名、dist-info、WHEEL 文件，识别平台标签、架构与 libc 类型（glibc/musl/android）",
+        "evidence": [
+          "src/auditwheel/wheeltools.py:36-348",
+          "src/auditwheel/architecture.py:10-75",
+          "src/auditwheel/libc.py:22-57"
+        ]
+      },
+      {
+        "name": "ELF 依赖树解析",
+        "description": "不执行 ELF 而直接读取其段与动态表，递归解析 DT_NEEDED、RPATH/RUNPATH、解释器及符号版本，构建类似 ldd 的依赖树",
+        "evidence": [
+          "src/auditwheel/lddtree.py:101-639",
+          "src/auditwheel/elfutils.py:18-134"
+        ]
+      },
+      {
+        "name": "多平台策略管理与兼容性判定",
+        "description": "加载 manylinux/musllinux/android 策略 JSON，基于白名单、符号版本、黑名单与 ISA 扩展判定 wheel 可声明的平台标签",
+        "evidence": [
+          "src/auditwheel/policy/__init__.py:58-295",
+          "src/auditwheel/wheel_abi.py:436-552"
+        ]
+      },
+      {
+        "name": "Wheel 修复与依赖打包",
+        "description": "将外部共享库复制到 wheel 内，调用 patchelf 重写 SONAME、RPATH 与 DT_NEEDED，并更新 wheel 文件名与 WHEEL 标签",
+        "evidence": [
+          "src/auditwheel/repair.py:31-149",
+          "src/auditwheel/patcher.py:44-107"
+        ]
+      },
+      {
+        "name": "SBOM 生成",
+        "description": "在修复时为打包进 wheel 的系统库生成 CycloneDX 格式 SBOM，通过系统包管理器（apk/rpm/dpkg/apt）反查库所属软件包",
+        "evidence": [
+          "src/auditwheel/sboms.py:16-86",
+          "src/auditwheel/_vendor/whichprovides/__init__.py:58-334"
+        ]
+      },
+      {
+        "name": "命令行接口",
+        "description": "提供 show、repair、lddtree 三个子命令，支持平台选择、压缩级别、排除 SONAME、RPATH 搜索路径等选项",
+        "evidence": [
+          "src/auditwheel/main.py:14-51",
+          "src/auditwheel/main_show.py:32-154",
+          "src/auditwheel/main_repair.py:129-284",
+          "src/auditwheel/main_lddtree.py:23-28"
+        ]
+      }
+    ],
+    "domain": "打包与构建工具",
+    "target_users": "Python 包发布者、CI/CD 维护人员、Python 打包生态贡献者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "JSON",
+      "Markdown",
+      "C",
+      "YAML",
+      "TOML",
+      "reStructuredText",
+      "C++"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 66,
+        "code": 6850,
+        "pct": 73.17,
+        "production": {
+          "files": 30,
+          "code": 3206
+        },
+        "test": {
+          "files": 36,
+          "code": 3644
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 3,
+        "code": 1125,
+        "pct": 12.02,
+        "production": {
+          "files": 3,
+          "code": 1125
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 365,
+        "pct": 3.9,
+        "production": {
+          "files": 1,
+          "code": 360
+        },
+        "test": {
+          "files": 1,
+          "code": 5
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 14,
+        "code": 327,
+        "pct": 3.49,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 14,
+          "code": 327
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 4,
+        "code": 241,
+        "pct": 2.57,
+        "production": {
+          "files": 4,
+          "code": 241
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 6,
+        "code": 148,
+        "pct": 1.58,
+        "production": {
+          "files": 1,
+          "code": 117
+        },
+        "test": {
+          "files": 5,
+          "code": 31
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 1,
+        "code": 105,
+        "pct": 1.12,
+        "production": {
+          "files": 1,
+          "code": 105
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 4,
+        "code": 63,
+        "pct": 0.67,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 4,
+          "code": 63
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 35,
+        "pct": 0.37,
+        "production": {
+          "files": 2,
+          "code": 35
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 1,
+        "code": 29,
+        "pct": 0.31,
+        "production": {
+          "files": 1,
+          "code": 29
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CMake",
+        "files": 2,
+        "code": 24,
+        "pct": 0.26,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 2,
+          "code": 24
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 2,
+        "code": 16,
+        "pct": 0.17,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 2,
+          "code": 16
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Cython",
+        "files": 4,
+        "code": 16,
+        "pct": 0.17,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 4,
+          "code": 16
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Fortran 90",
+        "files": 1,
+        "code": 12,
+        "pct": 0.13,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 12
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 4,
+        "code": 6,
+        "pct": 0.06,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 4,
+          "code": 6
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 116,
+      "code": 9362,
+      "comment": 897,
+      "blank": 1666,
+      "total_lines": 11925
+    },
+    "production": {
+      "files": 43,
+      "code": 5218,
+      "comment": 637,
+      "blank": 942,
+      "total_lines": 6797
+    },
+    "test": {
+      "files": 73,
+      "code": 4144,
+      "comment": 260,
+      "blank": 724,
+      "total_lines": 5128
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 30,
+        "code": 3206
+      },
+      "JSON": {
+        "files": 3,
+        "code": 1125
+      },
+      "Markdown": {
+        "files": 1,
+        "code": 360
+      },
+      "YAML": {
+        "files": 4,
+        "code": 241
+      },
+      "TOML": {
+        "files": 1,
+        "code": 117
+      },
+      "reStructuredText": {
+        "files": 1,
+        "code": 105
+      },
+      "Text": {
+        "files": 2,
+        "code": 35
+      },
+      "Bourne Shell": {
+        "files": 1,
+        "code": 29
+      }
+    }
+  },
+  "tests": {
+    "test_files": 73,
+    "test_cases": 146,
+    "frameworks": [
+      "pytest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 36,
+        "cases": 146
+      },
+      "C": {
+        "files": 14,
+        "cases": 0
+      },
+      "C++": {
+        "files": 4,
+        "cases": 0
+      },
+      "CMake": {
+        "files": 2,
+        "cases": 0
+      },
+      "Fortran 90": {
+        "files": 1,
+        "cases": 0
+      },
+      "TOML": {
+        "files": 5,
+        "cases": 0
+      },
+      "make": {
+        "files": 2,
+        "cases": 0
+      },
+      "Markdown": {
+        "files": 1,
+        "cases": 0
+      },
+      "Cython": {
+        "files": 4,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 4,
+        "cases": 0
+      }
+    },
+    "notes": "计数为基于正则的近似值；集成测试需要 Docker daemon 与多个 manylinux 镜像。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件与 MIT 许可文本一致；pyproject.toml [project].license 声明为 MIT。",
+    "notes": "主项目为 MIT；仓库内包含第三方代码：pax-utils 的 lddtree.py（BSD-3-Clause）、delocate 的 tools.py/wheeltools.py（BSD-2-Clause）、nibabel 的 tmpdirs.py（MIT），已在 LICENSE 中分别声明。"
+  },
+  "dependencies": {
+    "count": 11,
+    "manifests": [
+      "pyproject.toml",
+      "noxfile.py"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "packaging",
+        "pyelftools",
+        "pytest",
+        "jsonschema",
+        "patchelf",
+        "pretend",
+        "docker",
+        "pytest-cov",
+        "coverage",
+        "setuptools",
+        "setuptools_scm"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "packaging",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=20.9",
+        "purpose": "解析 wheel 文件名与平台标签",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:32-35"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pyelftools",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=0.24",
+        "purpose": "ELF 文件解析（段、节、符号表、动态段、版本符号等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:32-35"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "patchelf",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "0.14+",
+        "purpose": "外部系统二进制工具，用于修改 ELF 的 SONAME、RPATH、DT_NEEDED",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装二进制（README.rst:41、src/auditwheel/patcher.py:44-62 运行时检查）",
+        "declared_in": [
+          "README.rst:38-42",
+          "src/auditwheel/patcher.py:44-62"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=3.4",
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:44"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jsonschema",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "JSON schema 验证测试",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:44"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pretend",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试替身/桩对象",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:44"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "docker",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "集成测试中操作 Docker daemon",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:44"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-cov",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=7",
+        "purpose": "pytest 覆盖率插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:45"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "coverage",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=7.13",
+        "purpose": "代码覆盖率测量",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:45"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=61",
+        "purpose": "PEP 517 构建后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:1-3"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools_scm",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=8",
+        "purpose": "基于 git 标签自动推断版本号",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:1-3"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "patchelf 在 pyproject.toml 的 test dependency-group 中声明，但 auditwheel repair 运行时必须调用该外部二进制，因此按 runtime/system 归类。"
+  },
+  "native_api": {
+    "summary": "纯 Python 工具，通过 pyelftools 读取 ELF，不直接编写 C/C++ 原生扩展；平台相关能力主要依赖 Python 标准库与 subprocess 调用外部系统工具。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "os.walk",
+            "purpose": "递归遍历 wheel 解压后的目录树",
+            "count": 2,
+            "evidence": [
+              "src/auditwheel/tools.py:61",
+              "src/auditwheel/wheeltools.py:81"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "zipfile.ZipFile",
+            "purpose": "wheel 的解压与重新打包",
+            "count": 3,
+            "evidence": [
+              "src/auditwheel/tools.py:103",
+              "src/auditwheel/tools.py:159"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "subprocess.run / check_output / check_call",
+            "purpose": "调用 patchelf、strip、tar、musl libc 及系统包管理器",
+            "count": 16,
+            "evidence": [
+              "src/auditwheel/patcher.py:53",
+              "src/auditwheel/patcher.py:71",
+              "src/auditwheel/tools.py:184",
+              "src/auditwheel/libc.py:73"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.environ.get",
+            "purpose": "读取 LD_LIBRARY_PATH、AUDITWHEEL_*、SOURCE_DATE_EPOCH 等环境变量",
+            "count": 8,
+            "evidence": [
+              "src/auditwheel/lddtree.py:340",
+              "src/auditwheel/lddtree.py:385",
+              "src/auditwheel/tools.py:200",
+              "src/auditwheel/wheeltools.py:143"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "platform.machine / platform.architecture",
+            "purpose": "检测宿主架构与位数",
+            "count": 4,
+            "evidence": [
+              "src/auditwheel/architecture.py:56",
+              "src/auditwheel/libc.py:95",
+              "src/auditwheel/repair.py:234"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys.platform",
+            "purpose": "对 Windows/macOS 的 machine 名称做规范化映射",
+            "count": 2,
+            "evidence": [
+              "src/auditwheel/architecture.py:57"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "/etc/ld.so.conf 解析",
+            "purpose": "读取 Linux 动态链接器配置文件及 include 通配",
+            "count": 1,
+            "evidence": [
+              "src/auditwheel/lddtree.py:287"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "/lib /usr/lib /lib64 /usr/lib64 遍历",
+            "purpose": "搜索 ELF 共享库与解释器",
+            "count": 6,
+            "evidence": [
+              "src/auditwheel/lddtree.py:352",
+              "src/auditwheel/libc.py:62",
+              "src/auditwheel/scripts/calculate_symbol_versions.py:16-19"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "/etc/os-release 读取",
+            "purpose": "识别 Linux 发行版 ID，用于 SBOM 包提供者检测",
+            "count": 1,
+            "evidence": [
+              "src/auditwheel/_vendor/whichprovides/__init__.py:68"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行期深度依赖 Linux/类 Unix 宿主环境：读取动态链接器配置与库搜索路径，并通过 subprocess 调用 patchelf、strip、tar 等外部工具；无网络访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "/etc/ld.so.conf 及 include 的通配文件",
+        "purpose": "解析动态链接器库搜索路径",
+        "evidence": [
+          "src/auditwheel/lddtree.py:287"
+        ]
+      },
+      {
+        "detail": "/lib*、/usr/lib* 目录",
+        "purpose": "搜索 ELF 共享库与动态链接器",
+        "evidence": [
+          "src/auditwheel/lddtree.py:352",
+          "src/auditwheel/libc.py:62"
+        ]
+      },
+      {
+        "detail": "/etc/os-release",
+        "purpose": "识别 Linux 发行版，用于 SBOM 包提供者检测",
+        "evidence": [
+          "src/auditwheel/_vendor/whichprovides/__init__.py:68"
+        ]
+      },
+      {
+        "detail": "wheel 文件（.whl）与临时目录",
+        "purpose": "解压、修改、重新打包 wheel",
+        "evidence": [
+          "src/auditwheel/wheeltools.py:130",
+          "src/auditwheel/tmpdirs.py:14"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "LD_LIBRARY_PATH",
+        "purpose": "Linux 动态库搜索路径",
+        "evidence": [
+          "src/auditwheel/lddtree.py:340"
+        ]
+      },
+      {
+        "name": "AUDITWHEEL_LD_LIBRARY_PATH",
+        "purpose": "auditwheel 额外的动态库搜索路径",
+        "evidence": [
+          "src/auditwheel/lddtree.py:385"
+        ]
+      },
+      {
+        "name": "AUDITWHEEL_PLAT",
+        "purpose": "repair 子命令默认目标平台标签",
+        "evidence": [
+          "src/auditwheel/main_repair.py:65"
+        ]
+      },
+      {
+        "name": "AUDITWHEEL_ZIP_COMPRESSION_LEVEL",
+        "purpose": "输出 wheel 的 zip 压缩级别",
+        "evidence": [
+          "src/auditwheel/main_repair.py:54"
+        ]
+      },
+      {
+        "name": "SOURCE_DATE_EPOCH",
+        "purpose": "可复现构建时间戳",
+        "evidence": [
+          "src/auditwheel/wheeltools.py:143"
+        ]
+      },
+      {
+        "name": "TRAVIS / GITHUB_ACTIONS",
+        "purpose": "检测是否运行于 CI，以决定是否启用覆盖率与 Docker 拉取",
+        "evidence": [
+          "noxfile.py:17"
+        ]
+      },
+      {
+        "name": "AUDITWHEEL_ARCH / AUDITWHEEL_QEMU",
+        "purpose": "CI 中指定测试目标架构与是否使用 QEMU",
+        "evidence": [
+          "noxfile.py:106"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "patchelf",
+        "purpose": "修改 ELF 的 SONAME、RPATH、DT_NEEDED",
+        "evidence": [
+          "src/auditwheel/patcher.py:53-107"
+        ]
+      },
+      {
+        "command": "strip -s",
+        "purpose": "去除修复后库与扩展的符号表",
+        "evidence": [
+          "src/auditwheel/repair.py:154"
+        ]
+      },
+      {
+        "command": "tar xjf",
+        "purpose": "解压 conda 包（.tar.bz2）",
+        "evidence": [
+          "src/auditwheel/tools.py:184"
+        ]
+      },
+      {
+        "command": "apk info --who-owns / rpm -qf / dpkg -S / apt-file search",
+        "purpose": "SBOM 中反查库文件所属系统包",
+        "evidence": [
+          "src/auditwheel/_vendor/whichprovides/__init__.py:140-290"
+        ]
+      },
+      {
+        "command": "musl libc 解释器自身（ld_path）",
+        "purpose": "获取 musl libc 版本字符串",
+        "evidence": [
+          "src/auditwheel/libc.py:73"
+        ]
+      }
+    ],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "CPython 3.10 / 3.11 / 3.12 / 3.13 / 3.14",
+    "build_system": "setuptools（PEP 517 构建后端）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/test.yml:61"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          ".github/workflows/test.yml:64"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "i686",
+        "evidence": [
+          ".github/workflows/test.yml:66"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv7l",
+        "evidence": [
+          ".github/workflows/test.yml:68"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "ppc64le",
+        "evidence": [
+          ".github/workflows/test.yml:70"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "s390x",
+        "evidence": [
+          ".github/workflows/test.yml:73"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [
+          ".github/workflows/test.yml:76"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "aarch64",
+        "evidence": [
+          ".github/workflows/test.yml:79",
+          "README.rst:39"
+        ]
+      }
+    ],
+    "notes": "需要外部系统工具 patchelf >= 0.14；部分集成测试需要 Docker daemon 与多个 manylinux/musllinux 镜像。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "hard",
+    "overall_difficulty": "very_high",
+    "effort_estimate": "XL",
+    "recommended_path": "abandon",
+    "summary": "auditwheel 是纯 Python 命令行工具，自身无原生扩展，核心 Python 代码可在鸿蒙 Python 上直接运行。但该工具本质是面向 Linux ELF 与 manylinux/musllinux/android 生态的 wheel 修复器，其功能严重依赖 Linux 外部二进制（patchelf、strip、tar、apk/rpm/dpkg/apt）、Linux 动态链接器路径（/etc/ld.so.conf、/lib、/usr/lib）以及 glibc/musl 符号版本策略。鸿蒙 PC 不采用 Python wheel 作为应用分发格式，也无对应 manylinux 生态，因此强行移植需要重写几乎所有平台相关逻辑；更现实的方案是采用鸿蒙原生应用/库分发机制，而非移植本工具。",
+    "blockers": [
+      {
+        "issue": "repair 核心依赖 Linux 外部二进制 patchelf 修改 ELF",
+        "severity": "blocker",
+        "category": "native_dependency",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unavailable",
+        "remediation": "patchelf 基于 Linux/glibc ELF 语义，鸿蒙 PC 无等价工具；若需类似能力，须基于 OHOS NDK/Node-API 或鸿蒙包管理工具重新实现 ELF 修改，或放弃在鸿蒙上运行 wheel 修复流程。",
+        "evidence": [
+          "src/auditwheel/patcher.py:53-107",
+          "README.rst:41"
+        ]
+      },
+      {
+        "issue": "依赖 Linux 动态链接器配置文件与系统库路径",
+        "severity": "blocker",
+        "category": "posix_subset_gap",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unavailable",
+        "remediation": "鸿蒙 PC 不使用 /etc/ld.so.conf 与 /lib、/usr/lib 布局；解析逻辑需替换为鸿蒙原生库搜索路径与包管理元数据。",
+        "evidence": [
+          "src/auditwheel/lddtree.py:287",
+          "src/auditwheel/lddtree.py:352"
+        ]
+      },
+      {
+        "issue": "manylinux/musllinux/android 策略基于 glibc/musl 符号版本与 Linux 发行版白名单",
+        "severity": "blocker",
+        "category": "posix_subset_gap",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "需定义鸿蒙 PC 自身的 wheel/库兼容性策略与 ABI 白名单，替代现有的 manylinux-policy.json/musllinux-policy.json/android-policy.json。",
+        "evidence": [
+          "src/auditwheel/policy/__init__.py:29-33",
+          "src/auditwheel/policy/__init__.py:188-224"
+        ]
+      },
+      {
+        "issue": "SBOM 生成依赖 Linux 发行版包管理器（apk/rpm/dpkg/apt）",
+        "severity": "major",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "将 whichprovides 中的包提供者替换为鸿蒙 PC 包管理器查询命令，或关闭 SBOM 功能。",
+        "evidence": [
+          "src/auditwheel/_vendor/whichprovides/__init__.py:140-290"
+        ]
+      },
+      {
+        "issue": "集成测试依赖 Docker 与 manylinux 镜像",
+        "severity": "minor",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unavailable",
+        "remediation": "鸿蒙 PC 通常无法直接运行 Linux Docker 与 manylinux 镜像；移植时仅需保留单元测试，舍弃依赖 Docker 的集成测试。",
+        "evidence": [
+          "README.rst:130-142",
+          ".github/workflows/test.yml:51-104"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 核心逻辑",
+        "note": "ELF 数据结构解析、策略对象、命令行参数处理等纯 Python 代码可在鸿蒙 Python 上直接运行",
+        "evidence": [
+          "src/auditwheel/main.py",
+          "src/auditwheel/wheel_abi.py:35-59"
+        ]
+      },
+      {
+        "aspect": "wheel zip 文件读写",
+        "note": "基于 zipfile 的 wheel 解包/打包逻辑与平台无关",
+        "evidence": [
+          "src/auditwheel/tools.py:91-179"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "评估鸿蒙 PC 是否需要 Python wheel 修复能力；若不需要，直接采用鸿蒙原生应用/库分发机制",
+      "若需保留 ELF 解析能力，用鸿蒙原生 ELF 编辑库或工具替换 patchelf 调用",
+      "重写动态链接器路径解析，适配鸿蒙 PC 库搜索路径",
+      "定义鸿蒙 PC 专用的 wheel/库 ABI 策略，替代 manylinux/musllinux/android 策略",
+      "将 SBOM 包提供者替换为鸿蒙 PC 包管理器接口"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。auditwheel 不是通用算法库，而是紧密绑定 Linux 打包生态的基础设施工具；鸿蒙 PC 的应用/库分发模型不同，因此推荐路径为 abandon。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "scope",
+        "kind": "ambiguity",
+        "value": "patchelf declared as test but required at runtime",
+        "rationale": "patchelf 在 pyproject.toml 的 [dependency-groups].test 中声明，但 src/auditwheel/patcher.py 在 repair 运行时必须调用该外部二进制；按实际运行时依赖将其归类为 runtime/system。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "abandon",
+        "rationale": "auditwheel 是面向 Linux ELF/manylinux 生态的专用工具，鸿蒙 PC 不采用 Python wheel 分发模型，强行移植价值低，故采用 abandon 作为推荐路径。"
+      }
+    ]
+  }
+}

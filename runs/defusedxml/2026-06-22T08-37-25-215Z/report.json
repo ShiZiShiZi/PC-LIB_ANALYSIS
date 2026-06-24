@@ -1,0 +1,630 @@
+{
+  "library": {
+    "name": "defusedxml",
+    "package_name": "defusedxml",
+    "source_url": "https://github.com/tiran/defusedxml",
+    "analyzed_at": "2026-06-22T08:37:25.215Z",
+    "commit": "c7445887f5e1bcea470a16f61369d29870cfcfe1",
+    "one_liner": "用于拦截 XML 炸弹与实体扩张等漏洞的 Python 安全封装库",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "defusedxml 是对 Python 标准库 xml 系列模块的安全封装，通过拦截 DTD、内部/外部实体引用和外部实体扩展来防御 Billion Laughs、二次爆炸实体扩张、外部实体（XXE）和 gzip 炸弹等拒绝服务攻击。它以纯 Python 实现，提供与 xml.etree.ElementTree、xml.dom.minidom、xml.sax、xmlrpc.client 等标准库 API 相近的入口，主要面向需要在不可信 XML 输入上保持安全的 Python 开发者与安全工程师。",
+    "categories": [
+      {
+        "name": "ElementTree 防护",
+        "description": "封装 xml.etree.ElementTree，在解析阶段禁止 DTD、实体声明与外部引用，提供 parse、fromstring、iterparse 等安全入口。",
+        "evidence": ["defusedxml/ElementTree.py:66 DefusedXMLParser", "defusedxml/ElementTree.py:122 parse", "defusedxml/ElementTree.py:151 fromstring"]
+      },
+      {
+        "name": "DOM/SAX 防护",
+        "description": "对 xml.dom.minidom、xml.dom.pulldom、xml.sax、xml.dom.expatbuilder、xml.sax.expatreader 提供统一的安全封装与解析器钩子。",
+        "evidence": ["defusedxml/minidom.py:17 parse", "defusedxml/pulldom.py:17 parse", "defusedxml/sax.py:18 parse", "defusedxml/expatbuilder.py:18 DefusedExpatBuilder", "defusedxml/expatreader.py:17 DefusedExpatParser"]
+      },
+      {
+        "name": "XML-RPC 防护",
+        "description": "通过 monkey-patch 替换 xmlrpc.client 的 FastParser 与 gzip 解码逻辑，限制最大解压/请求大小以防御 gzip 炸弹。",
+        "evidence": ["defusedxml/xmlrpc.py:100 DefusedExpatParser", "defusedxml/xmlrpc.py:36 defused_gzip_decode", "defusedxml/xmlrpc.py:131 monkey_patch"]
+      },
+      {
+        "name": "全局 monkey-patch",
+        "description": "提供 defuse_stdlib() 一键将上述安全实现注入 Python 标准库对应模块，方便旧代码快速启用防护。",
+        "evidence": ["defusedxml/__init__.py:22 defuse_stdlib", "defusedxml/common.py:75 _apply_defusing"]
+      },
+      {
+        "name": "异常体系",
+        "description": "定义 DTDForbidden、EntitiesForbidden、ExternalReferenceForbidden 等异常，用于在触发危险 XML 特性时抛出明确错误。",
+        "evidence": ["defusedxml/common.py:25 DTDForbidden", "defusedxml/common.py:39 EntitiesForbidden", "defusedxml/common.py:56 ExternalReferenceForbidden"]
+      },
+      {
+        "name": "lxml 兼容（已弃用）",
+        "description": "提供基于 lxml.etree 的防护示例与 RestrictedElement，但该模块已被标记为废弃并将在未来版本移除。",
+        "evidence": ["defusedxml/lxml.py:33 RestrictedElement", "defusedxml/lxml.py:26 DeprecationWarning"]
+      }
+    ],
+    "domain": "security / xml parsing",
+    "target_users": "需要安全解析不可信 XML 的 Python 开发者、应用安全工程师与后端服务维护者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "Text",
+      "Markdown",
+      "CSS",
+      "YAML",
+      "XML",
+      "INI",
+      "make"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 17,
+        "code": 1272,
+        "pct": 37.36,
+        "production": {
+          "files": 17,
+          "code": 1272
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 3,
+        "code": 682,
+        "pct": 20.03,
+        "production": {
+          "files": 3,
+          "code": 682
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 641,
+        "pct": 18.83,
+        "production": {
+          "files": 2,
+          "code": 641
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 1,
+        "code": 440,
+        "pct": 12.92,
+        "production": {
+          "files": 1,
+          "code": 440
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 160,
+        "pct": 4.7,
+        "production": {
+          "files": 2,
+          "code": 160
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 10,
+        "code": 54,
+        "pct": 1.59,
+        "production": {
+          "files": 10,
+          "code": 54
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 1,
+        "code": 45,
+        "pct": 1.32,
+        "production": {
+          "files": 1,
+          "code": 45
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 41,
+        "pct": 1.2,
+        "production": {
+          "files": 1,
+          "code": 41
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XSLT",
+        "files": 2,
+        "code": 24,
+        "pct": 0.7,
+        "production": {
+          "files": 2,
+          "code": 24
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Ruby",
+        "files": 3,
+        "code": 23,
+        "pct": 0.68,
+        "production": {
+          "files": 3,
+          "code": 23
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "PHP",
+        "files": 1,
+        "code": 8,
+        "pct": 0.23,
+        "production": {
+          "files": 1,
+          "code": 8
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Perl",
+        "files": 1,
+        "code": 7,
+        "pct": 0.21,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XSD",
+        "files": 1,
+        "code": 5,
+        "pct": 0.15,
+        "production": {
+          "files": 1,
+          "code": 5
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 3,
+        "pct": 0.09,
+        "production": {
+          "files": 1,
+          "code": 3
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 46,
+      "code": 3405,
+      "comment": 217,
+      "blank": 957,
+      "total_lines": 4579
+    },
+    "production": {
+      "files": 46,
+      "code": 3405,
+      "comment": 217,
+      "blank": 957,
+      "total_lines": 4579
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 17,
+        "code": 1272
+      },
+      "Text": {
+        "files": 3,
+        "code": 682
+      },
+      "Markdown": {
+        "files": 2,
+        "code": 641
+      },
+      "CSS": {
+        "files": 1,
+        "code": 440
+      },
+      "YAML": {
+        "files": 2,
+        "code": 160
+      },
+      "XML": {
+        "files": 10,
+        "code": 54
+      },
+      "INI": {
+        "files": 1,
+        "code": 45
+      },
+      "make": {
+        "files": 1,
+        "code": 41
+      },
+      "XSLT": {
+        "files": 2,
+        "code": 24
+      },
+      "Ruby": {
+        "files": 3,
+        "code": 23
+      },
+      "PHP": {
+        "files": 1,
+        "code": 8
+      },
+      "Perl": {
+        "files": 1,
+        "code": 7
+      },
+      "XSD": {
+        "files": 1,
+        "code": 5
+      },
+      "TOML": {
+        "files": 1,
+        "code": 3
+      }
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 31,
+    "frameworks": ["unittest"],
+    "by_language": {
+      "Python": {
+        "test_files": 1,
+        "test_cases": 31
+      }
+    },
+    "notes": "code-metrics 脚本将 tests.py 误判为生产代码。实际 tests.py 是单文件 unittest 测试套件，内含 31 个 test_ 方法，覆盖 ElementTree、cElementTree、minidom、pulldom、sax、lxml、xmlrpc 与 gzip 防护场景。"
+  },
+  "license": {
+    "spdx": "PSF-2.0",
+    "name": "Python Software Foundation License Version 2",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件全文为 PSF License Version 2；setup.py 声明 license='PSFL'；setup.py classifiers 包含 'License :: OSI Approved :: Python Software Foundation License'。",
+    "notes": "PSF-2.0 为宽松许可证，需保留版权声明；无 copyleft 义务。"
+  },
+  "dependencies": {
+    "count": 4,
+    "manifests": ["setup.py", "pyproject.toml", "setup.cfg", "tox.ini"],
+    "by_ecosystem": {
+      "python": ["lxml", "black", "flake8", "docutils"]
+    },
+    "dependencies": [
+      {
+        "name": "lxml",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": null,
+        "purpose": "为 defusedxml.lxml 提供 lxml.etree 后端支持（该模块已弃用）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["defusedxml/lxml.py:15", "tox.ini:9"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "black",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "代码格式化工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["tox.ini:16"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "flake8",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "代码风格与静态检查工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["tox.ini:21"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "docutils",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "reStructuredText 文档检查工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["tox.ini:28"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "setup.py 中无 install_requires，核心库仅依赖 Python 标准库。lxml 为唯一可选运行时依赖，且对应模块已标记为废弃。black、flake8、docutils 为 tox 中定义的 dev/test 工具链依赖。"
+  },
+  "native_api": {
+    "summary": "defusedxml 为纯 Python 封装库，仅调用 Python 标准库（xml.*、sys、warnings、importlib、io、threading、gzip），无任何 OS 专有 API、系统内核接口、FFI 桥接或硬件访问；未在运行时动态加载外部库。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "xml.etree.ElementTree.parse",
+            "purpose": "标准库 ElementTree XML 解析入口",
+            "count": 1,
+            "evidence": ["defusedxml/ElementTree.py:14"],
+            "conditional": false
+          },
+          {
+            "name": "xml.etree.ElementTree.TreeBuilder",
+            "purpose": "构建 XML 元素树",
+            "count": 3,
+            "evidence": ["defusedxml/ElementTree.py:13", "defusedxml/ElementTree.py:125", "defusedxml/ElementTree.py:152"],
+            "conditional": false
+          },
+          {
+            "name": "xml.dom.expatbuilder.ExpatBuilder",
+            "purpose": "标准库 DOM Expat 构建器",
+            "count": 1,
+            "evidence": ["defusedxml/expatbuilder.py:10"],
+            "conditional": false
+          },
+          {
+            "name": "xml.sax.expatreader.ExpatParser",
+            "purpose": "标准库 SAX Expat 解析器",
+            "count": 1,
+            "evidence": ["defusedxml/expatreader.py:10"],
+            "conditional": false
+          },
+          {
+            "name": "xmlrpc.client.ExpatParser",
+            "purpose": "标准库 XML-RPC 解析器",
+            "count": 1,
+            "evidence": ["defusedxml/xmlrpc.py:17"],
+            "conditional": false
+          },
+          {
+            "name": "gzip.GzipFile",
+            "purpose": "标准库 gzip 解压缩并限制炸弹大小",
+            "count": 2,
+            "evidence": ["defusedxml/xmlrpc.py:46", "defusedxml/xmlrpc.py:61"],
+            "conditional": false
+          },
+          {
+            "name": "importlib.import_module",
+            "purpose": "临时屏蔽 C 扩展以导入纯 Python ElementTree 实现",
+            "count": 1,
+            "evidence": ["defusedxml/ElementTree.py:38"],
+            "conditional": false
+          },
+          {
+            "name": "sys.modules",
+            "purpose": "临时替换/恢复模块以获取纯 Python 实现并完成 monkey-patch",
+            "count": 4,
+            "evidence": ["defusedxml/ElementTree.py:33-48", "defusedxml/common.py:76-79"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["defusedxml/ElementTree.py", "defusedxml/common.py", "defusedxml/xmlrpc.py"]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "库代码本身不访问网络、不启动子进程、不读取环境变量、不访问设备节点；仅通过调用方传入的文件对象或字符串进行 XML 解析。测试代码设置 http_proxy 环境变量以阻止网络访问，但不属于库运行期行为。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.6",
+    "runtime_version": "CPython 3.6+ / PyPy 3.9+",
+    "build_system": "setuptools",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "all",
+        "arch": "all",
+        "evidence": ["setup.py:44 platforms='all'"]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/main.yml:40 ubuntu-22.04"]
+      }
+    ],
+    "notes": "纯 Python 包，无原生编译步骤；CI 主要在 Ubuntu x86_64 上验证 CPython 3.6–3.13-dev 与 PyPy3.9。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；自研内核，无 Linux ABI）",
+    "feasibility": "feasible",
+    "overall_difficulty": "low",
+    "effort_estimate": "XS",
+    "porting_class": "no_adaptation",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "defusedxml 为纯 Python 库，仅依赖 Python 标准库与可选的 lxml；lxml 已在 OpenHarmony PC PyPI 镜像提供鸿蒙化 wheel。无需修改即可在鸿蒙 PC 已移植 Python 运行时上运行，按模型 A 评估无阻碍点。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python XML 防护逻辑",
+        "note": "不调用平台专有 API，可直接在鸿蒙 Python 运行",
+        "evidence": ["defusedxml/ElementTree.py:66", "defusedxml/common.py:75"]
+      },
+      {
+        "aspect": "可选 lxml 后端",
+        "note": "OpenHarmony PC PyPI 镜像已提供 lxml 鸿蒙化版本，安装即可使用",
+        "evidence": ["defusedxml/lxml.py:15"]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 环境中安装 defusedxml 并执行 tests.py 验证全部用例通过"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。纯脚本、无原生扩展、无平台耦合，属于无需适配即可运行的典型场景。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [
+      "code-metrics 脚本将 tests.py 误判为生产代码，已在 tests 块中手动修正测试文件与用例数。"
+    ],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "tests",
+        "field": "test_files",
+        "kind": "gap",
+        "value": "cloc_misclassified_tests",
+        "rationale": "单文件 tests.py 未被 cloc 识别为测试文件，脚本返回 0 个测试文件与 0 个测试用例，需人工根据 unittest.TestCase 修正。"
+      }
+    ]
+  }
+}

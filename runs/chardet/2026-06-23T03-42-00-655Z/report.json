@@ -1,0 +1,793 @@
+{
+  "library": {
+    "name": "chardet",
+    "package_name": "chardet",
+    "source_url": "https://github.com/chardet/chardet.git",
+    "analyzed_at": "2026-06-23T03:42:00.655Z",
+    "commit": "b5b2aa5ff41b17b63b04dfe6a803dbebe820c8ad",
+    "one_liner": "通用字符编码检测器，纯 Python 实现、零运行时依赖，可流式检测并返回编码、置信度、语言与 MIME 类型。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "chardet 是一个通用字符编码检测库，通过 13 阶段流水线（BOM、UTF-16/32 模式、转义序列、魔数、二进制判定、标记字符集、ASCII/UTF-8 预检、字节有效性过滤、CJK 结构门控、结构探测、统计 bigram 评分、后处理与语言填充）识别字节流编码。它提供 detect、detect_all、UniversalDetector 流式接口以及 chardetect 命令行工具，适用于需要自动识别文本编码的 Python 应用、CLI 用户及下游库。",
+    "categories": [
+      {
+        "name": "编码检测核心 API",
+        "description": "对外提供一次性检测与全候选排序接口，包括 detect、detect_all 与结果类型 DetectionResult/DetectionDict。",
+        "evidence": ["src/chardet/__init__.py:detect", "src/chardet/__init__.py:detect_all", "src/chardet/pipeline/__init__.py:DetectionResult"]
+      },
+      {
+        "name": "流式检测",
+        "description": "UniversalDetector 以 feed/close/reset 模式支持大文件或网络流的增量编码检测。",
+        "evidence": ["src/chardet/detector.py:UniversalDetector"]
+      },
+      {
+        "name": "多阶段检测流水线",
+        "description": "按优先级执行 BOM、UTF-16/32、转义序列、魔数、二进制、标记字符集、ASCII、UTF-8、字节有效性、结构探测、统计评分、后处理等阶段。",
+        "evidence": ["src/chardet/pipeline/orchestrator.py:run_pipeline", "src/chardet/pipeline/orchestrator.py:_run_pipeline_core"]
+      },
+      {
+        "name": "二进制与 MIME 类型识别",
+        "description": "通过文件魔数识别 40 余种二进制格式，并返回对应 MIME 类型；无法识别时返回 application/octet-stream。",
+        "evidence": ["src/chardet/pipeline/magic.py:detect_magic", "src/chardet/pipeline/binary.py:is_binary"]
+      },
+      {
+        "name": "语言检测",
+        "description": "基于单语言编码映射、多语言 bigram 模型与 UTF-8 回退三层策略，为检测结果填充 ISO 639-1 语言代码。",
+        "evidence": ["src/chardet/pipeline/language.py:fill_languages", "src/chardet/models/__init__.py:score_best_language"]
+      },
+      {
+        "name": "编码过滤与兼容输出",
+        "description": "支持按编码年代、包含/排除列表过滤候选集，并提供 prefer_superset 与 compat_names 选项保持与 chardet 5.x/6.x 的兼容。",
+        "evidence": ["src/chardet/__init__.py:detect", "src/chardet/output_names.py:apply_compat_names", "src/chardet/output_names.py:apply_preferred_superset"]
+      },
+      {
+        "name": "命令行工具",
+        "description": "chardetect CLI 从文件或标准输入读取字节，输出检测到的编码与置信度。",
+        "evidence": ["src/chardet/cli.py:main", "pyproject.toml:project.scripts"]
+      }
+    ],
+    "domain": "text processing",
+    "target_users": "Python 应用开发者、数据工程师、CLI 用户以及需要自动识别文本编码的下游库"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "YAML",
+      "reStructuredText",
+      "Markdown",
+      "TOML",
+      "JSON",
+      "Text",
+      "Dockerfile"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 92,
+        "code": 14064,
+        "pct": 71.08,
+        "production": {
+          "files": 45,
+          "code": 8308
+        },
+        "test": {
+          "files": 47,
+          "code": 5756
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 4,
+        "code": 3728,
+        "pct": 18.84,
+        "production": {
+          "files": 4,
+          "code": 3728
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 10,
+        "code": 1025,
+        "pct": 5.18,
+        "production": {
+          "files": 10,
+          "code": 1025
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 8,
+        "code": 713,
+        "pct": 3.6,
+        "production": {
+          "files": 8,
+          "code": 713
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 237,
+        "pct": 1.2,
+        "production": {
+          "files": 2,
+          "code": 237
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 15,
+        "pct": 0.08,
+        "production": {
+          "files": 1,
+          "code": 15
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 1,
+        "code": 3,
+        "pct": 0.02,
+        "production": {
+          "files": 1,
+          "code": 3
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Dockerfile",
+        "files": 1,
+        "code": 2,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 2
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 119,
+      "code": 19787,
+      "comment": 4786,
+      "blank": 4236,
+      "total_lines": 28809
+    },
+    "production": {
+      "files": 72,
+      "code": 14031,
+      "comment": 3306,
+      "blank": 2236,
+      "total_lines": 19573
+    },
+    "test": {
+      "files": 47,
+      "code": 5756,
+      "comment": 1480,
+      "blank": 2000,
+      "total_lines": 9236
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 45,
+        "code": 8308
+      },
+      "YAML": {
+        "files": 4,
+        "code": 3728
+      },
+      "reStructuredText": {
+        "files": 10,
+        "code": 1025
+      },
+      "Markdown": {
+        "files": 8,
+        "code": 713
+      },
+      "TOML": {
+        "files": 2,
+        "code": 237
+      },
+      "JSON": {
+        "files": 1,
+        "code": 15
+      },
+      "Text": {
+        "files": 1,
+        "code": 3
+      },
+      "Dockerfile": {
+        "files": 1,
+        "code": 2
+      }
+    }
+  },
+  "tests": {
+    "test_files": 47,
+    "test_cases": 765,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 47,
+        "cases": 765
+      }
+    },
+    "notes": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "0BSD",
+    "name": "BSD Zero Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文本与 0BSD 标准文本一致；README 与 pyproject.toml 均声明 license 为 0BSD。",
+    "notes": "高度宽松的公共领域风格许可，无 copyleft 义务，允许任意使用、修改与分发。"
+  },
+  "dependencies": {
+    "count": 13,
+    "manifests": [
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "hatchling",
+        "hatch-vcs",
+        "hatch-mypyc",
+        "mypy",
+        "datasets",
+        "prek",
+        "pytest",
+        "pytest-cov",
+        "pytest-xdist",
+        "ruff",
+        "sphinx",
+        "furo",
+        "sphinx-copybutton"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "hatchling",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "PEP 517 构建后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:build-system"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "hatch-vcs",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "基于 git 标签动态生成版本号",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:build-system"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "hatch-mypyc",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=0.16.0",
+        "purpose": "可选的 mypyc 编译构建钩子，用于将关键 Python 模块编译为原生扩展以提升性能",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:tool.hatch.build.targets.wheel.hooks.mypyc"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mypy",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=1.15",
+        "purpose": "mypyc 编译所需的类型检查器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:tool.hatch.build.targets.wheel.hooks.mypyc"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "datasets",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=4.6.0",
+        "purpose": "训练脚本中加载 CulturaX/MADLAD-400/Wikipedia 等语料",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.dev"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "prek",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=0.3.4",
+        "purpose": "安装与配置 pre-commit hooks",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.dev"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=9.0.2",
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.dev"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-cov",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=7.0.0",
+        "purpose": "pytest 覆盖率插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.dev"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-xdist",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=3.5.0",
+        "purpose": "pytest 并行执行插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.dev"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ruff",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=0.15.2",
+        "purpose": "lint 与格式化工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.dev"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=8.0",
+        "purpose": "文档构建工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.docs"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "furo",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=2024.1.29",
+        "purpose": "Sphinx 文档主题",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.docs"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-copybutton",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=0.5.2",
+        "purpose": "Sphinx 代码块复制按钮扩展",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:dependency-groups.docs"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "所有依赖均为构建、开发、文档或可选 mypyc 编译所需；运行时不依赖任何第三方包。"
+  },
+  "native_api": {
+    "summary": "纯 Python 库，仅使用 Python 标准库；无任何平台专有、系统内核、硬件或 FFI 调用。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "importlib.resources.files",
+            "purpose": "读取随包分发的 models.bin / idf.bin / confusion.bin 资源文件",
+            "count": 5,
+            "evidence": [
+              "src/chardet/models/__init__.py:103",
+              "src/chardet/models/__init__.py:194",
+              "src/chardet/pipeline/confusion.py:120"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "warnings.warn",
+            "purpose": "发出弃用警告与运行时资源缺失警告",
+            "count": 9,
+            "evidence": [
+              "src/chardet/_utils.py:20",
+              "src/chardet/_utils.py:39",
+              "src/chardet/detector.py:89"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "zlib.decompress",
+            "purpose": "解压 models.bin 中的 zlib 压缩 blob",
+            "count": 2,
+            "evidence": [
+              "src/chardet/models/__init__.py:70"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "struct.Struct.unpack_from",
+            "purpose": "解析 models.bin / confusion.bin 的二进制头部长度、浮点 norm 等字段",
+            "count": 2,
+            "evidence": [
+              "src/chardet/models/__init__.py:17",
+              "src/chardet/models/__init__.py:44",
+              "src/chardet/models/__init__.py:61"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "argparse.ArgumentParser",
+            "purpose": "chardetect 命令行参数解析",
+            "count": 1,
+            "evidence": [
+              "src/chardet/cli.py:43"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys.stdin.buffer / sys.stderr / sys.exit",
+            "purpose": "CLI 从标准输入读取字节、向标准错误输出消息、异常退出",
+            "count": 6,
+            "evidence": [
+              "src/chardet/cli.py:111",
+              "src/chardet/cli.py:124",
+              "src/chardet/cli.py:131",
+              "src/chardet/cli.py:133",
+              "src/chardet/cli.py:144"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "pathlib.Path.open",
+            "purpose": "CLI 按用户指定路径打开文件读取字节",
+            "count": 1,
+            "evidence": [
+              "src/chardet/cli.py:108"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "functools.cache",
+            "purpose": "缓存模型数据与索引，避免重复解析",
+            "count": 6,
+            "evidence": [
+              "src/chardet/models/__init__.py:97",
+              "src/chardet/models/__init__.py:152",
+              "src/chardet/models/__init__.py:182"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "codecs",
+            "purpose": "验证编码名是否被 Python codec 注册表支持",
+            "count": 4,
+            "evidence": [
+              "src/chardet/registry.py:5"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "unicodedata",
+            "purpose": "判断 Unicode 类别，用于 UTF-16/32 与字符评估逻辑",
+            "count": 7,
+            "evidence": [
+              "src/chardet/pipeline/utf1632.py:12",
+              "src/chardet/evaluation.py:26"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "src/chardet/models/__init__.py",
+          "src/chardet/cli.py",
+          "src/chardet/registry.py"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期仅读取随包分发的二进制模型资源文件；CLI 从用户指定文件路径或标准输入读取字节。无网络访问、无子进程调用、无环境变量依赖、无设备访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "随包分发的 models.bin / idf.bin / confusion.bin",
+        "purpose": "加载预训练 bigram 统计模型、IDF 权重表与编码混淆矩阵",
+        "evidence": [
+          "src/chardet/models/__init__.py:103",
+          "src/chardet/models/__init__.py:194",
+          "src/chardet/pipeline/confusion.py:120"
+        ]
+      },
+      {
+        "detail": "用户指定的文件路径或标准输入",
+        "purpose": "CLI 读取待检测的字节流",
+        "evidence": [
+          "src/chardet/cli.py:108",
+          "src/chardet/cli.py:133"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >=3.10",
+    "runtime_version": "CPython 3.10 / 3.11 / 3.12 / 3.13 / 3.14 或 PyPy",
+    "build_system": "hatchling (PEP 517) + hatch-vcs 动态版本",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "OS Independent",
+        "arch": "any",
+        "evidence": [
+          "pyproject.toml:classifiers"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml:tool.cibuildwheel.linux"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          "pyproject.toml:tool.cibuildwheel.linux"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [
+          "pyproject.toml:tool.cibuildwheel.linux"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml:tool.cibuildwheel.macos"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "pyproject.toml:tool.cibuildwheel.macos"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml:tool.cibuildwheel.windows"
+        ]
+      }
+    ],
+    "notes": "可选 mypyc 编译（默认关闭）用于 CPython 性能加速；sdist 与 wheel 发布到 PyPI；cibuildwheel 覆盖 Linux、macOS、Windows 主流架构。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible",
+    "overall_difficulty": "low",
+    "effort_estimate": "XS",
+    "porting_class": "no_adaptation",
+    "unadaptable_apis": [],
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "chardet 是纯 Python 库、零运行时依赖、无原生扩展与平台耦合，可直接在鸿蒙 PC 已移植的 Python 运行时上运行，无需修改源码。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python 检测流水线",
+        "note": "BOM、UTF-16/32、ASCII、UTF-8、结构探测、统计评分、语言填充等全部阶段均使用 Python 标准库，鸿蒙 Python 直接支持。",
+        "evidence": [
+          "src/chardet/pipeline/orchestrator.py:run_pipeline"
+        ]
+      },
+      {
+        "aspect": "随包资源文件加载",
+        "note": "models.bin / idf.bin / confusion.bin 通过 importlib.resources 读取，鸿蒙 Python 的 resources 机制行为一致。",
+        "evidence": [
+          "src/chardet/models/__init__.py:103",
+          "src/chardet/pipeline/confusion.py:120"
+        ]
+      },
+      {
+        "aspect": "CLI 与公共 API",
+        "note": "chardetect CLI 仅依赖 argparse / sys / pathlib，均为标准库；公共 API 无需改动。",
+        "evidence": [
+          "src/chardet/cli.py:main",
+          "src/chardet/__init__.py:detect"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC Python 环境中安装 chardet wheel 并执行 import",
+      "运行核心测试集验证 detect / detect_all / UniversalDetector 行为一致",
+      "验证 importlib.resources 能正确读取 bundled 的 .bin 资源文件"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。纯 Python 实现且无运行时依赖，不存在原生扩展重编问题；若目标是 ArkTS 沙箱应用（模型 B），则需另行用 ArkTS/Node-API 重写，但本库作为通用 Python 库不属此场景。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": []
+  }
+}

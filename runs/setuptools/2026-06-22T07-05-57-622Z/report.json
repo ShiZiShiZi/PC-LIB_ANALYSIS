@@ -1,0 +1,1536 @@
+{
+  "library": {
+    "name": "setuptools",
+    "package_name": "setuptools",
+    "source_url": "https://github.com/pypa/setuptools",
+    "analyzed_at": "2026-06-22T07:10:15Z",
+    "commit": "84ed5913724df5a12dc804e1d5efe12508e706d2",
+    "one_liner": "Python 生态最广泛使用的构建后端与包安装工具，支持 PEP 517 构建、包发现、C/C++ 扩展编译及 wheel/egg 分发。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "setuptools 是 Python 包分发生态的核心构建后端，提供 PEP 517 构建入口、setup.py/setup.cfg/pyproject.toml 配置解析、包自动发现、C/C++ 扩展编译、wheel/egg/sdist 打包、脚本与入口点生成，以及向后兼容的 distutils 实现。它主要面向需要构建、打包和分发 Python 项目的开发者与 CI/CD 流程。",
+    "categories": [
+      {
+        "name": "PEP 517 构建后端",
+        "description": "实现 PEP 517 的 build_meta 后端，提供 build_sdist、build_wheel、prepare_metadata_for_build_wheel 等 hook，支撑 pyproject.toml 项目的隔离构建。",
+        "evidence": ["setuptools/build_meta.py"]
+      },
+      {
+        "name": "包发现与元数据",
+        "description": "自动发现源码包、命名空间包（PEP 420）与数据文件，解析并填充 PKG-INFO、METADATA、依赖声明、入口点等分发元数据。",
+        "evidence": ["setuptools/discovery.py", "setuptools/dist.py", "setuptools/_core_metadata.py"]
+      },
+      {
+        "name": "构建与安装命令",
+        "description": "提供 distutils 风格的一系列 Command 子命令，包括 build、build_py、build_ext、sdist、bdist_wheel、install、develop、egg_info 等，覆盖从源码到安装的全流程。",
+        "evidence": ["setuptools/command/"]
+      },
+      {
+        "name": "C/C++ 扩展编译支持",
+        "description": "封装 Extension/Library 声明，调用 distutils CCompiler 抽象在 Windows/Unix/macOS 上编译 Python C/C++ 扩展，并支持 abi3/limited API。",
+        "evidence": ["setuptools/extension.py", "setuptools/command/build_ext.py", "setuptools/_distutils/compilers/"]
+      },
+      {
+        "name": "入口点与脚本生成",
+        "description": "根据 entry_points 配置生成控制台/GUI 脚本，生成 shebang 行并写入 scripts 目录；内嵌 Windows exe 启动器用于执行对应 .py 脚本。",
+        "evidence": ["setuptools/_entry_points.py", "setuptools/_scripts.py", "setuptools/launcher.c"]
+      },
+      {
+        "name": "配置解析",
+        "description": "解析 pyproject.toml 与 setup.cfg，依据 PEP 621/PEP 639 等规范验证项目元数据，并支持动态版本与依赖扩展。",
+        "evidence": ["setuptools/config/"]
+      },
+      {
+        "name": "内嵌 distutils 兼容性",
+        "description": "自带 _distutils 子包，通过 monkey patch 在 Python 3.12+ 替代标准库 distutils，保持旧版 setup.py 与第三方构建脚本的兼容。",
+        "evidence": ["setuptools/_distutils/", "setuptools/monkey.py"]
+      }
+    ],
+    "domain": "packaging",
+    "target_users": "Python 包维护者、应用开发者及 CI/CD 构建流程"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "reStructuredText",
+      "SVG",
+      "C",
+      "YAML",
+      "JSON",
+      "INI",
+      "TOML"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 322,
+        "code": 49193,
+        "pct": 72.94,
+        "production": {
+          "files": 225,
+          "code": 35146
+        },
+        "test": {
+          "files": 97,
+          "code": 14047
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 55,
+        "code": 14053,
+        "pct": 20.84,
+        "production": {
+          "files": 54,
+          "code": 14052
+        },
+        "test": {
+          "files": 1,
+          "code": 1
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 13,
+        "code": 1508,
+        "pct": 2.24,
+        "production": {
+          "files": 13,
+          "code": 1508
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 3,
+        "code": 822,
+        "pct": 1.22,
+        "production": {
+          "files": 1,
+          "code": 204
+        },
+        "test": {
+          "files": 2,
+          "code": 618
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 13,
+        "code": 803,
+        "pct": 1.19,
+        "production": {
+          "files": 13,
+          "code": 803
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 3,
+        "code": 486,
+        "pct": 0.72,
+        "production": {
+          "files": 3,
+          "code": 486
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 4,
+        "code": 242,
+        "pct": 0.36,
+        "production": {
+          "files": 4,
+          "code": 242
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 4,
+        "code": 235,
+        "pct": 0.35,
+        "production": {
+          "files": 4,
+          "code": 235
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 10,
+        "code": 67,
+        "pct": 0.1,
+        "production": {
+          "files": 9,
+          "code": 45
+        },
+        "test": {
+          "files": 1,
+          "code": 22
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 1,
+        "code": 14,
+        "pct": 0.02,
+        "production": {
+          "files": 1,
+          "code": 14
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 11,
+        "pct": 0.02,
+        "production": {
+          "files": 2,
+          "code": 11
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 2,
+        "code": 7,
+        "pct": 0.01,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 2,
+          "code": 7
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CMake",
+        "files": 1,
+        "code": 5,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 5
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 433,
+      "code": 67446,
+      "comment": 23584,
+      "blank": 20984,
+      "total_lines": 112014
+    },
+    "production": {
+      "files": 330,
+      "code": 52751,
+      "comment": 19633,
+      "blank": 17592,
+      "total_lines": 89976
+    },
+    "test": {
+      "files": 103,
+      "code": 14695,
+      "comment": 3951,
+      "blank": 3392,
+      "total_lines": 22038
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 225,
+        "code": 35146
+      },
+      "reStructuredText": {
+        "files": 54,
+        "code": 14052
+      },
+      "SVG": {
+        "files": 13,
+        "code": 1508
+      },
+      "YAML": {
+        "files": 13,
+        "code": 803
+      },
+      "JSON": {
+        "files": 3,
+        "code": 486
+      },
+      "INI": {
+        "files": 4,
+        "code": 242
+      },
+      "TOML": {
+        "files": 4,
+        "code": 235
+      },
+      "C": {
+        "files": 1,
+        "code": 204
+      },
+      "Text": {
+        "files": 9,
+        "code": 45
+      },
+      "XML": {
+        "files": 1,
+        "code": 14
+      },
+      "Markdown": {
+        "files": 2,
+        "code": 11
+      },
+      "CMake": {
+        "files": 1,
+        "code": 5
+      }
+    }
+  },
+  "tests": {
+    "test_files": 103,
+    "test_cases": 657,
+    "frameworks": [
+      "pytest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 97,
+        "cases": 657
+      },
+      "C": {
+        "files": 2,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      },
+      "HTML": {
+        "files": 2,
+        "cases": 0
+      },
+      "reStructuredText": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "测试由 pytest 驱动；部分测试使用 stdlib unittest 风格的类。计数为基于正则的近似值。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "顶层 LICENSE 包含标准 MIT 全文；pyproject.toml 中声明 license = \"MIT\"。",
+    "notes": "宽松许可。内嵌 vendored 子包（如 packaging、wheel 等）可能携带各自不同的许可证，需单独留意。"
+  },
+  "dependencies": {
+    "count": 47,
+    "manifests": [
+      "pyproject.toml",
+      "setuptools/_vendor/"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "autocommand",
+        "backports.tarfile",
+        "build",
+        "filelock",
+        "importlib-metadata",
+        "ini2toml",
+        "jaraco.context",
+        "jaraco.develop",
+        "jaraco.envs",
+        "jaraco.functools",
+        "jaraco.packaging",
+        "jaraco.path",
+        "jaraco.test",
+        "jaraco.text",
+        "jaraco.tidelift",
+        "more-itertools",
+        "mypy",
+        "packaging",
+        "pip",
+        "platformdirs",
+        "pygments-github-lexers",
+        "pytest",
+        "pytest-checkdocs",
+        "pytest-cov",
+        "pytest-enabler",
+        "pytest-home",
+        "pytest-mypy",
+        "pytest-perf",
+        "pytest-ruff",
+        "pytest-subprocess",
+        "pytest-timeout",
+        "pytest-xdist",
+        "pyproject-hooks",
+        "ruff",
+        "sphinx",
+        "sphinx-favicon",
+        "sphinx-inline-tabs",
+        "sphinx-lint",
+        "sphinx-notfound-page",
+        "sphinx-reredirects",
+        "sphinxcontrib-towncrier",
+        "tomli",
+        "tomli-w",
+        "towncrier",
+        "virtualenv",
+        "wheel",
+        "zipp"
+      ],
+      "other": [
+        "C compiler toolchain"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "autocommand",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "2.2.2",
+        "purpose": "被 vendored 的函数式自动命令/装饰器工具",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/autocommand",
+        "declared_in": ["setuptools/_vendor/"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "backports.tarfile",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "1.2.0",
+        "purpose": "被 vendored 的 tarfile 向后兼容库",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/backports",
+        "declared_in": ["setuptools/_vendor/"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "importlib-metadata",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "8.7.1",
+        "purpose": "被 vendored 的包元数据读取（PEP 566/PEP 643）",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/importlib_metadata",
+        "declared_in": ["setuptools/_vendor/", "pyproject.toml [project.optional-dependencies] core"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.context",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "6.1.0",
+        "purpose": "被 vendored 的上下文管理工具",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/jaraco/context",
+        "declared_in": ["setuptools/_vendor/"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.functools",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "4.4.0",
+        "purpose": "被 vendored 的函数式工具集合",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/jaraco/functools",
+        "declared_in": ["setuptools/_vendor/", "pyproject.toml [project.optional-dependencies] core"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.text",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "4.0.0",
+        "purpose": "被 vendored 的文本处理工具",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/jaraco.text",
+        "declared_in": ["setuptools/_vendor/", "pyproject.toml [project.optional-dependencies] core"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "more-itertools",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "10.8.0",
+        "purpose": "被 vendored 的迭代器工具集合",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/more_itertools",
+        "declared_in": ["setuptools/_vendor/", "pyproject.toml [project.optional-dependencies] core"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "packaging",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "26.0",
+        "purpose": "被 vendored 的 PEP 440/PEP 425/标记/依赖解析核心库",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/packaging",
+        "declared_in": ["setuptools/_vendor/", "pyproject.toml [project.optional-dependencies] test/core"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "platformdirs",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "4.4.0",
+        "purpose": "被 vendored 的跨平台用户/系统目录定位库",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/platformdirs",
+        "declared_in": ["setuptools/_vendor/"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "tomli",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "2.4.0",
+        "purpose": "被 vendored 的 TOML 解析库",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/tomli",
+        "declared_in": ["setuptools/_vendor/", "pyproject.toml [project.optional-dependencies] core"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "wheel",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "0.46.3",
+        "purpose": "被 vendored 的 wheel 文件读写与 bdist_wheel 支持",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/wheel",
+        "declared_in": ["setuptools/_vendor/", "pyproject.toml [project.optional-dependencies] core/test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "zipp",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "3.23.0",
+        "purpose": "被 vendored 的 zip 文件路径工具",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 setuptools/_vendor/zipp",
+        "declared_in": ["setuptools/_vendor/"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">= 6, != 8.1.*",
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "virtualenv",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=13.0.0",
+        "purpose": "测试中创建隔离虚拟环境",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pip",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=19.1",
+        "purpose": "测试中支持 file:// URL 安装",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.envs",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=2.2",
+        "purpose": "测试环境管理工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-xdist",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=3",
+        "purpose": "pytest 并行执行",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.path",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=3.7.2",
+        "purpose": "测试用路径工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "build",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=1.0.3",
+        "purpose": "PEP 517 构建测试",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "filelock",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=3.4.0",
+        "purpose": "测试中文件锁",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ini2toml",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=0.14",
+        "purpose": "setup.cfg 转 TOML 测试辅助",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "tomli-w",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=1.0.0",
+        "purpose": "TOML 写回测试辅助",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-timeout",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "pytest 超时控制",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-perf",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "性能回归测试（排除 cygwin）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.develop",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">= 7.21",
+        "purpose": "tools/finalize.py 使用的开发工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test/type"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-home",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">= 0.5",
+        "purpose": "pytest HOME 目录隔离",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-subprocess",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试中模拟子进程",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pyproject-hooks",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "!=1.1",
+        "purpose": "PEP 517 hook 测试兼容",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test/doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.test",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=5.5",
+        "purpose": "测试辅助库（含 py.typed）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 3.5",
+        "purpose": "文档构建",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.packaging",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 9.3",
+        "purpose": "文档中集成包元数据",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "rst.linker",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 1.9",
+        "purpose": "reStructuredText 链接处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "furo",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Sphinx 文档主题",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-lint",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档 lint",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jaraco.tidelift",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 1.4",
+        "purpose": "Tidelift 订阅文档集成",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pygments-github-lexers",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "==0.0.5",
+        "purpose": "文档代码高亮 lexer",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-favicon",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档 favicon 扩展",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-inline-tabs",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档内联标签扩展",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-reredirects",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档重定向扩展",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinxcontrib-towncrier",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档集成 towncrier 变更日志",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-notfound-page",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=1,<2",
+        "purpose": "404 页面扩展",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "towncrier",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "<24.7",
+        "purpose": "变更日志生成",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] doc"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-checkdocs",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 2.14",
+        "purpose": "README 等文档检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] check"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-ruff",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 0.2.1",
+        "purpose": "pytest 中运行 ruff",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] check"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ruff",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 0.13.0",
+        "purpose": "Python linter/formatter",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] check"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "pytest-cov",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "测试覆盖率",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] cover"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-enabler",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 3.4",
+        "purpose": "pytest 插件自动启用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] enabler"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-mypy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">= 1.0.1",
+        "purpose": "pytest 中运行 mypy",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] type"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mypy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "==1.18.*",
+        "purpose": "静态类型检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml [project.optional-dependencies] type"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "C compiler toolchain",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "build_ext 命令编译用户 C/C++ 扩展时调用系统 C 编译器（gcc/clang/MSVC）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装的 C 编译器工具链",
+        "declared_in": ["setuptools/_distutils/compilers/C/unix.py", "setuptools/_distutils/compilers/C/msvc.py"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "pyproject.toml 的 [project.dependencies] 为空；运行时依赖全部内嵌在 setuptools/_vendor/ 中。extras 中的 core/test 重复引用了部分 vendored 包。"
+  },
+  "native_api": {
+    "summary": "setuptools 主体为纯 Python，主要使用 Python 标准库处理文件、子进程、路径与平台检测。平台相关代码均通过 sys.platform/os.name 条件分支隔离：Windows 端涉及 winreg、ctypes 调用 kernel32、MSVC 编译器发现；POSIX/Unix 端使用 dl 模块与 os.confstr；macOS 端有 Homebrew 框架兼容。C 启动器 launcher.c 为 Windows 专用可执行文件。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "os.walk",
+            "purpose": "递归遍历源码目录以发现包与数据文件",
+            "count": 3,
+            "evidence": ["setuptools/__init__.py:233", "setuptools/filelist.py:107", "setuptools/_distutils/filelist.py:103"],
+            "conditional": false
+          },
+          {
+            "name": "os.environ / os.getenv",
+            "purpose": "读取构建与平台相关环境变量",
+            "count": 80,
+            "evidence": ["setuptools/_scripts.py:49", "setuptools/command/build_ext.py:160", "setuptools/_distutils/util.py:57"],
+            "conditional": false
+          },
+          {
+            "name": "subprocess.check_call / subprocess.check_output",
+            "purpose": "调用外部编译器、vswhere、brew、rpm 等工具",
+            "count": 30,
+            "evidence": ["setuptools/_distutils/spawn.py:83", "setuptools/_distutils/compilers/C/msvc.py:98", "setuptools/_distutils/command/_framework_compat.py:44"],
+            "conditional": false
+          },
+          {
+            "name": "shutil.which",
+            "purpose": "在 PATH 中查找可执行文件",
+            "count": 2,
+            "evidence": ["setuptools/_distutils/spawn.py:78", "setuptools/_distutils/command/_framework_compat.py:44"],
+            "conditional": false
+          },
+          {
+            "name": "sysconfig.get_config_var",
+            "purpose": "读取 Python 编译配置变量（EXT_SUFFIX、LDSHARED 等）",
+            "count": 15,
+            "evidence": ["setuptools/command/build_ext.py:37", "setuptools/_distutils/sysconfig.py:78", "setuptools/_distutils/command/build_ext.py:335"],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "win32_registry",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "winreg.OpenKeyEx / winreg.EnumValue / winreg.QueryValueEx",
+            "purpose": "读取 Windows 注册表定位 Visual Studio/MSVC 安装路径",
+            "count": 10,
+            "evidence": ["setuptools/msvc.py:333", "setuptools/_distutils/compilers/C/msvc.py:45", "setuptools/_vendor/platformdirs/windows.py:208"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32_ctypes",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "ctypes.windll.kernel32.SetFileAttributesW",
+            "purpose": "设置文件隐藏属性",
+            "count": 1,
+            "evidence": ["setuptools/windows_support.py:22"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix_dl",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "dl.RTLD_NOW",
+            "purpose": "Unix 下判断动态加载能力以决定 stub 生成",
+            "count": 1,
+            "evidence": ["setuptools/command/build_ext.py:72"],
+            "conditional": true
+          },
+          {
+            "name": "os.confstr(CS_PATH)",
+            "purpose": "POSIX 下获取默认可执行搜索路径",
+            "count": 1,
+            "evidence": ["setuptools/_distutils/spawn.py:115"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "macos_framework",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "_osx_support.compiler_fixup",
+            "purpose": "macOS 下对编译命令进行 SDK/部署目标修正",
+            "count": 1,
+            "evidence": ["setuptools/_distutils/_macos_compat.py:10"],
+            "conditional": true
+          },
+          {
+            "name": "subprocess.check_output(['brew', '--prefix'])",
+            "purpose": "Homebrew Python 3.9 框架构建兼容",
+            "count": 1,
+            "evidence": ["setuptools/_distutils/command/_framework_compat.py:44"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "c_win32_api",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "CreateProcessA",
+            "purpose": "Windows 启动器创建 Python 子进程",
+            "count": 1,
+            "evidence": ["launcher.c:209"],
+            "conditional": true
+          },
+          {
+            "name": "GetModuleFileNameA / GetFinalPathNameByHandle / CreateFile",
+            "purpose": "获取启动器自身路径并解析最终脚本路径",
+            "count": 3,
+            "evidence": ["launcher.c:262", "launcher.c:264", "launcher.c:271"],
+            "conditional": true
+          },
+          {
+            "name": "WaitForSingleObject / GetExitCodeProcess",
+            "purpose": "等待 Python 子进程结束并获取退出码",
+            "count": 2,
+            "evidence": ["launcher.c:215", "launcher.c:216"],
+            "conditional": true
+          },
+          {
+            "name": "SetConsoleCtrlHandler / GenerateConsoleCtrlEvent",
+            "purpose": "将控制台控制事件转发给 Python 子进程",
+            "count": 2,
+            "evidence": ["launcher.c:179", "launcher.c:208"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "c_runtime",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "open / read / close",
+            "purpose": "启动器读取脚本 shebang 行",
+            "count": 3,
+            "evidence": ["launcher.c:281", "launcher.c:285", "launcher.c:286"],
+            "conditional": false
+          },
+          {
+            "name": "execv",
+            "purpose": "GUI 模式下替换当前进程为 Python",
+            "count": 1,
+            "evidence": ["launcher.c:328"],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "kernel32.dll",
+        "mechanism": "ctypes.windll.LoadLibrary",
+        "acquisition": "system",
+        "source": "Windows 系统 DLL",
+        "description": "通过 ctypes 调用 SetFileAttributesW 设置文件隐藏属性",
+        "optional": false,
+        "evidence": ["setuptools/windows_support.py:22"]
+      },
+      {
+        "name": "msvcrt.dll",
+        "mechanism": "implicit_link",
+        "acquisition": "system",
+        "source": "Windows C 运行时",
+        "description": "Windows 启动器隐式链接的 C 运行时库",
+        "optional": false,
+        "evidence": ["launcher.c:25"]
+      },
+      {
+        "name": "python.exe / pythonw.exe",
+        "mechanism": "CreateProcessA / execv",
+        "acquisition": "system",
+        "source": "系统 Python 解释器",
+        "description": "Windows 启动器根据 shebang 行启动的实际 Python 解释器",
+        "optional": false,
+        "evidence": ["launcher.c:209", "launcher.c:328"]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "setuptools 运行期依赖宿主环境的文件系统、环境变量和外部命令：读取项目配置、编译 C 扩展、生成脚本与 wheel；自身不直接发起网络请求，但 install/build 流程会调用 pip 等外部工具，后者可能访问网络。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "pyproject.toml / setup.cfg / setup.py",
+        "purpose": "读取项目构建配置与元数据",
+        "evidence": ["setuptools/config/pyprojecttoml.py", "setuptools/config/setupcfg.py", "setuptools/build_meta.py"]
+      },
+      {
+        "detail": "build/ 目录与 build/temp.*",
+        "purpose": "构建过程输出的中间产物与扩展模块目录",
+        "evidence": ["setuptools/_distutils/command/build.py:51", "setuptools/command/build_ext.py:108"]
+      },
+      {
+        "detail": "dist/ 与 *.whl / *.tar.gz",
+        "purpose": "sdist/wheel 分发产物输出目录",
+        "evidence": ["setuptools/command/sdist.py", "setuptools/command/bdist_wheel.py"]
+      },
+      {
+        "detail": "setuptools/_vendor/",
+        "purpose": "运行期通过 sys.path 插入加载 vendored 依赖",
+        "evidence": ["setuptools/__init__.py:17"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "SETUPTOOLS_USE_DISTUTILS",
+        "purpose": "控制使用本地 distutils 还是标准库 distutils",
+        "evidence": ["setup.py:31", "setuptools/tests/test_sdist.py:831"]
+      },
+      {
+        "name": "SETUPTOOLS_EXT_SUFFIX",
+        "purpose": "覆盖生成的 C 扩展后缀",
+        "evidence": ["setuptools/command/build_ext.py:160", "setuptools/tests/test_build_ext.py:83"]
+      },
+      {
+        "name": "SETUPTOOLS_LAUNCHER",
+        "purpose": "选择脚本启动器类型（executable/plain）",
+        "evidence": ["setuptools/_scripts.py:238"]
+      },
+      {
+        "name": "PIP_INDEX_URL / PIP_QUIET / PIP_VERBOSE",
+        "purpose": "旧版 easy_install/installer 中控制 pip 行为",
+        "evidence": ["setuptools/installer.py:82"]
+      },
+      {
+        "name": "MACOSX_DEPLOYMENT_TARGET",
+        "purpose": "macOS 部署目标版本",
+        "evidence": ["setuptools/_distutils/util.py:94", "setuptools/_vendor/wheel/macosx_libfile.py:419"]
+      },
+      {
+        "name": "VSCMD_ARG_TGT_ARCH",
+        "purpose": "MSVC 目标架构",
+        "evidence": ["setuptools/_distutils/util.py:57"]
+      },
+      {
+        "name": "CC / CXX / LDSHARED / CFLAGS / LDFLAGS",
+        "purpose": "覆盖 Unix C 编译器与链接器",
+        "evidence": ["setuptools/_distutils/sysconfig.py", "setuptools/_distutils/tests/test_sysconfig.py:119"]
+      },
+      {
+        "name": "ProgramFiles(x86) / ProgramFiles",
+        "purpose": "Windows 下定位 VS Installer/vswhere.exe",
+        "evidence": ["setuptools/_distutils/compilers/C/msvc.py:82"]
+      },
+      {
+        "name": "SOURCE_DATE_EPOCH",
+        "purpose": "可复现构建时覆盖 wheel 文件时间戳",
+        "evidence": ["setuptools/_vendor/wheel/wheelfile.py:53"]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "cc/gcc/clang/MSVC 等 C 编译器",
+        "purpose": "编译用户 C/C++ 扩展",
+        "evidence": ["setuptools/_distutils/spawn.py:83", "setuptools/_distutils/compilers/C/unix.py", "setuptools/_distutils/compilers/C/msvc.py"]
+      },
+      {
+        "command": "vswhere.exe",
+        "purpose": "Windows 下发现 Visual Studio 安装",
+        "evidence": ["setuptools/_distutils/compilers/C/msvc.py:98"]
+      },
+      {
+        "command": "brew --prefix",
+        "purpose": "macOS Homebrew 框架构建兼容",
+        "evidence": ["setuptools/_distutils/command/_framework_compat.py:44"]
+      },
+      {
+        "command": "rpm",
+        "purpose": "构建 RPM 包时调用",
+        "evidence": ["setuptools/_distutils/command/bdist_rpm.py:424"]
+      },
+      {
+        "command": "pip",
+        "purpose": "旧版 installer/easy_install 中安装依赖",
+        "evidence": ["setuptools/installer.py:121"]
+      }
+    ],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "Python >= 3.10（支持 CPython/PyPy）",
+    "build_system": "setuptools（PEP 517 自举后端，self-hosting）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64 / arm64 / x86",
+        "evidence": ["setuptools/launcher.c", "setuptools/msvc.py", "setuptools/_distutils/compilers/C/msvc.py", "setuptools/cli-*.exe", "setuptools/gui-*.exe"]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64 / aarch64",
+        "evidence": ["setuptools/_distutils/compilers/C/unix.py", "setuptools/wheel.py:108"]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64 / arm64",
+        "evidence": ["setuptools/_distutils/_macos_compat.py", "setuptools/_distutils/command/_framework_compat.py", "setuptools/command/build_ext.py:44"]
+      }
+    ],
+    "notes": "项目为纯 Python，自身无需编译；但 build_ext 功能要求宿主具备对应平台的 C 编译器。CMake 仅用于构建 Windows 启动器 launcher.c。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "effort_estimate": "M",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "setuptools 主体为纯 Python，鸿蒙 PC 已移植 Python 运行时，核心构建、打包、元数据逻辑可直接运行。主要工作量在于让内嵌 distutils 的 C 编译器抽象识别 HarmonyOS PC 平台，并能在需要时调用 OHOS NDK clang 编译用户 C 扩展；Windows/macOS 专有分支被平台条件隔离，不会触发。",
+    "blockers": [
+      {
+        "issue": "distutils C 编译器抽象尚未识别 HarmonyOS PC 平台",
+        "severity": "major",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "partial",
+        "remediation": "在 setuptools/_distutils/util.py、sysconfig.py 与 compilers/C/unix.py 中增加对鸿蒙平台的识别（如 platform/system 返回 ohos），并验证 OHOS NDK clang/musl 工具链可被正确调用；必要时参考 OHOS 官方 ohos.toolchain.cmake。",
+        "evidence": ["setuptools/_distutils/util.py:50", "setuptools/_distutils/compilers/C/unix.py:1", "setuptools/_distutils/sysconfig.py:78"]
+      },
+      {
+        "issue": "vendored 运行时依赖未在鸿蒙 Python 上验证",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "在鸿蒙 Python 上导入并运行 setuptools/_vendor/ 下的 packaging、wheel、platformdirs 等库，确认无平台相关失败；如有问题，优先从 PyPI/OpenHarmony PC 镜像获取已适配版本替换。",
+        "evidence": ["setuptools/__init__.py:17", "setuptools/_vendor/"]
+      },
+      {
+        "issue": "部分测试依赖（pytest 生态、virtualenv、build、pip）尚无官方鸿蒙 wheel",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "运行完整测试套件前，先在鸿蒙 Python 上安装这些测试依赖；鸿蒙 PC 镜像暂无对应 ohos wheel 时，可尝试从源码安装或裁剪测试范围。",
+        "evidence": ["pyproject.toml [project.optional-dependencies] test"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 构建逻辑",
+        "note": "PEP 517 后端、配置解析、包发现、元数据生成等不依赖平台特有 API，鸿蒙 Python 可直接运行。",
+        "evidence": ["setuptools/build_meta.py", "setuptools/config/", "setuptools/discovery.py"]
+      },
+      {
+        "aspect": "Windows/macOS 专有分支被条件隔离",
+        "note": "winreg、MSVC、Homebrew、_osx_support 等调用均在 sys.platform == 'win32'/'darwin' 或 os.name == 'nt' 分支内，鸿蒙不会执行。",
+        "evidence": ["setuptools/msvc.py:29", "setuptools/windows_support.py:5", "setuptools/_distutils/command/_framework_compat.py:19"]
+      },
+      {
+        "aspect": "无直接 /proc /sys /dev 或注册表访问",
+        "note": "库本身不读取内核伪文件或硬件设备，运行时表面主要为普通文件、环境变量和外部命令。",
+        "evidence": ["setuptools/runtime_surface 分析结果"]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 上安装 setuptools 并验证 import setuptools、PEP 517 build_wheel 基本流程",
+      "扩展 distutils 平台检测以识别 HarmonyOS PC，并验证 OHOS NDK clang 可编译简单 C 扩展",
+      "逐一验证 setuptools/_vendor/ 内嵌依赖在鸿蒙 Python 上的可用性",
+      "运行测试套件，优先处理平台相关失败并裁剪 Windows/macOS 专用测试"
+    ],
+    "notes": "评估按默认模型 A（库跑在已移植的鸿蒙 Python 运行时上）。若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时已不可用，setuptools 作为构建工具也不适用该场景。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": []
+  }
+}

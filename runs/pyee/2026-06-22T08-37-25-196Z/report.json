@@ -1,0 +1,829 @@
+{
+  "library": {
+    "name": "pyee",
+    "package_name": "pyee",
+    "source_url": "https://github.com/jfhbrook/pyee",
+    "analyzed_at": "2026-06-22T08:37:25.196Z",
+    "commit": "661fe6a4e144a0ce205d1e900836157208b79122",
+    "one_liner": "一个近似 Node.js EventEmitter 的 Python 事件发射器库，支持同步、asyncio、Trio、Twisted 及线程执行器等多种执行模型。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "pyee 为 Python 提供了一套受 Node.js EventEmitter 启发的事件发布/订阅机制。它以一个同步的 EventEmitter 为核心，并派生出支持 asyncio、Trio、Twisted 和 concurrent.futures 执行器的异步/并发后端，方便开发者在不同异步框架中统一使用事件驱动模式。",
+    "categories": [
+      {
+        "name": "同步事件发射器",
+        "description": "提供 EventEmitter 基类，支持 on/once/emit/remove_listener 等监听器注册、触发与移除操作。",
+        "evidence": ["pyee/base.py:EventEmitter"]
+      },
+      {
+        "name": "asyncio 异步事件发射器",
+        "description": "AsyncIOEventEmitter 自动识别协程处理器并通过 asyncio.ensure_future 将其调度到事件循环，支持等待完成与取消。",
+        "evidence": ["pyee/asyncio.py:AsyncIOEventEmitter"]
+      },
+      {
+        "name": "Trio 异步事件发射器",
+        "description": "TrioEventEmitter 在 Trio nursery 中以 start_soon 方式运行协程处理器，并提供异步上下文管理器生命周期。",
+        "evidence": ["pyee/trio.py:TrioEventEmitter"]
+      },
+      {
+        "name": "Twisted 异步事件发射器",
+        "description": "TwistedEventEmitter 支持 Twisted Deferred、inlineCallbacks 以及原生协程，统一通过 failure/error 事件处理异常。",
+        "evidence": ["pyee/twisted.py:TwistedEventEmitter"]
+      },
+      {
+        "name": "线程/执行器事件发射器",
+        "description": "ExecutorEventEmitter 将同步回调提交到 concurrent.futures Executor（默认 ThreadPoolExecutor），实现非阻塞的事件处理。",
+        "evidence": ["pyee/executor.py:ExecutorEventEmitter"]
+      },
+      {
+        "name": "类装饰器与事件封装",
+        "description": "提供 evented/on 装饰器为类方法自动绑定事件发射器，以及 uplift 工具将底层事件发射器能力提升到新的 emitter 类型。",
+        "evidence": ["pyee/cls.py:evented,on", "pyee/uplift.py:uplift"]
+      },
+      {
+        "name": "监听器生命周期管理",
+        "description": "支持事件名查询、监听器列表、一次性监听器、批量移除，以及 new_listener/error 等特殊事件。",
+        "evidence": ["pyee/base.py:event_names,listeners,once,remove_all_listeners"]
+      }
+    ],
+    "domain": "事件驱动编程 / 异步编程工具库",
+    "target_users": "Python 应用开发者及使用 asyncio、Trio、Twisted 等异步框架的开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "Markdown",
+      "Text",
+      "YAML",
+      "Justfile",
+      "TOML",
+      "reStructuredText",
+      "INI"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 17,
+        "code": 1117,
+        "pct": 49.03,
+        "production": {
+          "files": 9,
+          "code": 495
+        },
+        "test": {
+          "files": 8,
+          "code": 622
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 7,
+        "code": 434,
+        "pct": 19.05,
+        "production": {
+          "files": 7,
+          "code": 434
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 340,
+        "pct": 14.93,
+        "production": {
+          "files": 2,
+          "code": 340
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 5,
+        "code": 193,
+        "pct": 8.47,
+        "production": {
+          "files": 5,
+          "code": 193
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Justfile",
+        "files": 1,
+        "code": 73,
+        "pct": 3.2,
+        "production": {
+          "files": 1,
+          "code": 73
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 63,
+        "pct": 2.77,
+        "production": {
+          "files": 1,
+          "code": 63
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 1,
+        "code": 47,
+        "pct": 2.06,
+        "production": {
+          "files": 1,
+          "code": 47
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 2,
+        "code": 11,
+        "pct": 0.48,
+        "production": {
+          "files": 2,
+          "code": 11
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 36,
+      "code": 2278,
+      "comment": 512,
+      "blank": 876,
+      "total_lines": 3666
+    },
+    "production": {
+      "files": 28,
+      "code": 1656,
+      "comment": 415,
+      "blank": 539,
+      "total_lines": 2610
+    },
+    "test": {
+      "files": 8,
+      "code": 622,
+      "comment": 97,
+      "blank": 337,
+      "total_lines": 1056
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 9,
+        "code": 495
+      },
+      "Markdown": {
+        "files": 7,
+        "code": 434
+      },
+      "Text": {
+        "files": 2,
+        "code": 340
+      },
+      "YAML": {
+        "files": 5,
+        "code": 193
+      },
+      "Justfile": {
+        "files": 1,
+        "code": 73
+      },
+      "TOML": {
+        "files": 1,
+        "code": 63
+      },
+      "reStructuredText": {
+        "files": 1,
+        "code": 47
+      },
+      "INI": {
+        "files": 2,
+        "code": 11
+      }
+    }
+  },
+  "tests": {
+    "test_files": 8,
+    "test_cases": 25,
+    "frameworks": [
+      "pytest",
+      "pytest-asyncio",
+      "pytest-trio",
+      "unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 8,
+        "cases": 25
+      }
+    },
+    "notes": "测试使用 pytest 主框架，配合 pytest-asyncio 与 pytest-trio 插件覆盖异步后端；unittest.mock 用于断言。计数来自 cloc 的 regex 估算。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件包含完整 MIT 许可文本；pyproject.toml 的 license 字段亦声明为 MIT。",
+    "notes": "宽松许可；README 中同时标注 MIT/X11。"
+  },
+  "dependencies": {
+    "count": 23,
+    "manifests": [
+      "pyproject.toml",
+      "requirements.txt",
+      "requirements_dev.txt",
+      "uv.lock",
+      "environment.yml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "typing-extensions",
+        "setuptools",
+        "setuptools-scm",
+        "wheel",
+        "build",
+        "flake8",
+        "flake8-black",
+        "pytest",
+        "pytest-asyncio",
+        "pytest-trio",
+        "black",
+        "isort",
+        "jupyter-console",
+        "mkdocs",
+        "mkdocs-include-markdown-plugin",
+        "mkdocstrings",
+        "mypy",
+        "sphinx",
+        "tox",
+        "trio",
+        "trio-typing",
+        "twisted",
+        "validate-pyproject"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "typing-extensions",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "4.15.0",
+        "purpose": "为低版本 Python 提供 typing 模块的反向移植类型（Literal 等），本库实际要求 Python >=3.12，但仍用于类型标注兼容",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:31-33",
+          "requirements.txt:3"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:1-3"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools-scm",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "基于 git 标签/提交推断版本号",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:2"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "wheel",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建 wheel 分发包",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:2"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "build",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "PEP 517 构建前端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:37"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "flake8",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "代码风格与静态检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:38"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "flake8-black",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "flake8 的 black 格式化检查插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:39"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:40"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-asyncio",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pytest 的 asyncio 测试插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:41"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-trio",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pytest 的 trio 测试插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:42"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "black",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "代码格式化",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:43"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "isort",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "import 排序",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:44"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jupyter-console",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "交互式 Jupyter 控制台（开发/文档示例用）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:45"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mkdocs",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "静态文档站点生成",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:46"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mkdocs-include-markdown-plugin",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "MkDocs 的 markdown 包含插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:47"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mkdocstrings",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "MkDocs 的 API 文档自动生成插件（声明时带 python extra）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:48"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mypy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "静态类型检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:49"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档生成",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:50"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "tox",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "多环境测试矩阵工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:51"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "trio",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Trio 异步运行时，用于 TrioEventEmitter 后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:52"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "trio-typing",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Trio 的类型标注插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:53"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "twisted",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Twisted 异步网络框架，用于 TwistedEventEmitter 后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:54"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "validate-pyproject",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pyproject.toml 格式校验工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:55"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "依赖声明主要来自 pyproject.toml；requirements_dev.txt 与 uv.lock 为解析后的传递依赖锁定文件。全部直接依赖均为 PyPI 上的 Python 包，无本地 vendored 或系统预装依赖。"
+  },
+  "native_api": {
+    "summary": "pyee 为纯 Python 库，仅使用 Python 标准库中的线程与并发运行时 API，未调用任何平台特有或底层系统 API，也未使用 ctypes/FFI 动态加载。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "threading.Lock",
+            "purpose": "同步访问内部事件监听器表",
+            "count": 3,
+            "evidence": [
+              "pyee/base.py:67",
+              "pyee/base.py:161",
+              "pyee/base.py:193"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "asyncio.ensure_future",
+            "purpose": "将协程处理器调度到事件循环执行",
+            "count": 2,
+            "evidence": [
+              "pyee/asyncio.py:88",
+              "pyee/asyncio.py:90"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "asyncio.wait",
+            "purpose": "等待所有 pending future 完成",
+            "count": 1,
+            "evidence": [
+              "pyee/asyncio.py:131"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "concurrent.futures.ThreadPoolExecutor",
+            "purpose": "默认线程池执行器，用于非阻塞地执行同步回调",
+            "count": 1,
+            "evidence": [
+              "pyee/executor.py:54"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "concurrent.futures.Executor.submit",
+            "purpose": "将回调提交到执行器线程/进程运行",
+            "count": 1,
+            "evidence": [
+              "pyee/executor.py:62"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "concurrent.futures.Future.add_done_callback",
+            "purpose": "回调完成后捕获并分发异常到 error 事件",
+            "count": 1,
+            "evidence": [
+              "pyee/executor.py:64"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期无网络、文件系统、环境变量、子进程或设备访问；全部逻辑为内存中的事件派发与回调调度。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.12",
+    "runtime_version": "Python 3.12 / 3.13 / 3.14",
+    "build_system": "setuptools",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "OS Independent",
+        "arch": "any",
+        "evidence": [
+          "pyproject.toml:21"
+        ]
+      }
+    ],
+    "notes": "纯 Python 包，无需编译器扩展；classifier 声明 Operating System :: OS Independent。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Python 3.12 运行时上；arm64/x86_64；自研内核，无 Linux ABI)",
+    "feasibility": "feasible",
+    "overall_difficulty": "low",
+    "effort_estimate": "XS",
+    "porting_class": "no_adaptation",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "pyee 为纯 Python 事件发射器库，仅依赖 typing-extensions，无原生扩展、无平台特有 API、无文件/网络/子进程访问。鸿蒙 PC 已移植 Python 3.12 运行时，因此可直接运行，无需适配。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python 事件派发与监听器管理逻辑",
+        "note": "全部核心逻辑基于 Python 标准库，可直接在鸿蒙 Python 上运行",
+        "evidence": [
+          "pyee/base.py"
+        ]
+      },
+      {
+        "aspect": "asyncio/Trio/Twisted/线程执行器后端",
+        "note": "各后端均为纯 Python 第三方库，在已移植运行时上可正常安装使用",
+        "evidence": [
+          "pyee/asyncio.py",
+          "pyee/trio.py",
+          "pyee/twisted.py",
+          "pyee/executor.py"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 3.12 环境中安装 typing-extensions",
+      "运行 pytest 测试套件验证功能完整"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。typing-extensions 未在 OpenHarmony PC 镜像中标记为已适配，但它是纯 Python 包，可直接安装运行。若目标为 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，需整体重写。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": []
+  }
+}

@@ -1,0 +1,223 @@
+{
+  "library": {
+    "name": "pubchem-align3d",
+    "package_name": "align3d",
+    "source_url": "https://github.com/ncbi/pubchem-align3d.git",
+    "analyzed_at": "2026-06-22T02:54:50.878Z",
+    "commit": "06e17618f8a6f769a543be96ef59f9a4bfb33e29",
+    "one_liner": "NCBI PubChem 3D分子形状叠合C++算法库，基于Grant-Pickup高斯描述符计算分子间形状与药效团相似度。",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "pubchem-align3d 是 NCBI 开源的 C++ 算法库，实现基于 Grant-Pickup 高斯分子形状描述符的 3D 分子构象刚性叠合。它接收参考分子与待叠合分子的原子坐标和半径，通过四元数/平移向量的梯度优化寻找最佳重叠姿态，输出形状 Tanimoto（ST）和可选的药效团/特征 Tanimoto（CT）。库核心仅处理裸坐标数组，适合嵌入 RDKit 或其他化学信息学工作流，用于虚拟筛选、分子对齐和形状相似性搜索。",
+    "categories": [
+      {
+        "name": "3D分子构象叠合",
+        "description": "基于 Grant-Pickup 高斯形状描述符对两个分子构象进行刚性旋转/平移优化，使体积重叠最大化并返回 12 元素变换矩阵。",
+        "evidence": ["shape_neighbor.cpp:49", "shape_functions.hpp:38", "shape_neighbor.cpp:355"]
+      },
+      {
+        "name": "形状相似度计算",
+        "description": "逐对原子计算高斯体积重叠积分，再用 Tanimoto 系数表示形状相似度（ST），支持距离截断加速。",
+        "evidence": ["shape_functions.hpp:124", "shape_functions2.cpp:225", "shape_functions2.cpp:131"]
+      },
+      {
+        "name": "特征相似度计算",
+        "description": "按 PubChem 药效团特征类型（受体、供体、阳离子、阴离子、疏水、芳香环等）将特征点分组，计算特征点云重叠并输出 CT 相似度。",
+        "evidence": ["shape_functions.hpp:105", "shape_functions2.cpp:258", "rdkit_align3d_test.cpp:97"]
+      },
+      {
+        "name": "旋转-平移参数优化",
+        "description": "用四元数表示旋转、解析梯度驱动梯度上升，并配合线搜索与多初始姿态（qrat 决定 4/16 个起点）迭代优化叠合姿态。",
+        "evidence": ["shape_neighbor.cpp:289", "shape_functions.hpp:64", "shape_neighbor.cpp:441"]
+      },
+      {
+        "name": "分子预处理与坐标转换",
+        "description": "将坐标平移至质心/立体中心、通过 Jacobi 对角化计算惯性主轴（steric frame），并构建体积原子与颜色原子索引结构。",
+        "evidence": ["shape_functions.hpp:135", "shape_functions1.cpp:357", "shape_functions1.cpp:596"]
+      }
+    ],
+    "domain": "cheminformatics",
+    "target_users": "化学信息学研究人员、药物发现开发者，以及需要在 C++/RDKit 工作流中集成分子形状比对功能的应用开发者。"
+  },
+  "languages": {
+    "primary": "C/C++ Header",
+    "all": ["C/C++ Header", "C++"],
+    "breakdown": [
+      {
+        "language": "C/C++ Header",
+        "files": 7,
+        "code": 8969,
+        "pct": 83.93,
+        "production": {"files": 7, "code": 8969},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "C++",
+        "files": 4,
+        "code": 1717,
+        "pct": 16.07,
+        "production": {"files": 3, "code": 1377},
+        "test": {"files": 1, "code": 340},
+        "example": {"files": 0, "code": 0}
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {"files": 11, "code": 10686, "comment": 4054, "blank": 529, "total_lines": 15269},
+    "production": {"files": 10, "code": 10346, "comment": 4006, "blank": 465, "total_lines": 14817},
+    "test": {"files": 1, "code": 340, "comment": 48, "blank": 64, "total_lines": 452},
+    "example": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "production_by_language": {
+      "C/C++ Header": {"files": 7, "code": 8969},
+      "C++": {"files": 3, "code": 1377}
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {"C++": {"files": 1, "cases": 0}},
+    "notes": "仓库提供一个命令行测试/示例程序 rdkit_align3d_test.cpp，但无传统单元测试框架；脚本未识别出具体测试用例。"
+  },
+  "license": {
+    "spdx": "NOASSERTION",
+    "name": "Public Domain / U.S. Government Work",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "顶层 LICENSE 明确声明该软件是 'United States Government Work'，作为美国联邦政府雇员的职务作品不受版权保护，公众可自由使用与复制，无任何限制。",
+    "notes": "非标准 OSI/SPDX 许可证；美国政府职务作品，实际处于公有领域，但仍需按声明引用作者。"
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": ["Makefile.align3d.lib", "Makefile.rdkit_align3d_test.app", "Makefile.in"],
+    "by_ecosystem": {"cpp": ["RDKit"]},
+    "dependencies": [
+      {
+        "name": "RDKit",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "分子读写（SDMolSupplier/SDWriter）、RWMol 对象表示、3D 构象与坐标变换（MolTransforms/Transform3D）。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(需预装 RDKit 头文件与库，通过 RDKIT_INCLUDE/RDKIT_LIBS 引入构建)",
+        "declared_in": ["Makefile.rdkit_align3d_test.app", "Makefile.align3d.lib"]
+      }
+    ],
+    "notes": "核心算法库本身（shape_functions1.cpp / shape_functions2.cpp / shape_neighbor.cpp）仅使用 C++ 标准库；RDKit 用于捆绑的示例/测试程序进行分子 I/O 和预处理。"
+  },
+  "native_api": {
+    "summary": "库核心完全基于 C++ 标准库实现，未调用任何 OS 专有 API、系统调用、硬件加速或 FFI 桥接。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "std::vector", "purpose": "存储坐标、半径、梯度、索引等一维数组", "count": 61, "evidence": ["shape_functions.hpp:40"], "conditional": false},
+          {"name": "std::map", "purpose": "按特征类型映射到原子索引列表", "count": 20, "evidence": ["shape_functions.hpp:42"], "conditional": false},
+          {"name": "std::set", "purpose": "记录参与比对的颜色/特征原子类型集合", "count": 10, "evidence": ["shape_functions.hpp:259"], "conditional": false},
+          {"name": "std::memcpy", "purpose": "拷贝坐标工作数组", "count": 15, "evidence": ["shape_neighbor.cpp:102"], "conditional": false},
+          {"name": "std::memset", "purpose": "初始化梯度数组为零", "count": 1, "evidence": ["shape_functions2.cpp:148"], "conditional": false},
+          {"name": "std::sort", "purpose": "对特征值组合排序以计算 Qrat", "count": 1, "evidence": ["shape_functions1.cpp:699"], "conditional": false},
+          {"name": "std::sqrt", "purpose": "距离、范数和四元数归一化计算", "count": 17, "evidence": ["shape_functions1.cpp:54"], "conditional": false},
+          {"name": "std::round", "purpose": "指数查找表索引取整", "count": 2, "evidence": ["shape_math_functions.hpp:59"], "conditional": false},
+          {"name": "std::numeric_limits", "purpose": "初始化截断距离为最大值", "count": 4, "evidence": ["shape_functions2.cpp:377"], "conditional": false},
+          {"name": "std::min", "purpose": "取参考与拟合分子的自重叠较小值", "count": 2, "evidence": ["shape_neighbor.cpp:82"], "conditional": false},
+          {"name": "std::max / fmax", "purpose": "线搜索步长归一化与最大值比较", "count": 6, "evidence": ["shape_neighbor.cpp:441"], "conditional": false},
+          {"name": "std::signbit", "purpose": "判断梯度方向是否翻转以调整优化步长", "count": 12, "evidence": ["shape_neighbor.cpp:360"], "conditional": false},
+          {"name": "std::fabs", "purpose": "步长绝对值比较与收敛判断", "count": 83, "evidence": ["shape_neighbor.cpp:361"], "conditional": false},
+          {"name": "std::swap", "purpose": "特征值/特征向量排序交换", "count": 3, "evidence": ["shape_functions1.cpp:522"], "conditional": false},
+          {"name": "std::cerr", "purpose": "调试日志输出（受 debug_print 标志控制）", "count": 62, "evidence": ["shape_functions2.cpp:270"], "conditional": false},
+          {"name": "srand / rand", "purpose": "测试程序中按种子随机旋转初始构象", "count": 6, "evidence": ["rdkit_align3d_test.cpp:428"], "conditional": false},
+          {"name": "std::stoul / std::stod", "purpose": "测试程序解析命令行参数", "count": 6, "evidence": ["rdkit_align3d_test.cpp:426"], "conditional": false}
+        ],
+        "evidence": ["shape_functions1.cpp", "shape_functions2.cpp", "shape_neighbor.cpp"]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "库核心仅接收裸坐标数组和参数，不直接访问网络、环境变量、子进程或硬件设备。捆绑的示例/测试程序从命令行读取两个 SDF 文件，并写入对齐后的 SDF 文件。",
+    "network": [],
+    "filesystem": [
+      {"detail": "测试程序读取参考与拟合分子的 SDF 文件", "purpose": "作为分子输入源", "evidence": ["rdkit_align3d_test.cpp:413", "rdkit_align3d_test.cpp:419"]},
+      {"detail": "测试程序写入 ref.sdf、fit.sdf、fit-aligned.sdf", "purpose": "输出可视化对齐结果", "evidence": ["rdkit_align3d_test.cpp:338", "rdkit_align3d_test.cpp:400"]}
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "C++（未显式声明标准；代码使用 C++11 兼容特性，如 auto、范围 for、std::unique_ptr）",
+    "runtime_version": "不适用（原生 C++ 静态/动态链接库）",
+    "build_system": "Make（使用 NCBI C++ Toolkit 的 Makefile.meta 元 Makefile）",
+    "compiler_extensions": [],
+    "platforms": [
+      {"os": "跨平台", "arch": "x86_64 / arm64", "evidence": ["源码无 #ifdef 平台分支", "Makefile.align3d.lib", "Makefile.rdkit_align3d_test.app"]}
+    ],
+    "notes": "构建依赖 RDKit 头文件和库路径（RDKIT_INCLUDE / RDKIT_LIBS）；核心算法无平台特定代码，理论上可在任何支持 C++ 标准库和 RDKit 的平台上编译。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（原生 C++ 库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "effort_estimate": "M",
+    "recommended_path": "recompile_napi",
+    "summary": "该库是纯 C++ 算法代码，除 RDKit 外无平台专有依赖，核心逻辑不依赖 Linux 特有系统调用。主要工作量是为 HarmonyOS PC 准备 RDKit 的 OHOS NDK 交叉编译版本，并将 NCBI 元 Makefile 构建替换为 CMake 或直接 ohos.toolchain.cmake 构建；若需供 ArkTS 调用，再包一层 Node-API。",
+    "blockers": [
+      {
+        "issue": "RDKit 依赖需要为 HarmonyOS PC 交叉编译",
+        "severity": "major",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 RDKit 为 arm64/x86_64 .so；RDKit 本身跨平台且仅依赖标准库/Boost，可移植性较好，但需处理其 CMake 中的第三方依赖选项。",
+        "evidence": ["Makefile.rdkit_align3d_test.app:9", "Makefile.rdkit_align3d_test.app:13"]
+      },
+      {
+        "issue": "构建系统基于 NCBI C++ Toolkit 元 Makefile，OHOS 工具链不直接兼容",
+        "severity": "minor",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "为核心库编写 CMakeLists.txt，显式指定 shape_functions1.cpp / shape_functions2.cpp / shape_neighbor.cpp 源文件，链接 RDKit 与 C++ 标准库，使用 OHOS NDK 工具链交叉编译。",
+        "evidence": ["Makefile.in:11", "Makefile.align3d.lib:9"]
+      }
+    ],
+    "compatible": [
+      {"aspect": "核心形状/特征重叠算法", "note": "完全基于 C++ 标准库和裸数组运算，无需改动即可在 musl/OHOS 上运行。", "evidence": ["shape_functions2.cpp:131", "shape_neighbor.cpp:49"]},
+      {"aspect": "无平台专有代码", "note": "源码中无 #ifdef _WIN32 / __linux__ / __APPLE__ 分支，也无 /proc、/sys、注册表、Win32 API 调用。", "evidence": ["shape_functions1.cpp", "shape_functions2.cpp", "shape_neighbor.cpp"]},
+      {"aspect": "无运行时动态加载或网络/子进程", "note": "库不调用 dlopen、LoadLibrary、socket、system 等，迁移时无需替换宿主交互。", "evidence": ["shape_functions.hpp", "shape_neighbor.cpp"]}
+    ],
+    "key_tasks": [
+      "交叉编译 RDKit 为 HarmonyOS PC arm64/x86_64 库",
+      "为核心 align3d 编写 CMake 构建，接入 OHOS NDK 工具链",
+      "在鸿蒙设备或模拟器上编译并运行 rdkit_align3d_test 示例验证对齐结果",
+      "如需 ArkTS 调用，用 Node-API 包装 Neighbor_Conformers / Neighbor 接口"
+    ],
+    "notes": "评估按模型 A（C++ 原生库经 OHOS NDK 重编）。核心算法可移植性高，主要风险在 RDKit 及其可选第三方依赖的交叉编译；若仅移植算法核心而不依赖 RDKit I/O，工作量可进一步降低。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "license",
+        "field": "spdx",
+        "kind": "gap",
+        "value": "U.S. Government Work / public domain",
+        "rationale": "仓库 LICENSE 为美国政府职务作品公有领域声明，无对应 SPDX 标识符；使用 NOASSERTION 并附加说明。"
+      }
+    ]
+  }
+}

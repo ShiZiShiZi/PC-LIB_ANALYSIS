@@ -1,0 +1,746 @@
+{
+  "library": {
+    "name": "pycares",
+    "package_name": "pycares",
+    "source_url": "https://github.com/saghul/pycares.git",
+    "analyzed_at": "2026-06-23T04:08:21.777Z",
+    "commit": "8cf47fa86084d078570d7c321f780cab35372c98",
+    "one_liner": "基于 cffi 的 c-ares 异步 DNS 解析 Python 绑定库",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "pycares 是 c-ares C 库的 Python 封装，通过 cffi 暴露异步 DNS 查询、地址解析与 DNS 记录解析能力。它面向需要在 Python 中执行高性能异步域名解析的开发者，提供类似 Python socket 的回调式 API，并附带一个简易命令行 dig 工具。",
+    "categories": [
+      {
+        "name": "异步 DNS 查询",
+        "description": "发起 A/AAAA/MX/NS/SOA/SRV/TXT/CNAME/CAA/TLSA/HTTPS/URI/ANY 等 DNS 查询，支持 search 路径与自定义服务器、选项。",
+        "evidence": ["src/pycares/__init__.py:763 Channel.query", "src/pycares/__init__.py:804 Channel.search", "src/_cffi_src/build_cares.py:591 ares_query_dnsrec"]
+      },
+      {
+        "name": "地址解析",
+        "description": "提供 getaddrinfo（主机名到地址）、gethostbyaddr（反向解析）和 getnameinfo（地址到名称服务）的异步封装。",
+        "evidence": ["src/pycares/__init__.py:729 Channel.getaddrinfo", "src/pycares/__init__.py:706 Channel.gethostbyaddr", "src/pycares/__init__.py:893 Channel.getnameinfo"]
+      },
+      {
+        "name": "DNS 记录解析",
+        "description": "将 c-ares 返回的原始 DNS 记录解析为类型化的 Python dataclass，包括 answer/authority/additional 三个区段。",
+        "evidence": ["src/pycares/__init__.py:346 parse_dnsrec", "src/pycares/__init__.py:215 extract_record_data", "src/pycares/__init__.py:974 DNSResult dataclass"]
+      },
+      {
+        "name": "通道生命周期管理",
+        "description": "创建、配置、关闭 c-ares channel，支持超时、重试、服务器、本地 IP/网卡、resolv.conf 等选项，以及后台安全销毁线程。",
+        "evidence": ["src/pycares/__init__.py:487 Channel.__init__", "src/pycares/__init__.py:433 _ChannelShutdownManager", "src/pycares/__init__.py:930 Channel.close"]
+      },
+      {
+        "name": "错误处理与常量",
+        "description": "暴露 c-ares 错误码、查询类型/类常量、channel 标志位，并提供 strerror 中文友好错误描述。",
+        "evidence": ["src/pycares/errno.py", "src/pycares/__init__.py:27 ARES_FLAG_* constants", "src/pycares/__init__.py:59 QUERY_TYPE_* constants"]
+      },
+      {
+        "name": "国际化域名编码",
+        "description": "支持 ASCII 与 IDN 2003/2008 域名编码；可选依赖 idna 提供 IDNA 2008 支持。",
+        "evidence": ["src/pycares/utils.py:44 parse_name", "src/pycares/utils.py:29 parse_name_idna2008", "pyproject.toml:42 idna optional"]
+      },
+      {
+        "name": "命令行 dig 工具",
+        "description": "提供 python -m pycares [query_type] hostname 命令行接口，按 dig 风格输出 DNS 结果。",
+        "evidence": ["src/pycares/__main__.py", "README.rst:92"]
+      }
+    ],
+    "domain": "networking",
+    "target_users": "Python 应用开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "reStructuredText",
+      "YAML",
+      "DOS Batch",
+      "make",
+      "TOML",
+      "Text"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 16,
+        "code": 2601,
+        "pct": 74.68,
+        "production": {
+          "files": 8,
+          "code": 1321
+        },
+        "test": {
+          "files": 4,
+          "code": 1026
+        },
+        "example": {
+          "files": 4,
+          "code": 254
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 9,
+        "code": 311,
+        "pct": 8.93,
+        "production": {
+          "files": 9,
+          "code": 311
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 7,
+        "code": 215,
+        "pct": 6.17,
+        "production": {
+          "files": 7,
+          "code": 215
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 1,
+        "code": 166,
+        "pct": 4.77,
+        "production": {
+          "files": 1,
+          "code": 166
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 124,
+        "pct": 3.56,
+        "production": {
+          "files": 1,
+          "code": 124
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 64,
+        "pct": 1.84,
+        "production": {
+          "files": 1,
+          "code": 64
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 1,
+        "code": 2,
+        "pct": 0.06,
+        "production": {
+          "files": 1,
+          "code": 2
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 36,
+      "code": 3483,
+      "comment": 1531,
+      "blank": 1347,
+      "total_lines": 6361
+    },
+    "production": {
+      "files": 28,
+      "code": 2203,
+      "comment": 1380,
+      "blank": 1003,
+      "total_lines": 4586
+    },
+    "test": {
+      "files": 4,
+      "code": 1026,
+      "comment": 133,
+      "blank": 290,
+      "total_lines": 1449
+    },
+    "example": {
+      "files": 4,
+      "code": 254,
+      "comment": 18,
+      "blank": 54,
+      "total_lines": 326
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 8,
+        "code": 1321
+      },
+      "reStructuredText": {
+        "files": 9,
+        "code": 311
+      },
+      "YAML": {
+        "files": 7,
+        "code": 215
+      },
+      "DOS Batch": {
+        "files": 1,
+        "code": 166
+      },
+      "make": {
+        "files": 1,
+        "code": 124
+      },
+      "TOML": {
+        "files": 1,
+        "code": 64
+      },
+      "Text": {
+        "files": 1,
+        "code": 2
+      }
+    }
+  },
+  "tests": {
+    "test_files": 4,
+    "test_cases": 77,
+    "frameworks": ["unittest"],
+    "by_language": {
+      "Python": {
+        "files": 4,
+        "cases": 77
+      }
+    },
+    "note": "脚本原始输出 frameworks 为 ['pytest/unittest']；阅读测试源码后确认实际使用 unittest。测试依赖真实 DNS 查询（Google 8.8.8.8/8.8.4.4），需要联网。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件文本与 MIT 许可证一致；pyproject.toml 中声明 license = \"MIT\"。",
+    "notes": "宽松许可，需保留版权声明。仓库内无其他许可冲突信号。"
+  },
+  "dependencies": {
+    "count": 6,
+    "manifests": ["pyproject.toml", "setup.py", ".gitmodules"],
+    "by_ecosystem": {
+      "python": ["cffi", "idna", "setuptools", "wheel"],
+      "cpp": ["c-ares"],
+      "other": ["cmake"]
+    },
+    "dependencies": [
+      {
+        "name": "cffi",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "\u22651.5.0 (Python<3.14); \u22652.0.0b1 (Python\u22653.14)",
+        "purpose": "cffi 桥接，用于编译 _cares 扩展并在运行时调用 c-ares C API",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:5", "pyproject.toml:37"],
+        "used_symbols": [],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "c-ares",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "底层异步 DNS 解析 C 库，提供真正的 socket I/O 与 DNS 协议实现",
+        "acquisition": "submodule",
+        "locality": "remote",
+        "source": "https://github.com/c-ares/c-ares.git (git submodule，提交 3ac47ee；也可通过 PYCARES_USE_SYSTEM_LIB=1 使用系统预装版)",
+        "declared_in": [".gitmodules", "setup.py:45", "setup.py:175"],
+        "used_symbols": [
+          "ares_library_init",
+          "ares_init_options",
+          "ares_destroy",
+          "ares_cancel",
+          "ares_query_dnsrec",
+          "ares_search_dnsrec",
+          "ares_getaddrinfo",
+          "ares_freeaddrinfo",
+          "ares_gethostbyaddr",
+          "ares_getnameinfo",
+          "ares_process_fd",
+          "ares_timeout",
+          "ares_set_servers_csv",
+          "ares_get_servers_csv",
+          "ares_set_local_ip4",
+          "ares_set_local_ip6",
+          "ares_set_local_dev",
+          "ares_inet_pton",
+          "ares_inet_ntop",
+          "ares_strerror",
+          "ares_threadsafety",
+          "ares_queue_wait_empty",
+          "ares_dns_record_create",
+          "ares_dns_record_destroy",
+          "ares_dns_record_query_add",
+          "ares_dns_record_rr_cnt",
+          "ares_dns_record_rr_get_const",
+          "ares_dns_rr_get_name",
+          "ares_dns_rr_get_type",
+          "ares_dns_rr_get_class",
+          "ares_dns_rr_get_ttl",
+          "ares_dns_rr_get_addr",
+          "ares_dns_rr_get_addr6",
+          "ares_dns_rr_get_str",
+          "ares_dns_rr_get_u8",
+          "ares_dns_rr_get_u16",
+          "ares_dns_rr_get_u32",
+          "ares_dns_rr_get_bin",
+          "ares_dns_rr_get_opt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "idna",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": "\u22652.1",
+        "purpose": "提供 IDNA 2008 国际化域名编码支持",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:42"],
+        "used_symbols": ["idna.encode"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "Python 包构建与扩展构建入口",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:3"]
+      },
+      {
+        "name": "wheel",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "Python wheel 打包工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:4"]
+      },
+      {
+        "name": "cmake",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": "\u22653.5",
+        "purpose": "编译 c-ares 子模块的跨平台构建系统",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装二进制 (CMake >= 3.5)",
+        "declared_in": ["setup.py:32", "README.rst:34"]
+      }
+    ],
+    "notes": "c-ares 默认通过 git submodule 引入并由 setup.py 使用 CMake 静态编译进 cffi 扩展；设置 PYCARES_USE_SYSTEM_LIB=1 可改用系统预装 c-ares。本次克隆未拉取子模块，deps/c-ares 为空。"
+  },
+  "native_api": {
+    "summary": "pycares 自身是薄 Python 封装层，不直接发起操作系统 socket 调用；所有网络 I/O 与平台相关代码委托给静态链接的 c-ares。本仓源码仅通过 cffi 与 c-ares 交互，并使用 Python 标准库的 socket/threading 常量与同步原语。",
+    "groups": [
+      {
+        "type": "cffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "_ffi.new",
+            "purpose": "在 C 堆上分配 c-ares 结构体与缓冲区",
+            "count": 25,
+            "evidence": ["src/pycares/__init__.py:517", "src/pycares/__init__.py:710", "src/pycares/__init__.py:899"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.cast",
+            "purpose": "将 Python 文件描述符转换为 ares_socket_t / sockaddr 指针",
+            "count": 5,
+            "evidence": ["src/pycares/__init__.py:676", "src/pycares/__init__.py:921"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.string",
+            "purpose": "将 C 字符串/缓冲区转换为 Python bytes/str",
+            "count": 12,
+            "evidence": ["src/pycares/__init__.py:83", "src/pycares/__init__.py:360", "src/pycares/__init__.py:1155"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.buffer",
+            "purpose": "读取 C 二进制数据为 Python 缓冲区",
+            "count": 2,
+            "evidence": ["src/pycares/__init__.py:191", "src/pycares/__init__.py:242"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.new_handle",
+            "purpose": "将 Python 回调对象封装为 C void* 句柄",
+            "count": 2,
+            "evidence": ["src/pycares/__init__.py:557", "src/pycares/__init__.py:635"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.from_handle",
+            "purpose": "在 c-ares 回调中还原 Python 回调对象",
+            "count": 5,
+            "evidence": ["src/pycares/__init__.py:100", "src/pycares/__init__.py:108", "src/pycares/__init__.py:144"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.def_extern",
+            "purpose": "将 Python 函数注册为 c-ares 可调用的 C 回调",
+            "count": 5,
+            "evidence": ["src/pycares/__init__.py:96", "src/pycares/__init__.py:103", "src/pycares/__init__.py:137"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.NULL",
+            "purpose": "C NULL 指针常量，用于空值判断",
+            "count": 15,
+            "evidence": ["src/pycares/__init__.py:190", "src/pycares/__init__.py:348", "src/pycares/__init__.py:654"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.sizeof",
+            "purpose": "获取 C 结构体大小以传递给 c-ares",
+            "count": 2,
+            "evidence": ["src/pycares/__init__.py:724", "src/pycares/__init__.py:921"],
+            "conditional": false
+          },
+          {
+            "name": "_ffi.addressof",
+            "purpose": "获取 sockaddr_in/sockaddr_in6 字段地址以调用 ares_inet_pton",
+            "count": 3,
+            "evidence": ["src/pycares/__init__.py:900", "src/pycares/__init__.py:908", "src/pycares/__init__.py:1174"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["src/_cffi_src/build_cares.py:760 ffi.set_source", "src/_cffi_src/build_cares.py:745 INCLUDES"]
+      },
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "socket.AF_INET / AF_INET6",
+            "purpose": "传入地址族常量给 c-ares 地址转换函数",
+            "count": 10,
+            "evidence": ["src/pycares/__init__.py:220", "src/pycares/__init__.py:712", "src/pycares/__init__.py:900"],
+            "conditional": false
+          },
+          {
+            "name": "socket.htons / ntohs / ntohl",
+            "purpose": "端口号与 IPv4 地址的字节序转换",
+            "count": 5,
+            "evidence": ["src/pycares/__init__.py:887", "src/pycares/__init__.py:903", "src/pycares/__init__.py:1176"],
+            "conditional": false
+          },
+          {
+            "name": "threading.Thread",
+            "purpose": "后台安全销毁 channel 的守护线程",
+            "count": 1,
+            "evidence": ["src/pycares/__init__.py:465"],
+            "conditional": false
+          },
+          {
+            "name": "threading.RLock / Lock",
+            "purpose": "保护 channel 状态与关闭管理器启动",
+            "count": 2,
+            "evidence": ["src/pycares/__init__.py:439", "src/pycares/__init__.py:512"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["src/pycares/__init__.py:16 import contextlib, math, socket, threading"]
+      },
+      {
+        "type": "posix_sockets",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "sys/socket.h / netdb.h / netinet/in.h",
+            "purpose": "cffi 生成 C 扩展时包含的 POSIX socket 头文件（非 Python 层直接调用）",
+            "count": 3,
+            "evidence": ["src/_cffi_src/build_cares.py:750 #include <sys/socket.h>", "src/_cffi_src/build_cares.py:752 #include <netinet/in.h>"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/_cffi_src/build_cares.py:745 INCLUDES #ifdef _WIN32 ... #else ... #endif"]
+      },
+      {
+        "type": "win32_winsock",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "WinSock2.h",
+            "purpose": "cffi 生成 C 扩展时包含的 Windows socket 头文件（非 Python 层直接调用）",
+            "count": 1,
+            "evidence": ["src/_cffi_src/build_cares.py:748 #include <WinSock2.h>"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/_cffi_src/build_cares.py:746 #ifdef _WIN32"]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "pycares 运行期通过 c-ares 发起 DNS 查询（UDP/TCP 网络），支持用户指定 resolv.conf 路径与本地出站网卡名；自身不直接执行系统调用或外部命令。",
+    "network": [
+      {
+        "detail": "DNS 查询（A/AAAA/MX/NS/SOA/SRV/TXT/CNAME/CAA/TLSA/HTTPS/URI/ANY 等）",
+        "purpose": "异步域名解析",
+        "evidence": ["src/pycares/__init__.py:763 Channel.query", "src/pycares/__init__.py:729 Channel.getaddrinfo"]
+      },
+      {
+        "detail": "gethostbyaddr / getnameinfo 反向解析与服务名查询",
+        "purpose": "地址到主机名/服务名解析",
+        "evidence": ["src/pycares/__init__.py:706 Channel.gethostbyaddr", "src/pycares/__init__.py:893 Channel.getnameinfo"]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "resolv.conf 路径（resolvconf_path 参数）",
+        "purpose": "由 c-ares 读取 DNS 配置，仅在用户显式指定时传递",
+        "evidence": ["src/pycares/__init__.py:587 ARES_OPT_RESOLVCONF"]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "本地网络设备名（local_dev 参数）",
+        "purpose": "传递给 c-ares 的 ares_set_local_dev，用于 SO_BINDTODEVICE 类绑定",
+        "evidence": ["src/pycares/__init__.py:602 Channel.set_local_dev", "src/pycares/__init__.py:926 ares_set_local_dev"]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "Python >= 3.10（支持 CPython 与 PyPy，含 3.14 free-threaded）",
+    "build_system": "setuptools + CMake",
+    "compiler_extensions": [
+      {
+        "detail": "CARES_STATICLIB / HAVE_CONFIG_H / _LARGEFILE_SOURCE / _FILE_OFFSET_BITS=64 / CARES_STATICLIB",
+        "purpose": "setup.py 为 POSIX 平台定义的平台宏，用于静态链接 c-ares",
+        "evidence": ["setup.py:151-154"]
+      },
+      {
+        "detail": "Windows 平台链接 ws2_32 / advapi32 / iphlpapi",
+        "purpose": "Windows socket 与 IP 辅助 API 静态链接",
+        "evidence": ["setup.py:146-148"]
+      },
+      {
+        "detail": "Linux 链接 rt；FreeBSD/DragonFly 链接 kvm；SunOS 链接 socket/nsl/kstat",
+        "purpose": "各 Unix 变体下 c-ares 所需的系统库",
+        "evidence": ["setup.py:156-165"]
+      },
+      {
+        "detail": "macOS 部署目标 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12 与 _DARWIN_USE_64_BIT_INODE",
+        "purpose": "macOS 特定构建选项",
+        "evidence": ["setup.py:68", "setup.py:159"]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/test.yml:16", ".github/workflows/run-cibuildwheel.yml:33"]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [".github/workflows/run-cibuildwheel.yml:59"]
+      },
+      {
+        "os": "linux",
+        "arch": "ppc64le",
+        "evidence": [".github/workflows/run-cibuildwheel.yml:59"]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [".github/workflows/run-cibuildwheel.yml:59"]
+      },
+      {
+        "os": "linux",
+        "arch": "s390x",
+        "evidence": [".github/workflows/run-cibuildwheel.yml:59"]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/test.yml:16", ".github/workflows/run-cibuildwheel.yml:39"]
+      },
+      {
+        "os": "windows",
+        "arch": "arm64",
+        "evidence": [".github/workflows/test.yml:16", ".github/workflows/run-cibuildwheel.yml:41"]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [".github/workflows/test.yml:16", ".github/workflows/run-cibuildwheel.yml:35"]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/run-cibuildwheel.yml:37"]
+      },
+      {
+        "os": "freebsd",
+        "arch": "unknown",
+        "evidence": ["setup.py:160", "README.rst:43"]
+      }
+    ],
+    "notes": "c-ares 通过 git submodule 引入，setup.py 在构建时使用 CMake 将其静态编译进 cffi 扩展；也支持 PYCARES_USE_SYSTEM_LIB=1 链接系统 c-ares。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；原生 c-ares 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "effort_estimate": "M",
+    "porting_class": "needs_adaptation_full",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "pycares 是纯 Python 封装 + cffi 原生扩展。鸿蒙 PC 已移植 Python 3.12，且核心依赖 cffi 与 c-ares 均已有官方鸿蒙 PC 移植产物；因此纯 Python 部分可直接运行，主要工作量在于用 OHOS NDK 重新编译 cffi 扩展（静态链接 c-ares）。无不可适配的平台/硬件 API，整体可行。",
+    "blockers": [
+      {
+        "issue": "cffi 原生扩展需在鸿蒙上重新编译",
+        "severity": "major",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "使用鸿蒙 Python 与 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 pycares 的 _cares cffi 扩展；c-ares 可直接使用 OpenHarmony PC cmd-pkgs 中的预编译包或从源码重编。",
+        "evidence": ["setup.py:175 cffi_modules", "src/_cffi_src/build_cares.py:760 ffi.set_source"]
+      },
+      {
+        "issue": "setup.py 中的平台分支未覆盖 HarmonyOS",
+        "severity": "minor",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "在 setup.py 平台判断中增加 HarmonyOS 分支，或依赖 c-ares CMake 的跨平台能力自动处理；验证链接库与宏定义在 OHOS NDK 下正确。",
+        "evidence": ["setup.py:66-165 平台分支"]
+      },
+      {
+        "issue": "可选依赖 idna 尚未鸿蒙化",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "idna 是纯 Python 包，缺失时 pycares 回退到 Python 内置 idna codec（IDNA 2003），核心解析不受影响；如需 IDNA 2008 可单独移植 idna。",
+        "evidence": ["src/pycares/utils.py:4-7", "pyproject.toml:42"]
+      }
+    ],
+    "unadaptable_apis": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python 逻辑（DNS 记录 dataclass、回调封装、常量导出）",
+        "note": "鸿蒙 Python 3.12 直接运行，无需改动",
+        "evidence": ["src/pycares/__init__.py:974 DNSResult dataclasses", "src/pycares/__main__.py"]
+      },
+      {
+        "aspect": "cffi 运行时依赖",
+        "note": "cffi 已在 OpenHarmony PC PyPI 镜像提供 ohos wheel，可直接安装",
+        "evidence": ["dependencies[].harmony_adapted=true for cffi"]
+      },
+      {
+        "aspect": "c-ares 底层 DNS 库",
+        "note": "c-ares 已在 OpenHarmony PC C/C++ 预编译包清单中，无需从零移植",
+        "evidence": ["dependencies[].harmony_adapted=true for c-ares"]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python + OHOS NDK 环境下编译 pycares 的 cffi 扩展，静态链接 c-ares",
+      "验证 setup.py 平台分支在 HarmonyOS 下的行为，必要时添加 OHOS 条件处理",
+      "运行 pycares 单元测试（需联网 DNS 查询），确认 A/AAAA/MX/getaddrinfo 等核心功能正常",
+      "如需 IDNA 2008，单独评估并移植可选依赖 idna"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。核心原生依赖 cffi 与 c-ares 均已鸿蒙化，大大降低了移植难度；主要风险在于 cffi 扩展在 OHOS NDK 下的编译适配。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [
+      "deps/c-ares git submodule 未拉取，本次分析基于 .gitmodules、setup.py 与 cffi 声明推断 c-ares 集成方式。"
+    ],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "ambiguity",
+        "value": "submodule_plus_system_fallback",
+        "rationale": "c-ares 默认通过 git submodule 引入并在构建时静态编译，同时支持 PYCARES_USE_SYSTEM_LIB=1 回退到系统预装。现有 acquisition 取值（submodule/system）需要两条声明或备注才能准确表达这种\"构建时二选一\"的依赖关系。"
+      }
+    ]
+  }
+}

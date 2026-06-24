@@ -1,0 +1,822 @@
+{
+  "library": {
+    "name": "freesasa",
+    "package_name": "freesasa",
+    "source_url": "https://github.com/mittinatten/freesasa.git",
+    "analyzed_at": "2026-06-22T02:54:50.878Z",
+    "commit": "6af4c97c6f1bc29a0ebc0f7fe72f6179c9147ea1",
+    "one_liner": "用于计算生物大分子可及表面积（SASA）的 C 库与命令行工具，支持 PDB/mmCIF 输入和多种输出格式。",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "FreeSASA 是一个专注于生物大分子溶剂可及表面积（SASA）计算的 C/C++ 库，同时提供命令行工具。它实现了 Lee & Richards 与 Shrake & Rupley 两种经典算法，支持从 PDB 或 mmCIF 文件解析结构、为原子分配半径与极性/非极性类别、通过类 Pymol 选择语言提取子集面积，并可将结果导出为 log、RSA、JSON、XML、PDB 及 mmCIF 等多种格式。",
+    "categories": [
+      {
+        "name": "SASA 计算核心",
+        "description": "提供 Lee-Richards 与 Shrake-Rupley 两种 SASA 算法，支持单线程与可选的多线程计算。",
+        "evidence": ["src/freesasa.c:freesasa_calc", "src/freesasa.h:core", "src/sasa_lr.c", "src/sasa_sr.c"]
+      },
+      {
+        "name": "分子结构解析",
+        "description": "从 PDB 或 mmCIF 文件读取原子坐标、残基、链等信息，构建内部结构对象。",
+        "evidence": ["src/structure.c:freesasa_structure_from_pdb", "src/pdb.c", "src/cif.cc:freesasa_structure_from_cif", "src/freesasa.h:structure"]
+      },
+      {
+        "name": "原子分类与半径",
+        "description": "根据氨基酸/核酸类型为原子分配极性/非极性类别和半径，内置 ProtOr、NACCESS、OONS 分类器，并支持自定义配置文件。",
+        "evidence": ["src/classifier.c", "src/classifier_protor.c", "src/classifier_naccess.c", "src/classifier_oons.c", "src/freesasa.h:classifier"]
+      },
+      {
+        "name": "选择语言与子集面积",
+        "description": "实现类似 Pymol 的选择表达式语法，用于从结构中选取特定原子/残基并计算其 SASA 面积。",
+        "evidence": ["src/selection.c:freesasa_selection_new", "src/lexer.l", "src/parser.y", "src/freesasa.h:selection"]
+      },
+      {
+        "name": "结果输出与序列化",
+        "description": "将计算结果以 log、RSA、JSON、XML、PDB 或 mmCIF 格式输出，JSON/XML 为可选功能。",
+        "evidence": ["src/log.c", "src/rsa.c", "src/json.c", "src/xml.c", "src/cif.cc:freesasa_export_tree_to_cif", "src/freesasa.h:node"]
+      },
+      {
+        "name": "命令行工具",
+        "description": "提供 freesasa CLI，支持参数化算法、探针半径、输出格式、链分组与选择表达式。",
+        "evidence": ["src/main.cc", "doc/man/freesasa.1"]
+      }
+    ],
+    "domain": "生物信息学 / 结构生物学",
+    "target_users": "需要计算蛋白质、核酸等生物大分子可及表面积的研究人员、生物信息学开发者及结构生物学工作者"
+  },
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "C/C++ Header",
+      "Text",
+      "C++",
+      "Markdown",
+      "m4",
+      "SVG",
+      "F#"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 33,
+        "code": 13278,
+        "pct": 46.23,
+        "production": {
+          "files": 21,
+          "code": 10509
+        },
+        "test": {
+          "files": 12,
+          "code": 2769
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 31,
+        "code": 8476,
+        "pct": 29.51,
+        "production": {
+          "files": 30,
+          "code": 8468
+        },
+        "test": {
+          "files": 1,
+          "code": 8
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 2293,
+        "pct": 7.98,
+        "production": {
+          "files": 1,
+          "code": 293
+        },
+        "test": {
+          "files": 1,
+          "code": 2000
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 2,
+        "code": 1363,
+        "pct": 4.75,
+        "production": {
+          "files": 2,
+          "code": 1363
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 7,
+        "code": 1161,
+        "pct": 4.04,
+        "production": {
+          "files": 6,
+          "code": 1154
+        },
+        "test": {
+          "files": 1,
+          "code": 7
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "m4",
+        "files": 3,
+        "code": 1063,
+        "pct": 3.7,
+        "production": {
+          "files": 3,
+          "code": 1063
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 2,
+        "code": 256,
+        "pct": 0.89,
+        "production": {
+          "files": 2,
+          "code": 256
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "F#",
+        "files": 4,
+        "code": 209,
+        "pct": 0.73,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 4,
+          "code": 209
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Perl",
+        "files": 2,
+        "code": 169,
+        "pct": 0.59,
+        "production": {
+          "files": 2,
+          "code": 169
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 5,
+        "code": 113,
+        "pct": 0.39,
+        "production": {
+          "files": 4,
+          "code": 80
+        },
+        "test": {
+          "files": 1,
+          "code": 33
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "yacc",
+        "files": 1,
+        "code": 87,
+        "pct": 0.3,
+        "production": {
+          "files": 1,
+          "code": 87
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 62,
+        "pct": 0.22,
+        "production": {
+          "files": 2,
+          "code": 62
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 2,
+        "code": 56,
+        "pct": 0.19,
+        "production": {
+          "files": 2,
+          "code": 56
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TeX",
+        "files": 2,
+        "code": 47,
+        "pct": 0.16,
+        "production": {
+          "files": 2,
+          "code": 47
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "lex",
+        "files": 1,
+        "code": 42,
+        "pct": 0.15,
+        "production": {
+          "files": 1,
+          "code": 42
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Visual Studio Solution",
+        "files": 1,
+        "code": 32,
+        "pct": 0.11,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 32
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 1,
+        "code": 16,
+        "pct": 0.06,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 16
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 101,
+      "code": 28723,
+      "comment": 3648,
+      "blank": 5114,
+      "total_lines": 37485
+    },
+    "production": {
+      "files": 79,
+      "code": 23649,
+      "comment": 3526,
+      "blank": 4671,
+      "total_lines": 31846
+    },
+    "test": {
+      "files": 22,
+      "code": 5074,
+      "comment": 122,
+      "blank": 443,
+      "total_lines": 5639
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "C": {
+        "files": 21,
+        "code": 10509
+      },
+      "C/C++ Header": {
+        "files": 30,
+        "code": 8468
+      },
+      "C++": {
+        "files": 2,
+        "code": 1363
+      },
+      "Markdown": {
+        "files": 6,
+        "code": 1154
+      },
+      "m4": {
+        "files": 3,
+        "code": 1063
+      },
+      "Text": {
+        "files": 1,
+        "code": 293
+      },
+      "SVG": {
+        "files": 2,
+        "code": 256
+      },
+      "Perl": {
+        "files": 2,
+        "code": 169
+      },
+      "yacc": {
+        "files": 1,
+        "code": 87
+      },
+      "make": {
+        "files": 4,
+        "code": 80
+      },
+      "YAML": {
+        "files": 2,
+        "code": 62
+      },
+      "HTML": {
+        "files": 2,
+        "code": 56
+      },
+      "TeX": {
+        "files": 2,
+        "code": 47
+      },
+      "lex": {
+        "files": 1,
+        "code": 42
+      }
+    }
+  },
+  "tests": {
+    "test_files": 22,
+    "test_cases": 0,
+    "frameworks": ["Check"],
+    "by_language": {
+      "Text": {
+        "files": 1,
+        "cases": 0
+      },
+      "C": {
+        "files": 12,
+        "cases": 0
+      },
+      "F#": {
+        "files": 4,
+        "cases": 0
+      },
+      "make": {
+        "files": 1,
+        "cases": 0
+      },
+      "Visual Studio Solution": {
+        "files": 1,
+        "cases": 0
+      },
+      "XML": {
+        "files": 1,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 1,
+        "cases": 0
+      },
+      "Markdown": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "note": "脚本基于正则匹配，未识别 Check 框架的 START_TEST 宏，因此 test_cases 为 0；实际约有 53 个 Check 测试用例（tests/*.c）。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "顶层 LICENSE 文本与 MIT 模板一致；README.md:208 也声明为 MIT License。",
+    "notes": "仓库内 third-party/gemmi/ 下的 Gemmi 代码采用 MPL-2.0 许可（见 third-party/gemmi/LICENSE.txt），与主项目 MIT 许可不同。"
+  },
+  "dependencies": {
+    "count": 10,
+    "manifests": ["configure.ac", "src/Makefile.am", "tests/Makefile.am", "Makefile.am"],
+    "by_ecosystem": {
+      "cpp": ["libm", "libpthread", "json-c", "libxml2", "libstdc++", "gemmi", "libdl", "Check"],
+      "other": ["Doxygen", "Flex/Bison"]
+    },
+    "dependencies": [
+      {
+        "name": "libm",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "C 数学函数（sqrt、acos、atan2、fabs 等）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(AC_CHECK_LIB，需预装 libc 数学库)",
+        "declared_in": ["configure.ac:22"]
+      },
+      {
+        "name": "libpthread",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "可选的多线程 SASA 计算",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(可选；--disable-threads 可关闭；需预装 pthread 库)",
+        "declared_in": ["configure.ac:54-70"]
+      },
+      {
+        "name": "json-c",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "JSON 输出序列化",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(libjson-c-dev，需预装；--disable-json 可关闭)",
+        "declared_in": ["configure.ac:91-110", "src/Makefile.am:37-41"]
+      },
+      {
+        "name": "libxml2",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "XML 输出序列化",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(libxml2-dev，需预装；--disable-xml 可关闭)",
+        "declared_in": ["configure.ac:72-89", "src/Makefile.am:43-48"]
+      },
+      {
+        "name": "libstdc++",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "C++ CLI 与 mmCIF 解析器所需的 C++ 标准库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(GNU C++ 标准库，随 C++ 编译器提供)",
+        "declared_in": ["src/Makefile.am:3"]
+      },
+      {
+        "name": "gemmi",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "头文件-only 的 mmCIF 读写与结构解析（vendored）",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 third-party/gemmi/include",
+        "declared_in": ["Makefile.am:4", "src/Makefile.am:4", "src/cif.cc:12-16"]
+      },
+      {
+        "name": "libdl",
+        "ecosystem": "cpp",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试时使用 dlsym 拦截 malloc/realloc/strdup 模拟内存错误",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(libdl，测试链接 -ldl)",
+        "declared_in": ["configure.ac:23", "tests/Makefile.am:23"]
+      },
+      {
+        "name": "Check",
+        "ecosystem": "cpp",
+        "scope": "test",
+        "version": null,
+        "purpose": "C 单元测试框架",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(Check 库，--enable-check 时预装)",
+        "declared_in": ["configure.ac:151-168", "tests/Makefile.am:13-36"]
+      },
+      {
+        "name": "Doxygen",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建 HTML 参考手册",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(可执行程序，--enable-doxygen 时预装)",
+        "declared_in": ["configure.ac:128-149"]
+      },
+      {
+        "name": "Flex/Bison",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": null,
+        "purpose": "从 lexer.l/parser.y 重新生成词法/语法解析器",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(可执行程序，--enable-parser-generator 时预装)",
+        "declared_in": ["configure.ac:112-126"]
+      }
+    ],
+    "notes": "所有运行时依赖均为系统库或可选；JSON/XML 可在配置时关闭以最小化依赖。Python 绑定位于独立仓库 freesasa-python，不在本仓库内。"
+  },
+  "native_api": {
+    "summary": "FreeSASA 主要调用 C 标准库与 POSIX 线程 API。核心计算为纯数值算法，平台耦合较轻；CLI 依赖 POSIX getopt_long 与 isatty，多线程部分依赖 pthread，均可通过配置或替代实现规避。",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "malloc", "purpose": "动态内存分配", "count": 63, "evidence": ["src/freesasa.c:48", "src/selection.c:249", "src/structure.c:655"]},
+          {"name": "free", "purpose": "释放动态内存", "count": 130, "evidence": ["src/freesasa.c:71", "src/selection.c:275", "src/structure.c:720"]},
+          {"name": "strdup", "purpose": "字符串复制", "count": 34, "evidence": ["src/main.cc:415", "src/selection.c:120", "src/classifier.c:694"]},
+          {"name": "fopen", "purpose": "打开输入/输出/配置文件", "count": 2, "evidence": ["src/main.cc:371", "src/freesasa.h:546"]},
+          {"name": "fprintf", "purpose": "格式化输出到文件或标准错误", "count": 73, "evidence": ["src/main.cc:235", "src/log.c:1", "src/xml.c:612"]},
+          {"name": "snprintf", "purpose": "安全格式化字符串", "count": 12, "evidence": ["src/main.cc:337", "src/xml.c:420"]},
+          {"name": "strerror", "purpose": "获取错误描述字符串", "count": 13, "evidence": ["src/main.cc:375", "src/json.c:287"]},
+          {"name": "sqrt", "purpose": "平方根计算", "count": 7, "evidence": ["src/sasa_lr.c:311"]},
+          {"name": "fabs", "purpose": "浮点数绝对值", "count": 26, "evidence": ["src/sasa_lr.c:308"]},
+          {"name": "acos", "purpose": "反余弦（圆弧计算）", "count": 1, "evidence": ["src/sasa_lr.c:335"]},
+          {"name": "atan2", "purpose": "反正切（圆弧计算）", "count": 1, "evidence": ["src/sasa_lr.c:337"]},
+          {"name": "strcmp", "purpose": "字符串比较", "count": 31, "evidence": ["src/main.cc:461", "src/classifier.c:658"]},
+          {"name": "strncmp", "purpose": "限定长度字符串比较", "count": 18, "evidence": ["src/structure.c:665"]},
+          {"name": "strlen", "purpose": "字符串长度", "count": 41, "evidence": ["src/json.c:33", "src/main.cc:397"]},
+          {"name": "memset", "purpose": "内存清零/初始化", "count": 6, "evidence": ["src/main.cc:562"]},
+          {"name": "memcpy", "purpose": "内存拷贝", "count": 6, "evidence": ["src/freesasa.c:248"]}
+        ]
+      },
+      {
+        "type": "posix_threads",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "pthread_create", "purpose": "创建计算线程", "count": 3, "evidence": ["src/sasa_lr.c:238", "src/sasa_sr.c:246"], "conditional": true},
+          {"name": "pthread_join", "purpose": "等待线程结束", "count": 3, "evidence": ["src/sasa_lr.c:247", "src/sasa_sr.c:254"], "conditional": true},
+          {"name": "pthread_exit", "purpose": "退出线程", "count": 2, "evidence": ["src/sasa_lr.c:266", "src/sasa_sr.c:272"], "conditional": true}
+        ]
+      },
+      {
+        "type": "posix_cli",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "getopt_long", "purpose": "解析命令行长选项", "count": 1, "evidence": ["src/main.cc:564"], "conditional": false},
+          {"name": "isatty", "purpose": "判断 stdin 是否为终端", "count": 1, "evidence": ["src/main.cc:772"], "conditional": false}
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "CLI 从文件路径或 stdin 读取 PDB/mmCIF 输入，通过 --output 写入结果文件，也可读取 --config-file 配置文件；无网络、无子进程、无环境变量读取、无设备访问。",
+    "network": [],
+    "filesystem": [
+      {"detail": "PDB/mmCIF 输入文件", "purpose": "读取待计算结构的分子坐标", "evidence": ["src/main.cc:765", "src/main.cc:772"]},
+      {"detail": "--output 指定的结果文件", "purpose": "写入 SASA 计算结果", "evidence": ["src/main.cc:717"]},
+      {"detail": "--config-file 原子半径/分类配置文件", "purpose": "自定义原子半径与极性分类", "evidence": ["src/main.cc:627"]},
+      {"detail": "stdout/stderr", "purpose": "默认结果输出与错误/警告信息", "evidence": ["src/main.cc:719", "src/main.cc:235"]}
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "C99/C11 + C++14",
+    "runtime_version": "无（原生 C/C++ 库/CLI）",
+    "build_system": "GNU Autotools (autoconf/automake)",
+    "compiler_extensions": [
+      {"detail": "__attribute__((pure)) 标记纯函数", "evidence": ["src/sasa_sr.c:25", "src/coord.h:5"]},
+      {"detail": "__attribute__((noreturn)) 用于生成器代码", "evidence": ["src/lexer.h:99", "src/lexer.c:95"]},
+      {"detail": "C99 restrict 关键字", "evidence": ["src/sasa_lr.c:58", "src/sasa_sr.c:25"]}
+    ],
+    "platforms": [
+      {"os": "linux", "arch": "x86_64", "evidence": [".github/workflows/push.yml"]},
+      {"os": "macos", "arch": "amd64/arm64", "evidence": ["README.md:91"]},
+      {"os": "windows", "arch": "x86_64", "evidence": ["README.md:149"]}
+    ],
+    "notes": "Windows 下仅 C API 有 MSVC 构建记录，CLI 需 MinGW/Cygwin；核心计算与 PDB 解析完全跨平台。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（原生 C/C++ 库/CLI 经 OHOS NDK 交叉编译；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "effort_estimate": "M",
+    "recommended_path": "cross_compile",
+    "summary": "FreeSASA 是计算密集型原生 C/C++ 库，核心算法仅依赖 C 标准库与数学库，无网络、子进程、设备或平台专有系统调用。移植主线是使用 OHOS NDK 交叉编译，重点验证可选依赖 pthread、json-c、libxml2 及 C++ 标准库链接在鸿蒙 musl 上的可用性；若无需 JSON/XML 或多线程，可通过配置开关关闭对应功能以降低风险。",
+    "blockers": [
+      {
+        "issue": "可选 POSIX 线程（pthread_create/pthread_join）在 OHOS NDK/musl 上的可用性",
+        "severity": "minor",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "确认 OHOS musl 支持 pthread；如不支持，可用 --disable-threads 关闭多线程，退化为单线程计算。",
+        "evidence": ["src/sasa_lr.c:238", "src/sasa_sr.c:246"]
+      },
+      {
+        "issue": "可选 JSON-C 依赖在鸿蒙上是否可用",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "交叉编译 json-c 为鸿蒙 .so，或在不需要 JSON 输出时配置 --disable-json。",
+        "evidence": ["configure.ac:91-110"]
+      },
+      {
+        "issue": "可选 libxml2 依赖在鸿蒙上是否可用",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "交叉编译 libxml2 为鸿蒙 .so，或在不需要 XML 输出时配置 --disable-xml。",
+        "evidence": ["configure.ac:72-89"]
+      },
+      {
+        "issue": "CLI 使用 POSIX/GNU 的 getopt_long 与 isatty",
+        "severity": "minor",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "musl 支持 getopt_long 与 isatty；如有缺失，可用鸿蒙 C 库等价实现或限制为非交互式管道输入。",
+        "evidence": ["src/main.cc:564", "src/main.cc:772"]
+      },
+      {
+        "issue": "构建脚本显式链接 libstdc++，OHOS NDK 默认使用 libc++",
+        "severity": "minor",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "修改 src/Makefile.am / configure 使用 -lc++ 替代 -lstdc++，或在鸿蒙工具链中提供兼容的 C++ 标准库链接。",
+        "evidence": ["src/Makefile.am:3"]
+      },
+      {
+        "issue": "vendored Gemmi C++ 库含 Windows/POSIX 条件分支与第三方代码",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "cif.cc 仅使用 gemmi 的 cstream 接口读取 mmCIF；确认实际路径不依赖 Windows 专有 API 或 Linux 特有文件映射，必要时条件编译关闭 CIF 支持。",
+        "evidence": ["src/cif.cc:209", "third-party/gemmi/include/gemmi/cif.hpp:18"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "SASA 核心算法（Lee-Richards / Shrake-Rupley）",
+        "note": "纯 C 数值计算，无平台耦合，可直接用 OHOS NDK 编译。",
+        "evidence": ["src/sasa_lr.c", "src/sasa_sr.c", "src/freesasa.c"]
+      },
+      {
+        "aspect": "PDB 解析与选择语言",
+        "note": "除 mmCIF 的 Gemmi 封装外均为自研 C/C++ 代码，仅依赖标准 I/O。",
+        "evidence": ["src/structure.c", "src/selection.c", "src/pdb.c"]
+      },
+      {
+        "aspect": "文本输出格式（log/RSA/PDB）",
+        "note": "log、RSA、PDB 输出为纯文本，不依赖外部库。",
+        "evidence": ["src/log.c", "src/rsa.c", "src/freesasa.c:freesasa_write_pdb"]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK / ohos.toolchain.cmake 交叉编译 libfreesasa 与 freesasa CLI",
+      "调整 C++ 标准库链接：src/Makefile.am 中 -lstdc++ 改为 -lc++ 或等效",
+      "在鸿蒙上安装/交叉编译 json-c、libxml2，或配置 --disable-json/--disable-xml",
+      "验证 pthread 支持，必要时使用 --disable-threads 关闭多线程",
+      "运行 Check 单元测试与 CLI 测试，验证计算结果一致性"
+    ],
+    "notes": "评估按模型 A（原生 C/C++ 库/CLI 在鸿蒙 PC 上运行）；若目标是 ArkTS 应用，则需在 C/C++ 核心之上额外封装 Node-API，工作量会上升。JSON/XML 为可选输出，关闭后可显著降低外部依赖。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [
+      "codegraph 初始未初始化，已执行 `codegraph init repos/freesasa && codegraph index repos/freesasa` 完成索引。",
+      "metrics 脚本基于正则未识别 Check 框架的 START_TEST 宏，test_cases 为 0；实际约有 53 个 Check 测试用例。"
+    ],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "scope",
+        "kind": "gap",
+        "value": "C/C++ 编译器自带的 C++ 标准库作为 runtime 依赖",
+        "rationale": "libstdc++ 不是通过包管理器声明的独立包，而是随编译器提供的 runtime；现有 acquisition=system 可覆盖，但没有更细的分类来区分系统库与编译器 runtime。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "cross_compile",
+        "rationale": "该库为 C/C++ CLI/库，默认部署模型是交叉编译为鸿蒙原生可执行文件/库；仅 ArkTS 集成时才需要 Node-API 封装。"
+      }
+    ]
+  }
+}

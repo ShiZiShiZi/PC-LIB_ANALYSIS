@@ -1,0 +1,982 @@
+{
+  "library": {
+    "name": "typeshed",
+    "package_name": "typeshed",
+    "source_url": "https://github.com/python/typeshed.git",
+    "analyzed_at": "2026-06-22T11:25:29.349Z",
+    "commit": "fb2af6606cf8fa85a8bf06c0d1f5689327d4b6fc",
+    "one_liner": "Python 标准库与第三方包的社区维护类型存根集合，供静态类型检查器使用。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "typeshed 是 Python 生态的核心类型存根仓库，为 Python 标准库、内建对象以及大量第三方 PyPI 包提供 .pyi 静态类型签名。这些存根本身不执行，而是作为类型检查器（mypy、pyright、PyCharm 等）的输入，用于静态分析、类型推断和自动补全。仓库同时包含完整的测试与维护基础设施，用于验证存根质量、自动生成新包存根，以及向 PyPI 发布 types-* 存根包。",
+    "categories": [
+      {
+        "name": "标准库类型存根",
+        "description": "为 Python 标准库与内建模块提供类型签名，覆盖 os、sys、socket、ctypes 等模块。",
+        "evidence": [
+          "stdlib/VERSIONS",
+          "stdlib/@tests/test_cases",
+          "stdlib/ctypes.pyi",
+          "stdlib/os/__init__.pyi"
+        ]
+      },
+      {
+        "name": "第三方包类型存根",
+        "description": "为 PyPI 上无内建类型注解的第三方包提供 types-* 存根包，按包分目录管理，并声明版本与依赖。",
+        "evidence": [
+          "stubs/requests/METADATA.toml",
+          "stubs/numpy/METADATA.toml",
+          "stubs/paramiko/METADATA.toml"
+        ]
+      },
+      {
+        "name": "存根质量测试基础设施",
+        "description": "使用 mypy、pyright 与 stubtest 对存根进行回归测试、结构检查与运行时一致性校验。",
+        "evidence": [
+          "tests/mypy_test.py",
+          "tests/pyright_test.py",
+          "tests/stubtest_stdlib.py",
+          "tests/regr_test.py"
+        ]
+      },
+      {
+        "name": "存根生成与维护脚本",
+        "description": "自动生成新包基线存根、同步上游 protobuf 定义、以及自动检测并更新过期存根版本。",
+        "evidence": [
+          "scripts/create_baseline_stubs.py",
+          "scripts/stubsabot.py",
+          "scripts/sync_protobuf/"
+        ]
+      },
+      {
+        "name": "公共工具库",
+        "description": "ts_utils 提供解析 METADATA.toml、路径常量、版本要求与 mypy 配置等共享能力，供 tests 与 scripts 复用。",
+        "evidence": [
+          "lib/ts_utils/metadata.py",
+          "lib/ts_utils/paths.py",
+          "lib/ts_utils/utils.py"
+        ]
+      }
+    ],
+    "domain": "developer_tools",
+    "target_users": "Python 开发者、类型检查器维护者、希望为第三方库贡献类型存根的开源贡献者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "Text",
+      "Markdown",
+      "TOML",
+      "YAML",
+      "JSON",
+      "JSON5",
+      "INI"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 4984,
+        "code": 307895,
+        "pct": 97.72,
+        "production": {
+          "files": 4911,
+          "code": 303460
+        },
+        "test": {
+          "files": 39,
+          "code": 3632
+        },
+        "example": {
+          "files": 34,
+          "code": 803
+        }
+      },
+      {
+        "language": "Text",
+        "files": 178,
+        "code": 4450,
+        "pct": 1.41,
+        "production": {
+          "files": 177,
+          "code": 4447
+        },
+        "test": {
+          "files": 1,
+          "code": 3
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 6,
+        "code": 839,
+        "pct": 0.27,
+        "production": {
+          "files": 4,
+          "code": 567
+        },
+        "test": {
+          "files": 2,
+          "code": 272
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 201,
+        "code": 832,
+        "pct": 0.26,
+        "production": {
+          "files": 201,
+          "code": 832
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 9,
+        "code": 769,
+        "pct": 0.24,
+        "production": {
+          "files": 8,
+          "code": 689
+        },
+        "test": {
+          "files": 1,
+          "code": 80
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 4,
+        "code": 234,
+        "pct": 0.07,
+        "production": {
+          "files": 3,
+          "code": 209
+        },
+        "test": {
+          "files": 1,
+          "code": 25
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON5",
+        "files": 1,
+        "code": 37,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 37
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 2,
+        "code": 20,
+        "pct": 0.01,
+        "production": {
+          "files": 2,
+          "code": 20
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 5385,
+      "code": 315076,
+      "comment": 16362,
+      "blank": 36958,
+      "total_lines": 368396
+    },
+    "production": {
+      "files": 5307,
+      "code": 310261,
+      "comment": 15614,
+      "blank": 36078,
+      "total_lines": 361953
+    },
+    "test": {
+      "files": 44,
+      "code": 4012,
+      "comment": 408,
+      "blank": 692,
+      "total_lines": 5112
+    },
+    "example": {
+      "files": 34,
+      "code": 803,
+      "comment": 340,
+      "blank": 188,
+      "total_lines": 1331
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 4911,
+        "code": 303460
+      },
+      "Text": {
+        "files": 177,
+        "code": 4447
+      },
+      "TOML": {
+        "files": 201,
+        "code": 832
+      },
+      "YAML": {
+        "files": 8,
+        "code": 689
+      },
+      "Markdown": {
+        "files": 4,
+        "code": 567
+      },
+      "JSON": {
+        "files": 3,
+        "code": 209
+      },
+      "JSON5": {
+        "files": 1,
+        "code": 37
+      },
+      "INI": {
+        "files": 2,
+        "code": 20
+      }
+    }
+  },
+  "tests": {
+    "test_files": 44,
+    "test_cases": 5,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 39,
+        "cases": 5
+      },
+      "Markdown": {
+        "files": 2,
+        "cases": 0
+      },
+      "YAML": {
+        "files": 1,
+        "cases": 0
+      },
+      "JSON": {
+        "files": 1,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件包含完整 Apache-2.0 文本；文件末尾同时声明部分代码基于 MIT 许可。",
+    "notes": "项目整体以 Apache-2.0 授权；部分原始代码（如 Jukka Lehtosalo 和 contributors 的部分）采用 MIT License。permissive 许可，需保留 NOTICE/版权声明。"
+  },
+  "dependencies": {
+    "count": 16,
+    "manifests": [
+      "pyproject.toml",
+      "requirements-tests.txt",
+      ".pre-commit-config.yaml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "mypy",
+        "pyright",
+        "aiohttp",
+        "grpcio-tools",
+        "mypy-protobuf",
+        "packaging",
+        "pathspec",
+        "pre-commit",
+        "ruff",
+        "stubdefaulter",
+        "termcolor",
+        "tomli",
+        "tomlkit",
+        "typing_extensions",
+        "uv",
+        "ts_utils"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "mypy",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "==2.1.0",
+        "purpose": "对 stdlib 与 third-party stubs 运行类型检查测试",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:3"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pyright",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": "==1.1.410",
+        "purpose": "对 stubs 与 test cases 运行 pyright 类型检查测试",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI/npm",
+        "declared_in": [
+          "requirements-tests.txt:4"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "aiohttp",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "==3.14.1",
+        "purpose": "create_baseline_stubs.py 与 stubsabot.py 中用于异步访问 PyPI/GitHub API",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:7"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "grpcio-tools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=1.76.0",
+        "purpose": "scripts/sync_protobuf 中调用 grpc_tools.protoc 生成 protobuf 存根",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:8"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "mypy-protobuf",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": "==5.0.0",
+        "purpose": "为 protobuf 生成带 mypy 类型的 Python 存根",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:9"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "packaging",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "==26.0",
+        "purpose": "解析与比较版本号、specifier（stubsabot 与元数据解析）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:10"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pathspec",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.1.1",
+        "purpose": "按 .gitignore 模式匹配路径（测试与结构检查）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:11"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pre-commit",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "本地与 CI 中运行代码格式化与 lint 钩子",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:12"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ruff",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "==0.15.8",
+        "purpose": "对 stubs、tests、scripts 运行快速 lint 与自动修复",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:15"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "stubdefaulter",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": "==0.1.0",
+        "purpose": "create_baseline_stubs.py 中自动为生成存根填充默认值",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:16"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "termcolor",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=2.3",
+        "purpose": "脚本终端输出彩色日志",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:17"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "tomli",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "==2.4.1",
+        "purpose": "Python <3.11 时解析 TOML（METADATA.toml、pyproject.toml）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:18"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "tomlkit",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "==0.14.0",
+        "purpose": "读写 METADATA.toml 并保持格式与注释（stubsabot 更新元数据）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:19"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "typing_extensions",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=4.15.0rc1",
+        "purpose": "在 Python 3.10+ 中使用高版本 typing 特性",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:20"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "uv",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": "==0.11.15",
+        "purpose": "CI 与本地开发中快速创建虚拟环境与安装依赖",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "requirements-tests.txt:21"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ts_utils",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "typeshed 内部共享工具库：路径常量、METADATA.toml 解析、版本要求处理",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 lib/ts_utils，通过 requirements-tests.txt 中的 file:lib 本地安装",
+        "declared_in": [
+          "requirements-tests.txt:24"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "pyproject.toml 仅用于工具配置（ruff/black/typeshed），未声明项目运行时依赖。各 stubs/*/METADATA.toml 中声明的 dependencies 是针对发布的 types-* 存根包的依赖，不是 typeshed 项目本身的直接依赖；本报告只列出项目自身测试与维护工具链依赖。"
+  },
+  "native_api": {
+    "summary": "typeshed 为纯 Python 项目，无 C/C++ 原生扩展、无 FFI、无动态加载库。可执行脚本仅使用 Python 标准库（subprocess、urllib、pathlib、tempfile、zipfile、tarfile、importlib.metadata 等）和少量第三方库（aiohttp、packaging、tomlkit）。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "subprocess.run",
+            "purpose": "调用外部命令（stubgen、ruff、pre-commit、mypy、pyright、git、uv、protoc 等）",
+            "count": 30,
+            "evidence": [
+              "scripts/create_baseline_stubs.py:50",
+              "tests/runtests.py:81",
+              "scripts/stubsabot.py:948"
+            ]
+          },
+          {
+            "name": "urllib.request.urlopen",
+            "purpose": "下载 protobuf 上游归档文件",
+            "count": 1,
+            "evidence": [
+              "scripts/sync_protobuf/_utils.py:27"
+            ]
+          },
+          {
+            "name": "importlib.metadata.distribution",
+            "purpose": "读取已安装包元数据以推断顶层模块名",
+            "count": 2,
+            "evidence": [
+              "scripts/create_baseline_stubs.py:211"
+            ]
+          },
+          {
+            "name": "pathlib.Path",
+            "purpose": "跨平台文件路径操作，贯穿存根读写与测试",
+            "count": 100,
+            "evidence": [
+              "lib/ts_utils/paths.py:8",
+              "scripts/create_baseline_stubs.py:22"
+            ]
+          },
+          {
+            "name": "tempfile.TemporaryDirectory",
+            "purpose": "测试与脚本中创建临时目录",
+            "count": 5,
+            "evidence": [
+              "tests/mypy_test.py:11",
+              "tests/stubtest_third_party.py:11"
+            ]
+          },
+          {
+            "name": "zipfile.ZipFile",
+            "purpose": "解压下载的 wheel/sdist 与归档",
+            "count": 4,
+            "evidence": [
+              "scripts/stubsabot.py:204",
+              "scripts/sync_protobuf/_utils.py:33"
+            ]
+          },
+          {
+            "name": "os.environ",
+            "purpose": "读取 GITHUB_TOKEN、PYRIGHT_PYTHON_FORCE_VERSION、STUBTEST_ARGS、VIRTUAL_ENV 等环境变量",
+            "count": 8,
+            "evidence": [
+              "scripts/stubsabot.py",
+              "tests/pyright_test.py",
+              "tests/stubtest_third_party.py"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "third_party_http",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "aiohttp.ClientSession.get",
+            "purpose": "异步请求 PyPI JSON API 与 GitHub API（stubsabot 与 create_baseline_stubs）",
+            "count": 6,
+            "evidence": [
+              "scripts/create_baseline_stubs.py:76",
+              "scripts/stubsabot.py:125"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "typeshed 的存根本身无运行时行为。其维护与测试脚本在运行时依赖网络访问、文件系统读写以及大量外部命令调用。",
+    "network": [
+      {
+        "detail": "PyPI JSON API (https://pypi.org/pypi/{project}/json)",
+        "purpose": "create_baseline_stubs.py 与 stubsabot.py 查询包版本、项目 URL 与 release 信息",
+        "evidence": [
+          "scripts/create_baseline_stubs.py:75",
+          "scripts/stubsabot.py:124"
+        ]
+      },
+      {
+        "detail": "GitHub REST API (https://api.github.com/repos/...)",
+        "purpose": "stubsabot.py 获取 tags、commits compare 信息并创建 PR",
+        "evidence": [
+          "scripts/stubsabot.py:43",
+          "scripts/stubsabot.py:339"
+        ]
+      },
+      {
+        "detail": "GitLab API (https://gitlab.com/api/v4/...)",
+        "purpose": "stubsabot.py 对 GitLab 托管的上游仓库进行版本对比",
+        "evidence": [
+          "scripts/stubsabot.py"
+        ]
+      },
+      {
+        "detail": "protobuf 发布归档下载 (https://github.com/.../releases/download/...)",
+        "purpose": "scripts/sync_protobuf 同步上游 .proto 文件",
+        "evidence": [
+          "scripts/sync_protobuf/google_protobuf.py",
+          "scripts/sync_protobuf/s2clientprotocol.py"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "typeshed 仓库根目录下的 stdlib/、stubs/、tests/、scripts/",
+        "purpose": "读取与生成 .pyi 存根、METADATA.toml、测试用例与脚本",
+        "evidence": [
+          "lib/ts_utils/paths.py:9-10",
+          "scripts/create_baseline_stubs.py:219"
+        ]
+      },
+      {
+        "detail": "临时目录（tempfile）",
+        "purpose": "mypy_test、stubtest_third_party、regr_test 创建隔离虚拟环境与临时文件",
+        "evidence": [
+          "tests/mypy_test.py",
+          "tests/stubtest_third_party.py"
+        ]
+      },
+      {
+        "detail": "下载的 protobuf 归档与生成文件",
+        "purpose": "sync_protobuf 脚本下载上游 .proto 并生成 .pyi",
+        "evidence": [
+          "scripts/sync_protobuf/_utils.py:24-34"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "GITHUB_TOKEN",
+        "purpose": "stubsabot.py 认证访问 GitHub API 以创建 PR/更新标签",
+        "evidence": [
+          "scripts/stubsabot.py"
+        ]
+      },
+      {
+        "name": "PYRIGHT_PYTHON_FORCE_VERSION",
+        "purpose": "pyright_test.py 强制使用 requirements-tests.txt 中指定的 pyright 版本",
+        "evidence": [
+          "tests/pyright_test.py"
+        ]
+      },
+      {
+        "name": "STUBTEST_ARGS",
+        "purpose": "stubtest_third_party.py 在子进程中传递 stubtest 参数",
+        "evidence": [
+          "tests/stubtest_third_party.py"
+        ]
+      },
+      {
+        "name": "VIRTUAL_ENV",
+        "purpose": "regr_test.py 在隔离虚拟环境中运行测试用例",
+        "evidence": [
+          "tests/regr_test.py"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "pip",
+        "purpose": "create_baseline_stubs.py 获取已安装包版本信息",
+        "evidence": [
+          "scripts/create_baseline_stubs.py:50"
+        ]
+      },
+      {
+        "command": "stubgen",
+        "purpose": "create_baseline_stubs.py 生成新包基线存根",
+        "evidence": [
+          "scripts/create_baseline_stubs.py:56"
+        ]
+      },
+      {
+        "command": "stubdefaulter",
+        "purpose": "create_baseline_stubs.py 为生成存根填充默认值",
+        "evidence": [
+          "scripts/create_baseline_stubs.py:61"
+        ]
+      },
+      {
+        "command": "pre-commit",
+        "purpose": "create_baseline_stubs.py 与 runtests.py 运行格式化和 lint 钩子",
+        "evidence": [
+          "scripts/create_baseline_stubs.py:66",
+          "tests/runtests.py:81"
+        ]
+      },
+      {
+        "command": "ruff",
+        "purpose": "create_baseline_stubs.py 对生成存根自动修复 lint",
+        "evidence": [
+          "scripts/create_baseline_stubs.py:71"
+        ]
+      },
+      {
+        "command": "uv",
+        "purpose": "install_all_third_party_dependencies.py 安装第三方 stub 运行时依赖",
+        "evidence": [
+          "scripts/install_all_third_party_dependencies.py:7"
+        ]
+      },
+      {
+        "command": "git",
+        "purpose": "stubsabot.py 获取 remote URL、创建分支、提交并推送 PR",
+        "evidence": [
+          "scripts/stubsabot.py"
+        ]
+      },
+      {
+        "command": "mypy",
+        "purpose": "runtests.py 与 mypy_test.py 对 stubs 进行类型检查",
+        "evidence": [
+          "tests/runtests.py:104"
+        ]
+      },
+      {
+        "command": "pyright",
+        "purpose": "runtests.py 与 pyright_test.py 对 stubs 进行类型检查",
+        "evidence": [
+          "tests/runtests.py:88"
+        ]
+      },
+      {
+        "command": "grpc_tools.protoc",
+        "purpose": "sync_protobuf 脚本编译 .proto 为 .pyi 存根",
+        "evidence": [
+          "scripts/sync_protobuf/_utils.py:55"
+        ]
+      }
+    ],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >=3.10",
+    "runtime_version": "Python 3.10 - 3.15（CI 矩阵覆盖 3.10/3.11/3.12/3.13/3.14/3.15；本地脚本最低 3.10）",
+    "build_system": "uv / pip 安装依赖；ts_utils 通过 file:lib 本地安装；pre-commit 管理格式化与 lint 钩子；CI 使用 GitHub Actions",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/tests.yml:41",
+          "tests/mypy_test.py:48"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/tests.yml:44",
+          "tests/mypy_test.py:48"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64 / arm64",
+        "evidence": [
+          ".github/workflows/tests.yml:44",
+          "tests/mypy_test.py:48"
+        ]
+      }
+    ],
+    "notes": "CI 在 ubuntu-latest 上运行，但通过 mypy/pyright 的 platform 参数覆盖 linux、win32、darwin 三种 sys.platform。stubtest 需要平台特定的系统包（apt/brew/choco），这部分仅在对应平台 CI 或本地环境中生效。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible",
+    "overall_difficulty": "low",
+    "effort_estimate": "XS",
+    "porting_class": "no_adaptation",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "typeshed 是纯 Python 类型存根仓库，无原生扩展、无平台耦合，核心功能（存根本身）不执行任何代码，可直接在鸿蒙 PC 已移植的 Python 运行时上使用。测试与维护脚本也均为纯 Python，仅依赖标准库与常见 PyPI 包，整体无需适配。",
+    "blockers": [
+      {
+        "issue": "stubtest 与部分脚本依赖外部命令（apt/brew/choco 系统包、pip、pre-commit、grpc_tools.protoc 等）",
+        "severity": "minor",
+        "category": "external_command",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "partial",
+        "remediation": "核心存根使用无需这些命令；若需在鸿蒙上完整跑 CI，只需确保对应 Python 工具链与系统包可用，缺失项可跳过对应测试。",
+        "evidence": [
+          "tests/runtests.py:81-104",
+          ".github/workflows/tests.yml:57-63"
+        ]
+      },
+      {
+        "issue": "stubsabot.py 与 create_baseline_stubs.py 需要访问 PyPI/GitHub 网络 API",
+        "severity": "minor",
+        "category": "network_dependency",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "partial",
+        "remediation": "仅在执行自动化维护脚本时需要网络；存根读取与类型检查完全离线可用。",
+        "evidence": [
+          "scripts/create_baseline_stubs.py:75",
+          "scripts/stubsabot.py:124"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 存根数据",
+        "note": "stdlib/ 与 stubs/ 下大量 .pyi 文件仅为类型签名，不依赖任何平台 API，可直接在鸿蒙 Python 上使用。",
+        "evidence": [
+          "stdlib/",
+          "stubs/"
+        ]
+      },
+      {
+        "aspect": "测试与维护脚本",
+        "note": "tests/ 与 scripts/ 均为纯 Python，仅使用标准库与 PyPI 包，无原生扩展。",
+        "evidence": [
+          "tests/mypy_test.py",
+          "scripts/create_baseline_stubs.py"
+        ]
+      },
+      {
+        "aspect": "已鸿蒙化的部分依赖",
+        "note": "aiohttp、grpcio-tools、ruff 已在 OpenHarmony PC PyPI 镜像提供 ohos wheel，可降低维护脚本部署难度。",
+        "evidence": [
+          "requirements-tests.txt"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 3.12 环境中安装 requirements-tests.txt 依赖（部分工具如 uv/pre-commit 若不可用可跳过）",
+      "运行 tests/mypy_test.py 与 tests/pyright_test.py 验证存根在鸿蒙上可被类型检查器加载",
+      "如需执行 stubtest，准备对应平台系统包替代方案或跳过平台特定测试"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。typeshed 本质是类型数据仓库，不是传统运行时库；其移植性几乎完全由 Python 运行时保证。若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，需要改为使用 ArkTS/Node-API 生态重新实现类型检查能力，结论将收紧为 hard/very_high，但此口径不适用于 typeshed 的常规使用场景。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "domain",
+        "kind": "new_value",
+        "value": "developer_tools",
+        "rationale": "typeshed 不是常规功能库，而是为类型检查器提供输入的开发者工具/数据仓库，推荐取值中未直接覆盖，故使用 developer_tools。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "scope",
+        "kind": "ambiguity",
+        "value": "stubs_metadata_dependencies",
+        "rationale": "typeshed 项目中存在大量 stubs/*/METADATA.toml 内声明的 dependencies，它们属于发布的 types-* 包，而非 typeshed 项目自身依赖。当前按项目自身工具链依赖列出，并在 notes 中说明区别。"
+      }
+    ]
+  }
+}

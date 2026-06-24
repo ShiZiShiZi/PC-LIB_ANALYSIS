@@ -1,0 +1,934 @@
+{
+  "library": {
+    "name": "playwright-python",
+    "package_name": "playwright",
+    "source_url": "https://github.com/Microsoft/playwright-python",
+    "analyzed_at": "2026-06-21T15:56:55.832Z",
+    "commit": "f75d727269506724c9765f6bebd404e91062890e",
+    "one_liner": "Microsoft Playwright 的 Python 绑定，通过 pipe 与 Node.js 驱动通信以自动化 Chromium/Firefox/WebKit。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "playwright 是跨浏览器 Web 自动化库。本仓库为其 Python 语言绑定：客户端通过 JSON 协议 pipe 与内置的 Node.js 驱动通信，向上暴露异步与同步两套 API，覆盖浏览器启动、页面操作、元素定位、网络拦截、API 请求、追踪录制等能力，主要服务于 Web 测试与自动化脚本开发者。",
+    "categories": [
+      {
+        "name": "浏览器生命周期管理",
+        "description": "启动、连接、关闭浏览器实例，管理 BrowserContext 与页面的创建与销毁。",
+        "evidence": [
+          "playwright/_impl/_browser_type.py",
+          "playwright/_impl/_browser.py",
+          "playwright/_impl/_browser_context.py"
+        ]
+      },
+      {
+        "name": "页面与元素交互",
+        "description": "对 Page、Frame 执行导航、点击、填充、截图等操作，并通过 Locator 进行链式元素定位。",
+        "evidence": [
+          "playwright/_impl/_page.py",
+          "playwright/_impl/_frame.py",
+          "playwright/_impl/_locator.py"
+        ]
+      },
+      {
+        "name": "网络与请求拦截",
+        "description": "监听请求/响应事件、拦截并修改网络路由、处理 WebSocket，以及发起独立 API 请求。",
+        "evidence": [
+          "playwright/_impl/_network.py",
+          "playwright/_impl/_fetch.py"
+        ]
+      },
+      {
+        "name": "元素定位与选择器",
+        "description": "提供 role/text/test-id/label 等高级选择器语法，以及自定义选择器引擎注册。",
+        "evidence": [
+          "playwright/_impl/_locator.py",
+          "playwright/_impl/_selectors.py"
+        ]
+      },
+      {
+        "name": "异步/同步 API 包装",
+        "description": "基于 greenlet 在单线程内将异步实现桥接为同步 API，同时保留原生 async/await API。",
+        "evidence": [
+          "playwright/async_api/_generated.py",
+          "playwright/sync_api/_generated.py",
+          "playwright/_impl/_greenlets.py"
+        ]
+      },
+      {
+        "name": "驱动与安装管理",
+        "description": "负责 Node.js 驱动可执行文件定位、环境变量注入、子进程启动以及浏览器安装命令透传。",
+        "evidence": [
+          "playwright/__main__.py",
+          "playwright/_impl/_driver.py",
+          "playwright/_impl/_transport.py",
+          "setup.py"
+        ]
+      },
+      {
+        "name": "追踪、录制与上下文隔离",
+        "description": "支持 HAR 录制、视频录制、追踪文件、存储状态与客户端证书等上下文级配置。",
+        "evidence": [
+          "playwright/_impl/_tracing.py",
+          "playwright/_impl/_screencast.py",
+          "playwright/_impl/_har_router.py",
+          "playwright/_impl/_browser_context.py"
+        ]
+      }
+    ],
+    "domain": "浏览器自动化",
+    "target_users": "Web 测试与自动化开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "JSON",
+      "HTML",
+      "YAML",
+      "Markdown",
+      "JavaScript",
+      "Bourne Shell",
+      "Dockerfile"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 246,
+        "code": 58572,
+        "pct": 93.43
+      },
+      {
+        "language": "JSON",
+        "files": 6,
+        "code": 1113,
+        "pct": 1.78
+      },
+      {
+        "language": "HTML",
+        "files": 49,
+        "code": 892,
+        "pct": 1.42
+      },
+      {
+        "language": "YAML",
+        "files": 12,
+        "code": 722,
+        "pct": 1.15
+      },
+      {
+        "language": "Markdown",
+        "files": 9,
+        "code": 445,
+        "pct": 0.71
+      },
+      {
+        "language": "JavaScript",
+        "files": 18,
+        "code": 383,
+        "pct": 0.61
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 5,
+        "code": 318,
+        "pct": 0.51
+      },
+      {
+        "language": "Dockerfile",
+        "files": 3,
+        "code": 97,
+        "pct": 0.15
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 85,
+        "pct": 0.14
+      },
+      {
+        "language": "Text",
+        "files": 6,
+        "code": 54,
+        "pct": 0.09
+      },
+      {
+        "language": "CSS",
+        "files": 3,
+        "code": 9,
+        "pct": 0.01
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 358,
+      "code": 62690,
+      "comment": 30419,
+      "blank": 17407,
+      "total_lines": 110516
+    },
+    "production": {
+      "files": 102,
+      "code": 30630,
+      "comment": 24435,
+      "blank": 10328,
+      "total_lines": 65393
+    },
+    "test": {
+      "files": 246,
+      "code": 31730,
+      "comment": 5811,
+      "blank": 6947,
+      "total_lines": 44488
+    },
+    "example": {
+      "files": 10,
+      "code": 330,
+      "comment": 173,
+      "blank": 132,
+      "total_lines": 635
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 72,
+        "code": 29040
+      },
+      "YAML": {
+        "files": 11,
+        "code": 660
+      },
+      "Markdown": {
+        "files": 8,
+        "code": 440
+      },
+      "Bourne Shell": {
+        "files": 4,
+        "code": 257
+      },
+      "Dockerfile": {
+        "files": 3,
+        "code": 97
+      },
+      "TOML": {
+        "files": 1,
+        "code": 85
+      },
+      "Text": {
+        "files": 3,
+        "code": 51
+      }
+    }
+  },
+  "tests": {
+    "test_files": 246,
+    "test_cases": 681,
+    "frameworks": [
+      "pytest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 165,
+        "cases": 680
+      },
+      "JavaScript": {
+        "files": 18,
+        "cases": 1
+      },
+      "JSON": {
+        "files": 6,
+        "cases": 0
+      },
+      "HTML": {
+        "files": 49,
+        "cases": 0
+      },
+      "YAML": {
+        "files": 1,
+        "cases": 0
+      },
+      "Bourne Shell": {
+        "files": 1,
+        "cases": 0
+      },
+      "Markdown": {
+        "files": 1,
+        "cases": 0
+      },
+      "CSS": {
+        "files": 3,
+        "cases": 0
+      },
+      "Text": {
+        "files": 2,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates. The JavaScript cases are third-party/assets or generated stubs, not part of the project's own test framework."
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "Top-level LICENSE matches Apache-2.0 text; pyproject.toml declares license='Apache-2.0'; source file headers cite 'Apache License, Version 2.0'.",
+    "notes": "Permissive license. Copyright portions attributed to Microsoft Corporation and Google Inc. No copyleft."
+  },
+  "dependencies": {
+    "count": 15,
+    "manifests": [
+      "pyproject.toml",
+      "requirements.txt",
+      "local-requirements.txt",
+      "setup.py",
+      "DRIVER_SHA",
+      "scripts/build_driver.sh"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "pyee",
+        "greenlet",
+        "setuptools",
+        "setuptools-scm",
+        "wheel",
+        "auditwheel",
+        "pytest",
+        "pytest-asyncio",
+        "pytest-cov",
+        "pytest-repeat",
+        "pytest-rerunfailures",
+        "pytest-timeout",
+        "pytest-xdist",
+        "black",
+        "flake8",
+        "mypy",
+        "pre-commit",
+        "build",
+        "asyncio-atexit",
+        "requests",
+        "pyOpenSSL",
+        "service_identity",
+        "twisted",
+        "autobahn",
+        "Pillow",
+        "pixelmatch",
+        "objgraph",
+        "types-pyOpenSSL",
+        "types-requests"
+      ],
+      "nodejs": [
+        "playwright driver"
+      ],
+      "other": [
+        "Chromium/Firefox/WebKit browser binaries"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "pyee",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=13,<14",
+        "purpose": "异步事件发射器，用于内部对象事件分发",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ]
+      },
+      {
+        "name": "greenlet",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=3.1.1,<4.0.0",
+        "purpose": "协程级 greenlet，用于实现同步 API 对异步调用的桥接",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ]
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": "82.0.1",
+        "purpose": "Python 包构建系统",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ]
+      },
+      {
+        "name": "setuptools-scm",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": "9.2.2",
+        "purpose": "基于 git tag 动态推导版本号",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ]
+      },
+      {
+        "name": "wheel",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": "0.47.0",
+        "purpose": "构建 wheel 分发包",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ]
+      },
+      {
+        "name": "auditwheel",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": "6.4.2",
+        "purpose": "Linux wheel 修复与平台标签处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ]
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "local-requirements.txt"
+        ]
+      },
+      {
+        "name": "pytest-asyncio",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "pytest 异步测试支持",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "local-requirements.txt"
+        ]
+      },
+      {
+        "name": "mypy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "静态类型检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "local-requirements.txt"
+        ]
+      },
+      {
+        "name": "black",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "代码格式化",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "local-requirements.txt"
+        ]
+      },
+      {
+        "name": "requests",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试服务器与 HTTP 辅助",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "local-requirements.txt"
+        ]
+      },
+      {
+        "name": "twisted",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试用 WebSocket/HTTP 服务器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "local-requirements.txt"
+        ]
+      },
+      {
+        "name": "Pillow",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试用图像对比",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "local-requirements.txt"
+        ]
+      },
+      {
+        "name": "playwright driver",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "1cc5a90cfa3eaa430b1a991963100f95126caa47",
+        "purpose": "Node.js 编写的核心浏览器自动化引擎，Python 客户端通过 pipe 与其通信",
+        "acquisition": "download_build",
+        "locality": "remote",
+        "source": "https://github.com/microsoft/playwright @ DRIVER_SHA 提交的源码，经 npm ci/build 后打包嵌入 wheel",
+        "declared_in": [
+          "DRIVER_SHA",
+          "scripts/build_driver.sh",
+          "setup.py"
+        ]
+      },
+      {
+        "name": "Chromium/Firefox/WebKit browser binaries",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "被自动化的浏览器可执行文件，由驱动在运行期下载并启动",
+        "acquisition": "runtime_download",
+        "locality": "remote",
+        "source": "由 playwright install 命令按需从微软 CDN 下载的浏览器二进制",
+        "declared_in": [
+          "README.md",
+          "playwright/__main__.py"
+        ]
+      }
+    ],
+    "notes": "构建 wheel 时还需要 Node.js、npm、git、bash 工具链来下载并编译上游 Playwright 驱动；这些属于构建环境而非 Python 包依赖。浏览器二进制不在 Python manifest 中，由驱动在安装阶段下载。"
+  },
+  "native_api": {
+    "summary": "Python 绑定层以标准库为主：用 asyncio/subprocess 启动 Node.js 驱动，通过 pathlib/urllib.parse/json 处理路径与协议数据；仅在 Windows 分支使用 subprocess.STARTUPINFO 隐藏控制台窗口。无 raw syscall、无硬件 API、无动态库加载。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "asyncio.create_subprocess_exec",
+            "purpose": "启动 Node.js 驱动子进程",
+            "count": 1,
+            "evidence": [
+              "playwright/_impl/_transport.py:120"
+            ]
+          },
+          {
+            "name": "subprocess.run",
+            "purpose": "透传执行 playwright CLI 命令",
+            "count": 1,
+            "evidence": [
+              "playwright/__main__.py:24"
+            ]
+          },
+          {
+            "name": "subprocess.check_call",
+            "purpose": "构建 wheel 时调用 driver 构建脚本",
+            "count": 1,
+            "evidence": [
+              "setup.py:112"
+            ]
+          },
+          {
+            "name": "os.environ.copy",
+            "purpose": "拷贝并注入驱动环境变量",
+            "count": 1,
+            "evidence": [
+              "playwright/_impl/_driver.py:37"
+            ]
+          },
+          {
+            "name": "os.getenv",
+            "purpose": "读取 PLAYWRIGHT_NODEJS_PATH 等变量",
+            "count": 2,
+            "evidence": [
+              "playwright/_impl/_driver.py:30",
+              "playwright/_impl/_driver.py:33"
+            ]
+          },
+          {
+            "name": "sys.platform",
+            "purpose": "区分 Windows/Unix 以选择驱动可执行文件",
+            "count": 2,
+            "evidence": [
+              "playwright/_impl/_driver.py:28",
+              "playwright/_impl/_transport.py:114"
+            ]
+          },
+          {
+            "name": "json.dumps / json.loads",
+            "purpose": "序列化/反序列化与驱动的 JSON 消息",
+            "count": 24,
+            "evidence": [
+              "playwright/_impl/_transport.py:78",
+              "playwright/_impl/_transport.py:84"
+            ]
+          },
+          {
+            "name": "urllib.parse.urlparse / urljoin",
+            "purpose": "URL 解析与相对路径拼接",
+            "count": 7,
+            "evidence": [
+              "playwright/_impl/_helper.py:40",
+              "playwright/_impl/_helper.py:252"
+            ]
+          },
+          {
+            "name": "pathlib.Path",
+            "purpose": "驱动路径、用户数据目录、下载/追踪目录等路径处理",
+            "count": 12,
+            "evidence": [
+              "playwright/_impl/_driver.py:26",
+              "playwright/_impl/_browser_type.py:188"
+            ]
+          },
+          {
+            "name": "zipfile.ZipFile",
+            "purpose": "打包/解包驱动 bundle 到 wheel",
+            "count": 8,
+            "evidence": [
+              "setup.py:162",
+              "setup.py:166"
+            ]
+          },
+          {
+            "name": "glob.glob",
+            "purpose": "定位构建产物 wheel",
+            "count": 2,
+            "evidence": [
+              "setup.py:151"
+            ]
+          },
+          {
+            "name": "shutil.rmtree / shutil.copy / shutil.move",
+            "purpose": "清理并复制驱动目录与 wheel 文件",
+            "count": 7,
+            "evidence": [
+              "setup.py:160",
+              "setup.py:164",
+              "setup.py:182"
+            ]
+          },
+          {
+            "name": "platform.machine",
+            "purpose": "选择当前架构对应的 driver bundle",
+            "count": 2,
+            "evidence": [
+              "setup.py:139",
+              "setup.py:196"
+            ]
+          },
+          {
+            "name": "inspect.getfile",
+            "purpose": "定位 playwright 包安装目录以找到 driver",
+            "count": 1,
+            "evidence": [
+              "playwright/_impl/_driver.py:26"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "subprocess.STARTUPINFO / STARTF_USESHOWWINDOW / SW_HIDE",
+            "purpose": "Windows 下隐藏驱动子进程控制台窗口",
+            "count": 1,
+            "evidence": [
+              "playwright/_impl/_transport.py:115"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期通过子进程启动 Node.js 驱动并与其进行 stdin/stdout pipe 通信；读取若干 PLAYWRIGHT_* 环境变量；在文件系统上访问驱动目录、用户数据目录、下载目录、追踪/录制目录等。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "playwright/driver 目录",
+        "purpose": "存放随 wheel 嵌入的 Node.js 驱动",
+        "evidence": [
+          "playwright/_impl/_driver.py:26"
+        ]
+      },
+      {
+        "detail": "用户数据目录 (userDataDir)",
+        "purpose": "持久化浏览器上下文数据",
+        "evidence": [
+          "playwright/_impl/_browser_type.py:185"
+        ]
+      },
+      {
+        "detail": "下载/追踪/录制路径 (downloadsPath, tracesDir, artifactsDir, recordHarPath, recordVideoDir, storageState)",
+        "purpose": "保存测试产物与状态文件",
+        "evidence": [
+          "playwright/_impl/_browser_type.py:361",
+          "playwright/_impl/_browser_type.py:364",
+          "playwright/_impl/_browser_type.py:366"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "PLAYWRIGHT_NODEJS_PATH",
+        "purpose": "自定义 Node.js 可执行文件路径",
+        "evidence": [
+          "playwright/_impl/_driver.py:30"
+        ]
+      },
+      {
+        "name": "PLAYWRIGHT_BROWSERS_PATH",
+        "purpose": "在 PyInstaller/Nuitka 场景下将浏览器路径设为 0（禁用）",
+        "evidence": [
+          "playwright/_impl/_transport.py:111"
+        ]
+      },
+      {
+        "name": "PLAYWRIGHT_TARGET_WHEEL",
+        "purpose": "构建时指定目标 wheel 平台",
+        "evidence": [
+          "setup.py:127"
+        ]
+      },
+      {
+        "name": "DEBUGP",
+        "purpose": "开启与驱动之间 JSON 消息的调试打印",
+        "evidence": [
+          "playwright/_impl/_transport.py:79"
+        ]
+      },
+      {
+        "name": "INTERNAL_PW_GREENLET_DEBUG",
+        "purpose": "开启 greenlet 切换调试日志",
+        "evidence": [
+          "playwright/_impl/_greenlets.py:28"
+        ]
+      },
+      {
+        "name": "PW_LANG_NAME / PW_LANG_NAME_VERSION / PW_CLI_DISPLAY_VERSION",
+        "purpose": "向驱动标识 Python 语言绑定与版本",
+        "evidence": [
+          "playwright/_impl/_driver.py:38"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "[driver_executable, driver_cli, *sys.argv[1:]]",
+        "purpose": "将 playwright CLI 参数透传给 Node.js 驱动",
+        "evidence": [
+          "playwright/__main__.py:24"
+        ]
+      },
+      {
+        "command": "[driver_executable, entrypoint_path, \"run-driver\"]",
+        "purpose": "启动驱动 long-running 进程并通过 pipe 通信",
+        "evidence": [
+          "playwright/_impl/_transport.py:120"
+        ]
+      },
+      {
+        "command": "bash scripts/build_driver.sh",
+        "purpose": "构建 wheel 时从上游源码编译驱动 bundle",
+        "evidence": [
+          "setup.py:112"
+        ]
+      }
+    ],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >=3.10",
+    "runtime_version": "Python 3.10 至 3.14（requires-python >=3.10，classifiers 列出 3.10-3.14）",
+    "build_system": "setuptools + wheel（自定义 bdist_wheel 命令）；驱动通过 bash 脚本构建",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "setup.py:51"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          "setup.py:57"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "setup.py:33"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "setup.py:45"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "setup.py:69"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "arm64",
+        "evidence": [
+          "setup.py:75"
+        ]
+      }
+    ],
+    "notes": "构建 wheel 需要 Node.js、npm、git、bash 来下载并编译上游 Playwright 驱动；这些工具在 build_driver.sh 中显式检查。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（ArkTS 应用层 + OHOS NDK/musl 原生层 + Node-API 桥接；自研内核，无 Linux ABI）",
+    "feasibility": "infeasible",
+    "overall_difficulty": "very_high",
+    "effort_estimate": "XL",
+    "recommended_path": "abandon",
+    "summary": "本库是 Python 胶水层，真正的浏览器自动化逻辑在上游 Node.js 驱动与浏览器二进制中。HarmonyOS NEXT PC 应用层没有 Python 运行时的一等支持，也没有 Node.js 运行时和对应桌面浏览器引擎，无法直接移植；建议改用鸿蒙原生 WebView/ArkTS 自动化方案。",
+    "blockers": [
+      {
+        "issue": "Python 绑定依赖 Node.js 驱动作为运行时核心",
+        "severity": "blocker",
+        "category": "node_runtime_unavailable",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "HarmonyOS NEXT 无 Node.js 运行时；无法加载 playwright/driver 中的 Node 可执行文件与 JS 包，必须替换为完全不同的原生实现。",
+        "evidence": [
+          "playwright/_impl/_transport.py:120",
+          "DRIVER_SHA",
+          "scripts/build_driver.sh"
+        ]
+      },
+      {
+        "issue": "运行期子进程启动 Node 驱动与桌面浏览器",
+        "severity": "blocker",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unavailable",
+        "remediation": "鸿蒙应用沙箱限制外部进程创建，且 Node 驱动与 Chromium/Firefox/WebKit 二进制在鸿蒙上不存在。",
+        "evidence": [
+          "playwright/__main__.py:24",
+          "playwright/_impl/_transport.py:120"
+        ]
+      },
+      {
+        "issue": "浏览器二进制由驱动按需下载并启动",
+        "severity": "blocker",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "Chromium/Firefox/WebKit 桌面二进制无法在 HarmonyOS NEXT 运行，且自研内核不兼容 Linux ELF；需移植浏览器引擎，工作量等同于上游 Playwright。",
+        "evidence": [
+          "README.md",
+          "dependencies.dependencies[Chromium/Firefox/WebKit browser binaries]"
+        ]
+      },
+      {
+        "issue": "Python 不是 HarmonyOS NEXT 应用层首选运行时",
+        "severity": "blocker",
+        "category": "language_runtime_unavailable",
+        "source_dimension": "library",
+        "harmony_status": "unavailable",
+        "remediation": "应用层以 ArkTS/ArkUI 为主，Python 运行时不在标准应用模型内；需将逻辑重写为 ArkTS 或 NDK 原生实现。",
+        "evidence": [
+          "pyproject.toml"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 协议封装与参数校验逻辑",
+        "note": "在假设存在 Python 运行时的前提下，JSON 消息封装、URL/路径处理、API 映射层与平台无关，可复用；但当前鸿蒙应用模型下无落地价值。",
+        "evidence": [
+          "playwright/_impl/_transport.py",
+          "playwright/_impl/_helper.py"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "放弃直接移植，评估鸿蒙 ArkTS/WebView 替代自动化方案",
+      "若必须保留 Playwright API 语义，需将 Node 驱动核心重写为 OHOS NDK 原生实现并移植浏览器引擎，工作量等同于重写上游 Playwright"
+    ],
+    "notes": "评估基于 HarmonyOS NEXT 标准应用沙箱模型；若目标环境允许运行完整 Linux 容器/Node/Python，结论可放宽，但已不属于常规 PC 应用适配口径。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "runtime_download",
+        "rationale": "Playwright 的浏览器二进制不由 Python manifest 声明，而是由驱动在安装阶段（playwright install）从微软 CDN 下载，现有推荐取值未覆盖此场景。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "download_build",
+        "rationale": "上游 Playwright Node.js 驱动通过 scripts/build_driver.sh 从 GitHub 下载源码并构建后嵌入 wheel，不是 package_manager 也不是 submodule。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "platform_dependence",
+        "kind": "ambiguity",
+        "value": "cross-platform_with_win32_branch",
+        "rationale": "库主体跨平台，但有一条 Windows 专有分支（subprocess.STARTUPINFO）；分类为 cross-platform 同时记录 platform 组，符合 schema 但需在摘要中说明。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,701 @@
+{
+  "library": {
+    "name": "stack_data",
+    "package_name": "stack_data",
+    "source_url": "https://github.com/alexmojaki/stack_data.git",
+    "analyzed_at": "2026-06-22T11:25:29.360Z",
+    "commit": "ae11f5f938e3459ca2c54c933f57876844f5bc25",
+    "one_liner": "从 Python 堆栈帧和回溯中提取并格式化源代码与变量数据，用于生成更清晰的错误信息展示。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "stack_data 是一个 Python 调试工具库，用于从堆栈帧（stack frame）和回溯（traceback）中提取结构化数据，生成比默认 traceback 更丰富的错误信息展示。它通过 AST 分析将源码切分为语义片段（piece），安全地求值帧中的变量表达式，并支持文本、HTML、JSON 等多种输出格式，是 IPython 与 futurecoder 等项目的 traceback 展示底层依赖。",
+    "categories": [
+      {
+        "name": "帧与回溯解析",
+        "description": "封装 FrameInfo、Source 等类型，从 frame 或 traceback 对象中提取代码对象、行号、文件名、执行节点等元数据，并遍历完整调用栈。",
+        "evidence": [
+          "stack_data/core.py:511 FrameInfo",
+          "stack_data/core.py:82 Source",
+          "stack_data/utils.py:94 iter_stack",
+          "stack_data/utils.py:104 frame_and_lineno"
+        ]
+      },
+      {
+        "name": "源代码片段与上下文",
+        "description": "将源码按 AST 语义切分为 piece，结合 Options 配置生成包含当前行、上下文、函数签名、行间隔（LINE_GAP）和空行处理的 Line 列表。",
+        "evidence": [
+          "stack_data/core.py:95 Source.pieces",
+          "stack_data/core.py:719 FrameInfo.lines",
+          "stack_data/core.py:181 Options",
+          "stack_data/core.py:230 LINE_GAP"
+        ]
+      },
+      {
+        "name": "变量安全求值",
+        "description": "借助 pure_eval 在无副作用前提下，对当前作用域中的变量和表达式进行安全求值，生成 Variable 对象及其源码范围。",
+        "evidence": [
+          "stack_data/core.py:830 FrameInfo.variables",
+          "stack_data/core.py:65 Variable",
+          "stack_data/core.py:18 from pure_eval import Evaluator, is_expression_interesting"
+        ]
+      },
+      {
+        "name": "格式化输出",
+        "description": "提供 Formatter 类将堆栈信息格式化为类 Python 默认 traceback 的文本输出，支持行号、当前行标记、执行节点下划线、变量列表与 HTML 转义。",
+        "evidence": [
+          "stack_data/formatting.py:12 Formatter",
+          "stack_data/formatting.py:98 format_exception",
+          "stack_data/formatting.py:115 format_stack",
+          "stack_data/formatting.py:220 format_variables"
+        ]
+      },
+      {
+        "name": "序列化输出",
+        "description": "提供 Serializer 类将堆栈与异常信息输出为 JSON 可序列化的 dict 结构，便于 Web 前端或日志系统消费。",
+        "evidence": [
+          "stack_data/serializing.py:23 Serializer",
+          "stack_data/serializing.py:74 format_exception",
+          "stack_data/serializing.py:101 format_stack"
+        ]
+      },
+      {
+        "name": "语法高亮集成",
+        "description": "可选集成 Pygments，为源码片段提供终端 256 色或 HTML 语法高亮，并支持高亮当前执行节点。",
+        "evidence": [
+          "stack_data/core.py:450 style_with_executing_node",
+          "stack_data/utils.py:151 _pygmented_with_ranges",
+          "stack_data/formatting.py:15 pygmented"
+        ]
+      }
+    ],
+    "domain": "developer tools / debugging",
+    "target_users": "Python 开发者、调试器/REPL/在线教育工具开发者，以及需要增强 traceback 展示的应用开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "JSON",
+      "Text",
+      "Markdown",
+      "YAML",
+      "Bourne Shell",
+      "INI",
+      "TOML"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 17,
+        "code": 2034,
+        "pct": 45.01,
+        "production": {
+          "files": 6,
+          "code": 1043
+        },
+        "test": {
+          "files": 11,
+          "code": 991
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 1554,
+        "pct": 34.39,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 1554
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 24,
+        "code": 538,
+        "pct": 11.91,
+        "production": {
+          "files": 1,
+          "code": 17
+        },
+        "test": {
+          "files": 23,
+          "code": 521
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 310,
+        "pct": 6.86,
+        "production": {
+          "files": 1,
+          "code": 310
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 41,
+        "pct": 0.91,
+        "production": {
+          "files": 1,
+          "code": 41
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 1,
+        "code": 24,
+        "pct": 0.53,
+        "production": {
+          "files": 1,
+          "code": 24
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 1,
+        "code": 8,
+        "pct": 0.18,
+        "production": {
+          "files": 1,
+          "code": 8
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 6,
+        "pct": 0.13,
+        "production": {
+          "files": 1,
+          "code": 6
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 48,
+      "code": 4519,
+      "comment": 479,
+      "blank": 612,
+      "total_lines": 5610
+    },
+    "production": {
+      "files": 12,
+      "code": 1449,
+      "comment": 281,
+      "blank": 351,
+      "total_lines": 2081
+    },
+    "test": {
+      "files": 36,
+      "code": 3070,
+      "comment": 198,
+      "blank": 261,
+      "total_lines": 3529
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 6,
+        "code": 1043
+      },
+      "Markdown": {
+        "files": 1,
+        "code": 310
+      },
+      "YAML": {
+        "files": 1,
+        "code": 41
+      },
+      "Bourne Shell": {
+        "files": 1,
+        "code": 24
+      },
+      "Text": {
+        "files": 1,
+        "code": 17
+      },
+      "INI": {
+        "files": 1,
+        "code": 8
+      },
+      "TOML": {
+        "files": 1,
+        "code": 6
+      }
+    }
+  },
+  "tests": {
+    "test_files": 36,
+    "test_cases": 18,
+    "frameworks": [
+      "pytest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 11,
+        "cases": 18
+      },
+      "JSON": {
+        "files": 1,
+        "cases": 0
+      },
+      "Text": {
+        "files": 23,
+        "cases": 0
+      },
+      "Cython": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "测试使用 pytest（含 pytest.mark.parametrize / pytest.mark.skipif / pytest.raises）。代码 metrics 的 case 计数为基于正则的估计值。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "LICENSE.txt 与 MIT License 标准文本一致；setup.cfg 中 license = MIT 且包含 License :: OSI Approved :: MIT License classifier。",
+    "notes": "宽松许可，需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 11,
+    "manifests": [
+      "setup.cfg",
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "executing",
+        "asttokens",
+        "pure_eval",
+        "pytest",
+        "typeguard",
+        "pygments",
+        "littleutils",
+        "cython",
+        "setuptools",
+        "setuptools_scm",
+        "wheel"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "executing",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.2.0",
+        "purpose": "定位当前执行语句对应的 AST 节点",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:26"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "asttokens",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=2.1.0",
+        "purpose": "为 AST 节点提供源码文本位置与 token 信息",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:27"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pure_eval",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=0.1.0",
+        "purpose": "安全、无副作用地求值帧中的表达式",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:28"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:32",
+          "setup.cfg:35"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "typeguard",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "运行时类型检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:32",
+          "setup.cfg:35"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pygments",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": null,
+        "purpose": "语法高亮（可选运行时功能，也在测试中使用）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:32",
+          "setup.cfg:35"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "littleutils",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试辅助工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:32",
+          "setup.cfg:35"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "cython",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试对 Cython 源码的支持",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:35"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=44",
+        "purpose": "构建与打包工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:30",
+          "pyproject.toml:2"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools_scm",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=3.4.3",
+        "purpose": "基于 git tag 自动生成版本号",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.cfg:30",
+          "pyproject.toml:2"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "wheel",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建 wheel 分发包",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:2"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "运行时依赖仅 executing、asttokens、pure_eval 三个纯 Python 包；pygments 为可选运行时功能。无 native/C 扩展依赖。"
+  },
+  "native_api": {
+    "summary": "纯 Python 库，仅使用 Python 标准库中跨平台的通用模块，未调用任何操作系统专有 API、系统调用、硬件接口或 FFI 桥接。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ast",
+            "purpose": "解析与遍历 Python 抽象语法树",
+            "count": 1,
+            "evidence": [
+              "stack_data/core.py:1 import ast"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "inspect.currentframe",
+            "purpose": "获取当前调用帧对象",
+            "count": 3,
+            "evidence": [
+              "stack_data/formatting.py:88 inspect.currentframe().f_back",
+              "stack_data/formatting.py:117 inspect.currentframe().f_back",
+              "stack_data/serializing.py:103 inspect.currentframe().f_back"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path",
+            "purpose": "处理与解析源码文件路径",
+            "count": 1,
+            "evidence": [
+              "stack_data/core.py:631 os.path.isabs",
+              "stack_data/core.py:644 os.path.join",
+              "stack_data/core.py:645 os.path.isfile",
+              "stack_data/core.py:646 os.path.abspath"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys.exc_info / sys.stderr / sys.excepthook / sys.path",
+            "purpose": "获取异常信息、默认错误输出、设置异常钩子、遍历模块搜索路径",
+            "count": 1,
+            "evidence": [
+              "stack_data/formatting.py:81 sys.excepthook",
+              "stack_data/formatting.py:94 sys.stderr",
+              "stack_data/formatting.py:100 sys.exc_info()[1]",
+              "stack_data/core.py:642 for dirname in [\".\"] + list(sys.path)",
+              "stack_data/serializing.py:76 sys.exc_info()[1]"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "traceback",
+            "purpose": "复用标准库 traceback 的异常消息与上下文格式",
+            "count": 1,
+            "evidence": [
+              "stack_data/formatting.py:3 import traceback",
+              "stack_data/formatting.py:105 traceback._cause_message",
+              "stack_data/formatting.py:108 traceback._context_message",
+              "stack_data/formatting.py:113 traceback.format_exception_only",
+              "stack_data/serializing.py:4 import traceback"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "html.escape",
+            "purpose": "对 HTML 输出进行转义",
+            "count": 1,
+            "evidence": [
+              "stack_data/core.py:2 import html",
+              "stack_data/core.py:414 html.escape(text_part)",
+              "stack_data/serializing.py:6 from html import escape as escape_html"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期仅读取 Python 源码文件与帧对象信息，无网络访问、无子进程、无特殊设备访问、不依赖环境变量。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "根据 frame.f_code.co_filename 在 sys.path 与当前工作目录中解析并读取 Python 源文件",
+        "purpose": "为 FrameInfo 提供源码文本与 AST",
+        "evidence": [
+          "stack_data/core.py:621 FrameInfo.filename",
+          "stack_data/core.py:642-646 遍历 sys.path 与 cwd 查找文件"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.8",
+    "runtime_version": "CPython 3.8–3.14（setup.cfg classifiers / tox / GitHub Actions 矩阵）",
+    "build_system": "setuptools + setuptools_scm",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "OS Independent",
+        "arch": "any",
+        "evidence": [
+          "setup.cfg:20 Operating System :: OS Independent"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/pytest.yml:12 runs-on: ubuntu-latest"
+        ]
+      }
+    ],
+    "notes": "CI 仅在 ubuntu-latest 上运行；classifier 声明 OS Independent。无 C/C++ 编译步骤。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible",
+    "overall_difficulty": "low",
+    "effort_estimate": "XS",
+    "porting_class": "no_adaptation",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "stack_data 为纯 Python 库，无原生扩展、无平台专有 API、无子进程/网络/外设依赖。鸿蒙 PC 已移植 Python 3.12 运行时，本库可直接安装运行；三个运行时依赖 executing、asttokens、pure_eval 亦为纯 Python 包，虽未在 OpenHarmony PC 官方镜像中标记为已鸿蒙化，但同样可随已移植 Python 运行，不构成移植阻碍。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "全部纯 Python 实现",
+        "note": "无需重编，可直接在鸿蒙 Python 上运行",
+        "evidence": [
+          "stack_data/__init__.py:1-10",
+          "stack_data/core.py:1-23"
+        ]
+      },
+      {
+        "aspect": "仅使用跨平台 Python 标准库",
+        "note": "ast、os.path、sys、inspect、traceback、html 等均为标准库，不依赖操作系统专有接口",
+        "evidence": [
+          "stack_data/core.py:1-8",
+          "stack_data/formatting.py:1-5",
+          "stack_data/serializing.py:1-8"
+        ]
+      },
+      {
+        "aspect": "第三方依赖均为纯 Python",
+        "note": "executing/asttokens/pure_eval 均无 native 扩展，无需 OHOS NDK 重编",
+        "evidence": [
+          "setup.cfg:25-28"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 3.12 上安装 stack_data 及其运行时依赖",
+      "运行 pytest 测试套件验证功能完整"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。若目标为 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，需整体改用 ArkTS/Node-API 重写，结论会收紧为 hard/very_high。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": []
+  }
+}

@@ -1,0 +1,831 @@
+{
+  "library": {
+    "name": "pycurl",
+    "package_name": "pycurl",
+    "source_url": "https://github.com/pycurl/pycurl",
+    "analyzed_at": "2026-06-23T04:08:21.196Z",
+    "commit": "8ebfa582ecaf5fa615411f1649fa3a89b37394a2",
+    "one_liner": "PycURL 是 libcurl 的 Python 封装，提供高性能 HTTP/HTTPS/FTP 等多协议网络传输能力。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "PycURL 是 libcurl 的 Python 绑定库，将 libcurl 的多协议文件传输能力暴露给 Python 程序。它提供同步/异步 HTTP/FTP 请求、WebSocket、MIME 表单、连接共享、SSL/TLS 选项等底层网络控制，适合需要比 requests 更高性能或更细粒度 libcurl 控制的应用开发者。",
+    "categories": [
+      {
+        "name": "HTTP/HTTPS 客户端请求",
+        "description": "通过 Curl 对象执行同步 HTTP/HTTPS 请求，支持 setopt、perform、getinfo 等 libcurl 核心 API。",
+        "evidence": ["src/easy.c:do_curl_new", "src/easy.c:curlobject_methods", "src/easyperform.c:do_curl_perform"]
+      },
+      {
+        "name": "多协议文件传输",
+        "description": "依托 libcurl 支持 FTP、SFTP、WebSocket、FILE 等多种协议的数据传输。",
+        "evidence": ["src/pycurl.h", "README.rst:28-48", "src/easyws.c"]
+      },
+      {
+        "name": "异步/多路复用",
+        "description": "提供 CurlMulti 与 AsyncCurlMulti，基于 libcurl multi-socket API 实现非阻塞并发传输。",
+        "evidence": ["src/multi.c:curlmultiobject_methods", "src/pycurl/async_multi.py:AsyncCurlMulti"]
+      },
+      {
+        "name": "MIME/多部分表单",
+        "description": "通过 CurlMime 与 CurlMimePart 封装 libcurl MIME API，构造文件上传与表单请求。",
+        "evidence": ["src/mime.c:curlmimeobject_methods", "src/mime.c:CurlMime_Type"]
+      },
+      {
+        "name": "连接共享与会话状态",
+        "description": "通过 CurlShare 共享 DNS、Cookie、SSL 会话等状态，减少连接开销。",
+        "evidence": ["src/share.c:curlshareobject_methods", "src/share.c:CurlShare_Type"]
+      },
+      {
+        "name": "SSL/TLS 与代理配置",
+        "description": "暴露 libcurl 的 SSL 后端选项、CA 证书、代理、认证等高级网络配置常量与方法。",
+        "evidence": ["src/module.c:COMPILE_SSL_LIB", "src/easyopt.c:do_curl_setopt", "src/threadsupport.c"]
+      }
+    ],
+    "domain": "networking",
+    "target_users": "Python 应用开发者，特别是需要高性能网络传输或直接使用 libcurl 能力的场景"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "C",
+      "reStructuredText",
+      "C/C++ Header",
+      "YAML",
+      "Bourne Shell",
+      "make",
+      "diff"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 126,
+        "code": 11282,
+        "pct": 44.29,
+        "production": {
+          "files": 7,
+          "code": 1135
+        },
+        "test": {
+          "files": 93,
+          "code": 9443
+        },
+        "example": {
+          "files": 26,
+          "code": 704
+        }
+      },
+      {
+        "language": "C",
+        "files": 21,
+        "code": 9852,
+        "pct": 38.68,
+        "production": {
+          "files": 15,
+          "code": 9713
+        },
+        "test": {
+          "files": 6,
+          "code": 139
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 81,
+        "code": 2399,
+        "pct": 9.42,
+        "production": {
+          "files": 81,
+          "code": 2399
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 1,
+        "code": 699,
+        "pct": 2.74,
+        "production": {
+          "files": 1,
+          "code": 699
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 4,
+        "code": 393,
+        "pct": 1.54,
+        "production": {
+          "files": 4,
+          "code": 393
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 12,
+        "code": 284,
+        "pct": 1.11,
+        "production": {
+          "files": 1,
+          "code": 17
+        },
+        "test": {
+          "files": 11,
+          "code": 267
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 2,
+        "code": 187,
+        "pct": 0.73,
+        "production": {
+          "files": 1,
+          "code": 159
+        },
+        "test": {
+          "files": 1,
+          "code": 28
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "diff",
+        "files": 3,
+        "code": 167,
+        "pct": 0.66,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 3,
+          "code": 167
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 121,
+        "pct": 0.48,
+        "production": {
+          "files": 1,
+          "code": 121
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 44,
+        "pct": 0.17,
+        "production": {
+          "files": 2,
+          "code": 44
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 2,
+        "code": 32,
+        "pct": 0.13,
+        "production": {
+          "files": 2,
+          "code": 32
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 13,
+        "pct": 0.05,
+        "production": {
+          "files": 1,
+          "code": 12
+        },
+        "test": {
+          "files": 1,
+          "code": 1
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 257,
+      "code": 25473,
+      "comment": 2895,
+      "blank": 6356,
+      "total_lines": 34724
+    },
+    "production": {
+      "files": 116,
+      "code": 14724,
+      "comment": 1807,
+      "blank": 3180,
+      "total_lines": 19711
+    },
+    "test": {
+      "files": 115,
+      "code": 10045,
+      "comment": 849,
+      "blank": 2983,
+      "total_lines": 13877
+    },
+    "example": {
+      "files": 26,
+      "code": 704,
+      "comment": 239,
+      "blank": 193,
+      "total_lines": 1136
+    },
+    "production_by_language": {
+      "C": {
+        "files": 15,
+        "code": 9713
+      },
+      "reStructuredText": {
+        "files": 81,
+        "code": 2399
+      },
+      "Python": {
+        "files": 7,
+        "code": 1135
+      },
+      "C/C++ Header": {
+        "files": 1,
+        "code": 699
+      },
+      "YAML": {
+        "files": 4,
+        "code": 393
+      },
+      "make": {
+        "files": 1,
+        "code": 159
+      },
+      "TOML": {
+        "files": 1,
+        "code": 121
+      },
+      "Markdown": {
+        "files": 2,
+        "code": 44
+      },
+      "INI": {
+        "files": 2,
+        "code": 32
+      },
+      "Bourne Shell": {
+        "files": 1,
+        "code": 17
+      },
+      "Text": {
+        "files": 1,
+        "code": 12
+      }
+    }
+  },
+  "tests": {
+    "test_files": 115,
+    "test_cases": 704,
+    "frameworks": ["pytest/unittest"],
+    "by_language": {
+      "Python": {
+        "files": 93,
+        "cases": 704
+      },
+      "diff": {
+        "files": 3,
+        "cases": 0
+      },
+      "C": {
+        "files": 6,
+        "cases": 0
+      },
+      "Bourne Shell": {
+        "files": 11,
+        "cases": 0
+      },
+      "make": {
+        "files": 1,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "Counts are regex-based idiom matches; treat as close estimates. Test suite additionally depends on vsftpd for optional FTP tests."
+  },
+  "license": {
+    "spdx": "LGPL-2.1-only OR MIT",
+    "name": "GNU Lesser General Public License v2.1 only OR MIT License",
+    "confidence": "high",
+    "is_dual_licensed": true,
+    "license_files": ["COPYING-LGPL", "COPYING-MIT"],
+    "evidence": "pyproject.toml declares 'LGPL-2.1-only OR MIT'; top-level COPYING-LGPL and COPYING-MIT files present; README.rst confirms dual licensing.",
+    "notes": "Dual-licensed under LGPL-2.1-only or an MIT/X derivative based on the libcurl license. Weak copyleft option available."
+  },
+  "dependencies": {
+    "count": 19,
+    "manifests": ["pyproject.toml", "setup.py", "requirements-dev.txt"],
+    "by_ecosystem": {
+      "cpp": ["libcurl", "openssl", "wolfssl", "gnutls", "nss", "mbedtls", "sectransp", "schannel"],
+      "python": ["setuptools", "wheel", "flaky", "flask", "numpy", "paramiko", "pyflakes", "pytest", "pytest-run-parallel", "pytest-timeout", "sphinx", "websockets"]
+    },
+    "dependencies": [
+      {
+        "name": "libcurl",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">=7.19.0",
+        "purpose": "libcurl 是 PycURL 的核心依赖，提供 HTTP/HTTPS/FTP/WebSocket 等多协议传输能力。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装，通过 curl-config 检测头文件与链接标志",
+        "declared_in": ["setup.py:configure_unix", "pyproject.toml:project.dependencies 间接通过 requires"],
+        "used_symbols": ["curl_easy_init", "curl_easy_setopt", "curl_easy_perform", "curl_multi_init", "curl_multi_perform", "curl_multi_socket_action", "curl_version_info", "curl_global_init", "curl_global_cleanup", "curl_mime_init"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "openssl",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "libcurl 的 SSL/TLS 后端之一，用于 HTTPS 加密与证书验证。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装，随 libcurl SSL 后端选择而定",
+        "declared_in": ["setup.py:using_openssl", "src/pycurl.h:HAVE_CURL_OPENSSL"],
+        "used_symbols": ["SSL_CTX_get_cert_store", "CRYPTO_num_locks", "CRYPTO_set_locking_callback"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "wolfssl",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "libcurl 的可选 SSL/TLS 后端。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装，随 libcurl SSL 后端选择而定",
+        "declared_in": ["setup.py:ssl_options", "src/pycurl.h:HAVE_CURL_WOLFSSL"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gnutls",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "libcurl 的可选 SSL/TLS 后端。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装，随 libcurl SSL 后端选择而定",
+        "declared_in": ["setup.py:ssl_options", "src/pycurl.h:HAVE_CURL_GNUTLS"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "nss",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "libcurl 的可选 SSL/TLS 后端。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装，随 libcurl SSL 后端选择而定",
+        "declared_in": ["setup.py:ssl_options", "src/pycurl.h:HAVE_CURL_NSS"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mbedtls",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "libcurl 的可选 SSL/TLS 后端。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装，随 libcurl SSL 后端选择而定",
+        "declared_in": ["setup.py:ssl_options", "src/pycurl.h:HAVE_CURL_MBEDTLS"],
+        "used_symbols": [],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "sectransp",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "macOS 平台 libcurl 的可选 SSL/TLS 后端（Secure Transport）。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装，macOS 平台特有",
+        "declared_in": ["setup.py:ssl_options", "src/pycurl.h:HAVE_CURL_SECTRANSP"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "schannel",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Windows 平台 libcurl 的可选 SSL/TLS 后端。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装，Windows 平台特有",
+        "declared_in": ["setup.py:configure_windows", "src/pycurl.h:HAVE_CURL_SCHANNEL"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=77",
+        "purpose": "Python 构建后端，编译并安装 C 扩展。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[build-system]"]
+      },
+      {
+        "name": "wheel",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建 wheel 分发包。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[build-system]"]
+      },
+      {
+        "name": "flaky",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pytest 插件，处理不稳定测试重试。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev"]
+      },
+      {
+        "name": "flask",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "测试用 HTTP 服务器框架。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev", "README.rst:138"]
+      },
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "测试依赖，可能用于二进制缓冲区测试。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev"]
+      },
+      {
+        "name": "paramiko",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "SFTP/SSH 测试依赖（非 Windows ARM64）。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev"]
+      },
+      {
+        "name": "pyflakes",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "静态语法检查。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev"]
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=5",
+        "purpose": "测试框架主体。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev", "requirements-dev.txt"]
+      },
+      {
+        "name": "pytest-run-parallel",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pytest 并行执行插件。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev"]
+      },
+      {
+        "name": "pytest-timeout",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "pytest 超时控制插件。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev"]
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档构建工具。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev"]
+      },
+      {
+        "name": "websockets",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=12",
+        "purpose": "WebSocket 测试服务器/客户端。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:[dependency-groups] dev"]
+      }
+    ],
+    "notes": "Runtime dependency is essentially libcurl plus its selected SSL/TLS backend. SSL backends are mutually exclusive and selected at build time by libcurl configuration. Development dependencies are only required for running tests and building docs."
+  },
+  "native_api": {
+    "summary": "PycURL 核心是对 Python C-API 与 libcurl API 的封装，自身原生平台耦合较轻。C 扩展中主要使用 Python C-API 管理对象与 GIL，调用 POSIX 套接字辅助函数（含条件编译的 Win32 Winsock 分支），并在启用 PYCURL_AUTODETECT_CA 时通过 stat 探测 Linux 风格 CA 证书路径。",
+    "groups": [
+      {
+        "type": "python_c_api",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "PyArg_ParseTuple", "purpose": "解析 Python 方法参数", "count": 30, "evidence": ["src/module.c:90", "src/easy.c:283", "src/multi.c:1281"], "conditional": false},
+          {"name": "Py_BuildValue", "purpose": "构造返回给 Python 的对象", "count": 25, "evidence": ["src/easycb.c:140", "src/module.c:164", "src/mime.c:64"], "conditional": false},
+          {"name": "PyMem_New/PyMem_Free", "purpose": "分配/释放 C 级内存缓冲", "count": 10, "evidence": ["src/easycb.c:128", "src/easycb.c:147", "src/module.c:604"], "conditional": false},
+          {"name": "PyEval_SaveThread/PyEval_RestoreThread", "purpose": "在 libcurl 阻塞 I/O 期间释放/重获 GIL", "count": 8, "evidence": ["src/pycurl.h:304-309", "src/threadsupport.c:77"], "conditional": false},
+          {"name": "Py_IsFinalizing", "purpose": "Python 终止阶段检查，避免回调崩溃", "count": 2, "evidence": ["src/pycurl.h:335"], "conditional": false}
+        ]
+      },
+      {
+        "type": "posix_sockets",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "dup", "purpose": "复制 opensocket_callback 返回的 POSIX 文件描述符", "count": 1, "evidence": ["src/easycb.c:266"], "conditional": true},
+          {"name": "inet_ntop", "purpose": "将 IPv4/IPv6 地址转换为可打印字符串", "count": 2, "evidence": ["src/easycb.c:135", "src/easycb.c:154"], "conditional": false},
+          {"name": "AF_UNIX", "purpose": "Unix 域套接字地址族支持", "count": 1, "evidence": ["src/easycb.c:165"], "conditional": true},
+          {"name": "select", "purpose": "CurlMulti.select 中实现传统 fd_set 多路复用", "count": 1, "evidence": ["src/multi.c:1315"], "conditional": false}
+        ]
+      },
+      {
+        "type": "win32_winsock",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "WSADuplicateSocket", "purpose": "Windows 下复制套接字给 libcurl 使用", "count": 1, "evidence": ["src/oscompat.c:10"], "conditional": true},
+          {"name": "WSASocket", "purpose": "从 WSAPROTOCOL_INFO 创建重复套接字", "count": 1, "evidence": ["src/oscompat.c:16"], "conditional": true},
+          {"name": "WSAAddressToString", "purpose": "旧版 Windows SDK 缺少 inet_ntop 时的替代", "count": 1, "evidence": ["src/oscompat.c:50"], "conditional": true}
+        ]
+      },
+      {
+        "type": "posix_filesystem",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "stat", "purpose": "在 PYCURL_AUTODETECT_CA 模式下探测 Linux 风格 CA 证书文件/目录", "count": 2, "evidence": ["src/module.c:348", "src/module.c:355"], "conditional": true},
+          {"name": "S_ISREG/S_ISDIR", "purpose": "判断 stat 结果是否为普通文件或目录", "count": 2, "evidence": ["src/module.c:348", "src/module.c:355"], "conditional": true}
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libcurl.dll",
+        "mechanism": "ctypes.CDLL",
+        "acquisition": "system",
+        "source": "外部 libcurl 共享库，Windows 下由构建参数 --libcurl-dll 指定",
+        "description": "在构建阶段通过 ctypes 加载 libcurl DLL，读取 curl_version_info 以自动推断 SSL 后端。",
+        "optional": true,
+        "evidence": ["setup.py:530"]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "PycURL 运行期主要依赖 libcurl 完成网络 I/O，自身不直接创建套接字或发起连接。运行期读取 Linux 风格 CA 证书路径（若编译时启用 PYCURL_AUTODETECT_CA），并通过大量环境变量影响构建/检测过程；运行期本身不执行子进程。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "/etc/ssl/certs/ca-certificates.crt",
+        "purpose": "启用 PYCURL_AUTODETECT_CA 时自动探测的 CA 证书文件路径",
+        "evidence": ["src/module.c:329-335"]
+      },
+      {
+        "detail": "/etc/ssl/certs",
+        "purpose": "启用 PYCURL_AUTODETECT_CA 时自动探测的 CA 证书目录路径",
+        "evidence": ["src/module.c:336-338"]
+      }
+    ],
+    "env_vars": [
+      {"name": "PYCURL_CURL_CONFIG", "purpose": "指定 curl-config 工具路径，用于构建时检测 libcurl", "evidence": ["setup.py:200"]},
+      {"name": "PYCURL_SSL_LIBRARY", "purpose": "手动指定 libcurl 使用的 SSL 后端（openssl/gnutls/nss/mbedtls 等）", "evidence": ["setup.py:147"]},
+      {"name": "PYCURL_OPENSSL_DIR", "purpose": "指定 OpenSSL 头文件/库目录", "evidence": ["setup.py:206"]},
+      {"name": "PYCURL_AUTODETECT_CA", "purpose": "编译时开启 CA 证书路径自动探测", "evidence": ["setup.py:348", "src/module.c:322"]},
+      {"name": "PYCURL_SETUP_OPTIONS", "purpose": "传递 --avoid-stdio 等构建选项", "evidence": ["setup.py:493"]}
+    ],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "C + Python >= 3.10",
+    "runtime_version": "Python 3.10-3.14",
+    "build_system": "setuptools + Makefile",
+    "compiler_extensions": [
+      {"detail": "GCC/Clang pragma 抑制 -Wdeprecated-declarations", "purpose": "忽略 libcurl 弃用 API 警告", "evidence": ["src/pycurl.h:40-49"]},
+      {"detail": "Windows 条件编译 (_WIN32_WINNT, WSADuplicateSocket, WSASocket)", "purpose": "适配 Win32 Winsock API 与旧版 Windows SDK", "evidence": ["src/oscompat.c", "src/pycurl.h:21-97"]}
+    ],
+    "platforms": [
+      {"os": "linux", "arch": "x86_64", "evidence": ["pyproject.toml:classifiers", ".github/workflows/ci.yml"]},
+      {"os": "linux", "arch": "aarch64", "evidence": ["pyproject.toml:[tool.cibuildwheel.overrides]"]},
+      {"os": "macos", "arch": "x86_64", "evidence": ["pyproject.toml:[tool.cibuildwheel.macos]"]},
+      {"os": "macos", "arch": "arm64", "evidence": ["pyproject.toml:[tool.cibuildwheel.macos]"]},
+      {"os": "windows", "arch": "x86_64", "evidence": ["pyproject.toml:classifiers", "setup.py:configure_windows"]}
+    ],
+    "notes": "构建时需要目标平台已安装 libcurl 开发文件（头文件、curl-config 或 Windows 预编译库）。vcpkg 用于 cibuildwheel 中的 Linux/macOS 预编译 wheel 构建。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "effort_estimate": "M",
+    "porting_class": "recompile_only",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "PycURL 是 Python 库，鸿蒙 PC 已移植 Python 运行时，核心运行逻辑可直接沿用；唯一工作量在于其 C 扩展需针对鸿蒙重新编译。所幸其运行时核心依赖 libcurl 及常用 SSL/压缩库已在 OpenHarmony PC C/C++ 预编译包中提供，因此主要是用 OHOS NDK 重新构建 pycurl 扩展并链接鸿蒙版 libcurl。",
+    "blockers": [
+      {
+        "issue": "C 扩展需在鸿蒙上通过 OHOS NDK 重新编译",
+        "severity": "major",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 pycurl 的 C 扩展为 arm64/x86_64 .so，链接鸿蒙 PC 预编译包中的 libcurl。",
+        "evidence": ["setup.py:617-667", "pyproject.toml:[build-system]"]
+      },
+      {
+        "issue": "Linux 风格 CA 证书自动探测路径在鸿蒙上可能不存在",
+        "severity": "minor",
+        "category": "filesystem_path",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "partial",
+        "remediation": "确认鸿蒙系统 CA 证书路径，通过 CURLOPT_CAINFO/CAPATH 显式指定，或调整 PYCURL_AUTODETECT_CA 的探测列表。",
+        "evidence": ["src/module.c:329-360"]
+      }
+    ],
+    "unadaptable_apis": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python 封装与 asyncio 集成",
+        "note": "src/pycurl/async_multi.py 等 Python 代码可直接在鸿蒙 Python 上运行，无需改动。",
+        "evidence": ["src/pycurl/async_multi.py"]
+      },
+      {
+        "aspect": "libcurl 核心依赖已鸿蒙化",
+        "note": "libcurl、openssl、zlib、nghttp2、libssh2 等已在 OpenHarmony PC cmd-pkgs 中提供预编译包，降低移植难度。",
+        "evidence": ["scripts/harmony_adapted.js result for libcurl/openssl/zlib/nghttp2/libssh2"]
+      },
+      {
+        "aspect": "POSIX 套接字辅助代码",
+        "note": "dup、inet_ntop、select、stat 等调用在 musl/OHOS POSIX 子集下基本可用。",
+        "evidence": ["src/easycb.c:135-170", "src/multi.c:1315", "src/module.c:348-355"]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 上安装 libcurl 及所需 SSL/压缩库（使用 cmd-pkgs 预编译包或自行交叉编译）",
+      "使用 OHOS NDK 交叉编译 pycurl C 扩展，确保链接鸿蒙版 libcurl",
+      "确认鸿蒙系统 CA 证书路径并验证 HTTPS 请求",
+      "在鸿蒙 Python 上运行 pytest 测试套件，重点验证 HTTP/HTTPS/WebSocket/多路复用用例"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。若目标是 ArkTS 沙箱应用（模型 B），则需将 Python 运行时及 pycurl 整体替换为 Node-API/ArkTS 实现，结论会收紧为 hard/very_high。当前未选用 wolfssl/gnutls/nss/sectransp/schannel 等 SSL 后端，不影响 OpenSSL 路径的鸿蒙适配。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "curl-config_system",
+        "rationale": "PycURL 通过系统预装的 curl-config 脚本检测 libcurl 的头文件、链接标志与 SSL 后端，而非传统 find_package 或包管理器。现有推荐值列表中的 'system' 可涵盖，但建议在技能中强调 curl-config 这种 C/C++ 依赖探测方式。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "category",
+        "kind": "ambiguity",
+        "value": "libcurl_api_classification",
+        "rationale": "libcurl 是跨平台外部库而非语言标准库或 OS 平台 API。本报告将其使用归到 dependencies/used_symbols；其 API 调用本身未列入 native_api.groups，因为按可移植性分类更适合放在依赖维度。"
+      }
+    ]
+  }
+}

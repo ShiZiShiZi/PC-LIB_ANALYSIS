@@ -1,0 +1,309 @@
+{
+  "library": {
+    "name": "numpydoc",
+    "package_name": "numpydoc",
+    "source_url": "https://github.com/numpy/numpydoc/",
+    "analyzed_at": "2026-06-23T03:54:48.957Z",
+    "commit": "8d85154b3ca4e2cc3b8224f0c400e61584815168",
+    "one_liner": "用于解析并渲染 NumPy 格式文档字符串的 Sphinx 扩展与校验工具。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "numpydoc 是 NumPy 生态系统中的官方 Sphinx 扩展，用于解析、渲染并校验符合 NumPy 文档规范的文档字符串。它既在构建文档时把 NumPy 风格的 docstring 转换为 reStructuredText，也提供独立的 AST 校验器与命令行工具，帮助 Python 项目保持文档风格一致。主要面向维护文档的 Python 库开发者与文档工程师。",
+    "categories": [
+      {
+        "name": "Sphinx 扩展集成",
+        "description": "作为 Sphinx 扩展注册 autodoc 事件回调，将 NumPy 风格 docstring 在构建期转为 reStructuredText，并管理引用去重与 backref 清理。",
+        "evidence": ["numpydoc/numpydoc.py:setup", "numpydoc/numpydoc.py:mangle_docstrings", "numpydoc/numpydoc.py:relabel_references"]
+      },
+      {
+        "name": "文档字符串解析",
+        "description": "把 NumPy 格式 docstring 解析成结构化表示，支持 Parameters、Returns、See Also、Examples 等所有标准章节。",
+        "evidence": ["numpydoc/docscrape.py:NumpyDocString", "numpydoc/docscrape.py:FunctionDoc", "numpydoc/docscrape.py:ClassDoc"]
+      },
+      {
+        "name": "reStructuredText 渲染",
+        "description": "基于 Jinja2 模板把解析后的文档字符串渲染为 RST 片段，支持 autosummary 风格的成员列表、类型交叉引用与示例图片自动切换。",
+        "evidence": ["numpydoc/docscrape_sphinx.py:SphinxDocString", "numpydoc/docscrape_sphinx.py:get_doc_object", "numpydoc/templates/numpydoc_docstring.rst"]
+      },
+      {
+        "name": "文档字符串校验",
+        "description": "提供约 30 条规则校验 docstring 的格式、参数、返回值、参见与示例等，可作为模块导入、CLI 或 pre-commit hook 使用。",
+        "evidence": ["numpydoc/validate.py:Validator", "numpydoc/validate.py:validate", "numpydoc/cli.py:validate_object"]
+      },
+      {
+        "name": "AST 批量校验 hook",
+        "description": "在不导入目标模块的情况下，基于抽象语法树遍历文件并对函数、类与模块执行 numpydoc 校验，适合 pre-commit 场景。",
+        "evidence": ["numpydoc/hooks/validate_docstrings.py:AstValidator", "numpydoc/hooks/validate_docstrings.py:DocstringVisitor", "numpydoc/hooks/validate_docstrings.py:run_hook"]
+      },
+      {
+        "name": "命令行工具",
+        "description": "提供 render、validate、lint 三个子命令，用于生成 RST 预览、校验单个对象 docstring，以及批量扫描文件。",
+        "evidence": ["numpydoc/cli.py:get_parser", "numpydoc/cli.py:main", "pyproject.toml:project.scripts"]
+      },
+      {
+        "name": "类型交叉引用",
+        "description": "为参数类型字符串自动添加 Sphinx :obj: 角色，维护一组常见 Python 与 NumPy 类型别名映射。",
+        "evidence": ["numpydoc/xref.py:make_xref", "numpydoc/xref.py:DEFAULT_LINKS"]
+      }
+    ],
+    "domain": "文档工具 / 开发者工具",
+    "target_users": "维护 Sphinx 文档的 Python 库开发者与文档工程师",
+    "ecosystem": "python"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": ["Python", "reStructuredText", "YAML", "DOS Batch", "TOML", "make", "Text"],
+    "breakdown": [
+      {"language": "Python", "files": 25, "code": 4287, "pct": 63.89, "production": {"files": 14, "code": 2382}, "test": {"files": 11, "code": 1905}, "example": {"files": 0, "code": 0}},
+      {"language": "reStructuredText", "files": 12, "code": 1456, "pct": 21.7, "production": {"files": 11, "code": 1454}, "test": {"files": 1, "code": 2}, "example": {"files": 0, "code": 0}},
+      {"language": "YAML", "files": 12, "code": 407, "pct": 6.07, "production": {"files": 12, "code": 407}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "DOS Batch", "files": 1, "code": 212, "pct": 3.16, "production": {"files": 1, "code": 212}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "TOML", "files": 1, "code": 169, "pct": 2.52, "production": {"files": 1, "code": 169}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "make", "files": 2, "code": 158, "pct": 2.35, "production": {"files": 1, "code": 150}, "test": {"files": 1, "code": 8}, "example": {"files": 0, "code": 0}},
+      {"language": "Text", "files": 1, "code": 21, "pct": 0.31, "production": {"files": 1, "code": 21}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}}
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {"files": 54, "code": 6710, "comment": 3012, "blank": 2309, "total_lines": 12031},
+    "production": {"files": 41, "code": 4795, "comment": 901, "blank": 1197, "total_lines": 6893},
+    "test": {"files": 13, "code": 1915, "comment": 2111, "blank": 1112, "total_lines": 5138},
+    "example": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "production_by_language": {
+      "Python": {"files": 14, "code": 2382},
+      "reStructuredText": {"files": 11, "code": 1454},
+      "YAML": {"files": 12, "code": 407},
+      "DOS Batch": {"files": 1, "code": 212},
+      "TOML": {"files": 1, "code": 169},
+      "make": {"files": 1, "code": 150},
+      "Text": {"files": 1, "code": 21}
+    }
+  },
+  "tests": {
+    "test_files": 13,
+    "test_cases": 109,
+    "frameworks": ["pytest/unittest"],
+    "by_language": {
+      "Python": {"files": 11, "cases": 109},
+      "make": {"files": 1, "cases": 0},
+      "reStructuredText": {"files": 1, "cases": 0}
+    },
+    "notes": "基于 pytest 的单元测试与 doctests；测试文件主要覆盖 docscrape、validate、numpydoc 与 hooks 模块。"
+  },
+  "license": {
+    "spdx": "BSD-2-Clause",
+    "name": "BSD 2-Clause \"Simplified\" License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE.txt"],
+    "evidence": "LICENSE.txt 包含完整的 BSD-2-Clause 文本（保留版权声明、二进制分发需附带许可文本、免责声明）；pyproject.toml classifiers 也声明为 BSD License。",
+    "notes": "宽松型许可证，允许源码与二进制再分发，只需保留版权声明与免责声明。"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": ["pyproject.toml"],
+    "by_ecosystem": {"python": ["sphinx", "tomli"]},
+    "dependencies": [
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=6",
+        "purpose": "Sphinx 文档构建框架，numpydoc 作为其扩展运行",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependencies"],
+        "used_symbols": ["sphinx.application.Sphinx", "sphinx.addnodes.desc_content", "sphinx.domains.c.CDomain", "sphinx.domains.python.PythonDomain", "sphinx.jinja2glue.BuiltinTemplateLoader", "sphinx.util.logging"]
+      },
+      {
+        "name": "tomli",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.1.0; python_version<'3.11'",
+        "purpose": "在 Python <3.11 环境下读取 pyproject.toml 配置",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependencies"],
+        "used_symbols": ["tomli.load"]
+      },
+      {
+        "name": "jinja2",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "docstring RST 模板渲染（通过 Sphinx 间接引入）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Sphinx 的依赖传递，PyPI 包管理器",
+        "declared_in": ["numpydoc/docscrape_sphinx.py:import"],
+        "used_symbols": ["jinja2.FileSystemLoader", "jinja2.sandbox.SandboxedEnvironment"]
+      },
+      {
+        "name": "docutils",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Sphinx 底层文档节点类型，用于节点遍历与替换",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Sphinx 的依赖传递，PyPI 包管理器",
+        "declared_in": ["numpydoc/numpydoc.py:import"],
+        "used_symbols": ["docutils.nodes.Text", "docutils.nodes.citation", "docutils.nodes.comment", "docutils.nodes.inline", "docutils.nodes.reference", "docutils.nodes.section", "docutils.statemachine.ViewList"]
+      },
+      {
+        "name": "pre-commit",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=3.3",
+        "purpose": "本地 git 提交前代码检查工具链",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependency-groups.dev"]
+      },
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=1.22",
+        "purpose": "文档构建示例与 intersphinx 目标",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependency-groups.doc"]
+      },
+      {
+        "name": "matplotlib",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=3.5",
+        "purpose": "文档构建中的绘图示例与测试",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependency-groups.doc", "pyproject.toml:dependency-groups.test"]
+      },
+      {
+        "name": "pydata-sphinx-theme",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": ">=0.13.3",
+        "purpose": "文档站点主题",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependency-groups.doc"]
+      },
+      {
+        "name": "intersphinx_registry",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档构建时获取常用项目的 intersphinx 映射",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependency-groups.doc"]
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependency-groups.test"]
+      },
+      {
+        "name": "pytest-cov",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "pytest 覆盖率插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 包管理器",
+        "declared_in": ["pyproject.toml:dependency-groups.test"]
+      }
+    ],
+    "notes": "声明的运行时依赖只有 sphinx 与 tomli（Python<3.11）；jinja2 与 docutils 通过 Sphinx 传递引入。无原生 C/C++ 依赖、无系统库、无运行时动态加载库。"
+  },
+  "native_api": {
+    "summary": "numpydoc 为纯 Python 库，未调用任何平台专有系统 API、未使用 ctypes/dlopen、未访问 /proc/sys 等内核伪文件。其运行时仅依赖 Python 标准库与 Sphinx/docutils/jinja2 等上层包，平台无关。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "inspect.getdoc / inspect.getsource / inspect.signature / inspect.getmembers", "purpose": "通过反射获取对象文档字符串、源码、签名与成员列表", "count": 10, "evidence": ["numpydoc/docscrape.py:440", "numpydoc/docscrape.py:592", "numpydoc/validate.py:227", "numpydoc/validate.py:311", "numpydoc/validate.py:438"]},
+          {"name": "importlib.import_module", "purpose": "在运行时按名称导入模块，用于 CLI validate", "count": 2, "evidence": ["numpydoc/validate.py:258", "numpydoc/numpydoc.py:222"]},
+          {"name": "ast.parse / ast.walk / ast.get_docstring / ast.iter_child_nodes", "purpose": "基于抽象语法树解析源码并提取 docstring，用于 AST hook", "count": 7, "evidence": ["numpydoc/hooks/validate_docstrings.py:44", "numpydoc/hooks/validate_docstrings.py:76", "numpydoc/hooks/validate_docstrings.py:387", "numpydoc/validate.py:536"]},
+          {"name": "tokenize.generate_tokens", "purpose": "读取文件并定位注释位置，用于提取 numpydoc ignore 内联注释", "count": 1, "evidence": ["numpydoc/validate.py:150"]},
+          {"name": "open()", "purpose": "读取被校验的 Python 源码文件与 pyproject.toml 配置", "count": 4, "evidence": ["numpydoc/validate.py:144", "numpydoc/hooks/validate_docstrings.py:133", "numpydoc/hooks/validate_docstrings.py:302", "numpydoc/hooks/validate_docstrings.py:386"]},
+          {"name": "hashlib.sha256", "purpose": "为引用标签生成唯一前缀，避免重复", "count": 1, "evidence": ["numpydoc/numpydoc.py:73"]},
+          {"name": "pydoc.getdoc", "purpose": "获取清理后的对象文档字符串", "count": 5, "evidence": ["numpydoc/docscrape.py:592", "numpydoc/docscrape.py:662", "numpydoc/docscrape_sphinx.py:148", "numpydoc/docscrape_sphinx.py:250", "numpydoc/numpydoc.py:293"]},
+          {"name": "functools.lru_cache", "purpose": "缓存 ignore 注释与源码行解析结果，提升校验性能", "count": 2, "evidence": ["numpydoc/validate.py:124", "numpydoc/validate.py:309"]},
+          {"name": "re.match / re.search / re.compile", "purpose": "解析 docstring 章节、正则匹配引用与配置项", "count": 15, "evidence": ["numpydoc/docscrape.py:278", "numpydoc/numpydoc.py:65", "numpydoc/validate.py:154", "numpydoc/xref.py:93"]}
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期仅读取用户指定的 Python 源码文件与项目配置文件（pyproject.toml/setup.cfg），不访问网络、不调用外部命令、不读取环境变量、不操作设备节点。",
+    "network": [],
+    "filesystem": [
+      {"detail": "被校验 Python 源码文件", "purpose": "lint/validate 子命令读取用户传入的 .py 文件以解析 AST", "evidence": ["numpydoc/hooks/validate_docstrings.py:386", "numpydoc/validate.py:144"]},
+      {"detail": "pyproject.toml 或 setup.cfg", "purpose": "pre-commit hook 读取项目配置以决定校验规则与忽略项", "evidence": ["numpydoc/hooks/validate_docstrings.py:302"]}
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "Python 3.10 / 3.11 / 3.12 / 3.13 / 3.14",
+    "build_system": "setuptools (PEP 517)",
+    "compiler_extensions": [],
+    "platforms": [
+      {"os": "OS Independent", "arch": "any", "evidence": ["pyproject.toml:classifiers", "README.rst"]}
+    ],
+    "notes": "纯 Python 包，无需编译器；build-system requires 仅 setuptools>=61.2。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（库跑在已移植的 Python 3.12 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible",
+    "overall_difficulty": "low",
+    "effort_estimate": "XS",
+    "porting_class": "no_adaptation",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "numpydoc 是纯 Python 的 Sphinx 扩展，依赖 sphinx 与 tomli，均可在鸿蒙 PC 已移植的 Python 运行时上运行。代码中无原生扩展、无平台专有 API、无外部命令或设备访问，因此无需任何改造即可直接安装使用。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "compatible": [
+      {"aspect": "全部纯 Python 逻辑", "note": "docstring 解析、校验、Sphinx 事件回调与 CLI 均基于 Python 标准库与 Sphinx，可直接在鸿蒙 Python 上运行", "evidence": ["numpydoc/docscrape.py", "numpydoc/validate.py", "numpydoc/numpydoc.py", "numpydoc/cli.py"]},
+      {"aspect": "Sphinx 生态依赖", "note": "sphinx 与 jinja2/docutils 均为纯 Python 包，可在已移植 Python 运行时上通过 pip 安装", "evidence": ["pyproject.toml:dependencies"]}
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC Python 环境中通过 pip 安装 numpydoc 及其依赖（sphinx、tomli）",
+      "运行 pytest 测试套件确认校验与渲染功能正常"
+    ],
+    "notes": "评估按默认模型 A（库跑在鸿蒙已移植 Python 运行时上）。该库无 ArkTS 应用层需求，亦无需 NDK 重编或 Node-API 桥接。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer (manual session, opencode k2p7)",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": []
+  }
+}

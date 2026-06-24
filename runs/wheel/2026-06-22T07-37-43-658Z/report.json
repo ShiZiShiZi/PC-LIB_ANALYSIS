@@ -1,0 +1,579 @@
+{
+  "library": {
+    "name": "wheel",
+    "package_name": "wheel",
+    "source_url": "https://github.com/pypa/wheel.git",
+    "analyzed_at": "2026-06-22T07:37:43.658Z",
+    "commit": "197012dcb8a9da10570d6486bc1a70305861e7f2",
+    "one_liner": "用于创建与操作 Python wheel 包文件的命令行工具及 setuptools 扩展",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "wheel 是一个用于创建与操作 Python wheel 归档文件（PEP 427）的纯 Python 命令行工具。它提供 unpack、pack、convert、tags、info 等 CLI 子命令，并包含 WheelFile 类用于带 RECORD 哈希校验的 wheel 读写，以及历史上由 setuptools 使用的 bdist_wheel 命令实现。主要面向 Python 包维护者、构建工具开发者与需要在本地操作 wheel 归档的开发者。",
+    "categories": [
+      {
+        "name": "wheel 文件读写与哈希校验",
+        "description": "基于 zipfile.ZipFile 扩展实现 WheelFile，解析 wheel 文件名、读取 .dist-info/RECORD、对读取内容做 SHA-256 哈希校验，并负责写入 RECORD 与生成可复现的时间戳。",
+        "evidence": ["src/wheel/wheelfile.py:WheelFile", "src/wheel/wheelfile.py:58", "src/wheel/wheelfile.py:open", "src/wheel/wheelfile.py:writestr"]
+      },
+      {
+        "name": "命令行工具",
+        "description": "提供 wheel unpack / pack / convert / tags / info / version / help 子命令，用于解包、重新打包、转换旧格式、修改平台标签和查看 wheel 元数据。",
+        "evidence": ["src/wheel/_commands/__init__.py:parser", "src/wheel/_commands/__init__.py:85", "src/wheel/_commands/unpack.py", "src/wheel/_commands/pack.py", "src/wheel/_commands/tags.py", "src/wheel/_commands/info.py", "src/wheel/_commands/convert.py"]
+      },
+      {
+        "name": "旧分发格式转换",
+        "description": "将 .egg 归档/目录与 Windows wininst 安装程序转换为 wheel 格式，同时把 requires.txt、PKG-INFO 等旧元数据迁移为 Metadata 2.4 与 WHEEL 文件。",
+        "evidence": ["src/wheel/_commands/convert.py:convert", "src/wheel/_commands/convert.py:EggFileSource", "src/wheel/_commands/convert.py:WininstFileSource"]
+      },
+      {
+        "name": "元数据解析与生成",
+        "description": "解析并生成 PEP 566/643 风格的 METADATA、WHEEL 文件，提供 requires.txt 到 Requires-Dist、extras 到 Provides-Extra 的转换逻辑。",
+        "evidence": ["src/wheel/_metadata.py", "src/wheel/_metadata.py:pkginfo_to_metadata", "src/wheel/_metadata.py:generate_requirements", "src/wheel/_commands/pack.py:pack"]
+      },
+      {
+        "name": "macOS 平台标签计算",
+        "description": "通过解析 Mach-O / Fat 二进制头（LC_VERSION_MIN_MACOSX、LC_BUILD_VERSION）获取 .dylib / .so 的最低系统版本，从而计算正确的 macosx 平台标签。",
+        "evidence": ["src/wheel/macosx_libfile.py:calculate_macosx_platform_tag", "src/wheel/macosx_libfile.py:extract_macosx_min_system_version", "src/wheel/_bdist_wheel.py:get_platform"]
+      },
+      {
+        "name": "setuptools 集成",
+        "description": "提供 bdist_wheel distutils/setuptools 命令，用于从源码构建生成 wheel；新版本 setuptools 已内置该命令，此处保留兼容实现。",
+        "evidence": ["src/wheel/_bdist_wheel.py:bdist_wheel", "src/wheel/bdist_wheel.py", "pyproject.toml:project.entry-points.distutils.commands"]
+      }
+    ],
+    "domain": "packaging",
+    "target_users": "Python 包维护者、构建工具开发者与需要在本地操作 wheel 归档的开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "reStructuredText",
+      "DOS Batch",
+      "YAML",
+      "make",
+      "TOML",
+      "Text"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 25,
+        "code": 2608,
+        "pct": 63.24,
+        "production": {
+          "files": 16,
+          "code": 1707
+        },
+        "test": {
+          "files": 9,
+          "code": 901
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 15,
+        "code": 840,
+        "pct": 20.37,
+        "production": {
+          "files": 15,
+          "code": 840
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 1,
+        "code": 166,
+        "pct": 4.03,
+        "production": {
+          "files": 1,
+          "code": 166
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 5,
+        "code": 164,
+        "pct": 3.98,
+        "production": {
+          "files": 5,
+          "code": 164
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 124,
+        "pct": 3.01,
+        "production": {
+          "files": 1,
+          "code": 124
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 118,
+        "pct": 2.86,
+        "production": {
+          "files": 1,
+          "code": 118
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 104,
+        "pct": 2.52,
+        "production": {
+          "files": 1,
+          "code": 17
+        },
+        "test": {
+          "files": 1,
+          "code": 87
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 50,
+      "code": 4124,
+      "comment": 762,
+      "blank": 1232,
+      "total_lines": 6118
+    },
+    "production": {
+      "files": 40,
+      "code": 3136,
+      "comment": 636,
+      "blank": 989,
+      "total_lines": 4761
+    },
+    "test": {
+      "files": 10,
+      "code": 988,
+      "comment": 126,
+      "blank": 243,
+      "total_lines": 1357
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 16,
+        "code": 1707
+      },
+      "reStructuredText": {
+        "files": 15,
+        "code": 840
+      },
+      "DOS Batch": {
+        "files": 1,
+        "code": 166
+      },
+      "YAML": {
+        "files": 5,
+        "code": 164
+      },
+      "make": {
+        "files": 1,
+        "code": 124
+      },
+      "TOML": {
+        "files": 1,
+        "code": 118
+      },
+      "Text": {
+        "files": 1,
+        "code": 17
+      }
+    }
+  },
+  "tests": {
+    "test_files": 10,
+    "test_cases": 43,
+    "frameworks": ["pytest"],
+    "by_language": {
+      "Python": {
+        "files": 9,
+        "cases": 43
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "测试基于 pytest；metrics 工具原输出为 'pytest/unittest'，但实际测试仅使用 pytest（含 unittest.mock 补丁），因此修正为 pytest。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE.txt"],
+    "evidence": "LICENSE.txt 包含标准 MIT 许可证全文；pyproject.toml [project] 中声明 license = 'MIT'，与文件内容一致。",
+    "notes": "宽松许可证；需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 5,
+    "manifests": ["pyproject.toml"],
+    "by_ecosystem": {
+      "python": ["packaging", "pytest", "setuptools", "flit_core"]
+    },
+    "dependencies": [
+      {
+        "name": "packaging",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">= 24.0",
+        "purpose": "解析 PEP 440 版本、依赖规范与平台标签（packaging.tags.parse_tag、packaging.requirements.Requirement 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:project.dependencies"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "packaging",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">= 26.0",
+        "purpose": "测试中对 packaging API 的依赖",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:dependency-groups.test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">= 6.0.0",
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:dependency-groups.test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">= 77",
+        "purpose": "测试 bdist_wheel 与 setuptools 命令集成",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:dependency-groups.test"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "flit_core",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">= 3.11, < 5",
+        "purpose": "PEP 517 构建后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml:build-system.requires"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "运行依赖仅 packaging 一个；pytest、setuptools 为测试依赖，flit_core 为构建后端。所有依赖均为 PyPI 纯 Python 包。"
+  },
+  "native_api": {
+    "summary": "纯 Python 库，主要调用 Python 标准库。仅在 macosx_libfile.py 中使用 ctypes 定义 Mach-O / Fat 结构体并解析 macOS 动态库头，且只在 macOS 平台路径（sysconfig.get_platform().startswith('macosx')）中触发；无动态库加载（dlopen/LoadLibrary/ctypes.CDLL）。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "zipfile.ZipFile",
+            "purpose": "读写 wheel 归档（基于 ZIP 格式）",
+            "count": 10,
+            "evidence": ["src/wheel/wheelfile.py:58", "src/wheel/_commands/convert.py:137", "src/wheel/_commands/convert.py:236"],
+            "conditional": false
+          },
+          {
+            "name": "hashlib.sha256 / hashlib.new",
+            "purpose": "计算与校验 RECORD 中记录的哈希值",
+            "count": 6,
+            "evidence": ["src/wheel/wheelfile.py:63", "src/wheel/wheelfile.py:117", "src/wheel/wheelfile.py:163"],
+            "conditional": false
+          },
+          {
+            "name": "base64.urlsafe_b64encode / urlsafe_b64decode",
+            "purpose": "RECORD 哈希的 URL-safe Base64 编解码（无填充）",
+            "count": 4,
+            "evidence": ["src/wheel/wheelfile.py:37", "src/wheel/wheelfile.py:42", "src/wheel/wheelfile.py:131"],
+            "conditional": false
+          },
+          {
+            "name": "csv.reader / csv.writer",
+            "purpose": "解析与生成 .dist-info/RECORD CSV 文件",
+            "count": 4,
+            "evidence": ["src/wheel/wheelfile.py:108", "src/wheel/wheelfile.py:242"],
+            "conditional": false
+          },
+          {
+            "name": "email.message.Message / email.parser.BytesParser / email.generator.BytesGenerator",
+            "purpose": "解析与生成 METADATA、WHEEL 等邮件头格式的元数据文件",
+            "count": 12,
+            "evidence": ["src/wheel/_commands/convert.py:68", "src/wheel/_commands/info.py:40", "src/wheel/_bdist_wheel.py:476"],
+            "conditional": false
+          },
+          {
+            "name": "argparse.ArgumentParser",
+            "purpose": "wheel 命令行接口解析",
+            "count": 1,
+            "evidence": ["src/wheel/_commands/__init__.py:85"],
+            "conditional": false
+          },
+          {
+            "name": "os.walk / os.listdir / os.path",
+            "purpose": "遍历目录、列出文件、处理路径",
+            "count": 15,
+            "evidence": ["src/wheel/wheelfile.py:171", "src/wheel/_commands/pack.py:26", "src/wheel/macosx_libfile.py:441"],
+            "conditional": false
+          },
+          {
+            "name": "shutil.copytree / shutil.rmtree / shutil.copy",
+            "purpose": "复制/删除目录与许可证文件",
+            "count": 5,
+            "evidence": ["src/wheel/_bdist_wheel.py:585", "src/wheel/_bdist_wheel.py:553", "src/wheel/_bdist_wheel.py:614"],
+            "conditional": false
+          },
+          {
+            "name": "sysconfig.get_config_var / sysconfig.get_platform",
+            "purpose": "获取 Python ABI、平台名称以生成 wheel 标签",
+            "count": 6,
+            "evidence": ["src/wheel/_bdist_wheel.py:84", "src/wheel/_bdist_wheel.py:107", "src/wheel/_bdist_wheel.py:121"],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "ctypes",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ctypes.Structure / ctypes.BigEndianStructure / ctypes.LittleEndianStructure",
+            "purpose": "定义 Mach-O / Fat 二进制头结构体布局",
+            "count": 8,
+            "evidence": ["src/wheel/macosx_libfile.py:75", "src/wheel/macosx_libfile.py:264", "src/wheel/macosx_libfile.py:276"],
+            "conditional": true
+          },
+          {
+            "name": "ctypes.c_uint32 / c_int / c_uint64 / c_char",
+            "purpose": "Mach-O 结构体字段类型映射",
+            "count": 20,
+            "evidence": ["src/wheel/macosx_libfile.py:75", "src/wheel/macosx_libfile.py:111", "src/wheel/macosx_libfile.py:155"],
+            "conditional": true
+          },
+          {
+            "name": "ctypes.sizeof / from_buffer_copy",
+            "purpose": "按 C 结构体布局从二进制文件读取并解析字节",
+            "count": 4,
+            "evidence": ["src/wheel/macosx_libfile.py:269", "src/wheel/macosx_libfile.py:289"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "macosx_libfile",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "calculate_macosx_platform_tag",
+            "purpose": "根据 .dylib/.so 的 Mach-O 头计算 macOS 最低系统版本标签",
+            "count": 1,
+            "evidence": ["src/wheel/macosx_libfile.py:407", "src/wheel/_bdist_wheel.py:88"],
+            "conditional": true
+          },
+          {
+            "name": "extract_macosx_min_system_version / read_mach_header",
+            "purpose": "解析 Mach-O / Fat 头中的 LC_VERSION_MIN_MACOSX 与 LC_BUILD_VERSION 命令",
+            "count": 2,
+            "evidence": ["src/wheel/macosx_libfile.py:292", "src/wheel/macosx_libfile.py:350"],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时主要读写本地 wheel 文件、构建临时目录与 .dist-info 元数据文件；读取 SOURCE_DATE_EPOCH 与 MACOSX_DEPLOYMENT_TARGET 两个环境变量。无网络访问、无子进程调用、无特殊设备访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "wheel 归档文件（.whl）",
+        "purpose": "读取、写入、重新打包与校验 wheel 归档",
+        "evidence": ["src/wheel/wheelfile.py:58", "src/wheel/_commands/unpack.py:17", "src/wheel/_commands/pack.py:68"]
+      },
+      {
+        "detail": ".dist-info 目录下的 METADATA / WHEEL / RECORD 文件",
+        "purpose": "解析与生成 wheel 元数据及完整性记录",
+        "evidence": ["src/wheel/wheelfile.py:78", "src/wheel/_commands/info.py:39", "src/wheel/_bdist_wheel.py:444"]
+      },
+      {
+        "detail": "临时构建目录（bdist_dir）",
+        "purpose": "bdist_wheel 构建过程中临时安装文件树",
+        "evidence": ["src/wheel/_bdist_wheel.py:272", "src/wheel/_bdist_wheel.py:447"]
+      },
+      {
+        "detail": "egg / wininst 源文件",
+        "purpose": "convert 子命令读取旧格式归档并输出 wheel",
+        "evidence": ["src/wheel/_commands/convert.py:287"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "SOURCE_DATE_EPOCH",
+        "purpose": "实现可复现构建，固定 wheel 中 ZipInfo 的时间戳",
+        "evidence": ["src/wheel/wheelfile.py:53"]
+      },
+      {
+        "name": "MACOSX_DEPLOYMENT_TARGET",
+        "purpose": "设置 macOS 最低部署目标版本，影响 macosx 平台标签计算",
+        "evidence": ["src/wheel/macosx_libfile.py:419", "src/wheel/macosx_libfile.py:421"]
+      }
+    ],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.9",
+    "runtime_version": "CPython 3.9–3.14 或 PyPy3；requires-python = '>=3.9'",
+    "build_system": "flit_core（PEP 517 构建后端）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64 / aarch64 / armv7l",
+        "evidence": ["src/wheel/_bdist_wheel.py:90", "src/wheel/_bdist_wheel.py:93", "src/wheel/_bdist_wheel.py:346"]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64 / arm64",
+        "evidence": ["src/wheel/_bdist_wheel.py:85", "src/wheel/macosx_libfile.py:323"]
+      },
+      {
+        "os": "windows",
+        "arch": "win32 / amd64",
+        "evidence": ["src/wheel/_bdist_wheel.py:411", "src/wheel/_commands/convert.py:38"]
+      }
+    ],
+    "notes": "纯 Python 包，无编译步骤；flit_core 负责打包。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；自研内核，无 Linux ABI；arm64/x86_64）",
+    "feasibility": "feasible",
+    "overall_difficulty": "low",
+    "effort_estimate": "XS",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "wheel 是纯 Python 库，无原生扩展、无子进程/网络/设备访问、无 /proc/sys 等平台特有接口。其唯一的平台相关代码是 macOS Mach-O 解析，用于计算 macosx 平台标签，在 HarmonyOS PC 上不会触发。因此可直接运行于鸿蒙已移植的 Python 运行时，基本无需改动。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "所有 CLI 命令与 WheelFile 逻辑",
+        "note": "纯 Python 标准库实现，可直接在鸿蒙 Python 上运行",
+        "evidence": ["src/wheel/_commands/__init__.py", "src/wheel/wheelfile.py"]
+      },
+      {
+        "aspect": "zipfile / hashlib / csv / email 等标准库依赖",
+        "note": "鸿蒙 Python 的musl 标准库支持这些 API",
+        "evidence": ["src/wheel/wheelfile.py"]
+      },
+      {
+        "aspect": "运行时依赖 packaging",
+        "note": "packaging 为纯 Python 包，虽未被 OpenHarmony PC 官方镜像标记为已鸿蒙化，但可直接随 pip 安装运行",
+        "evidence": ["pyproject.toml:project.dependencies"]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 环境中执行 pip install wheel 并验证 wheel --help / wheel version 可用",
+      "运行测试套件（pytest）验证 unpack / pack / tags / info / convert / bdist_wheel 功能完整"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。macosx_libfile.py 中的 ctypes 结构体仅服务于 macOS 平台标签计算，在鸿蒙 PC 上无需执行；若未来需要在鸿蒙上为 macOS 交叉构建 wheel，则该路径仍不会在本机触发。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": []
+  }
+}

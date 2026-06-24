@@ -1,0 +1,844 @@
+{
+  "library": {
+    "name": "x86-simd-sort",
+    "package_name": "x86simdsortcpp",
+    "source_url": "https://github.com/intel/x86-simd-sort.git",
+    "analyzed_at": "2026-06-23T04:25:06.773Z",
+    "commit": "b8c9fd861f25ce0549f45d71058dfc2ba19508e4",
+    "one_liner": "基于 x86 AVX2/AVX-512 指令集的高性能 SIMD 排序 C++ 模板库，支持标量、整数、浮点及自定义对象排序。",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "x86-simd-sort 是 Intel 开源的 C++17 模板库，专门利用 x86 AVX2/AVX-512 指令集对 16/32/64 位整数、浮点以及自定义 C++ 对象进行高速排序。库在运行时自动检测 CPU 特性，在 AVX-512、AVX2 与纯标量实现之间动态分派，并被 NumPy、PyTorch、OpenJDK 等下游项目作为子模块集成。",
+    "categories": [
+      {
+        "name": "SIMD 快速排序",
+        "description": "对内置数值类型（_Float16、uint16_t、int16_t、float、uint32_t、int32_t、double、uint64_t、int64_t）提供快速排序、快速选择、部分排序的 SIMD 加速实现。",
+        "evidence": [
+          "lib/x86simdsort.h:21-39",
+          "src/avx2-32bit-qsort.hpp",
+          "src/avx512-32bit-qsort.hpp",
+          "src/avx512-64bit-qsort.hpp"
+        ]
+      },
+      {
+        "name": "索引排序",
+        "description": "返回排序后元素原位置的索引数组，等价于 NumPy 的 argsort/argpartition。",
+        "evidence": [
+          "lib/x86simdsort.h:42-51",
+          "src/xss-common-argsort.h",
+          "src/avx512-64bit-argsort.hpp"
+        ]
+      },
+      {
+        "name": "键值排序",
+        "description": "根据 key 数组排序同时重排 value 数组，支持 32/64 位浮点和整数键值对。",
+        "evidence": [
+          "lib/x86simdsort.h:54-77",
+          "src/xss-common-keyvaluesort.hpp",
+          "src/xss-network-keyvaluesort.hpp"
+        ]
+      },
+      {
+        "name": "自定义对象排序",
+        "description": "通过用户提供的 key_func 对任意 C++ 对象数组按 key 排序，采用 O(N) 额外空间存储 key 与索引。",
+        "evidence": [
+          "lib/x86simdsort.h:80-116",
+          "README.md:12-36",
+          "tests/test-objqsort.cpp"
+        ]
+      },
+      {
+        "name": "运行时 CPU 指令集分派",
+        "description": "在库加载时检测 avx2/avx512f/avx512dq/avx512vl/avx512vbmi2/avx512fp16 等 CPU 特性，自动绑定最优实现；支持通过 XSS_DISABLE_AVX512 环境变量禁用 AVX-512。",
+        "evidence": [
+          "lib/x86simdsort.cpp:14-45",
+          "lib/x86simdsortcpuid.h",
+          "lib/x86simdsort.cpp:63-99"
+        ]
+      },
+      {
+        "name": "OpenMP 并行加速（可选）",
+        "description": "开启 use_openmp 后，qsort、argsort、keyvalue_qsort 等大数组路径使用 OpenMP 线程并行，最多 16 线程。",
+        "evidence": [
+          "meson.build:43-46",
+          "src/xss-common-includes.h:85-95",
+          "README.md:95-107"
+        ]
+      }
+    ],
+    "domain": "high-performance computing / numerical sorting",
+    "target_users": "C++ 应用开发者、数值计算/科学计算库开发者（如 NumPy、PyTorch 等下游集成者）"
+  },
+  "languages": {
+    "primary": "C/C++ Header",
+    "all": [
+      "C/C++ Header",
+      "C++",
+      "YAML",
+      "Markdown",
+      "Text",
+      "Meson",
+      "Jupyter Notebook",
+      "Bourne Shell"
+    ],
+    "breakdown": [
+      {
+        "language": "C/C++ Header",
+        "files": 37,
+        "code": 9716,
+        "pct": 73.12,
+        "production": {
+          "files": 36,
+          "code": 9612
+        },
+        "test": {
+          "files": 1,
+          "code": 104
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 15,
+        "code": 1574,
+        "pct": 11.85,
+        "production": {
+          "files": 8,
+          "code": 830
+        },
+        "test": {
+          "files": 3,
+          "code": 684
+        },
+        "example": {
+          "files": 4,
+          "code": 60
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 5,
+        "code": 543,
+        "pct": 4.09,
+        "production": {
+          "files": 5,
+          "code": 543
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 6,
+        "code": 482,
+        "pct": 3.63,
+        "production": {
+          "files": 6,
+          "code": 482
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 3,
+        "code": 414,
+        "pct": 3.12,
+        "production": {
+          "files": 3,
+          "code": 414
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Meson",
+        "files": 4,
+        "code": 201,
+        "pct": 1.51,
+        "production": {
+          "files": 3,
+          "code": 174
+        },
+        "test": {
+          "files": 1,
+          "code": 27
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Jupyter Notebook",
+        "files": 1,
+        "code": 110,
+        "pct": 0.83,
+        "production": {
+          "files": 1,
+          "code": 110
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 3,
+        "code": 79,
+        "pct": 0.59,
+        "production": {
+          "files": 3,
+          "code": 79
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 1,
+        "code": 67,
+        "pct": 0.5,
+        "production": {
+          "files": 1,
+          "code": 67
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 1,
+        "code": 58,
+        "pct": 0.44,
+        "production": {
+          "files": 1,
+          "code": 58
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 2,
+        "code": 43,
+        "pct": 0.32,
+        "production": {
+          "files": 1,
+          "code": 26
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 17
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 78,
+      "code": 13287,
+      "comment": 799,
+      "blank": 1250,
+      "total_lines": 15336
+    },
+    "production": {
+      "files": 68,
+      "code": 12395,
+      "comment": 749,
+      "blank": 1122,
+      "total_lines": 14266
+    },
+    "test": {
+      "files": 5,
+      "code": 815,
+      "comment": 50,
+      "blank": 117,
+      "total_lines": 982
+    },
+    "example": {
+      "files": 5,
+      "code": 77,
+      "comment": 0,
+      "blank": 11,
+      "total_lines": 88
+    },
+    "production_by_language": {
+      "C/C++ Header": {
+        "files": 36,
+        "code": 9612
+      },
+      "C++": {
+        "files": 8,
+        "code": 830
+      },
+      "YAML": {
+        "files": 5,
+        "code": 543
+      },
+      "Markdown": {
+        "files": 6,
+        "code": 482
+      },
+      "Text": {
+        "files": 3,
+        "code": 414
+      },
+      "Meson": {
+        "files": 3,
+        "code": 174
+      },
+      "Jupyter Notebook": {
+        "files": 1,
+        "code": 110
+      },
+      "Bourne Shell": {
+        "files": 3,
+        "code": 79
+      },
+      "C": {
+        "files": 1,
+        "code": 67
+      },
+      "Python": {
+        "files": 1,
+        "code": 58
+      },
+      "make": {
+        "files": 1,
+        "code": 26
+      }
+    }
+  },
+  "tests": {
+    "test_files": 5,
+    "test_cases": 0,
+    "frameworks": ["gtest"],
+    "by_language": {
+      "C++": {
+        "files": 3,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 1,
+        "cases": 0
+      },
+      "Meson": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "测试基于 googletest 框架，脚本未能通过正则识别具体 TEST/TEST_F/TEST_P 用例数量。meson_options.txt 中 build_tests 默认关闭。"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE.md"],
+    "evidence": "LICENSE.md 全文与 BSD-3-Clause 条款一致；meson.build:4 显式声明 license: 'BSD 3-clause'；源文件头亦含 SPDX-License-Identifier: BSD-3-Clause。",
+    "notes": "Intel 版权所有，宽松型许可证，需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 6,
+    "manifests": ["meson.build", "meson_options.txt", "lib/meson.build", "tests/meson.build", "benchmarks/meson.build"],
+    "by_ecosystem": {
+      "cpp": ["openmp", "gtest", "benchmark", "threads", "Intel IPP", "highway"]
+    },
+    "dependencies": [
+      {
+        "name": "openmp",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "大数组排序的 OpenMP 线程并行加速",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(编译器自带 OpenMP 运行时，通过 Meson dependency('openmp') 获取)",
+        "declared_in": ["meson.build:44"],
+        "used_symbols": ["omp_get_max_threads"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gtest",
+        "ecosystem": "cpp",
+        "scope": "test",
+        "version": null,
+        "purpose": "C++ 单元测试框架",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(需预装 googlemock/googletest，通过 Meson dependency('gtest') 链接)",
+        "declared_in": ["meson.build:96", "tests/meson.build:15"],
+        "used_symbols": ["TEST", "TYPED_TEST_SUITE_P", "TYPED_TEST_P", "REGISTER_TYPED_TEST_SUITE_P", "INSTANTIATE_TYPED_TEST_SUITE_P"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "benchmark",
+        "ecosystem": "cpp",
+        "scope": "test",
+        "version": ">=1.9.2",
+        "purpose": "google benchmark 性能测试框架",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(需预装 google benchmark >=1.9.2，通过 Meson dependency('benchmark') 链接)",
+        "declared_in": ["meson.build:109", "benchmarks/meson.build:7", "README.md:81"],
+        "used_symbols": ["benchmark::State", "BENCHMARK"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "threads",
+        "ecosystem": "cpp",
+        "scope": "build",
+        "version": null,
+        "purpose": "libbenchmark 可能依赖的 pthread 线程支持",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(Meson dependency('threads')，链接 pthread)",
+        "declared_in": ["meson.build:110"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Intel IPP",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选 benchmark 对比项，调用 Intel Performance Primitives 排序 API",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(需预装 Intel IPP，通过 -lipps -lippcore 链接)",
+        "declared_in": ["meson.build:26", "benchmarks/meson.build:24", "benchmarks/bench-ipp.cpp:2"],
+        "used_symbols": ["ippsSortRadixGetBufferSize", "ippsSortRadixAscend_32f_I", "ippsSortRadixIndexGetBufferSize", "ippsSortRadixIndexAscend_32f"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "highway",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选 benchmark 对比项，与 google highway 的 vqsort 比较性能",
+        "acquisition": "sibling_checkout",
+        "locality": "local",
+        "source": "仓库上级目录 ../highway（需用户手动克隆 highway 到项目同级目录）",
+        "declared_in": ["benchmarks/meson.build:12"],
+        "used_symbols": ["hwy::contrib::sort::VQSort"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "第一方依赖主要为构建/测试/基准测试用途；运行时核心库除可选 OpenMP 外无外部链接依赖。highway 通过检查 ../highway 是否存在来启用，非包管理器集成。"
+  },
+  "native_api": {
+    "summary": "核心实现深度依赖 x86 AVX2/AVX-512 编译器内联函数与 CPU 特性检测，标量回退路径仅使用 C++ STL。Windows 分支使用 MSVC 的 __cpuid/_xgetbv；GCC/Clang 分支使用 __builtin_cpu_supports。OpenMP 为可选并行加速。",
+    "groups": [
+      {
+        "type": "x86_avx512_intrinsics",
+        "category": "hardware",
+        "platform": "unknown",
+        "apis": [
+          {
+            "name": "_mm512_set1_epi32",
+            "purpose": "AVX-512 广播常量到 512 位向量",
+            "count": 9,
+            "evidence": ["src/xss-common-includes.h:25-34"],
+            "conditional": false
+          },
+          {
+            "name": "_mm512_loadu_si512",
+            "purpose": "AVX-512 未对齐加载 512 位整数向量",
+            "count": 86,
+            "evidence": ["src/avx512-32bit-qsort.hpp", "src/avx512-64bit-common.h"],
+            "conditional": false
+          },
+          {
+            "name": "_mm512_mask_compressstoreu_epi32",
+            "purpose": "AVX-512 按 mask 压缩存储，用于快速分区",
+            "count": 84,
+            "evidence": ["src/avx512-64bit-common.h:210-224"],
+            "conditional": false
+          },
+          {
+            "name": "_mm512_cmp_epi32_mask",
+            "purpose": "AVX-512 向量比较生成 mask",
+            "count": 89,
+            "evidence": ["src/avx512-16bit-qsort.hpp", "src/avx512-32bit-qsort.hpp"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["src/xss-common-includes.h:7", "src/avx512-32bit-qsort.hpp", "src/avx512-64bit-common.h", "src/avx512-16bit-qsort.hpp", "src/avx512fp16-16bit-qsort.hpp"]
+      },
+      {
+        "type": "x86_avx2_intrinsics",
+        "category": "hardware",
+        "platform": "unknown",
+        "apis": [
+          {
+            "name": "_mm256_set1_epi32",
+            "purpose": "AVX2 广播常量到 256 位向量",
+            "count": 1,
+            "evidence": ["src/xss-common-includes.h:32"],
+            "conditional": false
+          },
+          {
+            "name": "_mm256_loadu_si256",
+            "purpose": "AVX2 未对齐加载 256 位整数向量",
+            "count": 93,
+            "evidence": ["src/avx2-32bit-qsort.hpp", "src/avx2-64bit-qsort.hpp"],
+            "conditional": false
+          },
+          {
+            "name": "_mm256_permutevar8x32_epi32",
+            "purpose": "AVX2 256 位向量变址置换，用于排序网络 shuffle",
+            "count": 18,
+            "evidence": ["src/avx2-emu-funcs.hpp"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["src/avx2-32bit-qsort.hpp", "src/avx2-64bit-qsort.hpp", "src/avx2-emu-funcs.hpp"]
+      },
+      {
+        "type": "x86_cpuid_gcc",
+        "category": "hardware",
+        "platform": "unknown",
+        "apis": [
+          {
+            "name": "__builtin_cpu_init",
+            "purpose": "GCC/Clang 初始化 CPU 特性缓存",
+            "count": 1,
+            "evidence": ["lib/x86simdsortcpuid.h:78"],
+            "conditional": true
+          },
+          {
+            "name": "__builtin_cpu_supports",
+            "purpose": "GCC/Clang 查询 x86 CPU 是否支持指定特性（avx2/avx512f 等）",
+            "count": 1,
+            "evidence": ["lib/x86simdsortcpuid.h:79", "lib/x86simdsort.cpp:21-33"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["lib/x86simdsortcpuid.h:77-80"]
+      },
+      {
+        "type": "x86_cpuid_msvc",
+        "category": "hardware",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "__cpuid",
+            "purpose": "MSVC 查询 CPUID 基础信息",
+            "count": 2,
+            "evidence": ["lib/x86simdsortcpuid.h:14", "lib/x86simdsortcpuid.h:37"],
+            "conditional": true
+          },
+          {
+            "name": "__cpuidex",
+            "purpose": "MSVC 查询扩展 CPUID leaf",
+            "count": 1,
+            "evidence": ["lib/x86simdsortcpuid.h:46"],
+            "conditional": true
+          },
+          {
+            "name": "_xgetbv",
+            "purpose": "MSVC 读取 XCR0 寄存器，确认 OS 已启用 AVX/AVX-512 向量状态",
+            "count": 2,
+            "evidence": ["lib/x86simdsortcpuid.h:21", "lib/x86simdsortcpuid.h:30"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["lib/x86simdsortcpuid.h:4-80"]
+      },
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::sort",
+            "purpose": "标量回退路径的快速排序",
+            "count": 1,
+            "evidence": ["lib/x86simdsort-scalar.h:50"],
+            "conditional": false
+          },
+          {
+            "name": "std::nth_element",
+            "purpose": "标量回退路径的快速选择",
+            "count": 1,
+            "evidence": ["lib/x86simdsort-scalar.h:58"],
+            "conditional": false
+          },
+          {
+            "name": "std::partial_sort",
+            "purpose": "标量回退路径的部分排序",
+            "count": 1,
+            "evidence": ["lib/x86simdsort-scalar.h:67"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["lib/x86simdsort-scalar.h"]
+      },
+      {
+        "type": "openmp",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "omp_get_max_threads",
+            "purpose": "获取 OpenMP 最大可用线程数，限制为最多 16 线程",
+            "count": 1,
+            "evidence": ["src/xss-common-includes.h:93"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/xss-common-includes.h:85-95", "meson.build:43-46"]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行时仅读取 XSS_DISABLE_AVX512 环境变量以禁用 AVX-512；开启 OpenMP 时使用线程并行。无网络、文件系统、子进程或设备访问。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [
+      {
+        "name": "XSS_DISABLE_AVX512",
+        "purpose": "若设置则强制关闭 AVX-512 路径，仅使用 AVX2/scalar",
+        "evidence": ["lib/x86simdsort.cpp:16", "lib/x86simdsort.cpp:18-31"]
+      }
+    ],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "C++17",
+    "runtime_version": null,
+    "build_system": "Meson",
+    "compiler_extensions": [
+      {
+        "detail": "GCC/Clang 构造函数属性，用于库加载时解析函数指针分派",
+        "purpose": "运行时 CPU 分派初始化",
+        "evidence": ["lib/x86simdsort.cpp:4"]
+      },
+      {
+        "detail": "MSVC __declspec(dllexport) 与 GCC __attribute__((visibility('default')))",
+        "purpose": "控制动态库符号可见性",
+        "evidence": ["lib/x86simdsort.h:9-15"]
+      },
+      {
+        "detail": "__builtin_expect 分支预测提示",
+        "purpose": "优化排序循环中的条件分支",
+        "evidence": ["src/xss-common-includes.h:59-60"]
+      },
+      {
+        "detail": "GCC unroll pragma / Intel unroll pragma",
+        "purpose": "循环展开提示",
+        "evidence": ["src/xss-common-includes.h:69-74"]
+      },
+      {
+        "detail": "-march=haswell / -march=skylake-avx512 / -march=icelake-client / -march=sapphirerapids",
+        "purpose": "分别为 AVX2、AVX-512 SKX、AVX-512 ICL、AVX-512 FP16 SPR 编译专用目标文件",
+        "evidence": ["lib/meson.build:7", "lib/meson.build:17", "lib/meson.build:27", "lib/meson.build:38"]
+      },
+      {
+        "detail": "MSVC /arch:AVX2 / /arch:AVX512",
+        "purpose": "Windows 下启用对应 SIMD 指令集",
+        "evidence": ["lib/meson.build:7", "lib/meson.build:17"]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/c-cpp.yml:62-289"]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/c-cpp.yml:12-58", "lib/x86simdsortcpuid.h:4-75"]
+      }
+    ],
+    "notes": "项目 CI 仅覆盖 x86_64；静态接口头 src/x86simdsort-static-incl.h 在缺少 __AVX2__/__AVX512*__ 时会触发 #error，因此当前代码仅能在 x86_64 且启用对应 SIMD 标志时编译。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (OHOS NDK 原生层; arm64/x86_64; 自研内核, 无 Linux ABI)",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "high",
+    "effort_estimate": "L",
+    "porting_class": "needs_adaptation_partial",
+    "recommended_path": "recompile_with_arch_porting",
+    "summary": "x86-simd-sort 是深度绑定 x86 SIMD 指令集的排序库。在 HarmonyOS PC x86_64 上，若 OHOS NDK clang 支持 AVX2/AVX-512，可尝试直接交叉编译，但需验证 CPU 特性检测与 musl 兼容性；在 arm64 上，AVX2/AVX-512 指令与 x86 CPUID 检测均不可用，必须新增 ARM NEON/SVE 向量后端或统一退化为 scalar 路径，工作量较大。核心排序功能（基于 std::sort 的 scalar 回退）可运行，但会失去库的主要 SIMD 加速价值。",
+    "unadaptable_apis": [
+      {
+        "api": "AVX-512 intrinsics (_mm512_loadu_si512 / _mm512_mask_compressstoreu_epi32 / _mm512_cmp_epi32_mask 等)",
+        "public_entry": "x86simdsort::qsort / x86simdsort::argsort / x86simdsort::keyvalue_qsort",
+        "reason": "AVX-512 是 x86_64 专有 SIMD 指令集，HarmonyOS PC arm64 无对应执行单元/指令编码，无法通过 NDK 重编获得。",
+        "blocking_native_api": "AVX-512 intrinsics from <immintrin.h>",
+        "category": "hardware",
+        "evidence": ["src/xss-common-includes.h:7", "src/avx512-32bit-qsort.hpp", "src/avx512-64bit-common.h"]
+      },
+      {
+        "api": "AVX2 intrinsics (_mm256_loadu_si256 / _mm256_permutevar8x32_epi32 等)",
+        "public_entry": "x86simdsort::qsort / x86simdsort::argsort / x86simdsort::keyvalue_qsort",
+        "reason": "AVX2 是 x86_64 专有 SIMD 指令集，HarmonyOS PC arm64 无对应执行单元。",
+        "blocking_native_api": "AVX2 intrinsics from <immintrin.h>",
+        "category": "hardware",
+        "evidence": ["src/avx2-32bit-qsort.hpp", "src/avx2-64bit-qsort.hpp", "src/avx2-emu-funcs.hpp"]
+      },
+      {
+        "api": "x86 CPU feature detection (__builtin_cpu_supports / __cpuidex / _xgetbv)",
+        "public_entry": "x86simdsort::qsort",
+        "reason": "__builtin_cpu_supports 与 __cpuid/_xgetbv 均为 x86 CPUID 机制的内建函数/内联函数，在非 x86 架构上不存在对应实现。",
+        "blocking_native_api": "__builtin_cpu_supports / __cpuidex / _xgetbv",
+        "category": "hardware",
+        "evidence": ["lib/x86simdsortcpuid.h:14-79", "lib/x86simdsort.cpp:21-33"]
+      }
+    ],
+    "blockers": [
+      {
+        "issue": "AVX2/AVX-512 硬件 intrinsics 在 arm64 上无对应实现，SIMD 加速路径不可用",
+        "severity": "blocker",
+        "category": "x86_specific_hardware",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "arm64 目标下新增 NEON/SVE 向量后端；若仅追求功能正确，可统一退化为 lib/x86simdsort-scalar.h 中的 std::sort 路径。",
+        "evidence": ["src/xss-common-includes.h:7", "src/avx512-32bit-qsort.hpp", "src/avx2-32bit-qsort.hpp"]
+      },
+      {
+        "issue": "x86 CPUID 特性检测在非 x86 架构上无法编译/运行",
+        "severity": "major",
+        "category": "x86_specific_hardware",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "按目标架构条件编译：x86_64 保留现有检测，arm64 直接走 scalar/NEON 分支；可借助编译期宏或 hwcap 替代。",
+        "evidence": ["lib/x86simdsortcpuid.h:4-80", "lib/x86simdsort.cpp:14-36"]
+      },
+      {
+        "issue": "构建系统硬编码 x86 -march 标志，arm64 下编译失败",
+        "severity": "major",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "unavailable",
+        "remediation": "重构 lib/meson.build，按 host_cpu 选择编译单元与编译标志；arm64 移除 -march=haswell/skylake-avx512 等 x86 专用选项。",
+        "evidence": ["lib/meson.build:7", "lib/meson.build:17", "lib/meson.build:27", "lib/meson.build:38"]
+      },
+      {
+        "issue": "静态接口头在缺少 __AVX2__/__AVX512*__ 时直接报错",
+        "severity": "major",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "unavailable",
+        "remediation": "修改 src/x86simdsort-static-incl.h:216，将 #error 改为默认使用 scalar 实现，或增加 arm64 NEON 分支。",
+        "evidence": ["src/x86simdsort-static-incl.h:164-217"]
+      },
+      {
+        "issue": "可选 OpenMP 运行时依赖需确认 OHOS NDK 支持程度",
+        "severity": "minor",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "关闭 use_openmp 即可绕过；如需并行，验证 OHOS NDK 是否提供 libomp 并链接。",
+        "evidence": ["meson.build:43-46"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "标量回退路径",
+        "note": "scalar 命名空间仅使用 std::sort/std::nth_element/std::partial_sort 等 C++ STL，可在任何支持 C++17 的平台上编译。",
+        "evidence": ["lib/x86simdsort-scalar.h"]
+      },
+      {
+        "aspect": "纯算法核心",
+        "note": "排序网络、分区逻辑、比较器均为模板化 C++ 算法，与 OS 无关。",
+        "evidence": ["src/xss-optimal-networks.hpp", "src/xss-pivot-selection.hpp"]
+      }
+    ],
+    "key_tasks": [
+      "为 arm64 新增 NEON/SVE 向量后端，或统一退化为 scalar 路径",
+      "重构构建系统，按目标架构选择编译单元并移除硬编码 x86 -march 标志",
+      "替换/条件化 x86 CPUID 检测，arm64 下直接走 scalar/NEON 分支",
+      "修改 src/x86simdsort-static-incl.h，允许无 AVX2/AVX-512 时回退到 scalar",
+      "用 OHOS NDK 验证 x86_64 重编与功能正确性",
+      "若面向 ArkTS 应用，额外封装 Node-API 桥接层"
+    ],
+    "notes": "默认按模型 A（C++ 原生库跑在 OHOS NDK 层）评估。若目标为 ArkTS 沙箱应用，还需增加 Node-API 封装，结论进一步收紧。本库核心价值是 x86 SIMD 加速，arm64 上即使功能正确也会失去主要性能优势。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "platform",
+        "kind": "gap",
+        "value": "x86_specific_hardware",
+        "rationale": "x86 SIMD intrinsics 与 CPUID 检测属于 x86 专有硬件 API，schema 的 platform 枚举（windows/posix/linux/macos/portable/unknown）缺少 'x86' 或 'x86_64' 值，暂用 'unknown' 表示。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "sibling_checkout",
+        "rationale": "highway 通过检查 ../highway 是否存在来启用，既非 FetchContent 也非 git submodule，需用户手动将 highway 克隆到项目同级目录，现有推荐取值无完全匹配项。"
+      }
+    ]
+  }
+}

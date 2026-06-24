@@ -1,0 +1,421 @@
+{
+  "library": {
+    "name": "cairocffi",
+    "package_name": "cairocffi",
+    "source_url": "https://github.com/Kozea/cairocffi",
+    "analyzed_at": "2026-06-21T15:56:55.835Z",
+    "commit": "b5c27d9",
+    "one_liner": "基于 CFFI 的 Python 绑定库，为 cairo 2D 矢量图形库提供面向对象的 Python API，可替代 Pycairo。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "cairocffi 是 cairo 2D 矢量图形库的 Python 绑定，使用 CFFI 而非手写 C 扩展实现，目标是成为 Pycairo 的兼容替代品。它把 cairo 的 C API 包装成 Python 的 Context、Surface、Pattern、Matrix、Font 等对象，支持图像、PDF、PostScript、SVG、Win32、XCB、Recording 等多种后端，并可通过 GDK-PixBuf 解码常见图片格式。主要面向需要在 Python 中完成高质量 2D 绘图、文档生成或图表渲染的开发者与其他上层库（如 WeasyPrint）。",
+    "categories": [
+      {
+        "name": "2D 矢量绘图上下文",
+        "description": "提供 Context 对象，封装 cairo 的路径、变换、裁剪、绘制操作（填充、描边、遮罩、文字、渐变等）状态机。",
+        "evidence": ["cairocffi/context.py", "cairocffi/matrix.py"]
+      },
+      {
+        "name": "多后端 Surface",
+        "description": "包装 cairo 的多种输出后端，包括内存位图（ImageSurface）、PDF、PostScript、SVG、Recording、Win32 与 XCB。",
+        "evidence": ["cairocffi/surfaces.py", "cairocffi/xcb.py"]
+      },
+      {
+        "name": "图案与渐变",
+        "description": "提供 SolidPattern、SurfacePattern、LinearGradient、RadialGradient 等源图案对象，用于填充与描边。",
+        "evidence": ["cairocffi/patterns.py"]
+      },
+      {
+        "name": "字体与文字",
+        "description": "包装 cairo 的字体面（FontFace/ToyFontFace）、缩放字体（ScaledFont）与字体选项（FontOptions），支持文字测量与字形渲染。",
+        "evidence": ["cairocffi/fonts.py"]
+      },
+      {
+        "name": "CFFI 桥接与常量定义",
+        "description": "通过 cffi 声明 cairo C 头文件、生成绑定句柄，并在导入时动态加载 libcairo 等共享库；constants.py 提供枚举值与错误码。",
+        "evidence": ["cairocffi/ffi.py", "cairocffi/constants.py", "cairocffi/__init__.py"]
+      },
+      {
+        "name": "图像解码（可选）",
+        "description": "cairocffi.pixbuf 子模块在可用时通过 CFFI 调用 GDK-PixBuf/GDK 把 PNG、JPEG 等图片解码成 cairo ImageSurface。",
+        "evidence": ["cairocffi/pixbuf.py"]
+      }
+    ],
+    "domain": "graphics",
+    "target_users": "需要在 Python 中进行 2D 矢量渲染、PDF/SVG 生成或图表绘制的开发者，以及依赖 cairo 的上层库（如 WeasyPrint）"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": ["Python", "reStructuredText", "YAML", "TOML"],
+    "breakdown": [
+      {"language": "Python", "files": 22, "code": 3168, "pct": 80.45},
+      {"language": "reStructuredText", "files": 9, "code": 647, "pct": 16.43},
+      {"language": "YAML", "files": 3, "code": 71, "pct": 1.8},
+      {"language": "TOML", "files": 1, "code": 52, "pct": 1.32}
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {"files": 35, "code": 3938, "comment": 5063, "blank": 2667, "total_lines": 11668},
+    "production": {"files": 31, "code": 2676, "comment": 4986, "blank": 2404, "total_lines": 10066},
+    "test": {"files": 4, "code": 1262, "comment": 77, "blank": 263, "total_lines": 1602},
+    "example": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "production_by_language": {
+      "Python": {"files": 18, "code": 1906},
+      "reStructuredText": {"files": 9, "code": 647},
+      "YAML": {"files": 3, "code": 71},
+      "TOML": {"files": 1, "code": 52}
+    }
+  },
+  "tests": {
+    "test_files": 4,
+    "test_cases": 55,
+    "frameworks": ["pytest"],
+    "by_language": {"Python": {"files": 4, "cases": 55}},
+    "notes": "用 pytest 运行；测试覆盖 cairo 核心 API、pixbuf 图像解码、numpy 数组缓冲与 XCB/X11 窗口渲染。"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件包含标准 BSD-3-Clause 全文；README.rst 与 pyproject.toml classifiers 均声明 BSD License。",
+    "notes": "宽松许可证，需保留版权声明；贡献默认按 BSD-3-Clause 授权。"
+  },
+  "dependencies": {
+    "count": 8,
+    "manifests": ["pyproject.toml"],
+    "by_ecosystem": {"python": ["cffi", "xcffib", "sphinx", "sphinx_rtd_theme", "pytest", "ruff", "numpy", "pikepdf"]},
+    "dependencies": [
+      {
+        "name": "cffi",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">= 1.1.0",
+        "purpose": "CFFI 绑定生成器与运行时，用于声明 cairo C 头并加载 libcairo",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装）",
+        "declared_in": ["pyproject.toml [project].dependencies"]
+      },
+      {
+        "name": "xcffib",
+        "ecosystem": "python",
+        "scope": "optional",
+        "version": ">= 1.4.0",
+        "purpose": "XCB 协议的 Python 绑定，为 cairocffi.xcb 提供 XCB surface 支持",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装，通过 [xcb] 额外依赖）",
+        "declared_in": ["pyproject.toml [project.optional-dependencies].xcb"]
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档构建工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装，[doc] 额外依赖）",
+        "declared_in": ["pyproject.toml [project.optional-dependencies].doc"]
+      },
+      {
+        "name": "sphinx_rtd_theme",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Sphinx Read the Docs 主题",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装，[doc] 额外依赖）",
+        "declared_in": ["pyproject.toml [project.optional-dependencies].doc"]
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装，[test] 额外依赖）",
+        "declared_in": ["pyproject.toml [project.optional-dependencies].test"]
+      },
+      {
+        "name": "ruff",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Python 代码风格检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装，[test] 额外依赖）",
+        "declared_in": ["pyproject.toml [project.optional-dependencies].test"]
+      },
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "测试用 ndarray 作为 cairo surface 缓冲区",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装，[test] 额外依赖）",
+        "declared_in": ["pyproject.toml [project.optional-dependencies].test"]
+      },
+      {
+        "name": "pikepdf",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "测试中解析/验证生成的 PDF",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装，[test] 额外依赖）",
+        "declared_in": ["pyproject.toml [project.optional-dependencies].test"]
+      }
+    ],
+    "notes": "除 cffi 为运行时依赖外，其余均为可选/开发/文档依赖。xcffib 提供 XCB 后端支持。"
+  },
+  "native_api": {
+    "summary": "cairocffi 自身是薄 Python 绑定层，核心平台交互几乎全部通过 CFFI/ctypes 桥接完成：运行时用 ctypes.util.find_library 与 ffi.dlopen 动态加载 libcairo、gdk-pixbuf、glib、gobject 等系统共享库；CFFI callback 用于 cairo 的读写流回调。Windows 下额外使用 os.add_dll_directory 辅助 DLL 搜索。",
+    "groups": [
+      {
+        "type": "cffi_ffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {"name": "cffi.FFI", "purpose": "创建 CFFI 绑定实例并声明 cairo C 头", "count": 2, "evidence": ["cairocffi/ffi.py:12", "cairocffi/ffi.py:30"]},
+          {"name": "ffi.cdef", "purpose": "声明 cairo C 函数与类型签名", "count": 2, "evidence": ["cairocffi/ffi.py:18", "cairocffi/ffi.py:27"]},
+          {"name": "ffi.dlopen", "purpose": "运行时动态加载共享库", "count": 4, "evidence": ["cairocffi/__init__.py:51", "cairocffi/pixbuf.py:22", "cairocffi/pixbuf.py:26", "cairocffi/pixbuf.py:29"]},
+          {"name": "ffi.callback", "purpose": "创建 Python 回调供 cairo 读写流调用", "count": 3, "evidence": ["cairocffi/surfaces.py:30", "cairocffi/surfaces.py:45", "cairocffi/surfaces.py:117"]},
+          {"name": "ffi.gc", "purpose": "把 cairo 指针生命周期与 Python GC 关联并在释放时调用析构", "count": 12, "evidence": ["cairocffi/surfaces.py:157", "cairocffi/fonts.py:32", "cairocffi/patterns.py:35"]},
+          {"name": "ffi.cast", "purpose": "把 Python 整数/指针转换为 CFFI 指针类型", "count": 4, "evidence": ["cairocffi/surfaces.py:729", "cairocffi/surfaces.py:1505", "cairocffi/surfaces.py:1533"]},
+          {"name": "ffi.string", "purpose": "把 C 字符串指针转换为 Python str/bytes", "count": 4, "evidence": ["cairocffi/__init__.py:112", "cairocffi/fonts.py:84", "cairocffi/surfaces.py:1026"]},
+          {"name": "ffi.buffer", "purpose": "把 C 数组/内存暴露为 Python 缓冲", "count": 3, "evidence": ["cairocffi/surfaces.py:801", "cairocffi/surfaces.py:47", "cairocffi/pixbuf.py:162"]},
+          {"name": "ffi.new", "purpose": "在 C 堆上分配 cairo 结构体/数组", "count": 52, "evidence": ["cairocffi/surfaces.py:26", "cairocffi/surfaces.py:349", "cairocffi/context.py:45"]},
+          {"name": "ffi.NULL", "purpose": "表示 C NULL 指针", "count": 18, "evidence": ["cairocffi/__init__.py:185", "cairocffi/surfaces.py:43", "cairocffi/context.py:120"]}
+        ]
+      },
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "os.name", "purpose": "判断当前操作系统（nt/posix）", "count": 3, "evidence": ["cairocffi/__init__.py:31", "cairocffi/__init__.py:65", "cairocffi/surfaces.py:60"]},
+          {"name": "os.getenv", "purpose": "读取 CAIROCFFI_DLL_DIRECTORIES 环境变量", "count": 1, "evidence": ["cairocffi/__init__.py:30"]},
+          {"name": "sys.modules", "purpose": "install_as_pycairo 时把自身注册为 cairo 模块", "count": 1, "evidence": ["cairocffi/__init__.py:141"]},
+          {"name": "sys.getfilesystemencoding", "purpose": "编码非 Windows 平台文件名", "count": 1, "evidence": ["cairocffi/surfaces.py:68"]},
+          {"name": "sys.byteorder", "purpose": "在 pixbuf 颜色格式转换时判断大小端", "count": 1, "evidence": ["cairocffi/pixbuf.py:170"]},
+          {"name": "ctypes.util.find_library", "purpose": "按平台惯例查找 cairo/pixbuf 等共享库文件名", "count": 1, "evidence": ["cairocffi/__init__.py:42"]},
+          {"name": "ctypes.addressof", "purpose": "获取 numpy/array 缓冲区内存地址", "count": 2, "evidence": ["cairocffi/surfaces.py:86", "cairocffi/surfaces.py:93"]},
+          {"name": "ctypes.c_char.from_buffer", "purpose": "从 Python 缓冲对象构造可获取地址的 ctypes 对象", "count": 2, "evidence": ["cairocffi/surfaces.py:86", "cairocffi/surfaces.py:93"]},
+          {"name": "tempfile.NamedTemporaryFile", "purpose": "write_to_png 失败时回退到临时文件", "count": 1, "evidence": ["cairocffi/surfaces.py:666"]},
+          {"name": "pathlib.Path", "purpose": "读取临时 PNG 文件字节", "count": 1, "evidence": ["cairocffi/surfaces.py:670"]}
+        ]
+      },
+      {
+        "type": "win32_dll_loader",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "os.add_dll_directory", "purpose": "Windows 下把 CAIROCFFI_DLL_DIRECTORIES 目录加入 DLL 搜索路径", "count": 1, "evidence": ["cairocffi/__init__.py:34"], "conditional": true}
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libcairo.so.2 / libcairo.2.dylib / libcairo-2.dll",
+        "mechanism": "ffi.dlopen",
+        "acquisition": "system",
+        "source": "操作系统/发行版提供的 cairo 2D 图形库",
+        "description": "cairo 2D 矢量图形库，核心绘制能力所在",
+        "optional": false,
+        "evidence": ["cairocffi/__init__.py:60-62"]
+      },
+      {
+        "name": "libgdk_pixbuf-2.0.so.0 / libgdk_pixbuf-2.0.0.dylib / libgdk_pixbuf-2.0-0.dll",
+        "mechanism": "ffi.dlopen",
+        "acquisition": "system",
+        "source": "操作系统/发行版提供的 GDK-PixBuf 图像解码库",
+        "description": "GDK-PixBuf，用于把 PNG/JPEG 等图片解码为 cairo surface",
+        "optional": true,
+        "evidence": ["cairocffi/pixbuf.py:22-25"]
+      },
+      {
+        "name": "libgobject-2.0.so.0 / libgobject-2.0.dylib / libgobject-2.0-0.dll",
+        "mechanism": "ffi.dlopen",
+        "acquisition": "system",
+        "source": "操作系统/发行版提供的 GObject 类型系统库",
+        "description": "GObject，用于 GdkPixbuf 对象的引用计数",
+        "optional": true,
+        "evidence": ["cairocffi/pixbuf.py:26-28"]
+      },
+      {
+        "name": "libglib-2.0.so.0 / libglib-2.0.dylib / libglib-2.0-0.dll",
+        "mechanism": "ffi.dlopen",
+        "acquisition": "system",
+        "source": "操作系统/发行版提供的 GLib 基础库",
+        "description": "GLib，用于 GError 释放等辅助函数",
+        "optional": true,
+        "evidence": ["cairocffi/pixbuf.py:29-31"]
+      },
+      {
+        "name": "libgdk-3.so.0 / libgdk-3.0.dylib / libgdk-3-0.dll",
+        "mechanism": "ffi.dlopen",
+        "acquisition": "system",
+        "source": "操作系统/发行版提供的 GTK3 GDK 库",
+        "description": "GDK，用于最快的 pixbuf→cairo 转换路径（gdk_cairo_set_source_pixbuf）",
+        "optional": true,
+        "evidence": ["cairocffi/pixbuf.py:33-37"]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行时主要依赖外部共享库（cairo、gdk-pixbuf 等）和少量环境变量；无网络访问，无子进程调用。测试时会读取 DISPLAY 环境变量并连接 X11 显示。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "Surface 写入 PNG/PDF/PS/SVG 时接受文件路径或二进制文件对象",
+        "purpose": "把渲染结果输出到文件或类文件对象",
+        "evidence": ["cairocffi/surfaces.py:638-675", "cairocffi/surfaces.py:863-871", "cairocffi/surfaces.py:1060-1068"]
+      },
+      {
+        "detail": "write_to_png 回调失败时使用 NamedTemporaryFile 作为回退",
+        "purpose": "临时保存 PNG 数据再读回内存",
+        "evidence": ["cairocffi/surfaces.py:666-672"]
+      },
+      {
+        "detail": "_encode_filename 根据 os.name 选择 Windows/非 Windows 文件名编码策略",
+        "purpose": "跨平台文件名编码",
+        "evidence": ["cairocffi/surfaces.py:52-74"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "CAIROCFFI_DLL_DIRECTORIES",
+        "purpose": "Windows 下指定额外的 DLL 搜索目录，用分号分隔",
+        "evidence": ["cairocffi/__init__.py:30-34"]
+      },
+      {
+        "name": "DISPLAY",
+        "purpose": "测试 XCB 后端时用于连接 X11 显示（仅测试）",
+        "evidence": ["cairocffi/test_xcb.py:31"]
+      }
+    ],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "XCB surface 通过 xcffib 连接到 X11 显示服务器",
+        "purpose": "在 X11 窗口/像素图上渲染（可选后端，主要用于测试）",
+        "evidence": ["cairocffi/xcb.py", "cairocffi/test_xcb.py"]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "Python 3.10/3.11/3.12/3.13/3.14（运行时要求 >=3.10）",
+    "build_system": "flit_core（PEP 517 build-backend）",
+    "compiler_extensions": [],
+    "platforms": [
+      {"os": "linux", "arch": "x86_64", "evidence": [".github/workflows/tests.yml:10", "pyproject.toml classifiers"]},
+      {"os": "macos", "arch": "arm64/x86_64", "evidence": [".github/workflows/tests.yml:10", "pyproject.toml classifiers"]},
+      {"os": "windows", "arch": "x86_64", "evidence": [".github/workflows/tests.yml:10", "pyproject.toml classifiers"]}
+    ],
+    "notes": "纯 Python 包，构建时无 C/C++ 编译步骤；安装时只需 cffi 与已预装的 cairo/pixbuf 系统库。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（ArkTS 应用层 + OHOS NDK/musl 原生层 + Node-API 桥接；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "infeasible",
+    "overall_difficulty": "very_high",
+    "effort_estimate": "XL",
+    "recommended_path": "find_alternative",
+    "summary": "cairocffi 本质是 Python 语言的 cairo 绑定层，所有功能都依赖 Python 运行时与 CFFI/ctypes 动态加载 libcairo/gdk-pixbuf。HarmonyOS NEXT PC 应用层没有 Python 运行时，也没有 CFFI/ctypes 桥接，因此无法直接迁移该 Python 包。若需在鸿蒙上使用 cairo 的 2D 绘图能力，应跳过 cairocffi，直接在 OHOS NDK 上编译 cairo 原生库，并通过 Node-API 暴露给 ArkTS，或寻找鸿蒙原生/ArkTS 的替代图形方案。",
+    "blockers": [
+      {
+        "issue": "Python 运行时与 CFFI/ctypes 桥接在 HarmonyOS NEXT PC 应用层不可用",
+        "severity": "blocker",
+        "category": "ffi_bridge",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "无法直接保留 Python 绑定；需用 OHOS NDK 重新编译 cairo 并用 Node-API 封装为 ArkTS 接口。",
+        "evidence": ["cairocffi/__init__.py:12-76", "cairocffi/ffi.py:12-90"]
+      },
+      {
+        "issue": "核心依赖 libcairo/gdk-pixbuf/glib/gobject 等 Linux/桌面生态原生库，HarmonyOS 无预装",
+        "severity": "blocker",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "需将 cairo 及其依赖（fontconfig/freetype/pixman 等）移植到 OHOS NDK/musl 并交叉编译；工作量巨大。",
+        "evidence": ["cairocffi/__init__.py:60-62", "cairocffi/pixbuf.py:22-37"]
+      },
+      {
+        "issue": "XCB/X11 surface 与 DISPLAY 依赖在鸿蒙无对应窗口系统",
+        "severity": "major",
+        "category": "platform_specific_backend",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unavailable",
+        "remediation": "移除 XCB 后端；输出目标改为 ImageSurface/PDF/SVG 或鸿蒙 ArkUI Canvas/NativeWindow。",
+        "evidence": ["cairocffi/xcb.py", "cairocffi/test_xcb.py:31"]
+      },
+      {
+        "issue": "Windows 专用 DLL 加载逻辑（CAIROCFFI_DLL_DIRECTORIES / add_dll_directory）与鸿蒙无关",
+        "severity": "minor",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "可安全移除或替换为鸿蒙动态库加载路径管理。",
+        "evidence": ["cairocffi/__init__.py:30-34"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "cairo 2D 矢量绘制算法与状态机本身",
+        "note": "核心图形逻辑在 cairo C 库中，与 Python 层无关；若能在 OHOS NDK 上编译 cairo，则绘制能力可复用。",
+        "evidence": ["cairocffi/__init__.py:60-62"]
+      },
+      {
+        "aspect": "输出格式抽象",
+        "note": "ImageSurface/PDF/SVG/Recording 等后端概念与平台无关，可在新封装中保留。",
+        "evidence": ["cairocffi/surfaces.py"]
+      }
+    ],
+    "key_tasks": [
+      "评估鸿蒙上是否有可替代 2D 矢量图形方案（如 ArkUI Canvas、Skia、鸿蒙原生图形接口）",
+      "若坚持使用 cairo，需在 OHOS NDK 上交叉编译 cairo 及其完整依赖链",
+      "用 Node-API 重新设计并封装 Context/Surface/Pattern/Matrix/Font 等 ArkTS API",
+      "实现 ImageSurface/PDF/SVG 输出，放弃 XCB/Win32 后端",
+      "重新实现或裁剪 pixbuf 图像解码功能（可用鸿蒙图片解码能力替代）"
+    ],
+    "notes": "本评估基于 HarmonyOS NEXT PC 应用沙箱模型。若目标是有特权的系统进程且能自行部署 Python 与 C 库，结论可部分放宽，但仍需重写绑定层。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer (opencode)",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "find_alternative",
+        "rationale": "cairocffi 是纯 Python 绑定层，在 HarmonyOS NEXT PC 无 Python 运行时，传统 'wrap_ffi' 路径不适用；最佳策略是寻找替代方案或跳过该包装直接在 NDK 上重建 cairo 能力。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "category",
+        "kind": "new_value",
+        "value": "cffi_ffi",
+        "rationale": "该库的平台 API 主要是 CFFI 桥接调用（ffi.dlopen/callback/gc/cast 等），建议单独列为 ffi 类型下的 cffi_ffi 家族，便于面板展示 Python 绑定类库的特征。"
+      }
+    ]
+  }
+}

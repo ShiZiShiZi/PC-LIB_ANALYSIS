@@ -1,0 +1,654 @@
+{
+  "library": {
+    "name": "xcffib",
+    "package_name": "xcffib",
+    "source_url": "https://github.com/tych0/xcffib.git",
+    "analyzed_at": "2026-06-22T07:37:43.648Z",
+    "commit": "12aeb1827c5df5fc934f03c8739826d10608a94a",
+    "one_liner": "基于 cffi 的 Python XCB 绑定库，用于构建 X11 客户端。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "xcffib 是 Python 的 XCB（X C Binding）绑定库，基于 cffi 在运行时加载 libxcb，并向 Python 提供 Connection、事件/请求/错误/结构封装以及资源 ID 管理。它还包含一个 Haskell 编写的代码生成器，用于从 xcb-proto XML 生成各 X 扩展的 Python 模块。目标用户是构建 X11 客户端、窗口管理器或与之交互的 GUI 库的 Python 开发者。",
+    "categories": [
+      {
+        "name": "XCB 连接与会话管理",
+        "description": "提供 Connection 类，封装 xcb_connect/xcb_disconnect、文件描述符、错误检查、setup 获取、扩展注册等 X11 连接生命周期管理。",
+        "evidence": ["module/__init__.py:518", "module/ffi.py:219-241"]
+      },
+      {
+        "name": "X11 协议数据封装（结构/事件/请求/错误）",
+        "description": "定义 Struct、Union、Event、Error、Reply、Cookie、List、Buffer 等基类，以及 OffsetMap、pack_list 等工具，用于序列化/反序列化 X11 协议数据。",
+        "evidence": ["module/__init__.py:89", "module/__init__.py:320", "module/__init__.py:404", "module/__init__.py:491", "module/__init__.py:823"]
+      },
+      {
+        "name": "cffi 原生绑定层",
+        "description": "使用 cffi 声明 XCB C 结构与函数（ffi.py），运行时动态加载 libxcb，完成 Python 对象与 C 指针/内存的互操作。",
+        "evidence": ["module/ffi.py:245", "module/__init__.py:35"]
+      },
+      {
+        "name": "XCB XML 协议代码生成器",
+        "description": "基于 Haskell/Cabal 的 xcffibgen 可读取 xcb-proto XML 定义，生成对应 Python 扩展模块（xproto、render、randr 等）。",
+        "evidence": ["generator/xcffibgen.hs:40", "generator/Data/XCB/Python/Parse.hs:70"]
+      },
+      {
+        "name": "X11 资源 ID 上下文包装器",
+        "description": "提供 IDWrapper 及 PixmapID/GContextID/ColormapID/CursorID 等上下文管理器，自动申请与释放 X11 资源 ID。",
+        "evidence": ["module/wrappers.py:14", "module/wrappers.py:35"]
+      },
+      {
+        "name": "测试基础设施（Xvfb）",
+        "description": "XvfbTest 测试辅助类可在测试时启动 Xvfb、管理 DISPLAY 环境变量与锁文件，方便在无头环境运行 X11 测试。",
+        "evidence": ["module/testing.py:47", "module/testing.py:71"]
+      }
+    ],
+    "domain": "图形/GUI/X11 窗口系统",
+    "target_users": "Python X11 客户端开发者、窗口管理器/合成器开发者（如 Qtile）以及依赖 cairocffi/xpyb 的 GUI 工具库用户。"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": ["Python", "Haskell", "XML", "make", "YAML", "TOML", "Markdown"],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 28,
+        "code": 2441,
+        "pct": 55.03,
+        "production": {"files": 4, "code": 694},
+        "test": {"files": 24, "code": 1747},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Haskell",
+        "files": 6,
+        "code": 1039,
+        "pct": 23.42,
+        "production": {"files": 4, "code": 965},
+        "test": {"files": 2, "code": 74},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "XML",
+        "files": 18,
+        "code": 771,
+        "pct": 17.38,
+        "production": {"files": 0, "code": 0},
+        "test": {"files": 18, "code": 771},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 69,
+        "pct": 1.56,
+        "production": {"files": 1, "code": 69},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 47,
+        "pct": 1.06,
+        "production": {"files": 2, "code": 47},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 36,
+        "pct": 0.81,
+        "production": {"files": 1, "code": 36},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 33,
+        "pct": 0.74,
+        "production": {"files": 1, "code": 33},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {"files": 57, "code": 4436, "comment": 722, "blank": 667, "total_lines": 5825},
+    "production": {"files": 13, "code": 1844, "comment": 543, "blank": 412, "total_lines": 2799},
+    "test": {"files": 44, "code": 2592, "comment": 179, "blank": 255, "total_lines": 3026},
+    "example": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "production_by_language": {
+      "Haskell": {"files": 4, "code": 965},
+      "Python": {"files": 4, "code": 694},
+      "make": {"files": 1, "code": 69},
+      "YAML": {"files": 2, "code": 47},
+      "TOML": {"files": 1, "code": 36},
+      "Markdown": {"files": 1, "code": 33}
+    }
+  },
+  "tests": {
+    "test_files": 44,
+    "test_cases": 46,
+    "frameworks": ["pytest", "HUnit/test-framework (Haskell)"],
+    "by_language": {
+      "Python": {"files": 24, "cases": 46},
+      "XML": {"files": 18, "cases": 0},
+      "Haskell": {"files": 2, "cases": 0}
+    },
+    "notes": "Python 测试用例由 pytest 运行；Haskell 测试套件依赖 test-framework/HUnit；XML 文件是生成器测试夹具，不计入测试用例。"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "顶层 LICENSE 文本与 Apache-2.0 一致；pyproject.toml 声明 Apache License 2.0，xcffib.cabal 声明 Apache-2.0；源文件头也引用 Apache License, Version 2.0。",
+    "notes": "宽松许可；再分发时需保留 NOTICE/版权声明。"
+  },
+  "dependencies": {
+    "count": 23,
+    "manifests": ["pyproject.toml", "xcffib.cabal", "Makefile", ".github/workflows/ci.yaml"],
+    "by_ecosystem": {
+      "python": ["cffi", "pytest", "setuptools", "ruff"],
+      "cpp": ["libxcb"],
+      "other": ["xcb-types", "filepath", "filemanip", "split", "containers", "mtl", "attoparsec", "bytestring", "either", "pretty", "directory", "optparse-applicative", "HUnit", "test-framework", "test-framework-hunit", "xcb-proto", "x11-apps"]
+    },
+    "dependencies": [
+      {
+        "name": "cffi",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.1.0",
+        "purpose": "Python CFFI 桥接，声明 XCB C API 并在运行时加载 libxcb",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=8.4",
+        "purpose": "Python 单元测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=61.0",
+        "purpose": "Python 包构建后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ruff",
+        "ecosystem": "python",
+        "scope": "dev",
+        "version": null,
+        "purpose": "代码风格检查与格式化",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["Makefile", ".github/workflows/ci.yaml"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "xcb-types",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=0.15.0 && <0.16",
+        "purpose": "Haskell 生成器解析 XCB 类型定义",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "filepath",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=1.4.2 && <1.6",
+        "purpose": "Haskell 文件路径处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "filemanip",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=0.3.6 && <0.4",
+        "purpose": "Haskell 文件/目录操作",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "split",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=0.2.3 && <0.3",
+        "purpose": "Haskell 列表切分工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "containers",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=0.6.5 && <0.9",
+        "purpose": "Haskell 容器数据结构",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mtl",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=2.2.2 && <2.4",
+        "purpose": "Haskell Monad 变换器库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "attoparsec",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=0.14.4 && <0.15",
+        "purpose": "Haskell 快速解析器组合子",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "bytestring",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=0.11.3 && <0.13",
+        "purpose": "Haskell 字节串处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "either",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=5.0.2 && <5.1",
+        "purpose": "Haskell Either 工具函数",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pretty",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=1.1 && <1.2",
+        "purpose": "Haskell 美化打印",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "directory",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=1.3.6 && <1.4",
+        "purpose": "Haskell 目录操作（生成器可执行文件）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "optparse-applicative",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": ">=0.18.1 && <0.20",
+        "purpose": "Haskell 命令行参数解析（xcffibgen）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "HUnit",
+        "ecosystem": "other",
+        "scope": "test",
+        "version": ">=1.6.2 && <1.7",
+        "purpose": "Haskell 单元测试断言",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "test-framework",
+        "ecosystem": "other",
+        "scope": "test",
+        "version": ">=0.8.2 && <0.9",
+        "purpose": "Haskell 测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "test-framework-hunit",
+        "ecosystem": "other",
+        "scope": "test",
+        "version": ">=0.3.0 && <0.4",
+        "purpose": "Haskell test-framework 与 HUnit 桥接",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Hackage",
+        "declared_in": ["xcffib.cabal"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "xcb-proto",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": null,
+        "purpose": "XCB XML 协议定义，代码生成器的输入",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 xcb-proto（通过 pkg-config 定位 xcbincludedir）",
+        "declared_in": ["Makefile"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libxcb",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "X11 客户端底层 C 库，运行时被 cffi 加载，构建时需要头文件",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libxcb（X11 C 绑定库，需预装）",
+        "declared_in": ["module/__init__.py", "README.md", "Makefile"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "x11-apps",
+        "ecosystem": "other",
+        "scope": "test",
+        "version": null,
+        "purpose": "CI 中安装 X11 工具用于测试",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统包管理器（如 apt）",
+        "declared_in": [".github/workflows/ci.yaml"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "Haskell 依赖通过 Hackage/Cabal 获取；libxcb 与 xcb-proto 是系统级 X11 依赖，未在 PyPI 声明但为构建/运行所必需。"
+  },
+  "native_api": {
+    "summary": "核心运行时通过 cffi 加载 libxcb 并调用 XCB C API；使用 Python struct/io 处理协议字节；测试辅助模块使用 POSIX fcntl 锁与 Xvfb 子进程。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "struct.unpack_from", "purpose": "从缓冲区按格式解包 X11 数据", "count": 1, "evidence": ["module/__init__.py:112"], "conditional": false},
+          {"name": "struct.pack", "purpose": "打包请求或列表为字节", "count": 3, "evidence": ["module/__init__.py:855"], "conditional": false},
+          {"name": "struct.calcsize", "purpose": "计算 X11 类型字节大小", "count": 3, "evidence": ["module/__init__.py:109"], "conditional": false},
+          {"name": "io.BytesIO", "purpose": "构造请求字节流", "count": 1, "evidence": ["module/__init__.py:857"], "conditional": false},
+          {"name": "ctypes.util.find_library", "purpose": "定位系统 libxcb 库名", "count": 1, "evidence": ["module/__init__.py:32"], "conditional": false},
+          {"name": "platform.system", "purpose": "区分 Darwin/Windows/Unix 选择 soname", "count": 2, "evidence": ["module/__init__.py:27", "module/__init__.py:29"], "conditional": false},
+          {"name": "weakref.WeakKeyDictionary", "purpose": "保持 cdata 生命周期", "count": 1, "evidence": ["module/__init__.py:66"], "conditional": false},
+          {"name": "functools.wraps", "purpose": "装饰 ensure_connected 包装器", "count": 1, "evidence": ["module/__init__.py:593"], "conditional": false}
+        ]
+      },
+      {
+        "type": "cffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {"name": "FFI.cdef", "purpose": "声明 XCB C 结构与函数签名", "count": 1, "evidence": ["module/ffi.py:245"], "conditional": false},
+          {"name": "ffi.dlopen", "purpose": "加载 libxcb 与 C 全局符号表", "count": 2, "evidence": ["module/__init__.py:35", "module/__init__.py:38"], "conditional": false},
+          {"name": "ffi.new", "purpose": "分配 C 结构/字符串/数组", "count": 12, "evidence": ["module/__init__.py:76", "module/__init__.py:261"], "conditional": false},
+          {"name": "ffi.cast", "purpose": "C 指针类型转换", "count": 4, "evidence": ["module/__init__.py:120", "module/__init__.py:315"], "conditional": false},
+          {"name": "ffi.buffer", "purpose": "从 cdata 创建缓冲区视图", "count": 1, "evidence": ["module/__init__.py:145"], "conditional": false},
+          {"name": "ffi.gc", "purpose": "为 XCB 事件内存注册 free 回调", "count": 1, "evidence": ["module/__init__.py:631"], "conditional": false},
+          {"name": "ffi.NULL", "purpose": "空指针常量", "count": 8, "evidence": ["module/__init__.py:365"], "conditional": false},
+          {"name": "ffi.addressof", "purpose": "取屏幕迭代器地址", "count": 1, "evidence": ["module/__init__.py:624"], "conditional": false}
+        ]
+      },
+      {
+        "type": "xcb_c_api",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {"name": "xcb_connect", "purpose": "连接 X server", "count": 1, "evidence": ["module/__init__.py:546"], "conditional": false},
+          {"name": "xcb_connect_to_fd", "purpose": "通过已有文件描述符连接 X server", "count": 1, "evidence": ["module/__init__.py:542"], "conditional": false},
+          {"name": "xcb_connect_to_display_with_auth_info", "purpose": "带认证信息连接 X server", "count": 1, "evidence": ["module/__init__.py:544"], "conditional": false},
+          {"name": "xcb_disconnect", "purpose": "断开 XCB 连接", "count": 1, "evidence": ["module/__init__.py:669"], "conditional": false},
+          {"name": "xcb_get_setup", "purpose": "获取 X setup 信息", "count": 1, "evidence": ["module/__init__.py:606"], "conditional": false},
+          {"name": "xcb_setup_roots_iterator", "purpose": "遍历屏幕根", "count": 1, "evidence": ["module/__init__.py:620"], "conditional": false},
+          {"name": "xcb_screen_next", "purpose": "屏幕迭代器前进", "count": 1, "evidence": ["module/__init__.py:624"], "conditional": false},
+          {"name": "xcb_get_file_descriptor", "purpose": "获取连接文件描述符", "count": 1, "evidence": ["module/__init__.py:649"], "conditional": false},
+          {"name": "xcb_connection_has_error", "purpose": "检查连接错误", "count": 2, "evidence": ["module/__init__.py:583", "module/__init__.py:645"], "conditional": false},
+          {"name": "xcb_wait_for_event", "purpose": "阻塞等待 X 事件", "count": 1, "evidence": ["module/__init__.py:630"], "conditional": false},
+          {"name": "xcb_poll_for_event", "purpose": "非阻塞轮询 X 事件", "count": 1, "evidence": ["module/__init__.py:637"], "conditional": false},
+          {"name": "xcb_get_extension_data", "purpose": "查询扩展元数据", "count": 1, "evidence": ["module/__init__.py:566"], "conditional": false},
+          {"name": "xcb_send_request", "purpose": "发送 X 请求", "count": 1, "evidence": ["module/__init__.py:744"], "conditional": false},
+          {"name": "xcb_wait_for_reply", "purpose": "等待请求响应", "count": 1, "evidence": ["module/__init__.py:682"], "conditional": false},
+          {"name": "xcb_discard_reply", "purpose": "丢弃请求响应", "count": 1, "evidence": ["module/__init__.py:748"], "conditional": false},
+          {"name": "xcb_request_check", "purpose": "检查 void cookie 错误", "count": 1, "evidence": ["module/__init__.py:708"], "conditional": false},
+          {"name": "xcb_flush", "purpose": "刷新输出缓冲区", "count": 1, "evidence": ["module/__init__.py:661"], "conditional": false},
+          {"name": "xcb_get_maximum_request_length", "purpose": "获取最大请求长度", "count": 1, "evidence": ["module/__init__.py:653"], "conditional": false},
+          {"name": "xcb_prefetch_maximum_request_length", "purpose": "预取最大请求长度", "count": 1, "evidence": ["module/__init__.py:657"], "conditional": false},
+          {"name": "xcb_generate_id", "purpose": "生成 X 资源 ID", "count": 1, "evidence": ["module/__init__.py:665"], "conditional": false}
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "fcntl.flock", "purpose": "测试时创建 X 显示锁文件", "count": 1, "evidence": ["module/testing.py:37"], "conditional": false}
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libxcb",
+        "mechanism": "cffi.dlopen",
+        "acquisition": "system",
+        "source": "系统 libxcb（X11 客户端 C 库，运行环境需预装）",
+        "description": "X11 底层 C 绑定库，提供连接、请求、事件、错误处理等接口；运行时按平台加载 libxcb.so / libxcb.dylib / libxcb.dll。",
+        "optional": false,
+        "evidence": ["module/__init__.py:27-35"]
+      },
+      {
+        "name": "libc (global symbol table)",
+        "mechanism": "cffi.dlopen(None)",
+        "acquisition": "system",
+        "source": "运行时 C 库全局符号表（RTLD_DEFAULT）",
+        "description": "用于获取 C free()，释放 XCB 分配的内存。",
+        "optional": false,
+        "evidence": ["module/__init__.py:38-39"]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "核心运行时不主动进行网络、文件或环境变量访问，所有 X11 通信由动态加载的 libxcb 处理；测试辅助模块会启动 Xvfb 子进程并读写 DISPLAY 环境变量与 /tmp 锁文件。",
+    "network": [],
+    "filesystem": [
+      {"detail": "/tmp/.X%d-lock", "purpose": "测试时为 Xvfb 显示号创建锁文件", "evidence": ["module/testing.py:28", "module/testing.py:35", "module/testing.py:92"]}
+    ],
+    "env_vars": [
+      {"name": "DISPLAY", "purpose": "测试时设置/恢复 X11 显示环境变量", "evidence": ["module/testing.py:72", "module/testing.py:74"]}
+    ],
+    "subprocess": [
+      {"command": "Xvfb", "purpose": "测试时启动虚拟 X server", "evidence": ["module/testing.py:63", "module/testing.py:130"]},
+      {"command": "xtrace", "purpose": "可选调试 X11 协议", "evidence": ["module/testing.py:78"]}
+    ],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >=3.10; Haskell2010",
+    "runtime_version": "Python >=3.10（支持 CPython 与 PyPy）",
+    "build_system": "setuptools（Python 包）+ Cabal（Haskell 生成器）",
+    "compiler_extensions": [],
+    "platforms": [
+      {"os": "linux", "arch": "x86_64", "evidence": [".github/workflows/ci.yaml"]},
+      {"os": "windows", "arch": "unknown", "evidence": ["module/__init__.py:29-30"]},
+      {"os": "macos", "arch": "unknown", "evidence": ["module/__init__.py:27-28"]}
+    ],
+    "notes": "构建时需要系统预装 libxcb 头文件与 xcb-proto XML；Haskell 生成器需要 GHC/Cabal 与 Hackage 依赖。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；原生扩展/动态库经 OHOS NDK/musl 重编；自研内核，无 Linux ABI）",
+    "feasibility": "infeasible",
+    "overall_difficulty": "very_high",
+    "effort_estimate": "XL",
+    "recommended_path": "abandon_or_find_alternative",
+    "summary": "xcffib 是纯 Python 包装器，依赖已鸿蒙化的 cffi，但核心功能完全建立在系统 libxcb/X11 之上。鸿蒙 PC 没有 X11 显示栈等价物，libxcb 也无法直接运行；若坚持移植，需将整套 X server 生态迁移到 OHOS NDK，工作量巨大且无现实意义。建议放弃该库，转而使用鸿蒙原生窗口/图形能力。",
+    "blockers": [
+      {
+        "issue": "核心动态依赖 libxcb（X11 C 绑定库）在鸿蒙 PC 上不存在等价实现",
+        "severity": "blocker",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "无法直接移植；如需 X11 客户端能力，须将 libxcb、libXau、libXdmcp 及 X server 移植到 OHOS NDK，或彻底改用 @ohos.window / @ohos.graphics 等鸿蒙原生图形 API。",
+        "evidence": ["module/__init__.py:35", "module/ffi.py:245"]
+      },
+      {
+        "issue": "测试基础设施依赖 Xvfb 与 DISPLAY 环境变量，鸿蒙上无对应工具",
+        "severity": "major",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unavailable",
+        "remediation": "测试辅助模块需重写，使用鸿蒙原生窗口测试环境或模拟器；核心功能测试也依赖 X server，无法直接运行。",
+        "evidence": ["module/testing.py:63", "module/testing.py:130"]
+      },
+      {
+        "issue": "POSIX-only fcntl 文件锁在鸿蒙 POSIX 子集中可能受限",
+        "severity": "minor",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "仅用于测试锁文件，可移除或替换为跨进程互斥实现。",
+        "evidence": ["module/testing.py:37"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "cffi 已鸿蒙化",
+        "note": "cffi 已在 OpenHarmony PC PyPI 镜像提供 ohos 构建，FFI 桥接本身不是阻碍。",
+        "evidence": ["pyproject.toml"]
+      },
+      {
+        "aspect": "纯 Python 协议结构/打包解包逻辑",
+        "note": "在 libxcb 可用的情况下，Python 层的 Struct/Union/Event/Error 封装无需改动即可在鸿蒙 Python 上运行。",
+        "evidence": ["module/__init__.py:89", "module/__init__.py:320"]
+      }
+    ],
+    "key_tasks": [
+      "评估业务是否真正需要 X11 客户端能力；如不需要，直接放弃 xcffib。",
+      "如需要类似窗口/图形能力，调研 @ohos.window / @ohos.graphics 替代方案。",
+      "如必须保留 XCB 语义，须先将 libxcb 及其依赖移植到 OHOS NDK 并在鸿蒙上运行 X server，工作量等同于移植整个 X11 生态。"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。Python 运行时本身不是阻碍；核心阻碍是 X11/libxcb 在鸿蒙 PC 上无等价物。结论对该库这类纯 X11 包装器基本不可行。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "ecosystem",
+        "kind": "gap",
+        "value": "haskell",
+        "rationale": "xcffib.cabal 声明了多个 Haskell 构建依赖，但 report schema 的 library/dependency ecosystem 枚举不含 haskell，本报告暂用 other 表示。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "hackage",
+        "rationale": "Haskell 依赖通过 Hackage/Cabal 获取，不在推荐 acquisition 列表（system/vendored/fetchcontent/download_build/submodule/package_manager/prebuilt_binary）中。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "category",
+        "kind": "ambiguity",
+        "value": "xcb_c_api_via_cffi",
+        "rationale": "XCB C 函数通过 cffi 调用，既非 Python 标准库也不是操作系统专有 API；本报告将其与 cffi 桥接归为 ffi 组，并在 dynamic_libraries 中记录 libxcb。"
+      }
+    ]
+  }
+}

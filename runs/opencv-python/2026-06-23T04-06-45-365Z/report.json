@@ -1,0 +1,899 @@
+{
+  "library": {
+    "name": "opencv-python",
+    "package_name": "opencv-python",
+    "source_url": "https://github.com/opencv/opencv-python",
+    "analyzed_at": "2026-06-23T04:06:45.365Z",
+    "commit": "ac3082d1d254d28cc81b58d52920149512c97fdd",
+    "one_liner": "OpenCV 的 Python 预编译 wheel 打包仓库，负责将 OpenCV C++ 库与 Python 绑定打包成可 pip 安装的 cv2 包。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "opencv-python 不是 OpenCV 本体，而是 OpenCV 的 Python wheel 打包与分发层。它通过 scikit-build 调用 CMake 编译 OpenCV 子模块（opencv/opencv_contrib），生成 cv2 Python 扩展与数据文件，最终输出 opencv-python / opencv-contrib-python / opencv-python-headless / opencv-contrib-python-headless 等 PyPI 包。本仓库的核心价值是提供跨平台（Windows、macOS、Linux/x86_64/aarch64）的预编译 wheel 构建流水线，而非实现计算机视觉算法。",
+    "categories": [
+      {
+        "name": "wheel 构建与打包",
+        "description": "使用 scikit-build + setuptools 将 OpenCV CMake 构建产物整理为 Python wheel，包括 cv2 扩展、haar 级联数据、Qt 插件与字体、LICENSE 文件等。",
+        "evidence": [
+          "setup.py:268-314",
+          "setup.py:96-148",
+          "scripts/__init__.py:1-24"
+        ]
+      },
+      {
+        "name": "OpenCV 子模块管理",
+        "description": "通过 git submodule 拉取 opencv、opencv_contrib、opencv_extra 与 multibuild 源码，并在构建时根据环境变量启用 contrib / headless / rolling 等变体。",
+        "evidence": [
+          ".gitmodules:1-12",
+          "setup.py:43-67",
+          "scripts/build.sh:7"
+        ]
+      },
+      {
+        "name": "跨平台 CMake 配置",
+        "description": "为 Windows、macOS、Linux 生成不同的 CMake 参数，包括 Python 解释器路径、PY_LIMITED_API、GUI 后端开关、平台特定生成器等。",
+        "evidence": [
+          "setup.py:157-222",
+          "setup.py:189-200"
+        ]
+      },
+      {
+        "name": "构建产物重排",
+        "description": "通过 RearrangeCMakeOutput 类 hook skbuild 的文件分类逻辑，把 CMake 安装目录中的文件复制到 Python 包期望的位置。",
+        "evidence": [
+          "setup.py:318-492"
+        ]
+      },
+      {
+        "name": "版本信息提取",
+        "description": "从 opencv/modules/core/include/opencv2/core/version.hpp 解析 OpenCV 版本号，并叠加本仓库的 git 修订号生成 package 版本。",
+        "evidence": [
+          "find_version.py:12-36"
+        ]
+      }
+    ],
+    "domain": "computer vision packaging and build automation",
+    "target_users": "希望在 Python 环境中通过 pip 安装 OpenCV 的开发者、数据科学家与计算机视觉工程师"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Text",
+      "YAML",
+      "Python",
+      "Bourne Shell",
+      "Markdown",
+      "TOML"
+    ],
+    "breakdown": [
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 2902,
+        "pct": 59.14,
+        "production": {
+          "files": 2,
+          "code": 2902
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 4,
+        "code": 849,
+        "pct": 17.3,
+        "production": {
+          "files": 4,
+          "code": 849
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 8,
+        "code": 517,
+        "pct": 10.54,
+        "production": {
+          "files": 6,
+          "code": 506
+        },
+        "test": {
+          "files": 2,
+          "code": 11
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 5,
+        "code": 431,
+        "pct": 8.78,
+        "production": {
+          "files": 5,
+          "code": 431
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 4,
+        "code": 194,
+        "pct": 3.95,
+        "production": {
+          "files": 4,
+          "code": 194
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 14,
+        "pct": 0.29,
+        "production": {
+          "files": 1,
+          "code": 14
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 24,
+      "code": 4907,
+      "comment": 211,
+      "blank": 1093,
+      "total_lines": 6211
+    },
+    "production": {
+      "files": 22,
+      "code": 4896,
+      "comment": 209,
+      "blank": 1086,
+      "total_lines": 6191
+    },
+    "test": {
+      "files": 2,
+      "code": 11,
+      "comment": 2,
+      "blank": 7,
+      "total_lines": 20
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production_by_language": {
+      "Text": {
+        "files": 2,
+        "code": 2902
+      },
+      "YAML": {
+        "files": 4,
+        "code": 849
+      },
+      "Python": {
+        "files": 6,
+        "code": 506
+      },
+      "Bourne Shell": {
+        "files": 5,
+        "code": 431
+      },
+      "Markdown": {
+        "files": 4,
+        "code": 194
+      },
+      "TOML": {
+        "files": 1,
+        "code": 14
+      }
+    }
+  },
+  "tests": {
+    "test_files": 2,
+    "test_cases": 2,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 2,
+        "cases": 2
+      }
+    },
+    "notes": "本仓库测试极少，仅验证 cv2 导入与 VideoCapture 基本可用；OpenCV 本体测试位于 opencv 子模块，本次 checkout 子模块为空，未纳入统计。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "LICENSE.txt 包含完整 MIT 许可文本；README.md:197 明确声明本仓库脚本使用 MIT。OpenCV 本体与第三方组件另有许可（Apache-2.0 / LGPL 等），见 LICENSE-3RD-PARTY.txt。",
+    "notes": "仅针对本仓库打包脚本。OpenCV 库本身采用 Apache-2.0；wheel 中静态链接的 FFmpeg 为 LGPLv2.1，非 headless Linux wheel 还包含 LGPLv3 的 Qt5；完整第三方许可清单见 LICENSE-3RD-PARTY.txt。"
+  },
+  "dependencies": {
+    "count": 11,
+    "manifests": [
+      "pyproject.toml",
+      "setup.py",
+      ".gitmodules"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "numpy",
+        "packaging",
+        "pip",
+        "scikit-build",
+        "setuptools",
+        "cmake",
+        "toml"
+      ],
+      "cpp": [
+        "opencv",
+        "opencv_contrib",
+        "opencv_extra"
+      ],
+      "other": [
+        "multibuild"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": "<2.0; python_version<'3.9' else >=2",
+        "purpose": "OpenCV Python 绑定与 ndarray 数据互操作的核心依赖",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (pip install)",
+        "declared_in": [
+          "setup.py:25-28",
+          "pyproject.toml:3-6"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "scikit-build",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=0.14.0",
+        "purpose": "在 setuptools 中集成 CMake 构建流程",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (pip install)",
+        "declared_in": [
+          "pyproject.toml:9"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": "==59.2.0; python_version<'3.12' else <70.0.0",
+        "purpose": "Python 包构建与安装入口",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (pip install)",
+        "declared_in": [
+          "pyproject.toml:10-11"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "packaging",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "在后端中解析 CMake 版本号",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (pip install)",
+        "declared_in": [
+          "pyproject.toml:7",
+          "_build_backend/backend.py:9"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pip",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "PEP 517 构建时通过 pip 安装 build-system requires；setup.py 内部也调用 pip._internal.vcs.git 同步子模块",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI / 随 Python 分发",
+        "declared_in": [
+          "pyproject.toml:8",
+          "setup.py:44"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "cmake",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">=3.5",
+        "purpose": "OpenCV 的构建系统；仅在系统未提供足够新版本时由 build backend 拉取 PyPI 版本",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (cmake 分发包) 或系统预装 cmake",
+        "declared_in": [
+          "_build_backend/backend.py:8-21"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "toml",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "CI 构建脚本读取 pyproject.toml 中的 build-system requires",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (pip install)",
+        "declared_in": [
+          "travis_config.sh:18"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "opencv",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "OpenCV 核心 C++ 库与 Python 绑定源码，构建后被打包进 wheel",
+        "acquisition": "submodule",
+        "locality": "remote",
+        "source": "https://github.com/opencv/opencv.git (git submodule)",
+        "declared_in": [
+          ".gitmodules:1-3",
+          "setup.py:18"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "opencv_contrib",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "OpenCV 扩展模块（contrib/extra），通过 ENABLE_CONTRIB=1 启用",
+        "acquisition": "submodule",
+        "locality": "remote",
+        "source": "https://github.com/opencv/opencv_contrib.git (git submodule)",
+        "declared_in": [
+          ".gitmodules:4-6",
+          "setup.py:204-206"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "opencv_extra",
+        "ecosystem": "cpp",
+        "scope": "test",
+        "version": null,
+        "purpose": "OpenCV 测试数据（testdata），仅在运行 OpenCV 本体测试时使用",
+        "acquisition": "submodule",
+        "locality": "remote",
+        "source": "https://github.com/opencv/opencv_extra.git (git submodule)",
+        "declared_in": [
+          ".gitmodules:10-12",
+          "travis_config.sh:154"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "multibuild",
+        "ecosystem": "other",
+        "scope": "build",
+        "version": null,
+        "purpose": "多平台 wheel 构建辅助脚本集合（manylinux/macOS 通用逻辑）",
+        "acquisition": "submodule",
+        "locality": "remote",
+        "source": "https://github.com/multi-build/multibuild.git (git submodule)",
+        "declared_in": [
+          ".gitmodules:7-9",
+          "scripts/build.sh:7"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "本次 checkout 中 opencv / opencv_contrib / opencv_extra / multibuild 四个子模块均为空目录，因此无法对 OpenCV 本体及其 transitive C/C++ 依赖做深度静态分析。Dockerfile 与 CI 中实际构建还会用到 Qt5、FFmpeg、OpenSSL、libpng、freetype、zlib、lapack/openblas、libvpx、aom、libavif、xcb、mesa 等系统/C++ 依赖，但这些由 OpenCV CMake 自行探测，未在本仓库 manifest 中显式声明为独立包。"
+  },
+  "native_api": {
+    "summary": "本仓库是薄层打包脚本，不直接实现计算机视觉算法。其原生 API 调用几乎全部来自 Python 标准库：环境变量读取、平台检测、子进程调用 git/patch。实际平台相关代码（Win32/POSIX 线程、内存映射、GUI、视频编解码、SIMD 等）位于空的 opencv 子模块中，本次未纳入分析。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "os.environ.get",
+            "purpose": "读取构建/打包控制环境变量",
+            "count": 5,
+            "evidence": [
+              "setup.py:16",
+              "setup.py:43",
+              "setup.py:90",
+              "setup.py:118"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.name",
+            "purpose": "区分 Windows (nt) 与类 Unix 平台以调整包数据路径与生成器",
+            "count": 4,
+            "evidence": [
+              "setup.py:98",
+              "setup.py:108",
+              "setup.py:134",
+              "setup.py:159"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys.platform",
+            "purpose": "按平台（win32 / darwin / linux）开关 CMake 参数与补丁逻辑",
+            "count": 6,
+            "evidence": [
+              "setup.py:198",
+              "setup.py:221",
+              "setup.py:224",
+              "scripts/__init__.py:15"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "platform.machine",
+            "purpose": "检测 Windows ARM64 以设置 CMake 目标平台",
+            "count": 1,
+            "evidence": [
+              "setup.py:198"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "subprocess.check_call",
+            "purpose": "调用外部 patch 命令应用 OpenEXR / Qt 插件补丁",
+            "count": 2,
+            "evidence": [
+              "setup.py:225",
+              "setup.py:236"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "subprocess.check_output",
+            "purpose": "调用 git 获取版本与标签信息",
+            "count": 2,
+            "evidence": [
+              "find_version.py:33",
+              "find_version.py:40-41"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "打包脚本在运行期主要与 git、patch 及环境变量交互；wheel 安装后的 cv2 包会设置 Qt 插件路径与字体目录。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "opencv/modules/core/include/opencv2/core/version.hpp",
+        "purpose": "解析 OpenCV 版本号",
+        "evidence": [
+          "find_version.py:13-15"
+        ]
+      },
+      {
+        "detail": "cv2/version.py",
+        "purpose": "写入版本与构建标志",
+        "evidence": [
+          "find_version.py:70-75"
+        ]
+      },
+      {
+        "detail": "contrib.enabled / headless.enabled / rolling.enabled",
+        "purpose": "通过文件传递构建开关",
+        "evidence": [
+          "scripts/build.sh:14-16"
+        ]
+      },
+      {
+        "detail": "patches/patchOpenEXR、patchQtPlugins",
+        "purpose": "构建时按平台条件应用补丁",
+        "evidence": [
+          "setup.py:225",
+          "setup.py:236"
+        ]
+      },
+      {
+        "detail": "cv2/qt/plugins、cv2/qt/fonts",
+        "purpose": "Linux 非 headless 包中配置 Qt 平台插件与字体路径",
+        "evidence": [
+          "scripts/__init__.py:15-18",
+          "scripts/__init__.py:21-24"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "CI_BUILD",
+        "purpose": "启用 CI 专用构建标志",
+        "evidence": [
+          "setup.py:16-17"
+        ]
+      },
+      {
+        "name": "OPENCV_PYTHON_SKIP_GIT_COMMANDS",
+        "purpose": "跳过 git 子模块同步",
+        "evidence": [
+          "setup.py:43"
+        ]
+      },
+      {
+        "name": "OPENCV_PYTHON_PACKAGE_NAME",
+        "purpose": "覆盖生成的包名",
+        "evidence": [
+          "setup.py:90"
+        ]
+      },
+      {
+        "name": "CMAKE_ARGS",
+        "purpose": "透传额外 CMake 参数",
+        "evidence": [
+          "setup.py:118"
+        ]
+      },
+      {
+        "name": "ENABLE_CONTRIB",
+        "purpose": "启用 opencv_contrib 扩展模块",
+        "evidence": [
+          "setup.py:20"
+        ]
+      },
+      {
+        "name": "ENABLE_HEADLESS",
+        "purpose": "构建无 GUI 版本",
+        "evidence": [
+          "setup.py:21"
+        ]
+      },
+      {
+        "name": "ENABLE_ROLLING",
+        "purpose": "启用滚动构建（从 OpenCV 远程主分支拉取）",
+        "evidence": [
+          "setup.py:23"
+        ]
+      },
+      {
+        "name": "ENABLE_JAVA",
+        "purpose": "启用 OpenCV Java 客户端构建",
+        "evidence": [
+          "setup.py:22"
+        ]
+      },
+      {
+        "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
+        "purpose": "运行时指向 wheel 内嵌的 Qt 平台插件",
+        "evidence": [
+          "scripts/__init__.py:16-18"
+        ]
+      },
+      {
+        "name": "QT_QPA_FONTDIR",
+        "purpose": "运行时指向 wheel 内嵌的 Qt 字体目录",
+        "evidence": [
+          "scripts/__init__.py:22-24"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "git submodule sync/update",
+        "purpose": "同步 OpenCV 子模块源码",
+        "evidence": [
+          "setup.py:48-67"
+        ]
+      },
+      {
+        "command": "git rev-parse / git describe",
+        "purpose": "获取本仓库 commit 与标签以生成版本",
+        "evidence": [
+          "find_version.py:33-45"
+        ]
+      },
+      {
+        "command": "patch -p0 < patches/patchOpenEXR",
+        "purpose": "Linux 32 位构建时补丁 OpenEXR",
+        "evidence": [
+          "setup.py:224-225"
+        ]
+      },
+      {
+        "command": "patch -p1 < patches/patchQtPlugins",
+        "purpose": "Linux CI 非 headless 构建时补丁 Qt 插件路径",
+        "evidence": [
+          "setup.py:233-236"
+        ]
+      },
+      {
+        "command": "python setup.py bdist_wheel",
+        "purpose": "CI 中触发 wheel 构建",
+        "evidence": [
+          "travis_config.sh:19"
+        ]
+      },
+      {
+        "command": "pylint",
+        "purpose": "CI 中对 OpenCV Python 示例做代码风格检查",
+        "evidence": [
+          "travis_config.sh:168-174"
+        ]
+      }
+    ],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "Python >=3.6（classifiers 声明到 3.14）；CMake >=3.5",
+    "runtime_version": "CPython 3.6+，构建与测试矩阵覆盖 3.8–3.14",
+    "build_system": "setuptools + scikit-build + CMake",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/build_wheels_manylinux.yml:28",
+          ".github/workflows/build_wheels_manylinux.yml:37-39"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          ".github/workflows/build_wheels_manylinux.yml:28",
+          ".github/workflows/build_wheels_manylinux.yml:34-36"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/build_wheels_windows.yml",
+          "setup.py:159-160"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "arm64",
+        "evidence": [
+          "setup.py:193-198"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/build_wheels_macos.yml"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          ".github/workflows/build_wheels_macos_m1.yml"
+        ]
+      }
+    ],
+    "notes": "构建深度依赖 OpenCV CMake 的跨平台能力；子模块为空时无法实际编译。许多系统级依赖（Qt5、FFmpeg、OpenSSL 等）在 manylinux Docker 镜像中预编译。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "medium",
+    "porting_class": "needs_adaptation_full",
+    "effort_estimate": "M",
+    "recommended_path": "rebuild_opencv_ohos",
+    "summary": "opencv-python 包装层本身是纯 Python，可在鸿蒙 Python 上直接运行；OpenCV C++ 核心已在 OpenHarmony PC cmd-pkgs 中提供移植版本，证明其可经 OHOS NDK 交叉编译。剩余工作主要是将 opencv / opencv_contrib 子模块按鸿蒙工具链重编、处理 GUI/视频后端策略、并将 FFmpeg 等第三方依赖替换为鸿蒙可用版本。整体可行，工作量中等。",
+    "blockers": [
+      {
+        "issue": "OpenCV / opencv_contrib 子模块需按鸿蒙工具链重新构建",
+        "severity": "major",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "使用 ohos.toolchain.cmake + clang/musl 交叉编译 opencv 子模块，开启 BUILD_opencv_python3=ON；opencv 核心已鸿蒙化，可直接参考 cmd-pkgs 中 OpenCV 的构建参数；opencv_contrib 未单独鸿蒙化，需随核心一并编译。",
+        "evidence": ["setup.py:18", "setup.py:163-189", ".gitmodules:1-3", "dependencies[].opencv.harmony_adapted=true"]
+      },
+      {
+        "issue": "视频 I/O 依赖 FFmpeg 与平台特定媒体框架（MSMF/V4L/AVFoundation）",
+        "severity": "major",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "鸿蒙 PC 若已提供 FFmpeg 移植版则直接链接；否则需在 NDK 下重编 FFmpeg（注意禁用 GPL 组件）。Windows MSMF、Linux V4L、macOS AVFoundation 分支需评估是否替换为鸿蒙多媒体系统能力或降级编译。",
+        "evidence": [
+          "docker/manylinux2014/Dockerfile_x86_64:124-135",
+          "setup.py:217-218",
+          "setup.py:258-259"
+        ]
+      },
+      {
+        "issue": "GUI 后端（Qt5/GTK/Win32 UI/Cocoa）在鸿蒙 PC 上无直接等价实现",
+        "severity": "major",
+        "category": "platform_ui",
+        "source_dimension": "dependencies",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "headless 版本可直接禁用 GUI（WITH_QT=OFF、WITH_GTK=OFF、WITH_WIN32UI=OFF）；非 headless 版本需将 highgui 后端迁移到鸿蒙 ArkUI/窗口系统能力，或仅提供 headless 包。",
+        "evidence": [
+          "setup.py:211-214",
+          "docker/manylinux2014/Dockerfile_x86_64:50-58"
+        ]
+      },
+      {
+        "issue": "构建流程依赖 git 子模块与外部下载，沙箱环境可能受限",
+        "severity": "minor",
+        "category": "toolchain",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "partial",
+        "remediation": "预先将 opencv/opencv_contrib 源码放入构建目录，或设置 OPENCV_PYTHON_SKIP_GIT_COMMANDS=1 跳过 git 调用；在受控 CI 环境中完成源码准备。",
+        "evidence": [
+          "setup.py:43-67"
+        ]
+      },
+      {
+        "issue": "wheel 补丁脚本调用 shell 命令 patch，鸿蒙环境需保证工具可用",
+        "severity": "minor",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "partial",
+        "remediation": "在构建镜像中预装 patch；或将补丁合并到源码 fork 中，避免运行时调用外部 patch。",
+        "evidence": [
+          "setup.py:225",
+          "setup.py:236"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python 包装层（setup.py、find_version.py、scripts/__init__.py）",
+        "note": "不依赖平台特有 API，可直接在鸿蒙 Python 上运行；仅需调整路径与平台判断。",
+        "evidence": [
+          "setup.py:1-12",
+          "scripts/__init__.py:1-24"
+        ]
+      },
+      {
+        "aspect": "运行时依赖 numpy",
+        "note": "numpy 已在 OpenHarmony PC PyPI 镜像提供 ohos wheel，无需额外移植。",
+        "evidence": [
+          "setup.py:25-28"
+        ]
+      },
+      {
+        "aspect": "OpenCV C++ 核心已鸿蒙化",
+        "note": "OpenHarmony PC cmd-pkgs 已包含 OpenCV 预编译包，证明核心库可经 OHOS NDK 交叉编译，降低了可行性风险。",
+        "evidence": [
+          "dependencies[].opencv.harmony_adapted=true"
+        ]
+      },
+      {
+        "aspect": "OpenCV 跨平台 CMake 构建体系",
+        "note": "OpenCV 本身支持 Windows/Linux/macOS/Android 等多种平台，具备丰富的平台抽象层，为 NDK 重编提供良好基础。",
+        "evidence": [
+          "setup.py:163-189"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "参考 OpenHarmony PC cmd-pkgs 中 OpenCV 的构建参数，用 OHOS NDK 交叉编译 opencv 子模块（BUILD_SHARED_LIBS=OFF，启用 python3 绑定）",
+      "将 opencv_contrib 与 OpenCV 一并编译；处理 FFmpeg、libpng、zlib、openblas/lapack 等第三方依赖的鸿蒙可用版本",
+      "决策 GUI 策略：优先发布 headless 包（禁用 Qt/GTK/Win32/Cocoa），或针对 ArkUI 实现 highgui 后端",
+      "调整 setup.py 中的平台判断与 CMake 生成器参数，适配鸿蒙工具链",
+      "验证 cv2 扩展在鸿蒙 Python 3.12 上的导入与基本功能，并跑通 OpenCV Python 测试"
+    ],
+    "notes": "本次 checkout 的 opencv/opencv_contrib/opencv_extra 子模块为空，无法对 OpenCV 本体的 native API 做精确清点；上述评估基于 OpenCV 已知架构、Dockerfile/CI 中声明的依赖，以及 opencv 核心已鸿蒙化的事实。若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时不适用，需将 OpenCV 经 Node-API 暴露给 ArkTS，结论会进一步收紧为 high/L。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [
+      "opencv/opencv_contrib/opencv_extra/multibuild 子模块在本次 checkout 中为空；代码体积、测试、native API 与依赖分析均只覆盖本仓库的打包脚本层，未覆盖 OpenCV 本体。",
+      "codegraph 仅索引了本仓库的 9 个 Python/YAML 文件，未包含空的 C++ 子模块。"
+    ],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "submodule",
+        "rationale": "opencv-python 通过 git submodule 引入 opencv/opencv_contrib/opencv_extra/multibuild，这比 FetchContent 更常见，应作为 acquisition 的推荐取值之一。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "scope",
+        "kind": "gap",
+        "value": "build-time system bundle",
+        "rationale": "Dockerfile 中通过 yum 安装并源码编译 Qt5/FFmpeg/OpenSSL/libpng 等，这些不是 manifest 中的独立包，而是构建环境预置的系统/源码依赖，现有 schema 缺乏对此类依赖的明确描述方式。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "rebuild_opencv_ohos",
+        "rationale": "对于以 C++ 子模块为核心的 Python 绑定包，适配路径不是简单 rerun_on_ported_runtime，而是先重编 C++ 核心再跑在 Python 运行时上，现有路径枚举未直接覆盖。"
+      }
+    ]
+  }
+}

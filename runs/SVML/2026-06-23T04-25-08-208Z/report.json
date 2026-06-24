@@ -1,0 +1,304 @@
+{
+  "library": {
+    "name": "SVML",
+    "package_name": null,
+    "source_url": "https://github.com/numpy/SVML",
+    "analyzed_at": "2026-06-23T04:25:08.208Z",
+    "commit": "3a713b13018325451c1b939d3914ceff5ec68e19",
+    "one_liner": "面向x86_64 AVX-512的短向量数学库，提供向量化初等函数汇编实现",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "SVML（Short Vector Math Library）是Intel开发、由NumPy社区维护的短向量数学库。仓库目前仅包含面向x86_64 AVX-512指令集的汇编源文件，提供常用初等函数（三角、双曲、指数对数、幂运算等）的高性能向量化实现，覆盖double、float与half三种精度，主要供NumPy等科学计算库在支持AVX-512的x86_64 Linux环境下链接使用。",
+    "categories": [
+      {
+        "name": "三角函数向量化",
+        "description": "提供sin、cos、tan、asin、acos、atan以及atan2的AVX-512向量化实现，按精度分为8路double（__svml_*8）、16路float（__svml_*f16）和32路half（__svml_*s32）版本，并分别提供低精度（_la）与高精度（_ha）入口。",
+        "evidence": ["linux/avx512/svml_z0_sin_d_la.s", "linux/avx512/svml_z0_cos_s_ha.s", "linux/avx512/svml_z0_atan2_d_ha.s", "__svml_sin8", "__svml_cosf16", "__svml_atan28"]
+      },
+      {
+        "name": "双曲函数向量化",
+        "description": "提供sinh、cosh、tanh、asinh、acosh、atanh的AVX-512向量化实现，与三角函数共享同样的精度/精度等级矩阵。",
+        "evidence": ["linux/avx512/svml_z0_sinh_d_la.s", "linux/avx512/svml_z0_acosh_s_ha.s", "__svml_sinh8", "__svml_acoshf16"]
+      },
+      {
+        "name": "指数与对数函数向量化",
+        "description": "提供exp、exp2、exp10、expm1、log、log2、log10、log1p的AVX-512向量化实现，采用多项式逼近与查表相结合的算法。",
+        "evidence": ["linux/avx512/svml_z0_exp_d_la.s", "linux/avx512/svml_z0_log_s_ha.s", "__svml_exp8", "__svml_logf16", "__svml_logs32"]
+      },
+      {
+        "name": "幂运算与根式向量化",
+        "description": "提供pow（幂）与cbrt（立方根）的AVX-512向量化实现。",
+        "evidence": ["linux/avx512/svml_z0_pow_d_ha.s", "linux/avx512/svml_z0_cbrt_s_la.s", "__svml_pow8", "__svml_cbrtf16"]
+      },
+      {
+        "name": "多精度与精度等级支持",
+        "description": "每个函数均按数据类型（double/float/half）和精度等级（低精度_la、高精度_ha）组织为独立的汇编文件与导出符号，方便消费项目按精度与性能需求选择链接。",
+        "evidence": ["README.md", "linux/avx512/svml_z0_sin_d_la.s", "linux/avx512/svml_z0_sin_d_ha.s"]
+      }
+    ],
+    "domain": "科学计算/高性能计算",
+    "target_users": "需要向量化数学运算的C/C++数值计算库（如NumPy）及其开发者",
+    "ecosystem": "cpp"
+  },
+  "languages": {
+    "primary": "Assembly",
+    "all": ["Assembly", "Markdown"],
+    "breakdown": [
+      {
+        "language": "Assembly",
+        "files": 111,
+        "code": 232245,
+        "pct": 100.0,
+        "production": {"files": 111, "code": 232245},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 3,
+        "pct": 0.0,
+        "production": {"files": 1, "code": 3},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {"files": 112, "code": 232248, "comment": 5845, "blank": 8264, "total_lines": 246357},
+    "production": {"files": 112, "code": 232248, "comment": 5845, "blank": 8264, "total_lines": 246357},
+    "test": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "example": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "production_by_language": {
+      "Assembly": {"files": 111, "code": 232245},
+      "Markdown": {"files": 1, "code": 3}
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "notes": "仓库中未发现测试文件或测试框架。该库作为汇编源码集合，由消费项目（如NumPy）在更上层进行测试。"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "顶层LICENSE与BSD-3-Clause文本完全匹配；多个汇编文件头部包含SPDX-License-Identifier: BSD-3-Clause声明；部分文件同时保留Intel版权声明或'INTEL CONFIDENTIAL'字样，但明确说明使用受所提供的License约束。",
+    "notes": "许可整体为宽松型BSD-3-Clause，允许再分发与修改，但需保留版权声明与免责声明。部分源码保留Intel版权声告，不影响BSD-3-Clause的适用性。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "该库是独立的汇编源码集合，未声明任何第三方依赖，无CMakeLists.txt、Makefile、pyproject.toml等构建清单。它通过直接链接的方式被消费项目（如NumPy）集成。"
+  },
+  "native_api": {
+    "summary": "Pure computational x86_64 AVX-512 assembly library. No OS syscalls, libc calls, or runtime dynamic loading. Platform coupling is limited to the x86_64 System V AMD64 ABI and Linux ELF conventions.",
+    "groups": [
+      {
+        "type": "x86_avx512",
+        "category": "hardware",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "AVX-512 FMA instructions (vfmadd213pd/vfmadd231pd/vfnmadd213pd)",
+            "purpose": "AVX-512融合乘加运算，是多项式逼近的核心算子",
+            "count": 111,
+            "evidence": ["linux/avx512/svml_z0_sin_d_la.s:57", "linux/avx512/svml_z0_sin_d_la.s:65", "linux/avx512/svml_z0_exp_s_ha.s:72"]
+          },
+          {
+            "name": "AVX-512 compare/mask instructions (vcmppd, kortestw)",
+            "purpose": "带掩码的向量比较与分支控制，用于参数范围判断",
+            "count": 111,
+            "evidence": ["linux/avx512/svml_z0_sin_d_la.s:58", "linux/avx512/svml_z0_sin_d_la.s:67", "linux/avx512/svml_z0_sin_d_la.s:71"]
+          },
+          {
+            "name": "AVX-512 data movement (vmovups/vmovaps)",
+            "purpose": "512位ZMM寄存器数据加载、存储与复制",
+            "count": 111,
+            "evidence": ["linux/avx512/svml_z0_sin_d_la.s:44", "linux/avx512/svml_z0_sin_d_la.s:56", "linux/avx512/svml_z0_exp_s_ha.s:60"]
+          },
+          {
+            "name": "AVX-512 arithmetic/logic (vaddpd/vsubpd/vmulpd/vandpd/vxorpd)",
+            "purpose": "基本向量算术与位运算",
+            "count": 111,
+            "evidence": ["linux/avx512/svml_z0_sin_d_la.s:62", "linux/avx512/svml_z0_sin_d_la.s:64", "linux/avx512/svml_z0_asin_s_la.s:38"]
+          }
+        ],
+        "evidence": ["linux/avx512/*.s"]
+      },
+      {
+        "type": "linux_elf_abi",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "System V AMD64 ABI calling convention",
+            "purpose": "函数入口使用pushq %rbp、对齐到64字节边界的栈帧，参数通过ZMM寄存器传递",
+            "count": 111,
+            "evidence": ["linux/avx512/svml_z0_sin_d_la.s:28-40", "linux/avx512/svml_z0_exp_s_ha.s:47-59"]
+          },
+          {
+            "name": "RIP-relative addressing (__svml_*_data_internal(%rip))",
+            "purpose": "x86_64位置无关代码中通过RIP相对寻址访问只读常量表",
+            "count": 111,
+            "evidence": ["linux/avx512/svml_z0_sin_d_la.s:44", "linux/avx512/svml_z0_exp_s_ha.s:66"]
+          },
+          {
+            "name": ".note.GNU-stack ELF marker",
+            "purpose": "Linux ELF可执行栈声明（非执行栈）",
+            "count": 111,
+            "evidence": ["linux/avx512/svml_z0_exp_s_ha.s 末尾", "linux/avx512/svml_z0_asin_s_la.s 末尾"]
+          }
+        ],
+        "evidence": ["linux/avx512/*.s"]
+      },
+      {
+        "type": "assembler_directives",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "GNU assembler directives (.globl/.text/.rodata/.type/.size)",
+            "purpose": "标准汇编源级符号导出、段分配与类型标注",
+            "count": 111,
+            "evidence": ["linux/avx512/svml_z0_sin_d_la.s:21-27", "linux/avx512/svml_z0_asin_s_la.s:7-14"]
+          }
+        ],
+        "evidence": ["linux/avx512/*.s"]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "该库为纯计算型汇编代码，运行时不访问网络、文件系统、环境变量、子进程或设备节点。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": []
+  },
+  "build_env": {
+    "language_standard": "x86_64 AVX-512 assembly（System V AMD64 ABI）",
+    "runtime_version": null,
+    "build_system": "无（仅提供汇编源文件，由消费项目自行集成）",
+    "compiler_extensions": [],
+    "platforms": [
+      {"os": "linux", "arch": "x86_64", "evidence": ["README.md", "linux/avx512/*.s"]}
+    ],
+    "notes": "需要支持AVX-512的汇编器（GNU as、LLVM integrated assembler或兼容工具）。仓库未提供CMake、Makefile或任何构建脚本。README明确声明'currently supports only x86_64 AVX-512'。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK，arm64/x86_64；默认按库/命令行运行时模型评估）",
+    "feasibility": "feasible_with_effort",
+    "overall_difficulty": "high",
+    "effort_estimate": "L",
+    "porting_class": "needs_adaptation_partial",
+    "unadaptable_apis": [
+      {
+        "api": "x86_64 AVX-512 SIMD instruction set",
+        "public_entry": "__svml_sin8 / __svml_expf16 / __svml_logs32（代表全部111个__svml_*导出函数）",
+        "reason": "全部函数实现均直接依赖x86_64 AVX-512指令与ZMM寄存器。arm64 HarmonyOS PC无AVX-512硬件及指令集等价实现，必须整体重写为NEON/SVE汇编或改用可移植库；x86_64 HarmonyOS PC需验证OHOS NDK汇编器支持。",
+        "blocking_native_api": "AVX-512 instructions (vfmadd*/vcmppd/vmovups/vandpd etc.)",
+        "category": "hardware",
+        "evidence": ["linux/avx512/svml_z0_sin_d_la.s:44-68", "linux/avx512/svml_z0_exp_s_ha.s:60-79", "linux/avx512/svml_z0_log_h_la.s:24-40"]
+      }
+    ],
+    "recommended_path": "arch_conditional_recompile_or_replace",
+    "summary": "该库是无外部依赖的纯x86_64 AVX-512汇编向量化数学库。在HarmonyOS PC x86_64设备上，若OHOS NDK工具链的汇编器支持AVX-512与System V ABI，可尝试直接重新汇编/链接集成；但在arm64设备上，AVX-512指令集无等价实现，全部111个函数必须重写或替换为可移植数学库，整体属于部分可适配。",
+    "blockers": [
+      {
+        "issue": "x86_64 AVX-512专用指令集在arm64 HarmonyOS PC上无硬件等价实现",
+        "severity": "blocker",
+        "category": "hardware_arch_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "若目标为arm64，需将函数改写为NEON/SVE汇编，或迁移至SLEEF、OpenLibm等已支持多架构的向量数学库；若目标为x86_64 HarmonyOS PC，则用OHOS NDK验证并重新汇编。",
+        "evidence": ["linux/avx512/svml_z0_sin_d_la.s:44-68", "linux/avx512/svml_z0_exp_s_ha.s:60-79", "README.md"]
+      },
+      {
+        "issue": "仓库无构建脚本，需消费项目自行集成到鸿蒙构建流程",
+        "severity": "minor",
+        "category": "build_integration",
+        "source_dimension": "build_env",
+        "harmony_status": "partial",
+        "remediation": "为消费项目补充CMake/BUILD.gn集成规则，指定汇编器标志与OHOS NDK工具链。",
+        "evidence": ["README.md", "linux/avx512/*.s"]
+      },
+      {
+        "issue": "源码含Intel版权与'INTEL CONFIDENTIAL'历史头，需确认再分发合规性",
+        "severity": "minor",
+        "category": "license_provenance",
+        "source_dimension": "license",
+        "harmony_status": "partial",
+        "remediation": "保留所有原始版权声明与BSD-3-Clause许可证文本；在集成文档中注明Intel原始作者与NumPy分发来源。",
+        "evidence": ["LICENSE", "linux/avx512/svml_z0_exp_s_ha.s:1-14"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "无外部依赖与运行时宿主交互",
+        "note": "库内无系统调用、无动态加载、无网络/文件/环境变量访问，降低了集成复杂度。",
+        "evidence": ["linux/avx512/*.s", "runtime_surface"]
+      },
+      {
+        "aspect": "宽松的开源许可",
+        "note": "BSD-3-Clause许可证兼容鸿蒙生态集成与再分发。",
+        "evidence": ["LICENSE"]
+      },
+      {
+        "aspect": "x86_64 HarmonyOS PC可能仅需重新汇编",
+        "note": "若OHOS NDK（clang/llvm）支持AVX-512汇编语法，理论上可直接重新编译链接。",
+        "evidence": ["linux/avx512/svml_z0_sin_d_la.s:21-47"]
+      }
+    ],
+    "key_tasks": [
+      "在HarmonyOS PC x86_64设备或模拟器上验证OHOS NDK能否正确汇编本仓库全部AVX-512源文件",
+      "若目标平台为arm64，评估并实施替代方案：将函数逐一手写为NEON/SVE汇编，或迁移至SLEEF/OpenLibm等可移植向量数学库",
+      "为消费项目（如NumPy）编写适配鸿蒙构建系统的集成脚本（CMake/BUILD.gn），处理汇编文件编译与链接",
+      "在集成文档中保留所有BSD-3-Clause与Intel版权声明，确保合规"
+    ],
+    "notes": "默认按库/命令行运行时模型评估。由于该库本质是x86_64 AVX-512专用汇编，arm64 HarmonyOS PC无法直接运行；即使x86_64 HarmonyOS PC也需工具链支持。评估置信度高——源码全部为自包含汇编，无隐藏依赖或运行时交互。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [
+      "CodeGraph index reported 'No files found to index' because the project contains only assembly source files, which CodeGraph does not parse. Analysis used direct file reading and grep instead."
+    ],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "ecosystem",
+        "kind": "ambiguity",
+        "value": "cpp_for_assembly_only_repo",
+        "rationale": "仓库无manifest，主语言为Assembly。按生态分类最接近C/C++库（作为可被C/C++项目链接的汇编组件），但严格说并非C/C++源代码。此处暂归为cpp并在notes说明。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "platform",
+        "kind": "ambiguity",
+        "value": "linux_for_avx512_hardware",
+        "rationale": "AVX-512本身是硬件ISA而非OS API，但此仓库的汇编 specifically targeting Linux ELF / System V ABI；schema platform枚举无x86_64/hardware，故使用linux。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "arch_conditional_recompile_or_replace",
+        "rationale": "该库在x86_64 HarmonyOS PC上可能仅需重新汇编，在arm64上则必须替换/重写，现有推荐路径词汇无法精确描述这种架构条件分支。"
+      }
+    ]
+  }
+}
