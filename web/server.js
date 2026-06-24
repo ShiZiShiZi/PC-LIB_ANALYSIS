@@ -30,6 +30,7 @@ const SETTINGS_FILE = path.join(ROOT, '.panel-settings.json');
 const AGENT_FILE = '.claude/agents/pc-lib-analyzer.md';
 const RESOLVE_AGENT_DIR = path.join(ROOT, '.resolve-agent');   // scratch for repo-resolver job results
 const PORT = process.env.PORT || 8765;
+const isWindows = process.platform === 'win32';
 
 const DEFAULT_PROMPT =
   'Analyze the PC open-source software project (a third-party library OR an application) ' +
@@ -68,7 +69,7 @@ const DEFAULT_SETTINGS = {
 // codegraph when it is BOTH installed and enabled in settings; otherwise the
 // agent falls back to grep/Read.
 let codegraphAvailable = false;
-execFile('codegraph', ['--version'], { timeout: 5000 }, (err) => {
+execFile('codegraph', ['--version'], { shell: isWindows, timeout: 5000 }, (err) => {
   codegraphAvailable = !err;
   console.log(`  codegraph: ${codegraphAvailable ? 'available' : 'not found (analyses fall back to grep)'}`);
 });
@@ -673,7 +674,7 @@ function spawnAnalyze(job) {
   job.logStream = fs.createWriteStream(path.join(job.meta.runDir, 'run.log.jsonl'), { flags: 'a' });
   job.emit('input', { argv: job.meta.argv, prompt: job.meta.prompt, runDir: path.relative(ROOT, job.meta.runDir) });
   const argv = job.meta.argv;
-  pipeProcess(job, spawn(argv[0], argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }));
+  pipeProcess(job, spawn(argv[0], argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: isWindows }));
 }
 
 // ---------------------------------------------------------------- recursive analysis (sessions)
@@ -950,7 +951,7 @@ function pumpAgentResolve() {
     job.onDone = () => { runningAgentResolve--; finishAgentResolve(job); pumpAgentResolve(); };
     job.setStatus('running');
     job.emit('input', { argv: job.meta.argv });
-    pipeProcess(job, spawn(job.meta.argv[0], job.meta.argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }));
+    pipeProcess(job, spawn(job.meta.argv[0], job.meta.argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: isWindows }));
   }
 }
 
@@ -993,7 +994,7 @@ function testModel(model, cb) {
   model = model || settings.model;
   if (!model) return cb({ ok: false, error: 'no model specified' });
   const child = spawn('opencode', ['run', '-m', model, 'reply with exactly the word: pong'],
-    { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: isWindows });
   let out = '', err = '';
   const t0 = Date.now();
   child.stdout.on('data', (d) => (out += d));
@@ -1051,7 +1052,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && pathname === '/api/models')
-      return execFile('opencode', ['models'], { timeout: 15000 }, (e, out) =>
+      return execFile('opencode', ['models'], { shell: isWindows, timeout: 15000 }, (e, out) =>
         send(res, 200, { models: e ? [] : out.split('\n').map((s) => s.trim()).filter(Boolean) }));
 
     if (req.method === 'GET' && pathname === '/api/testmodel')
@@ -1322,7 +1323,7 @@ const server = http.createServer(async (req, res) => {
       const tmp = path.join(os.tmpdir(), `pc-lib-export-${Date.now()}.xlsx`);
       const args = [path.join('scripts', 'export_xlsx.py'), '--runs', RUNS, '--out', tmp];
       if (query.names) args.push('--names', String(query.names));
-      return execFile('python3', args, { cwd: ROOT, timeout: 120000 }, (err, _o, stderr) => {
+      return execFile(isWindows ? 'python' : 'python3', args, { cwd: ROOT, shell: isWindows, timeout: 120000 }, (err, _o, stderr) => {
         if (err || !fs.existsSync(tmp)) {
           fs.unlink(tmp, () => {});
           return send(res, 500, { error: 'export failed', detail: String(stderr || err || '').slice(0, 2000) });
