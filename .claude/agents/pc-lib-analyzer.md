@@ -38,19 +38,21 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    python3 .claude/skills/code-metrics/scripts/metrics.py --repo repos/<name> --out <runDir>/metrics.json
    ```
 
-2b. **(Optional) Build a structural index with codegraph.** Only if codegraph is
-   installed — guard it: `command -v codegraph` (and only when the run prompt says
-   codegraph is enabled). Then index the checkout (the `.codegraph/` dir lands
-   inside `repos/<name>`, which is gitignored — safe, not `/tmp`):
+2b. **(Optional) Use the codegraph structural index.** When codegraph is enabled the
+   **server pre-builds the index right after clone** (`codegraph init -i <repoPath>`;
+   the `.codegraph/` dir lives inside the checkout, gitignored) — so you normally do
+   NOT need to build it. Just query it (use the exact `<repoPath>` the run prompt gives,
+   e.g. `repos/<group>/<name>`):
    ```bash
-   command -v codegraph && codegraph index repos/<name>
+   codegraph context "<task>" -p <repoPath>
+   codegraph query <symbol> -p <repoPath> -j
+   codegraph callers/callees <symbol> -p <repoPath>
    ```
-   If this fails or times out, skip it, add a `meta.warnings` note, and continue
-   with grep/Read. When it succeeds, prefer it for the structural lookups in
-   dims 1 and 7: `codegraph context "<task>" -p repos/<name>`,
-   `codegraph query <symbol> -p repos/<name> -j`,
-   `codegraph callers/callees <symbol> -p repos/<name>`. grep/Read remain the
-   fallback and the way to read literal text (strings, headers, manifests).
+   Prefer it for the structural lookups in dims 1 and 7. If a codegraph call fails
+   (index not ready / not installed), fall back to grep/Read and add a `meta.warnings`
+   note. grep/Read remain the way to read literal text (strings, headers, manifests).
+   If you ever do need to (re)build it yourself: `codegraph init -i <repoPath>` (first
+   time) or `codegraph sync <repoPath>` (refresh).
 
 3. **Reasoned dimensions (1, 5, 6, 7, 8).** For each, read the corresponding skill
    file for the full method, then read the actual source to fill in the block:

@@ -1,6 +1,6 @@
 ---
 name: harmony-adaptation
-description: Assess the feasibility, difficulty, and porting path of adapting a third-party library to HarmonyOS NEXT PC (self-developed kernel, ArkTS app layer, OHOS NDK native layer, Node-API bridge — no Linux ABI). A SYNTHESIS step over the already-computed native_api / runtime_surface / dependencies / build_env / library blocks. Use for dimension 9 of PC library analysis. Model reasoning, prescriptive (gives an adaptation plan).
+description: Assess the feasibility, difficulty, and porting path of adapting a third-party library or application to HarmonyOS NEXT PC (self-developed kernel, ArkTS app layer, OHOS NDK native layer, Node-API bridge — no Linux ABI). A SYNTHESIS step over the already-computed native_api / runtime_surface / dependencies / build_env / library blocks. Use for dimension 9 of PC library/application analysis. Model reasoning, prescriptive (gives an adaptation plan).
 ---
 
 # HarmonyOS PC adaptation assessment (model-driven, synthesis)
@@ -84,9 +84,12 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
    - 需列出的「所需能力」：（应用尤其）所用 **GUI 工具包**(Swing/AWT/JavaFX/Qt…) 与窗口/桌面集成项、
      所需 **JDK 内部模块**(jdk.attach/jvmstat/JVMTI…)、**进程/attach 模型**、**应用交付形态**；
      （库）通常只有「该语言运行时已移植」一条。
-   - 据 `target_status` 处置：`available`→不计阻碍；`partial`→记 `partial` 阻碍；`unavailable`→记
-     `blocker`/进 `unadaptable_apis`；**`unknown`→`target_assumptions` 记一条且若 `required` 则
-     **下调 `meta.confidence_overall`**、在 `notes` 注明「结论依赖未核实的目标事实：…」——禁止据
+   - 给每条假设一个稳定 `id`（如 `ta:swing`），供下游 `blockers`/`unadaptable_apis` 的 `caused_by` 回指。
+   - 据 `target_status` **显式驱动**下游（同一事实只登记一次、其余引用，不重复计入难度）：
+     `available`→不计阻碍；`partial`→**必产**一条 `blocker`（`adaptability: partial`）`caused_by` 指回该假设 id；
+     `unavailable`→**必产**一条 `blocker`（`adaptability: unadaptable`），若为具体 API 再进 `unadaptable_apis`
+     并让 blocker 的 `manifests_as` 指向它；**`unknown`→`target_assumptions` 记一条且若 `required` 则
+     **把本维度 `confidence` 下调至多 `medium`**、在 `notes` 注明「结论依赖未核实的目标事实：…」——禁止据
      unknown 臆断为 `feasible`/`no_adaptation`**。
    - 一项 `required:true` 且 `unavailable` ⇒ 该形态多半 `infeasible` 或需换形态（在 summary 说清）。
 1. **由 `library.ecosystem` 定基调与默认路径**（默认走模型 A：跑在已移植运行时上）：
@@ -128,12 +131,26 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
 3. **判每条阻碍的 `harmony_status` 与 `remediation`**：能用 `@ohos.*` 平替的写
    `replace_with_ohos` + 具体 API；需权限的 `needs_permission`;部分支持 `partial`;
    彻底没有 `unavailable`。
-4. **汇总闭轴**：`feasibility` / `overall_difficulty` / `effort_estimate`，与阻碍数量、
-   严重度、推荐路径自洽。例：纯脚本库(运行时已移植 + 无原生扩展 + 无平台耦合) ⇒
-   `feasible`/`low`/`XS`–`S`；少量原生扩展需重编 ⇒ `feasible_with_effort`/`medium`/`M`；
-   大量 `blocker` + `arkts_rewrite` ⇒ `hard`/`very_high`/`L`|`XL`。**不要因为是 Python/Java/JS
-   就判 `infeasible`——运行时已移植。** 对 FFI/ctypes 型库，**动态加载的平台库是否有鸿蒙
-   等价才是定档 feasibility/难度的主因**（运行时已移植不再是主阻碍）。
+4. **汇总：估 `effort.person_days` 区间 + 判 `feasibility`**（难度 `effort.level` 由 server 派生，**你无需自填**）。
+   你只输出两个**可观测**的量：`porting_class`（见第 5 步，权威机器轴）与 `effort.person_days:[min,max]`
+   人-天区间（区间宽度表达不确定性）。`feasibility` 与 porting_class 确定性对应（no_adaptation→feasible；
+   recompile_only/needs_adaptation_full→feasible_with_effort；needs_adaptation_partial→hard；infeasible→infeasible），
+   照填即可。**person_days 估算锚点（同 server 派 level 的 rubric）**：
+
+   | 量级 | person_days | 典型 porting_class | 特征 |
+   |---|---|---|---|
+   | 极低 | 0–2 | no_adaptation | 纯脚本跑已移植运行时，零原生/平台耦合，至多打包 |
+   | 低 | 2–5 | recompile_only | 仅 OHOS NDK 重编/交叉编译，无平台 API 改动 |
+   | 中 | 5–15 | needs_adaptation_full（量小） | 用到功能全可适配，阻碍点少且都有 @ohos 替代/重编路径 |
+   | 高 | 15–40 | partial 或 full（量大） | 有少量 unadaptable_apis 但核心可用，或阻碍点多/含 GUI·桌面集成大改 |
+   | 极高 | 40+ | infeasible（或近） | 核心依赖无解平台·硬件 API，或需 arkts_rewrite 整体重写 |
+
+   **不要因为是 Python/Java/JS 就判 `infeasible`——运行时已移植。** 对 FFI/ctypes 型库，
+   **动态加载的平台库是否有鸿蒙等价才是定 person_days/feasibility 的主因**（运行时已移植不再是主阻碍）。
+   **参考 `code_metrics.platform_adaptation`（各平台编译宏包裹的代码量）作为复杂度信号**：windows/macos/linux/posix
+   守卫代码越多 → 鸿蒙需新增/适配的平台分支越多 → `person_days` 上调、更可能产 toolchain/posix_subset_gap 类
+   `blocker`（C/C++ 库尤甚）；该数为空或很小 → 平台耦合轻。其它语言的平台分支（Python `sys.platform`/Java
+   `os.name`/Rust `cfg!(target_os)`）无此机械计数，按 native_api/源码定性判断。
 5. **定 `porting_class`（闭轴，依赖拓扑图用）** —— 把本库归入 5 类之一，与上面自洽：
    - `no_adaptation`：纯脚本（Python/Java/JS…）跑在已移植运行时上，无原生扩展、无平台耦合
      （≈ `feasible`/`run_on_ported_runtime`/无 blocker）。
@@ -153,10 +170,16 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
      无法适配并列入 `unadaptable_apis`；`infeasible`=核心依赖鸿蒙缺失的桌面环境/硬件且无替代。
 5b. **填 `unadaptable_apis`（API 粒度，父库综合用）** —— 仅当本库存在**确实无法在鸿蒙适配**的底层
    API 时列出；这是自底向上综合的关键：服务端会把**父库的 `dependencies[].used_symbols` 与子库此清单的
-   `public_entry` 求交**，命中才把该子计为父的阻碍——所以 `public_entry`（本库对外、会路由到该不支持
-   API 的公共函数/符号）要尽量填准，父库不调用到就不阻塞父的迁移。每项 `{api, public_entry, reason,
-   blocking_native_api, category(platform/system/hardware/ffi), evidence}`，证据复用 `native_api` 的调用点。
-   纯脚本 / 仅需重编 / 全部可适配 的库此项为空。
+   `public_entry` 求交**，命中才把该子计为父的阻碍——所以 `public_entry` 要尽量填准，父库不调用到就不阻塞父的迁移。
+   每项 `{id, api, public_entry, reason, blocking_native_api, category(platform/system/hardware/ffi), evidence, caused_by?}`，
+   `id` 形如 `ua:culaunch`，证据复用 `native_api` 的调用点。纯脚本 / 仅需重编 / 全部可适配 的库此项为空。
+   - **`public_entry` 命名约定（决定 rollup 能否命中，务必遵守）**：填**父库实际 import/调用本库时引用的那个名字**，
+     与依赖维度的 `dependencies[].used_symbols` **同一约定**——Python 用 `module.func` / `Class.method`；
+     JS/TS 用导出名（`pkg.export` 或具名导出）；C/C++ 用自由函数名或 `Class::method`；Java 用 `Class.method` 或 `pkg.Class`。
+     避免填内部静态函数名（父库引用不到 → rollup 漏判）。
+   - **自底向上填写顺序（先粒度、后引用，避免同一事实写三遍）**：① 先填 `unadaptable_apis`（最细粒度）；
+     ② 再写 `blockers`，把对应项的 `manifests_as` 指向 `ua:*`、`caused_by` 指向根因 `ta:*`；③ `target_assumptions` 作根因层。
+     一个事实只在其主清单写完整内容，其余清单只用 id 引用。
 6. **`compatible` 与 `key_tasks`**：列可顺利移植的部分(纯算法/数据结构/标准库逻辑)、
    落地推荐路径的关键工作项。
 
@@ -165,20 +188,20 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
 ```json
 {
   "target": "HarmonyOS PC (跑在已移植的 Python 3.12 运行时上; 原生扩展经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
-  "feasibility": "feasible_with_effort",
-  "overall_difficulty": "medium",
-  "effort_estimate": "M",
   "porting_class": "recompile_only",
+  "feasibility": "feasible_with_effort",
+  "effort": {"person_days": [3, 6]},
+  "confidence": "high",
   "recommended_path": "run_on_ported_runtime",
   "summary": "该库为 Python 库，鸿蒙 PC 已移植 Python 3.12 运行时，纯 Python 部分可直接运行；唯一工作量在其依赖的 C 库（经 cffi 绑定），需用 OHOS NDK 交叉编译该 C 库并重新生成绑定。无外部命令调用与平台特有系统接口，整体可行。",
   "blockers": [
-    {"issue": "经 cffi 绑定的原生 C 库（libfoo）需在鸿蒙上重新编译",
-     "severity": "major", "category": "native_dependency", "source_dimension": "dependencies",
+    {"id": "bk:libfoo", "issue": "经 cffi 绑定的原生 C 库（libfoo）需在鸿蒙上重新编译",
+     "severity": "major", "adaptability": "adaptable", "category": "native_dependency", "source_dimension": "dependencies",
      "harmony_status": "partial",
      "remediation": "用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 libfoo 为 .so，再用鸿蒙 Python 重新构建 cffi 绑定；确认其自身不依赖 Linux 专有系统调用。",
      "evidence": ["setup.py:31", "src/_build.py:12"]},
-    {"issue": "C 库内通过 mmap/部分 ioctl 访问设备",
-     "severity": "minor", "category": "posix_subset_gap", "source_dimension": "native_api",
+    {"id": "bk:ioctl", "issue": "C 库内通过 mmap/部分 ioctl 访问设备",
+     "severity": "minor", "adaptability": "partial", "category": "posix_subset_gap", "source_dimension": "native_api",
      "harmony_status": "partial",
      "remediation": "musl/OHOS 的 POSIX 子集多数 mmap 可用；逐项核对涉及的 ioctl 命令字是否被 OHOS 支持，缺失项做条件编译降级。",
      "evidence": ["src/native/io.c:88"]}
@@ -193,23 +216,23 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
     "核对 C 层 ioctl/设备访问在 OHOS POSIX 子集下的可用性，缺失项条件编译降级",
     "在鸿蒙 Python 上跑通其单元测试验证功能完整"
   ],
-  "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）；若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，须整体换原生实现或重写，结论收紧为 hard/very_high。"
+  "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）；若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，须整体换原生实现或重写，结论收紧为 hard、person_days 大幅上升。"
 }
 ```
-- **纯脚本库（无原生扩展、无平台耦合）**：`recommended_path: "run_on_ported_runtime"`、
-  `feasibility: feasible`、`low`/`XS`–`S`，`blockers` 为空或仅打包/路径类 `minor`。
-- **C/C++ 库**：`recommended_path: "recompile_napi"`、难度 medium、`blockers` 多为个别
-  POSIX 子集缺口或 Win32 分支,`compatible` 含 STL/算法核心。
+- **纯脚本库（无原生扩展、无平台耦合）**：`porting_class: no_adaptation`、`recommended_path: "run_on_ported_runtime"`、
+  `feasibility: feasible`、`effort.person_days:[0,2]`（派生 level=极低），`blockers` 为空或仅打包/路径类 `minor`。
+- **C/C++ 库**：`porting_class: recompile_only`、`recommended_path: "recompile_napi"`、`effort.person_days` 约 `[3,8]`、
+  `blockers` 多为个别 POSIX 子集缺口或 Win32 分支,`compatible` 含 STL/算法核心。
 - **应用 + 目标假设示例（VisualVM 类桌面 profiler，模型 C）**：`target_assumptions` 形如
   `[{"capability":"headful Swing/AWT","required":true,"target_status":"unknown","impact":"不支持则整个 GUI 无法运行","source":"harmony-pc-capabilities.json#gui.swing"},`
   `{"capability":"跨进程 attach (Attach API/JVMTI)","required":true,"target_status":"unknown","impact":"profiler 核心功能依赖","source":"…#5"},`
   `{"capability":"jdk.internal.jvmstat/sun.tools.attach 开放","required":true,"target_status":"unknown","impact":"性能计数器/attach 启动依赖","source":"…#2"}]`；
-  这些 `required+unknown` ⇒ **下调 `confidence_overall`、notes 注明依赖未核实事实**；其各平台预编译
+  这些 `required+unknown` ⇒ **把 `confidence` 下调至多 `medium`、notes 注明依赖未核实事实**；其各平台预编译
   JNI agent `libprofilerinterface` 无 OHOS 版 → 进 `unadaptable_apis`/`blocker`。
 - **部分功能不可适配的库（partial 档示例）**：如某图形库的 GPU 加速路径走 `cuLaunchKernel`/特定
-  设备 `ioctl`，鸿蒙无对应 → `porting_class: needs_adaptation_partial`，且
-  `unadaptable_apis: [{"api":"cuLaunchKernel","public_entry":"foo_gpu_render","reason":"鸿蒙无 CUDA 运行时，无替代","blocking_native_api":"cuLaunchKernel","category":"hardware","evidence":["src/gpu.c:120"]}]`；
-  其 CPU 路径（`foo_render`）仍可适配 → 父库若只调 `foo_render` 不调 `foo_gpu_render` 则不受此阻塞。
+  设备 `ioctl`，鸿蒙无对应 → `porting_class: needs_adaptation_partial`、`effort.person_days` 约 `[15,30]`，且
+  `unadaptable_apis: [{"id":"ua:culaunch","api":"cuLaunchKernel","public_entry":"foo.gpu_render","reason":"鸿蒙无 CUDA 运行时，无替代","blocking_native_api":"cuLaunchKernel","category":"hardware","evidence":["src/gpu.c:120"],"caused_by":["ta:cuda"]}]`，
+  对应 blocker `manifests_as:["ua:culaunch"]`；其 CPU 路径（`foo.render`）仍可适配 → 父库若只调 `foo.render` 不调 `foo.gpu_render` 则不受此阻塞。
 - **目标确为 ArkTS 沙箱应用的 JS 库**：才用 `arkts_rewrite`，Node 核心模块 → `@ohos.*`，
   并在 `notes` 注明是按模型 B 评估。
 
@@ -220,14 +243,18 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   `unadaptable_apis` 自然也是：**只在测试/示例里用到的平台 API 不是迁移阻碍**，不要列入。
   若整仓是**示例/教程集合**（生产代码≈0），据库本体收敛——`porting_class` 不按 demo 定档，
   `unadaptable_apis` 近空，`notes` 注明「本仓为示例集合，平台 API 仅见于示例」。
-- 闭轴(`feasibility`/`overall_difficulty`/`effort_estimate`/`porting_class`/`blockers[].severity`)
+- 闭轴(`feasibility`/`porting_class`/`confidence`/`blockers[].severity`/`blockers[].adaptability`/`effort.level`)
   取值**必须**落在 schema enum 内;开放词(`recommended_path`/`category`/`harmony_status`)按实际写。
-  `porting_class` 必须与 `feasibility`/难度/路径自洽（见 How-to 第 5 步的映射），并与 `unadaptable_apis`
+  **`effort.level` 由 server 派生，你不必填**；你填 `porting_class` + `effort.person_days` + `feasibility`。
+  `porting_class` 必须与 `feasibility`/路径自洽（见 How-to 第 4/5 步映射），并与 `unadaptable_apis`
   自洽：`unadaptable_apis` 非空 ⇒ `porting_class: needs_adaptation_partial`（或 `infeasible`）；
   为空且仍需改造 ⇒ `needs_adaptation_full`。
-- 闭轴之间须自洽:大量 `blocker` 不能配 `feasibility: feasible` / `low` 难度；反之
+- 引用完整性 + 去重：每个 `caused_by`/`manifests_as` 引用的 id 必须在对应清单存在；同一事实只在主清单
+  写完整内容、其余引用，避免重复计入难度。任一 `blocker.adaptability: unadaptable` 应同时在 `unadaptable_apis`
+  有对应项（除非不是具体 API）。
+- 闭轴之间须自洽:大量 `blocker` / 长 `person_days` 不能配 `feasibility: feasible`；反之
   **纯脚本库（运行时已移植 + 无原生扩展 + 无平台耦合）不能配 `infeasible`**——应是
-  `feasible`/`low`。
+  `feasible`/`person_days:[0,2]`。required+unknown 假设存在时 `confidence` 至多 `medium`。
 - **默认按模型 A（库跑在鸿蒙已移植运行时上）评估**；只有目标明确是 ArkTS 沙箱应用才用
   模型 B，并在 `notes` 注明。已移植运行时（Python/Node/Java/Rust/Go/Julia）本身不计为阻碍。
 - 描述要可执行:`remediation` 给具体的 `@ohos.*` 平替或裁剪决定,不空泛。

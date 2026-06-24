@@ -1,9 +1,10 @@
 # pc-lib-analysis
 
-An **agent + skill harness** for analyzing a PC third-party library from its git
-source. The core deliverable is the **`pc-lib-analyzer` agent**: give it a git URL
-(or local checkout) of a Python / C-C++ / Java / JS-TS library and it returns a
-single `report.json`.
+An **agent + skill harness** for analyzing a PC open-source software project — a
+third-party **library OR an application** — from its git source. The core deliverable
+is the **`pc-lib-analyzer` agent**: give it a git URL (or local checkout) of a
+Python / C-C++ / Java / JS-TS library or application and it returns a single
+`report.json`.
 
 ## Design principle
 

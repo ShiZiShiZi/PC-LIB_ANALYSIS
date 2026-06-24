@@ -1,6 +1,6 @@
 ---
 name: function-summary
-description: Summarize and classify what a third-party library does, by reading its source — README/docs, public API surface, module layout, and key implementation files. Produces a prose summary plus capability categories with evidence. Use for dimension 1 of PC library analysis. This is model reasoning, not a script.
+description: Summarize and classify what a third-party library or application does, by reading its source — README/docs, public API surface, module layout, and key implementation files. Produces a prose summary plus capability categories with evidence. Use for dimension 1 of PC library/application analysis. This is model reasoning, not a script.
 ---
 
 # Function summary & classification (model-driven)

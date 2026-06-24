@@ -1,6 +1,6 @@
 ---
 name: runtime-environment
-description: Analyze what a library needs from its host environment at runtime (network, filesystem, environment variables, subprocesses, devices) and its build/toolchain requirements (language standard, compiler extensions, runtime version, supported OS/arch). Use for dimension 8 of PC library analysis. Model reasoning over source and build files, descriptive only.
+description: Analyze what a library or application needs from its host environment at runtime (network, filesystem, environment variables, subprocesses, devices) and its build/toolchain requirements (language standard, compiler extensions, runtime version, supported OS/arch). Use for dimension 8 of PC library/application analysis. Model reasoning over source and build files, descriptive only.
 ---
 
 # Runtime & build environment (model-driven)

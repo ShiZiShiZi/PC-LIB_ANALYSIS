@@ -1,6 +1,6 @@
 ---
 name: native-api-analysis
-description: Analyze a third-party library's use of low-level and platform APIs — Win32, POSIX, C/C++ standard library, OS syscalls, GPU/graphics APIs, and FFI bridges (ctypes, JNI, N-API) — by reading source includes and call sites, and judging platform dependence. Use for dimension 7 of PC library analysis. Model reasoning over code, not a fixed grep list.
+description: Analyze a third-party library's or application's use of low-level and platform APIs — Win32, POSIX, C/C++ standard library, OS syscalls, GPU/graphics APIs, and FFI bridges (ctypes, JNI, N-API) — by reading source includes and call sites, and judging platform dependence. Use for dimension 7 of PC library/application analysis. Model reasoning over code, not a fixed grep list.
 ---
 
 # System & platform API analysis (model-driven)

@@ -27,6 +27,7 @@ const PUBLIC = path.join(__dirname, 'public');
 const REPOS = path.join(ROOT, 'repos');
 const RUNS = path.join(ROOT, 'runs');
 const SETTINGS_FILE = path.join(ROOT, '.panel-settings.json');
+const TAGS_FILE = path.join(ROOT, '.panel-library-tags.json');   // per-library 来源标签注册表
 const AGENT_FILE = '.claude/agents/pc-lib-analyzer.md';
 const RESOLVE_AGENT_DIR = path.join(ROOT, '.resolve-agent');   // scratch for repo-resolver job results
 const PORT = process.env.PORT || 8765;
@@ -49,6 +50,28 @@ const DEFAULT_PROMPT =
   'the project (under the run directory) — never use /tmp or any path outside the ' +
   'project, because the headless runner auto-rejects external directories and the ' +
   'run will abort. Finish with a short digest.';
+
+// Previous DEFAULT_PROMPT values. A persisted settings.promptTemplate that exactly
+// matches one of these is a stale default (it predates a DEFAULT_PROMPT change — e.g.
+// the "library OR application" rewrite), so loadSettings() auto-upgrades it to the
+// current DEFAULT_PROMPT. A genuinely user-customized template never matches and is
+// left untouched. When you change DEFAULT_PROMPT, append the OLD string here.
+const LEGACY_PROMPTS = [
+  // pre-"library OR application" default (said "Analyze the PC third-party library …")
+  'Analyze the PC third-party library checked out at {repoPath}. Follow the method ' +
+  'and JSON output contract in {agentFile} and the skills it references. The source ' +
+  'is already cloned — do NOT clone again. Run the deterministic code-metrics script ' +
+  'with `--out {metricsPath}`, reason through every dimension (function summary, ' +
+  'license, dependencies, native/platform API), and write the final report to ' +
+  '{reportPath}. Conform to references/report_schema.json. ' +
+  '语言要求：function_summary 里所有自然语言字段（summary、每个 category 的 name 与 ' +
+  'description、domain、target_users）以及 library.one_liner 必须用简体中文书写；' +
+  'SPDX 许可证标识、编程语言名、依赖包名等专有名词保持原文。' +
+  'IMPORTANT: write the report, metrics, and ALL intermediate/scratch files inside ' +
+  'the project (under the run directory) — never use /tmp or any path outside the ' +
+  'project, because the headless runner auto-rejects external directories and the ' +
+  'run will abort. Finish with a short digest.',
+];
 
 const DEFAULT_SETTINGS = {
   model: '',
@@ -74,12 +97,91 @@ execFile('codegraph', ['--version'], { shell: isWindows, timeout: 5000 }, (err) 
   console.log(`  codegraph: ${codegraphAvailable ? 'available' : 'not found (analyses fall back to grep)'}`);
 });
 
+// Build (or refresh) the codegraph structural index for a checkout so analysis can
+// query it. Runs `init -i` the first time (creates .codegraph/), `sync` afterwards.
+// No-op when codegraph isn't available or is disabled. onLog(line) streams progress.
+const codegraphIndexing = new Set();   // repoPath currently being (re)indexed — dedupe
+function ensureCodegraphIndex(repoPath, onLog) {
+  if (!codegraphAvailable || !settings.useCodegraph) return;
+  if (!repoPath || !fs.existsSync(repoPath) || codegraphIndexing.has(repoPath)) return;
+  const initialized = fs.existsSync(path.join(repoPath, '.codegraph'));
+  const args = initialized ? ['sync', repoPath] : ['init', '-i', repoPath];
+  const log = (s) => { if (onLog) onLog(s); else console.log(`  codegraph: ${s}`); };
+  codegraphIndexing.add(repoPath);
+  log(`${initialized ? 'sync' : 'init -i'} ${path.relative(ROOT, repoPath)}…`);
+  execFile('codegraph', args, { cwd: ROOT, timeout: 600000, maxBuffer: 16 * 1024 * 1024 }, (err) => {
+    codegraphIndexing.delete(repoPath);
+    log(err ? `index failed: ${String(err.message || err).split('\n')[0]}` : `index ready (${path.relative(ROOT, repoPath)})`);
+  });
+}
+
 for (const d of [REPOS, RUNS, RESOLVE_AGENT_DIR]) fs.mkdirSync(d, { recursive: true });
+
+// ---- 分组（工作空间隔离）-------------------------------------------------
+// Libraries live under repos/<group>/<name> and runs/<group>/<name>/<ts>. The
+// top level of repos/ and runs/ holds GROUP dirs (not libs). 'default' always exists.
+const GROUP_RE = /^[A-Za-z0-9._-]{1,64}$/;
+const safeGroup = (g) => (g && GROUP_RE.test(g) ? g : 'default');
+const repoDir = (group, name) => path.join(REPOS, safeGroup(group), name);
+const runLibDir = (group, name) => path.join(RUNS, safeGroup(group), name);
+function listGroups() {
+  const set = new Set(['default']);
+  for (const base of [REPOS, RUNS]) {
+    try { for (const d of fs.readdirSync(base, { withFileTypes: true }))
+      if (d.isDirectory() && !d.name.startsWith('.')) set.add(d.name); } catch (_) {}
+  }
+  return ['default', ...[...set].filter((g) => g !== 'default').sort()];
+}
+function ensureGroupDirs(group) {
+  const g = safeGroup(group);
+  for (const base of [REPOS, RUNS]) fs.mkdirSync(path.join(base, g), { recursive: true });
+  return g;
+}
+// One-time migration: pre-grouping layout had repos/<name> & runs/<name> at top level.
+// Move them under default/ and re-key the tags file. Idempotent (skips once default/ exists).
+function migrateToGroups() {
+  for (const base of [REPOS, RUNS]) {
+    const def = path.join(base, 'default');
+    if (fs.existsSync(def)) continue;                 // already migrated for this base
+    let entries = [];
+    try { entries = fs.readdirSync(base, { withFileTypes: true }); } catch (_) { continue; }
+    const libs = entries.filter((d) => d.isDirectory() && !d.name.startsWith('.') && d.name !== 'default');
+    if (!libs.length) { fs.mkdirSync(def, { recursive: true }); continue; }
+    fs.mkdirSync(def, { recursive: true });
+    for (const d of libs) {
+      try { fs.renameSync(path.join(base, d.name), path.join(def, d.name)); } catch (_) {}
+    }
+    console.log(`  migrated ${libs.length} entries under ${path.basename(base)}/ → default/`);
+  }
+  // re-key tags { "<name>": [...] } → { "default/<name>": [...] } when not already group-keyed
+  try {
+    if (fs.existsSync(TAGS_FILE)) {
+      const t = JSON.parse(fs.readFileSync(TAGS_FILE, 'utf8'));
+      if (t && typeof t === 'object' && Object.keys(t).some((k) => !k.includes('/'))) {
+        const out = {};
+        for (const [k, v] of Object.entries(t)) out[k.includes('/') ? k : `default/${k}`] = v;
+        fs.writeFileSync(TAGS_FILE, JSON.stringify(out, null, 2));
+      }
+    }
+  } catch (_) {}
+}
+migrateToGroups();
 
 let settings = loadSettings();
 function loadSettings() {
-  try { return { ...DEFAULT_SETTINGS, ...JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')) }; }
+  let s;
+  try { s = { ...DEFAULT_SETTINGS, ...JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')) }; }
   catch { return { ...DEFAULT_SETTINGS }; }
+  // Auto-heal a stale persisted promptTemplate: if it exactly matches a known former
+  // default, upgrade it to the current DEFAULT_PROMPT and rewrite the file so the
+  // panel stops running the outdated prompt. User-customized templates never match.
+  if (typeof s.promptTemplate === 'string' &&
+      LEGACY_PROMPTS.some((p) => p.trim() === s.promptTemplate.trim())) {
+    s.promptTemplate = DEFAULT_PROMPT;
+    try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(s, null, 2)); } catch (_) {}
+    console.log('  settings: upgraded a stale promptTemplate to the current default');
+  }
+  return s;
 }
 function saveSettings(patch) {
   settings = { ...settings, ...patch };
@@ -138,11 +240,11 @@ class Job {
     setTimeout(() => { for (const r of this.clients) { try { r.end(); } catch (_) {} } }, 250);
   }
   pruneGit() {
-    const gitDir = path.join(REPOS, this.meta.name, '.git');
+    const gitDir = path.join(repoDir(this.meta.group, this.meta.name), '.git');
     try {
       if (fs.existsSync(gitDir)) {
         fs.rmSync(gitDir, { recursive: true, force: true });
-        this.log('stdout', `[prune] 已删除 repos/${this.meta.name}/.git 以回收磁盘`);
+        this.log('stdout', `[prune] 已删除 ${path.relative(ROOT, gitDir)} 以回收磁盘`);
       }
     } catch (e) { this.log('stderr', `[prune] 删除 .git 失败：${e.message}`); }
   }
@@ -237,13 +339,15 @@ function extractGitUrl(...texts) {
   }
   return null;
 }
-function listRepos() {
-  return fs.readdirSync(REPOS, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
-    .map((d) => d.name).sort();
+function listRepos(group) {
+  try {
+    return fs.readdirSync(path.join(REPOS, safeGroup(group)), { withFileTypes: true })
+      .filter((d) => d.isDirectory() && !d.name.startsWith('.'))
+      .map((d) => d.name).sort();
+  } catch { return []; }
 }
-function runsForLib(name) {
-  const libDir = path.join(RUNS, name);
+function runsForLib(name, group) {
+  const libDir = runLibDir(group, name);
   if (!fs.existsSync(libDir) || !fs.statSync(libDir).isDirectory()) return [];
   const out = [];
   for (const ts of fs.readdirSync(libDir)) {
@@ -259,15 +363,16 @@ function runsForLib(name) {
   }
   return out.sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
 }
-function activeJobFor(name) {
+function activeJobFor(name, group) {
+  const g = safeGroup(group);
   for (const j of jobs.values())
-    if (j.meta.name === name && (j.status === 'running' || j.status === 'queued'))
+    if (j.meta.name === name && safeGroup(j.meta.group) === g && (j.status === 'running' || j.status === 'queued'))
       return { id: j.id, type: j.type, status: j.status };
   return null;
 }
-function reportSummary(name, run) {
+function reportSummary(name, run, group) {
   try {
-    const r = JSON.parse(fs.readFileSync(path.join(RUNS, name, run, 'report.json'), 'utf8'));
+    const r = JSON.parse(fs.readFileSync(path.join(runLibDir(group, name), run, 'report.json'), 'utf8'));
     return {
       oneLiner: (r.library && r.library.one_liner) || (r.function_summary && r.function_summary.summary) || '',
       primary: r.languages && r.languages.primary,
@@ -289,23 +394,56 @@ function runIdToMs(ts) {
 function birthtimeMs(p) {
   try { const s = fs.statSync(p); return s.birthtimeMs || s.ctimeMs || null; } catch { return null; }
 }
-function listLibraries() {
-  const repos = new Set(listRepos());
+// ---- per-library 来源标签 (主软件=primary / 被动依赖=passive) -----------------
+// Persisted in .panel-library-tags.json as { "<lib>": ["primary","passive"], ... }.
+// A lib can hold both; writes are union (addLibTag) so manual-clone + recursion compose.
+const TAG_VALUES = ['primary', 'passive'];
+function loadTags() {
+  try { const t = JSON.parse(fs.readFileSync(TAGS_FILE, 'utf8')); return t && typeof t === 'object' ? t : {}; }
+  catch { return {}; }
+}
+function saveTags(tags) {
+  try { fs.writeFileSync(TAGS_FILE, JSON.stringify(tags, null, 2)); } catch (_) {}
+}
+const tagKey = (group, name) => `${safeGroup(group)}/${name}`;
+function addLibTag(name, group, tag) {
+  if (!name || !TAG_VALUES.includes(tag)) return;
+  const tags = loadTags();
+  const k = tagKey(group, name);
+  const set = new Set(tags[k] || []);
+  set.add(tag);
+  tags[k] = [...set];
+  saveTags(tags);
+}
+function setLibTags(name, group, list) {
+  const tags = loadTags();
+  const k = tagKey(group, name);
+  const clean = [...new Set((Array.isArray(list) ? list : []).filter((t) => TAG_VALUES.includes(t)))];
+  if (clean.length) tags[k] = clean; else delete tags[k];
+  saveTags(tags);
+  return clean;
+}
+
+function listLibraries(group) {
+  const g = safeGroup(group);
+  const repos = new Set(listRepos(g));
   const names = new Set([...repos]);
-  if (fs.existsSync(RUNS))
-    for (const n of fs.readdirSync(RUNS))
-      try { if (fs.statSync(path.join(RUNS, n)).isDirectory()) names.add(n); } catch (_) {}
+  const runsBase = path.join(RUNS, g);
+  if (fs.existsSync(runsBase))
+    for (const n of fs.readdirSync(runsBase))
+      try { if (fs.statSync(path.join(runsBase, n)).isDirectory()) names.add(n); } catch (_) {}
+  const allTags = loadTags();
   return [...names].sort().map((name) => {
-    const runs = runsForLib(name);
+    const runs = runsForLib(name, g);
     const latest = runs[0] || null;
     const analyzedAt = latest ? (Date.parse(latest.endedAt || latest.startedAt) || runIdToMs(latest.run)) : null;
-    const addedAt = (repos.has(name) ? birthtimeMs(path.join(REPOS, name)) : null)
-      || birthtimeMs(path.join(RUNS, name));
+    const addedAt = (repos.has(name) ? birthtimeMs(repoDir(g, name)) : null)
+      || birthtimeMs(runLibDir(g, name));
     return {
-      name, cloned: repos.has(name), runCount: runs.length,
-      latest, active: activeJobFor(name),
-      analyzedAt: analyzedAt || null, addedAt,
-      summary: latest && latest.reportAvailable ? reportSummary(name, latest.run) : null,
+      name, group: g, cloned: repos.has(name), runCount: runs.length,
+      latest, active: activeJobFor(name, g),
+      analyzedAt: analyzedAt || null, addedAt, tags: allTags[tagKey(g, name)] || [],
+      summary: latest && latest.reportAvailable ? reportSummary(name, latest.run, g) : null,
     };
   });
 }
@@ -325,18 +463,19 @@ function ecoNorm(s) {
   if (/^(dotnet|net|csharp|nuget)$/.test(e)) return 'dotnet';
   return e;
 }
-function latestReport(name) {
-  const latest = runsForLib(name).find((r) => r.reportAvailable);
+function latestReport(name, group) {
+  const g = safeGroup(group);
+  const latest = runsForLib(name, g).find((r) => r.reportAvailable);
   if (!latest) return null;
-  try { return JSON.parse(fs.readFileSync(path.join(RUNS, name, latest.run, 'report.json'), 'utf8')); }
+  try { return JSON.parse(fs.readFileSync(path.join(runLibDir(g, name), latest.run, 'report.json'), 'utf8')); }
   catch { return null; }
 }
 // Index analyzed libraries by `ecosystem + ':' + normalized(name)`, preferring the
 // report's package_name over the repo dir name. Keys that resolve to >1 library
 // are flagged ambiguous (we won't auto-link them).
-function buildLibIndex(getRep) {
+function buildLibIndex(getRep, group) {
   const index = new Map();
-  for (const lib of listLibraries()) {
+  for (const lib of listLibraries(group)) {
     if (!lib.latest || !lib.latest.reportAvailable) continue;
     const rep = getRep(lib.name);
     if (!rep) continue;
@@ -354,14 +493,14 @@ function buildLibIndex(getRep) {
 // Companion to buildLibIndex keyed by the analyzed library's REPO identity, so a
 // dependency can be matched by its source-URL repo name even when its declared
 // `name` differs (e.g. rdkit's dep "AvalonTools" == analyzed repo "ava-formake").
-function buildLibUrlIndex(getRep) {
+function buildLibUrlIndex(getRep, group) {
   const index = new Map();
   const add = (key, libName) => {
     const cur = index.get(key);
     if (!cur) index.set(key, { libName, ambiguous: false });
     else if (cur.libName !== libName) cur.ambiguous = true;
   };
-  for (const lib of listLibraries()) {
+  for (const lib of listLibraries(group)) {
     if (!lib.latest || !lib.latest.reportAvailable) continue;
     const rep = getRep(lib.name);
     if (!rep) continue;
@@ -383,11 +522,12 @@ function resolveDepLib(d, byName, byRepo) {
   if (url) hit = byRepo.get(eco + ':' + normName(repoNameFromUrl(url)));
   return hit;
 }
-function buildDepTree(rootName, maxDepth) {
+function buildDepTree(rootName, maxDepth, group) {
+  const g = safeGroup(group);
   const repCache = new Map();
-  const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
-  const index = buildLibIndex(getRep);
-  const urlIndex = buildLibUrlIndex(getRep);
+  const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n, g)); return repCache.get(n); };
+  const index = buildLibIndex(getRep, g);
+  const urlIndex = buildLibUrlIndex(getRep, g);
   const seen = new Set([rootName]);
   const expand = (libName, depth) => {
     const rep = getRep(libName);
@@ -424,17 +564,107 @@ function derivePortingClass(report) {
   if (ha.feasibility === 'infeasible') return 'infeasible';
   const unadaptable = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
   const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
+  // Prefer the structured closed signal blockers[].adaptability over open-vocab category regex.
+  const hasStructured = blk.some((b) => b.adaptability);
+  if (unadaptable.length || blk.some((b) => b.adaptability === 'unadaptable')) return 'needs_adaptation_partial';
+  if (blk.some((b) => b.severity === 'blocker' || b.adaptability === 'partial')) return 'needs_adaptation_full';
   const cats = blk.map((b) => String(b.category || '').toLowerCase());
-  const hasBlocker = blk.some((b) => b.severity === 'blocker');
-  const platformish = cats.some((c) => PLATFORM_BLOCKER_RE.test(c));
-  if (unadaptable.length) return 'needs_adaptation_partial';     // some APIs cannot be adapted
-  if (hasBlocker || platformish) return 'needs_adaptation_full'; // needs work but nothing flagged unadaptable
-  const path = String(ha.recommended_path || '').toLowerCase();
   const native = cats.some((c) => /native_dependency|ffi|toolchain|posix/.test(c));
+  // Legacy fallback: open-vocab category regex, only when no structured adaptability is present.
+  if (!hasStructured && cats.some((c) => PLATFORM_BLOCKER_RE.test(c))) return 'needs_adaptation_full';
+  const path = String(ha.recommended_path || '').toLowerCase();
   if (/run_on_ported_runtime/.test(path) && !native) return 'no_adaptation';
   if (native) return 'recompile_only';
   // pure script, no native work, no blockers → nothing to adapt
   return 'no_adaptation';
+}
+
+// ---- difficulty level (5-tier) + effort person-days -----------------------
+// effort.level is DERIVED (not an independent model axis) from porting_class (floor)
+// × person_days (magnitude bucket), take-higher — keeps it self-consistent with the
+// porting class while adding the "how much" the class alone can't express, and the
+// numeric person_days aggregates up the dep tree.
+const LEVEL_RANK = { very_low: 0, low: 1, medium: 2, high: 3, very_high: 4 };
+const RANK_LEVEL = ['very_low', 'low', 'medium', 'high', 'very_high'];
+const CLASS_LEVEL_FLOOR = { no_adaptation: 0, recompile_only: 1, needs_adaptation_full: 2,
+  needs_adaptation: 3, needs_adaptation_partial: 3, infeasible: 4 };
+function daysBucket(daysHi) {            // person-days (upper bound) → level rank
+  const d = Number(daysHi);
+  if (!(d > 2)) return 0;
+  if (d <= 5) return 1;
+  if (d <= 15) return 2;
+  if (d <= 40) return 3;
+  return 4;
+}
+function deriveDifficultyLevel(portingClass, personDaysHi) {
+  if (!portingClass) return null;
+  const floor = portingClass in CLASS_LEVEL_FLOOR ? CLASS_LEVEL_FLOOR[portingClass] : 0;
+  return RANK_LEVEL[Math.max(floor, daysBucket(personDaysHi))];
+}
+// person-days [lo,hi] for a dim-9 block, deriving from legacy XS..XL / difficulty when absent.
+const TSHIRT_DAYS = { XS: [0, 2], S: [2, 5], M: [5, 15], L: [15, 40], XL: [40, 80] };
+const DIFF_DAYS = { low: [0, 5], medium: [5, 15], high: [15, 40], very_high: [40, 80] };
+function effortDays(ha) {
+  if (!ha) return null;
+  const e = ha.effort;
+  if (e && Array.isArray(e.person_days) && e.person_days.length === 2) {
+    const lo = Number(e.person_days[0]), hi = Number(e.person_days[1]);
+    if (Number.isFinite(lo) && Number.isFinite(hi)) return [lo, hi];
+  }
+  if (ha.effort_estimate && TSHIRT_DAYS[ha.effort_estimate]) return TSHIRT_DAYS[ha.effort_estimate].slice();
+  if (ha.overall_difficulty && DIFF_DAYS[ha.overall_difficulty]) return DIFF_DAYS[ha.overall_difficulty].slice();
+  return null;
+}
+// confidence ordinal for min-propagation up the tree.
+const CONF_RANK = { low: 0, medium: 1, high: 2 };
+const RANK_CONF = ['low', 'medium', 'high'];
+const FEAS_FOR_CLASS = { no_adaptation: 'feasible', recompile_only: 'feasible_with_effort',
+  needs_adaptation_full: 'feasible_with_effort', needs_adaptation: 'hard',
+  needs_adaptation_partial: 'hard', infeasible: 'infeasible' };
+
+// Serve-time normalize (mutates report.harmony_adaptation): fill the derived effort.level,
+// person_days (from legacy if missing), feasibility consistency, and stable ids — so 存量
+// reports gain the new structured fields without a re-run.
+function normalizeHarmony(report) {
+  const ha = report && report.harmony_adaptation;
+  if (!ha || typeof ha !== 'object') return report;
+  const cls = derivePortingClass(report);
+  if (cls && !ha.porting_class) ha.porting_class = cls;
+  if (cls && !ha.feasibility) ha.feasibility = FEAS_FOR_CLASS[cls] || null;
+  const days = effortDays(ha);
+  ha.effort = ha.effort && typeof ha.effort === 'object' ? ha.effort : {};
+  if (days && !(Array.isArray(ha.effort.person_days) && ha.effort.person_days.length === 2))
+    ha.effort.person_days = days;
+  ha.effort.level = deriveDifficultyLevel(cls, days ? days[1] : 0);   // always server-derived
+  const tag = (arr, p) => Array.isArray(arr) && arr.forEach((it, i) => { if (it && typeof it === 'object' && !it.id) it.id = `${p}:${i + 1}`; });
+  tag(ha.target_assumptions, 'ta'); tag(ha.unadaptable_apis, 'ua'); tag(ha.blockers, 'bk');
+  return report;
+}
+
+// Deterministic consistency check — returns 中文 warnings for the panel.
+function validateHarmony(report) {
+  const ha = report && report.harmony_adaptation;
+  if (!ha || typeof ha !== 'object') return [];
+  const w = [];
+  const cls = ha.porting_class || derivePortingClass(report);
+  if (cls && ha.feasibility && FEAS_FOR_CLASS[cls] && ha.feasibility !== FEAS_FOR_CLASS[cls])
+    w.push(`feasibility(${ha.feasibility}) 与 porting_class(${cls}) 不自洽，应为 ${FEAS_FOR_CLASS[cls]}`);
+  const ua = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
+  const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
+  const ta = Array.isArray(ha.target_assumptions) ? ha.target_assumptions : [];
+  if (ua.length && !['needs_adaptation_partial', 'needs_adaptation', 'infeasible'].includes(cls))
+    w.push(`unadaptable_apis 非空但 porting_class=${cls}（应为 needs_adaptation_partial 或 infeasible）`);
+  const ids = new Set([...ta, ...ua, ...blk].map((x) => x && x.id).filter(Boolean));
+  for (const b of blk) for (const r of [...(b.caused_by || []), ...(b.manifests_as || [])])
+    if (!ids.has(r)) w.push(`blocker ${b.id || b.issue || ''} 的引用 ${r} 不存在（悬空引用）`);
+  for (const u of ua) for (const r of (u.caused_by || [])) if (!ids.has(r)) w.push(`unadaptable_api ${u.id || u.api || ''} 的 caused_by ${r} 不存在`);
+  for (const a of ta) if (a && a.required && a.target_status === 'unavailable') {
+    const refed = [...blk, ...ua].some((x) => (x.caused_by || []).includes(a.id));
+    if (!refed) w.push(`target_assumption ${a.id || a.capability || ''} 为 required+unavailable 但无对应 blocker/unadaptable_api`);
+  }
+  if (ta.some((a) => a && a.required && a.target_status === 'unknown') && ha.confidence === 'high')
+    w.push('存在 required 且 unknown 的目标假设，confidence 不应为 high');
+  return w;
 }
 
 // ---- bottom-up adaptation rollup (serve-time, API-granular) ----------------
@@ -452,6 +682,7 @@ function symKeys(s) {
   const tail = low.split(/::|->|\./).pop();
   return tail && tail !== low ? [low, tail] : [low];
 }
+const addDays = (a, b) => !a ? (b ? b.slice() : null) : !b ? a.slice() : [a[0] + b[0], a[1] + b[1]];
 
 // Compute each node's EFFECTIVE adaptation class from its own class + its analyzed
 // children's, where a child's un-adaptable APIs only block the parent if the parent
@@ -467,24 +698,28 @@ function rollupAdaptation(topo) {
     : (n.selfClass || 'no_adaptation');
   const state = new Map();  // 0/undef unvisited, 1 visiting, 2 done
   const memo = new Map();
+  // a node's own person-days for rollup (harmonized ⇒ already ported ⇒ 0 work)
+  const selfDaysOf = (n) => n.harmonyAdapted ? [0, 0] : (n.effortDays || null);
+  const selfConfOf = (n) => n.harmonyAdapted ? 2 : (n.confidence in CONF_RANK ? CONF_RANK[n.confidence] : 1);
   const eff = (id) => {
     const n = byId.get(id);
     if (!n) return { rank: null, uncertain: false };
     if (state.get(id) === 2) return memo.get(id);
     const self = selfClassOf(n);
     if (state.get(id) === 1)   // cycle: use this node's own class only, no deeper recursion
-      return self === 'unanalyzed' ? { rank: null, uncertain: true } : { rank: rankOf(self), uncertain: false };
+      return self === 'unanalyzed' ? { rank: null, uncertain: true } : { rank: rankOf(self), uncertain: false, days: selfDaysOf(n), confRank: selfConfOf(n) };
     state.set(id, 1);
     // harmonized ⇒ official OHOS build already subsumes its deps → sealed leaf, no roll-up
-    if (n.harmonyAdapted) { const r = { rank: 0, uncertain: false, blockingChildren: [] }; state.set(id, 2); memo.set(id, r); return r; }
+    if (n.harmonyAdapted) { const r = { rank: 0, uncertain: false, blockingChildren: [], days: [0, 0], confRank: 2 }; state.set(id, 2); memo.set(id, r); return r; }
     if (self === 'unanalyzed') { const r = { rank: null, uncertain: true }; state.set(id, 2); memo.set(id, r); return r; }
     let worst = rankOf(self), uncertain = false;
+    let days = selfDaysOf(n), confRank = selfConfOf(n);
     const blockingChildren = [];
     for (const e of (out.get(id) || [])) {
       const child = byId.get(e.target);
       if (!child) continue;
       const ce = eff(e.target);
-      if (ce.rank == null) { uncertain = true; continue; }   // child unknown → can't lower, marks uncertain
+      if (ce.rank == null) { uncertain = true; confRank = Math.min(confRank, 1); continue; }   // child unknown → can't lower, marks uncertain
       uncertain = uncertain || ce.uncertain;
       // child's un-adaptable surface (public entry preferred, api fallback)
       const unAdaptKeys = new Set();
@@ -505,17 +740,24 @@ function rollupAdaptation(topo) {
         childClass: classOfRank(ce.rank), contribClass: classOfRank(contrib),
         viaSymbols: hit, basis: hit.length ? 'used_api' : (used.length ? 'used_other' : 'scope') });
       if (contrib > worst) worst = contrib;
+      // accumulate the child's subtree effort + confidence when it contributes porting work
+      if (contrib > 0) { days = addDays(days, ce.days); confRank = Math.min(confRank, ce.confRank == null ? 1 : ce.confRank); }
     }
-    const r = { rank: worst, uncertain, blockingChildren };
+    const r = { rank: worst, uncertain, blockingChildren, days, confRank };
     state.set(id, 2); memo.set(id, r);
     return r;
   };
   for (const n of topo.nodes) {
     const r = eff(n.id);
-    if (!n.analyzed && !n.harmonyAdapted) { n.rollupClass = null; n.rollupUncertain = false; continue; }
+    // self-view difficulty level (from the node's own class + own effort)
+    n.level = deriveDifficultyLevel(n.selfClass, n.effortDays ? n.effortDays[1] : 0);
+    if (!n.analyzed && !n.harmonyAdapted) { n.rollupClass = null; n.rollupUncertain = false; n.rollupEffort = null; n.rollupConfidence = null; n.rollupLevel = null; continue; }
     n.rollupClass = r.rank == null ? null : classOfRank(r.rank);
     n.rollupUncertain = !!r.uncertain;
     n.blockingChildren = r.blockingChildren || [];
+    n.rollupEffort = r.days || null;
+    n.rollupConfidence = r.confRank == null ? null : RANK_CONF[r.confRank];
+    n.rollupLevel = deriveDifficultyLevel(n.rollupClass, r.days ? r.days[1] : 0);
   }
   return topo;
 }
@@ -531,11 +773,12 @@ function isRuntimeDep(d) {
 // Build a runtime-only transitive dependency DAG (nodes + edges) rooted at an analyzed
 // library, each node carrying its HarmonyOS status (harmonized / 4 porting classes /
 // unanalyzed). harmony_adapted is filled per-node from the shared mirror cache later.
-function buildDepTopology(rootName, maxDepth = 6, maxNodes = 300) {
+function buildDepTopology(rootName, group, maxDepth = 6, maxNodes = 300) {
+  const g = safeGroup(group);
   const repCache = new Map();
-  const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
-  const index = buildLibIndex(getRep);
-  const urlIndex = buildLibUrlIndex(getRep);
+  const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n, g)); return repCache.get(n); };
+  const index = buildLibIndex(getRep, g);
+  const urlIndex = buildLibUrlIndex(getRep, g);
   const nodes = new Map();   // id -> node
   const edges = [];
   const edgeSeen = new Set();
@@ -580,24 +823,28 @@ function buildDepTopology(rootName, maxDepth = 6, maxNodes = 300) {
       node.feasibility = ha.feasibility || null;
       node.summary = ha.summary || '';
       node.unadaptableApis = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
+      node.effortDays = effortDays(ha);
+      node.confidence = ha.confidence || null;
     }
   }
   return { root: rootName, nodes: [...nodes.values()], edges };
 }
 
 // ---------------------------------------------------------------- clone
-function startClone({ url: rawUrl, ref, overwrite }) {
+function startClone({ url: rawUrl, ref, overwrite, tag, group }) {
   const gitUrl = normalizeCloneUrl(rawUrl);
   const name = repoNameFromUrl(gitUrl);
-  const dest = path.join(REPOS, name);
+  const g = ensureGroupDirs(group);
+  const dest = repoDir(g, name);
   if (fs.existsSync(dest)) {
-    if (!overwrite) throw new Error(`repos/${name} already exists (enable overwrite to re-clone)`);
+    if (!overwrite) throw new Error(`repos/${g}/${name} already exists (enable overwrite to re-clone)`);
     fs.rmSync(dest, { recursive: true, force: true });
   }
   const args = ['clone', '--progress', '--depth', '1'];
   if (ref) args.push('--branch', ref);
   args.push(gitUrl, dest);
-  const job = new Job('clone', { name, argv: ['git', ...args], url: gitUrl });
+  // 来源标签：默认主软件；递归/待分析依赖传 'passive'。end 回调里克隆成功才落库。
+  const job = new Job('clone', { name, group: g, argv: ['git', ...args], url: gitUrl, tag: TAG_VALUES.includes(tag) ? tag : 'primary' });
   job.emit('input', { argv: job.meta.argv });
   // stdin 'ignore' (EOF): opencode/tools block on an open stdin pipe.
   // GIT_TERMINAL_PROMPT=0: a private/auth-required URL fails fast instead of hanging
@@ -613,23 +860,28 @@ let runningAnalyze = 0;
 
 function createAnalyzeJob(opts) {
   const name = opts.name;
-  if (!name || !fs.existsSync(path.join(REPOS, name)))
-    throw new Error(`repo not found: repos/${name} (clone it first)`);
+  const group = safeGroup(opts.group);
+  const repoPathAbs = repoDir(group, name);
+  if (!name || !fs.existsSync(repoPathAbs))
+    throw new Error(`repo not found: ${path.relative(ROOT, repoPathAbs)} (clone it first)`);
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
-  const runDir = path.join(RUNS, name, ts);
+  const runDir = path.join(runLibDir(group, name), ts);
   fs.mkdirSync(runDir, { recursive: true });
   const reportPath = path.join(runDir, 'report.json');
+  const repoRel = path.relative(ROOT, repoPathAbs);   // repos/<group>/<name>
 
   const codegraphOn = codegraphAvailable && (opts.useCodegraph ?? settings.useCodegraph);
+  // Index is pre-built by the server (at clone, and as a safety-net below) — tell the
+  // agent to USE it rather than re-build it.
+  if (codegraphOn) ensureCodegraphIndex(repoPathAbs);
   const codegraphHint = codegraphOn
-    ? `codegraph is installed and enabled: first build a structural index with ` +
-      `\`codegraph index repos/${name}\`, then prefer ` +
-      `\`codegraph context/query/callers -p repos/${name} -j\` for the function-summary ` +
-      `and native/platform-API dimensions (fall back to grep/Read if any codegraph call fails). `
+    ? `codegraph is installed and the structural index for ${repoRel} is pre-built by ` +
+      `\`codegraph init\`: prefer \`codegraph context/query/callers -p ${repoRel} -j\` for the ` +
+      `function-summary and native/platform-API dimensions (fall back to grep/Read if any codegraph call fails). `
     : '';
   let prompt = (opts.promptTemplate || settings.promptTemplate || DEFAULT_PROMPT)
     .replaceAll('{codegraphHint}', codegraphHint)
-    .replaceAll('{repoPath}', `repos/${name}`)
+    .replaceAll('{repoPath}', repoRel)
     .replaceAll('{agentFile}', AGENT_FILE)
     .replaceAll('{reportPath}', path.relative(ROOT, reportPath))
     .replaceAll('{metricsPath}', path.relative(ROOT, path.join(runDir, 'metrics.json')))
@@ -641,6 +893,10 @@ function createAnalyzeJob(opts) {
   // sub-agent (task tool) sessions, so they black-hole the live log. Keep work inline.
   if (!/sub-agent|`task` tool/.test(prompt))
     prompt = prompt + ' Do NOT spawn sub-agents or use the `task` tool; do all work yourself in this single session.';
+  // Robust to stale/custom templates that predate "库 vs 应用" support: if the prompt
+  // still frames the target as only a library, remind that it may be an application.
+  if (/third-party library/i.test(prompt) && !/library\.kind|application/i.test(prompt))
+    prompt = prompt + ' 注意：被分析对象可能是库或应用——请先判定 library.kind（library/application/...）再按对应口径分析。';
 
   const base = (opts.opencodeCmd || settings.opencodeCmd).trim().split(/\s+/);
   const model = opts.model || settings.model;
@@ -652,7 +908,7 @@ function createAnalyzeJob(opts) {
   if (opts.printLogs ?? settings.printLogs) argv.push('--print-logs');
   argv.push(prompt);
 
-  const job = new Job('analyze', { name, model, runDir, reportPath, argv, prompt,
+  const job = new Job('analyze', { name, group, model, runDir, reportPath, argv, prompt,
     recursionSession: opts.recursionSession || null });
   job.setStatus('queued');
   analyzeQueue.push(job);
@@ -693,6 +949,7 @@ class RecursionSession {
   constructor(root, opts = {}) {
     this.id = crypto.randomBytes(6).toString('hex');
     this.root = root;
+    this.group = safeGroup(opts.group);       // 递归始终在根软件所在分组内进行
     this.opts = {
       maxDepth: Math.min(Math.max(parseInt(opts.maxDepth, 10) || 6, 1), 8),
       maxNodes: Math.min(Math.max(parseInt(opts.maxNodes, 10) || 150, 1), 500),
@@ -753,9 +1010,9 @@ class RecursionSession {
     }
     const repoName = dec.repoName;
     // already analyzed?
-    if (latestReport(repoName)) return this._set(dec, 'analyzed', '', repoName);
+    if (latestReport(repoName, this.group)) return this._set(dec, 'analyzed', '', repoName);
 
-    const cloned = repos.has(repoName) || fs.existsSync(path.join(REPOS, repoName));
+    const cloned = repos.has(repoName) || fs.existsSync(repoDir(this.group, repoName));
     // a clone/analyze job we launched may have just ended — react to its outcome
     if (dec.state === 'analyzing') {
       const j = jobs.get(dec.jobId);
@@ -774,12 +1031,12 @@ class RecursionSession {
       if (this._inflightClones() >= CLONE_MAX) return;            // slot busy → retry next tick
       if (this._workCount() >= this.opts.maxNodes) return this._set(dec, 'capped', '达到节点上限');
       try {
-        const job = startClone({ url: dec.url });
+        const job = startClone({ url: dec.url, tag: 'passive', group: this.group });
         job.meta.recursionSession = this.id;
         dec.jobId = job.id; dec.cloneAttempts = (dec.cloneAttempts || 0) + 1;
         this._set(dec, 'cloning', '克隆中');
       } catch (e) {
-        if (!fs.existsSync(path.join(REPOS, repoName))) this._set(dec, 'failed', '克隆出错: ' + e.message);
+        if (!fs.existsSync(repoDir(this.group, repoName))) this._set(dec, 'failed', '克隆出错: ' + e.message);
       }
       return;
     }
@@ -787,7 +1044,7 @@ class RecursionSession {
     if ((dec.analyzeAttempts || 0) >= 1) return this._set(dec, 'failed', '分析失败');
     if (this._workCount() >= this.opts.maxNodes) return this._set(dec, 'capped', '达到节点上限');
     try {
-      const job = createAnalyzeJob({ name: repoName, recursionSession: this.id });
+      const job = createAnalyzeJob({ name: repoName, group: this.group, recursionSession: this.id });
       dec.jobId = job.id; dec.analyzeAttempts = (dec.analyzeAttempts || 0) + 1;
       this._set(dec, 'analyzing', '分析中');
     } catch (e) { this._set(dec, 'failed', '分析启动失败: ' + e.message); }
@@ -798,10 +1055,10 @@ class RecursionSession {
     if (this.status !== 'running') return;
     this._changed = false;
     const repCache = new Map();
-    const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
-    const index = buildLibIndex(getRep);
-    const urlIndex = buildLibUrlIndex(getRep);
-    const repos = new Set(listRepos());
+    const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n, this.group)); return repCache.get(n); };
+    const index = buildLibIndex(getRep, this.group);
+    const urlIndex = buildLibUrlIndex(getRep, this.group);
+    const repos = new Set(listRepos(this.group));
 
     // BFS over analyzed reports → collect unanalyzed runtime deps + their depth.
     const seen = new Set([this.root]);
@@ -840,7 +1097,7 @@ class RecursionSession {
     // reconcile in-flight decisions that completed but left the frontier
     for (const dec of this.decisions.values()) {
       if (TERMINAL.has(dec.state)) continue;
-      if (dec.repoName && latestReport(dec.repoName)) this._set(dec, 'analyzed', '', dec.repoName);
+      if (dec.repoName && latestReport(dec.repoName, this.group)) this._set(dec, 'analyzed', '', dec.repoName);
     }
     // done when nothing is active anymore
     if (![...this.decisions.values()].some((d) => ACTIVE.has(d.state))) {
@@ -858,7 +1115,7 @@ class RecursionSession {
   }
   snapshot() {
     return {
-      id: this.id, root: this.root, status: this.status, opts: this.opts,
+      id: this.id, root: this.root, group: this.group, status: this.status, opts: this.opts,
       createdAt: this.createdAt, counts: this._counts(),
       decisions: [...this.decisions.values()]
         .sort((a, b) => a.depth - b.depth || a.name.localeCompare(b.name))
@@ -892,13 +1149,21 @@ function startRecursionSession(root, opts = {}) {
 // Level-trigger: re-tick every running session after any job ends, and optionally
 // auto-start recursion after a user-initiated analyze (one not already part of a session).
 jobEndListeners.add((job) => {
+  // 克隆成功 → 落来源标签（union，脏失败不留标签）+ 预建 codegraph 索引（你建议的"clone 之后执行"）
+  if (job.type === 'clone' && job.status === 'done' && job.meta.name) {
+    const rp = repoDir(job.meta.group, job.meta.name);
+    if (fs.existsSync(rp)) {
+      addLibTag(job.meta.name, job.meta.group, job.meta.tag || 'primary');
+      ensureCodegraphIndex(rp, (s) => { try { job.log('stdout', `[codegraph] ${s}`); } catch (_) {} });
+    }
+  }
   for (const s of recursionSessions.values()) if (s.status === 'running') s.tick();
   if (job.type === 'analyze' && job.status === 'done' && !job.meta.recursionSession
       && settings.recursiveAfterAnalyze) {
-    const root = job.meta.name;
-    if (latestReport(root)
-        && ![...recursionSessions.values()].some((s) => s.root === root && s.status === 'running'))
-      startRecursionSession(root);
+    const root = job.meta.name, group = safeGroup(job.meta.group);
+    if (latestReport(root, group)
+        && ![...recursionSessions.values()].some((s) => s.root === root && safeGroup(s.group) === group && s.status === 'running'))
+      startRecursionSession(root, { group });
   }
 });
 
@@ -916,17 +1181,18 @@ function lsRemoteOk(url, cb) {
 function createAgentResolveJob(ctx) {
   const eco = ecoNorm(ctx.ecosystem);
   const name = String(ctx.name || '').trim();
+  const group = safeGroup(ctx.group);
   if (!name) throw new Error('name required');
-  const job = new Job('resolve', { name, ecosystem: eco });
+  const job = new Job('resolve', { name, ecosystem: eco, group });
   job.meta.outFile = path.join(RESOLVE_AGENT_DIR, job.id + '.json');
   job.meta.resolveDone = false;
   // dependent checkouts that actually exist (the agent greps them for the integration point)
-  const dependents = (ctx.dependents || []).filter((n) => n && fs.existsSync(path.join(REPOS, n)));
+  const dependents = (ctx.dependents || []).filter((n) => n && fs.existsSync(repoDir(group, n)));
   const ctxLines = [
     `name: ${name}`, `ecosystem: ${eco}`, `scope: ${ctx.scope || ''}`,
     `locality: ${ctx.locality || ''}`, `acquisition: ${ctx.acquisition || ''}`,
     `source: ${ctx.source || ''}`, `purpose: ${ctx.purpose || ''}`,
-    `dependent libraries (checkouts to grep): ${dependents.map((n) => 'repos/' + n).join(', ') || '(none cloned locally)'}`,
+    `dependent libraries (checkouts to grep): ${dependents.map((n) => path.relative(ROOT, repoDir(group, n))).join(', ') || '(none cloned locally)'}`,
   ].join('\n');
   const prompt =
     `Resolve the upstream source-repository URL of this third-party dependency. Follow the ` +
@@ -1028,15 +1294,26 @@ function serveStatic(req, res, pathname) {
 const server = http.createServer(async (req, res) => {
   const { pathname, query } = url.parse(req.url, true);
   try {
+    if (req.method === 'GET' && pathname === '/api/groups')
+      return send(res, 200, { groups: listGroups() });
+    if (req.method === 'POST' && pathname === '/api/groups') {
+      const body = await readBody(req);
+      const g = String(body.group || '').trim();
+      if (!GROUP_RE.test(g)) return send(res, 400, { error: '分组名仅允许字母/数字/._- 且不超过 64 字符' });
+      ensureGroupDirs(g);
+      return send(res, 200, { groups: listGroups(), created: g });
+    }
+
     if (req.method === 'GET' && pathname === '/api/libraries')
-      return send(res, 200, { libraries: listLibraries() });
+      return send(res, 200, { group: safeGroup(query.group), groups: listGroups(), libraries: listLibraries(query.group) });
 
     if (req.method === 'GET' && pathname === '/api/library') {
       const name = query.name;
-      if (!name || !fs.existsSync(path.join(RUNS, name)) && !fs.existsSync(path.join(REPOS, name)))
+      const g = safeGroup(query.group);
+      if (!name || !fs.existsSync(runLibDir(g, name)) && !fs.existsSync(repoDir(g, name)))
         return send(res, 404, { error: 'unknown library' });
-      return send(res, 200, { name, cloned: fs.existsSync(path.join(REPOS, name)),
-        runs: runsForLib(name), active: activeJobFor(name) });
+      return send(res, 200, { name, group: g, cloned: fs.existsSync(repoDir(g, name)),
+        runs: runsForLib(name, g), active: activeJobFor(name, g) });
     }
 
     if (req.method === 'GET' && pathname === '/api/jobs')
@@ -1063,11 +1340,17 @@ const server = http.createServer(async (req, res) => {
       const urls = body.urls || (body.url ? [body.url] : []);
       if (!urls.length) return send(res, 400, { error: 'url(s) required' });
       const out = urls.map((u) => {
-        try { const j = startClone({ url: u, ref: body.ref, overwrite: body.overwrite });
+        try { const j = startClone({ url: u, ref: body.ref, overwrite: body.overwrite, tag: body.tag, group: body.group });
           return { url: u, jobId: j.id, name: j.meta.name }; }
         catch (e) { return { url: u, error: String(e.message || e) }; }
       });
       return send(res, 200, { jobs: out });
+    }
+
+    if (req.method === 'POST' && pathname === '/api/library-tags') {
+      const body = await readBody(req);
+      if (!body.name) return send(res, 400, { error: 'name required' });
+      return send(res, 200, { name: body.name, group: safeGroup(body.group), tags: setLibTags(body.name, body.group, body.tags) });
     }
 
     if (req.method === 'POST' && pathname === '/api/analyze') {
@@ -1099,9 +1382,10 @@ const server = http.createServer(async (req, res) => {
       // Aggregate meta.observations across all libraries' latest reports (skill 反哺).
       const groups = new Map();   // key: dimension|field|kind|value -> {..., count, libs:Set}
       let total = 0;
-      for (const lib of listLibraries()) {
+      // 词表反哺跨所有分组聚合（与具体分组无关）
+      for (const grp of listGroups()) for (const lib of listLibraries(grp)) {
         if (!lib.latest || !lib.latest.reportAvailable) continue;
-        const rep = latestReport(lib.name);
+        const rep = latestReport(lib.name, grp);
         const obs = (rep && rep.meta && rep.meta.observations) || [];
         for (const o of obs) {
           total++;
@@ -1121,13 +1405,14 @@ const server = http.createServer(async (req, res) => {
       // Aggregate, across every analyzed library, the dependencies that are NOT
       // themselves an analyzed library — the "third-party libs depended on but not
       // yet analyzed". Reuses the same ecosystem+name index as the dep tree.
+      const pg = safeGroup(query.group);
       const repCache = new Map();
-      const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n)); return repCache.get(n); };
-      const index = buildLibIndex(getRep);
-      const urlIndex = buildLibUrlIndex(getRep);
-      const repos = new Set(listRepos());
+      const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n, pg)); return repCache.get(n); };
+      const index = buildLibIndex(getRep, pg);
+      const urlIndex = buildLibUrlIndex(getRep, pg);
+      const repos = new Set(listRepos(pg));
       const groups = new Map();   // key: eco:normname -> aggregated dep
-      for (const lib of listLibraries()) {
+      for (const lib of listLibraries(pg)) {
         if (!lib.latest || !lib.latest.reportAvailable) continue;
         const rep = getRep(lib.name);
         const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
@@ -1160,25 +1445,27 @@ const server = http.createServer(async (req, res) => {
           locality: g.locality, acquisition: g.acquisition,
           source: g.source, candidateUrl: g.candidateUrl, repoName,
           cloned: !!repoName && repos.has(repoName),
-          active: repoName ? activeJobFor(repoName) : null,
+          active: repoName ? activeJobFor(repoName, pg) : null,
         };
       }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-      return send(res, 200, { total: items.length, items });
+      return send(res, 200, { group: pg, total: items.length, items });
     }
 
     if (req.method === 'GET' && pathname === '/api/depgraph') {
       const name = query.name;
+      const g = safeGroup(query.group);
       if (!name) return send(res, 400, { error: 'name required' });
-      if (!latestReport(name)) return send(res, 404, { error: 'no report for library' });
+      if (!latestReport(name, g)) return send(res, 404, { error: 'no report for library' });
       const depth = Math.min(Math.max(parseInt(query.depth, 10) || 3, 1), 5);
-      return send(res, 200, { root: name, depth, tree: buildDepTree(name, depth) });
+      return send(res, 200, { root: name, group: g, depth, tree: buildDepTree(name, depth, g) });
     }
 
     if (req.method === 'GET' && pathname === '/api/dep-topology') {
       const name = query.name;
+      const g = safeGroup(query.group);
       if (!name) return send(res, 400, { error: 'name required' });
-      if (!latestReport(name)) return send(res, 404, { error: 'no report for library' });
-      const topo = buildDepTopology(name);
+      if (!latestReport(name, g)) return send(res, 404, { error: 'no report for library' });
+      const topo = buildDepTopology(name, g);
       // per-node 已鸿蒙化: query the OpenHarmony mirror in batch (per ecosystem) when enabled;
       // else fall back to the parent-stamped harmony_adapted flag.
       if (settings.enableHarmonyMirror) {
@@ -1213,11 +1500,12 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && pathname === '/api/recurse') {
       const body = await readBody(req);
       const name = body.name;
+      const g = safeGroup(body.group);
       if (!name) return send(res, 400, { error: 'name required' });
-      if (!latestReport(name)) return send(res, 404, { error: 'root library not analyzed yet' });
-      const existing = [...recursionSessions.values()].find((s) => s.root === name && s.status === 'running');
+      if (!latestReport(name, g)) return send(res, 404, { error: 'root library not analyzed yet' });
+      const existing = [...recursionSessions.values()].find((s) => s.root === name && safeGroup(s.group) === g && s.status === 'running');
       if (existing) return send(res, 200, { sessionId: existing.id, existing: true });
-      const s = startRecursionSession(name, body);
+      const s = startRecursionSession(name, { ...body, group: g });
       return send(res, 200, { sessionId: s.id });
     }
 
@@ -1250,14 +1538,22 @@ const server = http.createServer(async (req, res) => {
       }
       const sessions = [...recursionSessions.values()]
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-        .map((s) => ({ id: s.id, root: s.root, status: s.status, counts: s._counts(), createdAt: s.createdAt }));
+        .map((s) => ({ id: s.id, root: s.root, group: s.group, status: s.status, counts: s._counts(), createdAt: s.createdAt }));
       return send(res, 200, { sessions });
     }
 
     if (req.method === 'GET' && pathname === '/api/report') {
-      const file = path.join(RUNS, query.name || '', query.run || '', 'report.json');
+      const file = path.join(runLibDir(query.group, query.name || ''), query.run || '', 'report.json');
       if (!file.startsWith(RUNS) || !fs.existsSync(file)) return send(res, 404, { error: 'report not found' });
-      return send(res, 200, fs.readFileSync(file, 'utf8'));
+      let rep;
+      try { rep = JSON.parse(fs.readFileSync(file, 'utf8')); }
+      catch (_) { return send(res, 200, fs.readFileSync(file, 'utf8')); }   // malformed → raw passthrough
+      // serve-time: fill derived dim-9 fields (effort.level/person_days/ids/feasibility) and
+      // attach consistency warnings, so 存量 reports gain structured data without a re-run.
+      normalizeHarmony(rep);
+      const hw = validateHarmony(rep);
+      if (hw.length) rep.meta = { ...(rep.meta || {}), harmony_warnings: hw };
+      return send(res, 200, rep);
     }
 
     if (req.method === 'GET' && pathname === '/api/harmony-status') {
@@ -1320,8 +1616,9 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && pathname === '/api/export') {
+      const g = safeGroup(query.group);
       const tmp = path.join(os.tmpdir(), `pc-lib-export-${Date.now()}.xlsx`);
-      const args = [path.join('scripts', 'export_xlsx.py'), '--runs', RUNS, '--out', tmp];
+      const args = [path.join('scripts', 'export_xlsx.py'), '--runs', path.join(RUNS, g), '--out', tmp];
       if (query.names) args.push('--names', String(query.names));
       return execFile(isWindows ? 'python' : 'python3', args, { cwd: ROOT, shell: isWindows, timeout: 120000 }, (err, _o, stderr) => {
         if (err || !fs.existsSync(tmp)) {
@@ -1341,7 +1638,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && pathname === '/api/runlog') {
-      const file = path.join(RUNS, query.name || '', query.run || '', 'run.log.jsonl');
+      const file = path.join(runLibDir(query.group, query.name || ''), query.run || '', 'run.log.jsonl');
       if (!file.startsWith(RUNS) || !fs.existsSync(file)) return send(res, 404, { error: 'log not found' });
       return send(res, 200, fs.readFileSync(file, 'utf8'), { 'Content-Type': 'text/plain; charset=utf-8' });
     }
@@ -1353,7 +1650,13 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`PC 开源软件分析 control panel → http://localhost:${PORT}`);
-  console.log(`  project root: ${ROOT}  ·  max concurrent analyses: ${settings.maxConcurrent}`);
-});
+// Export pure dim-9 derivation helpers for unit testing; only listen when run directly.
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`PC 开源软件分析 control panel → http://localhost:${PORT}`);
+    console.log(`  project root: ${ROOT}  ·  max concurrent analyses: ${settings.maxConcurrent}`);
+  });
+} else {
+  module.exports = { derivePortingClass, deriveDifficultyLevel, effortDays, normalizeHarmony,
+    validateHarmony, rollupAdaptation, buildDepTopology };
+}

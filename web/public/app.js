@@ -5,6 +5,10 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const enc = encodeURIComponent;
 const JSONH = { 'Content-Type': 'application/json' };
 const api = (p, opts) => fetch(p, opts).then((r) => r.json());
+// 活动分组（工作空间隔离）。所有 group-scoped 的请求带上它。
+let activeGroup = localStorage.getItem('activeGroup') || 'default';
+const gq = () => 'group=' + enc(activeGroup);                 // for query strings
+const withGroup = (obj) => ({ ...obj, group: activeGroup });  // for POST bodies
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const num = (n) => (n == null ? 0 : n).toLocaleString();
 const fmtTime = (s) => { try { return new Date(s).toLocaleString('zh-CN', { hour12: false }); } catch { return s || ''; } };
@@ -19,6 +23,9 @@ const ECO_LABELS = {
   other: '其他库',
 };
 const statusZh = (s) => ({ running: '运行中', queued: '排队中', done: '完成', error: '失败', unknown: '未知' }[s] || s);
+// 来源标签 (主软件=primary / 被动依赖=passive)
+const TAG_LABELS = { primary: '主软件', passive: '被动依赖' };
+const TAG_CLS = { primary: 'tag-primary', passive: 'tag-passive' };
 // library.kind — what the analyzed subject is (library vs application vs ...)
 const KIND_LABELS = { library: '库', application: '应用', framework: '框架', tool: '工具',
   cli: '命令行', service: '服务', plugin: '插件', other: '其他' };
@@ -58,8 +65,15 @@ const FEAS_LABELS = { feasible: '可行', feasible_with_effort: '可行（需投
 const FEAS_CLS = { feasible: 'done', feasible_with_effort: 'running', hard: 'sev-major', infeasible: 'error' };
 const DIFF_LABELS = { low: '低', medium: '中', high: '高', very_high: '很高' };
 const DIFF_CLS = { low: 'done', medium: 'running', high: 'sev-major', very_high: 'error' };
+// effort.level — 难度等级（server 派生：porting_class 下限 × person_days 数量级）
+const LVL_LABELS = { very_low: '极低', low: '低', medium: '中', high: '高', very_high: '极高' };
+const LVL_CLS = { very_low: 'done', low: 'done', medium: 'running', high: 'sev-major', very_high: 'error' };
+const CONF_LABELS = { high: '高', medium: '中', low: '低' };
+const fmtDays = (pd) => Array.isArray(pd) && pd.length === 2 ? `${pd[0]}–${pd[1]} 人天` : '';
 const SEV_LABELS = { blocker: '阻塞', major: '主要', minor: '次要' };
 const SEV_CLS = { blocker: 'error', major: 'sev-major', minor: 'gray' };
+const ADAPT_LABELS = { adaptable: '可适配', partial: '部分可适配', unadaptable: '不可适配' };
+const ADAPT_CLS = { adaptable: 'done', partial: 'sev-major', unadaptable: 'error' };
 // target_assumptions[].target_status — HarmonyOS PC 目标能力是否满足
 const TGT_LABELS = { available: '已支持', partial: '部分支持', unavailable: '不支持', unknown: '未核实' };
 const TGT_CLS = { available: 'done', partial: 'running', unavailable: 'error', unknown: 'gray' };
@@ -158,7 +172,8 @@ window.addEventListener('hashchange', navigate);
 let libsCache = [];
 const selected = new Set();
 let page = 1;
-const PAGE_SIZE = 15;
+const PAGE_SIZES = [10, 15, 25, 50, 100];
+let pageSize = (() => { const v = parseInt(localStorage.getItem('dashPageSize'), 10); return PAGE_SIZES.includes(v) ? v : 15; })();
 
 async function renderDashboard() {
   setHeader('<a class="btn" href="#/pending-deps">📦 待分析依赖</a>' +
@@ -169,7 +184,7 @@ async function renderDashboard() {
             '<button class="btn" id="hSettings">⚙ 系统设置</button>' +
             '<button class="btn primary" id="hClone">＋ 克隆库</button>');
   $('#hExport').onclick = () => {
-    const q = selected.size ? '?names=' + encodeURIComponent([...selected].join(',')) : '';
+    const q = '?' + gq() + (selected.size ? '&names=' + enc([...selected].join(',')) : '');
     window.location = '/api/export' + q;
   };
   $('#hSettings').onclick = openSettings;
@@ -177,6 +192,10 @@ async function renderDashboard() {
 
   $('#app').innerHTML = `
     <div class="toolbar">
+      <div class="filter" title="工作空间分组：克隆/分析/报告按分组隔离">
+        <select id="groupSelect"></select>
+      </div>
+      <button class="btn sm" id="newGroupBtn" title="新建分组">＋ 分组</button>
       <div class="search"><input id="search" type="text" placeholder="搜索库名 / 描述…" /></div>
       <div class="filter">
         <select id="ecoFilter">
@@ -194,6 +213,13 @@ async function renderDashboard() {
           <option value="active">进行中</option>
         </select>
       </div>
+      <div class="filter">
+        <select id="tagFilter">
+          <option value="">全部标签</option>
+          <option value="primary">主软件</option>
+          <option value="passive">被动依赖</option>
+        </select>
+      </div>
       <button class="btn sm primary" id="batchAnalyze" disabled>分析选中</button>
       <button class="btn sm" id="refreshBtn">刷新</button>
     </div>
@@ -205,17 +231,42 @@ async function renderDashboard() {
   $('#search').oninput = () => { page = 1; renderList(); };
   $('#ecoFilter').onchange = () => { page = 1; renderList(); };
   $('#statusFilter').onchange = () => { page = 1; renderList(); };
+  $('#tagFilter').onchange = () => { page = 1; renderList(); };
   $('#batchAnalyze').onclick = batchAnalyze;
+  $('#groupSelect').onchange = () => {
+    activeGroup = $('#groupSelect').value || 'default';
+    localStorage.setItem('activeGroup', activeGroup);
+    selected.clear(); page = 1; loadDash();
+  };
+  $('#newGroupBtn').onclick = newGroup;
 
   await loadDash();
   const timer = setInterval(loadDash, 3000);
   view.cleanup = () => clearInterval(timer);
 }
 
+function renderGroupSelect(groups) {
+  const sel = $('#groupSelect'); if (!sel) return;
+  if (!groups.includes(activeGroup)) activeGroup = 'default';
+  sel.innerHTML = groups.map((g) => `<option value="${esc(g)}" ${g === activeGroup ? 'selected' : ''}>分组：${esc(g)}</option>`).join('');
+}
+
+async function newGroup() {
+  const name = (prompt('新建分组名（字母/数字/._-，≤64）：') || '').trim();
+  if (!name) return;
+  const r = await api('/api/groups', { method: 'POST', headers: JSONH, body: JSON.stringify({ group: name }) });
+  if (r.error) return toast(r.error, 'err');
+  activeGroup = r.created || name;
+  localStorage.setItem('activeGroup', activeGroup);
+  renderGroupSelect(r.groups || [activeGroup]);
+  selected.clear(); page = 1; toast(`已创建分组 ${activeGroup}`, 'ok'); loadDash();
+}
+
 async function loadDash() {
   try {
-    const [{ libraries }, { jobs }] = await Promise.all([api('/api/libraries'), api('/api/jobs')]);
-    libsCache = libraries;
+    const [libResp, { jobs }] = await Promise.all([api('/api/libraries?' + gq()), api('/api/jobs')]);
+    if (libResp.groups) renderGroupSelect(libResp.groups);
+    libsCache = libResp.libraries || [];
     renderJobsStrip(jobs);
     renderList();
   } catch (_) {}
@@ -225,12 +276,14 @@ function visibleLibs() {
   const q = ($('#search') ? $('#search').value : '').trim().toLowerCase();
   const eco = ($('#ecoFilter') ? $('#ecoFilter').value : '');
   const stf = ($('#statusFilter') ? $('#statusFilter').value : '');
+  const tag = ($('#tagFilter') ? $('#tagFilter').value : '');
   const filtered = libsCache.filter((l) => {
     const matchesSearch = !q || l.name.toLowerCase().includes(q) ||
       ((l.summary && l.summary.oneLiner) || '').toLowerCase().includes(q);
     const matchesEco = !eco || (l.summary && l.summary.ecosystem === eco);
     const matchesStatus = !stf || statusKey(l) === stf;
-    return matchesSearch && matchesEco && matchesStatus;
+    const matchesTag = !tag || (l.tags || []).includes(tag);
+    return matchesSearch && matchesEco && matchesStatus && matchesTag;
   });
   // 默认排序：最近一次分析时间倒序；无分析时间者按添加（克隆）时间。
   const sortKey = (l) => (l.analyzedAt != null ? l.analyzedAt : (l.addedAt != null ? l.addedAt : 0));
@@ -261,9 +314,9 @@ function renderList() {
     box.innerHTML = '<div class="empty">还没有库。点击右上角「＋ 克隆库」开始。</div>';
     $('#pager').innerHTML = ''; updateBatchBtn(); return;
   }
-  const pages = Math.max(1, Math.ceil(libs.length / PAGE_SIZE));
+  const pages = Math.max(1, Math.ceil(libs.length / pageSize));
   page = Math.min(page, pages);
-  const slice = libs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const slice = libs.slice((page - 1) * pageSize, page * pageSize);
   const visCloned = libs.filter((l) => l.cloned).map((l) => l.name);
   const allSel = visCloned.length && visCloned.every((n) => selected.has(n));
 
@@ -277,6 +330,7 @@ function renderList() {
       return `<tr data-name="${esc(lib.name)}">
         <td class="c-chk"><input type="checkbox" data-sel="${esc(lib.name)}" ${selected.has(lib.name) ? 'checked' : ''} ${lib.cloned ? '' : 'disabled'} /></td>
         <td><a class="lname" href="#/lib/${enc(lib.name)}">${esc(lib.name)}</a>
+            ${(lib.tags || []).map((t) => `<span class="chip ${TAG_CLS[t] || ''}">${esc(TAG_LABELS[t] || t)}</span>`).join('')}
             <div class="lsub">${esc(s.oneLiner || (lib.cloned ? '尚未分析' : '尚未克隆'))}</div></td>
         <td class="c-st"><span class="badge ${st.cls}">${st.label}</span></td>
         <td>${s.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[s.ecosystem] || s.ecosystem)}</span>` : '—'}${bindingChips(s.bindings, s.ecosystem)}</td>
@@ -287,6 +341,7 @@ function renderList() {
         <td class="c-act">
           <a class="btn sm ghost" href="#/lib/${enc(lib.name)}">详情</a>
           ${lib.latest && lib.latest.reportAvailable ? `<a class="btn sm ghost" href="#/topology/${enc(lib.name)}" title="在依赖拓扑中查看">🕸 拓扑</a>` : ''}
+          <button class="btn sm ghost" data-act="tags" data-name="${esc(lib.name)}" title="编辑来源标签">🏷</button>
           <button class="btn sm primary" data-act="analyze" data-name="${esc(lib.name)}" ${lib.active || !lib.cloned ? 'disabled' : ''}>分析</button>
         </td></tr>`;
     }).join('')}</tbody></table>`;
@@ -300,14 +355,48 @@ function renderList() {
     updateBatchBtn();
   });
   $$('[data-act="analyze"]', box).forEach((b) => b.onclick = () => analyzeOne(b.dataset.name));
+  $$('[data-act="tags"]', box).forEach((b) => b.onclick = () => openTagsModal(b.dataset.name));
 
   $('#pager').innerHTML = `
+    <button class="btn sm" id="pFirst" ${page <= 1 ? 'disabled' : ''}>« 首页</button>
     <button class="btn sm" id="pPrev" ${page <= 1 ? 'disabled' : ''}>‹ 上一页</button>
     <span class="pinfo">第 ${page} / ${pages} 页 · 共 ${libs.length} 个库</span>
-    <button class="btn sm" id="pNext" ${page >= pages ? 'disabled' : ''}>下一页 ›</button>`;
+    <button class="btn sm" id="pNext" ${page >= pages ? 'disabled' : ''}>下一页 ›</button>
+    <button class="btn sm" id="pLast" ${page >= pages ? 'disabled' : ''}>末页 »</button>
+    <span class="pinfo">跳转</span>
+    <input id="pJump" type="number" min="1" max="${pages}" value="${page}" style="width:60px" />
+    <button class="btn sm" id="pGo">Go</button>
+    <span class="pinfo">每页</span>
+    <select id="pSize">${PAGE_SIZES.map((n) => `<option value="${n}" ${n === pageSize ? 'selected' : ''}>${n}</option>`).join('')}</select>`;
+  $('#pFirst').onclick = () => { if (page > 1) { page = 1; renderList(); } };
   $('#pPrev').onclick = () => { if (page > 1) { page--; renderList(); } };
   $('#pNext').onclick = () => { if (page < pages) { page++; renderList(); } };
+  $('#pLast').onclick = () => { if (page < pages) { page = pages; renderList(); } };
+  const jump = () => { const v = parseInt($('#pJump').value, 10); if (v >= 1) { page = Math.min(v, pages); renderList(); } };
+  $('#pGo').onclick = jump;
+  $('#pJump').onkeydown = (e) => { if (e.key === 'Enter') jump(); };
+  $('#pSize').onchange = () => { pageSize = parseInt($('#pSize').value, 10) || 15; localStorage.setItem('dashPageSize', pageSize); page = 1; renderList(); };
   updateBatchBtn();
+}
+
+// 编辑某库的来源标签（主软件/被动依赖，可同时勾选）
+function openTagsModal(name) {
+  const lib = libsCache.find((l) => l.name === name);
+  const cur = new Set((lib && lib.tags) || []);
+  showModal(`<h2>来源标签 · ${esc(name)}</h2>
+    <p class="hint">主软件＝主动分析的目标软件；被动依赖＝作为依赖被引入。可同时勾选。</p>
+    <label><input type="checkbox" id="tgPrimary" ${cur.has('primary') ? 'checked' : ''} /> 主软件</label>
+    <label><input type="checkbox" id="tgPassive" ${cur.has('passive') ? 'checked' : ''} /> 被动依赖</label>
+    <div class="actions"><button class="btn" data-close>取消</button>
+      <button class="btn primary" id="tgSave">保存</button></div>`);
+  $('#tgSave').onclick = async () => {
+    const tags = [];
+    if ($('#tgPrimary').checked) tags.push('primary');
+    if ($('#tgPassive').checked) tags.push('passive');
+    try { await api('/api/library-tags', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name, tags })) }); }
+    catch { return toast('保存失败', 'err'); }
+    closeModal(); toast('标签已更新', 'ok'); loadDash();
+  };
 }
 
 function updateBatchBtn() {
@@ -331,7 +420,7 @@ function renderJobsStrip(jobs) {
 }
 
 async function analyzeOne(name) {
-  const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify({ name }) });
+  const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name })) });
   if (r.jobs && r.jobs[0] && r.jobs[0].jobId) location.hash = '#/lib/' + enc(name);
   else toast((r.jobs && r.jobs[0] && r.jobs[0].error) || '启动失败', 'err');
 }
@@ -427,9 +516,9 @@ async function runAgentResolve(key, btn) {
   const purpose = (it.dependents || []).map((d) => d.purpose).find(Boolean) || '';
   let start;
   try {
-    start = await api('/api/resolve-repo-agent', { method: 'POST', headers: JSONH, body: JSON.stringify({
+    start = await api('/api/resolve-repo-agent', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({
       ecosystem: it.ecosystem, name: it.name, scope: (it.scopes || []).join(','),
-      locality: it.locality, acquisition: it.acquisition, source: it.source, purpose, dependents }) });
+      locality: it.locality, acquisition: it.acquisition, source: it.source, purpose, dependents })) });
   } catch { restore(); return toast('智能解析请求失败', 'err'); }
   if (start && start.disabled) { restore(); return toast('智能解析已在设置中关闭', 'err'); }
   if (!start || !start.jobId) { restore(); return toast((start && start.error) || '智能解析启动失败', 'err'); }
@@ -486,7 +575,7 @@ async function loadPendingDeps() {
   // Don't clobber a URL the user is actively typing.
   if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('pdep-url')) return;
   let data, libs;
-  try { [data, { libraries: libs }] = await Promise.all([api('/api/pending-deps'), api('/api/libraries')]); }
+  try { [data, { libraries: libs }] = await Promise.all([api('/api/pending-deps?' + gq()), api('/api/libraries?' + gq())]); }
   catch { box.innerHTML = '<div class="hint err">加载失败</div>'; return; }
   const libMap = {};
   (libs || []).forEach((l) => { libMap[l.name] = l; });
@@ -633,7 +722,7 @@ function cssAttr(s) { return String(s).replace(/["\\]/g, '\\$&'); }
 async function promoteDep(url, key) {
   if (!url) return toast('请输入 Git URL', 'err');
   let r;
-  try { r = await api('/api/clone', { method: 'POST', headers: JSONH, body: JSON.stringify({ urls: [url] }) }); }
+  try { r = await api('/api/clone', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ urls: [url], tag: 'passive' })) }); }
   catch { return toast('克隆请求失败', 'err'); }
   const job = (r.jobs || [])[0];
   if (job && job.jobId) {
@@ -648,7 +737,7 @@ async function promoteDep(url, key) {
 async function batchAnalyze() {
   const names = [...selected];
   if (!names.length) return;
-  const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify({ names }) });
+  const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ names })) });
   const ok = (r.jobs || []).filter((j) => j.jobId);
   const err = (r.jobs || []).filter((j) => j.error);
   toast(`已提交 ${ok.length} 个分析任务` + (err.length ? `，${err.length} 个失败` : ''), err.length ? 'err' : 'ok');
@@ -657,13 +746,19 @@ async function batchAnalyze() {
 }
 
 // ---- clone modal ----------------------------------------------------------
-function openCloneModal() {
+async function openCloneModal() {
+  let groups = [activeGroup];
+  try { groups = (await api('/api/groups')).groups || groups; } catch (_) {}
   showModal(`<h2>克隆库</h2>
     <label>Git 仓库地址（每行一个，支持批量并发克隆）
       <textarea id="mUrls" rows="5" placeholder="https://github.com/owner/lib.git
 https://github.com/owner/lib2.git"></textarea></label>
     <div class="row">
       <label class="grow">分支 / Tag（可选，应用于全部）<input id="mRef" type="text" placeholder="main / v1.2.0" /></label>
+      <label class="grow">来源标签<select id="mTag"><option value="primary">主软件</option><option value="passive">被动依赖</option></select></label>
+    </div>
+    <div class="row">
+      <label class="grow">分组<select id="mGroup">${groups.map((g) => `<option value="${esc(g)}" ${g === activeGroup ? 'selected' : ''}>${esc(g)}</option>`).join('')}</select></label>
       <label style="white-space:nowrap"><input id="mOver" type="checkbox" /> 覆盖已存在</label>
     </div>
     <div class="actions"><button class="btn" data-close>取消</button>
@@ -672,7 +767,12 @@ https://github.com/owner/lib2.git"></textarea></label>
     const urls = $('#mUrls').value.split('\n').map((s) => s.trim()).filter(Boolean);
     if (!urls.length) return toast('请输入至少一个 Git URL', 'err');
     const r = await api('/api/clone', { method: 'POST', headers: JSONH, body: JSON.stringify({
-      urls, ref: $('#mRef').value.trim() || undefined, overwrite: $('#mOver').checked }) });
+      urls, ref: $('#mRef').value.trim() || undefined, overwrite: $('#mOver').checked,
+      tag: $('#mTag').value, group: $('#mGroup').value }) });
+    // 克隆到非活动分组时切过去，便于查看
+    if ($('#mGroup').value && $('#mGroup').value !== activeGroup) {
+      activeGroup = $('#mGroup').value; localStorage.setItem('activeGroup', activeGroup);
+    }
     closeModal();
     const ok = (r.jobs || []).filter((j) => j.jobId);
     const err = (r.jobs || []).filter((j) => j.error);
@@ -684,7 +784,7 @@ https://github.com/owner/lib2.git"></textarea></label>
 
 // ---- settings modal -------------------------------------------------------
 async function openSettings() {
-  const { settings: s, codegraphAvailable: cg } = await api('/api/settings');
+  const { settings: s, defaults: d, codegraphAvailable: cg } = await api('/api/settings');
   showModal(`<h2>系统设置</h2>
     <label>默认模型 Model
       <div class="row"><input id="sModel" class="grow" type="text" list="modelList" value="${esc(s.model)}" placeholder="provider/model（留空用 opencode 默认）" />
@@ -701,8 +801,9 @@ async function openSettings() {
     <label><input id="sAgentResolve" type="checkbox" ${s.enableAgentResolve ? 'checked' : ''} /> 待分析依赖页 C/C++ 「🤖 智能解析」 <span class="hint" style="display:inline">（用 LLM agent 读描述+检索判断仓库地址，较慢/耗模型额度）</span></label>
     <label><input id="sRecursive" type="checkbox" ${s.recursiveAfterAnalyze ? 'checked' : ''} /> 分析完成后自动递归分析其依赖 <span class="hint" style="display:inline">（克隆并分析运行时依赖，系统库作叶子不下钻）</span></label>
     <details><summary class="hint" style="cursor:pointer">Prompt 模板（高级）</summary>
+      <div class="row" style="justify-content:flex-end"><button class="btn sm" id="sPromptReset">恢复默认</button></div>
       <textarea id="sPrompt" rows="9">${esc(s.promptTemplate)}</textarea>
-      <p class="hint">占位符：{repoPath} {agentFile} {reportPath} {metricsPath} {name}</p></details>
+      <p class="hint">占位符：{repoPath} {agentFile} {reportPath} {metricsPath} {name} {codegraphHint}</p></details>
     <div class="actions"><button class="btn" data-close>取消</button>
       <button class="btn primary" id="sSave">保存</button></div>`);
   loadModelsInto('#modelList');
@@ -712,6 +813,7 @@ async function openSettings() {
     span.className = 'hint ' + (r.ok ? 'ok' : 'err');
     span.textContent = r.ok ? `✅ 可用 (${r.ms}ms) · ${r.output}` : `❌ ${r.error}`;
   };
+  $('#sPromptReset').onclick = () => { $('#sPrompt').value = d.promptTemplate; toast('已恢复默认 Prompt（记得点保存）'); };
   $('#sSave').onclick = async () => {
     await api('/api/settings', { method: 'POST', headers: JSONH, body: JSON.stringify({
       model: $('#sModel').value.trim(), opencodeCmd: $('#sCmd').value.trim(),
@@ -883,7 +985,7 @@ function setDStatus(status) {
 }
 
 async function loadDetail(name) {
-  const d = await api('/api/library?name=' + enc(name));
+  const d = await api('/api/library?name=' + enc(name) + '&' + gq());
   if (d.error) { $('#runs').innerHTML = `<div class="hint err">${esc(d.error)}</div>`; return; }
   renderRuns(name, d.runs, d.active);
   if (d.active) {
@@ -911,7 +1013,7 @@ function renderRuns(name, runs, active) {
 }
 
 async function reAnalyze(name) {
-  const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify({ name }) });
+  const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name })) });
   const job = r.jobs && r.jobs[0];
   if (!job || !job.jobId) return toast((job && job.error) || '启动失败', 'err');
   toast('已开始分析', 'ok');
@@ -969,7 +1071,7 @@ const RC_SESSION_CLS = { running: 'running', done: 'done', stopped: 'queued' };
 
 async function startRecurse(name) {
   let r;
-  try { r = await api('/api/recurse', { method: 'POST', headers: JSONH, body: JSON.stringify({ name }) }); }
+  try { r = await api('/api/recurse', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name })) }); }
   catch { return toast('启动失败', 'err'); }
   if (r.error) return toast(r.error, 'err');
   toast(r.existing ? '已有进行中的递归会话' : '已开始递归分析', 'ok');
@@ -992,7 +1094,7 @@ async function renderRecursive(name) {
     <div class="card"><div id="rcTable"></div></div>`;
   $('#rcStart').onclick = () => startRecurse(name);
   let sessionId = null;
-  try { const { sessions } = await api('/api/recurse'); const s = (sessions || []).find((x) => x.root === name); if (s) sessionId = s.id; }
+  try { const { sessions } = await api('/api/recurse'); const s = (sessions || []).find((x) => x.root === name && (x.group || 'default') === activeGroup); if (s) sessionId = s.id; }
   catch (_) {}
   if (!sessionId) {
     $('#rcTable').innerHTML = '<div class="hint">尚无递归会话。点击「新建会话」从该库出发，递归克隆并分析其运行时依赖——系统库 / 无源码库作为叶子不再下钻。</div>';
@@ -1107,7 +1209,7 @@ function formatEvent(ev) {
 async function loadRun(name, run) {
   curRun = run;
   try {
-    const txt = await fetch(`/api/report?name=${enc(name)}&run=${enc(run)}`).then((x) => x.text());
+    const txt = await fetch(`/api/report?name=${enc(name)}&run=${enc(run)}&${gq()}`).then((x) => x.text());
     const obj = JSON.parse(txt);
     curReport = { name, run, obj };
     renderReport(obj);
@@ -1120,7 +1222,7 @@ async function loadRun(name, run) {
   // also replay this run's persisted log if not currently streaming live
   if (!es) {
     try {
-      const log = await fetch(`/api/runlog?name=${enc(name)}&run=${enc(run)}`).then((x) => x.text());
+      const log = await fetch(`/api/runlog?name=${enc(name)}&run=${enc(run)}&${gq()}`).then((x) => x.text());
       clearConsole();
       log.trim().split('\n').forEach((line) => {
         try { const ev = JSON.parse(line);
@@ -1334,18 +1436,28 @@ function renderReport(r) {
       (ha.target_assumptions || []).length) {
     const feasBadge = ha.feasibility
       ? `<span class="badge ${FEAS_CLS[ha.feasibility] || 'gray'}">${FEAS_LABELS[ha.feasibility] || esc(ha.feasibility)}</span>` : '—';
-    const diffBadge = ha.overall_difficulty
-      ? `<span class="badge ${DIFF_CLS[ha.overall_difficulty] || 'gray'}">${DIFF_LABELS[ha.overall_difficulty] || esc(ha.overall_difficulty)}</span>` : '—';
+    // 难度等级（effort.level，server 派生）+ 工作量人天；存量回退到旧 overall_difficulty/effort_estimate
+    const lvl = (ha.effort && ha.effort.level) || null;
+    const diffBadge = lvl
+      ? `<span class="badge ${LVL_CLS[lvl] || 'gray'}">${LVL_LABELS[lvl] || esc(lvl)}</span>`
+      : (ha.overall_difficulty
+        ? `<span class="badge ${DIFF_CLS[ha.overall_difficulty] || 'gray'}">${DIFF_LABELS[ha.overall_difficulty] || esc(ha.overall_difficulty)}</span>` : '—');
+    const pd = ha.effort && ha.effort.person_days;
+    const effortTxt = fmtDays(pd) || (ha.effort_estimate ? esc(ha.effort_estimate) : '—');
+    const confBadge = ha.confidence
+      ? `<span class="badge ${ha.confidence === 'low' ? 'error' : ha.confidence === 'medium' ? 'sev-major' : 'done'}">${CONF_LABELS[ha.confidence] || esc(ha.confidence)}</span>` : '—';
     const blockRows = (ha.blockers || []).map((b) => {
       const sev = b.severity
         ? `<span class="badge ${SEV_CLS[b.severity] || 'gray'}">${SEV_LABELS[b.severity] || esc(b.severity)}</span>` : '';
+      const adapt = b.adaptability
+        ? ` <span class="badge ${ADAPT_CLS[b.adaptability] || 'gray'}">${ADAPT_LABELS[b.adaptability] || esc(b.adaptability)}</span>` : '';
       const status = b.harmony_status ? `<span class="tag">${esc(b.harmony_status)}</span>` : '';
       const cat = b.category ? ` <code>${esc(b.category)}</code>` : '';
       const src = b.source_dimension ? ` <span class="muted">·${esc(b.source_dimension)}</span>` : '';
       const ev = (b.evidence || []).slice(0, 3).map(esc).join('、');
       const more = (b.evidence || []).length > 3
         ? ` <span class="muted" title="${esc((b.evidence || []).join(', '))}">…</span>` : '';
-      return `<tr><td class="api-n">${sev}${cat}${src}</td>
+      return `<tr><td class="api-n">${sev}${adapt}${cat}${src}</td>
         <td><b>${esc(b.issue || '')}</b>${b.remediation ? `<br><span class="muted">${esc(b.remediation)}</span>` : ''}</td>
         <td class="api-loc">${status}${ev ? `<div>${ev}${more}</div>` : ''}</td></tr>`;
     }).join('');
@@ -1385,10 +1497,13 @@ function renderReport(r) {
     parts.push(sec('鸿蒙适配评估', `<div class="kv">
       <b>移植分级</b><span>${pcBadge}</span>
       <b>可行性</b><span>${feasBadge}</span>
-      <b>整体难度</b><span>${diffBadge}</span>
-      <b>工作量</b><span>${ha.effort_estimate ? esc(ha.effort_estimate) : '—'}</span>
+      <b>难度等级</b><span>${diffBadge}</span>
+      <b>工作量</b><span>${effortTxt}</span>
+      <b>置信度</b><span>${confBadge}</span>
       <b>推荐路径</b><span>${ha.recommended_path ? `<code>${esc(ha.recommended_path)}</code>` : '—'}</span>
       <b>目标平台</b><span>${esc(ha.target || '—')}</span></div>` +
+      (((r.meta || {}).harmony_warnings || []).length
+        ? `<div class="hint err" style="margin:6px 0">⚠ 数据一致性提示：<ul style="margin:4px 0 0">${r.meta.harmony_warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>` : '') +
       (ha.summary ? `<p>${esc(ha.summary)}</p>` : '') +
       assumptions +
       unadaptable +
@@ -1447,7 +1562,7 @@ function depHighlightHandler(e) {
 async function loadDepTree(name) {
   const box = $('#depTree'); if (!box || !name) return;
   try {
-    const { tree } = await api('/api/depgraph?name=' + enc(name));
+    const { tree } = await api('/api/depgraph?name=' + enc(name) + '&' + gq());
     box.innerHTML = (tree && tree.length) ? depGroupsHtml(tree) : '<p class="muted">无可连接的依赖关系。</p>';
     decorateHarmonyBadges(box);
   } catch { box.innerHTML = '<p class="muted">依赖关系不可用。</p>'; }
@@ -1531,7 +1646,7 @@ function ensureCytoscape() {
 async function renderTopology(preselect) {
   setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>');
   let libs = [];
-  try { libs = (await api('/api/libraries')).libraries.filter((l) => l.latest && l.latest.reportAvailable); } catch (_) {}
+  try { libs = (await api('/api/libraries?' + gq())).libraries.filter((l) => l.latest && l.latest.reportAvailable); } catch (_) {}
   const names = new Set(libs.map((l) => l.name));
   const opts = libs.map((l) => `<option value="${esc(l.name)}"></option>`).join('');
   const initial = preselect && names.has(preselect) ? preselect : (libs[0] && libs[0].name) || '';
@@ -1567,7 +1682,7 @@ async function loadTopology(name) {
   topoCurrent = name;
   const box = $('#topoGraph'); if (box) box.innerHTML = '<p class="muted" style="padding:16px">加载中…</p>';
   let data;
-  try { data = await api('/api/dep-topology?name=' + enc(name)); }
+  try { data = await api('/api/dep-topology?name=' + enc(name) + '&' + gq()); }
   catch { if (box) box.innerHTML = '<p class="hint err" style="padding:16px">加载失败</p>'; return; }
   try { await ensureCytoscape(); }
   catch (e) { if (box) box.innerHTML = `<p class="hint err" style="padding:16px">${esc(e.message)}</p>`; return; }
@@ -1605,7 +1720,8 @@ function drawTopology(data) {
   for (const n of data.nodes) elements.push({ data: {
     id: n.id, label: n.label, status: nodeStatus(n), selfStatus: n.status, rollupStatus: n.rollupStatus || n.status,
     ecosystem: n.ecosystem, analyzed: n.analyzed, libName: n.libName, feasibility: n.feasibility || '',
-    summary: n.summary || '', isRoot: !!n.isRoot,
+    summary: n.summary || '', isRoot: !!n.isRoot, level: n.level || '', rollupLevel: n.rollupLevel || '',
+    rollupEffort: n.rollupEffort || null, rollupConfidence: n.rollupConfidence || '',
     rollupUncertain: !!n.rollupUncertain, blockingChildren: n.blockingChildren || [] } });
   for (const e of data.edges) elements.push({ data: { source: e.source, target: e.target } });
   cyInstance = window.cytoscape({
@@ -1644,6 +1760,8 @@ function showTopoDetail(d) {
       <b>本体分级</b><span>${dot(selfM)}</span>
       <b>含依赖(综合)</b><span>${dot(rollM)}${d.rollupUncertain ? ' <span class="badge gray" title="存在未分析的子依赖，综合结论可能偏乐观">含未分析依赖</span>' : ''}</span>
       <b>是否已分析</b><span>${d.analyzed ? '是' : '否（未分析）'}</span>
+      ${d.level ? `<b>本体难度</b><span>${esc(LVL_LABELS[d.level] || d.level)}</span>` : ''}
+      ${d.rollupLevel ? `<b>综合难度</b><span>${esc(LVL_LABELS[d.rollupLevel] || d.rollupLevel)}${fmtDays(d.rollupEffort) ? ` <span class="muted">(${fmtDays(d.rollupEffort)})</span>` : ''}${d.rollupConfidence ? ` <span class="muted">置信 ${CONF_LABELS[d.rollupConfidence] || d.rollupConfidence}</span>` : ''}</span>` : ''}
       ${d.feasibility ? `<b>可行性</b><span>${esc(FEAS_LABELS[d.feasibility] || d.feasibility)}</span>` : ''}
     </div>
     ${differs ? '<p class="hint">综合分级高于本体，因为它（用到的）依赖的适配等级更高，见下。</p>' : ''}

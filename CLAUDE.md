@@ -28,7 +28,10 @@ dimension by adding a parser — improve its skill prompt instead.
 一个只在 `tests/`、`examples/`、`demo/` 里出现的平台 API/依赖/阻碍点**不进** `native_api` /
 `dependencies` / `harmony_adaptation` 结论。`code-metrics` 按目录名 token 分类并在
 `metrics.json` 暴露 `code_metrics.top_dirs`（每个顶层目录 {dir,code,category}）+
-`test_example_dirs` 作为基线；但 token **会漏判按功能命名的 demo 目录**（如 PyQt 的
+`test_example_dirs` 作为基线；还机械统计 `code_metrics.platform_adaptation`（各平台
+`{windows,macos,linux,posix}` 被编译宏 `#ifdef _WIN32/__APPLE__/__linux__…` **正向**包裹的
+生产代码行 + total，`#ifndef`/`!defined` 不计），作为 dim-9 适配复杂度信号（守卫代码越多→
+重编/适配工作量越大、`person_days` 上调）。但 token **会漏判按功能命名的 demo 目录**（如 PyQt 的
 `QLabel/`/`QThread/`/`QAxWidget/`），模型据结构/README **补判**为示例。仓库若是**示例/教程
 集合**（生产代码≈0）则如实判定并收敛——不把 demo 的 Win32/COM/DLL 当作库的迁移阻碍。
 此为模型产出口径，**存量报告需重新分析才生效**。
@@ -63,11 +66,25 @@ language runtimes** (Python/Node.js/Java/Rust/Go/Julia are ported) — a pure-sc
 library runs on the ported runtime (`run_on_ported_runtime`), so the runtime itself
 is NOT a blocker and such libs are NOT auto-`infeasible`; the real work is native
 extensions / C deps / platform APIs. The strict ArkTS-sandbox model is a secondary口径
-used only when the target is an ArkTS app. Its closed axes are `feasibility`/`overall_difficulty`/
-`effort_estimate`/`porting_class` (no_adaptation/recompile_only/**needs_adaptation_full**(全部可适配)/
+used only when the target is an ArkTS app. **`porting_class` is the single authoritative
+machine axis** (no_adaptation/recompile_only/**needs_adaptation_full**(全部可适配)/
 **needs_adaptation_partial**(部分可适配)/infeasible — the dep-topology page's 5-way bucket; legacy
-`needs_adaptation` kept as a partial alias)/`blockers[].severity`; open vocab is `recommended_path`/
-`blockers[].category`/`harmony_status`.
+`needs_adaptation` kept as a partial alias). `feasibility` is a deterministic function of it
+(server validates). The model only estimates `effort.person_days:[lo,hi]` (numeric → aggregates up
+the dep tree); the **5-tier difficulty `effort.level`** (very_low…very_high / 极低…极高) is
+**server-DERIVED** (`deriveDifficultyLevel` = porting_class floor × person_days bucket, take-higher)
+— NOT an independent model axis, so it can't drift from porting_class. `confidence` (high/medium/low)
+drops to ≤medium when a required target_assumption is `unknown`, and propagates min up the rollup.
+Other closed axes: `blockers[].severity`/`blockers[].adaptability`(adaptable/partial/unadaptable —
+the structured signal `derivePortingClass` now reads instead of regex over open-vocab category).
+Open vocab: `recommended_path`/`blockers[].category`/`harmony_status`. The three problem lists are a
+**single-source-of-truth model with cross-refs**: a fact is登记 once in its primary list
+(`target_assumptions`=root cause, `unadaptable_apis`=granular machine layer for rollup, `blockers`=result)
+and referenced elsewhere by stable `id` via `caused_by`/`manifests_as` (no duplicate prose → no
+double-counted difficulty). `/api/report` runs serve-time `normalizeHarmony` (fills derived
+effort.level/person_days/ids/feasibility — 存量 reports gain them without a re-run) + `validateHarmony`
+(consistency warnings → `meta.harmony_warnings`, shown on the panel). The rollup also aggregates
+`rollupEffort`(Σ person_days of actually-depended children)/`rollupLevel`/`rollupConfidence`.
 
 **API-granular un-adaptability + bottom-up roll-up.** When some functionality is truly
 unportable, dim 9 lists it at **API granularity** in `harmony_adaptation.unadaptable_apis[]`
@@ -119,8 +136,8 @@ interpretive skill (dims 1, 5, 6, 7, 8, 9) follows this shape:
 - **Stable closed axes (model-set)**: `library.ecosystem`/`bindings`,
   `dependencies[].locality` (local/remote/system/runtime), `native_api.groups[].category`
   (standard/platform/system/hardware/ffi) and `.platform`. The UI relies on these.
-  Plus dim 9's `harmony_adaptation.feasibility`/`overall_difficulty`/`effort_estimate`/
-  `blockers[].severity`.
+  Plus dim 9's `harmony_adaptation.porting_class`/`feasibility`/`confidence`/`effort.level`(server-derived)/
+  `blockers[].severity`/`blockers[].adaptability`.
 - **Open detail vocabulary (model may coin)**: `dependencies[].acquisition`,
   `native_api.groups[].type`, `harmony_adaptation.recommended_path`/`blockers[].category`/
   `blockers[].harmony_status`, etc. The UI degrades unknown values to the raw string.
@@ -151,9 +168,10 @@ web/
 scripts/export_xlsx.py           # summary .xlsx export (openpyxl); panel /api/export spawns it
 scripts/harmony_adapted.js       # CLI over harmony-mirror.js; agent stamps deps[].harmony_adapted
 requirements.txt                 # python deps (openpyxl, for export only)
-repos/   <lib>/                  # cloned libraries (gitignored)
-runs/    <lib>/<ts>/             # per-run report.json + run.log.jsonl + meta.json (gitignored)
+repos/   <group>/<lib>/          # cloned libraries, grouped by workspace (gitignored)
+runs/    <group>/<lib>/<ts>/     # per-run report.json + run.log.jsonl + meta.json (gitignored)
 .panel-settings.json             # panel settings (gitignored)
+.panel-library-tags.json         # per-library 来源标签 {"<group>/<lib>":["primary","passive"]} (gitignored)
 ```
 
 ## Running
@@ -173,7 +191,27 @@ and `opencode` with a configured model. Excel export additionally needs
 ## Web panel architecture
 
 - **Level 1 (dashboard, `#/`):** library cards with status/metrics, batch select,
-  batch + concurrent clone and analyze, system settings.
+  batch + concurrent clone and analyze, system settings. Each library carries 来源标签
+  (`主软件`=primary / `被动依赖`=passive, stored in `.panel-library-tags.json`, union-merged):
+  manual clone defaults primary (chooser in the clone dialog), recursion + pending-deps
+  「加入列表」auto-tag passive, and the 🏷 row button edits them (`POST /api/library-tags`).
+  Tags drive a homepage 标签 filter. Pagination supports selectable page size (localStorage)
+  + jump-to-page; batch selection persists across pages.
+- **分组（工作空间隔离）：** every library lives in a group — directories are nested
+  `repos/<group>/<lib>` + `runs/<group>/<lib>/<ts>`, so clone/analyze/report/recursion/
+  topology/pending-deps/export are all scoped to a group and never cross-contaminate
+  (same lib can be cloned independently into different groups). 'default' always exists;
+  on first start `migrateToGroups()` moves any pre-grouping flat `repos/<lib>`/`runs/<lib>`
+  into `default/` (idempotent, re-keys the tags file). The active group is a localStorage
+  state (`activeGroup`); the dashboard has a group selector + 「＋ 分组」(`/api/groups`
+  GET/POST). Server fns take a `group` param (`safeGroup` validates `[A-Za-z0-9._-]`,
+  blocking traversal); recursion inherits the root's group. Every group-scoped endpoint
+  accepts `?group=`/`body.group` (default 'default').
+- **codegraph 索引：** when codegraph is installed+enabled the server pre-builds the
+  structural index **right after a successful clone** (`ensureCodegraphIndex` → `codegraph
+  init -i <repoPath>`, or `sync` if `.codegraph/` already exists), and again best-effort at
+  analyze start. The analyze prompt tells the agent the index is pre-built (query it; fall
+  back to grep if a call fails) instead of building it itself.
 - **Level 2 (detail, `#/lib/<name>`):** run history, live log (SSE, parses
   opencode `--format json` events), rendered report.
 - **待分析依赖 (`#/pending-deps`):** cross-library aggregation of dependencies that

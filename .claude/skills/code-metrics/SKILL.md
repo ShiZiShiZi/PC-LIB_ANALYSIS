@@ -1,6 +1,6 @@
 ---
 name: code-metrics
-description: Produce deterministic, reproducible code metrics for a source checkout — language breakdown, lines of code split into production vs test vs example, and test-file/test-case counts. This is the ONE hard-coded (cloc-backed) part of PC third-party library analysis. Use when you need objective line/test numbers; do NOT use it for license, dependency, function, or API analysis (those are model-reasoned).
+description: Produce deterministic, reproducible code metrics for a source checkout — language breakdown, lines of code split into production vs test vs example, and test-file/test-case counts. This is the ONE hard-coded (cloc-backed) part of PC library/application analysis. Use when you need objective line/test numbers; do NOT use it for license, dependency, function, or API analysis (those are model-reasoned).
 ---
 
 # Code metrics (deterministic)

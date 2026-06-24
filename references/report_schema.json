@@ -85,7 +85,27 @@
         "production": {"$ref": "#/definitions/lineAgg"},
         "test": {"$ref": "#/definitions/lineAgg"},
         "example": {"$ref": "#/definitions/lineAgg"},
-        "production_by_language": {"type": "object"}
+        "production_by_language": {"type": "object"},
+        "platform_adaptation": {
+          "type": "object",
+          "description": "各平台被编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的生产代码量（机械计数，C/C++/ObjC；#ifndef/!defined 不计）。作为鸿蒙适配复杂度信号之一供 dim-9 参考。",
+          "properties": {
+            "by_platform": {
+              "type": "object",
+              "description": "{windows|macos|linux|posix: {files, code, macros[]}}",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "files": {"type": "integer"},
+                  "code": {"type": "integer", "description": "该平台守卫块内代码行"},
+                  "macros": {"type": "array", "items": {"type": "string"}}
+                }
+              }
+            },
+            "total": {"type": "integer", "description": "各平台之和"},
+            "notes": {"type": "string"}
+          }
+        }
       }
     },
 
@@ -261,15 +281,24 @@
       "properties": {
         "target": {"type": "string", "description": "中文/英文：评估所针对的鸿蒙平台口径（HarmonyOS NEXT PC 等）"},
         "feasibility": {"type": "string", "enum": ["feasible", "feasible_with_effort", "hard", "infeasible"],
-          "description": "闭轴：整体可行性"},
-        "overall_difficulty": {"type": "string", "enum": ["low", "medium", "high", "very_high"],
-          "description": "闭轴：整体难度"},
+          "description": "闭轴：整体可行性。须与 porting_class 确定性自洽（no_adaptation→feasible；recompile_only/needs_adaptation_full→feasible_with_effort；needs_adaptation_partial→hard；infeasible→infeasible）。server 会据 porting_class 校验/补全。"},
         "porting_class": {"type": "string", "enum": ["no_adaptation", "recompile_only", "needs_adaptation_full", "needs_adaptation_partial", "needs_adaptation", "infeasible"],
-          "description": "闭轴：移植分级（依赖拓扑图用）。no_adaptation=纯脚本跑在已移植运行时/无原生工作；recompile_only=C/C++ 仅需 OHOS NDK 重编、无平台 API/平台差异；needs_adaptation_full=需改造但用到的功能全部能适配/有替代(unadaptable_apis 为空)；needs_adaptation_partial=部分功能因平台/硬件 API 无法适配(见 unadaptable_apis)但核心仍可用；infeasible=核心不可适配/依赖特定硬件无解。须与 feasibility/overall_difficulty/recommended_path 自洽。旧值 needs_adaptation 保留兼容，等同 needs_adaptation_partial 档。"},
+          "description": "★唯一权威机器轴（依赖拓扑图 + 难度派生用）。no_adaptation=纯脚本跑在已移植运行时/无原生工作；recompile_only=C/C++ 仅需 OHOS NDK 重编、无平台 API/平台差异；needs_adaptation_full=需改造但用到的功能全部能适配/有替代(unadaptable_apis 为空)；needs_adaptation_partial=部分功能因平台/硬件 API 无法适配(见 unadaptable_apis)但核心仍可用；infeasible=核心不可适配/依赖特定硬件无解。须与 feasibility/recommended_path 自洽。旧值 needs_adaptation 保留兼容，等同 needs_adaptation_partial 档。"},
+        "effort": {"type": "object",
+          "description": "工作量与难度。模型只估 person_days（区间）；level 由 server 按固定 rubric 从 (porting_class 下限 × person_days 上界分桶) 取高确定性派生——模型无需自填、填了也以派生为准。这样难度与 porting_class 自洽且 person_days 可跨依赖树数值聚合。",
+          "properties": {
+            "person_days": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2,
+              "description": "★模型估的工作量人-天区间 [min,max]，区间宽度表达不确定性。锚点：极低0–2 / 低2–5 / 中5–15 / 高15–40 / 极高40+。可跨依赖树累加（rollup）。"},
+            "level": {"type": "string", "enum": ["very_low", "low", "medium", "high", "very_high"],
+              "description": "闭轴：难度等级（server 派生）。展示：very_low=极低 low=低 medium=中 high=高 very_high=极高。"}}},
+        "confidence": {"type": "string", "enum": ["high", "medium", "low"],
+          "description": "★闭轴：本评估的置信度。存在 required 且 target_status=unknown 的 target_assumptions 时至多 medium；沿依赖树取 min 传播（rollupConfidence）。"},
         "unadaptable_apis": {"type": "array", "items": {
           "type": "object",
           "required": ["api"],
           "properties": {
+            "id": {"type": "string", "description": "稳定 id，形如 ua:culaunch；供 blockers.manifests_as 引用、跨树去重。"},
+            "caused_by": {"type": "array", "items": {"type": "string"}, "description": "回指根因 target_assumptions[].id（可空）"},
             "api": {"type": "string", "description": "该库用到的、HarmonyOS 无对应实现/无法适配的底层 API（平台/系统/硬件 API 名，如 ioctl、CreateFileW、cuLaunchKernel）"},
             "public_entry": {"type": "string", "description": "本库对外暴露、会路由到该不支持 API 的公共函数/符号（父库实际调用的那一层，如 cairo_create）。父库的 dependencies[].used_symbols 与此求交决定是否阻塞父——故尽量填准。"},
             "reason": {"type": "string", "description": "中文：为何无法适配（平台专有/硬件依赖/无替代等）"},
@@ -281,6 +310,7 @@
           "type": "object",
           "required": ["capability"],
           "properties": {
+            "id": {"type": "string", "description": "稳定 id，形如 ta:swing；供 blockers/unadaptable_apis 的 caused_by 引用。"},
             "capability": {"type": "string", "description": "结论所依赖的鸿蒙 PC 目标能力（如 headful Swing/AWT、跨进程 attach、jdk.internal.jvmstat 开放、传统桌面应用交付）"},
             "required": {"type": "boolean", "description": "该能力是否为本项目可移植的必需前提"},
             "target_status": {"type": "string", "enum": ["available", "partial", "unavailable", "unknown"],
@@ -288,8 +318,6 @@
             "impact": {"type": "string", "description": "中文：该目标事实如何影响结论（如「不支持则整体不可运行」）"},
             "source": {"type": "string", "description": "事实来源，通常 references/harmony-pc-capabilities.md 的对应条目"}}},
           "description": "结论所依赖的目标平台能力假设（来自 references/harmony-pc-capabilities.md 的匹配）。target_status=unknown 的项表示结论依赖未核实事实——应同时下调 meta.confidence_overall 并在 notes 说明，不得据 unknown 臆断为可行。库通常为空或仅运行时一条。"},
-        "effort_estimate": {"type": "string", "enum": ["XS", "S", "M", "L", "XL"],
-          "description": "闭轴：T 恤码工作量估计"},
         "recommended_path": {"type": "string",
           "description": "开放词：推荐适配路径，如 recompile_napi / cross_compile / arkts_rewrite / wrap_ffi / find_alternative / abandon"},
         "summary": {"type": "string", "description": "中文：总体判断与为何选这条路径"},
@@ -297,14 +325,19 @@
           "type": "object",
           "required": ["issue"],
           "properties": {
+            "id": {"type": "string", "description": "稳定 id，形如 bk:gpu；供跨树去重/引用。"},
             "issue": {"type": "string", "description": "中文：阻碍点描述"},
             "severity": {"type": "string", "enum": ["blocker", "major", "minor"], "description": "闭轴：严重度"},
+            "adaptability": {"type": "string", "enum": ["adaptable", "partial", "unadaptable"],
+              "description": "★闭轴：该阻碍能否适配——adaptable=有 @ohos 替代/重编可解；partial=部分可解；unadaptable=无解(此类应同时进 unadaptable_apis)。derivePortingClass 据此结构化判分级，不再靠 category 开放词正则。"},
             "category": {"type": "string", "description": "开放词：如 subprocess_unavailable / win32_api / sysfs_procfs / registry_wmi / node_core_module / ffi_bridge / native_dependency / toolchain"},
             "source_dimension": {"type": "string", "description": "来源维度：native_api / runtime_surface / dependencies / build_env / library"},
             "harmony_status": {"type": "string", "description": "开放词：unavailable / partial / needs_permission / replace_with_ohos"},
             "remediation": {"type": "string", "description": "中文：改造建议"},
+            "caused_by": {"type": "array", "items": {"type": "string"}, "description": "回指根因 target_assumptions[].id（可空）——同一事实只在主清单登记完整内容，此处仅引用，避免重复计入难度。"},
+            "manifests_as": {"type": "array", "items": {"type": "string"}, "description": "若该阻碍体现为具体不可适配 API，引用 unadaptable_apis[].id（可空）。"},
             "evidence": {"type": "array", "items": {"type": "string"}, "description": "复用来源维度的 file:line"}}},
-          "description": "从前序维度推导的移植阻碍点"},
+          "description": "从前序维度推导的移植阻碍点（结果层）。同一事实只在主清单登记一次：target 事实→target_assumptions、无法适配的具体 API→unadaptable_apis、阻碍点→此处，其余清单用 id 引用。"},
         "compatible": {"type": "array", "items": {
           "type": "object",
           "properties": {

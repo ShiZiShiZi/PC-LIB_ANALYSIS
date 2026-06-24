@@ -1,6 +1,6 @@
 ---
 name: dependency-analysis
-description: Identify and explain a third-party library's dependencies across ecosystems (Python, C/C++, Java, JS/TS) by reading manifest and build files, then reasoning about what each dependency is and why it's used. Distinguishes runtime vs dev/test/build deps. Use for dimension 6 of PC library analysis. Model reasoning over manifests, not a fixed parser.
+description: Identify and explain a third-party library's or application's dependencies across ecosystems (Python, C/C++, Java, JS/TS) by reading manifest and build files, then reasoning about what each dependency is and why it's used. Distinguishes runtime vs dev/test/build deps. Use for dimension 6 of PC library/application analysis. Model reasoning over manifests, not a fixed parser.
 ---
 
 # Dependency analysis (model-driven)
@@ -95,6 +95,9 @@ registry 里的样子），**禁止**用 `/`、`,`、`+`、`、` 把多个不同
    **自底向上综合**用：服务端把它与该依赖（子库）`harmony_adaptation.unadaptable_apis[].public_entry`
    求交，命中才把子库的不可适配计为本库阻碍——**本库没调到子库的不可适配 API 就不阻塞本库迁移**。
    只对**非系统、可分析**的依赖填；系统库 / 拿不准用法时留空（综合会回退到依赖 scope）。
+   - **命名约定（务必与子库 `public_entry` 同一形式，否则 rollup 求交漏判）**：填**调用方引用该符号时的名字**——
+     Python `module.func` / `Class.method`；JS/TS 导出名（`pkg.export`/具名导出）；C/C++ 自由函数名或 `Class::method`；
+     Java `Class.method` 或 `pkg.Class`。（服务端 `symKeys` 会再做大小写/尾段归一，但尽量对齐主名。）
 
 ## Output (fills report `dependencies`)
 ```json

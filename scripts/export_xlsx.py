@@ -22,6 +22,58 @@ from openpyxl.utils import get_column_letter
 
 JOIN = "；"
 
+# dim-9 difficulty rubric (mirrors web/server.js deriveDifficultyLevel/effortDays) so the
+# standalone export shows the derived 难度等级 + person_days even for legacy reports.
+_LEVEL_ZH = {"very_low": "极低", "low": "低", "medium": "中", "high": "高", "very_high": "极高"}
+_RANK_LEVEL = ["very_low", "low", "medium", "high", "very_high"]
+_CLASS_FLOOR = {"no_adaptation": 0, "recompile_only": 1, "needs_adaptation_full": 2,
+                "needs_adaptation": 3, "needs_adaptation_partial": 3, "infeasible": 4}
+_TSHIRT_DAYS = {"XS": [0, 2], "S": [2, 5], "M": [5, 15], "L": [15, 40], "XL": [40, 80]}
+_DIFF_DAYS = {"low": [0, 5], "medium": [5, 15], "high": [15, 40], "very_high": [40, 80]}
+
+
+def _effort_days(ha: dict):
+    e = (ha or {}).get("effort") or {}
+    pd = e.get("person_days")
+    if isinstance(pd, list) and len(pd) == 2:
+        try:
+            return [float(pd[0]), float(pd[1])]
+        except (TypeError, ValueError):
+            pass
+    if ha.get("effort_estimate") in _TSHIRT_DAYS:
+        return list(_TSHIRT_DAYS[ha["effort_estimate"]])
+    if ha.get("overall_difficulty") in _DIFF_DAYS:
+        return list(_DIFF_DAYS[ha["overall_difficulty"]])
+    return None
+
+
+def _days_bucket(hi) -> int:
+    try:
+        d = float(hi)
+    except (TypeError, ValueError):
+        return 0
+    if d <= 2:
+        return 0
+    if d <= 5:
+        return 1
+    if d <= 15:
+        return 2
+    if d <= 40:
+        return 3
+    return 4
+
+
+def _difficulty_level(ha: dict):
+    cls = (ha or {}).get("porting_class")
+    days = _effort_days(ha)
+    if (ha or {}).get("effort", {}).get("level"):
+        return _LEVEL_ZH.get(ha["effort"]["level"], ha["effort"]["level"])
+    if not cls:
+        return ""
+    floor = _CLASS_FLOOR.get(cls, 0)
+    rank = max(floor, _days_bucket(days[1] if days else 0))
+    return _LEVEL_ZH[_RANK_LEVEL[rank]]
+
 
 def _latest_report(lib_dir: str):
     """Return the parsed report.json of the newest run (ISO-timestamp dir) or None."""
@@ -121,6 +173,7 @@ def rows_overview(name, r):
         _g(cm, "production", "code"),
         _g(cm, "test", "code"),
         _g(cm, "example", "code"),
+        _g(cm, "platform_adaptation", "total", default=""),
         _g(cm, "total", "total_lines"),
         t.get("test_files"),
         t.get("test_cases"),
@@ -138,8 +191,10 @@ def rows_overview(name, r):
         _join(be.get("platforms", []) or []),
         ha.get("porting_class", ""),
         ha.get("feasibility", ""),
-        ha.get("overall_difficulty", ""),
-        ha.get("effort_estimate", ""),
+        _difficulty_level(ha),
+        (_effort_days(ha) or ["", ""])[0],
+        (_effort_days(ha) or ["", ""])[1],
+        ha.get("confidence", "") or _g(r, "meta", "confidence_overall", default=""),
         ha.get("recommended_path", ""),
         ha.get("summary", ""),
         len(ha.get("blockers", []) or []),
@@ -152,9 +207,10 @@ def rows_overview(name, r):
 HEAD_OVERVIEW = [
     "库名", "源地址", "commit", "分析时间", "主语言", "语言列表", "生态", "绑定",
     "功能摘要", "领域", "目标用户", "总代码", "生产代码", "测试代码", "样例代码",
-    "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度",
+    "平台适配代码", "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度",
     "运行时依赖数", "依赖总数", "API摘要", "平台依赖", "动态库数", "构建系统",
-    "语言标准", "运行时版本", "支持平台", "移植分级", "鸿蒙可行性", "鸿蒙难度", "工作量",
+    "语言标准", "运行时版本", "支持平台", "移植分级", "鸿蒙可行性", "鸿蒙难度",
+    "工作量min(人天)", "工作量max(人天)", "鸿蒙置信度",
     "推荐路径", "鸿蒙总结", "阻碍点数", "不支持API数", "关键任务", "整体置信度",
 ]
 
@@ -256,15 +312,18 @@ def rows_blockers(name, r):
     out = []
     for b in _g(r, "harmony_adaptation", "blockers", default=[]) or []:
         out.append([
-            name, b.get("issue", ""), b.get("severity", ""), b.get("category", ""),
+            name, b.get("id", ""), b.get("issue", ""), b.get("severity", ""),
+            b.get("adaptability", ""), b.get("category", ""),
             b.get("source_dimension", ""), b.get("harmony_status", ""),
-            b.get("remediation", ""), _join(b.get("evidence", []) or []),
+            b.get("remediation", ""), _join(b.get("caused_by", []) or []),
+            _join(b.get("manifests_as", []) or []), _join(b.get("evidence", []) or []),
         ])
     return out
 
 
 HEAD_BLOCKERS = [
-    "库名", "阻碍点", "严重度", "类别", "来源维度", "鸿蒙状态", "改造建议", "证据",
+    "库名", "ID", "阻碍点", "严重度", "可适配性", "类别", "来源维度", "鸿蒙状态",
+    "改造建议", "根因(caused_by)", "体现为(manifests_as)", "证据",
 ]
 
 
@@ -272,15 +331,15 @@ def rows_unadaptable(name, r):
     out = []
     for u in _g(r, "harmony_adaptation", "unadaptable_apis", default=[]) or []:
         out.append([
-            name, u.get("api", ""), u.get("public_entry", ""), u.get("reason", ""),
+            name, u.get("id", ""), u.get("api", ""), u.get("public_entry", ""), u.get("reason", ""),
             u.get("blocking_native_api", ""), u.get("category", ""),
-            _join(u.get("evidence", []) or []),
+            _join(u.get("caused_by", []) or []), _join(u.get("evidence", []) or []),
         ])
     return out
 
 
 HEAD_UNADAPTABLE = [
-    "库名", "不支持API", "公共入口", "原因", "阻碍根源API", "类别", "证据",
+    "库名", "ID", "不支持API", "公共入口", "原因", "阻碍根源API", "类别", "根因(caused_by)", "证据",
 ]
 
 
@@ -288,14 +347,14 @@ def rows_target_assumptions(name, r):
     out = []
     for a in _g(r, "harmony_adaptation", "target_assumptions", default=[]) or []:
         out.append([
-            name, a.get("capability", ""), "是" if a.get("required") else "否",
+            name, a.get("id", ""), a.get("capability", ""), "是" if a.get("required") else "否",
             a.get("target_status", ""), a.get("impact", ""), a.get("source", ""),
         ])
     return out
 
 
 HEAD_TARGET_ASSUMPTIONS = [
-    "库名", "目标能力", "必需", "目标状态", "影响", "来源",
+    "库名", "ID", "目标能力", "必需", "目标状态", "影响", "来源",
 ]
 
 
