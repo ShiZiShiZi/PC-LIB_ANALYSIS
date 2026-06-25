@@ -1,0 +1,612 @@
+{
+  "library": {
+    "name": "selenium",
+    "kind": "library",
+    "ecosystem": "java",
+    "bindings": ["python", "javascript", "ruby", "csharp", "rust"],
+    "one_liner": "跨平台、多语言的浏览器自动化库，实现 W3C WebDriver 规范，提供 Java、Python、JavaScript、Ruby、.NET 等语言绑定及分布式测试 Grid 服务器",
+    "source_url": "https://github.com/SeleniumHQ/selenium",
+    "registry_name": null,
+    "aliases": ["selenium-webdriver", "selenium-java", "selenium-python", "selenium-dotnet"],
+    "import_names": ["selenium", "org.openqa.selenium"]
+  },
+  "function_summary": {
+    "summary": "Selenium 是一个浏览器自动化库，实现 W3C WebDriver 规范，提供跨平台、多语言的 API 来控制和自动化 Web 浏览器。它支持主流浏览器（Chrome、Firefox、Edge、Safari），用于 Web 应用测试、任务自动化和爬虫开发。项目包含五个主要语言绑定（Java、Python、JavaScript、Ruby、.NET/C#）、一个用 Rust 编写的 Selenium Manager 工具（自动管理浏览器驱动），以及 Selenium Grid 分布式测试服务器。核心功能包括：页面导航、元素定位与操作、表单填写、窗口管理、Cookie 处理、截图、DevTools/CDP 协议集成（网络拦截、性能监控）、BiDi（双向 WebDriver）协议支持。所有语言绑定共享同一协议层，通过 HTTP/WebSocket 与浏览器驱动通信。",
+    "categories": [
+      {
+        "name": "浏览器控制与导航",
+        "description": "提供 WebDriver API 控制浏览器打开页面、导航前进后退刷新、管理窗口和标签页、处理弹窗和对话框",
+        "evidence": ["java/src/org/openqa/selenium/WebDriver.java: WebDriver.get(), Navigation.to/back/forward/refresh()", "py/selenium/webdriver/remote/webdriver.py: driver.get(), driver.back(), driver.forward()"]
+      },
+      {
+        "name": "元素定位与交互",
+        "description": "通过 CSS 选择器、XPath、ID、类名等方式定位 DOM 元素，执行点击、输入文本、清除、提交表单、拖拽等操作",
+        "evidence": ["java/src/org/openqa/selenium/By.java: By.id/cssSelector/xpath/linkText", "java/src/org/openqa/selenium/WebElement.java: click(), sendKeys(), clear(), submit()"]
+      },
+      {
+        "name": "DevTools/CDP 协议集成",
+        "description": "集成 Chrome DevTools Protocol，支持网络请求拦截、性能监控、日志捕获、JavaScript 执行上下文控制、页面性能分析",
+        "evidence": ["java/src/org/openqa/selenium/devtools/DevTools.java", "java/src/org/openqa/selenium/devtools/idealized/Network.java: NetworkInterceptor", "common/devtools/*.json CDP 协议定义"]
+      },
+      {
+        "name": "分布式测试（Selenium Grid）",
+        "description": "提供 Grid 服务器实现分布式浏览器测试，支持节点注册、会话分发、队列管理、WebSocket 代理，可在多台机器并行运行测试",
+        "evidence": ["java/src/org/openqa/selenium/grid/", "java/src/org/openqa/selenium/grid/distributor/local/LocalNodeRegistry.java", "java/src/org/openqa/selenium/grid/router/"]
+      },
+      {
+        "name": "驱动管理（Selenium Manager）",
+        "description": "用 Rust 编写的 CLI 工具，自动下载和管理浏览器驱动（chromedriver、geckodriver、IEDriver 等），解析驱动版本匹配浏览器版本",
+        "evidence": ["rust/src/main.rs: Selenium Manager CLI", "rust/src/lib.rs: driver resolution logic", "Cargo.toml: selenium-manager"]
+      }
+    ],
+    "domain": "Web 自动化测试 / 浏览器控制 / Web 应用自动化",
+    "target_users": "自动化测试工程师、Web 应用开发者、QA 团队、爬虫开发者"
+  },
+  "languages": {
+    "primary": "Java",
+    "all": ["Java", "JavaScript", "C#", "Python", "JSON", "C++", "Ruby", "C", "Rust", "HTML", "TypeScript", "TSX", "CSS"],
+    "breakdown": [
+      {"language": "Java", "files": 1491, "code": 139706, "pct": 31.17},
+      {"language": "JavaScript", "files": 508, "code": 79786, "pct": 17.8},
+      {"language": "C#", "files": 727, "code": 47619, "pct": 10.63},
+      {"language": "Python", "files": 277, "code": 36044, "pct": 8.04},
+      {"language": "C++", "files": 116, "code": 26840, "pct": 5.99},
+      {"language": "Ruby", "files": 303, "code": 19691, "pct": 4.39},
+      {"language": "Rust", "files": 41, "code": 8050, "pct": 1.8}
+    ]
+  },
+  "code_metrics": {
+    "tool": "tokei",
+    "total": {"files": 4278, "code": 448149, "comment": 154356, "blank": 91372, "total_lines": 693877},
+    "production": {"files": 3066, "code": 303475, "comment": 127108, "blank": 56637, "total_lines": 487220},
+    "test": {"files": 1206, "code": 144562, "comment": 27070, "blank": 34706, "total_lines": 206338},
+    "example": {"files": 6, "code": 112, "comment": 178, "blank": 29, "total_lines": 319},
+    "top_dirs": [
+      {"dir": "java", "code": 146564, "category": "production", "by_category": {"production": 78910, "test": 67654}},
+      {"dir": "third_party", "code": 76868, "category": "production", "by_category": {"production": 71384, "test": 5484}},
+      {"dir": "dotnet", "code": 46760, "category": "production", "by_category": {"production": 24216, "test": 22544}},
+      {"dir": "javascript", "code": 44774, "category": "production", "by_category": {"production": 24150, "test": 20512, "example": 112}},
+      {"dir": "py", "code": 35158, "category": "production", "by_category": {"production": 18958, "test": 16200}},
+      {"dir": "rust", "code": 8109, "category": "production", "by_category": {"production": 7295, "test": 814}}
+    ],
+    "test_example_dirs": {"test": ["rb"], "example": []},
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {"files": 10, "code": 1231, "macros": ["_MSC_VER", "_WIN32", "_WIN64", "__CYGWIN__", "__MINGW32__", "__MINGW64__"]},
+        "macos": {"files": 1, "code": 54, "macros": ["__MACH__"]},
+        "linux": {"files": 1, "code": 92, "macros": ["__linux__"]},
+        "posix": {"files": 2, "code": 4, "macros": ["unix"]}
+      },
+      "total": 1381
+    },
+    "platform_branches": {
+      "by_language": {"csharp": {"files": 6, "hits": 15}, "javascript": {"files": 9, "hits": 13}, "python": {"files": 4, "hits": 12}, "rust": {"files": 1, "hits": 1}},
+      "by_platform": {"windows": 9, "macos": 6, "linux": 6},
+      "samples": [
+        {"language": "csharp", "file": "dotnet/src/webdriver/Manager/SeleniumManager.cs", "line": 98, "text": "if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))"},
+        {"language": "javascript", "file": "javascript/selenium-webdriver/net/index.js", "line": 24, "text": "if (process.platform === 'darwin')"},
+        {"language": "python", "file": "py/selenium/webdriver/remote/remote_connection.py", "line": 159, "text": "system = sys.platform"}
+      ],
+      "total": 41
+    }
+  },
+  "tests": {
+    "test_files": 1206,
+    "test_cases": 6521,
+    "frameworks": ["JUnit/TestNG", "jest/mocha", "pytest/unittest", "RSpec"],
+    "by_language": {
+      "Java": {"files": 489, "cases": 3524},
+      "Python": {"files": 146, "cases": 1729},
+      "JavaScript": {"files": 127, "cases": 1208},
+      "Ruby": {"files": 119, "cases": 0},
+      "C#": {"files": 175, "cases": 0}
+    }
+  },
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "confidence": "high",
+    "source": "LICENSE file (full Apache License 2.0 text)",
+    "copyright_holder": "Software Freedom Conservancy (SFC)",
+    "evidence": ["LICENSE: Copyright 2026 Software Freedom Conservancy (SFC)", "java/README.md: Licensed under the Apache License 2.0"]
+  },
+  "dependencies": [
+    {
+      "name": "guava",
+      "ecosystem": "java",
+      "version": "33.6.0-jre",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/google/guava",
+      "declared_in": ["MODULE.bazel:187"],
+      "purpose": "Google 核心库，提供集合、缓存、并发工具等基础功能",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "gson",
+      "ecosystem": "java",
+      "version": "2.14.0",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/google/gson",
+      "declared_in": ["MODULE.bazel:186"],
+      "purpose": "JSON 序列化/反序列化，用于 WebDriver 响应解析",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "netty",
+      "ecosystem": "java",
+      "version": "4.2.15.Final",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/netty/netty",
+      "declared_in": ["MODULE.bazel:203-208, 248"],
+      "purpose": "高性能网络框架，用于 HTTP/WebSocket 通信和 Grid 服务器",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "opentelemetry",
+      "ecosystem": "java",
+      "version": "1.63.0",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/open-telemetry/opentelemetry-java",
+      "declared_in": ["MODULE.bazel:210-218, 247"],
+      "purpose": "分布式追踪，用于 Grid 性能监控和调试",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "lettuce-core",
+      "ecosystem": "java",
+      "version": "7.6.0.RELEASE",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/lettuce-io/lettuce-core",
+      "declared_in": ["MODULE.bazel:203"],
+      "purpose": "Redis 客户端，用于 Grid 分布式会话存储",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "redisson",
+      "ecosystem": "java",
+      "version": "4.6.0",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/redisson/redisson",
+      "declared_in": ["MODULE.bazel:239"],
+      "purpose": "Redis 客户端（备选），用于 Grid 分布式存储",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "junit",
+      "ecosystem": "java",
+      "version": "6.1.0",
+      "scope": "test",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/junit-team/junit5",
+      "declared_in": ["MODULE.bazel:230-236, 249"],
+      "purpose": "单元测试框架",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "protobuf",
+      "ecosystem": "java",
+      "version": "33.5",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/protocolbuffers/protobuf",
+      "declared_in": ["MODULE.bazel:18, 192"],
+      "purpose": "协议缓冲区，用于结构化数据序列化",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "pytest",
+      "ecosystem": "python",
+      "version": "9.0",
+      "scope": "test",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/pytest-dev/pytest",
+      "declared_in": ["py/requirements.txt:10"],
+      "purpose": "Python 测试框架",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "jszip",
+      "ecosystem": "javascript",
+      "version": "3.10.1",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/Stuk/jszip",
+      "declared_in": ["javascript/selenium-webdriver/package.json:27"],
+      "purpose": "ZIP 文件处理，用于解压下载的驱动",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "ws",
+      "ecosystem": "javascript",
+      "version": "8.21.0",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/websockets/ws",
+      "declared_in": ["javascript/selenium-webdriver/package.json:29"],
+      "purpose": "WebSocket 客户端，用于 CDP/BiDi 协议通信",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "tokio",
+      "ecosystem": "rust",
+      "version": "1.52.3",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/tokio-rs/tokio",
+      "declared_in": ["rust/Cargo.toml:19"],
+      "purpose": "异步运行时，用于 Selenium Manager HTTP 请求和并发处理",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "reqwest",
+      "ecosystem": "rust",
+      "version": "0.13.3",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/seanmonstar/reqwest",
+      "declared_in": ["rust/Cargo.toml:21"],
+      "purpose": "HTTP 客户端，用于下载浏览器驱动",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "rustls",
+      "ecosystem": "rust",
+      "version": "0.23",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/rustls/rustls",
+      "declared_in": ["rust/Cargo.toml:26"],
+      "purpose": "TLS 实现，用于 HTTPS 驱动下载",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "serde_json",
+      "ecosystem": "rust",
+      "version": "1.0.149",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/serde-rs/json",
+      "declared_in": ["rust/Cargo.toml:30"],
+      "purpose": "JSON 解析，用于驱动元数据处理",
+      "used_symbols": [],
+      "harmony_adapted": false
+    },
+    {
+      "name": "winapi",
+      "ecosystem": "rust",
+      "version": "0.3.9",
+      "scope": "runtime",
+      "locality": "remote",
+      "acquisition": "package_manager",
+      "source": "https://github.com/retep998/winapi-rs",
+      "declared_in": ["rust/Cargo.toml:48"],
+      "purpose": "Windows API 绑定（Rust），用于 Selenium Manager 在 Windows 上的系统信息获取",
+      "used_symbols": [],
+      "harmony_adapted": false
+    }
+  ],
+  "native_api": {
+    "groups": [
+      {
+        "category": "standard",
+        "platform": "cross",
+        "type": "network_http",
+        "apis": [
+          {"name": "HttpClient", "purpose": "HTTP 客户端，用于与浏览器驱动通信", "count": 15, "evidence": ["java/src/org/openqa/selenium/remote/http/HttpClient.java", "java/src/org/openqa/selenium/remote/http/jdk/JdkHttpClient.java"]},
+          {"name": "HttpURLConnection", "purpose": "标准 Java HTTP 连接（常量引用）", "count": 4, "evidence": ["java/src/org/openqa/selenium/docker/client/InspectContainer.java:20"]}
+        ]
+      },
+      {
+        "category": "standard",
+        "platform": "cross",
+        "type": "network_websocket",
+        "apis": [
+          {"name": "WebSocket", "purpose": "WebSocket 协议，用于 DevTools/CDP 和 BiDi 通信", "count": 20, "evidence": ["java/src/org/openqa/selenium/remote/http/WebSocket.java", "java/src/org/openqa/selenium/netty/server/WebSocketMessageHandler.java"]}
+        ]
+      },
+      {
+        "category": "standard",
+        "platform": "cross",
+        "type": "process",
+        "apis": [
+          {"name": "ProcessBuilder", "purpose": "进程启动，用于启动浏览器驱动进程", "count": 1, "evidence": ["java/src/org/openqa/selenium/os/ExternalProcess.java:47"]},
+          {"name": "subprocess.Popen", "purpose": "Python 进程启动，用于启动驱动", "count": 5, "evidence": ["py/selenium/webdriver/common/service.py:21,26"]},
+          {"name": "spawn", "purpose": "Ruby 进程启动（IO.popen/spawn）", "count": 3, "evidence": ["rb/lib/selenium/webdriver/common/child_process.rb"]}
+        ]
+      },
+      {
+        "category": "standard",
+        "platform": "cross",
+        "type": "filesystem",
+        "apis": [
+          {"name": "std::fs", "purpose": "Rust 文件系统操作，用于驱动下载和管理", "count": 10, "evidence": ["rust/src/files.rs", "rust/src/downloads.rs"]}
+        ]
+      },
+      {
+        "category": "platform",
+        "platform": "windows",
+        "type": "process",
+        "apis": [
+          {"name": "CreateProcess", "purpose": "Windows 进程创建 API（C++ IEDriver）", "count": 8, "evidence": ["cpp/iedriverserver/CHANGELOG:781,788"]},
+          {"name": "CloseHandle", "purpose": "Windows 句柄关闭", "count": 3, "evidence": ["cpp/iedriverserver/IEDriverServer.cpp:93,94,113"]}
+        ]
+      },
+      {
+        "category": "platform",
+        "platform": "cross",
+        "type": "system_info",
+        "apis": [
+          {"name": "sys.platform", "purpose": "Python 平台检测", "count": 12, "evidence": ["py/selenium/webdriver/remote/remote_connection.py:159"]},
+          {"name": "process.platform", "purpose": "Node.js 平台检测", "count": 13, "evidence": ["javascript/selenium-webdriver/net/index.js:24"]},
+          {"name": "RuntimeInformation.IsOSPlatform", "purpose": ".NET 平台检测", "count": 15, "evidence": ["dotnet/src/webdriver/Manager/SeleniumManager.cs:98"]}
+        ]
+      },
+      {
+        "category": "ffi",
+        "platform": "cross",
+        "type": "driver_bridge",
+        "apis": [
+          {"name": "chromedriver", "purpose": "Chrome 浏览器驱动（外部进程）", "count": 0, "evidence": ["通过 HTTP 协议通信，非 FFI"]},
+          {"name": "geckodriver", "purpose": "Firefox 浏览器驱动（外部进程）", "count": 0, "evidence": ["通过 HTTP 协议通信"]}
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "notes": "核心架构为 HTTP/WebSocket 协议驱动，不使用 JNI 或直接 FFI。浏览器驱动作为独立进程通过 JSON Wire Protocol / W3C WebDriver 协议通信。平台特有代码主要集中在驱动路径检测和进程启动参数（Windows creation_flags、macOS darwin 检测）。"
+  },
+  "runtime_surface": {
+    "external_interaction": {
+      "network": {
+        "outbound": true,
+        "protocols": ["HTTP", "WebSocket", "HTTPS"],
+        "endpoints": ["browser driver servers (chromedriver/geckodriver)", "Selenium Grid hubs", "driver download URLs"],
+        "evidence": ["java/src/org/openqa/selenium/remote/http/HttpClient.java", "rust/src/downloads.rs"]
+      },
+      "filesystem": {
+        "read": true,
+        "write": true,
+        "paths": ["driver executables (chromedriver.exe, geckodriver)", "cache directories (~/.cache/selenium)", "log files"],
+        "evidence": ["rust/src/files.rs", "py/selenium/webdriver/common/service.py:64"]
+      },
+      "subprocesses": {
+        "spawns": true,
+        "types": ["browser driver executables", "browser processes (indirect via driver)", "Selenium Grid nodes"],
+        "evidence": ["java/src/org/openqa/selenium/os/ExternalProcess.java", "py/selenium/webdriver/common/service.py:21"]
+      },
+      "devices": [],
+      "gui": false
+    },
+    "services": [
+      {"name": "Selenium Grid Hub", "type": "server", "port": 4444, "description": "分布式测试中心节点，接收测试请求并分发到可用节点", "evidence": ["java/src/org/openqa/selenium/grid/router/"]},
+      {"name": "Selenium Grid Node", "type": "server", "port": "dynamic", "description": "执行节点，运行本地浏览器驱动", "evidence": ["java/src/org/openqa/selenium/grid/node/local/LocalNode.java"]}
+    ],
+    "environment_variables": [
+      {"name": "SELENIUM_BROWSER", "purpose": "指定目标浏览器", "languages": ["javascript"]},
+      {"name": "SELENIUM_REMOTE_URL", "purpose": "指定远程 Grid URL", "languages": ["javascript", "java"]},
+      {"name": "JAVA_HOME", "purpose": "Java JDK 路径（构建依赖）", "languages": ["java"]},
+      {"name": "PATH", "purpose": "查找驱动可执行文件", "languages": ["all"]}
+    ]
+  },
+  "build_env": {
+    "toolchain": {
+      "build_system": "Bazel",
+      "language_versions": {
+        "java": "17+",
+        "python": "3.10+",
+        "node": "20+",
+        "dotnet": "10.0",
+        "ruby": "3.3+",
+        "rust": "2024 edition"
+      },
+      "compilers": ["javac", "python", "dotnet", "rustc"],
+      "build_dependencies": ["Bazelisk", "protoc", "Node.js", "pnpm"]
+    },
+    "platform_support": {
+      "os": ["Windows", "Linux", "macOS"],
+      "arch": ["x86_64", "arm64", "aarch64"],
+      "notes": "跨平台构建，Windows 需要 MSYS2/Visual Studio。Rust 构建支持 Windows ARM64 特殊配置。"
+    },
+    "entry_points": [],
+    "packaging": [
+      {"format": "jar", "ecosystem": "java", "artifact": "selenium-java", "registry": "Maven Central"},
+      {"format": "wheel", "ecosystem": "python", "artifact": "selenium", "registry": "PyPI"},
+      {"format": "npm", "ecosystem": "javascript", "artifact": "selenium-webdriver", "registry": "npm"},
+      {"format": "gem", "ecosystem": "ruby", "artifact": "selenium-webdriver", "registry": "RubyGems"},
+      {"format": "nupkg", "ecosystem": "dotnet", "artifact": "Selenium.WebDriver", "registry": "NuGet"},
+      {"format": "binary", "ecosystem": "rust", "artifact": "selenium-manager", "registry": "embedded"}
+    ],
+    "ci": ["GitHub Actions (.github/workflows/ci.yml)"]
+  },
+  "capability_profile": {
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无 GUI 依赖，库本身不实现桌面界面",
+        "evidence": "无 GUI 代码，控制浏览器而非实现界面"
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无 3D 渲染依赖",
+        "evidence": "库不涉及 GPU/3D 图形"
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无媒体编解码依赖",
+        "evidence": "通过浏览器间接处理音视频，库本身无直接媒体 API"
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无硬件依赖",
+        "evidence": "不直接访问硬件，通过浏览器驱动间接控制"
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "partial",
+    "confidence": "medium",
+    "effort": {"level": "medium", "person_days": [30, 60]},
+    "recommended_path": "核心库为纯协议层（HTTP/WebSocket），可运行于已移植的 Java/Python/Node 运行时。主要障碍为：1) Selenium Manager (Rust) 需编译为 HarmonyOS ARM64 二进制；2) 需要 HarmonyOS 支持的浏览器（目前 Chrome/Firefox/Edge 均未官方支持）；3) 需适配的浏览器驱动（chromedriver 等）。若目标为移动端 WebView 自动化，可探索通过 ArkUI WebView + DevTools 协议桥接。Grid 服务器依赖 Netty HTTP 和 Redis（可选），需验证 Netty 在 HarmonyOS JVM 上的可用性。",
+    "blockers": [
+      {
+        "id": "blocker-1",
+        "category": "browser_support",
+        "severity": "critical",
+        "adaptability": "unadaptable",
+        "description": "缺少 HarmonyOS 支持的浏览器",
+        "harmony_status": "unavailable",
+        "caused_by": ["target_assumption-1"],
+        "manifests_as": [],
+        "evidence": "WebDriver 依赖 Chrome/Firefox/Edge/Safari，目前无 HarmonyOS 官方浏览器驱动"
+      },
+      {
+        "id": "blocker-2",
+        "category": "driver_executable",
+        "severity": "critical",
+        "adaptability": "unadaptable",
+        "description": "缺少浏览器驱动可执行文件",
+        "harmony_status": "unavailable",
+        "caused_by": ["target_assumption-2"],
+        "manifests_as": [],
+        "evidence": "chromedriver/geckodriver/IEDriverServer 需为目标平台编译，目前无 HarmonyOS 版本"
+      },
+      {
+        "id": "blocker-3",
+        "category": "native_tool",
+        "severity": "high",
+        "adaptability": "adaptable",
+        "description": "Selenium Manager 需为 HarmonyOS 编译",
+        "harmony_status": "unknown",
+        "caused_by": ["target_assumption-3"],
+        "manifests_as": [],
+        "evidence": "rust/Cargo.toml: selenium-manager，Rust 运行时已移植，需验证交叉编译"
+      }
+    ],
+    "unadaptable_apis": [
+      {
+        "api": "chromedriver executable",
+        "public_entry": "ChromeDriver",
+        "reason": "浏览器驱动为外部二进制，需官方支持",
+        "blocking_native_api": "chromedriver",
+        "category": "driver_executable",
+        "evidence": "java/src/org/openqa/selenium/chrome/ChromeDriver.java"
+      },
+      {
+        "api": "geckodriver executable",
+        "public_entry": "FirefoxDriver",
+        "reason": "Firefox 驱动为外部二进制，需官方支持",
+        "blocking_native_api": "geckodriver",
+        "category": "driver_executable",
+        "evidence": "java/src/org/openqa/selenium/firefox/FirefoxDriver.java"
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "target_assumption-1",
+        "capability": "HarmonyOS 支持的 WebDriver 兼容浏览器",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "无法执行浏览器自动化",
+        "source": "browser_support"
+      },
+      {
+        "id": "target_assumption-2",
+        "capability": "HarmonyOS 版浏览器驱动可执行文件",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "无法启动浏览器控制进程",
+        "source": "driver_executable"
+      },
+      {
+        "id": "target_assumption-3",
+        "capability": "Rust 运行时（selenium-manager 编译）",
+        "required": true,
+        "target_status": "available",
+        "impact": "Selenium Manager 可编译",
+        "source": "rust_runtime"
+      },
+      {
+        "id": "target_assumption-4",
+        "capability": "Netty HTTP/WebSocket 库（Java）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "Grid 服务器 HTTP 层需验证",
+        "source": "netty"
+      },
+      {
+        "id": "target_assumption-5",
+        "capability": "Redis 客户端（可选，Grid 分布式存储）",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "无 Redis 时 Grid 使用本地内存存储",
+        "source": "redis"
+      }
+    ],
+    "required_permissions": [],
+    "notes": "Selenium 是浏览器自动化库，本身不依赖特定硬件或操作系统 API，核心障碍为生态依赖：浏览器和驱动。若 HarmonyOS PC 提供基于 Chrome/Edge 的 WebView 或内置浏览器，可通过 DevTools 协议桥接（已有 CDP 实现）。Grid 服务器为可选组件，单机测试只需本地驱动。"
+  },
+  "meta": {
+    "analysis_timestamp": "2026-06-25T11:46:39Z",
+    "repo_commit": "trunk",
+    "metrics_file": "runs/default/selenium/2026-06-25T11-46-39-545Z/metrics.json",
+    "confidence_overall": "medium",
+    "observations": [
+      {"dimension": "native_api", "field": "groups[].type", "kind": "coined", "value": "driver_bridge", "rationale": "浏览器驱动为外部进程，通过 HTTP 协议通信，不同于传统 FFI/JNI"}
+    ],
+    "harmony_warnings": []
+  }
+}

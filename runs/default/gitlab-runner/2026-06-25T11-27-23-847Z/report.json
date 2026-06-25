@@ -1,0 +1,305 @@
+{
+  "library": {
+    "name": "gitlab-runner",
+    "kind": "application",
+    "package_name": "gitlab-runner",
+    "aliases": ["gitlab-ci-multi-runner"],
+    "import_names": [],
+    "source_url": "https://gitlab.com/gitlab-org/gitlab-runner",
+    "analyzed_at": "2026-06-25T11:27:23.847Z",
+    "commit": null,
+    "one_liner": "GitLab CI/CD 任务执行器，轮询并运行 GitLab 实例下发的构建任务",
+    "ecosystem": "go",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "GitLab Runner 是一个用 Go 语言编写的 CI/CD 应用程序，负责从 GitLab 实例轮询待执行的构建任务，在本地或远程环境中执行这些任务（如构建、测试、部署），并将执行日志和结果上传回 GitLab。它支持多种执行器（Shell、Docker、Kubernetes、SSH、VirtualBox、Parallels、Instance、Custom），可作为系统服务运行，提供完整的 CLI 命令集用于注册、运行、验证和管理 Runner 实例。",
+    "categories": [
+      {
+        "name": "任务调度与轮询",
+        "description": "从 GitLab API 获取待执行的 CI/CD 任务，处理任务请求、更新和取消",
+        "evidence": ["network/gitlab.go:647", "commands/multi.go"]
+      },
+      {
+        "name": "多执行器支持",
+        "description": "提供 Shell、Docker、Kubernetes、SSH、VirtualBox、Parallels、Instance、Custom 等多种执行环境",
+        "evidence": ["executors/shell/shell.go", "executors/docker/docker.go", "executors/kubernetes/kubernetes.go"]
+      },
+      {
+        "name": "脚本生成",
+        "description": "生成 Bash 和 PowerShell 脚本以在目标环境中执行 CI/CD 步骤",
+        "evidence": ["shells/bash.go", "shells/powershell.go"]
+      },
+      {
+        "name": "制品与缓存管理",
+        "description": "上传/下载构建制品，管理 S3/GCS/Azure 缓存后端",
+        "evidence": ["cache/s3/s3.go", "cache/gcs/gcs.go", "commands/helpers/artifacts_uploader.go"]
+      },
+      {
+        "name": "服务管理",
+        "description": "支持作为系统服务安装和运行（Windows 服务、Linux systemd、macOS launchd）",
+        "evidence": ["commands/service.go", "commands/service_windows.go", "commands/service_linux.go"]
+      },
+      {
+        "name": "密钥管理集成",
+        "description": "支持从 Vault、AWS Secrets Manager、Azure Key Vault、GCP Secret Manager 获取敏感数据",
+        "evidence": ["helpers/vault/client.go", "helpers/secrets/resolvers/"]
+      }
+    ],
+    "domain": "CI/CD DevOps",
+    "target_users": "CI/CD 管理员、DevOps 工程师、GitLab 实例运维人员"
+  },
+  "languages": {
+    "primary": "Go",
+    "all": ["Go", "BASH", "Makefile", "Shell", "JSON", "PowerShell", "Ruby", "Protocol Buffers"],
+    "breakdown": [
+      {"language": "Go", "files": 870, "code": 181454, "pct": 98.95, "production": {"files": 538, "code": 78532}, "test": {"files": 332, "code": 102922}, "example": {"files": 0, "code": 0}},
+      {"language": "BASH", "files": 12, "code": 554, "pct": 0.3, "production": {"files": 11, "code": 552}, "test": {"files": 1, "code": 2}, "example": {"files": 0, "code": 0}},
+      {"language": "Makefile", "files": 4, "code": 498, "pct": 0.27, "production": {"files": 3, "code": 490}, "test": {"files": 1, "code": 8}, "example": {"files": 0, "code": 0}},
+      {"language": "Shell", "files": 12, "code": 356, "pct": 0.19, "production": {"files": 6, "code": 234}, "test": {"files": 6, "code": 122}, "example": {"files": 0, "code": 0}},
+      {"language": "JSON", "files": 2, "code": 175, "pct": 0.1, "production": {"files": 2, "code": 175}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "PowerShell", "files": 7, "code": 82, "pct": 0.04, "production": {"files": 6, "code": 40}, "test": {"files": 1, "code": 42}, "example": {"files": 0, "code": 0}},
+      {"language": "Ruby", "files": 1, "code": 68, "pct": 0.04, "production": {"files": 1, "code": 68}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "Protocol Buffers", "files": 2, "code": 49, "pct": 0.03, "production": {"files": 2, "code": 49}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}}
+    ]
+  },
+  "code_metrics": {
+    "tool": "tokei",
+    "total": {"files": 1190, "code": 183378, "comment": 55840, "blank": 56194, "total_lines": 295412},
+    "production": {"files": 841, "code": 80231, "comment": 52997, "blank": 41939, "total_lines": 175167},
+    "test": {"files": 349, "code": 103147, "comment": 2843, "blank": 14255, "total_lines": 120245},
+    "example": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "top_dirs": [
+      {"dir": "executors", "code": 58595, "category": "test", "by_category": {"production": 18441, "test": 40154}},
+      {"dir": "helpers", "code": 27626, "category": "production", "by_category": {"production": 15876, "test": 11750}},
+      {"dir": "common", "code": 25910, "category": "test", "by_category": {"production": 11431, "test": 14479}},
+      {"dir": "commands", "code": 18518, "category": "test", "by_category": {"production": 8154, "test": 10364}},
+      {"dir": "shells", "code": 10407, "category": "test", "by_category": {"production": 4093, "test": 6314}},
+      {"dir": "functions", "code": 10265, "category": "test", "by_category": {"production": 3677, "test": 6588}},
+      {"dir": "network", "code": 8402, "category": "test", "by_category": {"production": 2827, "test": 5575}},
+      {"dir": "cache", "code": 7636, "category": "test", "by_category": {"production": 3094, "test": 4542}}
+    ],
+    "test_example_dirs": {"test": ["executors", "common", "commands", "shells", "functions", "network", "cache", "tests"], "example": []},
+    "platform_adaptation": {"by_platform": {}, "total": 0, "notes": "无 C/C++/ObjC 文件，无编译宏平台分支"},
+    "platform_branches": {
+      "by_language": {"go": {"files": 26, "hits": 43}},
+      "by_platform": {"windows": 16, "macos": 3, "linux": 9},
+      "samples": [
+        {"language": "go", "file": "shells/bash.go", "line": 494, "text": "if runtime.GOOS == OSLinux {"},
+        {"language": "go", "file": "shells/powershell.go", "line": 867, "text": "return runtime.GOOS == OSWindows && b.Shell == SNPwsh"},
+        {"language": "go", "file": "commands/service.go", "line": 193, "text": "if runtime.GOOS == osTypeWindows {"},
+        {"language": "go", "file": "helpers/docker/machine_command.go", "line": 198, "text": "if runtime.GOOS == \"windows\" {"}
+      ],
+      "total": 43,
+      "notes": "运行时平台判断 (runtime.GOOS) 覆盖 Windows/Linux/macOS"
+    }
+  },
+  "tests": {
+    "test_files": 349,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "Go": {"files": 332, "cases": 0},
+      "Shell": {"files": 6, "cases": 0},
+      "BASH": {"files": 1, "cases": 0},
+      "PowerShell": {"files": 1, "cases": 0},
+      "Dockerfile": {"files": 5, "cases": 0},
+      "Makefile": {"files": 1, "cases": 0},
+      "TOML": {"files": 1, "cases": 0},
+      "Markdown": {"files": 2, "cases": 0}
+    },
+    "notes": "Go 测试使用 testify，集成测试依赖 Docker/Kubernetes 环境"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件为标准 MIT 许可证文本，头部注明 Copyright (c) 2015-2019 GitLab Inc.",
+    "notes": "宽松许可，允许商业使用"
+  },
+  "dependencies": {
+    "count": 108,
+    "manifests": ["go.mod"],
+    "by_ecosystem": {
+      "go": [
+        "github.com/docker/docker", "github.com/docker/cli", "k8s.io/client-go", "k8s.io/api", "k8s.io/apimachinery",
+        "github.com/aws/aws-sdk-go-v2", "github.com/aws/aws-sdk-go-v2/config", "github.com/aws/aws-sdk-go-v2/service/s3",
+        "cloud.google.com/go/storage", "cloud.google.com/go/secretmanager", "cloud.google.com/go/compute/metadata",
+        "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob", "github.com/Azure/azure-sdk-for-go/sdk/azidentity",
+        "github.com/openbao/openbao/api/v2", "github.com/kardianos/service", "github.com/sirupsen/logrus",
+        "github.com/urfave/cli", "github.com/stretchr/testify", "github.com/google/uuid", "github.com/gorilla/websocket",
+        "github.com/creack/pty", "github.com/klauspost/compress", "github.com/minio/minio-go/v7", "mvdan.cc/sh/v3",
+        "gitlab.com/gitlab-org/labkit", "gitlab.com/gitlab-org/fleeting/fleeting", "go.opentelemetry.io/otel"
+      ]
+    },
+    "dependencies": [
+      {"name": "docker", "ecosystem": "go", "registry_name": "github.com/docker/docker", "source_repo": "https://github.com/moby/moby", "scope": "runtime", "version": "v28.5.2+incompatible", "purpose": "Docker SDK，用于 docker/docker-windows 执行器", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:29"], "used_symbols": ["Client.ContainerCreate", "Client.ContainerStart", "Client.ContainerWait"]},
+      {"name": "docker/cli", "ecosystem": "go", "registry_name": "github.com/docker/cli", "source_repo": "https://github.com/docker/cli", "scope": "runtime", "version": "v28.5.2+incompatible", "purpose": "Docker CLI 客户端库", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:28"]},
+      {"name": "kubernetes", "ecosystem": "go", "registry_name": "k8s.io/client-go", "source_repo": "https://github.com/kubernetes/client-go", "scope": "runtime", "version": "v0.35.1", "purpose": "Kubernetes 客户端 SDK，用于 kubernetes 执行器", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:105"]},
+      {"name": "aws-sdk-go-v2", "ecosystem": "go", "registry_name": "github.com/aws/aws-sdk-go-v2", "source_repo": "https://github.com/aws/aws-sdk-go-v2", "scope": "runtime", "version": "v1.41.4", "purpose": "AWS SDK，用于 S3 缓存和 Secrets Manager", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:17"]},
+      {"name": "azure-sdk-for-go", "ecosystem": "go", "registry_name": "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob", "source_repo": "https://github.com/Azure/azure-sdk-for-go", "scope": "runtime", "version": "v1.6.4", "purpose": "Azure SDK，用于 Azure Blob 缓存和 Key Vault", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:14"]},
+      {"name": "google-cloud-storage", "ecosystem": "go", "registry_name": "cloud.google.com/go/storage", "source_repo": "https://github.com/googleapis/google-cloud-go", "scope": "runtime", "version": "v1.60.0", "purpose": "Google Cloud SDK，用于 GCS 缓存和 Secret Manager", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:9"]},
+      {"name": "vault", "ecosystem": "go", "registry_name": "github.com/openbao/openbao/api/v2", "source_repo": "https://github.com/openbao/openbao", "scope": "runtime", "version": "v2.5.1", "purpose": "Vault SDK，用于 Vault 密钥管理", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:59"]},
+      {"name": "kardianos/service", "ecosystem": "go", "registry_name": "github.com/kardianos/service", "source_repo": "https://github.com/kardianos/service", "scope": "runtime", "version": "v1.2.4", "purpose": "跨平台系统服务管理（Windows 服务、Linux systemd、macOS launchd）", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:52"]},
+      {"name": "logrus", "ecosystem": "go", "registry_name": "github.com/sirupsen/logrus", "source_repo": "https://github.com/sirupsen/logrus", "scope": "runtime", "version": "v1.9.4", "purpose": "结构化日志框架", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:68"]},
+      {"name": "urfave/cli", "ecosystem": "go", "registry_name": "github.com/urfave/cli", "source_repo": "https://github.com/urfave/cli", "scope": "runtime", "version": "v1.22.17", "purpose": "CLI 框架，构建 gitlab-runner 命令行", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:71"]},
+      {"name": "testify", "ecosystem": "go", "registry_name": "github.com/stretchr/testify", "source_repo": "https://github.com/stretchr/testify", "scope": "dev", "version": "v1.11.1", "purpose": "测试框架", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:70"]},
+      {"name": "websocket", "ecosystem": "go", "registry_name": "github.com/gorilla/websocket", "source_repo": "https://github.com/gorilla/websocket", "scope": "runtime", "version": "v1.5.4-0.20250319132907-e064f32e3674", "purpose": "WebSocket 客户端，用于实时日志上传", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:40"]},
+      {"name": "pty", "ecosystem": "go", "registry_name": "github.com/creack/pty", "source_repo": "https://github.com/creack/pty", "scope": "runtime", "version": "v1.1.24", "purpose": "伪终端支持，用于 shell 执行器交互模式", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:25"]},
+      {"name": "sh", "ecosystem": "go", "registry_name": "mvdan.cc/sh/v3", "source_repo": "https://github.com/mvdan/sh", "scope": "runtime", "version": "v3.12.0", "purpose": "Shell 解析器，用于脚本分析和生成", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:106"]},
+      {"name": "labkit", "ecosystem": "go", "registry_name": "gitlab.com/gitlab-org/labkit", "source_repo": "https://gitlab.com/gitlab-org/labkit", "scope": "runtime", "version": "v1.62.0", "purpose": "GitLab 工具库，包含 FIPS 检测、日志、错误处理", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:82"]},
+      {"name": "fleeting", "ecosystem": "go", "registry_name": "gitlab.com/gitlab-org/fleeting/fleeting", "source_repo": "https://gitlab.com/gitlab-org/fleeting", "scope": "runtime", "version": "v0.0.0-20260423090250-d453cbd29c2d", "purpose": "GitLab Fleeting 弹性计算框架", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:73"]},
+      {"name": "otel", "ecosystem": "go", "registry_name": "go.opentelemetry.io/otel", "source_repo": "https://github.com/open-telemetry/opentelemetry-go", "scope": "runtime", "version": "v1.43.0", "purpose": "OpenTelemetry SDK，用于追踪和监控", "acquisition": "package_manager", "locality": "remote", "source": "go.mod 远端依赖", "declared_in": ["go.mod:87"]}
+    ],
+    "notes": "主要依赖为 Docker SDK、Kubernetes client-go、云存储 SDK（AWS/GCS/Azure）、密钥管理（Vault）、服务管理（kardianos/service）"
+  },
+  "native_api": {
+    "summary": "主要使用 Go 标准库（exec.Command, os 包）和跨平台服务管理 API；通过外部进程调用（git, docker, VBoxManage, kubectl）实现平台功能；包含运行时平台判断分支。",
+    "groups": [
+      {
+        "type": "go_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "exec.Command", "purpose": "启动外部进程执行命令", "count": 50, "evidence": ["executors/shell/shell_terminal.go:43", "helpers/virtualbox/control.go:83", "common/support.go:438"]},
+          {"name": "exec.CommandContext", "purpose": "带上下文和超时控制的进程启动", "count": 10, "evidence": ["functions/concrete/run/stages/get_sources.go:871", "helpers/process/killer_windows.go:114"]},
+          {"name": "os.Getenv", "purpose": "读取环境变量", "count": 50, "evidence": ["helpers/homedir/homedir.go:29", "helpers/docker/credentials.go:15", "commands/service.go:35"]},
+          {"name": "os.Getuid", "purpose": "获取当前用户 UID（Unix）", "count": 5, "evidence": ["commands/service.go:35", "commands/config_unix.go:17"]},
+          {"name": "runtime.GOOS", "purpose": "运行时操作系统检测", "count": 43, "evidence": ["shells/bash.go:494", "shells/powershell.go:867", "network/gitlab.go:128"]},
+          {"name": "runtime.GOARCH", "purpose": "运行时架构检测", "count": 8, "evidence": ["network/gitlab.go:129", "common/version.go:30"]},
+          {"name": "os.ReadFile", "purpose": "读取文件内容", "count": 3, "evidence": ["network/gitlab.go:622"]}
+        ]
+      },
+      {
+        "type": "service_manager",
+        "category": "platform",
+        "platform": "mixed",
+        "apis": [
+          {"name": "kardianos/service", "purpose": "跨平台系统服务管理（Windows 服务、Linux systemd、macOS launchd）", "count": 10, "evidence": ["commands/service.go:135", "commands/service_windows.go:9", "commands/service_linux.go:13"], "conditional": true}
+        ]
+      },
+      {
+        "type": "external_tools",
+        "category": "system",
+        "platform": "mixed",
+        "apis": [
+          {"name": "git (external)", "purpose": "调用 Git 命令行工具进行版本控制操作", "count": 20, "evidence": ["common/support.go:438", "commands/helpers/file_archiver.go:232"]},
+          {"name": "docker (external)", "purpose": "调用 Docker CLI 进行容器操作", "count": 5, "evidence": ["executors/docker/docker_command_integration_test.go:1358"]},
+          {"name": "VBoxManage (external)", "purpose": "调用 VirtualBox 命令行管理虚拟机", "count": 30, "evidence": ["helpers/virtualbox/control.go:97", "helpers/virtualbox/control.go:250"]},
+          {"name": "kubectl (external)", "purpose": "调用 Kubernetes CLI 管理集群资源", "count": 3, "evidence": ["magefiles/kubernetes/provision/provisioner.go:49"]},
+          {"name": "taskkill (external)", "purpose": "Windows 进程终止命令", "count": 1, "evidence": ["helpers/process/killer_windows.go:114"], "conditional": true}
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "应用作为 CLI 工具运行，需要网络连接到 GitLab 实例、读取配置文件和制品缓存、调用外部工具（git/docker/VBoxManage）、读取大量环境变量、可选作为系统服务运行。",
+    "network": [
+      {"detail": "GitLab API HTTP 请求（任务轮询、制品上传、日志上传）", "purpose": "与 GitLab 实例通信获取任务和上传结果", "evidence": ["network/gitlab.go:647", "network/gitlab.go:712"]}
+    ],
+    "filesystem": [
+      {"detail": "配置文件 ~/.gitlab-runner/config.toml 或 /etc/gitlab-runner/config.toml", "purpose": "存储 Runner 配置", "evidence": ["commands/config_unix.go:12", "commands/config_windows.go:7"]},
+      {"detail": "构建制品和缓存目录", "purpose": "临时存储构建产物", "evidence": ["commands/helpers/artifacts_uploader.go"]}
+    ],
+    "env_vars": [
+      {"name": "HOME", "purpose": "用户主目录，用于定位配置和缓存", "evidence": ["functions/concrete/run/stages/get_sources.go:257"]},
+      {"name": "PATH", "purpose": "外部工具查找路径", "evidence": ["helpers/virtualbox/control_windows.go:22"]},
+      {"name": "CI_*", "purpose": "GitLab CI 环境变量", "evidence": ["main_test.go:16"]},
+      {"name": "DOCKER_HOST", "purpose": "Docker 守护进程地址", "evidence": ["helpers/docker/credentials.go:17"]},
+      {"name": "AWS_*", "purpose": "AWS SDK 环境变量", "evidence": ["cache/s3v2/s3.go:467"]},
+      {"name": "MACHINE_STORAGE_PATH", "purpose": "docker-machine 存储路径", "evidence": ["helpers/docker/machine_command.go:406"]},
+      {"name": "KUBERNETES_SERVICE_HOST", "purpose": "Kubernetes 服务地址（Pod 内运行时）", "evidence": ["executors/kubernetes/kubernetes_integration_test.go:2787"]}
+    ],
+    "subprocess": [
+      {"command": "git", "purpose": "版本控制操作（克隆、检出、凭证配置）", "evidence": ["common/support.go:438", "functions/concrete/run/stages/get_sources.go:871"]},
+      {"command": "docker", "purpose": "容器创建、启动、执行命令", "evidence": ["executors/docker/docker_command_integration_test.go:1358"]},
+      {"command": "VBoxManage", "purpose": "VirtualBox 虚拟机管理（创建、启动、快照）", "evidence": ["helpers/virtualbox/control.go:97"]},
+      {"command": "kubectl", "purpose": "Kubernetes 资源管理（测试/开发）", "evidence": ["magefiles/kubernetes/provision/provisioner.go:49"]},
+      {"command": "taskkill", "purpose": "Windows 进程终止", "evidence": ["helpers/process/killer_windows.go:114"]},
+      {"command": "bash/sh", "purpose": "Shell 脚本执行", "evidence": ["executors/shell/shell_terminal.go:43"]},
+      {"command": "pwsh/powershell", "purpose": "PowerShell 脚本执行", "evidence": ["shells/powershell.go"]}
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Go 1.26.3",
+    "runtime_version": "Go 1.24+（鸿蒙已移植）",
+    "build_system": "Makefile + Mage（Go 构建工具）",
+    "compiler_extensions": [],
+    "platforms": [
+      {"os": "windows", "arch": "x86_64", "evidence": ["commands/service_windows.go", "helpers/process/killer_windows.go"]},
+      {"os": "linux", "arch": "x86_64", "evidence": ["commands/service_linux.go", "runtime.GOOS 检测"]},
+      {"os": "linux", "arch": "arm64", "evidence": ["runtime.GOARCH 检测"]},
+      {"os": "macos", "arch": "x86_64", "evidence": ["commands/service_darwin.go"]},
+      {"os": "macos", "arch": "arm64", "evidence": ["runtime.GOARCH 检测"]}
+    ],
+    "entry_points": [
+      {"type": "main", "name": "gitlab-runner", "command": "CLI 主程序入口，支持 register/run/unregister/install 等子命令", "evidence": ["main.go:51"]}
+    ],
+    "packaging": "RPM/DEB 包、Windows MSI、Docker 镜像、zip 分发；运行依赖外部 Go 运行时或捆绑为单文件",
+    "notes": "官方提供多平台二进制分发；可通过系统包管理器安装"
+  },
+  "capability_profile": {
+    "summary": "本项目不涉及 GUI 桌面界面、3D 渲染、媒体处理或特定硬件依赖；为纯 CLI 应用，依赖外部工具（git/docker/VBoxManage）实现 CI/CD 功能。",
+    "scenarios": [
+      {"key": "gui", "present": false},
+      {"key": "rendering_3d", "present": false},
+      {"key": "media", "present": false},
+      {"key": "hardware", "present": false}
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (自研内核，Go 运行时已移植至 arm64/x86_64；应用以 CLI 工具形态运行，通过 OHOS NDK 交叉编译)",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {"person_days": [15, 40]},
+    "confidence": "medium",
+    "recommended_path": "cross_compile + service_rewrite",
+    "summary": "GitLab Runner 是 Go 语言 CLI 应用，Go 运行时已移植至鸿蒙 PC，核心代码可交叉编译运行。主要适配工作量在于：（1）服务管理模块需适配鸿蒙桌面应用形态（从 systemd/Windows 服务改为原生应用包）；（2）外部工具调用（git/docker/VBoxManage/kubectl）需评估鸿蒙环境是否有对应工具或替代方案；（3）Docker/Kubernetes 执行器依赖容器/集群环境，需鸿蒙侧有相应运行时支持。",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {"id": "ta:go_runtime", "capability": "Go 运行时", "required": true, "target_status": "available", "impact": "Go 代码可直接编译运行", "source": "harmony-pc-capabilities.json#runtimes.go"},
+      {"id": "ta:cli_app", "capability": "CLI 应用形态（命令行工具直接运行）", "required": true, "target_status": "unknown", "impact": "不确定鸿蒙 PC 是否支持传统 CLI 工具直接运行（非 ArkTS 应用包）", "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"},
+      {"id": "ta:git_tool", "capability": "Git 命令行工具", "required": true, "target_status": "unknown", "impact": "任务执行依赖 git 操作（克隆、检出），需确认鸿蒙是否有 git", "source": "常见工具，待核实"},
+      {"id": "ta:docker_runtime", "capability": "Docker 容器运行时", "required": false, "target_status": "unknown", "impact": "Docker 执行器依赖 Docker 守护进程；若不支持则该执行器不可用", "source": "容器运行时，待核实"},
+      {"id": "ta:kubernetes_client", "capability": "Kubernetes 客户端 API（kube-apiserver 通信）", "required": false, "target_status": "unknown", "impact": "Kubernetes 执行器需访问 kube-apiserver；纯 API 客户端理论上可工作", "source": "k8s.io/client-go 为纯 Go SDK"},
+      {"id": "ta:service_manager", "capability": "系统服务管理（类似 systemd/service）", "required": false, "target_status": "unknown", "impact": "install/start/stop 命令需适配鸿蒙应用包机制", "source": "harmony-pc-capabilities.json#process_security"}
+    ],
+    "required_permissions": [],
+    "blockers": [
+      {"id": "bk:service", "issue": "服务管理模块依赖 kardianos/service 库，该库支持 Windows 服务/Linux systemd/macOS launchd，鸿蒙无对应服务管理机制", "severity": "major", "adaptability": "adaptable", "category": "platform_service", "source_dimension": "dependencies", "harmony_status": "needs_rewrite", "remediation": "将 install/start/stop 命令改造为鸿蒙应用包的安装/启动/卸载逻辑；或作为普通 CLI 工具运行（放弃服务管理）", "caused_by": ["ta:service_manager"], "evidence": ["commands/service.go", "commands/service_windows.go", "commands/service_linux.go"]},
+      {"id": "bk:git_tool", "issue": "任务执行依赖 git 命令行工具进行克隆和检出操作", "severity": "major", "adaptability": "adaptable", "category": "external_tool", "source_dimension": "runtime_surface", "harmony_status": "unknown", "remediation": "需确认鸿蒙 PC 是否提供 git 命令；若无则需提供替代方案（如内置 git 实现或通过其他版本控制方式）", "caused_by": ["ta:git_tool"], "evidence": ["common/support.go:438", "functions/concrete/run/stages/get_sources.go:871"]},
+      {"id": "bk:docker_exec", "issue": "Docker 执行器依赖 Docker 守护进程和 CLI，鸿蒙可能无 Docker 支持", "severity": "minor", "adaptability": "partial", "category": "external_tool", "source_dimension": "dependencies", "harmony_status": "unknown", "remediation": "若鸿蒙无 Docker，该执行器不可用；可保留 shell/ssh/custom 执行器", "caused_by": ["ta:docker_runtime"], "evidence": ["executors/docker/docker.go", "go.mod:29"]},
+      {"id": "bk:virtualbox", "issue": "VirtualBox 执行器依赖 VBoxManage 命令行，为平台特定虚拟化工具", "severity": "minor", "adaptability": "unadaptable", "category": "external_tool", "source_dimension": "runtime_surface", "harmony_status": "unavailable", "remediation": "VirtualBox 执行器在鸿蒙不可用；建议放弃该执行器或寻找鸿蒙虚拟化替代", "evidence": ["helpers/virtualbox/control.go"]}
+    ],
+    "compatible": [
+      {"aspect": "核心 Go 代码（任务轮询、脚本生成、制品处理）", "note": "Go 运行时已移植，可直接交叉编译运行", "evidence": []},
+      {"aspect": "Shell 执行器（bash/sh 执行）", "note": "若鸿蒙提供 POSIX shell，该执行器可用", "evidence": ["executors/shell/shell.go"]},
+      {"aspect": "SSH 执行器", "note": "纯 Go SSH 客户端，理论上可工作", "evidence": ["executors/ssh/ssh.go"]},
+      {"aspect": "Custom 执行器", "note": "可配置自定义执行脚本，灵活性高", "evidence": ["executors/custom/custom.go"]}
+    ],
+    "key_tasks": [
+      "确认鸿蒙 PC 是否支持传统 CLI 工具直接运行（非 ArkTS 应用包形态）",
+      "评估鸿蒙环境是否提供 git 命令行工具",
+      "将服务管理命令改造为鸿蒙应用包安装/启动逻辑",
+      "验证 shell/ssh/custom 执行器在鸿蒙环境下的可用性",
+      "评估 Docker/Kubernetes 执行器的鸿蒙替代方案"
+    ],
+    "notes": "评估置信度为 medium，因 CLI 应用形态、git 工具、Docker/Kubernetes 运行时等关键目标能力状态为 unknown。若 CLI 工具形态不被支持，需重构为 ArkTS 应用或放弃；若 git 不可用则任务执行受阻。建议先核实这些目标能力后再决定完整适配路径。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "tokei",
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": [
+      {"dimension": "harmony_adaptation", "field": "target_assumptions", "kind": "gap", "value": "CLI 应用形态、git 工具、Docker/Kubernetes 运行时均为 unknown", "rationale": "这些能力是 Runner 正常运行的关键依赖，需核实后才能确定完整适配路径"}
+    ]
+  }
+}

@@ -1,0 +1,914 @@
+{
+  "library": {
+    "name": "openvpn",
+    "kind": "application",
+    "package_name": null,
+    "aliases": [],
+    "import_names": [],
+    "source_url": "https://github.com/OpenVPN/openvpn",
+    "analyzed_at": "2026-06-25T11:00:25.898Z",
+    "commit": null,
+    "one_liner": "开源 VPN 隧道守护进程，提供基于 SSL/TLS 的安全隧道、加密、认证和压缩功能",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "OpenVPN 是一款开源 VPN 隧道守护进程应用程序，通过单一 TCP/UDP 端口安全隧道化 IP 网络。它支持 SSL/TLS 会话认证与密钥交换、数据包加密、认证和压缩，可运行于点对点或服务器模式。用户通过配置文件或命令行参数启动它建立安全 VPN 连接。",
+    "categories": [
+      {
+        "name": "VPN 隧道建立与管理",
+        "description": "核心功能：建立并维护加密 VPN 隧道，支持点对点和服务器两种运行模式，处理连接初始化、断开重连、信号处理等",
+        "evidence": ["src/openvpn/openvpn.c", "src/openvpn/init.c", "src/openvpn/forward.c"]
+      },
+      {
+        "name": "SSL/TLS 认证与密钥交换",
+        "description": "基于 OpenSSL/mbedTLS/wolfSSL 实现的 TLS 会话认证、证书验证、密钥协商和加密通道建立",
+        "evidence": ["src/openvpn/ssl.c", "src/openvpn/ssl_openssl.c", "src/openvpn/crypto_openssl.c"]
+      },
+      {
+        "name": "数据包加密与认证",
+        "description": "数据通道加密，支持 AES-GCM、ChaCha20-Poly1305 等现代加密算法，包含数据包重放保护和 epoch 密钥轮换",
+        "evidence": ["src/openvpn/crypto.c", "src/openvpn/crypto_epoch.c", "src/openvpn/packet_id.c"]
+      },
+      {
+        "name": "虚拟网络接口 (TUN/TAP)",
+        "description": "配置和管理虚拟 TUN/TAP 网络适配器，处理 IP 地址分配、路由设置、DNS 配置等",
+        "evidence": ["src/openvpn/tun.c", "src/openvpn/tun.h", "src/openvpn/route.c"]
+      },
+      {
+        "name": "数据通道卸载 (DCO)",
+        "description": "Linux/FreeBSD/Windows 的数据通道卸载支持，通过内核模块 ovpn-dco 加速数据处理",
+        "evidence": ["src/openvpn/dco.c", "src/openvpn/dco_linux.c", "src/openvpn/dco_win.c"]
+      },
+      {
+        "name": "压缩支持",
+        "description": "可选的数据压缩功能，支持 LZO 和 LZ4 压缩算法以降低带宽占用",
+        "evidence": ["src/openvpn/lzo.c", "src/openvpn/comp-lz4.c"]
+      },
+      {
+        "name": "插件与管理接口",
+        "description": "插件系统支持外部认证（如 PAM），管理接口允许远程控制和监控",
+        "evidence": ["src/openvpn/plugin.c", "src/openvpn/manage.c", "src/plugins/auth-pam/"]
+      }
+    ],
+    "domain": "networking",
+    "target_users": "网络管理员、VPN 用户、企业 IT 管理员"
+  },
+  "languages": {
+    "primary": "C",
+    "all": ["C", "C Header", "ReStructuredText", "Shell", "Autoconf", "CMake", "Automake", "Python"],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 159,
+        "code": 93462,
+        "pct": 79.07,
+        "production": {"files": 121, "code": 84747},
+        "test": {"files": 31, "code": 7347},
+        "example": {"files": 7, "code": 1368}
+      },
+      {
+        "language": "C Header",
+        "files": 143,
+        "code": 11658,
+        "pct": 9.86,
+        "production": {"files": 140, "code": 11484},
+        "test": {"files": 3, "code": 174},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "ReStructuredText",
+        "files": 32,
+        "code": 6910,
+        "pct": 5.85,
+        "production": {"files": 32, "code": 6910},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Shell",
+        "files": 27,
+        "code": 1650,
+        "pct": 1.4,
+        "production": {"files": 10, "code": 908},
+        "test": {"files": 11, "code": 599},
+        "example": {"files": 6, "code": 143}
+      },
+      {
+        "language": "Autoconf",
+        "files": 6,
+        "code": 1534,
+        "pct": 1.3,
+        "production": {"files": 5, "code": 1156},
+        "test": {"files": 1, "code": 378},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "CMake",
+        "files": 11,
+        "code": 1202,
+        "pct": 1.02,
+        "production": {"files": 11, "code": 1202},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Automake",
+        "files": 25,
+        "code": 954,
+        "pct": 0.81,
+        "production": {"files": 16, "code": 496},
+        "test": {"files": 7, "code": 442},
+        "example": {"files": 2, "code": 16}
+      },
+      {
+        "language": "Python",
+        "files": 7,
+        "code": 384,
+        "pct": 0.32,
+        "production": {"files": 4, "code": 296},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 3, "code": 88}
+      },
+      {
+        "language": "JSON",
+        "files": 5,
+        "code": 376,
+        "pct": 0.32,
+        "production": {"files": 5, "code": 376},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Perl",
+        "files": 3,
+        "code": 66,
+        "pct": 0.06,
+        "production": {"files": 0, "code": 0},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 3, "code": 66}
+      },
+      {
+        "language": "Module-Definition",
+        "files": 1,
+        "code": 6,
+        "pct": 0.01,
+        "production": {"files": 0, "code": 0},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 1, "code": 6}
+      },
+      {
+        "language": "BASH",
+        "files": 2,
+        "code": 4,
+        "pct": 0.0,
+        "production": {"files": 2, "code": 4},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Markdown",
+        "files": 5,
+        "code": 0,
+        "pct": 0.0,
+        "production": {"files": 2, "code": 0},
+        "test": {"files": 3, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Plain Text",
+        "files": 10,
+        "code": 0,
+        "pct": 0.0,
+        "production": {"files": 5, "code": 0},
+        "test": {"files": 5, "code": 0},
+        "example": {"files": 0, "code": 0}
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "tokei",
+    "total": {"files": 436, "code": 118206, "comment": 32532, "blank": 23379, "total_lines": 174117},
+    "production": {"files": 353, "code": 107579, "comment": 30086, "blank": 20886, "total_lines": 158551},
+    "test": {"files": 61, "code": 8940, "comment": 1673, "blank": 2084, "total_lines": 12697},
+    "example": {"files": 22, "code": 1687, "comment": 773, "blank": 409, "total_lines": 2869},
+    "top_dirs": [
+      {"dir": "src", "code": 96489, "category": "production", "by_category": {"production": 96489}},
+      {"dir": "tests", "code": 8940, "category": "test", "by_category": {"test": 8940}},
+      {"dir": "doc", "code": 6249, "category": "production", "by_category": {"production": 6249}},
+      {"dir": ".", "code": 2572, "category": "production", "by_category": {"production": 2572}},
+      {"dir": "sample", "code": 1687, "category": "example", "by_category": {"example": 1687}},
+      {"dir": "include", "code": 836, "category": "production", "by_category": {"production": 836}},
+      {"dir": "distro", "code": 645, "category": "production", "by_category": {"production": 645}},
+      {"dir": "dev-tools", "code": 419, "category": "production", "by_category": {"production": 419}},
+      {"dir": "contrib", "code": 365, "category": "production", "by_category": {"production": 365}},
+      {"dir": "debug", "code": 4, "category": "production", "by_category": {"production": 4}}
+    ],
+    "test_example_dirs": {"test": ["tests"], "example": ["sample"]},
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {"files": 57, "code": 9194, "macros": ["WIN32", "_MSC_VER", "_WIN32", "_WIN64", "__MINGW32__"]},
+        "macos": {"files": 4, "code": 10, "macros": ["__APPLE__"]}
+      },
+      "total": 9204,
+      "notes": "C/C++/ObjC文件中被编译宏(#ifdef _WIN32/__APPLE__/__linux__...)正向包裹的生产代码行"
+    },
+    "platform_branches": {"by_language": {}, "by_platform": {}, "samples": [], "total": 0, "notes": "C/C++平台分支由platform_adaptation覆盖"}
+  },
+  "tests": {
+    "test_files": 61,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "Autoconf": {"files": 1, "cases": 0},
+      "Automake": {"files": 7, "cases": 0},
+      "C": {"files": 31, "cases": 0},
+      "C Header": {"files": 3, "cases": 0},
+      "Markdown": {"files": 3, "cases": 0},
+      "Plain Text": {"files": 5, "cases": 0},
+      "Shell": {"files": 11, "cases": 0}
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "GPL-2.0",
+    "name": "GNU General Public License v2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["COPYING", "COPYRIGHT.GPL"],
+    "evidence": "COPYING 文件明确声明 OpenVPN 使用 GPL-2.0 许可，并包含 OpenSSL 和 Apache-2.0 链接例外条款",
+    "notes": "GPL-2.0 copyleft 许可证，含 OpenSSL 和 Apache-2.0 链接例外，允许与这些库链接分发。还包含 LZO 链接例外。源文件头均标注 GPL-2.0。"
+  },
+  "dependencies": {
+    "count": 12,
+    "manifests": ["configure.ac", "CMakeLists.txt", "src/openvpn/Makefile.am"],
+    "by_ecosystem": {
+      "cpp": ["openssl", "lzo2", "liblz4", "libnl-genl-3.0", "libcap-ng", "libpkcs11-helper-1", "p11-kit-1", "libsystemd"],
+      "system": ["tap-windows6", "ovpn-dco"]
+    },
+    "dependencies": [
+      {
+        "name": "openssl",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">=1.1.0",
+        "purpose": "TLS/SSL 加密库，提供证书验证、密钥交换、数据加密等核心加密功能",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package/pkg-config，需预装 OpenSSL)",
+        "declared_in": ["configure.ac:772-783", "CMakeLists.txt"],
+        "used_symbols": ["SSL_CTX_new", "EVP_aes_256_gcm", "RAND_bytes", "X509_verify_cert"],
+        "source_repo": "https://github.com/openssl/openssl",
+        "harmony_adapted": true,
+        "harmony_adapted_source": "cmd-pkgs"
+      },
+      {
+        "name": "mbedtls",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">=3.2.1",
+        "purpose": "可选 TLS 替代实现（mbed TLS）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config)",
+        "declared_in": ["configure.ac:878-928"],
+        "source_repo": "https://github.com/Mbed-TLS/mbedtls",
+        "harmony_adapted": true,
+        "harmony_adapted_source": "cmd-pkgs"
+      },
+      {
+        "name": "wolfssl",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选 TLS 替代实现（wolfSSL）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config)",
+        "declared_in": ["configure.ac:930-981"],
+        "source_repo": "https://github.com/wolfSSL/wolfssl",
+        "harmony_adapted": true,
+        "harmony_adapted_source": "cmd-pkgs"
+      },
+      {
+        "name": "lzo2",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "LZO 压缩库，用于 VPN 数据压缩",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config 或 -llzo2)",
+        "declared_in": ["configure.ac:986-1031"],
+        "used_symbols": ["lzo1x_1_15_compress"],
+        "source_repo": "https://github.com/nickolasburr/lzo",
+        "harmony_adapted": true,
+        "harmony_adapted_source": "cmd-pkgs"
+      },
+      {
+        "name": "liblz4",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">=1.7.1",
+        "purpose": "LZ4 压缩库，现代高速压缩算法",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config)",
+        "declared_in": ["configure.ac:1037-1106"],
+        "used_symbols": ["LZ4_compress_default", "LZ4_decompress_safe"],
+        "source_repo": "https://github.com/lz4/lz4",
+        "harmony_adapted": true,
+        "harmony_adapted_source": "cmd-pkgs"
+      },
+      {
+        "name": "libnl-genl-3.0",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">=3.4.0",
+        "purpose": "Linux generic netlink 库，用于与 ovpn-dco 内核模块通信（DCO 数据通道卸载）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config，仅 Linux)",
+        "declared_in": ["configure.ac:709-717"],
+        "used_symbols": ["nl_socket_alloc", "genl_connect", "genl_ctrl_resolve", "nlmsg_alloc"],
+        "source_repo": "https://github.com/thom311/libnl",
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libcap-ng",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Linux capabilities 库，用于进程权限管理",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config，仅 Linux)",
+        "declared_in": ["configure.ac:755-768"],
+        "source_repo": "https://github.com/stevegrubb/libcap-ng",
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libpkcs11-helper-1",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">=1.11",
+        "purpose": "PKCS#11 智能卡/硬件令牌支持",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config)",
+        "declared_in": ["configure.ac:1200-1216"],
+        "source_repo": "https://github.com/OpenSC/pkcs11-helper",
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "p11-kit-1",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "PKCS#11 模块代理",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config)",
+        "declared_in": ["configure.ac:1210-1216"],
+        "source_repo": "https://github.com/p11-glue/p11-kit",
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libsystemd",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">216",
+        "purpose": "systemd 集成，支持 systemd 服务单元和密码查询",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config)",
+        "declared_in": ["configure.ac:1113-1134"],
+        "source_repo": "https://github.com/systemd/systemd",
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "tap-windows6",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Windows TAP 驱动，虚拟网络适配器",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（Windows 预装 tap-windows6 驱动）",
+        "declared_in": ["configure.ac:302-307", "src/openvpn/tun.h:28"],
+        "source_repo": "https://github.com/OpenVPN/tap-windows6",
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ovpn-dco",
+        "ecosystem": "system",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Linux 内核模块，数据通道卸载加速",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Linux 内核模块（需加载 ovpn-dco.ko）",
+        "declared_in": ["src/openvpn/dco_linux.c:44", "README.dco.md"],
+        "source_repo": "https://github.com/OpenVPN/ovpn-dco",
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "OpenVPN 运行时依赖 OpenSSL/mbedTLS/wolfSSL（三选一）作为加密后端，LZO/LZ4 作为可选压缩库。Linux 平台额外依赖 libnl-genl（DCO）和 libcap-ng。Windows 需要 tap-windows6 驱动。"
+  },
+  "native_api": {
+    "summary": "跨平台 VPN 应用，包含大量平台特有 API：Windows 使用 Win32 API（进程创建、文件操作、Winsock、iphlpapi、WFP），Linux/Unix 使用 POSIX API（socket、ioctl、fork/execve、epoll、netlink），所有平台均调用加密库 API（OpenSSL/mbedTLS/wolfSSL）。核心依赖 TUN/TAP 虚拟网络设备和 DCO 内核模块。",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "socket", "purpose": "创建网络套接字", "count": 50, "evidence": ["src/openvpn/socket.c:120", "src/openvpn/dco_freebsd.c:208"]},
+          {"name": "bind", "purpose": "绑定套接字到地址端口", "count": 30, "evidence": ["src/openvpn/socket.c:450"]},
+          {"name": "listen", "purpose": "监听 TCP 连接", "count": 15, "evidence": ["src/openvpn/mtcp.c:88"]},
+          {"name": "accept", "purpose": "接受 TCP 连接", "count": 20, "evidence": ["src/openvpn/mtcp.c:120"]},
+          {"name": "send", "purpose": "发送数据", "count": 100, "evidence": ["src/openvpn/forward.c:200"]},
+          {"name": "recv", "purpose": "接收数据", "count": 100, "evidence": ["src/openvpn/forward.c:250"]},
+          {"name": "select", "purpose": "I/O 多路复用", "count": 30, "evidence": ["src/openvpn/event.c:150"]},
+          {"name": "poll", "purpose": "I/O 多路复用", "count": 25, "evidence": ["src/openvpn/event.c:200"]},
+          {"name": "getaddrinfo", "purpose": "DNS 解析", "count": 20, "evidence": ["src/openvpn/socket.c:600"]}
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "CreateFile", "purpose": "创建/打开文件或设备句柄（访问 DCO 设备）", "count": 5, "evidence": ["src/openvpn/dco_win.c:79", "src/openvpn/dco_win.c:84"], "conditional": true},
+          {"name": "CreateProcess", "purpose": "创建子进程（启动外部命令）", "count": 3, "evidence": ["src/openvpn/win32.c:1023", "src/openvpn/win32.c:1093"], "conditional": true},
+          {"name": "WaitForSingleObject", "purpose": "等待对象（进程、事件）", "count": 10, "evidence": ["src/openvpn/win32.c:783", "src/openvpn/event.c:439"], "conditional": true},
+          {"name": "LoadLibraryW", "purpose": "动态加载 DLL（插件）", "count": 2, "evidence": ["src/openvpn/plugin.c:300"], "conditional": true},
+          {"name": "GetProcAddress", "purpose": "获取 DLL 函数地址", "count": 5, "evidence": ["src/openvpn/plugin.c:223", "src/openvpn/win32.c:1294"], "conditional": true},
+          {"name": "SetConsoleOutputCP", "purpose": "设置控制台编码", "count": 1, "evidence": ["src/openvpn/openvpn.c:163"], "conditional": true},
+          {"name": "WideCharToMultiByte", "purpose": "Unicode 转换", "count": 3, "evidence": ["src/openvpn/openvpn.c:367"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/win32.c", "src/openvpn/syshead.h:38-45"]
+      },
+      {
+        "type": "winsock2",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "WSAStartup", "purpose": "初始化 Winsock", "count": 1, "evidence": ["src/openvpn/win32.c:68"], "conditional": true},
+          {"name": "WSACleanup", "purpose": "清理 Winsock", "count": 1, "evidence": ["src/openvpn/win32.c"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/syshead.h:350-351", "src/openvpn/dco_win.c:38"]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "fork", "purpose": "创建子进程（守护化、执行外部命令）", "count": 5, "evidence": ["src/openvpn/misc.c:200"], "conditional": true},
+          {"name": "execve", "purpose": "执行外部程序", "count": 10, "evidence": ["src/openvpn/run_command.c:150"], "conditional": true},
+          {"name": "chroot", "purpose": "改变根目录（安全隔离）", "count": 2, "evidence": ["src/openvpn/misc.c:300"], "conditional": true},
+          {"name": "mlockall", "purpose": "锁定内存（防止交换）", "count": 2, "evidence": ["src/openvpn/misc.c:350"], "conditional": true},
+          {"name": "setsid", "purpose": "创建新会话（守护化）", "count": 3, "evidence": ["src/openvpn/misc.c:180"], "conditional": true},
+          {"name": "mmap", "purpose": "内存映射", "count": 5, "evidence": ["src/openvpn/syshead.h:358"], "conditional": true},
+          {"name": "getrlimit", "purpose": "获取资源限制", "count": 2, "evidence": ["configure.ac:567"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/syshead.h:146", "configure.ac:562-572"]
+      },
+      {
+        "type": "epoll",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {"name": "epoll_create", "purpose": "创建 epoll 实例", "count": 2, "evidence": ["src/openvpn/event.c:36"], "conditional": true},
+          {"name": "epoll_ctl", "purpose": "控制 epoll 实例", "count": 20, "evidence": ["src/openvpn/event.c:80"], "conditional": true},
+          {"name": "epoll_wait", "purpose": "等待事件", "count": 30, "evidence": ["src/openvpn/event.c:120"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/event.c:36", "configure.ac:512-516"]
+      },
+      {
+        "type": "ioctl",
+        "category": "system",
+        "platform": "posix",
+        "apis": [
+          {"name": "ioctl", "purpose": "设备控制（TUN/TAP 配置、DCO 控制）", "count": 50, "evidence": ["src/openvpn/tun.c:300", "src/openvpn/dco_freebsd.c:177"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/syshead.h:118-120", "src/openvpn/dco_freebsd.c"]
+      },
+      {
+        "type": "netlink",
+        "category": "system",
+        "platform": "linux",
+        "apis": [
+          {"name": "nl_socket_alloc", "purpose": "创建 netlink 套接字", "count": 3, "evidence": ["src/openvpn/dco_linux.c:89"], "conditional": true},
+          {"name": "genl_connect", "purpose": "连接 generic netlink", "count": 2, "evidence": ["src/openvpn/dco_linux.c:97"], "conditional": true},
+          {"name": "genl_ctrl_resolve", "purpose": "解析 netlink family", "count": 3, "evidence": ["src/openvpn/dco_linux.c:105"], "conditional": true},
+          {"name": "nl_recvmsgs", "purpose": "接收 netlink 消息", "count": 20, "evidence": ["src/openvpn/dco_linux.c:140"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/dco_linux.c:46-50"]
+      },
+      {
+        "type": "tun_tap",
+        "category": "system",
+        "platform": "linux",
+        "apis": [
+          {"name": "TUNSETIFF", "purpose": "ioctl 命令，配置 TUN/TAP 设备", "count": 10, "evidence": ["src/openvpn/tun.c:400"], "conditional": true},
+          {"name": "linux/if_tun.h", "purpose": "Linux TUN 接口头文件", "count": 1, "evidence": ["src/openvpn/syshead.h:223"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/syshead.h:215-224", "src/openvpn/tun.c"]
+      },
+      {
+        "type": "iphlpapi",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "GetAdaptersInfo", "purpose": "获取网络适配器信息", "count": 5, "evidence": ["src/openvpn/tun.c"], "conditional": true},
+          {"name": "AddIPAddress", "purpose": "添加 IP 地址", "count": 3, "evidence": ["src/openvpn/tun.c"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/syshead.h:344"]
+      },
+      {
+        "type": "openssl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "SSL_CTX_new", "purpose": "创建 SSL 上下文", "count": 5, "evidence": ["src/openvpn/crypto_openssl.c:812"]},
+          {"name": "EVP_aes_256_gcm", "purpose": "AES-256-GCM 加密", "count": 10, "evidence": ["configure.ac:866-870"]},
+          {"name": "RAND_bytes", "purpose": "生成随机数", "count": 20, "evidence": ["src/openvpn/crypto_openssl.c"]},
+          {"name": "X509_verify_cert", "purpose": "验证证书", "count": 15, "evidence": ["src/openvpn/ssl_verify_openssl.c"]},
+          {"name": "EVP_EncryptInit_ex", "purpose": "初始化加密", "count": 30, "evidence": ["src/openvpn/crypto_openssl.c"]}
+        ],
+        "evidence": ["src/openvpn/crypto_openssl.c:44-51"]
+      },
+      {
+        "type": "dlfcn",
+        "category": "ffi",
+        "platform": "posix",
+        "apis": [
+          {"name": "dlopen", "purpose": "动态加载共享库（插件）", "count": 3, "evidence": ["src/openvpn/plugin.c:35"], "conditional": true},
+          {"name": "dlsym", "purpose": "获取符号地址", "count": 5, "evidence": ["src/openvpn/plugin.c"], "conditional": true}
+        ],
+        "evidence": ["src/openvpn/syshead.h:54", "src/openvpn/plugin.c"]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libssl.so",
+        "mechanism": "link",
+        "acquisition": "system",
+        "source": "系统 OpenSSL 库",
+        "description": "OpenSSL TLS/加密库，运行时链接",
+        "optional": false,
+        "evidence": ["configure.ac:772-783"]
+      },
+      {
+        "name": "libcrypto.so",
+        "mechanism": "link",
+        "acquisition": "system",
+        "source": "系统 OpenSSL 库",
+        "description": "OpenSSL 加密库",
+        "optional": false,
+        "evidence": ["configure.ac:772-783"]
+      },
+      {
+        "name": "plugin.so",
+        "mechanism": "dlopen",
+        "acquisition": "system",
+        "source": "用户指定的插件路径",
+        "description": "OpenVPN 插件动态库（如 auth-pam）",
+        "optional": true,
+        "evidence": ["src/openvpn/plugin.c:300"]
+      },
+      {
+        "name": "ovpn-dco",
+        "mechanism": "ioctl",
+        "acquisition": "system",
+        "source": "Linux 内核模块",
+        "description": "ovpn-dco 内核驱动（DCO 数据通道卸载）",
+        "optional": true,
+        "evidence": ["src/openvpn/dco_linux.c:44"]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "VPN 隧道应用运行时需绑定网络端口、访问 TUN/TAP 设备、读写配置文件与 PID 文件、执行外部网络配置命令（ifconfig/iproute2/netsh）、读取环境变量、集成 systemd 服务。",
+    "network": [
+      {"detail": "绑定 TCP/UDP 端口（默认 1194）", "purpose": "VPN 隧道入口监听", "evidence": ["src/openvpn/socket.h:42"]},
+      {"detail": "DNS 解析远程服务器地址", "purpose": "客户端连接目标服务器", "evidence": ["src/openvpn/socket.c"]}
+    ],
+    "filesystem": [
+      {"detail": "配置文件（*.ovpn, stdin）", "purpose": "读取 VPN 配置", "evidence": ["src/openvpn/options.c"]},
+      {"detail": "PID 文件（writepid 选项）", "purpose": "记录进程 ID", "evidence": ["src/openvpn/openvpn.c:278"]},
+      {"detail": "证书/密钥文件", "purpose": "TLS 认证", "evidence": ["src/openvpn/ssl.c"]}
+    ],
+    "env_vars": [
+      {"name": "OPENVPN", "purpose": "配置环境变量传递", "evidence": ["src/openvpn/init.c"]},
+      {"name": "config", "purpose": "配置文件路径", "evidence": ["src/openvpn/openvpn.c:65"]}
+    ],
+    "subprocess": [
+      {"command": "ifconfig / iproute2", "purpose": "POSIX 平台网络接口配置", "evidence": ["src/openvpn/tun.c", "configure.ac:406-408"]},
+      {"command": "netsh", "purpose": "Windows 网络配置命令", "evidence": ["src/openvpn/tun.c:109"]},
+      {"command": "route", "purpose": "路由表操作", "evidence": ["src/openvpn/route.c"]}
+    ],
+    "devices": [
+      {"detail": "/dev/net/tun (Linux)", "purpose": "TUN 虚拟网络设备", "evidence": ["src/openvpn/tun.c:400"]},
+      {"detail": "tap-windows6 驱动 (Windows)", "purpose": "Windows TAP 驱动", "evidence": ["src/openvpn/tun.h:28"]},
+      {"detail": "ovpn-dco 内核模块 (Linux)", "purpose": "数据通道卸载设备", "evidence": ["src/openvpn/dco_linux.c"]}
+    ],
+    "services": [
+      {"detail": "systemd 服务单元", "purpose": "Linux 服务管理", "evidence": ["configure.ac:1113-1134"]},
+      {"detail": "openvpnserv.exe (Windows)", "purpose": "Windows 服务管理", "evidence": ["src/openvpnserv/"]}
+    ]
+  },
+  "build_env": {
+    "language_standard": "C11",
+    "runtime_version": null,
+    "build_system": "CMake / Autoconf (configure.ac)",
+    "compiler_extensions": [
+      {"detail": "__builtin_expect (likely/unlikely)", "evidence": ["src/openvpn/syshead.h:30-36"]},
+      {"detail": "__attribute__", "evidence": ["configure.ac:1246"]},
+      {"detail": "MSVC pragma/GCC flags", "evidence": ["CMakeLists.txt:79-130"]}
+    ],
+    "platforms": [
+      {"os": "linux", "arch": "x86_64, arm64", "evidence": ["configure.ac:306-312", "README"]},
+      {"os": "windows", "arch": "x86_64", "evidence": ["configure.ac:342-351", "README.cmake.md"]},
+      {"os": "macos", "arch": "x86_64, arm64", "evidence": ["configure.ac:335-340"]},
+      {"os": "freebsd", "arch": "x86_64, arm64", "evidence": ["configure.ac:325-329"]},
+      {"os": "openbsd", "arch": "x86_64", "evidence": ["configure.ac:320-324"]},
+      {"os": "netbsd", "arch": "x86_64", "evidence": ["configure.ac:330-334"]},
+      {"os": "solaris", "arch": "x86_64, sparc", "evidence": ["configure.ac:313-319"]},
+      {"os": "dragonfly", "arch": "x86_64", "evidence": ["configure.ac:352-356"]},
+      {"os": "aix", "arch": "ppc", "evidence": ["configure.ac:357-364"]},
+      {"os": "haiku", "arch": "x86_64", "evidence": ["configure.ac:365-370"]}
+    ],
+    "entry_points": [
+      {"type": "main", "name": "openvpn", "command": "openvpn 命令行守护进程，通过 main/openvpn_main 启动", "evidence": ["src/openvpn/openvpn.c:152-386"]},
+      {"type": "service", "name": "openvpnserv.exe", "command": "Windows 服务管理器", "evidence": ["src/openvpnserv/service.c"]},
+      {"type": "launcher", "name": "tapctl.exe", "command": "Windows TAP 设备管理工具", "evidence": ["src/tapctl/main.c"]}
+    ],
+    "packaging": "各平台包管理器分发（apt/rpm/pacman/Windows MSI/macOS brew）；Windows 可用 MSVC/MinGW 构建 MSI 安装包（openvpn-build 项目）；systemd 服务单元打包。",
+    "notes": "官方构建方式：Linux/Unix 使用 autoconf（configure + make），Windows 使用 CMake（MSVC/MinGW）。支持跨平台编译。"
+  },
+  "capability_profile": {
+    "summary": "OpenVPN 是网络 VPN 应用，不涉及 GUI 桌面界面、3D 渲染或媒体处理。关键硬件依赖是虚拟网络设备（TUN/TAP）和 Linux 内核模块（ovpn-dco），属于特定平台网络栈。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": true,
+        "kind": ["tun_tap", "kernel_module", "network_stack"],
+        "specific_hardware": true,
+        "via": ["tap-windows6", "ovpn-dco", "/dev/net/tun"],
+        "harmony_status": "unavailable",
+        "adaptation": "TUN/TAP 虚拟网络设备和内核级 DCO 模块是操作系统网络栈核心组件，鸿蒙 PC 自研内核（非 Linux ABI）需要移植等效虚拟网络接口层和内核模块支持——目前无对应实现，属于重度阻碍。",
+        "evidence": ["src/openvpn/tun.c:400", "src/openvpn/dco_linux.c:44", "configure.ac:302-307"]
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK 原生层；模型 C：整包桌面应用移植）",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
+    "effort": {"person_days": [60, 120]},
+    "confidence": "medium",
+    "recommended_path": "kernel_extension_rewrite",
+    "summary": "OpenVPN 是网络 VPN 守护进程应用，移植到鸿蒙 PC 的核心障碍在于虚拟网络设备（TUN/TAP）和内核数据通道卸载模块（ovpn-dco）。加密库（OpenSSL/mbedTLS）已鸿蒙化可直接使用，但 Linux netlink API、ioctl 设备控制、fork/execve 进程模型、Windows Win32 API 等平台特有部分需重写或替换。建议路径：1) 为鸿蒙内核开发虚拟网络接口扩展（模拟 TUN/TAP）；2) 重写进程管理和服务集成适配 ArkTS/OHOS 服务模型；3) 替换平台网络配置命令；4) 评估 DCO 内核模块移植可行性。",
+    "unadaptable_apis": [
+      {
+        "id": "ua:ioctl_tun",
+        "caused_by": ["ta:tun_tap"],
+        "api": "ioctl (TUNSETIFF)",
+        "public_entry": "openvpn_tun_open",
+        "reason": "TUN/TAP 设备控制 ioctl 是 Linux 内核接口，鸿蒙自研内核无对应",
+        "blocking_native_api": "ioctl (TUNSETIFF)",
+        "category": "system",
+        "evidence": ["src/openvpn/tun.c:400", "src/openvpn/syshead.h:223"]
+      },
+      {
+        "id": "ua:netlink",
+        "caused_by": ["ta:kernel_module"],
+        "api": "genl_ctrl_resolve / nl_recvmsgs",
+        "public_entry": "dco_new",
+        "reason": "Linux generic netlink 用于与 ovpn-dco 内核模块通信，鸿蒙无 netlink 机制",
+        "blocking_native_api": "genl_ctrl_resolve",
+        "category": "system",
+        "evidence": ["src/openvpn/dco_linux.c:97-105"]
+      },
+      {
+        "id": "ua:fork_execve",
+        "caused_by": ["ta:process_model"],
+        "api": "fork / execve",
+        "public_entry": "openvpn_execve",
+        "reason": "POSIX fork/execve 进程模型，鸿蒙可能不支持或受限",
+        "blocking_native_api": "fork",
+        "category": "platform",
+        "evidence": ["src/openvpn/run_command.c:150", "configure.ac:462-464"]
+      },
+      {
+        "id": "ua:win32_createprocess",
+        "caused_by": ["ta:win32_api"],
+        "api": "CreateProcess",
+        "public_entry": "openvpn_execve_win32",
+        "reason": "Windows 进程创建 API，鸿蒙无 Win32 子集",
+        "blocking_native_api": "CreateProcess",
+        "category": "platform",
+        "evidence": ["src/openvpn/win32.c:1023"]
+      },
+      {
+        "id": "ua:epoll",
+        "caused_by": ["ta:posix_api"],
+        "api": "epoll_create / epoll_wait",
+        "public_entry": "event_linux_init",
+        "reason": "Linux epoll 事件多路复用，musl/OHOS POSIX 子集可能不支持",
+        "blocking_native_api": "epoll_create",
+        "category": "platform",
+        "evidence": ["src/openvpn/event.c:36"]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:tun_tap",
+        "capability": "虚拟网络接口（TUN/TAP 设备）",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "无 TUN/TAP 设备则 VPN 隧道无法建立——应用核心功能依赖",
+        "source": "harmony-pc-capabilities.json#hardware_devices（无 TUN/TAP）"
+      },
+      {
+        "id": "ta:kernel_module",
+        "capability": "内核模块加载（ovpn-dco DCO 模块）",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "DCO 为可选加速功能，缺失可降级为用户态处理",
+        "source": "harmony-pc-capabilities.json#process_security（内核扩展能力未知）"
+      },
+      {
+        "id": "ta:posix_api",
+        "capability": "POSIX API 子集（fork/execve/epoll/ioctl）",
+        "required": true,
+        "target_status": "partial",
+        "impact": "musl/OHOS POSIX 子集可能缺失 fork/epoll，需逐项核验并替换",
+        "source": "harmony-pc-capabilities.json#intro（OHOS NDK POSIX 子集）"
+      },
+      {
+        "id": "ta:process_model",
+        "capability": "进程启动与服务管理（daemon/systemd/Windows service）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "VPN 守护进程需要后台运行与服务化——鸿蒙应用形态未知",
+        "source": "harmony-pc-capabilities.json#app_delivery（桌面应用形态未知）"
+      },
+      {
+        "id": "ta:win32_api",
+        "capability": "Win32 API（仅 Windows 分支）",
+        "required": false,
+        "target_status": "unavailable",
+        "impact": "Windows 分支代码不影响鸿蒙（非 Windows 目标）",
+        "source": "harmony-pc-capabilities.json#intro（无 Win32）"
+      },
+      {
+        "id": "ta:openssl",
+        "capability": "OpenSSL/mbedTLS/wolfSSL 加密库",
+        "required": true,
+        "target_status": "available",
+        "impact": "加密库已鸿蒙化，可直接使用",
+        "source": "cmd-pkgs（openssl/mbedtls/wolfssl 已适配）"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "VPN 隧道需要网络访问",
+        "source_capability": "hardware",
+        "harmony_status": "unknown",
+        "evidence": ["src/openvpn/socket.c"]
+      },
+      {
+        "permission": "读写存储",
+        "reason": "读取配置文件、证书、密钥",
+        "source_capability": null,
+        "harmony_status": "unknown",
+        "evidence": ["src/openvpn/options.c"]
+      }
+    ],
+    "blockers": [
+      {
+        "id": "bk:tun_tap",
+        "issue": "TUN/TAP 虚拟网络设备：Linux /dev/net/tun 和 Windows tap-windows6 驱动，鸿蒙内核无对应虚拟网络接口层",
+        "severity": "blocker",
+        "adaptability": "unadaptable",
+        "category": "kernel_extension",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "需为鸿蒙内核开发虚拟网络接口扩展（模拟 TUN/TAP），或改用其他隧道机制（如 Unix socket + 用户态网络栈）",
+        "caused_by": ["ta:tun_tap"],
+        "manifests_as": ["ua:ioctl_tun"],
+        "evidence": ["src/openvpn/tun.c:400", "configure.ac:302-307"]
+      },
+      {
+        "id": "bk:dco_kernel",
+        "issue": "DCO 内核模块（ovpn-dco）：Linux 内核模块加速数据通道，依赖 netlink API",
+        "severity": "major",
+        "adaptability": "unadaptable",
+        "category": "kernel_module",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "DCO 为可选功能；禁用后用户态处理可降级。若需加速需鸿蒙内核移植 ovpn-dco 或开发等效 OHOS 内核扩展",
+        "caused_by": ["ta:kernel_module"],
+        "manifests_as": ["ua:netlink"],
+        "evidence": ["src/openvpn/dco_linux.c:44", "README.dco.md"]
+      },
+      {
+        "id": "bk:posix_fork",
+        "issue": "fork/execve 进程模型：守护化、外部命令执行依赖 POSIX fork",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "改用鸿蒙进程启动 API（如 OHOS spawn/服务托管），外部命令改为 OHOS 系统调用或重写功能",
+        "caused_by": ["ta:posix_api", "ta:process_model"],
+        "manifests_as": ["ua:fork_execve"],
+        "evidence": ["src/openvpn/run_command.c:150"]
+      },
+      {
+        "id": "bk:epoll",
+        "issue": "Linux epoll 事件多路复用",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "改用 poll/select 或 OHOS 事件机制",
+        "caused_by": ["ta:posix_api"],
+        "manifests_as": ["ua:epoll"],
+        "evidence": ["src/openvpn/event.c:36"]
+      },
+      {
+        "id": "bk:network_config",
+        "issue": "外部网络配置命令（ifconfig/iproute2/netsh）",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "改用 OHOS 网络 API（@ohos.net）配置虚拟接口",
+        "caused_by": ["ta:posix_api", "ta:process_model"],
+        "evidence": ["src/openvpn/tun.c", "configure.ac:406-408"]
+      },
+      {
+        "id": "bk:service_integration",
+        "issue": "服务化运行（systemd/Windows service）",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "service_integration",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "适配 OHOS 服务模型（Ability/.hap），或开发 OHOS 原生守护进程框架",
+        "caused_by": ["ta:process_model"],
+        "evidence": ["configure.ac:1113-1134", "src/openvpnserv/"]
+      }
+    ],
+    "compatible": [
+      {"aspect": "加密库（OpenSSL/mbedTLS/wolfSSL）", "note": "已鸿蒙化，可直接链接使用", "evidence": ["cmd-pkgs"]},
+      {"aspect": "压缩库（LZO/LZ4）", "note": "已鸿蒙化", "evidence": ["cmd-pkgs"]},
+      {"aspect": "TLS 协议实现", "note": "加密后端可复用", "evidence": ["src/openvpn/ssl.c"]}
+    ],
+    "key_tasks": [
+      "为鸿蒙内核开发虚拟网络接口扩展（模拟 TUN/TAP），提供 /dev/net/tun 或 OHOS 等效 API",
+      "重写进程管理：替换 fork/execve 为 OHOS spawn/API，外部命令改为 OHOS 系统调用",
+      "替换 epoll 为 OHOS 事件机制或 poll/select",
+      "改用 @ohos.net API 配置虚拟网络接口",
+      "适配 OHOS 服务模型（Ability/.hap）实现守护进程运行",
+      "评估 DCO 内核模块移植可行性，或禁用 DCO 降级为用户态处理",
+      "在 OHOS NDK 下交叉编译核心加密与压缩模块"
+    ],
+    "notes": "OpenVPN 是 VPN 应用（模型 C），移植障碍核心在于操作系统网络栈（TUN/TAP 内核接口、进程模型、服务集成）。加密库已鸿蒙化可复用。总体可行性：hard，需内核扩展 + 应用层重写。存在 required target_assumptions 为 unknown（进程模型、应用形态），置信度下调为 medium。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "tokei",
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": []
+  }
+}
