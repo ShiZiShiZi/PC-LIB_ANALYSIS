@@ -1079,6 +1079,8 @@ class RecursionSession {
       maxDepth: Math.min(Math.max(parseInt(opts.maxDepth, 10) || 6, 1), 8),
       maxNodes: Math.min(Math.max(parseInt(opts.maxNodes, 10) || 150, 1), 500),
     };
+    this.manual = !!opts.manual;              // 手动模式：只展示 frontier，待用户批准才 clone/analyze
+    this.autoRoot = !this.manual;             // 非手动 = 从根整树全量自动（保留原行为）
     this.status = 'running';                  // running | stopped | done
     this.decisions = new Map();               // depKey -> decision
     this.events = [];
@@ -1142,6 +1144,17 @@ class RecursionSession {
       return this._set(dec, 'leaf_system', '系统库（find_package/预装），无源码');
     if (d.acquisition === 'prebuilt_binary')
       return this._set(dec, 'leaf_prebuilt', '预编译二进制，无源码');
+
+    // 手动模式门控：未经用户批准的依赖只做免费的本地 URL 预填（供查看/编辑），
+    // 不联网、不克隆、不分析——等待 /api/recurse/advance 把 dec.approved 置真。
+    if (this.manual && !dec.approved) {
+      if (!dec.repoName) {
+        const url = extractGitUrl(d.source, d.version);
+        if (url) { dec.url = url; dec.repoName = repoNameFromUrl(url); this._set(dec, 'resolved', '待选择'); }
+        else this._set(dec, 'pending', '待选择（请填写 Git 地址）');
+      }
+      return;
+    }
 
     // 已移植到鸿蒙 PC 镜像 → 封闭叶子，不再 resolve/clone/analyze
     // （与 dim-9 rollupAdaptation 把已鸿蒙化依赖当封闭叶子的口径一致）。只在初始 pending
@@ -1208,10 +1221,15 @@ class RecursionSession {
     const idx = buildIdentityIndex(getRep, this.group);
     const repos = new Set(listRepos(this.group));
 
+    // 已分析子库 → 其引入决策（用于把「递归」批准沿依赖树向下传递）
+    const byRepo = new Map();
+    for (const dec of this.decisions.values()) if (dec.repoName) byRepo.set(dec.repoName, dec);
+
     // BFS over analyzed reports → collect unanalyzed runtime deps + their depth.
+    // 队列携带 auto：根=autoRoot，子库继承祖先 auto 或该库被「递归」批准的 autoRecurse。
     const seen = new Set([this.root]);
-    const frontier = new Map();   // depKey -> { d, depth, ambiguous }
-    const queue = [{ libName: this.root, depth: 0 }];
+    const frontier = new Map();   // depKey -> { d, depth, ambiguous, auto }
+    const queue = [{ libName: this.root, depth: 0, auto: this.autoRoot }];
     while (queue.length) {
       const cur = queue.shift();
       if (cur.depth >= this.opts.maxDepth) continue;
@@ -1221,13 +1239,22 @@ class RecursionSession {
         if (!d || !d.name || !isRuntimeDep(d)) continue;
         const hit = resolveDepLib(d, idx);
         if (hit && !hit.ambiguous) {                       // analyzed → recurse into it
-          if (!seen.has(hit.libName)) { seen.add(hit.libName); queue.push({ libName: hit.libName, depth: cur.depth + 1 }); }
+          if (!seen.has(hit.libName)) {
+            seen.add(hit.libName);
+            const decL = byRepo.get(hit.libName);
+            queue.push({ libName: hit.libName, depth: cur.depth + 1, auto: cur.auto || !!(decL && decL.autoRecurse) });
+          }
           continue;
         }
         const depKey = ecoNorm(d.ecosystem) + ':' + normName(d.name);
         const prev = frontier.get(depKey);
-        if (!prev || cur.depth + 1 < prev.depth)
-          frontier.set(depKey, { d, depth: cur.depth + 1, ambiguous: !!(hit && hit.ambiguous) });
+        const nd = cur.depth + 1;
+        frontier.set(depKey, {
+          d: (prev && prev.depth <= nd) ? prev.d : d,
+          depth: prev ? Math.min(prev.depth, nd) : nd,
+          ambiguous: (prev ? prev.ambiguous : false) || !!(hit && hit.ambiguous),
+          auto: (prev ? prev.auto : false) || cur.auto,
+        });
       }
     }
 
@@ -1240,6 +1267,7 @@ class RecursionSession {
         this.decisions.set(depKey, dec);
         this._changed = true;
       } else { dec.depth = Math.min(dec.depth, f.depth); dec.ambiguous = dec.ambiguous || f.ambiguous; }
+      if (f.auto && !dec.approved) { dec.approved = true; dec.autoRecurse = true; this._changed = true; }
       this._advance(dec, f.d, repos);
     }
     // reconcile in-flight decisions that completed but left the frontier
@@ -1247,10 +1275,11 @@ class RecursionSession {
       if (TERMINAL.has(dec.state)) continue;
       if (dec.repoName && latestReport(dec.repoName, this.group)) this._set(dec, 'analyzed', '', dec.repoName);
     }
-    // done when nothing is active anymore
-    if (![...this.decisions.values()].some((d) => ACTIVE.has(d.state))) {
-      if (this.status === 'running') { this.status = 'done'; this._changed = true; }
-    }
+    // done: 手动会话仅当所有依赖都终态（有「待选择」依赖则保持 running、SSE 不关闭，
+    // 等用户继续批准）；非手动会话沿用「无活跃即完成」。
+    const decs = [...this.decisions.values()];
+    const doneNow = this.manual ? decs.every((d) => TERMINAL.has(d.state)) : !decs.some((d) => ACTIVE.has(d.state));
+    if (doneNow && this.status === 'running') { this.status = 'done'; this._changed = true; }
     this._flush();
   }
 
@@ -1267,8 +1296,9 @@ class RecursionSession {
       createdAt: this.createdAt, counts: this._counts(),
       decisions: [...this.decisions.values()]
         .sort((a, b) => a.depth - b.depth || a.name.localeCompare(b.name))
-        .map((d) => ({ name: d.name, ecosystem: d.ecosystem, depth: d.depth, state: d.state,
-          reason: d.reason || '', repoName: d.repoName || null, libName: d.libName || null, url: d.url || null })),
+        .map((d) => ({ key: d.key, name: d.name, ecosystem: d.ecosystem, depth: d.depth, state: d.state,
+          reason: d.reason || '', repoName: d.repoName || null, libName: d.libName || null, url: d.url || null,
+          approved: !!d.approved, autoRecurse: !!d.autoRecurse })),
     };
   }
   _flush() { if (this._changed) { this._changed = false; this.emit('update', this.snapshot()); } }
@@ -1502,6 +1532,24 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { name: body.name, group: safeGroup(body.group), tags: setLibTags(body.name, body.group, body.tags) });
     }
 
+    // 彻底删除一个库：克隆代码 + 全部分析记录 + 来源标签 + 关联的递归会话。
+    if (req.method === 'POST' && pathname === '/api/library/delete') {
+      const body = await readBody(req);
+      const name = body.name;
+      const g = safeGroup(body.group);
+      if (!name) return send(res, 400, { error: 'name required' });
+      if (/[\\/]|\.\./.test(name)) return send(res, 400, { error: 'invalid name' });   // 防目录穿越
+      if (activeJobFor(name, g)) return send(res, 409, { error: '该库有进行中的任务，请先停止/等待完成再删除' });
+      try {
+        fs.rmSync(repoDir(g, name), { recursive: true, force: true });
+        fs.rmSync(runLibDir(g, name), { recursive: true, force: true });
+      } catch (e) { return send(res, 500, { error: '删除失败: ' + e.message }); }
+      setLibTags(name, g, []);                          // 清来源标签（空列表会 delete tags[k]）
+      for (const [id, s] of recursionSessions)          // 清以该库为 root 的递归会话
+        if (s.root === name && safeGroup(s.group) === g) recursionSessions.delete(id);
+      return send(res, 200, { ok: true });
+    }
+
     if (req.method === 'POST' && pathname === '/api/analyze') {
       const body = await readBody(req);
       const names = body.names || (body.name ? [body.name] : []);
@@ -1676,6 +1724,30 @@ const server = http.createServer(async (req, res) => {
       if (!s) return send(res, 404, { error: 'unknown session' });
       s.stop();
       return send(res, 200, { status: s.status });
+    }
+
+    // 手动会话：批准选中的依赖并推进。recurse=true → 该依赖及其子依赖继续自动级联；
+    // recurse=false → 仅分析本层；recurseAll=true → 整树转全量自动。
+    if (req.method === 'POST' && pathname === '/api/recurse/advance') {
+      const body = await readBody(req);
+      const s = recursionSessions.get(body.session);
+      if (!s) return send(res, 404, { error: 'unknown session' });
+      if (body.recurseAll) {
+        s.autoRoot = true;
+      } else {
+        for (const it of (Array.isArray(body.items) ? body.items : [])) {
+          const dec = it && s.decisions.get(it.key);
+          if (!dec || TERMINAL.has(dec.state)) continue;
+          if (it.url) { dec.url = String(it.url).trim(); dec.repoName = repoNameFromUrl(dec.url); }
+          if (!dec.url) continue;                       // 无地址不批准
+          dec.approved = true;
+          dec.autoRecurse = !!body.recurse;
+          s._set(dec, 'resolved', body.recurse ? '已批准（递归）' : '已批准（仅本层）');
+        }
+      }
+      if (s.status !== 'running') s.status = 'running';  // 复活已 done 的手动会话
+      s.tick();
+      return send(res, 200, s.snapshot());
     }
 
     if (req.method === 'GET' && pathname === '/api/recurse') {

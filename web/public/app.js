@@ -342,6 +342,7 @@ function renderList() {
           ${lib.latest && lib.latest.reportAvailable ? `<a class="btn sm ghost" href="#/topology/${enc(lib.name)}" title="在依赖拓扑中查看">🕸 拓扑</a>` : ''}
           <button class="btn sm ghost" data-act="tags" data-name="${esc(lib.name)}" title="编辑来源标签">🏷</button>
           <button class="btn sm primary" data-act="analyze" data-name="${esc(lib.name)}" ${lib.active || !lib.cloned ? 'disabled' : ''}>分析</button>
+          <button class="btn sm danger ghost" data-act="del" data-name="${esc(lib.name)}" ${lib.active ? 'disabled' : ''} title="彻底删除该库（代码 + 分析记录 + 标签）">🗑 删除</button>
         </td></tr>`;
     }).join('')}</tbody></table>`;
 
@@ -355,6 +356,7 @@ function renderList() {
   });
   $$('[data-act="analyze"]', box).forEach((b) => b.onclick = () => analyzeOne(b.dataset.name));
   $$('[data-act="tags"]', box).forEach((b) => b.onclick = () => openTagsModal(b.dataset.name));
+  $$('[data-act="del"]', box).forEach((b) => b.onclick = () => deleteLib(b.dataset.name));
 
   $('#pager').innerHTML = `
     <div class="pager-nav">
@@ -426,6 +428,17 @@ async function analyzeOne(name) {
   const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name })) });
   if (r.jobs && r.jobs[0] && r.jobs[0].jobId) location.hash = '#/lib/' + enc(name);
   else toast((r.jobs && r.jobs[0] && r.jobs[0].error) || '启动失败', 'err');
+}
+
+async function deleteLib(name) {
+  if (!confirm(`确认彻底删除「${name}」？\n将删除其克隆代码、全部分析记录与来源标签，不可恢复。`)) return;
+  let r;
+  try { r = await api('/api/library/delete', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name })) }); }
+  catch { return toast('删除失败', 'err'); }
+  if (r && r.error) return toast(r.error, 'err');
+  selected.delete(name);            // 清掉批量选择残留
+  toast('已删除', 'ok');
+  loadDash();
 }
 
 // ===========================================================================
@@ -975,7 +988,7 @@ async function renderDetail(name) {
     toast(r.ok ? `模型可用 (${r.ms}ms)` : `模型不可用：${r.error}`, r.ok ? 'ok' : 'err');
   };
   $('#dAnalyze').onclick = () => reAnalyze(name);
-  $('#dRecurse').onclick = () => startRecurse(name);
+  $('#dRecurse').onclick = () => { location.hash = '#/recursive/' + enc(name); };
   $('#rawBtn').onclick = () => { $('#rawJson').classList.toggle('hidden'); $('#report').classList.toggle('hidden'); };
   $('#htmlBtn').onclick = exportReportHtml;
   $('#dlBtn').onclick = downloadReport;
@@ -1073,17 +1086,14 @@ const RC_STATE = {
 const RC_SESSION_ZH = { running: '运行中', done: '完成', stopped: '已停止' };
 const RC_SESSION_CLS = { running: 'running', done: 'done', stopped: 'queued' };
 
-async function startRecurse(name) {
-  let r;
-  try { r = await api('/api/recurse', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name })) }); }
-  catch { return toast('启动失败', 'err'); }
-  if (r.error) return toast(r.error, 'err');
-  toast(r.existing ? '已有进行中的递归会话' : '已开始递归分析', 'ok');
-  if (location.hash === '#/recursive/' + enc(name)) renderRecursive(name);   // same hash → no hashchange
-  else location.hash = '#/recursive/' + enc(name);
-}
+let rcSession = null, rcName = null;
+const rcUrlEdits = {};   // key -> 已编辑/解析出的 git url（防 SSE 重渲染覆盖输入）
+const RC_TERMINAL = new Set(['analyzed', 'leaf_system', 'leaf_prebuilt', 'leaf_interface',
+  'leaf_no_source', 'leaf_harmonized', 'ambiguous', 'failed', 'capped']);
 
 async function renderRecursive(name) {
+  rcName = name; rcSession = null;
+  for (const k in rcUrlEdits) delete rcUrlEdits[k];
   setHeader(`<a class="btn ghost" href="#/lib/${enc(name)}">← 返回 ${esc(name)}</a>` +
     `<a class="btn" href="#/topology/${enc(name)}">🕸 依赖拓扑</a>`);
   $('#app').innerHTML = `
@@ -1091,20 +1101,56 @@ async function renderRecursive(name) {
       <h1>🌳 递归依赖分析 · ${esc(name)}</h1>
       <span id="rcStatus"></span>
       <span class="spacer"></span>
-      <button class="btn sm" id="rcStart">▶ 新建会话</button>
+      <button class="btn sm" id="rcRescan">🔄 重新扫描</button>
+      <button class="btn sm" id="rcAuto" title="从该库出发，整树自动递归克隆并分析全部运行时依赖">🌲 自动递归全部</button>
       <button class="btn sm" id="rcStop" disabled>■ 停止</button>
     </div>
+    <p class="hint">进入只列出当前一层未分析的运行时依赖（不会自动分析）。勾选要分析的依赖（可手动填写 / 修正 Git 地址），再选「仅本层」或「递归」分析——系统库 / 无源码库作为叶子不再下钻。</p>
     <div id="rcBar" class="rc-bar"></div>
-    <div class="card"><div id="rcTable"></div></div>`;
-  $('#rcStart').onclick = () => startRecurse(name);
-  let sessionId = null;
-  try { const { sessions } = await api('/api/recurse'); const s = (sessions || []).find((x) => x.root === name && (x.group || 'default') === activeGroup); if (s) sessionId = s.id; }
-  catch (_) {}
-  if (!sessionId) {
-    $('#rcTable').innerHTML = '<div class="hint">尚无递归会话。点击「新建会话」从该库出发，递归克隆并分析其运行时依赖——系统库 / 无源码库作为叶子不再下钻。</div>';
-    return;
+    <div class="card"><div id="rcPick"></div></div>
+    <div class="card"><div class="section-title">进行中 / 已完成</div><div id="rcTable"></div></div>`;
+  $('#rcRescan').onclick = () => advanceRecurse({ rescan: true });
+  $('#rcAuto').onclick = () => { if (confirm('从该库出发，整树自动递归分析全部运行时依赖？')) advanceRecurse({ recurseAll: true }); };
+  // 找现有会话；没有就建一个手动会话（只展示、不分析）
+  try {
+    const { sessions } = await api('/api/recurse');
+    const s = (sessions || []).find((x) => x.root === name && (x.group || 'default') === activeGroup);
+    if (s) rcSession = s.id;
+  } catch (_) {}
+  if (!rcSession) {
+    let r;
+    try { r = await api('/api/recurse', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name, manual: true })) }); }
+    catch { $('#rcPick').innerHTML = '<div class="hint err">创建会话失败</div>'; return; }
+    if (r.error) { $('#rcPick').innerHTML = `<div class="hint err">${esc(r.error)}</div>`; return; }
+    rcSession = r.sessionId;
   }
-  openRecurseStream(sessionId);
+  openRecurseStream(rcSession);
+}
+
+// 批准选中依赖并推进。opts: { recurse } 分析本层/递归；{ recurseAll } 整树自动；{ rescan } 仅重算 frontier。
+async function advanceRecurse(opts = {}) {
+  if (!rcSession) return;
+  const body = { session: rcSession };
+  if (opts.recurseAll) body.recurseAll = true;
+  else if (opts.rescan) body.items = [];                 // 空批准 → 仅 re-tick
+  else {
+    const items = [];
+    $$('#rcPick tr[data-key]').forEach((tr) => {
+      const cb = tr.querySelector('.rc-sel');
+      if (!cb || !cb.checked) return;
+      const inp = tr.querySelector('.rc-url');
+      items.push({ key: tr.dataset.key, url: inp ? inp.value.trim() : '' });
+    });
+    if (!items.length) return toast('请先勾选要分析的依赖', 'err');
+    if (items.some((it) => !it.url)) return toast('选中依赖缺少 Git 地址，请填写或用 🔎 解析', 'err');
+    body.items = items; body.recurse = !!opts.recurse;
+  }
+  let snap;
+  try { snap = await api('/api/recurse/advance', { method: 'POST', headers: JSONH, body: JSON.stringify(body) }); }
+  catch { return toast('提交失败', 'err'); }
+  if (snap && snap.error) return toast(snap.error, 'err');
+  if (snap) renderRecurseSnap(snap);
+  if (!es && rcSession) openRecurseStream(rcSession);    // 会话之前 done 关流了 → 重新挂上
 }
 
 function openRecurseStream(id) {
@@ -1124,16 +1170,23 @@ function openRecurseStream(id) {
 }
 
 function renderRecurseSnap(snap) {
+  // 用户正在输入 Git 地址时跳过整页重渲染，避免清空输入
+  if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('rc-url')) return;
   const stEl = $('#rcStatus');
   if (stEl) stEl.innerHTML = `<span class="badge ${RC_SESSION_CLS[snap.status] || 'gray'}">${RC_SESSION_ZH[snap.status] || snap.status}</span>`;
   if (snap.status !== 'running' && es) { es.close(); es = null; }
   const stopBtn = $('#rcStop'); if (stopBtn) stopBtn.disabled = snap.status !== 'running';
+  const rows = snap.decisions || [];
+  // 待选择：尚未批准、且非终态、非在途的依赖（pending / resolved 等待用户挑选）
+  const awaiting = rows.filter((d) => !d.approved && !RC_TERMINAL.has(d.state) && d.state !== 'cloning' && d.state !== 'analyzing');
+  const processed = rows.filter((d) => !awaiting.includes(d));
   const c = snap.counts || {};
   const g = (keys) => keys.reduce((n, k) => n + (c[k] || 0), 0);
   const bar = [
+    ['待选择', awaiting.length, 'gray'],
+    ['处理中', processed.filter((d) => !RC_TERMINAL.has(d.state)).length, 'running'],
     ['已分析', c.analyzed || 0, 'done'],
     ['已鸿蒙化叶子', c.leaf_harmonized || 0, 'done'],
-    ['处理中', g(['pending', 'resolving', 'resolved', 'cloning', 'analyzing']), 'running'],
     ['系统/无源码叶子', g(['leaf_system', 'leaf_prebuilt', 'leaf_interface']), 'queued'],
     ['待人工解析', c.leaf_no_source || 0, 'gray'],
     ['歧义', c.ambiguous || 0, 'gray'],
@@ -1141,22 +1194,76 @@ function renderRecurseSnap(snap) {
   ];
   if (c.capped) bar.push(['超出上限', c.capped, 'gray']);
   $('#rcBar').innerHTML = bar.map(([t, n, cl]) => `<span class="rc-chip"><span class="badge ${cl}">${num(n)}</span>${t}</span>`).join('');
-  const rows = snap.decisions || [];
-  if (!rows.length) {
-    $('#rcTable').innerHTML = '<div class="hint">尚无运行时依赖（该库可能只有系统/本地依赖），会话已完成。</div>';
+  renderRcPick(awaiting);
+  if (!processed.length) $('#rcTable').innerHTML = '<div class="hint muted">尚无进行中 / 已完成的依赖。</div>';
+  else $('#rcTable').innerHTML = `<table class="obstable"><thead><tr>
+      <th>依赖</th><th>生态</th><th>深度</th><th>状态</th><th>说明</th></tr></thead>
+    <tbody>${processed.map(rcRow).join('')}</tbody></table>`;
+}
+
+function renderRcPick(awaiting) {
+  const box = $('#rcPick'); if (!box) return;
+  if (!awaiting.length) {
+    box.innerHTML = '<div class="hint muted">当前没有待选择的依赖。分析完成后若出现更深一层依赖，会在此列出。</div>';
     return;
   }
-  $('#rcTable').innerHTML = `<table class="obstable"><thead><tr>
-      <th>依赖</th><th>生态</th><th>深度</th><th>状态</th><th>说明</th></tr></thead>
-    <tbody>${rows.map(rcRow).join('')}</tbody></table>`;
+  box.innerHTML = `
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="section-title" style="margin:0">待选择依赖（${awaiting.length}）</div>
+      <div class="row" style="gap:6px">
+        <label class="muted" style="font-size:12px"><input type="checkbox" id="rcSelAll" /> 全选</label>
+        <button class="btn sm" id="rcAnalyzeLayer">分析选中（仅本层）</button>
+        <button class="btn sm primary" id="rcAnalyzeRecurse">递归分析选中</button>
+      </div>
+    </div>
+    <table class="obstable"><thead><tr>
+      <th class="c-chk"></th><th>依赖</th><th>生态</th><th>深度</th><th>Git 地址</th><th></th></tr></thead>
+    <tbody>${awaiting.map(rcPickRow).join('')}</tbody></table>`;
+  $('#rcSelAll').onchange = (e) => $$('#rcPick .rc-sel').forEach((cb) => { cb.checked = e.target.checked; });
+  $('#rcAnalyzeLayer').onclick = () => advanceRecurse({ recurse: false });
+  $('#rcAnalyzeRecurse').onclick = () => advanceRecurse({ recurse: true });
+  $$('#rcPick .rc-url').forEach((inp) => inp.oninput = () => { rcUrlEdits[inp.dataset.key] = inp.value; });
+  $$('#rcPick [data-rc-resolve]').forEach((b) => b.onclick = () => rcResolve(b.dataset.eco, b.dataset.name, b.dataset.rcResolve, b));
+}
+
+function rcPickRow(d) {
+  const key = d.key || (d.ecosystem + ':' + d.name);
+  const url = rcUrlEdits[key] != null ? rcUrlEdits[key] : (d.url || '');
+  const eco = ECO_LABELS[d.ecosystem] || d.ecosystem || '';
+  return `<tr data-key="${esc(key)}">
+    <td class="c-chk"><input type="checkbox" class="rc-sel" /></td>
+    <td>${esc(d.name)}</td><td>${esc(eco)}</td><td>${d.depth}</td>
+    <td><input class="rc-url" type="text" data-key="${esc(key)}" value="${esc(url)}" placeholder="Git URL" style="width:100%;min-width:220px" /></td>
+    <td><button class="btn sm" data-rc-resolve="${esc(key)}" data-eco="${esc(d.ecosystem || '')}" data-name="${esc(d.name)}" title="联网解析仓库地址">🔎</button></td>
+  </tr>`;
+}
+
+// 联网解析单个依赖的仓库地址，命中单一具体仓库则填回该行（复用 /api/resolve-repo）
+async function rcResolve(eco, name, key, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  let r;
+  try { r = await api(`/api/resolve-repo?ecosystem=${enc(eco || '')}&name=${enc(name)}`); }
+  catch { r = null; }
+  if (btn) { btn.disabled = false; btn.textContent = '🔎'; }
+  if (r && r.disabled) return toast('联网解析已在设置中关闭', 'err');
+  const cands = (r && r.candidates) || [];
+  if (r && r.url && !r.interface && cands.length <= 1) {
+    rcUrlEdits[key] = r.url;
+    const tr = $$('#rcPick tr[data-key]').find((x) => x.dataset.key === key);
+    const inp = tr && tr.querySelector('.rc-url'); if (inp) inp.value = r.url;
+    toast('已填入解析地址', 'ok');
+  } else {
+    toast(r && r.url ? '接口 / 多候选，请手动确认地址' : '未解析到仓库地址，请手动填写', 'err');
+  }
 }
 
 function rcRow(d) {
   const s = RC_STATE[d.state] || { t: d.state, c: 'gray' };
   const nm = d.libName ? `<a href="#/lib/${enc(d.libName)}">${esc(d.name)}</a>` : esc(d.name);
   const repo = d.repoName && d.repoName !== d.name ? ` <span class="muted">→ ${esc(d.repoName)}</span>` : '';
+  const rec = d.autoRecurse ? ' <span class="chip">递归</span>' : '';
   const eco = ECO_LABELS[d.ecosystem] || d.ecosystem || '';
-  return `<tr><td>${nm}${repo}</td><td>${esc(eco)}</td><td>${d.depth}</td>` +
+  return `<tr><td>${nm}${repo}${rec}</td><td>${esc(eco)}</td><td>${d.depth}</td>` +
     `<td><span class="badge ${s.c}">${esc(s.t)}</span></td><td class="muted">${esc(d.reason || '')}</td></tr>`;
 }
 
