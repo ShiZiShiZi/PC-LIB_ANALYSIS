@@ -1,0 +1,1202 @@
+{
+  "library": {
+    "name": "cffi",
+    "kind": "library",
+    "package_name": "cffi",
+    "source_url": "https://github.com/python-cffi/cffi",
+    "analyzed_at": "2026-06-25T01:26:55.770Z",
+    "commit": "ce296233f2467dc735cf219d15547d2b53cee272",
+    "one_liner": "Python 外部函数接口（FFI）库，用于在 Python 中声明、加载和调用 C 代码。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "CFFI（C Foreign Function Interface）是一个 Python 库，允许 Python 代码通过声明 C 函数、结构体、类型和全局变量来调用 C 动态库或编译后的 C 扩展。它提供两种主要工作模式：ABI（直接 dlopen 并调用）和 API（通过 C 编译器校验并生成绑定），并支持从 C 反向调用 Python 函数（回调）以及将 Python 嵌入 C 程序。",
+    "categories": [
+      {
+        "name": "C 声明解析与类型系统",
+        "description": "解析 C 头文件风格的声明（ffi.cdef），建立类型、结构体、联合体、枚举、函数指针和全局变量的内部表示，为后续代码生成和调用提供元数据。",
+        "evidence": [
+          "src/cffi/cparser.py",
+          "src/cffi/model.py",
+          "src/cffi/commontypes.py",
+          "src/cffi/cffi_opcode.py"
+        ]
+      },
+      {
+        "name": "C 动态库加载与符号解析",
+        "description": "通过 ffi.dlopen() 在运行时加载共享库（.so/.dll/.dylib），并使用 dlsym/GetProcAddress 解析函数、变量和常量符号，封装为 Python 可调用的对象。",
+        "evidence": [
+          "src/c/_cffi_backend.c:b_do_dlopen",
+          "src/c/cdlopen.c",
+          "src/c/misc_win32.h"
+        ]
+      },
+      {
+        "name": "C 编译时绑定生成",
+        "description": "在 API 模式下调用 C 编译器，生成并编译与 Python C-API 对接的 C 扩展模块（ffi.compile / ffi.verify），实现类型安全的函数调用和结构体访问。",
+        "evidence": [
+          "src/cffi/recompiler.py",
+          "src/cffi/ffiplatform.py",
+          "src/cffi/vengine_cpy.py",
+          "src/cffi/vengine_gen.py"
+        ]
+      },
+      {
+        "name": "Python 回调到 C",
+        "description": "利用 libffi 的 closure 机制生成可执行跳板（trampoline），使 C 代码能够调用 Python 回调函数；涉及线程本地存储（TLS）和可执行内存管理。",
+        "evidence": [
+          "src/c/call_python.c",
+          "src/c/malloc_closure.h",
+          "src/c/misc_thread_posix.h",
+          "src/c/misc_win32.h"
+        ]
+      },
+      {
+        "name": "Python 嵌入 C 程序",
+        "description": "提供 embedding API，支持在 C/C++ 程序中初始化并调用 Python 模块；生成初始化代码和链接约定，方便把 Python 作为脚本引擎嵌入原生应用。",
+        "evidence": [
+          "src/cffi/_embedding.h",
+          "src/cffi/api.py:embedding_init_code",
+          "src/cffi1_module.c"
+        ]
+      },
+      {
+        "name": "setuptools 集成",
+        "description": "通过 cffi_modules 入口点与 setuptools/distutils 集成，使项目可以在构建阶段自动编译 CFFI 扩展模块。",
+        "evidence": [
+          "src/cffi/setuptools_ext.py",
+          "pyproject.toml:cffi_modules"
+        ]
+      }
+    ],
+    "domain": "language-binding / ffi",
+    "target_users": "需要让 Python 调用 C 库或让 C 调用 Python 回调的 Python 开发者与库作者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "C",
+      "reStructuredText",
+      "C/C++ Header",
+      "YAML",
+      "DOS Batch",
+      "Assembly",
+      "make"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 119,
+        "code": 25419,
+        "pct": 56.46,
+        "production": {
+          "files": 23,
+          "code": 6469
+        },
+        "test": {
+          "files": 62,
+          "code": 17541
+        },
+        "example": {
+          "files": 34,
+          "code": 1409
+        }
+      },
+      {
+        "language": "C",
+        "files": 25,
+        "code": 11780,
+        "pct": 26.17,
+        "production": {
+          "files": 14,
+          "code": 11340
+        },
+        "test": {
+          "files": 9,
+          "code": 290
+        },
+        "example": {
+          "files": 2,
+          "code": 150
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 12,
+        "code": 3794,
+        "pct": 8.43,
+        "production": {
+          "files": 12,
+          "code": 3794
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 20,
+        "code": 3076,
+        "pct": 6.83,
+        "production": {
+          "files": 19,
+          "code": 3010
+        },
+        "test": {
+          "files": 1,
+          "code": 66
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 3,
+        "code": 501,
+        "pct": 1.11,
+        "production": {
+          "files": 3,
+          "code": 501
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 2,
+        "code": 152,
+        "pct": 0.34,
+        "production": {
+          "files": 2,
+          "code": 152
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Assembly",
+        "files": 1,
+        "code": 116,
+        "pct": 0.26,
+        "production": {
+          "files": 1,
+          "code": 116
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 70,
+        "pct": 0.16,
+        "production": {
+          "files": 1,
+          "code": 70
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 45,
+        "pct": 0.1,
+        "production": {
+          "files": 1,
+          "code": 45
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 1,
+        "code": 41,
+        "pct": 0.09,
+        "production": {
+          "files": 1,
+          "code": 41
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 24,
+        "pct": 0.05,
+        "production": {
+          "files": 1,
+          "code": 24
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 186,
+      "code": 45018,
+      "comment": 8182,
+      "blank": 7298,
+      "total_lines": 60498
+    },
+    "production": {
+      "files": 78,
+      "code": 25562,
+      "comment": 4017,
+      "blank": 4792,
+      "total_lines": 34371
+    },
+    "test": {
+      "files": 72,
+      "code": 17897,
+      "comment": 3269,
+      "blank": 1965,
+      "total_lines": 23131
+    },
+    "example": {
+      "files": 36,
+      "code": 1559,
+      "comment": 896,
+      "blank": 541,
+      "total_lines": 2996
+    },
+    "production_by_language": {
+      "C": {
+        "files": 14,
+        "code": 11340
+      },
+      "Python": {
+        "files": 23,
+        "code": 6469
+      },
+      "reStructuredText": {
+        "files": 12,
+        "code": 3794
+      },
+      "C/C++ Header": {
+        "files": 19,
+        "code": 3010
+      },
+      "YAML": {
+        "files": 3,
+        "code": 501
+      },
+      "DOS Batch": {
+        "files": 2,
+        "code": 152
+      },
+      "Assembly": {
+        "files": 1,
+        "code": 116
+      },
+      "make": {
+        "files": 1,
+        "code": 70
+      },
+      "TOML": {
+        "files": 1,
+        "code": 45
+      },
+      "Text": {
+        "files": 1,
+        "code": 41
+      },
+      "Markdown": {
+        "files": 1,
+        "code": 24
+      }
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 24772,
+        "category": "production",
+        "by_category": {
+          "production": 20710,
+          "test": 4062
+        }
+      },
+      {
+        "dir": "testing",
+        "code": 13835,
+        "category": "test",
+        "by_category": {
+          "test": 13835
+        }
+      },
+      {
+        "dir": "doc",
+        "code": 3976,
+        "category": "production",
+        "by_category": {
+          "production": 3976
+        }
+      },
+      {
+        "dir": "demo",
+        "code": 1559,
+        "category": "example",
+        "by_category": {
+          "example": 1559
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 546,
+        "category": "production",
+        "by_category": {
+          "production": 546
+        }
+      },
+      {
+        "dir": ".",
+        "code": 283,
+        "category": "production",
+        "by_category": {
+          "production": 283
+        }
+      },
+      {
+        "dir": "tools",
+        "code": 47,
+        "category": "production",
+        "by_category": {
+          "production": 47
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "testing"
+      ],
+      "example": [
+        "demo"
+      ]
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 13,
+          "code": 222,
+          "macros": [
+            "_MSC_VER",
+            "_WIN32",
+            "_WIN64",
+            "__MINGW32__"
+          ]
+        },
+        "macos": {
+          "files": 3,
+          "code": 13,
+          "macros": [
+            "__APPLE__",
+            "__MACH__"
+          ]
+        },
+        "linux": {
+          "files": 1,
+          "code": 27,
+          "macros": [
+            "__linux__"
+          ]
+        }
+      },
+      "total": 262,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；注释行可能计入。"
+    }
+  },
+  "tests": {
+    "test_files": 72,
+    "test_cases": 1350,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 62,
+        "cases": 1350
+      },
+      "C": {
+        "files": 9,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "MIT-0",
+    "name": "MIT No Attribution",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "顶层 LICENSE 文件明确写明 'MIT No Attribution'；pyproject.toml 的 license 字段声明为 'MIT-0'。",
+    "notes": "仓库内嵌的 libffi 源码（src/c/libffi_x86_x64、src/c/libffi_arm64）采用 MIT 许可证，与项目主体许可证兼容。"
+  },
+  "dependencies": {
+    "count": 3,
+    "manifests": [
+      "pyproject.toml",
+      "setup.py",
+      "setup_base.py"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "pycparser",
+        "setuptools"
+      ],
+      "cpp": [
+        "libffi"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "pycparser",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "解析 C 语言声明（ffi.cdef 的底层 C 语法解析器）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 官方源（pip install）",
+        "declared_in": [
+          "pyproject.toml:11",
+          "setup_base.py:14"
+        ],
+        "used_symbols": [
+          "pycparser.c_parser.CParser",
+          "pycparser.c_generator",
+          "pycparser.c_ast"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libffi",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供跨平台的 C 调用约定抽象（ffi_call / ffi_prep_cif），是 CFFI 回调和函数调用的核心依赖",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装；Windows 上内嵌源码编译（src/c/libffi_x86_x64、src/c/libffi_arm64）",
+        "declared_in": [
+          "setup.py:10-13",
+          "setup.py:113-153"
+        ],
+        "used_symbols": [
+          "ffi_call",
+          "ffi_prep_cif",
+          "ffi_closure_alloc",
+          "ffi_closure_free",
+          "ffi_type_void",
+          "ffi_type_pointer"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": ">= 77.0.3",
+        "purpose": "构建 C 扩展模块和打包 wheel",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 官方源",
+        "declared_in": [
+          "pyproject.toml:2-6"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "CFFI 在 PyPy 上依赖解释器内置的 _cffi_backend，无需 pycparser 与 libffi。除 setuptools 为构建依赖外，pycparser 与 libffi 为运行时依赖。"
+  },
+  "native_api": {
+    "summary": "CFFI 的核心是 Python C-API 与 libffi 的互操作封装；同时包含按平台分发的动态加载、线程本地存储和可执行内存分配代码。POSIX 与 Win32 分支均被条件编译隔离，生产代码以跨平台为主。",
+    "groups": [
+      {
+        "type": "python_c_api",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "PyArg_ParseTuple",
+            "purpose": "解析从 Python 传入 C 扩展的位置参数",
+            "count": 30,
+            "evidence": [
+              "src/c/_cffi_backend.c:4315",
+              "src/c/_cffi_backend.c:4378",
+              "src/c/_cffi_backend.c:4516"
+            ]
+          },
+          {
+            "name": "PyErr_Format",
+            "purpose": "设置 Python 异常并携带格式化错误信息",
+            "count": 25,
+            "evidence": [
+              "src/c/_cffi_backend.c:4302",
+              "src/c/_cffi_backend.c:4331",
+              "src/c/_cffi_backend.c:4348"
+            ]
+          },
+          {
+            "name": "PyObject_New",
+            "purpose": "分配并初始化 CFFI 内部 Python 对象（如 DynLibObject）",
+            "count": 8,
+            "evidence": [
+              "src/c/_cffi_backend.c:4567"
+            ]
+          },
+          {
+            "name": "PyGILState_Ensure / PyGILState_Release",
+            "purpose": "在 C 回调进入 Python 时获取/释放 GIL",
+            "count": 6,
+            "evidence": [
+              "src/c/call_python.c:254",
+              "src/c/misc_thread_common.h:354"
+            ]
+          },
+          {
+            "name": "PyMem_Malloc / PyMem_Free",
+            "purpose": "使用 Python 内存分配器分配内部缓冲区",
+            "count": 12,
+            "evidence": [
+              "src/c/_cffi_backend.c:160",
+              "src/c/cdlopen.c:160"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "libffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ffi_prep_cif",
+            "purpose": "准备 C 函数调用的调用约定信息",
+            "count": 4,
+            "evidence": [
+              "src/c/ffi_obj.c",
+              "src/c/libffi_x86_x64/prep_cif.c"
+            ]
+          },
+          {
+            "name": "ffi_call",
+            "purpose": "按指定调用约定调用 C 函数",
+            "count": 5,
+            "evidence": [
+              "src/c/ffi_obj.c",
+              "src/c/libffi_x86_x64/ffi.c"
+            ]
+          },
+          {
+            "name": "ffi_closure_alloc / ffi_closure_free",
+            "purpose": "分配/释放用于 Python 回调的可执行 closure 内存",
+            "count": 3,
+            "evidence": [
+              "src/c/malloc_closure.h:177",
+              "src/c/malloc_closure.h:167"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "posix_dynamic_loader",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "dlopen",
+            "purpose": "在 POSIX 系统上加载共享库",
+            "count": 8,
+            "evidence": [
+              "src/c/_cffi_backend.c:4540",
+              "src/c/cdlopen.c:1"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "dlsym",
+            "purpose": "解析共享库中的符号地址",
+            "count": 5,
+            "evidence": [
+              "src/c/_cffi_backend.c:4329",
+              "src/c/cdlopen.c:15"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "dlclose",
+            "purpose": "关闭已加载的共享库",
+            "count": 4,
+            "evidence": [
+              "src/c/_cffi_backend.c:4569",
+              "src/c/cdlopen.c:27"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "dlerror",
+            "purpose": "获取动态加载器错误信息",
+            "count": 6,
+            "evidence": [
+              "src/c/_cffi_backend.c:4328",
+              "src/c/cdlopen.c:14"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32_dynamic_loader",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "LoadLibraryExA / LoadLibraryExW",
+            "purpose": "Windows 上加载 DLL",
+            "count": 2,
+            "evidence": [
+              "src/c/misc_win32.h:159",
+              "src/c/misc_win32.h:172"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetProcAddress",
+            "purpose": "解析 DLL 导出符号",
+            "count": 2,
+            "evidence": [
+              "src/c/misc_win32.h:177",
+              "src/c/misc_win32.h:191"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "FreeLibrary",
+            "purpose": "释放已加载的 DLL",
+            "count": 1,
+            "evidence": [
+              "src/c/misc_win32.h:202"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix_threads",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "pthread_key_create",
+            "purpose": "创建线程本地存储键，用于保存每线程的 CFFI TLS",
+            "count": 1,
+            "evidence": [
+              "src/c/misc_thread_posix.h:26"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "pthread_setspecific",
+            "purpose": "设置线程本地存储值",
+            "count": 1,
+            "evidence": [
+              "src/c/misc_thread_posix.h:35"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "pthread_getspecific",
+            "purpose": "获取线程本地存储值",
+            "count": 1,
+            "evidence": [
+              "src/c/misc_thread_posix.h:44"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32_threads",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "TlsAlloc",
+            "purpose": "分配 Windows TLS 索引",
+            "count": 1,
+            "evidence": [
+              "src/c/misc_win32.h:42"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "TlsGetValue",
+            "purpose": "读取 Windows TLS 值",
+            "count": 2,
+            "evidence": [
+              "src/c/misc_win32.h:25",
+              "src/c/misc_win32.h:50"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "TlsSetValue",
+            "purpose": "写入 Windows TLS 值",
+            "count": 2,
+            "evidence": [
+              "src/c/misc_win32.h:27",
+              "src/c/misc_win32.h:57"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix_vm",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "mmap",
+            "purpose": "分配可读可写可执行的匿名内存，用于 libffi closure 跳板",
+            "count": 2,
+            "evidence": [
+              "src/c/malloc_closure.h:132"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "sysconf / getpagesize",
+            "purpose": "获取系统页大小以计算 mmap 块尺寸",
+            "count": 2,
+            "evidence": [
+              "src/c/malloc_closure.h:102",
+              "src/c/malloc_closure.h:105"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32_vm",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "VirtualAlloc",
+            "purpose": "Windows 上分配可执行内存页用于 closure 跳板",
+            "count": 1,
+            "evidence": [
+              "src/c/malloc_closure.h:121"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetSystemInfo",
+            "purpose": "获取 Windows 页大小",
+            "count": 1,
+            "evidence": [
+              "src/c/malloc_closure.h:97"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "linux_procfs",
+        "category": "system",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "procfs (/proc/self/status)",
+            "purpose": "读取内核伪文件判断 PaX MPROTECT 是否启用，以决定 mmap 是否去掉 PROT_EXEC",
+            "count": 1,
+            "evidence": [
+              "src/c/malloc_closure.h:40"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32_system",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "GetLastError / SetLastError",
+            "purpose": "保存/恢复 Windows 调用错误码",
+            "count": 5,
+            "evidence": [
+              "src/c/misc_win32.h:69",
+              "src/c/misc_win32.h:82"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "FormatMessageW",
+            "purpose": "将 Windows 错误码转换为可读消息（ffi.getwinerror）",
+            "count": 1,
+            "evidence": [
+              "src/c/misc_win32.h:109"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "LocalFree",
+            "purpose": "释放 FormatMessageW 分配的缓冲区",
+            "count": 1,
+            "evidence": [
+              "src/c/misc_win32.h:136"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "malloc / calloc / free",
+            "purpose": "常规 C 内存分配",
+            "count": 15,
+            "evidence": [
+              "src/c/misc_thread_posix.h:32",
+              "src/c/misc_win32.h:53"
+            ]
+          },
+          {
+            "name": "memset / memcpy / memmove",
+            "purpose": "内存初始化与拷贝",
+            "count": 20,
+            "evidence": [
+              "src/c/_cffi_backend.c:186",
+              "src/c/cdlopen.c:186"
+            ]
+          },
+          {
+            "name": "fopen / fclose / getline",
+            "purpose": "文件流操作（含 /proc/self/status 读取）",
+            "count": 3,
+            "evidence": [
+              "src/c/malloc_closure.h:40"
+            ]
+          },
+          {
+            "name": "__atomic_load_n / __atomic_store_n",
+            "purpose": "GCC/Clang 原子操作（free-threading 构建）",
+            "count": 8,
+            "evidence": [
+              "src/c/misc_thread_posix.h:61",
+              "src/c/misc_win32.h:230"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要依赖 Python 解释器、系统 libffi 和标准的文件/环境接口；除用户显式 dlopen 的库外，库自身不加载外部动态库。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "在调用者目录的 __pycache__ 子目录中生成临时 C 源文件和编译产物",
+        "purpose": "API/verify 模式下编译 C 扩展",
+        "evidence": [
+          "src/cffi/verifier.py:246-254",
+          "src/cffi/recompiler.py:1534"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "CFFI_TMPDIR",
+        "purpose": "覆盖默认的临时编译目录（__pycache__）",
+        "evidence": [
+          "src/cffi/verifier.py:249"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "pkg-config",
+        "purpose": "build 时查询 libffi 的 include/lib 路径（setup.py/pkgconfig.py）",
+        "evidence": [
+          "setup.py:26-53",
+          "src/cffi/pkgconfig.py:26-57"
+        ]
+      }
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99 + Python >= 3.9",
+    "runtime_version": "CPython/PyPy >= 3.9；PyPy 内置 _cffi_backend",
+    "build_system": "setuptools + distutils（通过 _shimmed_dist_utils 兼容）",
+    "compiler_extensions": [
+      {
+        "detail": "__thread 线程局部变量探测",
+        "evidence": [
+          "setup.py:80-91"
+        ]
+      },
+      {
+        "detail": "__sync_synchronize 原子屏障探测",
+        "evidence": [
+          "setup.py:94-104"
+        ]
+      },
+      {
+        "detail": "GCC/Clang __atomic_* 与 MSVC _Interlocked* 原子原语",
+        "evidence": [
+          "src/c/misc_thread_posix.h:54-88",
+          "src/c/misc_win32.h:216-291"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/ci.yaml",
+          "setup.py:153-155"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          ".github/workflows/ci.yaml"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "setup.py:113-159"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          ".github/workflows/ci.yaml"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "setup.py:132-151",
+          "src/c/libffi_x86_x64"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "arm64",
+        "evidence": [
+          "setup.py:133-135",
+          "src/c/libffi_arm64"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "Python wheel/sdist 分发，通过 setuptools 构建；不捆绑运行时。",
+    "notes": "setup.py 在 Windows 上内嵌编译 libffi_x86_x64/libffi_arm64；在其他平台通过 pkg-config 或系统路径链接 libffi。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（模型 A：库跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "feasible_with_effort",
+    "effort": {
+      "person_days": [
+        5,
+        15
+      ]
+    },
+    "confidence": "high",
+    "recommended_path": "run_on_ported_runtime + recompile_native_extension",
+    "summary": "CFFI 主体为 Python 库，鸿蒙 PC 已移植 Python 运行时，纯 Python 部分可直接运行；核心工作量是将 C 扩展 _cffi_backend 及内嵌 libffi 用 OHOS NDK 交叉编译为鸿蒙 .so。关键依赖 libffi 已有官方鸿蒙预编译包，POSIX 动态加载/线程/内存映射接口在 musl 下基本可用，Windows 分支为条件编译、不会触发，因此整体可完整适配。",
+    "blockers": [
+      {
+        "id": "bk:c_ext_rebuild",
+        "issue": "C 扩展 _cffi_backend 需要针对鸿蒙 Python 头文件和 musl 重新编译",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 _cffi_backend.c 及内嵌 libffi 源码为 arm64/x86_64 .so；鸿蒙 cmd-pkgs 已提供 libffi 预编译包，可直接链接或参考其构建参数。",
+        "evidence": [
+          "setup.py:10-15",
+          "setup.py:113-155",
+          "src/c/_cffi_backend.c:1-18"
+        ]
+      },
+      {
+        "id": "bk:build_probe",
+        "issue": "setup.py 中的编译器特性探测（__thread、__sync_synchronize）和 pkg-config 调用需要适配鸿蒙工具链",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "partial",
+        "remediation": "在 OHOS NDK 环境下验证 try_compile/try_link 探测逻辑；如 musl 不支持 __thread 可回退到 pthread TLS；pkg-config 路径指向鸿蒙 sysroot 中的 libffi.pc。",
+        "evidence": [
+          "setup.py:80-104",
+          "setup.py:113-121"
+        ]
+      },
+      {
+        "id": "bk:linux_procfs",
+        "issue": "Linux 专用 /proc/self/status PaX 检测在鸿蒙上可能不存在",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "sysfs_procfs",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "鸿蒙非 Linux ABI，__linux__ 分支大概率不启用；如启用后 /proc/self/status 不存在，可改为直接尝试 PROT_EXEC mmap 并捕获失败降级到非执行页，保持现有回退语义。",
+        "evidence": [
+          "src/c/malloc_closure.h:28-62"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python",
+        "capability": "Python 运行时已移植到鸿蒙 PC",
+        "required": true,
+        "target_status": "available",
+        "impact": "Python 库可直接运行在鸿蒙 Python 上，无需重写",
+        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+      },
+      {
+        "id": "ta:libffi",
+        "capability": "libffi 已在鸿蒙 cmd-pkgs 提供预编译包",
+        "required": true,
+        "target_status": "available",
+        "impact": "CFFI 核心依赖可直接链接鸿蒙版 libffi，无需自行完整移植",
+        "source": "scripts/harmony_adapted.js --ecosystem cpp --names libffi"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 的 C 声明解析、代码生成与 API 封装",
+        "note": "鸿蒙 Python 3.12 可直接运行，无需改动",
+        "evidence": [
+          "src/cffi/cparser.py",
+          "src/cffi/recompiler.py",
+          "src/cffi/api.py"
+        ]
+      },
+      {
+        "aspect": "POSIX 动态加载与线程本地存储分支",
+        "note": "OHOS NDK 的 musl POSIX 子集支持 dlopen/dlsym、pthread TLS、mmap，可直接使用",
+        "evidence": [
+          "src/c/cdlopen.c",
+          "src/c/misc_thread_posix.h",
+          "src/c/malloc_closure.h:88-141"
+        ]
+      },
+      {
+        "aspect": "Windows 专用代码",
+        "note": "被 MS_WIN32 / _WIN32 宏条件隔离，鸿蒙构建不会进入该分支",
+        "evidence": [
+          "src/c/misc_win32.h",
+          "src/c/_cffi_backend.c:7-10"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "配置 OHOS NDK 交叉编译环境，将 _cffi_backend.c 与内嵌/系统 libffi 编译为鸿蒙 .so",
+      "调整 setup.py 的编译器探测逻辑，适配 musl/OHOS 工具链和鸿蒙 sysroot 路径",
+      "确保 pycparser 在鸿蒙 Python 上可安装/运行（纯 Python，通常无需改动）",
+      "在鸿蒙 Python 上运行 CFFI 单元测试，验证 ABI/API 模式、回调和嵌入功能",
+      "评估 /proc/self/status PaX 检测在鸿蒙上的行为，必要时增加非 Linux 分支回退"
+    ],
+    "notes": "评估按模型 A（库跑在已移植 Python 运行时）进行。libffi 已通过 cmd-pkgs 官方鸿蒙化，显著降低移植风险；若目标为 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，需改用 N-API 原生桥接并整体重写，结论会完全不同。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": []
+  }
+}

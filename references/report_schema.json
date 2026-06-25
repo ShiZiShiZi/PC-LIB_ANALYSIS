@@ -16,6 +16,10 @@
           "description": "model: 被分析对象的性质。推荐取值（开放，可扩并记入 meta.observations）：library（被 API 调用的三方库）/ application（终端用户启动运行的应用，如桌面/CLI）/ framework / tool / cli / service / plugin / other。缺省/旧报告按 library 处理。决定 dim-9 鸿蒙口径：library→模型A/B（重编+链接/桥接），application→模型C（整包应用打包并启动）。"},
         "package_name": {"type": ["string", "null"],
           "description": "model: distribution/package name from the manifest (PyPI/npm/Maven artifact/crate name), may differ from the repo dir name. Used to link this library into other libraries' dependency trees. Null if none/uncertain."},
+        "aliases": {"type": "array", "items": {"type": "string"},
+          "description": "model: 该库的其它已知名称（旧名/别名/常见拼写/CMake find_package 名/Maven groupId:artifactId 等），用于被别的库的依赖按名匹配上。无则省略或 []。"},
+        "import_names": {"type": "array", "items": {"type": "string"},
+          "description": "model: 实际 import/引入时用的名字（如 PyPI Pillow → import PIL；包名≠导入名时尤其有用）。无则省略或 []。"},
         "source_url": {"type": ["string", "null"]},
         "analyzed_at": {"type": "string", "description": "ISO-8601 UTC"},
         "commit": {"type": ["string", "null"]},
@@ -85,7 +89,6 @@
         "production": {"$ref": "#/definitions/lineAgg"},
         "test": {"$ref": "#/definitions/lineAgg"},
         "example": {"$ref": "#/definitions/lineAgg"},
-        "production_by_language": {"type": "object"},
         "platform_adaptation": {
           "type": "object",
           "description": "各平台被编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的生产代码量（机械计数，C/C++/ObjC；#ifndef/!defined 不计）。作为鸿蒙适配复杂度信号之一供 dim-9 参考。",
@@ -103,6 +106,42 @@
               }
             },
             "total": {"type": "integer", "description": "各平台之和"},
+            "notes": {"type": "string"}
+          }
+        },
+        "platform_branches": {
+          "type": "object",
+          "description": "生产代码中运行时平台判断分支（sys.platform/process.platform/os.name/runtime.GOOS/cfg!(target_os)…）的机械计数（启发式）。补 platform_adaptation 漏掉的脚本/JVM/Go/Rust/C# 平台分支，作为 dim-9 第二个平台适配信号；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计。",
+          "properties": {
+            "by_language": {
+              "type": "object",
+              "description": "{python|javascript|java|go|rust|csharp: {files, hits}}",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "files": {"type": "integer"},
+                  "hits": {"type": "integer"}
+                }
+              }
+            },
+            "by_platform": {
+              "type": "object",
+              "description": "启发式按命中行平台关键字归类 {windows|macos|linux|posix: hits}"
+            },
+            "samples": {
+              "type": "array",
+              "description": "样例命中位置（最多约 30 条，供核验与 codegraph 追踪种子）",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "language": {"type": "string"},
+                  "file": {"type": "string"},
+                  "line": {"type": "integer"},
+                  "text": {"type": "string"}
+                }
+              }
+            },
+            "total": {"type": "integer", "description": "命中总数"},
             "notes": {"type": "string"}
           }
         }
@@ -149,6 +188,14 @@
           "properties": {
             "name": {"type": "string"},
             "ecosystem": {"type": "string", "description": "LANGUAGE ecosystem only: cpp/c/python/java/nodejs/rust/go/dotnet/other. Use 'other' for non-language deps (data files, generic tools); do NOT put role values like 'tool'/'data' here — a dependency's build-tool nature belongs in scope:build."},
+            "registry_name": {"type": ["string", "null"],
+              "description": "model: 该依赖的规范/注册表包名（PyPI/npm/Maven artifact/crate；或 CMake find_package 的真实包名），当 `name` 是别名/接口名/缩写时填它，便于按名关联到已分析库。不确定则 null。"},
+            "source_repo": {"type": ["string", "null"],
+              "description": "model (best-effort): 该依赖的上游源码仓库 URL（github/gitlab/gitee/自托管均可）。是把依赖关联到已分析库的最强键——能从 manifest/lock/已知常识判断就填，含 `find_package(PNG)`→glennrp/libpng 这类名≠仓的情形。不确定则 null。"},
+            "import_names": {"type": "array", "items": {"type": "string"},
+              "description": "model: 实际 import 名（如依赖 Pillow → 代码里 import PIL）。无则省略。"},
+            "aliases": {"type": "array", "items": {"type": "string"},
+              "description": "model: 该依赖的其它已知名称/拼写。无则省略。"},
             "scope": {"type": "string", "description": "runtime/dev/test/optional/build"},
             "version": {"type": ["string", "null"]},
             "purpose": {"type": "string", "description": "model: why it's used"},
@@ -197,8 +244,6 @@
                   "evidence": {"type": "array", "items": {"type": "string"},
                     "description": "调用位置 file:line（代表性 1-3 处）"},
                   "conditional": {"type": "boolean", "description": "是否被 #ifdef / 平台条件守卫"}}}},
-            "symbols": {"type": "array", "items": {"type": "string"},
-              "description": "deprecated: 旧版扁平符号列表，向后兼容；新输出请用 apis"},
             "evidence": {"type": "array", "items": {"type": "string"},
               "description": "group-level files / includes (optional; prefer per-api evidence)"}}}},
         "dynamic_libraries": {
@@ -275,6 +320,31 @@
       }
     },
 
+    "capability_profile": {
+      "type": "object",
+      "description": "Dimension 10 — MODEL (skill: capability-profile). SYNTHESIS-lite：复用已算出的 native_api / runtime_surface / dependencies / function_summary 证据，把项目触及的鸿蒙适配重点场景结构化标出（是否涉及 GUI/3D 渲染/媒体/特定硬件）。回答\"是否涉及 X\"；dim-9 据此判\"改多少/能否移植\"。prose 简体中文。",
+      "properties": {
+        "summary": {"type": "string", "description": "中文：本项目触及的鸿蒙适配重点场景概览"},
+        "scenarios": {"type": "array", "items": {
+          "type": "object",
+          "required": ["key", "present"],
+          "properties": {
+            "key": {"type": "string",
+              "description": "闭轴（推荐集，开放可扩并记 meta.observations）：gui（桌面界面/窗口）/ rendering_3d（OpenGL/Vulkan/DirectX/Metal 等 3D 图形）/ media（音视频编解码/播放/采集）/ hardware（GPU 计算/USB/串口/蓝牙/传感器/摄像头/NPU 等设备）。"},
+            "present": {"type": "boolean", "description": "本项目是否触及该场景"},
+            "kind": {"type": "array", "items": {"type": "string"},
+              "description": "开放词：该场景的具体技术。gui→工具包/窗口栈(qt6/gtk/win32/swing/electron/tk/wayland/x11)；rendering_3d→opengl/vulkan/directx/metal/webgpu；media→video_decode/audio_capture/ffmpeg/gstreamer/codec；hardware→gpu_cuda/opencl/usb_serial/bluetooth/camera/sensor/npu/fpga。"},
+            "specific_hardware": {"type": "boolean", "description": "仅 hardware：是否依赖特定/不可替代硬件（CUDA/NPU/FPGA 等）——常直接决定 infeasible。"},
+            "via": {"type": "array", "items": {"type": "string"},
+              "description": "交叉引用来源：dependencies[].name / native_api group.type / native_api.dynamic_libraries[].name（说明该场景由谁引入）"},
+            "harmony_status": {"type": "string", "enum": ["available", "partial", "unavailable", "unknown"],
+              "description": "闭轴：该场景在鸿蒙 PC 的支持状态，对照 references/harmony-pc-capabilities.json（GUI/3D/媒体/硬件 段）"},
+            "adaptation": {"type": "string", "description": "开放/中文：修改量与路径（如 ArkUI 重写界面层、换 @ohos.multimedia、无解需放弃）"},
+            "evidence": {"type": "array", "items": {"type": "string"}, "description": "复用来源维度的 file:line（代表性）"}}},
+          "description": "场景清单。未触及的场景可省略或 present:false。空数组表示纯计算/无这些场景。"}
+      }
+    },
+
     "harmony_adaptation": {
       "type": "object",
       "description": "Dimension 9 — MODEL (skill: harmony-adaptation). SYNTHESIS dimension: feasibility / difficulty / path of porting the library to HarmonyOS NEXT PC (self-kernel, ArkTS app layer, OHOS NDK native layer, Node-API bridge — NO Linux ABI). Derived by reasoning over the already-filled native_api / runtime_surface / dependencies / build_env / library blocks, reusing their evidence. Prose in 简体中文.",
@@ -282,8 +352,8 @@
         "target": {"type": "string", "description": "中文/英文：评估所针对的鸿蒙平台口径（HarmonyOS NEXT PC 等）"},
         "feasibility": {"type": "string", "enum": ["feasible", "feasible_with_effort", "hard", "infeasible"],
           "description": "闭轴：整体可行性。须与 porting_class 确定性自洽（no_adaptation→feasible；recompile_only/needs_adaptation_full→feasible_with_effort；needs_adaptation_partial→hard；infeasible→infeasible）。server 会据 porting_class 校验/补全。"},
-        "porting_class": {"type": "string", "enum": ["no_adaptation", "recompile_only", "needs_adaptation_full", "needs_adaptation_partial", "needs_adaptation", "infeasible"],
-          "description": "★唯一权威机器轴（依赖拓扑图 + 难度派生用）。no_adaptation=纯脚本跑在已移植运行时/无原生工作；recompile_only=C/C++ 仅需 OHOS NDK 重编、无平台 API/平台差异；needs_adaptation_full=需改造但用到的功能全部能适配/有替代(unadaptable_apis 为空)；needs_adaptation_partial=部分功能因平台/硬件 API 无法适配(见 unadaptable_apis)但核心仍可用；infeasible=核心不可适配/依赖特定硬件无解。须与 feasibility/recommended_path 自洽。旧值 needs_adaptation 保留兼容，等同 needs_adaptation_partial 档。"},
+        "porting_class": {"type": "string", "enum": ["no_adaptation", "recompile_only", "needs_adaptation_full", "needs_adaptation_partial", "infeasible"],
+          "description": "★唯一权威机器轴（依赖拓扑图 + 难度派生用）。no_adaptation=纯脚本跑在已移植运行时/无原生工作；recompile_only=C/C++ 仅需 OHOS NDK 重编、无平台 API/平台差异；needs_adaptation_full=需改造但用到的功能全部能适配/有替代(unadaptable_apis 为空)；needs_adaptation_partial=部分功能因平台/硬件 API 无法适配(见 unadaptable_apis)但核心仍可用；infeasible=核心不可适配/依赖特定硬件无解。须与 feasibility/recommended_path 自洽。"},
         "effort": {"type": "object",
           "description": "工作量与难度。模型只估 person_days（区间）；level 由 server 按固定 rubric 从 (porting_class 下限 × person_days 上界分桶) 取高确定性派生——模型无需自填、填了也以派生为准。这样难度与 porting_class 自洽且 person_days 可跨依赖树数值聚合。",
           "properties": {
@@ -318,6 +388,17 @@
             "impact": {"type": "string", "description": "中文：该目标事实如何影响结论（如「不支持则整体不可运行」）"},
             "source": {"type": "string", "description": "事实来源，通常 references/harmony-pc-capabilities.md 的对应条目"}}},
           "description": "结论所依赖的目标平台能力假设（来自 references/harmony-pc-capabilities.md 的匹配）。target_status=unknown 的项表示结论依赖未核实事实——应同时下调 meta.confidence_overall 并在 notes 说明，不得据 unknown 臆断为可行。库通常为空或仅运行时一条。"},
+        "required_permissions": {"type": "array", "items": {
+          "type": "object",
+          "required": ["permission"],
+          "properties": {
+            "permission": {"type": "string", "description": "鸿蒙化后运行所需的权限：ohos.permission.* 名（如 ohos.permission.CAMERA/MICROPHONE/LOCATION/INTERNET/读写存储/USE_BLUETOOTH）或中文能力名"},
+            "reason": {"type": "string", "description": "中文：为何需要该权限（哪个能力/场景驱动）"},
+            "source_capability": {"type": "string", "description": "交叉引用 capability_profile.scenarios[].key（gui/rendering_3d/media/hardware）或其它来源"},
+            "harmony_status": {"type": "string", "enum": ["available", "restricted", "unavailable", "unknown"],
+              "description": "闭轴：该权限在鸿蒙 PC 形态的可授予性，对照 harmony-pc-capabilities.json 权限模型段。restricted/unavailable/unknown 应影响 confidence/blocker。"},
+            "evidence": {"type": "array", "items": {"type": "string"}, "description": "调用点 file:line"}}},
+          "description": "鸿蒙化后运行所需申请的额外权限（多见于媒体/硬件/定位/网络场景）。与 capability_profile 交叉引用；unknown/unavailable 的 required 权限应下调 confidence 并酌情记 blocker。"},
         "recommended_path": {"type": "string",
           "description": "开放词：推荐适配路径，如 recompile_napi / cross_compile / arkts_rewrite / wrap_ffi / find_alternative / abandon"},
         "summary": {"type": "string", "description": "中文：总体判断与为何选这条路径"},

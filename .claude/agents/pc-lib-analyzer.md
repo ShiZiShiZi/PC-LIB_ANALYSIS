@@ -63,6 +63,9 @@ the `.claude/skills/...` and `references/...` paths below resolve.
      (classify each group: 标准/特有/系统/ffi/硬件; include managed-language stdlib/system calls)
    - Dim 8 runtime & build environment → `.claude/skills/runtime-environment/SKILL.md`
      (fills `runtime_surface` + `build_env`)
+   - Dim 10 capability profile → `.claude/skills/capability-profile/SKILL.md`
+     (fills `capability_profile`; a SYNTHESIS over dims 1/6/7/8 — do it AFTER those
+     exist, BEFORE dim 9: flag GUI/3D/媒体/特定硬件 场景 + harmony_status)
    Use `Glob`/`Grep`/`Read` to inspect README, manifests, public headers/API, and
    representative source files. Prefer breadth on large repos. Cross-check the
    script's test framework / language guesses against what you see; refine the
@@ -107,7 +110,11 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    **synthesis** pass: do NOT re-scan the source — reason over the already-filled
    `library.ecosystem`, `native_api`, `runtime_surface`, `dependencies` (incl. their
    `harmony_adapted` flags from 3a — adapted deps are NOT blockers and lower
-   difficulty/effort), and `build_env`, and **reuse their `evidence`**. Do it inline in
+   difficulty/effort), `build_env`, and the dim-10 `capability_profile` (GUI/3D/媒体/硬件
+   场景 + their harmony_status — a present scenario that is unavailable/specific_hardware
+   drives a blocker/unadaptable_api), and **reuse their `evidence`**. Also fill
+   `harmony_adaptation.required_permissions[]` (鸿蒙化后所需 ohos.permission.*, cross-ref
+   the capability_profile scenario via `source_capability`). Do it inline in
    this same session (never spawn a sub-agent). Because dims 6/7/8 are already
    production-scoped (see above), `blockers`/`unadaptable_apis` are too — a platform API
    seen only in tests/examples is NOT a porting blocker. For an示例/教程集合, converge:
@@ -121,10 +128,22 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    unknown. `available`→no blocker; `partial`→partial blocker; `unavailable`→blocker/
    `unadaptable_apis`.
 
+3c. **Self-check (completeness + cross-dimension consistency).** Before assembling,
+   re-examine the repo signals (README, manifests, `code_metrics.top_dirs`, codegraph)
+   and审查每个维度：是否有"本该非空却空"的维度（如有 GUI deps 却空 capability_profile、有
+   平台 API 却空 native_api）？证据是否到位（关键结论都带 `evidence` file:line）？**跨维是否自洽**——
+   - `dependencies`/`native_api` 出现 Qt/GTK/SDL/Electron → `capability_profile` 应有 `gui` present；
+     出现 OpenGL/Vulkan/DirectX → `rendering_3d`；FFmpeg/GStreamer → `media`；CUDA/OpenCL/libusb → `hardware`。
+   - `capability_profile` 里 present 且 `harmony_status` 为 partial/unavailable 的场景，dim-9 应有对应
+     `blocker`/`unadaptable_apis`/`target_assumptions`（用 `caused_by`/`source_capability` 交叉引用，**不要重述**）。
+   - `required_permissions[].source_capability` 必须指向一个 present 场景。
+   补齐发现的缺口；仍不确定的写入 `meta.observations` 或对应块的 `notes`。这一步与服务端的
+   `validateReport` 启发式互补（一个是模型推理补全、一个是确定性兜底）。**inline 完成，禁子代理。**
+
 4. **Assemble `report.json`.** Merge the script fragment (`languages`,
    `code_metrics`, `tests`) with your reasoned blocks (`function_summary`,
    `license`, `dependencies`, `native_api`, `runtime_surface`, `build_env`,
-   `harmony_adaptation`) and the `library` / `meta` headers.
+   `capability_profile`, `harmony_adaptation`) and the `library` / `meta` headers.
    Conform exactly to `references/report_schema.json`: every top-level key
    present, required sub-fields filled. Fill `meta` with `schema_version: "1.0"`,
    `analyzer: "pc-lib-analyzer"`, `counter_tool` (from the fragment),
@@ -136,7 +155,13 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `rust`, `go`, `dotnet`, `other`. If you are uncertain, use `other`. Write
    `library.package_name` (the distribution/package name from the manifest, which
    may differ from the repo dir name; `null` if none) — the panel uses it to link
-   this library into other libraries' dependency trees. Set `library.bindings` —
+   this library into other libraries' dependency trees. When the package name ≠
+   import name or the library has other known names, also set `library.aliases`
+   (其它已知名/旧名/CMake find_package 名/Maven groupId:artifactId) and
+   `library.import_names` (实际 import 名，如 Pillow→PIL) so other libraries' deps
+   can match it by name. In `dependencies[]`, fill each dep's `source_repo` (上游源码仓 URL,
+   最强关联键, 尤其当 dep `name` 是别名/接口名如 `find_package(PNG)`→glennrp/libpng) +
+   `registry_name` when its `name` isn't the canonical package name. Set `library.bindings` —
    the languages it provides bindings/wrappers for beyond the core ecosystem
    (e.g. C++ core with Python/Java/C# bindings → `["python","java","dotnet"]`; `[]` if none).
 
@@ -152,8 +177,9 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `build_env` (language_standard/runtime_version/build_system/compiler_extensions/
    platforms) per the runtime-environment skill — descriptive only, `[]` when empty.
    Write `harmony_adaptation` per the harmony-adaptation skill: the closed axes
-   (`feasibility`/`overall_difficulty`/`effort_estimate`/`blockers[].severity`) must use
-   schema enum values; `recommended_path`/`blockers[].category`/`harmony_status` are open
+   (`feasibility`/`porting_class`/`effort.person_days`/`blockers[].severity`/`blockers[].adaptability`)
+   must use schema enum values (`effort.level` is server-derived — don't fill it);
+   `recommended_path`/`blockers[].category`/`harmony_status` are open
    vocab; each blocker carries its `source_dimension` + reused `evidence`.
 
    For every entry in `dependencies.dependencies`, set `acquisition` (OPEN vocab — coin a

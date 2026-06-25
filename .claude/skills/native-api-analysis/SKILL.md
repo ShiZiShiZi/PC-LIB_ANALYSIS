@@ -118,6 +118,9 @@ same call site and listing both is intentional, **not** a duplicate.
    lookups — `codegraph query <symbol> -p repos/<name> -j` to find definitions and
    `codegraph callers/callees -p repos/<name>` to confirm call sites — and fall back
    to grep/Read when it isn't.
+   **运行时平台判断**（`sys.platform`/`os.name`、`process.platform`、`runtime.GOOS`、
+   `cfg!(target_os)`、`RuntimeInformation.IsOSPlatform`…）也是 `platform` 类别的信号——
+   从 `code_metrics.platform_branches.samples` 取现成位置，再用 codegraph 确认每个分支**守卫的下游平台调用**。
 2. Open representative hits and confirm real usage (ignore comments, strings,
    third-party/vendored subtrees). **限定生产代码 —— 排除测试与示例/演示代码。** 用
    `metrics.json` 的 `code_metrics.top_dirs`/`test_example_dirs` 作基线，并对**按功能命名的

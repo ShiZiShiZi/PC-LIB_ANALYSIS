@@ -1,0 +1,576 @@
+{
+  "library": {
+    "name": "pycparser",
+    "kind": "library",
+    "package_name": "pycparser",
+    "source_url": "https://github.com/eliben/pycparser",
+    "analyzed_at": "2026-06-25T01:34:57.700Z",
+    "commit": "89c9f3d8642b9ec84cfdd6921faffaba7e95c43c",
+    "one_liner": "纯 Python 实现的 C99/C11 语法解析器，输出 AST 供静态分析、代码生成与 FFI 工具链使用。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "pycparser 是一个用纯 Python 编写的 C 语言解析器，能够把 C99（及部分 C11）源代码解析成抽象语法树（AST）。它既可以直接处理预处理后的 C 代码，也通过 parse_file / preprocess_file 提供了调用外部 C 预处理器（cpp/gcc -E/clang -E）的便利接口。其典型用户是需要解析 C 代码的 Python 应用与工具链，例如 cffi 用它解析 C 声明来自动生成 FFI 绑定。",
+    "categories": [
+      {
+        "name": "C 语言词法分析",
+        "description": "独立的 C 语言词法分析器（CLexer），负责将 C 源代码切分为 token 流，并处理 #line/#pragma 等预处理器指令。",
+        "evidence": ["pycparser/c_lexer.py", "CLexer.token", "CLexer.input"]
+      },
+      {
+        "name": "递归下降语法解析",
+        "description": "遵循 C99 标准附录 A 文法的递归下降解析器（CParser），将 token 流构建为类型化的 AST。",
+        "evidence": ["pycparser/c_parser.py", "CParser.parse", "CParser._parse_translation_unit_or_empty"]
+      },
+      {
+        "name": "抽象语法树（AST）定义与操作",
+        "description": "提供 C 语言各语法节点（Decl、FuncDef、Compound、BinaryOp 等）的 Python 类，以及节点访问器（NodeVisitor）、格式化打印（Node.show）等 AST 操作能力。",
+        "evidence": ["pycparser/c_ast.py", "pycparser/_c_ast.cfg", "NodeVisitor", "Node.show"]
+      },
+      {
+        "name": "AST 转换与后处理",
+        "description": "对解析后的 AST 进行友好化调整，例如整理 switch-case 的嵌套结构与原子类型限定符。",
+        "evidence": ["pycparser/ast_transforms.py", "fix_switch_cases", "fix_atomic_specifiers"]
+      },
+      {
+        "name": "C 代码生成",
+        "description": "将 AST 重新输出为可编译的 C 源代码，支持括号精简等格式化选项。",
+        "evidence": ["pycparser/c_generator.py", "CGenerator.visit"]
+      },
+      {
+        "name": "文件级解析与预处理集成",
+        "description": "通过 parse_file 与 preprocess_file 提供从文件读取、调用外部 cpp 到解析的一站式入口。",
+        "evidence": ["pycparser/__init__.py", "parse_file", "preprocess_file"]
+      }
+    ],
+    "domain": "编译器前端 / 静态分析 / 代码解析",
+    "target_users": "Python 开发者、静态分析工具、FFI 自动生成工具（如 cffi）、编译器前端研究者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "C",
+      "C/C++ Header",
+      "reStructuredText",
+      "YAML",
+      "TOML",
+      "Text",
+      "make"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 35,
+        "code": 8038,
+        "pct": 77.31,
+        "production": {
+          "files": 14,
+          "code": 3967
+        },
+        "test": {
+          "files": 7,
+          "code": 3604
+        },
+        "example": {
+          "files": 14,
+          "code": 467
+        }
+      },
+      {
+        "language": "C",
+        "files": 16,
+        "code": 1524,
+        "pct": 14.66,
+        "production": {
+          "files": 3,
+          "code": 105
+        },
+        "test": {
+          "files": 7,
+          "code": 1111
+        },
+        "example": {
+          "files": 6,
+          "code": 308
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 11,
+        "code": 562,
+        "pct": 5.41,
+        "production": {
+          "files": 7,
+          "code": 529
+        },
+        "test": {
+          "files": 3,
+          "code": 21
+        },
+        "example": {
+          "files": 1,
+          "code": 12
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 3,
+        "code": 163,
+        "pct": 1.57,
+        "production": {
+          "files": 2,
+          "code": 156
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 7
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 34,
+        "pct": 0.33,
+        "production": {
+          "files": 1,
+          "code": 34
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 32,
+        "pct": 0.31,
+        "production": {
+          "files": 1,
+          "code": 32
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 22,
+        "pct": 0.21,
+        "production": {
+          "files": 1,
+          "code": 21
+        },
+        "test": {
+          "files": 1,
+          "code": 1
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 11,
+        "pct": 0.11,
+        "production": {
+          "files": 1,
+          "code": 11
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 10,
+        "pct": 0.1,
+        "production": {
+          "files": 1,
+          "code": 10
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 1,
+        "code": 1,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 1
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 72,
+      "code": 10397,
+      "comment": 2786,
+      "blank": 6564,
+      "total_lines": 19747
+    },
+    "production": {
+      "files": 32,
+      "code": 4866,
+      "comment": 1061,
+      "blank": 1096,
+      "total_lines": 7023
+    },
+    "test": {
+      "files": 18,
+      "code": 4737,
+      "comment": 1194,
+      "blank": 5144,
+      "total_lines": 11075
+    },
+    "example": {
+      "files": 22,
+      "code": 794,
+      "comment": 531,
+      "blank": 324,
+      "total_lines": 1649
+    },
+    "production_by_language": {
+      "Python": {
+        "files": 14,
+        "code": 3967
+      },
+      "C/C++ Header": {
+        "files": 7,
+        "code": 529
+      },
+      "reStructuredText": {
+        "files": 2,
+        "code": 156
+      },
+      "C": {
+        "files": 3,
+        "code": 105
+      },
+      "YAML": {
+        "files": 1,
+        "code": 34
+      },
+      "TOML": {
+        "files": 1,
+        "code": 32
+      },
+      "Text": {
+        "files": 1,
+        "code": 21
+      },
+      "make": {
+        "files": 1,
+        "code": 11
+      },
+      "Markdown": {
+        "files": 1,
+        "code": 10
+      },
+      "DOS Batch": {
+        "files": 1,
+        "code": 1
+      }
+    },
+    "top_dirs": [
+      {
+        "dir": "tests",
+        "code": 4737,
+        "category": "test",
+        "by_category": {
+          "test": 4737
+        }
+      },
+      {
+        "dir": "pycparser",
+        "code": 3815,
+        "category": "production",
+        "by_category": {
+          "production": 3815
+        }
+      },
+      {
+        "dir": "examples",
+        "code": 794,
+        "category": "example",
+        "by_category": {
+          "example": 794
+        }
+      },
+      {
+        "dir": "utils",
+        "code": 791,
+        "category": "production",
+        "by_category": {
+          "production": 791
+        }
+      },
+      {
+        "dir": ".",
+        "code": 226,
+        "category": "production",
+        "by_category": {
+          "production": 226
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 34,
+        "category": "production",
+        "by_category": {
+          "production": 34
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tests"
+      ],
+      "example": [
+        "examples"
+      ]
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；注释行可能计入。"
+    }
+  },
+  "tests": {
+    "test_files": 18,
+    "test_cases": 135,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 7,
+        "cases": 135
+      },
+      "C": {
+        "files": 7,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 3,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "pyproject.toml 显式声明 license = \"BSD-3-Clause\"；LICENSE 文件正文与 BSD-3-Clause 文本一致（保留版权声明、免责声明、禁止以贡献者名义背书）。",
+    "notes": "宽松型许可，允许商业/闭源使用；需保留版权声明与免责声明。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "pyproject.toml",
+      "setup.py",
+      "setup.cfg"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "pycparser 是纯 Python 库，manifest 中未声明任何运行时依赖（README 亦强调 no external dependencies）。构建依赖仅在 pyproject.toml 的 [build-system] 中声明 setuptools>=69，属于构建系统本身所需。"
+  },
+  "native_api": {
+    "summary": "pycparser 为纯 Python 库，无原生扩展、无 ctypes/cffi/JNI/N-API 等互操作桥接，也无 Win32/POSIX 系统调用。仅在 convenience 接口中调用 Python 标准库的 subprocess.check_output 来执行外部 C 预处理器（cpp）以及用 io.open 读取文件。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "subprocess.check_output",
+            "purpose": "调用外部 C 预处理器（cpp/gcc -E/clang -E）获取预处理后的 C 代码",
+            "count": 1,
+            "evidence": ["pycparser/__init__.py:45"]
+          },
+          {
+            "name": "io.open",
+            "purpose": "读取待解析的 C 源文件内容",
+            "count": 1,
+            "evidence": ["pycparser/__init__.py:94"]
+          },
+          {
+            "name": "sys.stdout",
+            "purpose": "AST 节点 show 方法的默认输出缓冲区",
+            "count": 2,
+            "evidence": ["pycparser/c_ast.py:72", "pycparser/_ast_gen.py:224"]
+          },
+          {
+            "name": "os.path",
+            "purpose": "AST 代码生成器脚本运行时定位 _c_ast.cfg 路径",
+            "count": 2,
+            "evidence": ["pycparser/_ast_gen.py:350", "pycparser/_ast_gen.py:351"]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期对外部宿主环境的依赖极少：仅当用户显式使用 use_cpp=True 时才会 spawn 外部 C 预处理器；其余逻辑均在内存中处理字符串/AST。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "用户传入的 C 源文件",
+        "purpose": "读取待解析的 C 代码",
+        "evidence": ["pycparser/__init__.py:94"]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [
+      {
+        "command": "cpp / gcc -E / clang -E（可配置）",
+        "purpose": "对 C 源文件做预处理，解析器本身只处理预处理后的代码",
+        "evidence": ["pycparser/__init__.py:21-53"]
+      }
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "Python 3.10 / 3.11 / 3.12 / 3.13 / 3.14",
+    "build_system": "setuptools（pyproject.toml 指定 build-system requires setuptools>=69）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/ci.yml", "README.rst: tested on Linux, macOS and Windows"]
+      },
+      {
+        "os": "macos",
+        "arch": "unknown",
+        "evidence": ["README.rst: tested on Linux, macOS and Windows"]
+      },
+      {
+        "os": "windows",
+        "arch": "unknown",
+        "evidence": ["README.rst: tested on Linux, macOS and Windows"]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "通过 pip 以纯 Python wheel/sdist 分发，无原生扩展、不捆绑运行时。",
+    "notes": "CI 覆盖现代 Python 版本与三大桌面平台；安装无需编译步骤。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；自研内核，无 Linux ABI；arm64/x86_64）",
+    "porting_class": "no_adaptation",
+    "feasibility": "feasible",
+    "effort": {
+      "person_days": [0, 2]
+    },
+    "confidence": "high",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "pycparser 是纯 Python 库，不依赖任何原生扩展或第三方包，仅调用 Python 标准库 io/subprocess 与外部 cpp 交互。鸿蒙 PC 已移植 Python 3.12 运行时，因此纯 Python 部分无需修改即可运行；外部 cpp 命令在鸿蒙开发环境下可由系统预处理器提供。整体无移植阻碍，仅需打包验证。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python",
+        "capability": "Python 运行时已移植",
+        "required": true,
+        "target_status": "available",
+        "impact": "纯 Python 库可直接运行在鸿蒙 Python 上",
+        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+      },
+      {
+        "id": "ta:spawn",
+        "capability": "启动外部进程（exec/ProcessBuilder）",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "仅当用户使用 use_cpp=True 调用外部 cpp 时才需要；该功能可选，缺失时用户可先用 gcc -E 预处理再调用解析器",
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 解析核心",
+        "note": "词法、语法、AST 构建与代码生成完全基于 Python 标准库，鸿蒙 Python 可直接运行，无需改动",
+        "evidence": ["pycparser/c_lexer.py", "pycparser/c_parser.py", "pycparser/c_ast.py", "pycparser/c_generator.py"]
+      },
+      {
+        "aspect": "零第三方依赖",
+        "note": "manifest 与源码中均无第三方运行时依赖，不存在依赖移植问题",
+        "evidence": ["pyproject.toml", "pycparser/__init__.py"]
+      },
+      {
+        "aspect": "跨平台设计",
+        "note": "源码无平台条件编译分支（platform_adaptation 总计为 0），所有平台行为统一",
+        "evidence": ["code_metrics.platform_adaptation.total = 0"]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 3.12 环境中安装 pycparser（pip install . 或复制包目录）",
+      "运行 pytest 单元测试确认解析核心工作正常",
+      "（可选）确认系统 PATH 中可用 cpp/clang/gcc -E，以验证 use_cpp=True 路径"
+    ],
+    "notes": "评估按模型 A（库跑在已移植的 Python 运行时上）。若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，pycparser 无法直接运行，需要以 Python 子进程或重写方式实现，结论将完全不同。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": []
+  }
+}

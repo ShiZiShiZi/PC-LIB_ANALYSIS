@@ -21,7 +21,7 @@ runner external paths are auto-rejected, which aborts the analysis.
 
 Outputs a JSON fragment with three keys, ready to drop into the final report:
 - `languages` — dim 2: per-language file/code counts, `primary` implementation language.
-- `code_metrics` — dim 3: `total` / `production` / `test` / `example` line aggregates + `production_by_language`.
+- `code_metrics` — dim 3: `total` / `production` / `test` / `example` line aggregates (+ platform_adaptation / platform_branches signals).
 - `tests` — dim 4: `test_files`, `test_cases`, detected `frameworks`, `by_language`.
 
 Requires `cloc` (preferred) or `tokei` on PATH; falls back to a builtin counter

@@ -98,6 +98,9 @@ ecosystem, one of the allowed values above), and `library.package_name` — the
 **distribution/package name** declared in the manifest (`[project].name` / `name`
 in `package.json` / Maven `artifactId` / `Cargo.toml` `name`), which may differ
 from the repo dir name. Set it to `null` if there is no manifest or it is uncertain.
+当**包名≠导入名或有别名/旧名**时，再填 `library.aliases`（其它已知名/旧名/CMake `find_package` 名/
+Maven `groupId:artifactId`）与 `library.import_names`（实际 import 名，如 Pillow→PIL）——这些让本库
+被别的库的依赖按名关联上（与 `package_name`/`source_url` 一起构成本库的身份键）。无则省略或 `[]`。
 
 Set `library.bindings` — the languages the library exposes **bindings/wrappers**
 for beyond its core ecosystem (so a polyglot library isn't shown as single-language).

@@ -98,11 +98,6 @@ def _top_dirs(cloc: ClocResult, cap: int = 40) -> tuple[list[dict], dict]:
 
 def _code_metrics(cloc: ClocResult) -> dict:
     cats = {c: cloc.by_category(c) for c in ("production", "test", "example")}
-    by_lang_prod: dict[str, dict] = {}
-    for f in cats["production"]:
-        d = by_lang_prod.setdefault(f.language, {"files": 0, "code": 0})
-        d["files"] += 1
-        d["code"] += f.code
     top_dirs, test_example_dirs = _top_dirs(cloc)
     return {
         "tool": cloc.tool,
@@ -110,8 +105,6 @@ def _code_metrics(cloc: ClocResult) -> dict:
         "production": _agg(cats["production"]),
         "test": _agg(cats["test"]),
         "example": _agg(cats["example"]),
-        "production_by_language": dict(sorted(
-            by_lang_prod.items(), key=lambda kv: kv[1]["code"], reverse=True)),
         "top_dirs": top_dirs,
         "test_example_dirs": test_example_dirs,
     }
@@ -133,6 +126,64 @@ _CXX_EXT = (".c", ".cc", ".cpp", ".cxx", ".c++", ".h", ".hpp", ".hh", ".hxx",
             ".m", ".mm", ".cu", ".cuh")
 _IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _NEG_DEFINED_RE = re.compile(r"!\s*defined\s*\([^)]*\)")
+
+# Per-language comment/string masking so platform idioms inside comments or string
+# literals don't inflate the mechanical counts. cfg: line-comment marker, C-style
+# /* */ block comments, Python triple-quoted strings, backtick raw/template strings.
+_MASK_CFG = {
+    "python":     {"line": "#",  "block": False, "triple": True,  "backtick": False},
+    "javascript": {"line": "//", "block": True,  "triple": False, "backtick": True},
+    "java":       {"line": "//", "block": True,  "triple": False, "backtick": False},
+    "go":         {"line": "//", "block": True,  "triple": False, "backtick": True},
+    "rust":       {"line": "//", "block": True,  "triple": False, "backtick": False},
+    "csharp":     {"line": "//", "block": True,  "triple": False, "backtick": False},
+    "cpp":        {"line": "//", "block": True,  "triple": False, "backtick": False},
+}
+
+
+def _masked_lines(lines, cfg):
+    """Yield (lineno, masked) where comment + string-literal content is replaced by
+    spaces (structure preserved). Tracks /* */ block comments and Python triple quotes
+    across lines. Single-line ' " (and backtick when enabled) strings are blanked too."""
+    line_c = cfg.get("line")
+    blk = cfg.get("block")
+    triple_on = cfg.get("triple")
+    tick = cfg.get("backtick")
+    in_block = False
+    triple = None
+    for i, raw in enumerate(lines, 1):
+        s = raw.rstrip("\n")
+        out = []
+        j, n = 0, len(s)
+        instr = None
+        while j < n:
+            c = s[j]
+            two = s[j:j + 2]
+            if in_block:
+                if two == "*/":
+                    in_block = False; out.append("  "); j += 2; continue
+                out.append(" "); j += 1; continue
+            if triple is not None:
+                if s[j:j + 3] == triple:
+                    triple = None; out.append("   "); j += 3; continue
+                out.append(" "); j += 1; continue
+            if instr is not None:
+                out.append(" ")
+                if c == "\\" and j + 1 < n:
+                    out.append(" "); j += 2; continue
+                if c == instr:
+                    instr = None
+                j += 1; continue
+            if triple_on and (s[j:j + 3] == '"""' or s[j:j + 3] == "'''"):
+                triple = s[j:j + 3]; out.append("   "); j += 3; continue
+            if blk and two == "/*":
+                in_block = True; out.append("  "); j += 2; continue
+            if line_c and s[j:j + len(line_c)] == line_c:
+                break  # rest of line is a comment
+            if c in ("'", '"') or (tick and c == "`"):
+                instr = c; out.append(" "); j += 1; continue
+            out.append(c); j += 1
+        yield i, "".join(out)
 
 
 def _platforms_in_condition(cond: str) -> set:
@@ -162,10 +213,11 @@ def platform_adaptation(repo: str, cloc: ClocResult) -> dict:
                 lines = fh.readlines()
         except OSError:
             continue
+        # mask comments/strings so blank/comment-only lines aren't counted as guarded code
+        masked = [m for _, m in _masked_lines(lines, _MASK_CFG["cpp"])]
         stack = []          # each frame: set of platforms active in the current branch
         file_hit = set()
-        for raw in lines:
-            s = raw.strip()
+        for s in (mk.strip() for mk in masked):
             m = re.match(r"#\s*(ifdef|ifndef|if|elif|else|endif)\b(.*)", s)
             if m:
                 d, rest = m.group(1), m.group(2)
@@ -185,7 +237,7 @@ def platform_adaptation(repo: str, cloc: ClocResult) -> dict:
                     if stack:
                         stack.pop()
                 continue
-            if not s:
+            if not s:                                          # blank or comment-only → not code
                 continue
             active = set().union(*stack) if stack else set()  # any enclosing guard names a platform
             for p in active:
@@ -193,8 +245,8 @@ def platform_adaptation(repo: str, cloc: ClocResult) -> dict:
                 file_hit.add(p)
         for p in file_hit:
             by[p]["files"] += 1
-            for raw in lines:                                  # record which macros were seen for this platform
-                mm = re.match(r"#\s*(?:ifdef|ifndef|if|elif)\b(.*)", raw.strip())
+            for s in (mk.strip() for mk in masked):            # record which macros were seen for this platform
+                mm = re.match(r"#\s*(?:ifdef|ifndef|if|elif)\b(.*)", s)
                 if mm:
                     for tok in _IDENT_RE.findall(mm.group(1)):
                         if _MACRO_TO_PLATFORM.get(tok) == p:
@@ -205,7 +257,97 @@ def platform_adaptation(repo: str, cloc: ClocResult) -> dict:
         "by_platform": out,
         "total": sum(v["code"] for v in out.values()),
         "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)"
-                 "正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；注释行可能计入。",
+                 "正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。",
+    }
+
+
+# ── Runtime platform-detection branches (language-level, not compile macros) ──
+# Pure-language libs branch on the platform at runtime (if/else/switch on
+# sys.platform / process.platform / os.name / runtime.GOOS / cfg!(target_os) …).
+# These ALSO need adaptation but carry no #ifdef, so platform_adaptation misses
+# them. We count occurrences of the detection idioms per language with sample
+# sites — a reproducible signal dim-9 (model + codegraph) then interprets.
+_BRANCH_LANG_EXT = {
+    "python": (".py",),
+    "javascript": (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"),
+    "java": (".java", ".kt"),
+    "go": (".go",),
+    "rust": (".rs",),
+    "csharp": (".cs",),
+}
+_EXT_TO_BRANCH_LANG = {e: lang for lang, exts in _BRANCH_LANG_EXT.items() for e in exts}
+_BRANCH_PATTERNS = {
+    "python": re.compile(
+        r"\bsys\.platform\b|\bos\.name\b|\bos\.uname\s*\(|"
+        r"\bplatform\.(?:system|machine|uname|platform|release|version|architecture)\s*\("),
+    "javascript": re.compile(
+        r"\bprocess\.platform\b|\bprocess\.arch\b|\bos\.(?:platform|type|arch|release)\s*\(|"
+        r"\bnavigator\.(?:platform|userAgent)\b"),
+    "java": re.compile(r"""System\.getProperty\(\s*["']os\.(?:name|arch|version)["']"""),
+    "go": re.compile(r"\bruntime\.GO(?:OS|ARCH)\b"),
+    "rust": re.compile(r"cfg!\s*\(\s*target_os|#\[\s*cfg\s*\(\s*target_os|std::env::consts::(?:OS|ARCH)\b"),
+    "csharp": re.compile(
+        r"RuntimeInformation\.IsOSPlatform|Environment\.OSVersion|Environment\.Is64BitOperatingSystem"),
+}
+# Heuristic platform attribution from keywords on the matched line.
+_BRANCH_PLAT_KEYWORDS = {
+    "windows": ("win32", "win64", "windows", "_nt", "msvc", "mingw", "cygwin", "msys"),
+    "macos":   ("darwin", "macos", "mac_os", "osx", "apple", "mach"),
+    "linux":   ("linux",),
+    "posix":   ("unix", "posix", "bsd", "solaris", "aix", "sunos"),
+}
+_BRANCH_SAMPLE_CAP = 30
+
+
+def platform_branches(repo: str, cloc: ClocResult) -> dict:
+    """Count production runtime platform-detection idioms per language + sample sites."""
+    by_lang = {}
+    by_plat = {p: 0 for p in _BRANCH_PLAT_KEYWORDS}
+    samples = []
+    total = 0
+    for f in cloc.by_category("production"):
+        ext = os.path.splitext(f.path)[1].lower()
+        lang = _EXT_TO_BRANCH_LANG.get(ext)
+        if not lang:
+            continue
+        pat = _BRANCH_PATTERNS[lang]
+        try:
+            with open(os.path.join(repo, f.path), encoding="utf-8", errors="replace") as fh:
+                lines = fh.readlines()
+        except OSError:
+            continue
+        file_hit = False
+        cfg = _MASK_CFG.get(lang, {})
+        for i, masked in _masked_lines(lines, cfg):
+            # Match the IDIOM on the masked line (so commented-out / stringified
+            # mentions don't count); attribute the PLATFORM on the raw line (the
+            # platform value lives in a string literal, e.g. == "linux").
+            if not pat.search(masked):
+                continue
+            raw = lines[i - 1]
+            total += 1
+            file_hit = True
+            agg = by_lang.setdefault(lang, {"files": 0, "hits": 0})
+            agg["hits"] += 1
+            low = raw.lower()
+            for p, kws in _BRANCH_PLAT_KEYWORDS.items():
+                if any(k in low for k in kws):
+                    by_plat[p] += 1
+            if len(samples) < _BRANCH_SAMPLE_CAP:
+                samples.append({"language": lang, "file": f.path, "line": i,
+                                "text": raw.strip()[:160]})
+        if file_hit:
+            by_lang[lang]["files"] += 1
+    return {
+        "by_language": by_lang,
+        "by_platform": {p: n for p, n in by_plat.items() if n},
+        "samples": samples,
+        "total": total,
+        "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法"
+                 "(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、"
+                 "runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；"
+                 "C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字"
+                 "启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。",
     }
 
 
@@ -213,6 +355,7 @@ def compute(repo: str) -> dict:
     cloc = run_cloc(repo)
     cm = _code_metrics(cloc)
     cm["platform_adaptation"] = platform_adaptation(repo, cloc)
+    cm["platform_branches"] = platform_branches(repo, cloc)
     fragment = {
         "languages": _languages(cloc),
         "code_metrics": cm,

@@ -27,9 +27,7 @@ JOIN = "；"
 _LEVEL_ZH = {"very_low": "极低", "low": "低", "medium": "中", "high": "高", "very_high": "极高"}
 _RANK_LEVEL = ["very_low", "low", "medium", "high", "very_high"]
 _CLASS_FLOOR = {"no_adaptation": 0, "recompile_only": 1, "needs_adaptation_full": 2,
-                "needs_adaptation": 3, "needs_adaptation_partial": 3, "infeasible": 4}
-_TSHIRT_DAYS = {"XS": [0, 2], "S": [2, 5], "M": [5, 15], "L": [15, 40], "XL": [40, 80]}
-_DIFF_DAYS = {"low": [0, 5], "medium": [5, 15], "high": [15, 40], "very_high": [40, 80]}
+                "needs_adaptation_partial": 3, "infeasible": 4}
 
 
 def _effort_days(ha: dict):
@@ -40,10 +38,6 @@ def _effort_days(ha: dict):
             return [float(pd[0]), float(pd[1])]
         except (TypeError, ValueError):
             pass
-    if ha.get("effort_estimate") in _TSHIRT_DAYS:
-        return list(_TSHIRT_DAYS[ha["effort_estimate"]])
-    if ha.get("overall_difficulty") in _DIFF_DAYS:
-        return list(_DIFF_DAYS[ha["overall_difficulty"]])
     return None
 
 
@@ -174,6 +168,8 @@ def rows_overview(name, r):
         _g(cm, "test", "code"),
         _g(cm, "example", "code"),
         _g(cm, "platform_adaptation", "total", default=""),
+        _g(cm, "platform_branches", "total", default=""),
+        _cap_flag(r, "gui"), _cap_flag(r, "rendering_3d"), _cap_flag(r, "media"), _cap_flag(r, "hardware"),
         _g(cm, "total", "total_lines"),
         t.get("test_files"),
         t.get("test_cases"),
@@ -207,7 +203,7 @@ def rows_overview(name, r):
 HEAD_OVERVIEW = [
     "库名", "源地址", "commit", "分析时间", "主语言", "语言列表", "生态", "绑定",
     "功能摘要", "领域", "目标用户", "总代码", "生产代码", "测试代码", "样例代码",
-    "平台适配代码", "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度",
+    "平台适配代码", "平台判断分支(处)", "GUI", "3D渲染", "媒体", "硬件", "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度",
     "运行时依赖数", "依赖总数", "API摘要", "平台依赖", "动态库数", "构建系统",
     "语言标准", "运行时版本", "支持平台", "移植分级", "鸿蒙可行性", "鸿蒙难度",
     "工作量min(人天)", "工作量max(人天)", "鸿蒙置信度",
@@ -238,6 +234,85 @@ HEAD_LANGUAGES = [
     "库名", "语言", "文件", "代码", "生产代码", "生产文件", "测试代码", "测试文件",
     "样例代码", "样例文件", "占比%",
 ]
+
+
+_PLAT_LABELS = {"windows": "Windows", "macos": "macOS", "linux": "Linux", "posix": "POSIX"}
+
+
+def rows_platform(name, r):
+    by = _g(r, "code_metrics", "platform_adaptation", "by_platform", default={}) or {}
+    out = []
+    for k, v in by.items():
+        v = v or {}
+        out.append([
+            name, _PLAT_LABELS.get(k, k), v.get("code"), v.get("files"),
+            "/".join(v.get("macros", []) or []),
+        ])
+    return out
+
+
+HEAD_PLATFORM = ["库名", "平台", "代码行", "文件数", "命中编译宏"]
+
+
+_BRANCH_LANG_LABELS = {"python": "Python", "javascript": "JS/TS", "java": "Java/Kotlin",
+                       "go": "Go", "rust": "Rust", "csharp": "C#"}
+
+
+def rows_platform_branches(name, r):
+    out = []
+    for s in _g(r, "code_metrics", "platform_branches", "samples", default=[]) or []:
+        lang = s.get("language", "")
+        out.append([
+            name, _BRANCH_LANG_LABELS.get(lang, lang), s.get("file", ""),
+            s.get("line", ""), s.get("text", ""),
+        ])
+    return out
+
+
+HEAD_PLATFORM_BRANCHES = ["库名", "语言", "文件", "行号", "代码片段"]
+
+
+_CAP_LABELS = {"gui": "GUI 界面", "rendering_3d": "3D 渲染", "rendering_2d": "2D 绘制",
+               "media": "媒体", "hardware": "硬件/设备"}
+
+
+def rows_capabilities(name, r):
+    out = []
+    for s in _g(r, "capability_profile", "scenarios", default=[]) or []:
+        if not s.get("present"):
+            continue
+        out.append([
+            name, _CAP_LABELS.get(s.get("key"), s.get("key", "")),
+            "/".join(s.get("kind", []) or []),
+            "是" if s.get("specific_hardware") else "",
+            s.get("harmony_status", ""), "/".join(s.get("via", []) or []),
+            s.get("adaptation", ""), _join(s.get("evidence", []) or []),
+        ])
+    return out
+
+
+HEAD_CAPABILITIES = ["库名", "场景", "具体技术", "特定硬件", "鸿蒙状态", "来源", "适配说明", "证据"]
+
+
+def rows_permissions(name, r):
+    out = []
+    for p in _g(r, "harmony_adaptation", "required_permissions", default=[]) or []:
+        out.append([
+            name, p.get("permission", ""), p.get("source_capability", ""),
+            p.get("harmony_status", ""), p.get("reason", ""),
+            _join(p.get("evidence", []) or []),
+        ])
+    return out
+
+
+HEAD_PERMISSIONS = ["库名", "权限", "来源场景", "鸿蒙可授予", "原因", "证据"]
+
+
+def _cap_flag(r, key):
+    for s in _g(r, "capability_profile", "scenarios", default=[]) or []:
+        if s.get("key") == key and s.get("present"):
+            return "是"
+    return ""
 
 
 def rows_deps(name, r):
@@ -375,6 +450,10 @@ SHEETS = [
     ("汇总", HEAD_OVERVIEW, rows_overview),
     ("功能分类", HEAD_CATEGORIES, rows_categories),
     ("语言分布", HEAD_LANGUAGES, rows_languages),
+    ("平台适配代码量", HEAD_PLATFORM, rows_platform),
+    ("平台判断分支", HEAD_PLATFORM_BRANCHES, rows_platform_branches),
+    ("能力画像", HEAD_CAPABILITIES, rows_capabilities),
+    ("鸿蒙权限", HEAD_PERMISSIONS, rows_permissions),
     ("依赖", HEAD_DEPS, rows_deps),
     ("系统平台API", HEAD_APIS, rows_apis),
     ("动态加载库", HEAD_DYNLIBS, rows_dynlibs),
@@ -388,7 +467,7 @@ SHEETS = [
 HEAD_FILL = PatternFill("solid", fgColor="DDE6F0")
 HEAD_FONT = Font(bold=True)
 WRAP_COLS = {"功能摘要", "API摘要", "鸿蒙总结", "用途", "改造建议", "证据", "调用位置",
-             "理由", "关键任务"}
+             "理由", "关键任务", "代码片段"}
 
 
 def _write_sheet(ws, header, data):

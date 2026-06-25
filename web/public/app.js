@@ -63,8 +63,6 @@ const PLAT_LABELS = { windows: 'Windows', posix: 'POSIX', linux: 'Linux', macos:
 // harmony_adaptation (dim 9) — closed axes
 const FEAS_LABELS = { feasible: '可行', feasible_with_effort: '可行（需投入）', hard: '困难', infeasible: '不可行' };
 const FEAS_CLS = { feasible: 'done', feasible_with_effort: 'running', hard: 'sev-major', infeasible: 'error' };
-const DIFF_LABELS = { low: '低', medium: '中', high: '高', very_high: '很高' };
-const DIFF_CLS = { low: 'done', medium: 'running', high: 'sev-major', very_high: 'error' };
 // effort.level — 难度等级（server 派生：porting_class 下限 × person_days 数量级）
 const LVL_LABELS = { very_low: '极低', low: '低', medium: '中', high: '高', very_high: '极高' };
 const LVL_CLS = { very_low: 'done', low: 'done', medium: 'running', high: 'sev-major', very_high: 'error' };
@@ -75,8 +73,10 @@ const SEV_CLS = { blocker: 'error', major: 'sev-major', minor: 'gray' };
 const ADAPT_LABELS = { adaptable: '可适配', partial: '部分可适配', unadaptable: '不可适配' };
 const ADAPT_CLS = { adaptable: 'done', partial: 'sev-major', unadaptable: 'error' };
 // target_assumptions[].target_status — HarmonyOS PC 目标能力是否满足
-const TGT_LABELS = { available: '已支持', partial: '部分支持', unavailable: '不支持', unknown: '未核实' };
-const TGT_CLS = { available: 'done', partial: 'running', unavailable: 'error', unknown: 'gray' };
+const TGT_LABELS = { available: '已支持', partial: '部分支持', unavailable: '不支持', unknown: '未核实', restricted: '受限' };
+const TGT_CLS = { available: 'done', partial: 'running', unavailable: 'error', unknown: 'gray', restricted: 'sev-major' };
+// capability_profile (dim 10) — scenario key labels
+const CAP_LABELS = { gui: 'GUI 界面', rendering_3d: '3D 渲染', rendering_2d: '2D 绘制', media: '媒体', hardware: '硬件/设备' };
 
 // dep-topology node status — label + color (HarmonyOS porting state, 5-way)
 const TOPO_STATUS = {
@@ -85,11 +85,10 @@ const TOPO_STATUS = {
   recompile_only:           { label: '仅需重新编译', color: '#0ea5a5' },
   needs_adaptation_full:    { label: '全部可适配', color: '#e0a458' },
   needs_adaptation_partial: { label: '部分可适配', color: '#dd7a33' },
-  needs_adaptation:         { label: '需要适配', color: '#e0a458' },   // legacy alias
   infeasible:               { label: '无法适配', color: '#d65745' },
   unanalyzed:               { label: '未分析', color: '#9aa4b2' },
 };
-const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'needs_adaptation', 'infeasible', 'unanalyzed'];
+const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'infeasible', 'unanalyzed'];
 const topoStatusMeta = (s) => TOPO_STATUS[s] || { label: s || '未知', color: '#9aa4b2' };
 
 // HarmonyOS-PC mirror adaptation status (already-ported packages), cached client-side.
@@ -358,16 +357,20 @@ function renderList() {
   $$('[data-act="tags"]', box).forEach((b) => b.onclick = () => openTagsModal(b.dataset.name));
 
   $('#pager').innerHTML = `
-    <button class="btn sm" id="pFirst" ${page <= 1 ? 'disabled' : ''}>« 首页</button>
-    <button class="btn sm" id="pPrev" ${page <= 1 ? 'disabled' : ''}>‹ 上一页</button>
-    <span class="pinfo">第 ${page} / ${pages} 页 · 共 ${libs.length} 个库</span>
-    <button class="btn sm" id="pNext" ${page >= pages ? 'disabled' : ''}>下一页 ›</button>
-    <button class="btn sm" id="pLast" ${page >= pages ? 'disabled' : ''}>末页 »</button>
-    <span class="pinfo">跳转</span>
-    <input id="pJump" type="number" min="1" max="${pages}" value="${page}" style="width:60px" />
-    <button class="btn sm" id="pGo">Go</button>
-    <span class="pinfo">每页</span>
-    <select id="pSize">${PAGE_SIZES.map((n) => `<option value="${n}" ${n === pageSize ? 'selected' : ''}>${n}</option>`).join('')}</select>`;
+    <div class="pager-nav">
+      <button class="btn sm" id="pFirst" ${page <= 1 ? 'disabled' : ''}>« 首页</button>
+      <button class="btn sm" id="pPrev" ${page <= 1 ? 'disabled' : ''}>‹ 上一页</button>
+      <span class="pinfo">第 ${page} / ${pages} 页 · 共 ${libs.length} 个库</span>
+      <button class="btn sm" id="pNext" ${page >= pages ? 'disabled' : ''}>下一页 ›</button>
+      <button class="btn sm" id="pLast" ${page >= pages ? 'disabled' : ''}>末页 »</button>
+      <span class="pinfo">跳转</span>
+      <input id="pJump" type="number" min="1" max="${pages}" value="${page}" style="width:60px" />
+      <button class="btn sm" id="pGo">Go</button>
+    </div>
+    <div class="pager-size">
+      <span class="pinfo">每页</span>
+      <select id="pSize">${PAGE_SIZES.map((n) => `<option value="${n}" ${n === pageSize ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    </div>`;
   $('#pFirst').onclick = () => { if (page > 1) { page = 1; renderList(); } };
   $('#pPrev').onclick = () => { if (page > 1) { page--; renderList(); } };
   $('#pNext').onclick = () => { if (page < pages) { page++; renderList(); } };
@@ -1064,6 +1067,7 @@ const RC_STATE = {
   cloning: { t: '克隆中', c: 'running' }, analyzing: { t: '分析中', c: 'running' }, analyzed: { t: '已分析', c: 'done' },
   leaf_system: { t: '系统库 (叶子)', c: 'queued' }, leaf_prebuilt: { t: '预编译 (叶子)', c: 'queued' },
   leaf_interface: { t: '接口/系统 (叶子)', c: 'queued' }, leaf_no_source: { t: '无源码 · 待人工', c: 'gray' },
+  leaf_harmonized: { t: '已鸿蒙化 (叶子)', c: 'done' },
   ambiguous: { t: '歧义 · 待确认', c: 'gray' }, failed: { t: '失败', c: 'error' }, capped: { t: '超出上限', c: 'gray' },
 };
 const RC_SESSION_ZH = { running: '运行中', done: '完成', stopped: '已停止' };
@@ -1128,6 +1132,7 @@ function renderRecurseSnap(snap) {
   const g = (keys) => keys.reduce((n, k) => n + (c[k] || 0), 0);
   const bar = [
     ['已分析', c.analyzed || 0, 'done'],
+    ['已鸿蒙化叶子', c.leaf_harmonized || 0, 'done'],
     ['处理中', g(['pending', 'resolving', 'resolved', 'cloning', 'analyzing']), 'running'],
     ['系统/无源码叶子', g(['leaf_system', 'leaf_prebuilt', 'leaf_interface']), 'queued'],
     ['待人工解析', c.leaf_no_source || 0, 'gray'],
@@ -1332,6 +1337,57 @@ function renderReport(r) {
     parts.push(sec('语言分布', legend + rows));
   }
 
+  const pa = cm.platform_adaptation || {};
+  const paBy = pa.by_platform || {};
+  if (pa.total > 0 && Object.keys(paBy).length) {
+    const PLAT_LABELS = { windows: 'Windows', macos: 'macOS', linux: 'Linux', posix: 'POSIX' };
+    const ent = Object.entries(paBy)
+      .filter(([, v]) => v && v.code)
+      .sort((a, b) => (b[1].code || 0) - (a[1].code || 0));
+    const max = Math.max(...ent.map(([, v]) => v.code || 0), 1);
+    const blocks = ent.map(([k, v]) => {
+      const mac = (v.macros || []).map((m) => `<span class="mtok">${esc(m)}</span>`).join('');
+      return `<div class="platblock">
+        <div class="platrow">
+          <span class="pl-name">${esc(PLAT_LABELS[k] || k)}</span>
+          <span class="pl-bar"><span class="bar" style="width:${Math.max(3, 100 * (v.code || 0) / max)}%"></span></span>
+          <span class="pl-count">${num(v.code)} 行 · ${num(v.files)} 文件</span>
+        </div>${mac ? `<div class="pl-macros">${mac}</div>` : ''}</div>`;
+    }).join('');
+    parts.push(sec('平台适配代码量（编译宏）',
+      `<div class="pl-head" title="${esc(pa.notes || '')}"><span class="muted">各平台被编译宏正向包裹的生产代码行</span><b>共 ${num(pa.total)} 行</b></div>` +
+      blocks +
+      `<p class="hint">正向 #ifdef 守卫（_WIN32/__APPLE__/__linux__…）的生产代码（C/C++/ObjC，#ifndef·!defined 不计），作为鸿蒙适配复杂度参考信号。</p>`));
+  }
+
+  const pb = cm.platform_branches || {};
+  const pbLang = pb.by_language || {};
+  if (pb.total > 0 && Object.keys(pbLang).length) {
+    const LANG_LABELS = { python: 'Python', javascript: 'JS/TS', java: 'Java/Kotlin', go: 'Go', rust: 'Rust', csharp: 'C#' };
+    const PLAT_LABELS = { windows: 'Windows', macos: 'macOS', linux: 'Linux', posix: 'POSIX', other: '其它' };
+    const ent = Object.entries(pbLang)
+      .filter(([, v]) => v && v.hits)
+      .sort((a, b) => (b[1].hits || 0) - (a[1].hits || 0));
+    const max = Math.max(...ent.map(([, v]) => v.hits || 0), 1);
+    const blocks = ent.map(([k, v]) => `<div class="platblock">
+        <div class="platrow">
+          <span class="pl-name">${esc(LANG_LABELS[k] || k)}</span>
+          <span class="pl-bar"><span class="bar" style="width:${Math.max(3, 100 * (v.hits || 0) / max)}%"></span></span>
+          <span class="pl-count">${num(v.hits)} 处 · ${num(v.files)} 文件</span>
+        </div></div>`).join('');
+    const platTally = Object.entries(pb.by_platform || {})
+      .filter(([, n]) => n)
+      .map(([k, n]) => `<span class="mtok">${esc(PLAT_LABELS[k] || k)} ${num(n)}</span>`).join('');
+    const samp = (pb.samples || []).slice(0, 8)
+      .map((s) => `<div class="codeloc"><span class="muted">${esc(s.file)}:${s.line}</span> ${esc(s.text)}</div>`).join('');
+    parts.push(sec('平台判断分支（运行时）',
+      `<div class="pl-head" title="${esc(pb.notes || '')}"><span class="muted">运行时平台判断（sys.platform / process.platform / runtime.GOOS…）</span><b>共 ${num(pb.total)} 处</b></div>` +
+      blocks +
+      (platTally ? `<div class="pl-macros" style="margin-left:0">${platTally}</div>` : '') +
+      (samp ? `<div class="codeloc-list">${samp}</div>` : '') +
+      `<p class="hint">机械计数（启发式）：脚本/JVM/Go/Rust/C# 等运行时平台分支——这类分支同样需逐一确认鸿蒙等价，是 dim-9 适配评估信号之一。C/C++ 编译宏见上一卡片。</p>`));
+  }
+
   parts.push(sec('测试', `<div class="kv">
     <b>测试文件</b><span>${num(t.test_files)}</span>
     <b>测试用例</b><span>${num(t.test_cases)}</span>
@@ -1366,19 +1422,16 @@ function renderReport(r) {
       const cat = g.category ? `<span class="badge ${CAT_CLS[g.category] || 'gray'}">${CAT_LABELS[g.category] || g.category}</span> ` : '';
       const plat = g.platform && PLAT_LABELS[g.platform] ? `<span class="tag">${PLAT_LABELS[g.platform]}</span>` : '';
       const head = `<div class="apigroup-h">${cat}<b>${esc(g.type)}</b> ${plat}</div>`;
-      // new per-API table; fall back to old flat symbols for legacy reports
-      if ((g.apis || []).length) {
-        const rows = g.apis.map((a) => {
-          const loc = (a.evidence || []).slice(0, 3).map(esc).join('、');
-          const more = (a.evidence || []).length > 3 ? ` <span class="muted" title="${esc((a.evidence || []).join(', '))}">…</span>` : '';
-          const cnt = (a.count != null) ? ` <span class="api-cnt" title="调用次数">×${num(a.count)}</span>` : '';
-          return `<tr><td class="api-n"><code>${esc(a.name)}</code>${cnt}${a.conditional ? ' <span class="tag">#ifdef</span>' : ''}</td>
-            <td>${esc(a.purpose || '')}</td><td class="api-loc">${loc || '—'}${more}</td></tr>`;
-        }).join('');
-        return `${head}<table class="apitable"><thead><tr><th>API</th><th>用途</th><th>调用位置</th></tr></thead><tbody>${rows}</tbody></table>`;
-      }
-      const syms = (g.symbols || []).map(esc).join(', ');
-      return `${head}<div class="cat"><span class="syms">${syms || '<i class="muted">—</i>'}</span></div>`;
+      const rows = (g.apis || []).map((a) => {
+        const loc = (a.evidence || []).slice(0, 3).map(esc).join('、');
+        const more = (a.evidence || []).length > 3 ? ` <span class="muted" title="${esc((a.evidence || []).join(', '))}">…</span>` : '';
+        const cnt = (a.count != null) ? ` <span class="api-cnt" title="调用次数">×${num(a.count)}</span>` : '';
+        return `<tr><td class="api-n"><code>${esc(a.name)}</code>${cnt}${a.conditional ? ' <span class="tag">#ifdef</span>' : ''}</td>
+          <td>${esc(a.purpose || '')}</td><td class="api-loc">${loc || '—'}${more}</td></tr>`;
+      }).join('');
+      return rows
+        ? `${head}<table class="apitable"><thead><tr><th>API</th><th>用途</th><th>调用位置</th></tr></thead><tbody>${rows}</tbody></table>`
+        : `${head}<div class="cat"><i class="muted">—</i></div>`;
     }).join('');
     const legend = `<div class="api-legend">${CAT_ORDER.filter((c) => sortedGroups.some((g) => g.category === c))
       .map((c) => `<span><span class="badge ${CAT_CLS[c]}">${CAT_LABELS[c]}</span> ${esc(CAT_LEGEND[c])}</span>`).join('')}</div>`;
@@ -1428,6 +1481,28 @@ function renderReport(r) {
       (be.notes ? `<p class="hint">${esc(be.notes)}</p>` : '')));
   }
 
+  // 能力画像 (capability_profile, dim 10) — GUI/3D/媒体/硬件 场景
+  const cap = r.capability_profile || {};
+  const scen = (cap.scenarios || []).filter((s) => s && s.present);
+  if (scen.length || cap.summary) {
+    const rows = scen.map((s) => {
+      const st = s.harmony_status || 'unknown';
+      const kinds = (s.kind || []).map((k) => `<span class="mtok">${esc(k)}</span>`).join('');
+      const via = (s.via || []).length ? `<span class="muted">来源：${(s.via || []).map(esc).join('、')}</span>` : '';
+      const spec = s.specific_hardware ? ' <span class="badge error">特定硬件</span>' : '';
+      const ev = (s.evidence || []).length ? `<div class="codeloc"><span class="muted">${(s.evidence || []).slice(0, 3).map(esc).join('  ')}</span></div>` : '';
+      return `<div class="platblock">
+        <div class="cap-row">
+          <span class="cap-name">${esc(CAP_LABELS[s.key] || s.key)}${spec}</span>
+          <span class="badge ${TGT_CLS[st] || 'gray'}">${TGT_LABELS[st] || esc(st)}</span>
+          <span class="cap-kinds">${kinds} ${via}</span>
+        </div>${s.adaptation ? `<p class="hint" style="margin:2px 0 0">${esc(s.adaptation)}</p>` : ''}${ev}</div>`;
+    }).join('');
+    parts.push(sec('能力画像（GUI / 3D / 媒体 / 硬件）',
+      (cap.summary ? `<p>${esc(cap.summary)}</p>` : '') + (rows || '<p class="hint">未触及 GUI/3D/媒体/特定硬件场景。</p>') +
+      `<p class="hint">这些场景的鸿蒙支持状态（徽标）对照目标能力参考；详见鸿蒙适配评估。</p>`));
+  }
+
   // 鸿蒙适配评估 (harmony_adaptation, dim 9)
   const ha = r.harmony_adaptation || {};
   if (ha.feasibility || ha.summary || (ha.blockers || []).length ||
@@ -1436,14 +1511,12 @@ function renderReport(r) {
       (ha.target_assumptions || []).length) {
     const feasBadge = ha.feasibility
       ? `<span class="badge ${FEAS_CLS[ha.feasibility] || 'gray'}">${FEAS_LABELS[ha.feasibility] || esc(ha.feasibility)}</span>` : '—';
-    // 难度等级（effort.level，server 派生）+ 工作量人天；存量回退到旧 overall_difficulty/effort_estimate
+    // 难度等级（effort.level，server 派生）+ 工作量人天
     const lvl = (ha.effort && ha.effort.level) || null;
     const diffBadge = lvl
-      ? `<span class="badge ${LVL_CLS[lvl] || 'gray'}">${LVL_LABELS[lvl] || esc(lvl)}</span>`
-      : (ha.overall_difficulty
-        ? `<span class="badge ${DIFF_CLS[ha.overall_difficulty] || 'gray'}">${DIFF_LABELS[ha.overall_difficulty] || esc(ha.overall_difficulty)}</span>` : '—');
+      ? `<span class="badge ${LVL_CLS[lvl] || 'gray'}">${LVL_LABELS[lvl] || esc(lvl)}</span>` : '—';
     const pd = ha.effort && ha.effort.person_days;
-    const effortTxt = fmtDays(pd) || (ha.effort_estimate ? esc(ha.effort_estimate) : '—');
+    const effortTxt = fmtDays(pd) || '—';
     const confBadge = ha.confidence
       ? `<span class="badge ${ha.confidence === 'low' ? 'error' : ha.confidence === 'medium' ? 'sev-major' : 'done'}">${CONF_LABELS[ha.confidence] || esc(ha.confidence)}</span>` : '—';
     const blockRows = (ha.blockers || []).map((b) => {
@@ -1494,6 +1567,16 @@ function renderReport(r) {
       ? (unverified ? `<div class="hint err" style="margin:6px 0">⚠ 结论依赖 ${unverified} 项未核实的鸿蒙 PC 目标能力，准确性受限——见下表「未核实」项，请人工核实后重评。</div>` : '')
         + `<div class="subtitle">目标平台能力假设</div><table class="apitable"><thead><tr><th>目标能力</th><th>必需性</th><th>目标状态</th><th>影响</th></tr></thead><tbody>${taRows}</tbody></table>`
       : '';
+    // 所需鸿蒙权限（required_permissions）
+    const permRows = (ha.required_permissions || []).map((p) => {
+      const st = p.harmony_status || 'unknown';
+      return `<tr><td><code>${esc(p.permission || '')}</code></td>
+        <td class="muted">${esc(p.reason || '')}${p.source_capability ? ` <span class="chip">${esc(CAP_LABELS[p.source_capability] || p.source_capability)}</span>` : ''}</td>
+        <td><span class="badge ${TGT_CLS[st] || 'gray'}">${TGT_LABELS[st] || esc(st)}</span></td></tr>`;
+    }).join('');
+    const permissions = permRows
+      ? `<div class="subtitle">所需鸿蒙权限</div><table class="apitable"><thead><tr><th>权限</th><th>原因 / 来源场景</th><th>鸿蒙可授予</th></tr></thead><tbody>${permRows}</tbody></table>`
+      : '';
     parts.push(sec('鸿蒙适配评估', `<div class="kv">
       <b>移植分级</b><span>${pcBadge}</span>
       <b>可行性</b><span>${feasBadge}</span>
@@ -1506,6 +1589,7 @@ function renderReport(r) {
         ? `<div class="hint err" style="margin:6px 0">⚠ 数据一致性提示：<ul style="margin:4px 0 0">${r.meta.harmony_warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>` : '') +
       (ha.summary ? `<p>${esc(ha.summary)}</p>` : '') +
       assumptions +
+      permissions +
       unadaptable +
       blockers +
       (compat ? `<div class="subtitle">可平滑移植</div>${compat}` : '') +

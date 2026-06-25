@@ -74,6 +74,17 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   `http`/`process` —— 跑在鸿蒙 Node.js 上时（模型 A）这些基本可用，无需改写。
 
 ## How to assess
+00. **先看 `capability_profile`（dim-10 场景画像）作为阻碍线索的入口**：它已把本项目是否涉及
+   **GUI / 3D 渲染 / 媒体 / 特定硬件** 标好（`scenarios[].key/present/kind/via/harmony_status/specific_hardware`）。
+   对每个 `present:true` 的场景：`harmony_status=unavailable`（或 `specific_hardware:true` 无替代）→**必产** `blocker`
+   （多数还进 `unadaptable_apis`，category 取 hardware/platform），`porting_class` 升 `needs_adaptation_partial`/`infeasible`、
+   `person_days` 上调；`partial`→产 partial `blocker`、`person_days` 上调；`unknown`→记 `target_assumptions` 并下调 `confidence`。
+   把对应目标能力写进 `target_assumptions`，与场景 `key` 交叉引用（`blocker.caused_by`/`unadaptable_apis.caused_by`）。
+0c. **产 `required_permissions[]`（鸿蒙化后运行所需权限）**：媒体/硬件/定位/网络等场景常需申请鸿蒙权限
+   （`ohos.permission.CAMERA/MICROPHONE/LOCATION/INTERNET/读写存储/USE_BLUETOOTH…`）。逐项填 `{permission, reason,
+   source_capability(=capability_profile 的场景 key), harmony_status, evidence}`；`harmony_status` 对照
+   `harmony-pc-capabilities.json` 的**权限模型段**——`restricted/unavailable`→酌情产 blocker；`unknown` 且该权限为运行必需
+   →下调 `confidence` 并 notes 注明。无需权限则 `[]`。
 0. **先按 `library.kind` 选模型**：`application` → **模型 C（整包桌面应用）**，据
    GUI 工具包 / 窗口·桌面集成 / 启动器·打包 / 运行期服务（见上）判阻碍与分级；其它（库）→
    模型 A（默认）/ 仅当目标是 ArkTS 应用才 B。下面的「由 ecosystem 定基调」对两类都适用
@@ -147,10 +158,16 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
 
    **不要因为是 Python/Java/JS 就判 `infeasible`——运行时已移植。** 对 FFI/ctypes 型库，
    **动态加载的平台库是否有鸿蒙等价才是定 person_days/feasibility 的主因**（运行时已移植不再是主阻碍）。
-   **参考 `code_metrics.platform_adaptation`（各平台编译宏包裹的代码量）作为复杂度信号**：windows/macos/linux/posix
-   守卫代码越多 → 鸿蒙需新增/适配的平台分支越多 → `person_days` 上调、更可能产 toolchain/posix_subset_gap 类
-   `blocker`（C/C++ 库尤甚）；该数为空或很小 → 平台耦合轻。其它语言的平台分支（Python `sys.platform`/Java
-   `os.name`/Rust `cfg!(target_os)`）无此机械计数，按 native_api/源码定性判断。
+   **两个平台适配机械信号（都在 `code_metrics` 里，作复杂度依据）**：
+   - `code_metrics.platform_adaptation`（**编译型**：C/C++ 各平台编译宏 `#ifdef _WIN32/__APPLE__/__linux__…` 包裹的代码量）——
+     守卫代码越多 → 鸿蒙需新增/适配的平台分支越多 → `person_days` 上调、更可能产 toolchain/posix_subset_gap 类
+     `blocker`（C/C++ 库尤甚）；为空或很小 → 平台耦合轻。
+   - `code_metrics.platform_branches`（**运行时**：脚本/JVM/Go/Rust/C# 的 `sys.platform`/`os.name`/`process.platform`/
+     `runtime.GOOS`/`cfg!(target_os)`… 命中数 + `samples` 样例位置）——补上一信号漏掉的纯语言平台分支。**用法**：把
+     `samples` 当**追踪种子**，对每个平台分支用 codegraph（`codegraph_trace`/`callees`）顺着追到它**守卫的下游平台特有调用**，
+     再对照 `references/harmony-pc-capabilities.json` 判鸿蒙有无等价——有等价 → 仅 `person_days` 略增；**无等价**（如仅
+     Windows 的注册表/COM、`/proc`、`fork`/信号路径）→ 记 `blocker`/`unadaptable_apis`、`porting_class` 升 `needs_adaptation_*`，
+     并把该能力登记到 `target_assumptions`。分支越多 → `person_days` 越高。两数都为空 → 平台耦合轻。
 5. **定 `porting_class`（闭轴，依赖拓扑图用）** —— 把本库归入 5 类之一，与上面自洽：
    - `no_adaptation`：纯脚本（Python/Java/JS…）跑在已移植运行时上，无原生扩展、无平台耦合
      （≈ `feasible`/`run_on_ported_runtime`/无 blocker）。
@@ -163,7 +180,6 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
      （这些必须逐个列入 `unadaptable_apis`），但核心仍可用（≈ `feasible_with_effort`/`hard`，
      `unadaptable_apis` 非空）。
    - `infeasible`：核心不可适配 / 依赖特定硬件 / 无解（≈ `feasibility: infeasible`）。
-   - （旧值 `needs_adaptation` 仍兼容，等同 partial 档；新输出请用 full/partial 二选一。）
    - **应用（模型 C）下重新诠释**：`no_adaptation`=纯运行时应用且 GUI 工具包鸿蒙已具备、直接跑；
      `recompile_only`=仅原生启动器/JNI agent 需重编；`needs_adaptation_full`=GUI/窗口/桌面集成需改
      但都能适配；`needs_adaptation_partial`=部分功能（如依赖无 OHOS 版的预编译 agent、特定桌面能力）
@@ -251,7 +267,10 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   为空且仍需改造 ⇒ `needs_adaptation_full`。
 - 引用完整性 + 去重：每个 `caused_by`/`manifests_as` 引用的 id 必须在对应清单存在；同一事实只在主清单
   写完整内容、其余引用，避免重复计入难度。任一 `blocker.adaptability: unadaptable` 应同时在 `unadaptable_apis`
-  有对应项（除非不是具体 API）。
+  有对应项（除非不是具体 API）。**单一登记源**：场景"是否涉及 + 鸿蒙状态"登记在 `capability_profile`、
+  权限登记在 `required_permissions`、不可适配 API 登记在 `unadaptable_apis`、目标能力假设登记在
+  `target_assumptions`、结果阻碍登记在 `blockers`——dim-9 引用（`source_capability`/`caused_by`/`manifests_as`）
+  而非把同一 GUI/3D/媒体/硬件/权限事实在多处重述，否则会被 rollup 双计 person_days。
 - 闭轴之间须自洽:大量 `blocker` / 长 `person_days` 不能配 `feasibility: feasible`；反之
   **纯脚本库（运行时已移植 + 无原生扩展 + 无平台耦合）不能配 `infeasible`**——应是
   `feasible`/`person_days:[0,2]`。required+unknown 假设存在时 `confidence` 至多 `medium`。

@@ -98,6 +98,13 @@ registry 里的样子），**禁止**用 `/`、`,`、`+`、`、` 把多个不同
    - **命名约定（务必与子库 `public_entry` 同一形式，否则 rollup 求交漏判）**：填**调用方引用该符号时的名字**——
      Python `module.func` / `Class.method`；JS/TS 导出名（`pkg.export`/具名导出）；C/C++ 自由函数名或 `Class::method`；
      Java `Class.method` 或 `pkg.Class`。（服务端 `symKeys` 会再做大小写/尾段归一，但尽量对齐主名。）
+10. Fill **身份字段**（best-effort，让"依赖名 ≠ 源码仓名"也能关联到已分析库）——
+    - **`source_repo`**（最强键）：该依赖的上游**源码仓库 URL**。能从 manifest/lock（pip `git+`、npm `repository`、
+      Cargo/Go module 路径）或常识判断就填，**尤其当 `name` 是别名/接口名/缩写**：`find_package(PNG)`→
+      `https://github.com/glennrp/libpng`、`find_package(ZLIB)`→`https://github.com/madler/zlib`。拿不准留 null。
+    - **`registry_name`**：规范注册表包名（当 `name` 不是规范包名时，如 CMake 模块名 `PNG` 的 registry 名）。
+    - **`import_names`** / **`aliases`**：实际 import 名（Pillow→PIL）/ 其它已知名。无则省略。
+    服务端按 `source_repo`（owner 限定的规范 URL）优先关联，再退回 `name`/`registry_name`/`aliases` 变体——填得越准，依赖树/拓扑/待分析依赖关联越对。
 
 ## Output (fills report `dependencies`)
 ```json
@@ -115,7 +122,8 @@ registry 里的样子），**禁止**用 `/`、`,`、`+`、`、` 把多个不同
      "declared_in": ["External/CoordGen/CMakeLists.txt"], "used_symbols": ["sketcherMinimize", "CoordgenMinimizer"]},
     {"name": "AvalonTools", "ecosystem": "cpp", "scope": "optional", "version": "2.0.5-pre.3",
      "purpose": "额外指纹与结构检查", "acquisition": "vendored", "locality": "local",
-     "source": "仓库内 External/AvalonTools", "declared_in": ["External/AvalonTools/CMakeLists.txt"]}
+     "source": "仓库内 External/AvalonTools", "declared_in": ["External/AvalonTools/CMakeLists.txt"],
+     "registry_name": "AvalonToolkit", "source_repo": "https://github.com/rdkit/ava-formake"}
   ],
   "notes": "Also vendors 'chardet' under src/; pytest is dev-only."
 }

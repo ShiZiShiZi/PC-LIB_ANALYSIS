@@ -307,4 +307,19 @@ function cachePut(ecoCanon, name, partial) {
   saveCache();
 }
 
-module.exports = { resolveRepo, normalizeRepoUrl, httpText, cachePut };
+// Read-only lookup of a previously resolved dep → repo entry. Exact key first,
+// then a case-insensitive match within the same ecosystem (dep names vary in case).
+// Returns the cache entry ({url, candidates, interface, ...}) or null.
+function cacheGet(ecoCanon, name) {
+  const eco = String(ecoCanon || '').toLowerCase();
+  const nm = String(name || '').trim();
+  if (!nm) return null;
+  const c = loadCache();
+  const exact = c[`${eco}:${nm}`];
+  if (exact) return exact;
+  const want = `${eco}:${nm.toLowerCase()}`;
+  for (const k of Object.keys(c)) if (k.toLowerCase() === want) return c[k];
+  return null;
+}
+
+module.exports = { resolveRepo, normalizeRepoUrl, httpText, cachePut, cacheGet };

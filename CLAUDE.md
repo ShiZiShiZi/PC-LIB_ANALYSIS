@@ -31,7 +31,11 @@ dimension by adding a parser — improve its skill prompt instead.
 `test_example_dirs` 作为基线；还机械统计 `code_metrics.platform_adaptation`（各平台
 `{windows,macos,linux,posix}` 被编译宏 `#ifdef _WIN32/__APPLE__/__linux__…` **正向**包裹的
 生产代码行 + total，`#ifndef`/`!defined` 不计），作为 dim-9 适配复杂度信号（守卫代码越多→
-重编/适配工作量越大、`person_days` 上调）。但 token **会漏判按功能命名的 demo 目录**（如 PyQt 的
+重编/适配工作量越大、`person_days` 上调）。**第二个平台适配信号** `code_metrics.platform_branches`
+机械计数**运行时平台判断分支**（脚本/JVM/Go/Rust/C# 的 `sys.platform`/`os.name`/`process.platform`/
+`runtime.GOOS`/`cfg!(target_os)`… 命中数 + `by_language`/`by_platform` + `samples` 样例位置；C/C++ 编译宏
+归 `platform_adaptation` 不重复计）——补纯语言库无编译宏却仍需适配的平台分支；dim-9 把 `samples` 当
+codegraph 追踪种子，顺分支追下游平台调用判鸿蒙等价性（无等价→blocker/`needs_adaptation_*`）。但 token **会漏判按功能命名的 demo 目录**（如 PyQt 的
 `QLabel/`/`QThread/`/`QAxWidget/`），模型据结构/README **补判**为示例。仓库若是**示例/教程
 集合**（生产代码≈0）则如实判定并收敛——不把 demo 的 Win32/COM/DLL 当作库的迁移阻碍。
 此为模型产出口径，**存量报告需重新分析才生效**。
@@ -46,7 +50,31 @@ dimension by adding a parser — improve its skill prompt instead.
 | 6 | Dependencies | model — `dependency-analysis` skill |
 | 7 | System & platform API calls (portability classes 标准/平台特有/系统内核/硬件/FFI; per-API name+purpose+call-site) | model — `native-api-analysis` skill |
 | 8 | Runtime & build environment (external-interaction surface + toolchain/platform matrix) | model — `runtime-environment` skill |
-| 9 | HarmonyOS PC adaptation assessment (可行性/难度/路径/工作量) — **synthesis** of dims 1/6/7/8 | model — `harmony-adaptation` skill |
+| 9 | HarmonyOS PC adaptation assessment (可行性/难度/路径/工作量) — **synthesis** of dims 1/6/7/8/10 | model — `harmony-adaptation` skill |
+| 10 | Capability profile — GUI/3D 渲染/媒体/特定硬件 场景标志 + 鸿蒙支持状态 — **synthesis** of dims 1/6/7/8 | model — `capability-profile` skill |
+
+**能力画像（dim 10，`capability_profile`）**：聚焦镜头，复用已算出的 native_api/runtime_surface/
+dependencies/function_summary 把项目触及的**鸿蒙适配重点场景**结构化标出——`scenarios[]`，每个
+`{key(gui/rendering_3d/media/hardware，开放可扩), present, kind[], specific_hardware, via[],
+harmony_status(对照 caps), adaptation, evidence}`。回答"**是否涉及 X**"，dim-9 据此判修改量/能否移植：
+present 场景 `harmony_status=unavailable` 或 `specific_hardware` → blocker/unadaptable_api + person_days 上调
+（可推 infeasible）。dim-9 还产 **`harmony_adaptation.required_permissions[]`**（鸿蒙化后所需
+`ohos.permission.*`，`{permission, reason, source_capability(交叉引用场景 key), harmony_status, evidence}`，
+对照 caps **权限模型段**）。目标侧 `references/harmony-pc-capabilities.json` 新增 **3D 图形栈 / 媒体 /
+硬件设备 / 权限模型** 4 段事实供对照（多为 unknown/partial，经面板 `#/harmony-caps` 人工核实后翻转）。
+`normalizeHarmony` 给缺失的 permission `harmony_status` 补 unknown，`validateHarmony` 校验 unavailable
+权限须有对应 blocker。**存量报告需重新分析才有 capability_profile/required_permissions**；caps 新段与
+面板/xlsx（「能力画像」+「鸿蒙权限」sheet、汇总 GUI/3D/媒体/硬件 列）即时生效。
+
+**单一登记源（防双计）**：同一事实只在其主清单登记一次——`capability_profile.scenarios` 是"涉及哪些场景 +
+鸿蒙状态"的登记源、`required_permissions` 是权限登记源、`unadaptable_apis` 是不可适配 API 的粒度源、
+`target_assumptions` 是目标能力假设源、`blockers` 是结果层——dim-9 的 blocker/unadaptable 用
+`caused_by`/`source_capability` **引用**而非重述，避免 person_days 被重复计入。**跨维一致性校验**
+`validateReport`(`web/server.js`，serve-time，与 `validateHarmony` 合入 `meta.harmony_warnings`)
+启发式查 capability_profile↔native_api↔dependencies↔dim-9 的漏判/矛盾（如 deps 有 Qt/cuda 但 capability_profile
+漏标、场景缺 evidence、权限 source_capability 悬空、present+unavailable 场景在 dim-9 无登记），面板「数据
+一致性提示」展示。**计数准确性**：platform_adaptation/platform_branches 已剔除注释与字符串字面量内的命中
+（`_masked_lines`），并有 `code-metrics/scripts/selftest.py` 单测固化。
 
 Dependencies (dim 6) carry `acquisition` (how the build obtains each one:
 system/vendored/fetchcontent/download_build/submodule/package_manager/prebuilt_binary)
@@ -68,8 +96,8 @@ is NOT a blocker and such libs are NOT auto-`infeasible`; the real work is nativ
 extensions / C deps / platform APIs. The strict ArkTS-sandbox model is a secondary口径
 used only when the target is an ArkTS app. **`porting_class` is the single authoritative
 machine axis** (no_adaptation/recompile_only/**needs_adaptation_full**(全部可适配)/
-**needs_adaptation_partial**(部分可适配)/infeasible — the dep-topology page's 5-way bucket; legacy
-`needs_adaptation` kept as a partial alias). `feasibility` is a deterministic function of it
+**needs_adaptation_partial**(部分可适配)/infeasible — the dep-topology page's 5-way bucket).
+`feasibility` is a deterministic function of it
 (server validates). The model only estimates `effort.person_days:[lo,hi]` (numeric → aggregates up
 the dep tree); the **5-tier difficulty `effort.level`** (very_low…very_high / 极低…极高) is
 **server-DERIVED** (`deriveDifficultyLevel` = porting_class floor × person_days bucket, take-higher)
@@ -214,9 +242,23 @@ and `opencode` with a configured model. Excel export additionally needs
   back to grep if a call fails) instead of building it itself.
 - **Level 2 (detail, `#/lib/<name>`):** run history, live log (SSE, parses
   opencode `--format json` events), rendered report.
+- **库身份 & 依赖关联（多键，URL 优先）：** a library's storage **handle** is its git
+  basename (`repoNameFromUrl`), but its **identity** is a set of keys, joined primarily by the
+  **owner-qualified canonical repo URL** (`canonicalRepoKey(url)` = `host/owner[/subgroup…]/repo`,
+  host-agnostic, keeps full path; returns null → falls back to name keys for registries/tarballs/
+  fake-homepage `.git`, never force-links a junk URL). `buildIdentityIndex` indexes every analyzed
+  lib by `byUrl`(canonicalRepoKey of `source_url` + the clone-time `.identity.json`) and `byName`
+  (`nameKeys`: eco-scoped variants of package_name/handle/repo-basename/`aliases`/`import_names`,
+  handling lib-prefix `libpng↔png` + version suffix). `resolveDepLib(d, idx)` matches a dep **URL-first**
+  — repo URL from the dep's own text, its model-emitted `source_repo` (dim-6), or the panel's
+  `.resolve-cache.json` (`resolve.cacheGet`) — then by name variants. This fixes "依赖名≠源码仓名"
+  假阴 and owner-blind 假阳. **L2 撞名**: `startClone` disambiguates the handle (`zlib__madler`) when the
+  basename collides with a DIFFERENT upstream repo (by `.identity.json`), instead of erroring/overwriting;
+  existing handles are never disturbed. L1/L2 是 serve-time/克隆时（对存量报告即时生效）；dim-6/dim-1 的
+  `source_repo`/`registry_name`/`aliases`/`import_names` 需重分析才富集。
 - **待分析依赖 (`#/pending-deps`):** cross-library aggregation of dependencies that
   analyzed libraries depend on but that are NOT themselves analyzed yet (matched via
-  the same `ecosystem+name` index as the dep tree). Each row can be cloned into
+  the unified identity index — URL-first then name variants — as the dep tree). Each row can be cloned into
   `repos/` ("加入列表") — best-effort prefilling a git URL extracted from the dep's
   `source`/`version` — and then analyzed in place. Drives the iterative "analyze the
   deps of the deps" loop. A dep leaves this list once analyzed. The git URL can also be

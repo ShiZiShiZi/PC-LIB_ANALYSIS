@@ -290,6 +290,51 @@ function repoNameFromUrl(u) {
   const base = u.replace(/\/+$/, '').split('/').pop() || 'repo';
   return base.replace(/\.git$/i, '').replace(/[^A-Za-z0-9._-]/g, '_');
 }
+// Canonical, OWNER-qualified repo identity used as the strongest cross-ecosystem
+// join key: `host/owner[/subgroup…]/repo` (lowercased). HOST-AGNOSTIC — keeps the
+// full path so GitLab subgroups / googlesource single-segment / self-hosted all
+// work. Returns null (→ caller falls back to name keys, never force-links) for
+// URLs that are NOT a trustworthy repo: non-http(s)/scp, package registries &
+// download sites, release artifacts, or a bare homepage with `.git` tacked on.
+const _REGISTRY_HOSTS = /^(?:www\.)?(?:pypi\.org|files\.pythonhosted\.org|registry\.npmjs\.org|npmjs\.com|crates\.io|static\.crates\.io|repo\d*\.maven\.org|repo\.maven\.apache\.org|search\.maven\.org|rubygems\.org|nuget\.org|pkg\.go\.dev|proxy\.golang\.org|anaconda\.org|conda\.anaconda\.org)$/i;
+const _ARTIFACT_RE = /\.(?:tar\.(?:gz|bz2|xz|zst)|tgz|tbz2?|txz|zip|whl|crate|gem|jar|7z|rar)$/i;
+function canonicalRepoKey(url) {
+  let u = String(url || '').trim();
+  if (!u) return null;
+  u = u.replace(/^git\+/i, '');
+  const scp = u.match(/^[\w.-]+@([\w.-]+):(.+)$/);          // git@host:owner/repo(.git)
+  if (scp) u = `https://${scp[1]}/${scp[2]}`;
+  u = u.replace(/^git:\/\//i, 'https://').replace(/^ssh:\/\/(?:git@)?/i, 'https://')
+       .replace(/^http:\/\//i, 'https://');
+  u = u.split('#')[0].replace(/\?.*$/, '');
+  let m;
+  try { m = new URL(u); } catch { return null; }
+  if (!/^https:$/i.test(m.protocol)) return null;
+  const host = m.hostname.replace(/^www\./i, '').toLowerCase();
+  if (_REGISTRY_HOSTS.test(host)) return null;              // a registry, not a repo
+  if (_ARTIFACT_RE.test(m.pathname)) return null;           // a release artifact
+  let p = m.pathname;
+  const dash = p.indexOf('/-/');                            // GitLab non-repo separator
+  if (dash >= 0) p = p.slice(0, dash);
+  else p = p.replace(/\/(?:tree|blob|commits?|releases?|tags?|raw|wikis?|issues?|merge_requests|pulls?|src|browse)\b.*$/i, '');
+  p = p.replace(/\/+$/, '').replace(/^\/+/, '').replace(/\.git$/i, '');
+  if (!p) return null;                                       // bare homepage (e.g. foo.sourceforge.net[.git])
+  return `${host}/${p.toLowerCase()}`;
+}
+// A set of `eco:variant` name keys for fuzzy same-name matching: handles lib-prefix
+// (libpng↔png), version suffix (zlib-1.3↔zlib), and artifact-ish names.
+function nameKeys(eco, name) {
+  const out = new Set();
+  let base = String(name || '').trim().toLowerCase();
+  base = base.replace(_ARTIFACT_RE, '').replace(/[-_.]?v?\d[\d.]*$/, '');  // drop trailing version
+  const variants = new Set();
+  const add = (s) => { const n = normName(s); if (n) variants.add(n); };
+  add(base);
+  add(base.replace(/^lib/, ''));      // libpng → png
+  add('lib' + base.replace(/^lib/, '')); // png → libpng
+  for (const v of variants) out.add(eco + ':' + v);
+  return out;
+}
 // Turn a pasted *web* URL into a clonable git URL. Users often paste browser URLs
 // (esp. GitLab `…/-/tree/main`, subgroup paths, or a bare repo URL with no `.git`),
 // which `git clone` can't use. Known hosts get cleaned; unknown hosts pass through.
@@ -470,70 +515,96 @@ function latestReport(name, group) {
   try { return JSON.parse(fs.readFileSync(path.join(runLibDir(g, name), latest.run, 'report.json'), 'utf8')); }
   catch { return null; }
 }
-// Index analyzed libraries by `ecosystem + ':' + normalized(name)`, preferring the
-// report's package_name over the repo dir name. Keys that resolve to >1 library
-// are flagged ambiguous (we won't auto-link them).
-function buildLibIndex(getRep, group) {
-  const index = new Map();
-  for (const lib of listLibraries(group)) {
-    if (!lib.latest || !lib.latest.reportAvailable) continue;
-    const rep = getRep(lib.name);
-    if (!rep) continue;
-    const eco = ecoNorm(rep.library && rep.library.ecosystem);
-    const pkg = (rep.library && rep.library.package_name) || lib.name;
-    for (const nm of new Set([pkg, lib.name])) {
-      const key = eco + ':' + normName(nm);
-      const cur = index.get(key);
-      if (!cur) index.set(key, { libName: lib.name, ambiguous: false });
-      else if (cur.libName !== lib.name) cur.ambiguous = true;
-    }
-  }
-  return index;
+// Read the per-library identity record (handle ↔ {url, canonicalKey, ecosystem}),
+// written by startClone. Lets even un-analyzed libs join by source-URL. null if none.
+function readIdentity(group, handle) {
+  try { return JSON.parse(fs.readFileSync(path.join(repoDir(group, handle), '.identity.json'), 'utf8')); }
+  catch { return null; }
 }
-// Companion to buildLibIndex keyed by the analyzed library's REPO identity, so a
-// dependency can be matched by its source-URL repo name even when its declared
-// `name` differs (e.g. rdkit's dep "AvalonTools" == analyzed repo "ava-formake").
-function buildLibUrlIndex(getRep, group) {
-  const index = new Map();
-  const add = (key, libName) => {
-    const cur = index.get(key);
-    if (!cur) index.set(key, { libName, ambiguous: false });
+function writeIdentity(group, handle, url) {
+  try {
+    fs.writeFileSync(path.join(repoDir(group, handle), '.identity.json'),
+      JSON.stringify({ handle, url: url || null, canonicalKey: canonicalRepoKey(url) }, null, 2));
+  } catch (_) {}
+}
+// Does an existing handle point to the SAME upstream repo as (url, ckey)? Uses the
+// identity record; a legacy checkout without one is treated as "same" so we never
+// disturb pre-existing handles.
+function sameRepoHandle(group, handle, url, ckey) {
+  const id = readIdentity(group, handle);
+  if (!id) return true;
+  if (ckey && id.canonicalKey) return id.canonicalKey === ckey;
+  if (url && id.url) return id.url === url;
+  return true;
+}
+// Choose a collision-safe storage handle: reuse the base name when free or it's the
+// same repo; otherwise qualify with the owner (zlib → zlib__madler), then number.
+function pickCloneHandle(group, base, url, ckey) {
+  const free = (h) => !fs.existsSync(repoDir(group, h)) || sameRepoHandle(group, h, url, ckey);
+  if (free(base)) return base;
+  const owner = ckey ? (ckey.split('/')[1] || '').replace(/[^A-Za-z0-9._-]/g, '_') : '';
+  const qualified = owner ? `${base}__${owner}` : `${base}-2`;
+  if (free(qualified)) return qualified;
+  let n = 2;
+  while (!free(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+// Unified, multi-key identity index over analyzed libraries in a group:
+//   byUrl : canonicalRepoKey(source_url|identity.url)         → strongest join key
+//   byName: eco:variant (package_name/handle/repo-basename/aliases, via nameKeys)
+// A key resolving to >1 library is flagged ambiguous (we won't auto-link it).
+function buildIdentityIndex(getRep, group) {
+  const byUrl = new Map(), byName = new Map();
+  const add = (map, key, libName) => {
+    if (!key) return;
+    const cur = map.get(key);
+    if (!cur) map.set(key, { libName, ambiguous: false });
     else if (cur.libName !== libName) cur.ambiguous = true;
   };
   for (const lib of listLibraries(group)) {
     if (!lib.latest || !lib.latest.reportAvailable) continue;
     const rep = getRep(lib.name);
     if (!rep) continue;
-    const eco = ecoNorm(rep.library && rep.library.ecosystem);
-    const repoNames = new Set([lib.name]);
-    const su = rep.library && rep.library.source_url;
-    if (su) repoNames.add(repoNameFromUrl(su));
-    for (const rn of repoNames) if (rn) add(eco + ':' + normName(rn), lib.name);
+    const L = rep.library || {};
+    const eco = ecoNorm(L.ecosystem);
+    // URL keys: report source_url + the clone-time identity record (covers pre/odd cases)
+    const ident = readIdentity(group, lib.name);
+    for (const u of [L.source_url, ident && ident.url]) add(byUrl, canonicalRepoKey(u), lib.name);
+    // Name keys: package_name, handle, source_url basename, declared aliases / import names
+    const names = [L.package_name, lib.name];
+    if (L.source_url) names.push(repoNameFromUrl(L.source_url));
+    for (const a of [].concat(L.aliases || [], L.import_names || [])) names.push(a);
+    for (const nm of names) for (const k of nameKeys(eco, nm)) add(byName, k, lib.name);
   }
-  return index;
+  return { byUrl, byName };
 }
-// Match a dependency to an analyzed library: by ecosystem+name first, then by the
-// repo identity resolved from its source URL (mirrors the panel's repoName logic).
-function resolveDepLib(d, byName, byRepo) {
+// Match a dependency to an analyzed library. URL identity FIRST (owner-qualified,
+// cross-ecosystem, robust), falling back to ecosystem+name variants. The dep's repo
+// URL is taken from its own source text, its model-emitted source_repo (L3), or the
+// panel's resolve cache — so a dep whose NAME differs from the repo still links.
+function resolveDepLib(d, idx) {
   const eco = ecoNorm(d.ecosystem);
-  let hit = byName.get(eco + ':' + normName(d.name));
-  if (hit) return hit;
-  const url = extractGitUrl(d.source, d.version);
-  if (url) hit = byRepo.get(eco + ':' + normName(repoNameFromUrl(url)));
-  return hit;
+  const cached = resolve.cacheGet(eco, d.name);
+  const url = extractGitUrl(d.source, d.version) || d.source_repo || (cached && cached.url);
+  const urlKey = canonicalRepoKey(url);
+  if (urlKey) { const hit = idx.byUrl.get(urlKey); if (hit) return hit; }
+  for (const nm of [d.name, d.registry_name]) {
+    if (!nm) continue;
+    for (const k of nameKeys(eco, nm)) { const hit = idx.byName.get(k); if (hit) return hit; }
+  }
+  return null;
 }
 function buildDepTree(rootName, maxDepth, group) {
   const g = safeGroup(group);
   const repCache = new Map();
   const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n, g)); return repCache.get(n); };
-  const index = buildLibIndex(getRep, g);
-  const urlIndex = buildLibUrlIndex(getRep, g);
+  const idx = buildIdentityIndex(getRep, g);
   const seen = new Set([rootName]);
   const expand = (libName, depth) => {
     const rep = getRep(libName);
     const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
     return deps.map((d) => {
-      const hit = resolveDepLib(d, index, urlIndex);
+      const hit = resolveDepLib(d, idx);
       const analyzed = !!hit && !hit.ambiguous && hit.libName !== libName;
       const node = {
         name: d.name, ecosystem: d.ecosystem || null, scope: d.scope || null,
@@ -587,7 +658,7 @@ function derivePortingClass(report) {
 const LEVEL_RANK = { very_low: 0, low: 1, medium: 2, high: 3, very_high: 4 };
 const RANK_LEVEL = ['very_low', 'low', 'medium', 'high', 'very_high'];
 const CLASS_LEVEL_FLOOR = { no_adaptation: 0, recompile_only: 1, needs_adaptation_full: 2,
-  needs_adaptation: 3, needs_adaptation_partial: 3, infeasible: 4 };
+  needs_adaptation_partial: 3, infeasible: 4 };
 function daysBucket(daysHi) {            // person-days (upper bound) → level rank
   const d = Number(daysHi);
   if (!(d > 2)) return 0;
@@ -601,9 +672,7 @@ function deriveDifficultyLevel(portingClass, personDaysHi) {
   const floor = portingClass in CLASS_LEVEL_FLOOR ? CLASS_LEVEL_FLOOR[portingClass] : 0;
   return RANK_LEVEL[Math.max(floor, daysBucket(personDaysHi))];
 }
-// person-days [lo,hi] for a dim-9 block, deriving from legacy XS..XL / difficulty when absent.
-const TSHIRT_DAYS = { XS: [0, 2], S: [2, 5], M: [5, 15], L: [15, 40], XL: [40, 80] };
-const DIFF_DAYS = { low: [0, 5], medium: [5, 15], high: [15, 40], very_high: [40, 80] };
+// person-days [lo,hi] for a dim-9 block (the model's single effort axis).
 function effortDays(ha) {
   if (!ha) return null;
   const e = ha.effort;
@@ -611,15 +680,13 @@ function effortDays(ha) {
     const lo = Number(e.person_days[0]), hi = Number(e.person_days[1]);
     if (Number.isFinite(lo) && Number.isFinite(hi)) return [lo, hi];
   }
-  if (ha.effort_estimate && TSHIRT_DAYS[ha.effort_estimate]) return TSHIRT_DAYS[ha.effort_estimate].slice();
-  if (ha.overall_difficulty && DIFF_DAYS[ha.overall_difficulty]) return DIFF_DAYS[ha.overall_difficulty].slice();
   return null;
 }
 // confidence ordinal for min-propagation up the tree.
 const CONF_RANK = { low: 0, medium: 1, high: 2 };
 const RANK_CONF = ['low', 'medium', 'high'];
 const FEAS_FOR_CLASS = { no_adaptation: 'feasible', recompile_only: 'feasible_with_effort',
-  needs_adaptation_full: 'feasible_with_effort', needs_adaptation: 'hard',
+  needs_adaptation_full: 'feasible_with_effort',
   needs_adaptation_partial: 'hard', infeasible: 'infeasible' };
 
 // Serve-time normalize (mutates report.harmony_adaptation): fill the derived effort.level,
@@ -638,6 +705,10 @@ function normalizeHarmony(report) {
   ha.effort.level = deriveDifficultyLevel(cls, days ? days[1] : 0);   // always server-derived
   const tag = (arr, p) => Array.isArray(arr) && arr.forEach((it, i) => { if (it && typeof it === 'object' && !it.id) it.id = `${p}:${i + 1}`; });
   tag(ha.target_assumptions, 'ta'); tag(ha.unadaptable_apis, 'ua'); tag(ha.blockers, 'bk');
+  // required_permissions: default missing harmony_status to unknown so the panel/xlsx
+  // and confidence logic treat an unstated permission conservatively.
+  if (Array.isArray(ha.required_permissions))
+    for (const p of ha.required_permissions) if (p && typeof p === 'object' && !p.harmony_status) p.harmony_status = 'unknown';
   return report;
 }
 
@@ -652,7 +723,7 @@ function validateHarmony(report) {
   const ua = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
   const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
   const ta = Array.isArray(ha.target_assumptions) ? ha.target_assumptions : [];
-  if (ua.length && !['needs_adaptation_partial', 'needs_adaptation', 'infeasible'].includes(cls))
+  if (ua.length && !['needs_adaptation_partial', 'infeasible'].includes(cls))
     w.push(`unadaptable_apis 非空但 porting_class=${cls}（应为 needs_adaptation_partial 或 infeasible）`);
   const ids = new Set([...ta, ...ua, ...blk].map((x) => x && x.id).filter(Boolean));
   for (const b of blk) for (const r of [...(b.caused_by || []), ...(b.manifests_as || [])])
@@ -664,13 +735,64 @@ function validateHarmony(report) {
   }
   if (ta.some((a) => a && a.required && a.target_status === 'unknown') && ha.confidence === 'high')
     w.push('存在 required 且 unknown 的目标假设，confidence 不应为 high');
+  const perms = Array.isArray(ha.required_permissions) ? ha.required_permissions : [];
+  for (const p of perms) if (p && p.harmony_status === 'unavailable' && !blk.length)
+    w.push(`required_permission ${p.permission || ''} 为 unavailable 但无对应 blocker`);
+  return w;
+}
+
+// Cross-dimension consistency — catches model omissions/contradictions between
+// capability_profile ↔ native_api ↔ dependencies ↔ dim-9. Conservative (only
+// high-confidence signals) to avoid noise. Returns 中文 warnings.
+// leading word-boundary only — library names often concatenate (Qt6Widgets, libGLESv2, cudart)
+const CAP_SIGNALS = [
+  // NB: avoid broad OS-API tokens (e.g. win32 = whole Windows API, mostly non-GUI) → false positives
+  { key: 'gui', re: /\b(qt|pyqt|pyside|gtk|wxwidget|imgui|tkinter|electron|swing|javafx|\bswt\b|wpf|winui)/i },
+  { key: 'rendering_3d', re: /\b(opengl|libgl|gles|egl|vulkan|directx|d3d1[12]|dxgi|webgpu)/i },
+  { key: 'media', re: /\b(ffmpeg|libav|gstreamer|portaudio|libasound|pulseaudio|x264|openh264|libvpx|v4l2|avfoundation)/i },
+  { key: 'hardware', re: /\b(cuda|nvcc|opencl|libusb|termios|bluez|npu|fpga)/i },
+];
+function validateReport(report) {
+  if (!report || typeof report !== 'object') return [];
+  const w = [];
+  const cap = report.capability_profile || {};
+  const scen = Array.isArray(cap.scenarios) ? cap.scenarios : [];
+  const presentKeys = new Set(scen.filter((s) => s && s.present).map((s) => s.key));
+  // collect the names/types that hint at a scenario, from deps + dynamic libs + api groups
+  const na = report.native_api || {};
+  const names = [
+    ...((report.dependencies && report.dependencies.dependencies) || []).map((d) => d && d.name),
+    ...((na.dynamic_libraries || []).map((d) => d && d.name)),
+    ...((na.groups || []).map((g) => g && g.type)),
+  ].filter(Boolean);
+  // include a lib-stripped variant so a leading `lib`/path prefix doesn't hide the token
+  const hay = names.flatMap((n) => [n, String(n).replace(/^lib/i, '')]).join('  ');
+  for (const sig of CAP_SIGNALS) {
+    if (sig.re.test(hay) && !presentKeys.has(sig.key))
+      w.push(`依赖/native_api 出现 ${sig.key} 强信号，但 capability_profile 未标记该场景（可能漏判）`);
+  }
+  // present scenario without evidence
+  for (const s of scen) if (s && s.present && !((s.evidence || []).length))
+    w.push(`能力画像场景 ${s.key} present 但缺 evidence`);
+  // dangling permission → scenario
+  const ha = report.harmony_adaptation || {};
+  for (const p of (ha.required_permissions || []))
+    if (p && p.source_capability && !presentKeys.has(p.source_capability))
+      w.push(`required_permission ${p.permission || ''} 的 source_capability=${p.source_capability} 不在已标记场景中`);
+  // present+unsupported scenario not reflected in dim-9
+  const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
+  const ta = Array.isArray(ha.target_assumptions) ? ha.target_assumptions : [];
+  const dimText = JSON.stringify([blk, ta, ha.unadaptable_apis || []]).toLowerCase();
+  for (const s of scen) if (s && s.present && ['unavailable', 'partial'].includes(s.harmony_status)
+      && !dimText.includes(String(s.key).toLowerCase()) && (blk.length + ta.length) === 0)
+    w.push(`场景 ${s.key} 鸿蒙状态为 ${s.harmony_status} 但 dim-9 无对应阻碍/假设（可能漏登记）`);
   return w;
 }
 
 // ---- bottom-up adaptation rollup (serve-time, API-granular) ----------------
-// worst-wins lattice over porting classes. Legacy `needs_adaptation` ≡ partial.
+// worst-wins lattice over porting classes.
 const CLASS_RANK = { no_adaptation: 0, recompile_only: 1, needs_adaptation_full: 2,
-  needs_adaptation: 3, needs_adaptation_partial: 3, infeasible: 4 };
+  needs_adaptation_partial: 3, infeasible: 4 };
 const RANK_CLASS = ['no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'infeasible'];
 const rankOf = (cls) => (cls in CLASS_RANK ? CLASS_RANK[cls] : 0);
 const classOfRank = (r) => RANK_CLASS[Math.min(Math.max(r, 0), 4)];
@@ -777,8 +899,7 @@ function buildDepTopology(rootName, group, maxDepth = 6, maxNodes = 300) {
   const g = safeGroup(group);
   const repCache = new Map();
   const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n, g)); return repCache.get(n); };
-  const index = buildLibIndex(getRep, g);
-  const urlIndex = buildLibUrlIndex(getRep, g);
+  const idx = buildIdentityIndex(getRep, g);
   const nodes = new Map();   // id -> node
   const edges = [];
   const edgeSeen = new Set();
@@ -795,7 +916,7 @@ function buildDepTopology(rootName, group, maxDepth = 6, maxNodes = 300) {
     const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
     for (const d of deps) {
       if (!d || !d.name || !isRuntimeDep(d)) continue;
-      const hit = resolveDepLib(d, index, urlIndex);
+      const hit = resolveDepLib(d, idx);
       const analyzed = !!hit && !hit.ambiguous;
       const id = analyzed ? 'lib:' + hit.libName : 'dep:' + ecoNorm(d.ecosystem) + ':' + normName(d.name);
       if (!nodes.has(id)) {
@@ -833,8 +954,12 @@ function buildDepTopology(rootName, group, maxDepth = 6, maxNodes = 300) {
 // ---------------------------------------------------------------- clone
 function startClone({ url: rawUrl, ref, overwrite, tag, group }) {
   const gitUrl = normalizeCloneUrl(rawUrl);
-  const name = repoNameFromUrl(gitUrl);
   const g = ensureGroupDirs(group);
+  // Storage handle: the git basename, but disambiguated when it collides with a
+  // DIFFERENT upstream repo already in this group (owner-qualified). Same repo
+  // (by identity) keeps its handle and goes through the overwrite/re-clone path.
+  const ckey = canonicalRepoKey(gitUrl);
+  const name = pickCloneHandle(g, repoNameFromUrl(gitUrl), gitUrl, ckey);
   const dest = repoDir(g, name);
   if (fs.existsSync(dest)) {
     if (!overwrite) throw new Error(`repos/${g}/${name} already exists (enable overwrite to re-clone)`);
@@ -942,7 +1067,7 @@ function spawnAnalyze(job) {
 const recursionSessions = new Map();   // id -> RecursionSession
 const CLONE_MAX = 3;                   // cap concurrent clones a session launches
 const TERMINAL = new Set(['analyzed', 'leaf_system', 'leaf_prebuilt', 'leaf_interface',
-  'leaf_no_source', 'ambiguous', 'failed', 'capped']);
+  'leaf_no_source', 'leaf_harmonized', 'ambiguous', 'failed', 'capped']);
 const ACTIVE = new Set(['pending', 'resolving', 'resolved', 'cloning', 'analyzing']);
 
 class RecursionSession {
@@ -994,6 +1119,21 @@ class RecursionSession {
     this.tick();
   }
 
+  // Check the HarmonyOS-PC mirror for this dep (async, fire-and-forget → re-ticks).
+  // A hit seals it as a leaf (no recurse); a miss just flags it so the next tick
+  // proceeds to resolve/clone/analyze as usual.
+  async _checkHarmonized(dec, d) {
+    dec.harmonyChecking = true;
+    let adapted = false;
+    try { adapted = await harmonyMirror.isAdapted(ecoNorm(d.ecosystem), d.name); } catch (_) {}
+    dec.harmonyChecking = false;
+    dec.harmonyChecked = true;
+    if (this.status !== 'running') return;
+    if (adapted) this._set(dec, 'leaf_harmonized', '已鸿蒙化（镜像已提供预编译/ohos 包），无需递归');
+    this._flush();
+    this.tick();
+  }
+
   // Advance one dependency by a single step based on current disk state.
   _advance(dec, d, repos) {
     if (TERMINAL.has(dec.state)) return;
@@ -1002,6 +1142,15 @@ class RecursionSession {
       return this._set(dec, 'leaf_system', '系统库（find_package/预装），无源码');
     if (d.acquisition === 'prebuilt_binary')
       return this._set(dec, 'leaf_prebuilt', '预编译二进制，无源码');
+
+    // 已移植到鸿蒙 PC 镜像 → 封闭叶子，不再 resolve/clone/analyze
+    // （与 dim-9 rollupAdaptation 把已鸿蒙化依赖当封闭叶子的口径一致）。只在初始 pending
+    // 态触发一次，避免影响已在 resolving/cloning/analyzing 的在途决策。
+    if (settings.enableHarmonyMirror && dec.state === 'pending'
+        && !dec.harmonyChecked && !dec.harmonyChecking) {
+      this._checkHarmonized(dec, d);   // async；完成后 re-tick
+      return;
+    }
 
     // need a repo URL first
     if (!dec.repoName) {
@@ -1056,8 +1205,7 @@ class RecursionSession {
     this._changed = false;
     const repCache = new Map();
     const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n, this.group)); return repCache.get(n); };
-    const index = buildLibIndex(getRep, this.group);
-    const urlIndex = buildLibUrlIndex(getRep, this.group);
+    const idx = buildIdentityIndex(getRep, this.group);
     const repos = new Set(listRepos(this.group));
 
     // BFS over analyzed reports → collect unanalyzed runtime deps + their depth.
@@ -1071,7 +1219,7 @@ class RecursionSession {
       const deps = (rep && rep.dependencies && rep.dependencies.dependencies) || [];
       for (const d of deps) {
         if (!d || !d.name || !isRuntimeDep(d)) continue;
-        const hit = resolveDepLib(d, index, urlIndex);
+        const hit = resolveDepLib(d, idx);
         if (hit && !hit.ambiguous) {                       // analyzed → recurse into it
           if (!seen.has(hit.libName)) { seen.add(hit.libName); queue.push({ libName: hit.libName, depth: cur.depth + 1 }); }
           continue;
@@ -1154,6 +1302,7 @@ jobEndListeners.add((job) => {
     const rp = repoDir(job.meta.group, job.meta.name);
     if (fs.existsSync(rp)) {
       addLibTag(job.meta.name, job.meta.group, job.meta.tag || 'primary');
+      writeIdentity(job.meta.group, job.meta.name, job.meta.url);   // 句柄↔上游仓身份
       ensureCodegraphIndex(rp, (s) => { try { job.log('stdout', `[codegraph] ${s}`); } catch (_) {} });
     }
   }
@@ -1408,8 +1557,7 @@ const server = http.createServer(async (req, res) => {
       const pg = safeGroup(query.group);
       const repCache = new Map();
       const getRep = (n) => { if (!repCache.has(n)) repCache.set(n, latestReport(n, pg)); return repCache.get(n); };
-      const index = buildLibIndex(getRep, pg);
-      const urlIndex = buildLibUrlIndex(getRep, pg);
+      const idx = buildIdentityIndex(getRep, pg);
       const repos = new Set(listRepos(pg));
       const groups = new Map();   // key: eco:normname -> aggregated dep
       for (const lib of listLibraries(pg)) {
@@ -1420,7 +1568,7 @@ const server = http.createServer(async (req, res) => {
           if (!d || !d.name) continue;
           const eco = ecoNorm(d.ecosystem);
           const key = eco + ':' + normName(d.name);
-          if (resolveDepLib(d, index, urlIndex)) continue;   // already an analyzed library (by name or source-URL repo)
+          if (resolveDepLib(d, idx)) continue;   // already an analyzed library (by URL identity or name)
           let g = groups.get(key);
           if (!g) {
             g = { name: d.name, ecosystem: d.ecosystem || null, count: 0,
@@ -1551,7 +1699,7 @@ const server = http.createServer(async (req, res) => {
       // serve-time: fill derived dim-9 fields (effort.level/person_days/ids/feasibility) and
       // attach consistency warnings, so 存量 reports gain structured data without a re-run.
       normalizeHarmony(rep);
-      const hw = validateHarmony(rep);
+      const hw = [...validateHarmony(rep), ...validateReport(rep)];
       if (hw.length) rep.meta = { ...(rep.meta || {}), harmony_warnings: hw };
       return send(res, 200, rep);
     }
@@ -1658,5 +1806,5 @@ if (require.main === module) {
   });
 } else {
   module.exports = { derivePortingClass, deriveDifficultyLevel, effortDays, normalizeHarmony,
-    validateHarmony, rollupAdaptation, buildDepTopology };
+    validateHarmony, validateReport, rollupAdaptation, buildDepTopology };
 }
