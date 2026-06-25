@@ -1,0 +1,1692 @@
+{
+  "library": {
+    "name": "sonarlint-core",
+    "kind": "library",
+    "package_name": "sonarlint-core",
+    "aliases": [
+      "org.sonarsource.sonarlint.core:sonarlint-core-parent",
+      "org.sonarsource.sonarlint.core:sonarlint-core",
+      "org.sonarsource.sonarlint.core:sonarlint-rpc-protocol",
+      "org.sonarsource.sonarlint.core:sonarlint-rpc-java-client",
+      "org.sonarsource.sonarlint.core:sonarlint-backend-cli"
+    ],
+    "import_names": [],
+    "source_url": "https://github.com/SonarSource/sonarlint-core.git",
+    "analyzed_at": "2026-06-25T11:46:16.806Z",
+    "commit": "4227f07fa70fef33f3275feb6d1e184bebb00c4b",
+    "one_liner": "SonarLint IDE 代码质量分析核心库，提供 RPC 后端、分析引擎与 SonarQube/SonarCloud 同步能力。",
+    "ecosystem": "java",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "SonarLint Core 是 SonarSource 为 IDE 提供的代码质量与安全分析核心库。它以 JSON-RPC/LSP 风格的协议与 IDE 客户端通信，负责加载并隔离 SonarQube 分析器插件、执行多语言静态分析、与 SonarQube/SonarCloud 同步规则与问题、管理本地存储与缓存，并提供遥测与错误监控。主要供 SonarLint Eclipse、IntelliJ、VS Code 等 IDE 插件作为后端集成，本身以 Maven 多模块库形式发布。",
+    "categories": [
+      {
+        "name": "RPC 协议与客户端通信",
+        "description": "定义 IDE 与后端之间的 JSON-RPC 协议（rpc-protocol），提供 Java 客户端封装（rpc-java-client）以及后端 RPC 实现（rpc-impl），实现初始化、文件事件、分析请求、问题推送、配置同步等双向通信。",
+        "evidence": [
+          "rpc-protocol/src/main/java/org/sonarsource/sonarlint/core/rpc/protocol/SonarLintRpcClient.java",
+          "client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SonarLintRpcClientImpl.java",
+          "backend/rpc-impl/src/main/java/org/sonarsource/sonarlint/core/rpc/impl/SonarLintRpcServerImpl.java"
+        ]
+      },
+      {
+        "name": "静态代码分析引擎",
+        "description": "基于 SonarQube 插件 API 构建分析容器，调度并执行各类语言分析器，处理文件系统事件、活跃规则、问题过滤、快速修复（QuickFix）及取消机制。",
+        "evidence": [
+          "backend/analysis-engine/src/main/java/org/sonarsource/sonarlint/core/analysis/AnalysisScheduler.java",
+          "backend/analysis-engine/src/main/java/org/sonarsource/sonarlint/core/analysis/command/AnalyzeCommand.java",
+          "backend/analysis-engine/src/main/java/org/sonarsource/sonarlint/core/analysis/container/analysis/sensor/SensorsExecutor.java"
+        ]
+      },
+      {
+        "name": "SonarQube/SonarCloud 连接与同步",
+        "description": "通过 REST/Protobuf API 与 SonarQube 或 SonarCloud 建立连接，同步项目绑定、规则配置、质量问题（Issues/Hotspots/Taint）、新代码定义以及服务器事件推送。",
+        "evidence": [
+          "backend/server-api/src/main/java/org/sonarsource/sonarlint/core/serverapi",
+          "backend/server-connection/src/main/java/org/sonarsource/sonarlint/core/serverconnection/ProjectStorage.java",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/websocket/WebSocketManager.java"
+        ]
+      },
+      {
+        "name": "插件加载与隔离",
+        "description": "使用自定义类加载器加载、验证并实例化 SonarQube 分析器插件，支持嵌入式插件、服务器下载插件以及按需商业插件的缓存与签名校验。",
+        "evidence": [
+          "backend/plugin-commons/src/main/java/org/sonarsource/sonarlint/core/plugin/commons/loading/PluginInstancesLoader.java",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/plugin/source/server/ServerPluginSource.java",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/plugin/source/binaries/BinariesLocalCacheManager.java"
+        ]
+      },
+      {
+        "name": "HTTP/HTTPS 传输与代理",
+        "description": "基于 Apache HttpClient 5 构建异步 HTTP 客户端，处理 TLS/SSL 配置、系统代理、基本/Token 认证、重试策略以及 WebSocket 长连接。",
+        "evidence": [
+          "backend/http/src/main/java/org/sonarsource/sonarlint/core/http/HttpClientProvider.java",
+          "backend/http/src/main/java/org/sonarsource/sonarlint/core/http/WebSocketClient.java",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/websocket/SonarCloudWebSocket.java"
+        ]
+      },
+      {
+        "name": "本地存储与缓存",
+        "description": "在本地文件系统管理用户数据目录、工作目录、项目存储、插件缓存以及基于 Xodus/H2 的嵌入式数据库存储，并通过 Flyway 执行数据库迁移。",
+        "evidence": [
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/UserPaths.java",
+          "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/storage/SonarLintDatabase.java",
+          "backend/server-connection/src/main/java/org/sonarsource/sonarlint/core/serverconnection/storage/ProtobufFileUtil.java"
+        ]
+      },
+      {
+        "name": "遥测与监控",
+        "description": "收集安装、使用、绑定模式等匿名遥测数据并上报 SonarSource，同时集成 Sentry 进行错误监控与崩溃报告。",
+        "evidence": [
+          "backend/telemetry/src/main/java/org/sonarsource/sonarlint/core/telemetry/TelemetryHttpClient.java",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/monitoring/MonitoringService.java"
+        ]
+      },
+      {
+        "name": "Git 集成与 Blame",
+        "description": "通过 JGit 或调用系统 Git 可执行文件执行 blame，用于确定代码行的作者与提交时间，支持新代码定义与问题归属。",
+        "evidence": [
+          "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGit.java",
+          "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGitLocator.java",
+          "backend/commons/pom.xml:33-35"
+        ]
+      },
+      {
+        "name": "后端 CLI 启动器",
+        "description": "将后端打包为独立命令行程序（slcore），通过标准输入输出与 IDE 客户端建立 RPC 通道；同时提供 SloopLauncher 供 Java 客户端启动该后端进程。",
+        "evidence": [
+          "backend/cli/src/main/java/org/sonarsource/sonarlint/core/backend/cli/SonarLintServerCli.java",
+          "client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SloopLauncher.java"
+        ]
+      }
+    ],
+    "domain": "代码质量分析 / 开发者工具",
+    "target_users": "IDE 插件开发者、SonarLint 各平台客户端（Eclipse、IntelliJ、VS Code 等）"
+  },
+  "languages": {
+    "primary": "Java",
+    "all": [
+      "Java",
+      "Maven",
+      "Markdown",
+      "XML",
+      "YAML",
+      "Protocol Buffers",
+      "COBOL",
+      "Text"
+    ],
+    "breakdown": [
+      {
+        "language": "Java",
+        "files": 1730,
+        "code": 105580,
+        "pct": 91.66,
+        "production": {
+          "files": 1265,
+          "code": 49415
+        },
+        "test": {
+          "files": 451,
+          "code": 55788
+        },
+        "example": {
+          "files": 14,
+          "code": 377
+        }
+      },
+      {
+        "language": "Maven",
+        "files": 37,
+        "code": 4120,
+        "pct": 3.58,
+        "production": {
+          "files": 28,
+          "code": 3720
+        },
+        "test": {
+          "files": 9,
+          "code": 400
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 14,
+        "code": 1278,
+        "pct": 1.11,
+        "production": {
+          "files": 13,
+          "code": 934
+        },
+        "test": {
+          "files": 1,
+          "code": 344
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 40,
+        "code": 714,
+        "pct": 0.62,
+        "production": {
+          "files": 7,
+          "code": 293
+        },
+        "test": {
+          "files": 32,
+          "code": 405
+        },
+        "example": {
+          "files": 1,
+          "code": 16
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 13,
+        "code": 621,
+        "pct": 0.54,
+        "production": {
+          "files": 10,
+          "code": 603
+        },
+        "test": {
+          "files": 3,
+          "code": 18
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Protocol Buffers",
+        "files": 11,
+        "code": 589,
+        "pct": 0.51,
+        "production": {
+          "files": 11,
+          "code": 589
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "COBOL",
+        "files": 4,
+        "code": 543,
+        "pct": 0.47,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 4,
+          "code": 543
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 15,
+        "code": 386,
+        "pct": 0.34,
+        "production": {
+          "files": 4,
+          "code": 135
+        },
+        "test": {
+          "files": 11,
+          "code": 251
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 1919,
+      "code": 115181,
+      "comment": 37462,
+      "blank": 21720,
+      "total_lines": 174363
+    },
+    "production": {
+      "files": 1360,
+      "code": 56520,
+      "comment": 27864,
+      "blank": 10674,
+      "total_lines": 95058
+    },
+    "test": {
+      "files": 544,
+      "code": 58268,
+      "comment": 9287,
+      "blank": 10946,
+      "total_lines": 78501
+    },
+    "example": {
+      "files": 15,
+      "code": 393,
+      "comment": 311,
+      "blank": 100,
+      "total_lines": 804
+    },
+    "top_dirs": [
+      {
+        "dir": "backend",
+        "code": 69379,
+        "category": "production",
+        "by_category": {
+          "production": 44114,
+          "test": 25265
+        }
+      },
+      {
+        "dir": "medium-tests",
+        "code": 23799,
+        "category": "test",
+        "by_category": {
+          "production": 407,
+          "test": 23392
+        }
+      },
+      {
+        "dir": "rpc-protocol",
+        "code": 7333,
+        "category": "production",
+        "by_category": {
+          "production": 7179,
+          "test": 154
+        }
+      },
+      {
+        "dir": "its",
+        "code": 4972,
+        "category": "test",
+        "by_category": {
+          "production": 270,
+          "test": 4309,
+          "example": 393
+        }
+      },
+      {
+        "dir": "test-utils",
+        "code": 4459,
+        "category": "test",
+        "by_category": {
+          "production": 99,
+          "test": 4360
+        }
+      },
+      {
+        "dir": "client",
+        "code": 2268,
+        "category": "production",
+        "by_category": {
+          "production": 1765,
+          "test": 503
+        }
+      },
+      {
+        "dir": ".",
+        "code": 1415,
+        "category": "production",
+        "by_category": {
+          "production": 1415
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 609,
+        "category": "production",
+        "by_category": {
+          "production": 609
+        }
+      },
+      {
+        "dir": "spec",
+        "code": 285,
+        "category": "test",
+        "by_category": {
+          "test": 285
+        }
+      },
+      {
+        "dir": "docs",
+        "code": 242,
+        "category": "production",
+        "by_category": {
+          "production": 242
+        }
+      },
+      {
+        "dir": "doc",
+        "code": 152,
+        "category": "production",
+        "by_category": {
+          "production": 152
+        }
+      },
+      {
+        "dir": "buildSrc",
+        "code": 142,
+        "category": "production",
+        "by_category": {
+          "production": 142
+        }
+      },
+      {
+        "dir": "report-aggregate",
+        "code": 119,
+        "category": "production",
+        "by_category": {
+          "production": 119
+        }
+      },
+      {
+        "dir": ".sonarlint",
+        "code": 4,
+        "category": "production",
+        "by_category": {
+          "production": 4
+        }
+      },
+      {
+        "dir": ".mvn",
+        "code": 3,
+        "category": "production",
+        "by_category": {
+          "production": 3
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "medium-tests",
+        "its",
+        "test-utils",
+        "spec"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计。"
+    }
+  },
+  "tests": {
+    "test_files": 544,
+    "test_cases": 1440,
+    "frameworks": [
+      "JUnit 5"
+    ],
+    "by_language": {
+      "Java": {
+        "files": 451,
+        "cases": 1440
+      },
+      "COBOL": {
+        "files": 4,
+        "cases": 0
+      },
+      "Markdown": {
+        "files": 1,
+        "cases": 0
+      },
+      "Maven": {
+        "files": 9,
+        "cases": 0
+      },
+      "PHP": {
+        "files": 1,
+        "cases": 0
+      },
+      "AsciiDoc": {
+        "files": 10,
+        "cases": 0
+      },
+      "Text": {
+        "files": 11,
+        "cases": 0
+      },
+      "XML": {
+        "files": 32,
+        "cases": 0
+      },
+      "Go": {
+        "files": 1,
+        "cases": 0
+      },
+      "JSON": {
+        "files": 5,
+        "cases": 0
+      },
+      "JavaScript": {
+        "files": 2,
+        "cases": 0
+      },
+      "YAML": {
+        "files": 3,
+        "cases": 0
+      },
+      "Apex Class": {
+        "files": 1,
+        "cases": 0
+      },
+      "C": {
+        "files": 1,
+        "cases": 0
+      },
+      "C++": {
+        "files": 1,
+        "cases": 0
+      },
+      "HCL": {
+        "files": 1,
+        "cases": 0
+      },
+      "TypeScript": {
+        "files": 1,
+        "cases": 0
+      },
+      "Kotlin": {
+        "files": 1,
+        "cases": 0
+      },
+      "Ruby": {
+        "files": 1,
+        "cases": 0
+      },
+      "Scala": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "测试用例以 JUnit 5 为主；COBOL/Go/PHP/Apex/C/C++/HCL/Kotlin/Ruby/Scala 等文件为分析器测试夹具，非生产代码。"
+  },
+  "license": {
+    "spdx": "LGPL-3.0-only",
+    "name": "GNU Lesser General Public License v3.0 only",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "顶层 LICENSE.txt 为 GNU Lesser General Public License Version 3 完整文本；pom.xml 中 <license.name>GNU LGPL v3</license.name> 与之呼应。",
+    "notes": "弱 copyleft（LGPL-3.0-only）；作为库被调用时通常不传染调用方，但修改本库需遵守 LGPL。"
+  },
+  "dependencies": {
+    "count": 42,
+    "manifests": [
+      "pom.xml",
+      "backend/pom.xml",
+      "backend/core/pom.xml",
+      "backend/commons/pom.xml",
+      "backend/http/pom.xml",
+      "backend/server-connection/pom.xml",
+      "backend/server-api/pom.xml",
+      "backend/plugin-commons/pom.xml",
+      "backend/plugin-api/pom.xml",
+      "backend/rpc-impl/pom.xml",
+      "backend/rule-extractor/pom.xml",
+      "backend/telemetry/pom.xml",
+      "backend/cli/pom.xml",
+      "client/pom.xml",
+      "client/rpc-java-client/pom.xml",
+      "client/java-client-dependencies/pom.xml"
+    ],
+    "by_ecosystem": {
+      "java": [
+        "gson",
+        "guava",
+        "commons-lang3",
+        "commons-text",
+        "commons-io",
+        "commons-codec",
+        "commons-compress",
+        "commons-csv",
+        "slf4j-api",
+        "jul-to-slf4j",
+        "logback-classic",
+        "h2",
+        "jooq",
+        "flyway-core",
+        "bcprov-jdk18on",
+        "bcpg-jdk18on",
+        "httpclient5",
+        "httpcore5",
+        "ayza",
+        "org.eclipse.lsp4j.jsonrpc",
+        "org.eclipse.jgit",
+        "sentry",
+        "protobuf-java",
+        "xodus-entity-store",
+        "xodus-environment",
+        "xodus-vfs",
+        "sonar-plugin-api",
+        "sonar-scanner-protocol",
+        "sonar-markdown",
+        "spring-context",
+        "sonar-classloader",
+        "git-files-blame",
+        "picocli",
+        "javax.annotation-api",
+        "jakarta.inject-api",
+        "jakarta.annotation-api",
+        "jsr305"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "gson",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.13.2",
+        "purpose": "JSON 序列化与反序列化（RPC DTO、配置、遥测负载）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（com.google.code.gson:gson）",
+        "declared_in": ["pom.xml:56"],
+        "used_symbols": ["Gson", "GsonBuilder", "JsonParser"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "guava",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "33.6.0-jre",
+        "purpose": "Google 通用工具库（集合、缓存、并发工具、FailSafeExecutors 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（com.google.guava:guava）",
+        "declared_in": ["pom.xml:159-161"],
+        "used_symbols": ["MoreExecutors", "Lists", "Sets", "Maps"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "commons-lang3",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "3.20.0",
+        "purpose": "Apache Commons Lang 工具类（SystemUtils、StringUtils、ArrayUtils 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.apache.commons:commons-lang3）",
+        "declared_in": ["pom.xml:127-129"],
+        "used_symbols": ["SystemUtils", "StringUtils", "ArrayUtils"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "commons-text",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.15.0",
+        "purpose": "文本处理工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.apache.commons:commons-text）",
+        "declared_in": ["pom.xml:132-134"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "commons-io",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.22.0",
+        "purpose": "IO 工具类（FileUtils、IOUtils）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（commons-io:commons-io）",
+        "declared_in": ["pom.xml:138-141"],
+        "used_symbols": ["FileUtils", "IOUtils"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "commons-codec",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.22.0",
+        "purpose": "Base64/Hex 编解码",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（commons-codec:commons-codec）",
+        "declared_in": ["pom.xml:143-145"],
+        "used_symbols": ["DigestUtils", "Hex"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "commons-compress",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.28.0",
+        "purpose": "压缩/解压（tar.gz 等插件包/存储备份）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.apache.commons:commons-compress）",
+        "declared_in": ["pom.xml:148-150"],
+        "used_symbols": ["TarArchiveInputStream", "GzipCompressorInputStream"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "commons-csv",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.14.1",
+        "purpose": "CSV 解析",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.apache.commons:commons-csv）",
+        "declared_in": ["backend/plugin-commons/pom.xml:57-60"],
+        "used_symbols": ["CSVFormat", "CSVParser"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "slf4j-api",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.0.17",
+        "purpose": "日志门面",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.slf4j:slf4j-api）",
+        "declared_in": ["pom.xml:247-249"],
+        "used_symbols": ["Logger", "LoggerFactory"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jul-to-slf4j",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.0.17",
+        "purpose": "将 java.util.logging 桥接到 SLF4J",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.slf4j:jul-to-slf4j）",
+        "declared_in": ["pom.xml:251-253"],
+        "used_symbols": ["SLF4JBridgeHandler"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "logback-classic",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.5.32",
+        "purpose": "SLF4J 后端日志实现（主要用于后端 CLI 与测试）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（ch.qos.logback:logback-classic）",
+        "declared_in": ["pom.xml:256-258", "backend/rpc-impl/pom.xml:41-43"],
+        "used_symbols": ["LoggerContext", "PatternLayoutEncoder"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "h2",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.4.240",
+        "purpose": "嵌入式关系数据库（用于 commons 存储）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（com.h2database:h2）",
+        "declared_in": ["pom.xml:79-81", "backend/commons/pom.xml:19-21"],
+        "used_symbols": ["org.h2.Driver"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jooq",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "3.19.15",
+        "purpose": "类型安全 SQL 构建器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.jooq:jooq）",
+        "declared_in": ["pom.xml:81-82", "backend/commons/pom.xml:24-26"],
+        "used_symbols": ["DSL", "Record"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "flyway-core",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "11.20.3",
+        "purpose": "数据库迁移",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.flywaydb:flyway-core）",
+        "declared_in": ["pom.xml:82-83", "backend/commons/pom.xml:28-30"],
+        "used_symbols": ["Flyway"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "bcprov-jdk18on",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.84",
+        "purpose": "BouncyCastle 加密提供方",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.bouncycastle:bcprov-jdk18on）",
+        "declared_in": ["pom.xml:205-212"],
+        "used_symbols": ["BouncyCastleProvider"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "bcpg-jdk18on",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.84",
+        "purpose": "BouncyCastle OpenPGP（插件签名验证）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.bouncycastle:bcpg-jdk18on）",
+        "declared_in": ["pom.xml:205-207"],
+        "used_symbols": ["PGPSignature", "PGPObjectFactory"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "httpclient5",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "5.6.1",
+        "purpose": "Apache HTTP 异步客户端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.apache.httpcomponents.client5:httpclient5）",
+        "declared_in": ["pom.xml:230-232", "backend/http/pom.xml:37-44"],
+        "used_symbols": ["CloseableHttpAsyncClient", "HttpAsyncClients", "PoolingAsyncClientConnectionManagerBuilder"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "httpcore5",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "5.4.2",
+        "purpose": "Apache HTTP 核心库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.apache.httpcomponents.core5:httpcore5）",
+        "declared_in": ["backend/core/pom.xml:120-123"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ayza",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "10.0.5",
+        "purpose": "SSL/TLS 信任材料处理辅助库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（io.github.hakky54:ayza）",
+        "declared_in": ["pom.xml:235-237", "backend/http/pom.xml:47-54"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "org.eclipse.lsp4j.jsonrpc",
+        "ecosystem": "java",
+        "registry_name": "org.eclipse.lsp4j.jsonrpc",
+        "scope": "runtime",
+        "version": "0.24.0",
+        "purpose": "JSON-RPC 2.0 实现（IDE 与后端通信）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central / Eclipse（org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc）",
+        "declared_in": ["pom.xml:59", "rpc-protocol/pom.xml:31-33"],
+        "used_symbols": ["Launcher", "MessageConsumer", "RemoteEndpoint"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "org.eclipse.jgit",
+        "ecosystem": "java",
+        "registry_name": "org.eclipse.jgit",
+        "scope": "runtime",
+        "version": "7.5.0.202512021534-r",
+        "purpose": "纯 Java Git 操作库（blame、仓库遍历）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central / Eclipse（org.eclipse.jgit:org.eclipse.jgit）",
+        "declared_in": ["backend/commons/pom.xml:37-39"],
+        "used_symbols": ["Git", "BlameCommand", "Repository"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sentry",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "8.38.0",
+        "purpose": "错误监控与崩溃上报",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（io.sentry:sentry）",
+        "declared_in": ["pom.xml:68", "rpc-protocol/pom.xml:36-38"],
+        "used_symbols": ["Sentry", "SentryOptions"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "protobuf-java",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "4.34.1",
+        "purpose": "Protocol Buffers 运行时（与 SonarQube/SonarCloud 的 protobuf API 交互）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（com.google.protobuf:protobuf-java）",
+        "declared_in": ["pom.xml:50", "backend/server-connection/pom.xml:50-52"],
+        "used_symbols": ["GeneratedMessageV3", "Parser"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "xodus-entity-store",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.0.1",
+        "purpose": "JetBrains Xodus 实体存储（本地 issue/findings 存储）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.jetbrains.xodus:xodus-entity-store）",
+        "declared_in": ["backend/server-connection/pom.xml:55-64"],
+        "used_symbols": ["PersistentEntityStore"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "xodus-environment",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.0.1",
+        "purpose": "JetBrains Xodus 环境抽象",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.jetbrains.xodus:xodus-environment）",
+        "declared_in": ["backend/server-connection/pom.xml:66-74"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "xodus-vfs",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.0.1",
+        "purpose": "JetBrains Xodus 虚拟文件系统",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.jetbrains.xodus:xodus-vfs）",
+        "declared_in": ["backend/server-connection/pom.xml:76-79"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sonar-plugin-api",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "13.4.2.4284",
+        "purpose": "SonarQube 分析器插件 API（Sensor、InputFile、Rule 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central / SonarSource（org.sonarsource.api.plugin:sonar-plugin-api）",
+        "declared_in": ["backend/plugin-api/pom.xml:22-24", "backend/plugin-commons/pom.xml:31-40"],
+        "used_symbols": ["Sensor", "SensorContext", "InputFile", "ActiveRule"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sonar-scanner-protocol",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "9.9.0.65466",
+        "purpose": "仅用于其 protobuf stub 与 SonarQube 通信",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central / SonarSource（org.sonarsource.sonarqube:sonar-scanner-protocol）",
+        "declared_in": ["pom.xml:49", "backend/server-api/pom.xml:47-57"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sonar-markdown",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "25.3.0.104237",
+        "purpose": "规则描述 Markdown 处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central / SonarSource（org.sonarsource.sonarqube:sonar-markdown）",
+        "declared_in": ["pom.xml:48", "backend/rule-extractor/pom.xml:31-33"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "spring-context",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "6.2.19",
+        "purpose": "Spring IoC 容器与事件发布（后端依赖注入）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（org.springframework:spring-context）",
+        "declared_in": ["pom.xml:100-104"],
+        "used_symbols": ["ApplicationContext", "ApplicationEventPublisher", "EventListener"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sonar-classloader",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.2.1.2095",
+        "purpose": "SonarSource 插件类加载器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central / SonarSource（org.sonarsource.classloader:sonar-classloader）",
+        "declared_in": ["pom.xml:276-279", "backend/plugin-commons/pom.xml:54-56"],
+        "used_symbols": ["ClassloaderBuilder"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "git-files-blame",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.0.2.54",
+        "purpose": "SonarSource 提供的文件级 Git blame 库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central / SonarSource（org.sonarsource.git.blame:git-files-blame）",
+        "declared_in": ["backend/commons/pom.xml:32-34"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "picocli",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "4.7.7",
+        "purpose": "后端 CLI 命令行解析",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（info.picocli:picocli）",
+        "declared_in": ["backend/cli/pom.xml:307-309"],
+        "used_symbols": ["CommandLine", "CommandLine.Command"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "javax.annotation-api",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "1.3.2",
+        "purpose": "JSR-250 注解（@Nullable/@Nonnull 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（javax.annotation:javax.annotation-api）",
+        "declared_in": ["pom.xml:190-192"],
+        "used_symbols": ["Nullable", "Nonnull"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jakarta.inject-api",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "2.0.1",
+        "purpose": "依赖注入注解（@Inject）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（jakarta.inject:jakarta.inject-api）",
+        "declared_in": ["pom.xml:195-197"],
+        "used_symbols": ["Inject"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jakarta.annotation-api",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "3.0.0",
+        "purpose": "Jakarta 注解（@PreDestroy 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（jakarta.annotation:jakarta.annotation-api）",
+        "declared_in": ["pom.xml:200-202"],
+        "used_symbols": ["PreDestroy"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jsr305",
+        "ecosystem": "java",
+        "scope": "provided",
+        "version": "3.0.2",
+        "purpose": "FindBugs/SpotBugs 注解（@CheckForNull 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（com.google.code.findbugs:jsr305）",
+        "declared_in": ["pom.xml:185-187"],
+        "used_symbols": ["CheckForNull", "Nullable"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "所有 okhttp 依赖均为 test scope，未列入运行时依赖。部分商业分析器插件（sonar-cfamily/csharp/omnisharp 等）在构建期通过 download-maven-plugin 下载签名文件，属于构建/可选插件分发，未作为核心运行时依赖。所有运行时依赖经 harmony_adapted.js 查询均暂无官方 HarmonyOS PC 移植包，但均为纯 Java 库，可在鸿蒙 JDK 上直接运行。"
+  },
+  "native_api": {
+    "summary": "作为纯 Java 库，核心依赖 JDK 标准库（java.nio.file、java.net、java.util.concurrent 等）。平台相关面集中在：通过 ProcessBuilder 启动外部进程（git、node、where/which/path_helper、sonar-code-context），以及 Windows 快捷方式 (.lnk) 的检测。无 JNI、无 sun.* 内部 API、无图形/硬件 API。",
+    "groups": [
+      {
+        "type": "java_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "java.nio.file.Files",
+            "purpose": "跨平台文件读写、目录遍历、临时目录创建、符号链接检测",
+            "count": 80,
+            "evidence": [
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/UserPaths.java:52",
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/plugin/source/binaries/BinariesArtifactSource.java:237",
+              "backend/server-connection/src/main/java/org/sonarsource/sonarlint/core/serverconnection/storage/ProtobufFileUtil.java:34"
+            ]
+          },
+          {
+            "name": "java.nio.file.Paths / Path.of",
+            "purpose": "路径构建与转换",
+            "count": 60,
+            "evidence": [
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/UserPaths.java:45",
+              "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/SonarLintUserHome.java:40-42"
+            ]
+          },
+          {
+            "name": "java.net.URI / URL",
+            "purpose": "文件与服务器 URI 表示，RPC DTO 中的资源定位",
+            "count": 100,
+            "evidence": [
+              "rpc-protocol/src/main/java/org/sonarsource/sonarlint/core/rpc/protocol/common/ClientFileDto.java:22",
+              "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGit.java:22"
+            ]
+          },
+          {
+            "name": "java.net.http.WebSocket",
+            "purpose": "与 SonarCloud 建立 WebSocket 长连接接收服务器事件",
+            "count": 10,
+            "evidence": [
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/websocket/SonarCloudWebSocket.java:27"
+            ]
+          },
+          {
+            "name": "java.util.concurrent.*",
+            "purpose": "线程池、CompletableFuture、调度任务",
+            "count": 120,
+            "evidence": [
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/websocket/SonarCloudWebSocket.java:78-99",
+              "client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SonarLintRpcClientImpl.java:116-150"
+            ]
+          },
+          {
+            "name": "java.lang.ProcessBuilder",
+            "purpose": "启动外部子进程（后端 JVM、git、node 等）",
+            "count": 4,
+            "evidence": [
+              "client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SloopLauncher.java:104",
+              "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/ProcessWrapperFactory.java:89"
+            ]
+          },
+          {
+            "name": "System.getProperty(\"os.name\")",
+            "purpose": "运行时检测操作系统以拼接 .exe 等后缀",
+            "count": 2,
+            "evidence": [
+              "client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SloopLauncher.java:49"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "windows_subprocess",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "C:\\Windows\\System32\\where.exe",
+            "purpose": "在 PATH 中定位 git.exe / node.exe / python.exe / bash.exe",
+            "count": 4,
+            "evidence": [
+              "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGitLocator.java:78",
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:114",
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:110"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "Windows .lnk shortcut magic number detection",
+            "purpose": "检测 URI 是否指向 Windows 快捷方式文件",
+            "count": 1,
+            "evidence": [
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/file/WindowsShortcutUtils.java:45-77"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix_subprocess",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "/usr/bin/which",
+            "purpose": "在 PATH 中定位 node / python 可执行文件",
+            "count": 3,
+            "evidence": [
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:117",
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:112"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "/bin/bash",
+            "purpose": "检测 Bash 是否可用于 hook 脚本",
+            "count": 1,
+            "evidence": [
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:133"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "macos_subprocess",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "/usr/libexec/path_helper",
+            "purpose": "在 macOS 上从 shell 配置重建 PATH，用于定位 node/python/git",
+            "count": 3,
+            "evidence": [
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:131-141",
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:138-147"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "os_detection",
+        "category": "platform",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS / IS_OS_MAC_OSX",
+            "purpose": "运行时平台分支判断",
+            "count": 12,
+            "evidence": [
+              "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGitLocator.java:53",
+              "backend/core/src/main/java/org/sonarsource/sonarlint/core/analysis/NodeJsService.java:126",
+              "backend/http/src/main/java/org/sonarsource/sonarlint/core/http/HttpClientProvider.java:131-132"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要依赖文件系统（~/.sonarlint 或 SONARLINT_USER_HOME 下的存储/工作目录）、网络（SonarQube/SonarCloud HTTP/HTTPS 与 WebSocket）、外部可执行文件（git、node、python、bash、sonar-code-context）以及若干环境变量。无 GUI/桌面集成、无特定硬件访问。",
+    "network": [
+      {
+        "detail": "SonarQube / SonarCloud REST 与 protobuf API",
+        "purpose": "同步规则、项目绑定、问题、质量配置、服务器事件",
+        "evidence": ["backend/server-api/src/main/java/org/sonarsource/sonarlint/core/serverapi", "backend/server-connection/src/main/java/org/sonarsource/sonarlint/core/serverconnection"]
+      },
+      {
+        "detail": "SonarCloud WebSocket (wss)",
+        "purpose": "订阅服务器推送事件",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/websocket/SonarCloudWebSocket.java:83-106"]
+      },
+      {
+        "detail": "遥测上报 (https)",
+        "purpose": "向 SonarSource 发送匿名使用数据",
+        "evidence": ["backend/telemetry/src/main/java/org/sonarsource/sonarlint/core/telemetry/TelemetryHttpClient.java:68-196"]
+      },
+      {
+        "detail": "Sentry 错误上报 (https)",
+        "purpose": "崩溃与错误监控",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/monitoring/MonitoringService.java:102-103"]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "~/.sonarlint（或 SONARLINT_USER_HOME 指定目录）",
+        "purpose": "用户级存储根、工作目录、遥测/活动数据目录",
+        "evidence": ["backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/SonarLintUserHome.java:34-43"]
+      },
+      {
+        "detail": "storage/ 下的项目与连接数据",
+        "purpose": "缓存规则、问题、插件、设置等 Protobuf/Xodus 数据",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/UserPaths.java:38", "backend/server-connection/src/main/java/org/sonarsource/sonarlint/core/serverconnection/storage"]
+      },
+      {
+        "detail": "work/ 临时目录",
+        "purpose": "Xodus 临时数据库、解压缓存",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/UserPaths.java:36"]
+      },
+      {
+        "detail": "插件缓存目录",
+        "purpose": "下载并缓存分析器插件二进制包",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/plugin/source/binaries/BinariesArtifactSource.java:86"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "SONARLINT_USER_HOME",
+        "purpose": "覆盖默认 ~/.sonarlint 用户主目录",
+        "evidence": ["backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/SonarLintUserHome.java:28-35"]
+      },
+      {
+        "name": "SONARLINT_JVM_OPTS",
+        "purpose": "为后端子进程附加 JVM 参数",
+        "evidence": ["client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SloopLauncher.java:130"]
+      },
+      {
+        "name": "SONARLINT_TELEMETRY_LOG",
+        "purpose": "开启遥测日志调试",
+        "evidence": ["backend/telemetry/src/main/java/org/sonarsource/sonarlint/core/telemetry/TelemetryHttpClient.java:196"]
+      },
+      {
+        "name": "PATH",
+        "purpose": "定位系统 git、node、python、bash 等可执行文件",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:107-120"]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "java -classpath ... org.sonarsource.sonarlint.core.backend.cli.SonarLintServerCli",
+        "purpose": "SloopLauncher 启动后端 RPC 服务进程",
+        "evidence": ["client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SloopLauncher.java:96-122"]
+      },
+      {
+        "command": "git blame / git --version",
+        "purpose": "原生 Git blame（JGit 之外的备选/优化路径）",
+        "evidence": ["backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGit.java:57-118"]
+      },
+      {
+        "command": "C:\\Windows\\System32\\where.exe $PATH:<exe>",
+        "purpose": "Windows 下在 PATH 中定位 git/node/python/bash",
+        "evidence": ["backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGitLocator.java:75-79", "backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:114", "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:110"]
+      },
+      {
+        "command": "/usr/bin/which node | python3 | python",
+        "purpose": "POSIX 下定位 node/python",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:117", "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:112"]
+      },
+      {
+        "command": "/usr/libexec/path_helper -s",
+        "purpose": "macOS 下重建 PATH",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:131-141"]
+      },
+      {
+        "command": "sonar-code-context init / generate-md-guidelines / merge-md / install",
+        "purpose": "dogfood 专用 SonarCodeContext CLI（默认关闭）",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/SonarCodeContextService.java:166-214"]
+      }
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Java 21（backend/core/http 等）；client/ 与 rpc-protocol/ 模块需 Java 11",
+    "runtime_version": "JDK 11 最低；发行版打包使用 Temurin JRE 21",
+    "build_system": "Maven（多模块聚合项目）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/build.yml:57", "backend/cli/src/main/assembly/dist-windows_x64.xml"]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/build.yml:57", "backend/cli/src/main/assembly/dist-linux_x64.xml"]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [".github/workflows/build.yml:57", "backend/cli/src/main/assembly/dist-linux_aarch64.xml"]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [".github/workflows/build.yml:57", "backend/cli/src/main/assembly/dist-macosx_x64.xml"]
+      },
+      {
+        "os": "macos",
+        "arch": "aarch64",
+        "evidence": [".github/workflows/build.yml:57", "backend/cli/src/main/assembly/dist-macosx_aarch64.xml"]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "main",
+        "name": "org.sonarsource.sonarlint.core.backend.cli.SonarLintServerCli",
+        "command": "后端 CLI 入口，从 stdin/stdout 读取 JSON-RPC",
+        "evidence": ["backend/cli/src/main/java/org/sonarsource/sonarlint/core/backend/cli/SonarLintServerCli.java:68-71"]
+      },
+      {
+        "type": "launcher",
+        "name": "org.sonarsource.sonarlint.core.rpc.client.SloopLauncher",
+        "command": "Java 客户端用于启动后端 CLI 进程的启动器",
+        "evidence": ["client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SloopLauncher.java:58-76"]
+      }
+    ],
+    "packaging": "Maven 多模块构建为 JAR；backend/cli 通过 maven-assembly-plugin 为 Windows/Linux/macOS (x86_64+aarch64) 各生成 ZIP 分发包，内含依赖 lib 与 Temurin JRE 21。client/java-client-osgi 与 java-client-dependencies 通过 maven-shade-plugin 打包为 OSGi/重定位依赖包。",
+    "notes": "构建期通过 download-maven-plugin 下载商业分析器插件签名文件与 Temurin JRE，用于分发打包。"
+  },
+  "capability_profile": {
+    "summary": "本项目是纯后台代码质量分析库/服务，无桌面 GUI、无 3D 渲染、无音视频媒体处理、无特定硬件访问。唯一与平台耦合较重的部分是通过子进程调用系统命令（git/node/where/which/path_helper）。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（Java 库运行在已移植 JDK 上；原生层 OHOS NDK/musl；架构 arm64/x86_64；自研内核，无 Linux ABI）",
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "feasible_with_effort",
+    "effort": {
+      "person_days": [10, 25]
+    },
+    "confidence": "medium",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "SonarLint Core 为纯 Java 库，鸿蒙 PC 已移植 JDK，核心字节码与绝大多数纯 Java 依赖可直接运行。主要移植工作在于替换平台特定的外部命令调用（Windows where.exe、macOS path_helper、POSIX which）与 .lnk 快捷方式检测，使其在鸿蒙命令与 PATH 环境下可用；同时为 backend/cli 分发包替换或移除捆绑的 Temurin JRE。没有 GUI/3D/媒体/硬件等不可适配场景。",
+    "blockers": [
+      {
+        "id": "bk:spawn",
+        "issue": "鸿蒙 PC 上 ProcessBuilder 启动外部进程的能力及 PATH 环境尚未核实",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "posix_subset_gap",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unknown",
+        "remediation": "在鸿蒙 JDK 上验证 ProcessBuilder.start 与 PATH 传播行为；若受限则改用 Java NIO 文件遍历等自实现路径查找，减少对外部命令的依赖。",
+        "caused_by": ["ta:spawn"],
+        "evidence": ["client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SloopLauncher.java:110"]
+      },
+      {
+        "id": "bk:where_exe",
+        "issue": "Windows 专有命令 where.exe 用于定位 git/node/python/bash，鸿蒙无该工具",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "subprocess_unavailable",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "对非 Windows 平台统一改用 Java NIO 遍历 PATH 目录查找可执行文件，或调用鸿蒙 shell 的等价命令（如 which/busybox），移除 where.exe 硬编码路径。",
+        "evidence": [
+          "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGitLocator.java:78",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:114",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:110"
+        ]
+      },
+      {
+        "id": "bk:path_helper",
+        "issue": "macOS 专有的 /usr/libexec/path_helper 用于重建 PATH，鸿蒙不存在该工具",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "subprocess_unavailable",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "在鸿蒙上直接采用 Java 进程继承的 PATH 或显式配置路径，跳过 path_helper 调用。",
+        "evidence": [
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:131-141",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:138-147"
+        ]
+      },
+      {
+        "id": "bk:which_posix",
+        "issue": "依赖 /usr/bin/which 定位 node/python，鸿蒙不一定提供该路径的二进制",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "subprocess_unavailable",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "用 Java NIO 遍历 PATH 自实现可执行文件查找，或探测鸿蒙可用的命令（如 command -v / busybox which）。",
+        "evidence": [
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:117",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:112"
+        ]
+      },
+      {
+        "id": "bk:bash_posix",
+        "issue": "假设 /bin/bash 在非 Windows 平台始终可用，鸿蒙可能无该路径",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "subprocess_unavailable",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "探测鸿蒙 shell 环境，或提供可配置的解释器路径，避免硬编码 /bin/bash。",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:126-134"]
+      },
+      {
+        "id": "bk:win_lnk",
+        "issue": "Windows .lnk 快捷方式解析逻辑在鸿蒙上无意义",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "在非 Windows 平台（含鸿蒙）直接跳过 .lnk 检测分支，保持现有按文件扩展名判断的守卫即可。",
+        "evidence": ["backend/core/src/main/java/org/sonarsource/sonarlint/core/file/WindowsShortcutUtils.java:45-77"]
+      },
+      {
+        "id": "bk:external_executables",
+        "issue": "运行依赖 git、node、python、bash 等外部可执行文件，鸿蒙需确保这些运行时可用并在 PATH 中",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "native_dependency",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "partial",
+        "remediation": "文档化鸿蒙所需外部运行时；必要时对 node/python/git 提供 fallback（如 JGit 替代原生 git，或允许客户端显式传入路径）。",
+        "evidence": [
+          "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/util/git/NativeGitLocator.java:39-54",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/nodejs/NodeJsHelper.java:102-127",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/ai/ide/ExecutableLocator.java:60-82"
+        ]
+      },
+      {
+        "id": "bk:jre_bundle",
+        "issue": "backend/cli 分发包按平台捆绑 Temurin JRE，鸿蒙无现成 Temurin 包",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "为鸿蒙构建独立的 assembly 描述符，引用鸿蒙 JDK/JRE 包；或改为不捆绑 JRE、依赖系统已安装的鸿蒙 JDK。",
+        "evidence": [
+          "backend/cli/pom.xml:14-17",
+          "backend/cli/pom.xml:64-298",
+          ".github/workflows/build.yml:57"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:jdk",
+        "capability": "Java (JDK) 在 HarmonyOS PC 上可用",
+        "required": true,
+        "target_status": "available",
+        "impact": "JDK 已移植，本库作为 Java 库可运行",
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+      },
+      {
+        "id": "ta:spawn",
+        "capability": "ProcessBuilder / 启动外部进程 (exec) 在 HarmonyOS PC 上可用且不受沙箱严重限制",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "若受限或不可用，则启动后端子进程、git blame、node 检测等功能受阻",
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+      },
+      {
+        "id": "ta:arch",
+        "capability": "目标架构 arm64 或 x86_64 可用",
+        "required": true,
+        "target_status": "partial",
+        "impact": "arm64 已确认可用；x86_64 覆盖待核实",
+        "source": "references/harmony-pc-capabilities.json#arch"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "连接 SonarQube/SonarCloud REST API、WebSocket 与遥测上报需要网络访问",
+        "source_capability": "network",
+        "harmony_status": "unknown",
+        "evidence": [
+          "backend/server-api/src/main/java/org/sonarsource/sonarlint/core/serverapi",
+          "backend/core/src/main/java/org/sonarsource/sonarlint/core/websocket/SonarCloudWebSocket.java:83-106"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Java 分析引擎与 RPC 逻辑",
+        "note": "核心代码均为 JDK 标准库与纯 Java 依赖，可直接在鸿蒙 JDK 上运行。",
+        "evidence": ["backend/analysis-engine/src/main/java", "rpc-protocol/src/main/java"]
+      },
+      {
+        "aspect": "HTTP/WebSocket 网络通信",
+        "note": "基于 Apache HttpClient 5 与 java.net.http.WebSocket，均为纯 Java 实现，在已移植 JDK 上可运行。",
+        "evidence": ["backend/http/src/main/java/org/sonarsource/sonarlint/core/http/HttpClientProvider.java"]
+      },
+      {
+        "aspect": "本地存储（Xodus/H2/Protobuf 文件）",
+        "note": "均为纯 Java 嵌入式存储，无需原生适配。",
+        "evidence": [
+          "backend/server-connection/src/main/java/org/sonarsource/sonarlint/core/serverconnection/storage",
+          "backend/commons/src/main/java/org/sonarsource/sonarlint/core/commons/storage/SonarLintDatabase.java"
+        ]
+      },
+      {
+        "aspect": "无 GUI/桌面集成/硬件访问",
+        "note": "库本身明确以 headless 模式运行，没有 Swing/AWT/JavaFX/Qt 等不可移植的 GUI 栈。",
+        "evidence": ["client/rpc-java-client/src/main/java/org/sonarsource/sonarlint/core/rpc/client/SloopLauncher.java:138"]
+      }
+    ],
+    "key_tasks": [
+      "验证鸿蒙 JDK 上 ProcessBuilder 与 PATH 行为，必要时用 Java NIO 实现可执行文件路径查找",
+      "移除或条件化 Windows where.exe、macOS path_helper、POSIX /usr/bin/which / /bin/bash 的硬编码路径",
+      "为 backend/cli 新增鸿蒙 assembly 描述符，替换或移除 Temurin JRE 捆绑",
+      "在鸿蒙环境跑通单元测试与 medium tests，验证分析器插件加载、git blame、node 检测路径",
+      "文档化鸿蒙所需外部运行时（git、node、python）及其获取方式"
+    ],
+    "notes": "评估按模型 A（Java 库运行在鸿蒙已移植 JDK 上）。由于 process_security.spawn 目标状态为 unknown，整体置信度降至 medium；若后续核实该能力可用，则工作量和风险可进一步降低。无 GUI/3D/媒体/硬件场景，故无对应 blocker。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "kind",
+        "kind": "ambiguity",
+        "value": "library_with_internal_cli",
+        "rationale": "仓库包含独立 backend CLI 入口（SonarLintServerCli.main）和发行包，但 README 与模块描述明确称其为“core library”，CLI 只是被 IDE 客户端启动的内部后端，因此 kind 判为 library 而非 application。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "category",
+        "kind": "new_value",
+        "value": "java_process_spawning_as_platform_signal",
+        "rationale": "Java ProcessBuilder 本身是标准库 API，但本项目用它调用平台专有的命令（where.exe、path_helper、/usr/bin/which），因此将具体命令按 platform+windows/macos/posix 分类，而 ProcessBuilder.start 保留在 java_stdlib/standard。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "run_on_ported_runtime_with_subprocess_adaptation",
+        "rationale": "纯 Java 库在鸿蒙 JDK 上基本可直接运行，真正的适配点是外部命令与 PATH 查找，而非重编或 ArkTS 重写。现有 recommended_path 枚举未精确覆盖此情形，因此用 run_on_ported_runtime 并在 notes 中说明需改造子进程调用。"
+      }
+    ]
+  }
+}

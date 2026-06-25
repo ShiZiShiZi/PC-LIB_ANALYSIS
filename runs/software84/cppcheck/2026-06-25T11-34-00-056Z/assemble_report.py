@@ -1,0 +1,597 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Assemble the pc-lib-analysis report for cppcheck."""
+import json
+import os
+from datetime import datetime, timezone
+
+RUN_DIR = os.path.dirname(os.path.abspath(__file__))
+METRICS_PATH = os.path.join(RUN_DIR, "metrics.json")
+REPORT_PATH = os.path.join(RUN_DIR, "report.json")
+
+def main():
+    with open(METRICS_PATH, "r", encoding="utf-8") as f:
+        metrics = json.load(f)
+
+    report = {
+        "library": {
+            "name": "cppcheck",
+            "kind": "application",
+            "package_name": "cppcheck",
+            "aliases": ["C++check", "Cppcheck Official"],
+            "import_names": [],
+            "source_url": "https://github.com/cppcheck-opensource/cppcheck",
+            "analyzed_at": "2026-06-25T11:34:00.056Z",
+            "commit": "d8eaa524f24c9269bab520ad187decdc6a58c5a9",
+            "one_liner": "面向 C/C++ 的静态代码分析器，支持命令行与 Qt 图形界面，用于检测代码缺陷、风格与安全漏洞。",
+            "ecosystem": "cpp",
+            "bindings": []
+        },
+        "function_summary": {
+            "summary": "Cppcheck 是一款面向 C 和 C++ 代码的静态分析工具，主要供开发者、CI/CD 流水线及代码审计人员使用。它通过词法/语法分析、控制流与数据流分析、符号数据库、值流传播等技术，检测空指针、未初始化变量、内存泄漏、缓冲区溢出、异常安全、STL 误用、并发问题等缺陷。项目以命令行程序 cppcheck 为主入口，另提供可选的 Qt 图形界面 cppcheck-gui，并支持通过 Python 插件（addons）扩展功能。",
+            "categories": [
+                {
+                    "name": "静态缺陷检测",
+                    "description": "对 C/C++ 源码进行多维度静态检查，覆盖内存、类型、并发、STL、异常安全等类别的错误与警告。",
+                    "evidence": ["lib/check*.cpp", "lib/cppcheck.cpp", "lib/valueflow.cpp"]
+                },
+                {
+                    "name": "C/C++ 预处理与解析",
+                    "description": "集成 simplecpp 预处理器，完成宏展开、条件编译、Token 化、模板简化与 AST 构建，为后续检查提供中间表示。",
+                    "evidence": ["externals/simplecpp/simplecpp.cpp", "lib/tokenize.cpp", "lib/templatesimplifier.cpp"]
+                },
+                {
+                    "name": "跨翻译单元分析",
+                    "description": "通过 .analyzeinfo 文件或 ctuinfo 字符串聚合多文件信息，实现未使用函数、跨文件内存泄漏等全局分析。",
+                    "evidence": ["lib/ctu.cpp", "lib/checkunusedfunctions.cpp", "lib/summaries.cpp"]
+                },
+                {
+                    "name": "规则与配置扩展",
+                    "description": "使用 XML 库配置文件（cfg）定义函数语义，并可选地通过 PCRE 正则规则引擎加载自定义规则。",
+                    "evidence": ["cfg/*.cfg", "lib/library.cpp", "lib/regex.cpp"]
+                },
+                {
+                    "name": "命令行与图形界面",
+                    "description": "提供命令行主程序以及可选的 Qt6 图形界面，支持项目配置、结果展示、报表导出与打印。",
+                    "evidence": ["cli/main.cpp", "cli/cppcheckexecutor.cpp", "gui/mainwindow.cpp"]
+                },
+                {
+                    "name": "插件与外部工具集成",
+                    "description": "通过 addons 目录下的 Python 脚本实现 MISRA/CERT 等编码规范检查，并可通过 popen 调用 clang-tidy 等外部工具。",
+                    "evidence": ["addons/*.py", "cli/cppcheckexecutor.cpp:executeCommand"]
+                }
+            ],
+            "domain": "代码质量 / 静态分析 / 安全审计",
+            "target_users": "C/C++ 开发者、DevOps/CI 维护者、代码审计人员、安全研究团队"
+        },
+        "languages": metrics["languages"],
+        "code_metrics": metrics["code_metrics"],
+        "tests": metrics["tests"],
+        "license": {
+            "spdx": "GPL-3.0-or-later",
+            "name": "GNU General Public License v3.0 or later",
+            "confidence": "high",
+            "is_dual_licensed": False,
+            "license_files": ["COPYING"],
+            "evidence": "根目录 COPYING 为 GPL-3.0 完整文本；所有源文件头均声明 'either version 3 of the License, or (at your option) any later version'。",
+            "notes": "Copyleft 许可证；作为终端用户工具分发时需注意提供源码。"
+        },
+        "dependencies": {
+            "count": 9,
+            "manifests": ["CMakeLists.txt", "Makefile", "cmake/findDependencies.cmake", "cmake/options.cmake"],
+            "by_ecosystem": {
+                "cpp": 8,
+                "python": 1
+            },
+            "dependencies": [
+                {
+                    "name": "simplecpp",
+                    "ecosystem": "cpp",
+                    "registry_name": None,
+                    "source_repo": "https://github.com/danmar/simplecpp",
+                    "import_names": [],
+                    "aliases": [],
+                    "scope": "runtime",
+                    "version": None,
+                    "purpose": "C/C++ 预处理器，提供宏展开、条件编译、Token 化与路径简化。",
+                    "acquisition": "vendored",
+                    "locality": "local",
+                    "source": "源码内嵌于 externals/simplecpp/",
+                    "declared_in": ["CMakeLists.txt:109", "Makefile:277"],
+                    "used_symbols": ["simplecpp::TokenList", "simplecpp::simplifyPath", "simplecpp::preprocess"],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                },
+                {
+                    "name": "tinyxml2",
+                    "ecosystem": "cpp",
+                    "registry_name": "tinyxml2",
+                    "source_repo": "https://github.com/leethomason/tinyxml2",
+                    "import_names": [],
+                    "aliases": [],
+                    "scope": "runtime",
+                    "version": None,
+                    "purpose": "轻量 XML 解析器，用于读取库配置、分析信息文件与项目配置。",
+                    "acquisition": "vendored",
+                    "locality": "local",
+                    "source": "源码内嵌于 externals/tinyxml2/（默认 USE_BUNDLED_TINYXML2=ON）",
+                    "declared_in": ["CMakeLists.txt:105", "Makefile:278"],
+                    "used_symbols": ["tinyxml2::XMLDocument", "tinyxml2::XMLElement", "tinyxml2::XMLNode"],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                },
+                {
+                    "name": "picojson",
+                    "ecosystem": "cpp",
+                    "registry_name": "picojson",
+                    "source_repo": "https://github.com/kazuho/picojson",
+                    "import_names": [],
+                    "aliases": [],
+                    "scope": "runtime",
+                    "version": None,
+                    "purpose": "仅头文件的 JSON 解析/生成库，用于 addon 信息、库数据与 SARIF 报告。",
+                    "acquisition": "vendored",
+                    "locality": "local",
+                    "source": "头文件内嵌于 externals/picojson/picojson.h",
+                    "declared_in": ["CMakeLists.txt:110", "Makefile INCLUDE 路径"],
+                    "used_symbols": ["picojson::value", "picojson::object", "picojson::array"],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                },
+                {
+                    "name": "PCRE",
+                    "ecosystem": "cpp",
+                    "registry_name": "pcre",
+                    "source_repo": "https://github.com/PCRE2Project/pcre2",
+                    "import_names": [],
+                    "aliases": ["libpcre"],
+                    "scope": "optional",
+                    "version": None,
+                    "purpose": "可选正则规则引擎（HAVE_RULES=yes），用于加载自定义 XML 规则。",
+                    "acquisition": "system",
+                    "locality": "system",
+                    "source": "系统预装库，CMake 通过 find_path/find_library 查找 pcre.h/pcre 库；Makefile 通过 pcre-config 获取。",
+                    "declared_in": ["cmake/findDependencies.cmake:31", "Makefile:142"],
+                    "used_symbols": ["pcre_compile", "pcre_exec", "pcre_study", "pcre_free", "pcre_free_study"],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                },
+                {
+                    "name": "Qt6",
+                    "ecosystem": "cpp",
+                    "registry_name": "qtbase",
+                    "source_repo": "https://github.com/qt/qtbase",
+                    "import_names": [],
+                    "aliases": ["Qt", "qt"],
+                    "scope": "optional",
+                    "version": "6.x",
+                    "purpose": "构建可选的 Qt 图形界面 cppcheck-gui、在线帮助与 triage 工具。",
+                    "acquisition": "system",
+                    "locality": "system",
+                    "source": "系统预装 Qt6 开发包，CMake find_package(Qt6 COMPONENTS Core Gui Widgets PrintSupport LinguistTools Help Network [Charts/Test]) 查找。",
+                    "declared_in": ["cmake/findDependencies.cmake:1", "CMakeLists.txt:23"],
+                    "used_symbols": [],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                },
+                {
+                    "name": "Boost",
+                    "ecosystem": "cpp",
+                    "registry_name": "boost",
+                    "source_repo": "https://github.com/boostorg/boost",
+                    "import_names": [],
+                    "aliases": [],
+                    "scope": "optional",
+                    "version": None,
+                    "purpose": "可选地使用 boost::container::small_vector 等头文件容器优化性能。",
+                    "acquisition": "system",
+                    "locality": "system",
+                    "source": "系统预装 Boost 头文件，CMake find_package(Boost) 查找。",
+                    "declared_in": ["cmake/findDependencies.cmake:85", "cmake/options.cmake:111"],
+                    "used_symbols": ["boost::container::small_vector"],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                },
+                {
+                    "name": "Threads",
+                    "ecosystem": "cpp",
+                    "registry_name": "Threads",
+                    "source_repo": None,
+                    "import_names": [],
+                    "aliases": ["pthread"],
+                    "scope": "runtime",
+                    "version": None,
+                    "purpose": "线程执行器与并行分析所需的线程/互斥支持。",
+                    "acquisition": "system",
+                    "locality": "system",
+                    "source": "系统线程库，CMake find_package(Threads REQUIRED) 查找。",
+                    "declared_in": ["cmake/findDependencies.cmake:75"],
+                    "used_symbols": ["std::async", "std::future", "std::mutex", "std::lock_guard"],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                },
+                {
+                    "name": "Python",
+                    "ecosystem": "python",
+                    "registry_name": "python",
+                    "source_repo": None,
+                    "import_names": [],
+                    "aliases": [],
+                    "scope": "build",
+                    "version": ">=3.7",
+                    "purpose": "构建期 matchcompiler 优化代码生成；运行期执行 Python addons。",
+                    "acquisition": "system",
+                    "locality": "system",
+                    "source": "系统 Python 解释器，CMake find_package(Python COMPONENTS Interpreter) 查找。",
+                    "declared_in": ["cmake/findDependencies.cmake:43"],
+                    "used_symbols": [],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                },
+                {
+                    "name": "libxml2",
+                    "ecosystem": "cpp",
+                    "registry_name": "libxml2",
+                    "source_repo": "https://github.com/GNOME/libxml2",
+                    "import_names": [],
+                    "aliases": ["xmllint"],
+                    "scope": "build",
+                    "version": None,
+                    "purpose": "构建期校验 cfg/*.cfg、platforms/*.xml 与 XML 输出示例。",
+                    "acquisition": "system",
+                    "locality": "system",
+                    "source": "系统 xmllint 可执行文件，CMake find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)。",
+                    "declared_in": ["CMakeLists.txt:34", "Makefile:447"],
+                    "used_symbols": ["xmllint"],
+                    "harmony_adapted": False,
+                    "harmony_adapted_source": None
+                }
+            ],
+            "notes": "Windows 构建还会链接系统库 shlwapi（Makefile LDFLAGS -lshlwapi），但属于平台特定系统依赖，不影响跨平台评估。"
+        },
+        "native_api": {
+            "summary": "Cppcheck 的平台相关代码已被编译宏严格隔离。POSIX 平台使用 fork/pipe/select/waitpid 等进程模型实现并行分析，信号处理与堆栈回溯依赖 execinfo/ucontext；Windows 平台则使用 FindFirstFile、Win32 API 与 SEH。核心分析引擎仅使用标准 C++11/STL，可通过 std::async 的 ThreadExecutor 避免 fork。",
+            "groups": [
+                {
+                    "type": "cpp_stl",
+                    "category": "standard",
+                    "platform": "portable",
+                    "apis": [
+                        {"name": "std::async", "purpose": "启动异步并行分析任务", "count": 1, "evidence": ["cli/threadexecutor.cpp:206"], "conditional": False},
+                        {"name": "std::future", "purpose": "收集并行任务结果", "count": 1, "evidence": ["cli/threadexecutor.cpp:199"], "conditional": False},
+                        {"name": "std::mutex", "purpose": "线程日志/文件队列同步", "count": 2, "evidence": ["cli/threadexecutor.cpp:57", "cli/threadexecutor.cpp:102"], "conditional": False},
+                        {"name": "std::lock_guard", "purpose": "临界区加锁", "count": 4, "evidence": ["cli/threadexecutor.cpp:57"], "conditional": False}
+                    ]
+                },
+                {
+                    "type": "posix",
+                    "category": "platform",
+                    "platform": "posix",
+                    "apis": [
+                        {"name": "fork", "purpose": "创建子进程以并行分析文件", "count": 1, "evidence": ["cli/processexecutor.cpp:379"], "conditional": True},
+                        {"name": "pipe", "purpose": "父子进程间通信管道", "count": 1, "evidence": ["cli/processexecutor.cpp:363"], "conditional": True},
+                        {"name": "select", "purpose": "非阻塞读取多个子进程管道", "count": 1, "evidence": ["cli/processexecutor.cpp:434"], "conditional": True},
+                        {"name": "waitpid", "purpose": "回收已结束子进程状态", "count": 1, "evidence": ["cli/processexecutor.cpp:474"], "conditional": True},
+                        {"name": "kill", "purpose": "信号处理中终止当前进程", "count": 2, "evidence": ["cli/signalhandler.cpp:116", "cli/signalhandler.cpp:295"], "conditional": True},
+                        {"name": "sigaction", "purpose": "安装 UNIX 信号处理器", "count": 3, "evidence": ["cli/signalhandler.cpp:294", "cli/signalhandler.cpp:326"], "conditional": True},
+                        {"name": "sigaltstack", "purpose": "为信号处理器设置备用栈", "count": 1, "evidence": ["cli/signalhandler.cpp:314"], "conditional": True},
+                        {"name": "getpid", "purpose": "获取进程 ID 用于崩溃报告", "count": 2, "evidence": ["lib/settings.cpp:62", "cli/signalhandler.cpp:123"], "conditional": True},
+                        {"name": "getcwd", "purpose": "获取当前工作目录", "count": 1, "evidence": ["lib/path.cpp:143"], "conditional": True},
+                        {"name": "realpath", "purpose": "解析绝对路径", "count": 1, "evidence": ["lib/path.cpp:392"], "conditional": True},
+                        {"name": "readlink", "purpose": "读取 /proc/self/exe 获取可执行文件路径", "count": 1, "evidence": ["lib/path.cpp:171"], "conditional": True},
+                        {"name": "stat", "purpose": "获取文件/目录元数据", "count": 4, "evidence": ["lib/path.cpp:427", "cli/filelister.cpp:215", "cli/filelister.cpp:266"], "conditional": True},
+                        {"name": "opendir", "purpose": "打开目录遍历", "count": 1, "evidence": ["cli/filelister.cpp:225"], "conditional": True},
+                        {"name": "readdir", "purpose": "遍历目录项", "count": 1, "evidence": ["cli/filelister.cpp:235"], "conditional": True},
+                        {"name": "closedir", "purpose": "关闭目录流", "count": 1, "evidence": ["cli/filelister.cpp:196"], "conditional": True},
+                        {"name": "popen", "purpose": "执行外部命令（clang-tidy、addons 等）并读取输出", "count": 1, "evidence": ["cli/cppcheckexecutor.cpp:711"], "conditional": True},
+                        {"name": "pclose", "purpose": "关闭外部命令管道", "count": 1, "evidence": ["cli/cppcheckexecutor.cpp:730"], "conditional": True},
+                        {"name": "backtrace", "purpose": "获取调用栈地址", "count": 1, "evidence": ["cli/stacktrace.cpp:37"], "conditional": True},
+                        {"name": "backtrace_symbols", "purpose": "将调用栈地址转为符号字符串", "count": 1, "evidence": ["cli/stacktrace.cpp:52"], "conditional": True},
+                        {"name": "prctl(PR_SET_PDEATHSIG)", "purpose": "Linux 下设置父进程退出时子进程接收信号", "count": 1, "evidence": ["cli/processexecutor.cpp:386"], "conditional": True},
+                        {"name": "getloadavg", "purpose": "读取系统负载以控制并行度", "count": 1, "evidence": ["cli/processexecutor.cpp:326"], "conditional": True},
+                        {"name": "fcntl", "purpose": "设置管道非阻塞标志", "count": 2, "evidence": ["cli/processexecutor.cpp:368", "cli/processexecutor.cpp:374"], "conditional": True}
+                    ]
+                },
+                {
+                    "type": "win32",
+                    "category": "platform",
+                    "platform": "windows",
+                    "apis": [
+                        {"name": "FindFirstFileA", "purpose": "Windows 下遍历目录文件", "count": 1, "evidence": ["cli/filelister.cpp:86"], "conditional": True},
+                        {"name": "FindNextFileA", "purpose": "继续遍历目录", "count": 2, "evidence": ["cli/filelister.cpp:154"], "conditional": True},
+                        {"name": "FindClose", "purpose": "关闭文件查找句柄", "count": 1, "evidence": ["cli/filelister.cpp:96"], "conditional": True},
+                        {"name": "GetModuleFileNameA", "purpose": "获取当前可执行文件路径", "count": 1, "evidence": ["lib/path.cpp:157"], "conditional": True},
+                        {"name": "_getcwd", "purpose": "Windows 下获取当前工作目录", "count": 1, "evidence": ["lib/path.cpp:145"], "conditional": True},
+                        {"name": "_fullpath", "purpose": "Windows 下解析绝对路径", "count": 1, "evidence": ["lib/path.cpp:385"], "conditional": True},
+                        {"name": "MultiByteToWideChar", "purpose": "ANSI 到宽字符转换", "count": 1, "evidence": ["cli/cppcheckexecutor.cpp:579"], "conditional": True},
+                        {"name": "WideCharToMultiByte", "purpose": "宽字符到 OEM 代码页转换", "count": 1, "evidence": ["cli/cppcheckexecutor.cpp:581"], "conditional": True},
+                        {"name": "_popen", "purpose": "Windows 下执行外部命令", "count": 1, "evidence": ["cli/cppcheckexecutor.cpp:709"], "conditional": True},
+                        {"name": "_pclose", "purpose": "关闭 Windows 外部命令管道", "count": 1, "evidence": ["cli/cppcheckexecutor.cpp:725"], "conditional": True},
+                        {"name": "LoadLibraryW", "purpose": "运行时加载 Dbghelp.dll", "count": 1, "evidence": ["cli/sehwrapper.cpp:60"], "conditional": True},
+                        {"name": "GetProcAddress", "purpose": "获取 Dbghelp.dll 中符号地址", "count": 8, "evidence": ["cli/sehwrapper.cpp:63"], "conditional": True},
+                        {"name": "GetCurrentProcess", "purpose": "SEH 堆栈跟踪中获取进程句柄", "count": 1, "evidence": ["cli/sehwrapper.cpp:78"], "conditional": True},
+                        {"name": "GetCurrentThread", "purpose": "SEH 堆栈跟踪中获取线程句柄", "count": 1, "evidence": ["cli/sehwrapper.cpp:79"], "conditional": True}
+                    ]
+                },
+                {
+                    "type": "macos",
+                    "category": "platform",
+                    "platform": "macos",
+                    "apis": [
+                        {"name": "_NSGetExecutablePath", "purpose": "macOS 下获取当前可执行文件路径", "count": 1, "evidence": ["lib/path.cpp:160"], "conditional": True}
+                    ]
+                }
+            ],
+            "dynamic_libraries": [
+                {
+                    "name": "Dbghelp.dll",
+                    "mechanism": "LoadLibrary",
+                    "acquisition": "system",
+                    "source": "Windows 系统调试符号库",
+                    "description": "仅在 Windows 崩溃处理中用于输出堆栈跟踪；加载失败会优雅跳过。",
+                    "optional": True,
+                    "evidence": ["cli/sehwrapper.cpp:60"]
+                }
+            ],
+            "platform_dependence": "mixed"
+        },
+        "runtime_surface": {
+            "summary": "Cppcheck 作为命令行/桌面应用，运行时主要访问本地文件系统、读取少量环境变量，并通过 popen 启动外部命令。无网络、无专用设备访问、无守护进程集成。",
+            "network": [],
+            "filesystem": [
+                {"detail": "cfg/、addons/、platforms/ 数据目录", "purpose": "加载检查规则库、平台定义与 Python 插件", "evidence": ["CMakeLists.txt:82-103", "cli/cmdlineparser.cpp:2185"]},
+                {"detail": "用户指定的源码目录/文件", "purpose": "静态分析输入", "evidence": ["cli/filelister.cpp"]},
+                {"detail": "--build-dir 目录", "purpose": "存储 .analyzeinfo、checkers.txt 等中间分析数据", "evidence": ["cli/cppcheckexecutor.cpp:435"]},
+                {"detail": "--output-file / --checkers-report", "purpose": "输出 XML/文本/SARIF 结果与检查器报告", "evidence": ["cli/cppcheckexecutor.cpp:111-115", "cli/cppcheckexecutor.cpp:444"]}
+            ],
+            "env_vars": [
+                {"name": "NO_COLOR", "purpose": "禁用终端彩色输出", "evidence": ["lib/color.cpp:47"]},
+                {"name": "CLICOLOR_FORCE", "purpose": "强制启用终端彩色输出", "evidence": ["lib/color.cpp:52"]},
+                {"name": "DISABLE_VALUEFLOW", "purpose": "调试用：禁用值流分析", "evidence": ["lib/tokenize.cpp:3551"]},
+                {"name": "UNUSEDFUNCTION_ONLY", "purpose": "调试用：仅执行未使用函数检查", "evidence": ["lib/settings.cpp:784"]}
+            ],
+            "subprocess": [
+                {"command": "popen / _popen", "purpose": "执行用户配置的外部程序（如 clang-tidy、自定义 addons 脚本）并读取标准输出", "evidence": ["cli/cppcheckexecutor.cpp:685-747"]}
+            ],
+            "devices": [],
+            "services": []
+        },
+        "build_env": {
+            "language_standard": "C++11",
+            "runtime_version": "不适用（原生 C++ 可执行程序，依赖 libc/musl 与系统线程库）",
+            "build_system": "CMake 3.22+（同时保留 Makefile，由 dmake 生成）",
+            "compiler_extensions": [
+                {"detail": "__declspec(dllexport/dllimport)", "purpose": "Windows 下构建 cppcheck-core.dll", "evidence": ["lib/config.h:26"]},
+                {"detail": "__attribute__((noreturn/fallthrough/unused/deprecated/returns_nonnull))", "purpose": "跨平台编译器属性宏", "evidence": ["lib/config.h:55-118"]},
+                {"detail": "GCC/Clang _Pragma 诊断压栈/恢复", "purpose": "按编译器精细控制警告", "evidence": ["lib/config.h:165-195"]},
+                {"detail": "__has_builtin / __has_include / __has_cpp_attribute / __has_feature", "purpose": "特性检测", "evidence": ["lib/config.h:39-53"]}
+            ],
+            "platforms": [
+                {"os": "Windows", "arch": "x86/x64/ARM64", "evidence": ["README.md:49-110", "lib/config.h:146"]},
+                {"os": "Linux", "arch": "x86_64/ARM64", "evidence": ["README.md:56", "cli/processexecutor.cpp:62"]},
+                {"os": "macOS", "arch": "x86_64/ARM64", "evidence": ["README.md:52", "lib/path.cpp:52"]},
+                {"os": "BSD/Solaris/其他 POSIX", "arch": " varies", "evidence": ["cli/processexecutor.cpp:58", "lib/path.cpp:165"]}
+            ],
+            "entry_points": [
+                {"type": "main", "name": "cppcheck", "command": "命令行静态分析主程序：cppcheck [options] <path>", "evidence": ["cli/main.cpp", "CMakeLists.txt:113"]},
+                {"type": "launcher", "name": "cppcheck-gui", "command": "Qt 图形界面：需 -DBUILD_GUI=ON 构建", "evidence": ["gui/main.cpp", "CMakeLists.txt:115"]},
+                {"type": "console_script", "name": "cppcheck-htmlreport", "command": "Python 脚本，将 XML 结果转为 HTML 报告", "evidence": ["htmlreport/cppcheck-htmlreport"]},
+                {"type": "tool", "name": "dmake", "command": "构建工具，用于生成/更新 Makefile", "evidence": ["tools/dmake/dmake.cpp", "Makefile:1"]}
+            ],
+            "packaging": "以源码构建为主；官方提供 Windows 安装程序（WiX）、各 Linux 发行版/包管理器包、macOS Homebrew/MacPorts 包；不捆绑运行时。",
+            "notes": "构建选项丰富：BUILD_GUI/WITH_QCHART、HAVE_RULES（PCRE）、USE_MATCHCOMPILER（Python）、USE_BOOST、USE_LIBCXX、SANITIZERS 等。"
+        },
+        "capability_profile": {
+            "summary": "本项目触及桌面 GUI 场景（可选 Qt6 图形界面），但不涉及 3D 渲染、媒体编解码或特定硬件访问。",
+            "scenarios": [
+                {
+                    "key": "gui",
+                    "present": True,
+                    "kind": ["qt6"],
+                    "specific_hardware": False,
+                    "via": ["Qt6", "gui/mainwindow.cpp"],
+                    "harmony_status": "available",
+                    "adaptation": "Qt 已有鸿蒙社区移植，界面层可直接基于 Qt6 编译；窗口/桌面集成需按鸿蒙 PC 实际窗口环境验证。",
+                    "evidence": ["CMakeLists.txt:23 BUILD_GUI", "gui/mainwindow.cpp", "references/harmony-pc-capabilities.json#gui.qt"]
+                },
+                {
+                    "key": "rendering_3d",
+                    "present": False,
+                    "kind": [],
+                    "specific_hardware": False,
+                    "via": [],
+                    "harmony_status": "unknown",
+                    "adaptation": "不适用",
+                    "evidence": []
+                },
+                {
+                    "key": "media",
+                    "present": False,
+                    "kind": [],
+                    "specific_hardware": False,
+                    "via": [],
+                    "harmony_status": "unknown",
+                    "adaptation": "不适用",
+                    "evidence": []
+                },
+                {
+                    "key": "hardware",
+                    "present": False,
+                    "kind": [],
+                    "specific_hardware": False,
+                    "via": [],
+                    "harmony_status": "unknown",
+                    "adaptation": "不适用",
+                    "evidence": []
+                }
+            ]
+        },
+        "harmony_adaptation": {
+            "target": "HarmonyOS NEXT PC",
+            "feasibility": "feasible_with_effort",
+            "porting_class": "needs_adaptation_full",
+            "effort": {
+                "person_days": [20, 40],
+                "level": "high"
+            },
+            "confidence": "medium",
+            "unadaptable_apis": [],
+            "target_assumptions": [
+                {
+                    "id": "ta:desktop_app",
+                    "capability": "传统桌面应用（命令行 + 可选 GUI 直接运行/分发）",
+                    "required": True,
+                    "target_status": "unknown",
+                    "impact": "若鸿蒙 PC 仅支持 .hap ArkTS 应用，则需为 CLI 提供 ArkTS 封装/Ability 入口，GUI 需按 ArkUI 重写，工作量和形态会发生根本性变化。",
+                    "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+                },
+                {
+                    "id": "ta:spawn",
+                    "capability": "启动外部进程 (popen/exec/ProcessBuilder)",
+                    "required": True,
+                    "target_status": "unknown",
+                    "impact": "若受限，addons（Python 插件）和 clang-tidy 集成功能将不可用，但核心静态分析仍可运行。",
+                    "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+                },
+                {
+                    "id": "ta:qt",
+                    "capability": "Qt (C/C++ GUI)",
+                    "required": False,
+                    "target_status": "available",
+                    "impact": "可选 GUI 可基于社区 Qt 鸿蒙版编译。",
+                    "source": "references/harmony-pc-capabilities.json#gui.qt"
+                },
+                {
+                    "id": "ta:posix_subset",
+                    "capability": "POSIX fork/pipe/select/waitpid 等进程模型",
+                    "required": False,
+                    "target_status": "unknown",
+                    "impact": "若 POSIX fork 不可用，可回退到基于 std::async 的 ThreadExecutor。",
+                    "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+                },
+                {
+                    "id": "ta:x86_64",
+                    "capability": "x86_64 架构支持",
+                    "required": False,
+                    "target_status": "unknown",
+                    "impact": "仅在目标为 x86_64 设备时需要。",
+                    "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+                }
+            ],
+            "required_permissions": [
+                {
+                    "permission": "读写存储（文件访问）",
+                    "reason": "扫描用户源代码、读取 cfg/addons/platforms 数据文件、写入输出文件与 buildDir",
+                    "source_capability": "",
+                    "harmony_status": "unknown",
+                    "evidence": ["cli/filelister.cpp", "cli/cppcheckexecutor.cpp:StdLogger"]
+                }
+            ],
+            "recommended_path": "recompile_ndk",
+            "summary": "Cppcheck 核心为纯 C++ 静态分析引擎，平台相关代码已用宏隔离；移植思路为使用 OHOS NDK 重新编译 CLI 与 lib，可选 Qt GUI 链接社区 Qt 鸿蒙版。主要不确定点在于鸿蒙 PC 的应用交付形态（是否允许传统桌面 CLI）以及外部进程启动能力（影响 addons/clang-tidy）。",
+            "blockers": [
+                {
+                    "id": "bk:delivery",
+                    "issue": "鸿蒙 PC 应用交付形态未核实",
+                    "severity": "major",
+                    "adaptability": "partial",
+                    "category": "app_delivery",
+                    "source_dimension": "build_env",
+                    "harmony_status": "unknown",
+                    "remediation": "核实鸿蒙 PC 是否支持原生二进制/桌面应用；如仅支持 .hap，需设计 ArkTS 包装或 Ability 入口。",
+                    "caused_by": ["ta:desktop_app"],
+                    "manifests_as": [],
+                    "evidence": ["README.md:packages", "references/harmony-pc-capabilities.json#app_delivery"]
+                },
+                {
+                    "id": "bk:spawn",
+                    "issue": "外部进程启动（popen）能力未核实，影响 addons 与 clang-tidy 集成",
+                    "severity": "major",
+                    "adaptability": "partial",
+                    "category": "subprocess_unavailable",
+                    "source_dimension": "runtime_surface",
+                    "harmony_status": "unknown",
+                    "remediation": "若受限，将 addons 改为内嵌 Python 解释器调用或禁用；clang-tidy 集成改为库内调用或禁用。",
+                    "caused_by": ["ta:spawn"],
+                    "manifests_as": [],
+                    "evidence": ["cli/cppcheckexecutor.cpp:685-747"]
+                },
+                {
+                    "id": "bk:posix_fork",
+                    "issue": "POSIX fork/pipe 模型在鸿蒙 POSIX 子集上的可用性未知",
+                    "severity": "minor",
+                    "adaptability": "adaptable",
+                    "category": "posix_api",
+                    "source_dimension": "native_api",
+                    "harmony_status": "unknown",
+                    "remediation": "优先使用 ThreadExecutor（std::async），必要时禁用 ProcessExecutor。",
+                    "caused_by": ["ta:posix_subset"],
+                    "manifests_as": [],
+                    "evidence": ["cli/processexecutor.cpp:379", "cli/threadexecutor.cpp:206"]
+                }
+            ],
+            "compatible": [
+                {
+                    "aspect": "核心静态分析引擎",
+                    "note": "lib/ 下约 10 万行 C++，逻辑跨平台，不依赖 Linux 特有 ABI。",
+                    "evidence": ["lib/cppcheck.cpp", "lib/valueflow.cpp"]
+                },
+                {
+                    "aspect": "可选 Qt GUI",
+                    "note": "Qt 已有鸿蒙社区移植，界面层无需重写。",
+                    "evidence": ["CMakeLists.txt:23", "references/harmony-pc-capabilities.json#gui.qt"]
+                },
+                {
+                    "aspect": "线程执行器",
+                    "note": "ThreadExecutor 基于 C++11 std::async，可替代 POSIX fork。",
+                    "evidence": ["cli/threadexecutor.cpp:206"]
+                }
+            ],
+            "key_tasks": [
+                "用 OHOS NDK 交叉编译 lib + cli，处理 POSIX 子集差异",
+                "验证/适配 ProcessExecutor 或默认使用 ThreadExecutor",
+                "确认 addons 执行方式（内嵌 Python 或外部进程）",
+                "按需编译 Qt GUI 并链接社区 Qt 鸿蒙版",
+                "设计符合鸿蒙 PC 应用交付形态的启动/分发方案"
+            ],
+            "notes": "由于目标平台对桌面应用、外部进程启动、x86_64 等能力状态未知，整体置信度为 medium；一旦这些假设得到核实，置信度和工作量区间将收窄。"
+        },
+        "meta": {
+            "schema_version": "1.0",
+            "analyzer": "pc-lib-analyzer",
+            "counter_tool": "cloc",
+            "warnings": [],
+            "confidence_overall": "medium",
+            "observations": [
+                {
+                    "dimension": "library",
+                    "field": "kind",
+                    "kind": "new_value",
+                    "value": "application",
+                    "rationale": "cppcheck 是终端用户直接启动的 CLI/GUI 工具，不是被其他程序以 API 形式调用的库。"
+                },
+                {
+                    "dimension": "dependencies",
+                    "field": "scope/acquisition",
+                    "kind": "new_value",
+                    "value": "build_runtime dual-use Python",
+                    "rationale": "Python 同时是构建期 matchcompiler 优化工具与运行期 addons 执行环境，单一依赖跨两种 scope。"
+                },
+                {
+                    "dimension": "native_api",
+                    "field": "category",
+                    "kind": "gap",
+                    "value": "external_library_api",
+                    "rationale": "PCRE 等第三方库 API 未在 native_api groups 中单独成组，已归入 dependencies 与 used_symbols。"
+                }
+            ]
+        }
+    }
+
+    with open(REPORT_PATH, "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print(f"Wrote {REPORT_PATH}")
+
+if __name__ == "__main__":
+    main()

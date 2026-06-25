@@ -1,0 +1,1705 @@
+{
+  "library": {
+    "name": "gatling",
+    "kind": "application",
+    "package_name": "gatling-core",
+    "aliases": [
+      "io.gatling:gatling-core",
+      "io.gatling:gatling-parent",
+      "gatling-parent"
+    ],
+    "import_names": [
+      "io.gatling.core.Predef",
+      "io.gatling.core.scenario.Simulation",
+      "io.gatling.app.Gatling"
+    ],
+    "source_url": "https://github.com/gatling/gatling.git",
+    "analyzed_at": "2026-06-25T09:31:08.083Z",
+    "commit": "f4ed6905c6e2e7a69ee0b9720955247e9bc09082",
+    "one_liner": "基于 Scala/JVM 的开源负载测试与性能工程平台，支持以代码方式编写 HTTP/WebSocket/JMS 等协议的性能测试场景并提供 CLI 启动器与录制器。",
+    "ecosystem": "java",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "Gatling 是一个代码优先的负载测试与性能工程平台。用户可以使用 Scala、Java、Kotlin 或 JavaScript/TypeScript DSL 编写虚拟用户场景，模拟高并发流量对 HTTP/WebSocket/Server-Sent Events/JMS/gRPC/MQTT 等协议的请求，并生成统计报告。仓库以 JVM 版本为核心，包含 gatling-core 场景引擎、gatling-http 协议支持、gatling-charts 报告图表、gatling-app CLI 启动器以及带 Swing GUI 的 gatling-recorder 流量录制器。",
+    "categories": [
+      {
+        "name": "负载注入与场景编排",
+        "description": "提供虚拟用户（Virtual User）、场景（Scenario）、注入模式（Injection Profile）与断言（Assertion）DSL，编排并发负载并收集响应指标。",
+        "evidence": [
+          "gatling-core/src/main/scala/io/gatling/core/scenario/Simulation.scala",
+          "gatling-core/src/main/scala/io/gatling/core/inject/open/OpenInjectionStep.scala",
+          "gatling-core/src/main/scala/io/gatling/core/assertion/Assertion.scala"
+        ]
+      },
+      {
+        "name": "HTTP/WebSocket/Server-Sent Events 协议支持",
+        "description": "基于 Netty 实现高性能异步 HTTP/HTTPS 客户端，支持 HTTP/2、WebSocket、SSE、请求/响应检查、Cookie、缓存、鉴权与 feeder 数据驱动。",
+        "evidence": [
+          "gatling-http-client/src/main/java/io/gatling/http/client/impl/DefaultHttpClient.java",
+          "gatling-http/src/main/scala/io/gatling/http/action/ws/WsAction.scala",
+          "gatling-http/src/main/scala/io/gatling/http/action/sse/SseAction.scala"
+        ]
+      },
+      {
+        "name": "JMS/JDBC/Redis 协议与数据集成",
+        "description": "通过可插拔协议模块支持 JMS 消息队列、JDBC 数据库与 Redis 数据源/检查，并统一抽象为协议与 feeder。",
+        "evidence": [
+          "gatling-jms/src/main/scala/io/gatling/jms/protocol/JmsProtocol.scala",
+          "gatling-jdbc/src/main/scala/io/gatling/jdbc/package.scala",
+          "gatling-redis/src/main/scala/io/gatling/redis/feeder/RedisFeederBuilder.scala"
+        ]
+      },
+      {
+        "name": "报告生成与图表渲染",
+        "description": "将运行时采集的响应时间、吞吐量、错误率等指标写入 simulation.log，并渲染为 HTML/CSS/JavaScript 交互式报告。",
+        "evidence": [
+          "gatling-charts/src/main/scala/io/gatling/charts/stats/writer/LogFileDataWriter.scala",
+          "gatling-charts/src/main/scala/io/gatling/charts/report/ReportsGenerator.scala",
+          "gatling-charts/src/main/resources/templates"
+        ]
+      },
+      {
+        "name": "HTTP 流量录制器",
+        "description": "gatling-recorder 以代理或 HAR 转换方式录制浏览器/应用流量，并生成 Gatling 模拟脚本；默认提供 Swing GUI，也支持 headless 命令行模式。",
+        "evidence": [
+          "gatling-recorder/src/main/scala/io/gatling/recorder/GatlingRecorder.scala",
+          "gatling-recorder/src/main/scala/io/gatling/recorder/ui/swing/SwingFrontEnd.scala",
+          "gatling-recorder/src/main/scala/io/gatling/recorder/ui/headless/HeadlessFrontEnd.scala"
+        ]
+      },
+      {
+        "name": "CLI 启动器与构建工具集成",
+        "description": "gatling-app 提供 main 入口，解析命令行参数并执行模拟；gatling-test-framework 作为 sbt/Maven/Gradle 插件的测试接口，支持在 CI/CD 中运行。",
+        "evidence": [
+          "gatling-app/src/main/scala/io/gatling/app/Gatling.scala",
+          "gatling-app/src/main/scala/io/gatling/app/cli/GatlingArgsParser.scala",
+          "gatling-test-framework/src/main/scala/io/gatling/sbt/GatlingFramework.scala"
+        ]
+      }
+    ],
+    "domain": "性能测试与负载注入",
+    "target_users": "性能工程师、QA 测试人员、后端/全栈开发者以及 DevOps 团队"
+  },
+  "languages": {
+    "primary": "Scala",
+    "all": [
+      "Scala",
+      "Java",
+      "JSON",
+      "Text",
+      "CSS",
+      "HTML",
+      "Markdown",
+      "Properties",
+      "XML",
+      "JavaScript",
+      "SVG",
+      "YAML",
+      "SQL",
+      "CSV"
+    ],
+    "breakdown": [
+      {
+        "language": "Scala",
+        "files": 753,
+        "code": 41391,
+        "pct": 60.92,
+        "production": {
+          "files": 607,
+          "code": 29899
+        },
+        "test": {
+          "files": 146,
+          "code": 11492
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Java",
+        "files": 224,
+        "code": 18793,
+        "pct": 27.66,
+        "production": {
+          "files": 186,
+          "code": 15153
+        },
+        "test": {
+          "files": 38,
+          "code": 3640
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 18,
+        "code": 3444,
+        "pct": 5.07,
+        "production": {
+          "files": 4,
+          "code": 463
+        },
+        "test": {
+          "files": 14,
+          "code": 2981
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 31,
+        "code": 1685,
+        "pct": 2.48,
+        "production": {
+          "files": 30,
+          "code": 1684
+        },
+        "test": {
+          "files": 1,
+          "code": 1
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 2,
+        "code": 1025,
+        "pct": 1.51,
+        "production": {
+          "files": 2,
+          "code": 1025
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 6,
+        "code": 553,
+        "pct": 0.81,
+        "test": {
+          "files": 6,
+          "code": 553
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 5,
+        "code": 282,
+        "pct": 0.42,
+        "production": {
+          "files": 5,
+          "code": 282
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Properties",
+        "files": 2,
+        "code": 253,
+        "pct": 0.37,
+        "production": {
+          "files": 2,
+          "code": 253
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 9,
+        "code": 165,
+        "pct": 0.24,
+        "production": {
+          "files": 2,
+          "code": 49
+        },
+        "test": {
+          "files": 7,
+          "code": 116
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JavaScript",
+        "files": 6,
+        "code": 149,
+        "pct": 0.22,
+        "production": {
+          "files": 6,
+          "code": 149
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 10,
+        "code": 102,
+        "pct": 0.15,
+        "production": {
+          "files": 10,
+          "code": 102
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 92,
+        "pct": 0.14,
+        "production": {
+          "files": 2,
+          "code": 92
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SQL",
+        "files": 1,
+        "code": 7,
+        "pct": 0.01,
+        "test": {
+          "files": 1,
+          "code": 7
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CSV",
+        "files": 3,
+        "code": 6,
+        "pct": 0.01,
+        "test": {
+          "files": 3,
+          "code": 6
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 1072,
+      "code": 67947,
+      "comment": 26516,
+      "blank": 14147,
+      "total_lines": 108610
+    },
+    "production": {
+      "files": 856,
+      "code": 49151,
+      "comment": 23449,
+      "blank": 11261,
+      "total_lines": 83861
+    },
+    "test": {
+      "files": 216,
+      "code": 18796,
+      "comment": 3067,
+      "blank": 2886,
+      "total_lines": 24749
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 216,
+    "test_cases": 120,
+    "frameworks": [
+      "ScalaTest",
+      "JUnit 5"
+    ],
+    "by_language": {
+      "Java": {
+        "files": 38,
+        "cases": 120
+      },
+      "Scala": {
+        "files": 146,
+        "cases": 0
+      },
+      "HTML": {
+        "files": 6,
+        "cases": 0
+      },
+      "JSON": {
+        "files": 14,
+        "cases": 0
+      },
+      "XML": {
+        "files": 7,
+        "cases": 0
+      },
+      "SQL": {
+        "files": 1,
+        "cases": 0
+      },
+      "CSV": {
+        "files": 3,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "脚本通过 JUnit 注解识别出 120 个 Java 测试用例；Scala 测试用 ScalaTest 编写，但脚本未按 ScalaTest 风格计数，故显示为 0。实际测试覆盖以 ScalaTest + JUnit 5 为主。"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt",
+      "NOTICE.md"
+    ],
+    "evidence": "根目录 LICENSE.txt 与 Apache-2.0 标准文本一致；NOTICE.md 明确声明 Licensed under the Apache License, Version 2.0；所有源文件头均包含 Apache-2.0 版权声明。",
+    "notes": "宽松许可。NOTICE.md 列明大量第三方依赖（Scala、Netty、Jackson、BouncyCastle、Highcharts 等）及其许可，分发时需保留对应声明；其中 Highcharts 为商业限制许可，仅影响捆绑的图表模块。"
+  },
+  "dependencies": {
+    "count": 45,
+    "manifests": [
+      "build.sbt",
+      "project/Dependencies.scala",
+      "project/plugins.sbt"
+    ],
+    "by_ecosystem": {
+      "java": [
+        "gatling-shared-cli",
+        "gatling-shared-model",
+        "gatling-shared-util",
+        "netty-codec-http",
+        "netty-buffer",
+        "netty-handler",
+        "netty-handler-proxy",
+        "netty-resolver-dns",
+        "netty-codec-http2",
+        "netty-transport-native-epoll",
+        "netty-transport-native-io_uring",
+        "netty-resolver-dns-native-macos",
+        "netty-tcnative-boringssl-static",
+        "brotli4j",
+        "gatling-recorder-bc-shaded",
+        "caffeine",
+        "cfor",
+        "commons-pool2",
+        "config",
+        "fast-uuid",
+        "jackson-databind",
+        "jmespath-jackson",
+        "jakarta.jms-api",
+        "jodd-util",
+        "jodd-lagarto",
+        "jspecify",
+        "logback-classic",
+        "pebble",
+        "redisclient",
+        "Saxon-HE",
+        "scala-logging",
+        "scopt",
+        "lightning-csv",
+        "slf4j-api",
+        "jul-to-slf4j",
+        "t-digest",
+        "test-interface",
+        "typetools",
+        "xmlresolver",
+        "scala-parser-combinators",
+        "scala-swing",
+        "scala-reflect",
+        "scalatest",
+        "junit-jupiter",
+        "jmh"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "gatling-shared-cli",
+        "ecosystem": "java",
+        "registry_name": "io.gatling:gatling-shared-cli",
+        "source_repo": "https://github.com/gatling/gatling",
+        "scope": "runtime",
+        "version": "0.0.7",
+        "purpose": "Gatling 共享 CLI 选项定义，供 app、recorder 与 test-framework 解析命令行参数",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.gatling:gatling-shared-cli:0.0.7)",
+        "declared_in": ["project/Dependencies.scala:9"]
+      },
+      {
+        "name": "gatling-shared-model",
+        "ecosystem": "java",
+        "registry_name": "io.gatling:gatling-shared-model",
+        "source_repo": "https://github.com/gatling/gatling",
+        "scope": "runtime",
+        "version": "0.1.3",
+        "purpose": "Gatling 跨语言共享数据模型",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.gatling:gatling-shared-model:0.1.3)",
+        "declared_in": ["project/Dependencies.scala:10"]
+      },
+      {
+        "name": "gatling-shared-util",
+        "ecosystem": "java",
+        "registry_name": "io.gatling:gatling-shared-util",
+        "source_repo": "https://github.com/gatling/gatling",
+        "scope": "runtime",
+        "version": "0.0.14",
+        "purpose": "Gatling 共享工具类（路径、SSL、字符串等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.gatling:gatling-shared-util:0.0.14)",
+        "declared_in": ["project/Dependencies.scala:11"]
+      },
+      {
+        "name": "netty-codec-http",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-codec-http",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "Netty HTTP/HTTPS 编解码器，HTTP 协议栈核心",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.netty:netty-codec-http:4.2.15.Final)",
+        "declared_in": ["project/Dependencies.scala:12"],
+        "used_symbols": ["io.netty.handler.codec.http.HttpClientCodec", "io.netty.handler.codec.http.HttpObjectAggregator"]
+      },
+      {
+        "name": "netty-buffer",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-buffer",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "Netty ByteBuf 缓冲区分配与管理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.netty:netty-buffer:4.2.15.Final)",
+        "declared_in": ["project/Dependencies.scala:13"]
+      },
+      {
+        "name": "netty-handler",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-handler",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "Netty SSL/TLS、流量整形等处理器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.netty:netty-handler:4.2.15.Final)",
+        "declared_in": ["project/Dependencies.scala:14"],
+        "used_symbols": ["io.netty.handler.ssl.SslHandler", "io.netty.handler.ssl.SslContext"]
+      },
+      {
+        "name": "netty-handler-proxy",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-handler-proxy",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "Netty HTTP/SOCKS 代理处理器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.netty:netty-handler-proxy:4.2.15.Final)",
+        "declared_in": ["project/Dependencies.scala:15"]
+      },
+      {
+        "name": "netty-resolver-dns",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-resolver-dns",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "Netty 异步 DNS 解析器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.netty:netty-resolver-dns:4.2.15.Final)",
+        "declared_in": ["project/Dependencies.scala:16"]
+      },
+      {
+        "name": "netty-codec-http2",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-codec-http2",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "Netty HTTP/2 编解码器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.netty:netty-codec-http2:4.2.15.Final)",
+        "declared_in": ["project/Dependencies.scala:21"]
+      },
+      {
+        "name": "netty-transport-native-epoll",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-transport-native-epoll",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "Linux epoll 原生传输，提升高并发网络 I/O 性能",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central，按 classifier 拉取 linux-x86_64 / linux-aarch_64 原生库",
+        "declared_in": ["project/Dependencies.scala:17-18"],
+        "used_symbols": ["io.netty.channel.epoll.Epoll", "io.netty.channel.epoll.EpollIoHandler"]
+      },
+      {
+        "name": "netty-transport-native-io_uring",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-transport-native-io_uring",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "Linux io_uring 原生传输（可选，较新内核）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central，按 classifier 拉取 linux-x86_64 / linux-aarch_64 原生库",
+        "declared_in": ["project/Dependencies.scala:19-20"],
+        "used_symbols": ["io.netty.channel.uring.IoUring", "io.netty.channel.uring.IoUringIoHandler"]
+      },
+      {
+        "name": "netty-resolver-dns-native-macos",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-resolver-dns-native-macos",
+        "source_repo": "https://github.com/netty/netty",
+        "scope": "runtime",
+        "version": "4.2.15.Final",
+        "purpose": "macOS 原生 DNS 解析器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central，按 classifier 拉取 osx-x86_64 / osx-aarch_64 原生库",
+        "declared_in": ["project/Dependencies.scala:22-23"]
+      },
+      {
+        "name": "netty-tcnative-boringssl-static",
+        "ecosystem": "java",
+        "registry_name": "io.netty:netty-tcnative-boringssl-static",
+        "source_repo": "https://github.com/netty/netty-tcnative",
+        "scope": "runtime",
+        "version": "2.0.79.Final",
+        "purpose": "Netty 基于 BoringSSL 的原生 TLS 加速库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central，按 classifier 拉取 linux-x86_64 / linux-aarch_64 / osx-x86_64 / osx-aarch_64 / windows-x86_64 原生库",
+        "declared_in": ["project/Dependencies.scala:24-30"],
+        "used_symbols": ["io.netty.handler.ssl.OpenSsl.isAvailable"]
+      },
+      {
+        "name": "brotli4j",
+        "ecosystem": "java",
+        "registry_name": "com.aayushatharva.brotli4j:brotli4j",
+        "source_repo": "https://github.com/hyperxpro/Brotli4j",
+        "scope": "runtime",
+        "version": "1.23.0",
+        "purpose": "Brotli 压缩解码原生库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central，主包 + native-linux-aarch64 / native-linux-x86_64 / native-osx-aarch64 / native-osx-x86_64 / native-windows-x86_64 classifier 包",
+        "declared_in": ["project/Dependencies.scala:31-36"],
+        "used_symbols": ["com.aayushatharva.brotli4j.Brotli4jLoader.isAvailable"]
+      },
+      {
+        "name": "gatling-recorder-bc-shaded",
+        "ecosystem": "java",
+        "registry_name": "io.gatling:gatling-recorder-bc-shaded",
+        "source_repo": "https://github.com/gatling/gatling",
+        "scope": "runtime",
+        "version": "1.84.0",
+        "purpose": "Gatling 对 BouncyCastle 的重打包，用于 recorder 的证书/自签名 TLS 代理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.gatling:gatling-recorder-bc-shaded:1.84.0)",
+        "declared_in": ["project/Dependencies.scala:37"]
+      },
+      {
+        "name": "caffeine",
+        "ecosystem": "java",
+        "registry_name": "com.github.ben-manes.caffeine:caffeine",
+        "source_repo": "https://github.com/ben-manes/caffeine",
+        "scope": "runtime",
+        "version": "3.2.4",
+        "purpose": "高性能本地缓存",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (com.github.ben-manes.caffeine:caffeine:3.2.4)",
+        "declared_in": ["project/Dependencies.scala:38"]
+      },
+      {
+        "name": "cfor",
+        "ecosystem": "java",
+        "registry_name": "io.github.metarank:cfor_2.13",
+        "source_repo": "https://github.com/metarank/cfor",
+        "scope": "runtime",
+        "version": "0.3",
+        "purpose": "Scala 编译器宏实现的 C 风格 for 循环优化",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.github.metarank:cfor_2.13:0.3)",
+        "declared_in": ["project/Dependencies.scala:39"]
+      },
+      {
+        "name": "commons-pool2",
+        "ecosystem": "java",
+        "registry_name": "org.apache.commons:commons-pool2",
+        "source_repo": "https://github.com/apache/commons-pool",
+        "scope": "runtime",
+        "version": "2.13.1",
+        "purpose": "Apache Commons Pool，用于 JMS/Redis 连接池",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.apache.commons:commons-pool2:2.13.1)",
+        "declared_in": ["project/Dependencies.scala:40"]
+      },
+      {
+        "name": "config",
+        "ecosystem": "java",
+        "registry_name": "com.typesafe:config",
+        "source_repo": "https://github.com/lightbend/config",
+        "scope": "runtime",
+        "version": "1.4.9",
+        "purpose": "Typesafe Config，HOCON 配置文件解析",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (com.typesafe:config:1.4.9)",
+        "declared_in": ["project/Dependencies.scala:41"],
+        "used_symbols": ["com.typesafe.config.ConfigFactory.parseResources", "com.typesafe.config.ConfigFactory.systemProperties"]
+      },
+      {
+        "name": "fast-uuid",
+        "ecosystem": "java",
+        "registry_name": "com.eatthepath:fast-uuid",
+        "source_repo": "https://github.com/jchambers/fast-uuid",
+        "scope": "runtime",
+        "version": "0.2.0",
+        "purpose": "高性能 UUID 生成，用于 JMS 等场景",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (com.eatthepath:fast-uuid:0.2.0)",
+        "declared_in": ["project/Dependencies.scala:42"]
+      },
+      {
+        "name": "jackson-databind",
+        "ecosystem": "java",
+        "registry_name": "com.fasterxml.jackson.core:jackson-databind",
+        "source_repo": "https://github.com/FasterXML/jackson",
+        "scope": "runtime",
+        "version": "2.22.0",
+        "purpose": "JSON 数据绑定与解析",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (com.fasterxml.jackson.core:jackson-databind:2.22.0)",
+        "declared_in": ["project/Dependencies.scala:43"]
+      },
+      {
+        "name": "jmespath-jackson",
+        "ecosystem": "java",
+        "registry_name": "io.burt:jmespath-jackson",
+        "source_repo": "https://github.com/burtcorp/jmespath-java",
+        "scope": "runtime",
+        "version": "0.6.0",
+        "purpose": "JMESPath JSON 查询（基于 Jackson）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.burt:jmespath-jackson:0.6.0)",
+        "declared_in": ["project/Dependencies.scala:44"]
+      },
+      {
+        "name": "jakarta.jms-api",
+        "ecosystem": "java",
+        "registry_name": "jakarta.jms:jakarta.jms-api",
+        "source_repo": "https://github.com/jakartaee-messaging/jakartaee-messaging",
+        "scope": "runtime",
+        "version": "3.1.0",
+        "purpose": "Jakarta Messaging 3.1 API，gatling-jms 协议支持",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (jakarta.jms:jakarta.jms-api:3.1.0)",
+        "declared_in": ["project/Dependencies.scala:45"]
+      },
+      {
+        "name": "jodd-util",
+        "ecosystem": "java",
+        "registry_name": "org.jodd:jodd-util",
+        "source_repo": "https://github.com/oblac/jodd",
+        "scope": "runtime",
+        "version": "6.3.0",
+        "purpose": "Jodd 工具类",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.jodd:jodd-util:6.3.0)",
+        "declared_in": ["project/Dependencies.scala:46"]
+      },
+      {
+        "name": "jodd-lagarto",
+        "ecosystem": "java",
+        "registry_name": "org.jodd:jodd-lagarto",
+        "source_repo": "https://github.com/oblac/jodd",
+        "scope": "runtime",
+        "version": "6.0.6",
+        "purpose": "HTML/XML 解析器，用于 CSS/XPath 检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.jodd:jodd-lagarto:6.0.6)",
+        "declared_in": ["project/Dependencies.scala:48"]
+      },
+      {
+        "name": "jspecify",
+        "ecosystem": "java",
+        "registry_name": "org.jspecify:jspecify",
+        "source_repo": "https://github.com/jspecify/jspecify",
+        "scope": "runtime",
+        "version": "1.0.0",
+        "purpose": "Java 可空性注解",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.jspecify:jspecify:1.0.0)",
+        "declared_in": ["project/Dependencies.scala:47"]
+      },
+      {
+        "name": "logback-classic",
+        "ecosystem": "java",
+        "registry_name": "ch.qos.logback:logback-classic",
+        "source_repo": "https://github.com/qos-ch/logback",
+        "scope": "runtime",
+        "version": "1.5.34",
+        "purpose": "SLF4J 日志实现",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (ch.qos.logback:logback-classic:1.5.34)",
+        "declared_in": ["project/Dependencies.scala:49"]
+      },
+      {
+        "name": "pebble",
+        "ecosystem": "java",
+        "registry_name": "io.pebbletemplates:pebble",
+        "source_repo": "https://github.com/PebbleTemplates/pebble",
+        "scope": "runtime",
+        "version": "4.1.2",
+        "purpose": "模板引擎，用于请求体模板渲染",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (io.pebbletemplates:pebble:4.1.2)",
+        "declared_in": ["project/Dependencies.scala:50"]
+      },
+      {
+        "name": "redisclient",
+        "ecosystem": "java",
+        "registry_name": "net.debasishg:redisclient_2.13",
+        "source_repo": "https://github.com/debasishg/scala-redis",
+        "scope": "runtime",
+        "version": "3.42",
+        "purpose": "Scala Redis 客户端，gatling-redis 数据源支持",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (net.debasishg:redisclient_2.13:3.42)",
+        "declared_in": ["project/Dependencies.scala:51"]
+      },
+      {
+        "name": "Saxon-HE",
+        "ecosystem": "java",
+        "registry_name": "net.sf.saxon:Saxon-HE",
+        "source_repo": "https://github.com/Saxonica/Saxon-HE",
+        "scope": "runtime",
+        "version": "12.9",
+        "purpose": "XPath/XSLT 处理器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (net.sf.saxon:Saxon-HE:12.9)",
+        "declared_in": ["project/Dependencies.scala:52"]
+      },
+      {
+        "name": "scala-logging",
+        "ecosystem": "java",
+        "registry_name": "com.typesafe.scala-logging:scala-logging_2.13",
+        "source_repo": "https://github.com/lightbend/scala-logging",
+        "scope": "runtime",
+        "version": "3.9.6",
+        "purpose": "Scala 日志包装（基于 SLF4J）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (com.typesafe.scala-logging:scala-logging_2.13:3.9.6)",
+        "declared_in": ["project/Dependencies.scala:53"]
+      },
+      {
+        "name": "scopt",
+        "ecosystem": "java",
+        "registry_name": "com.github.scopt:scopt_2.13",
+        "source_repo": "https://github.com/scopt/scopt",
+        "scope": "runtime",
+        "version": "4.1.0",
+        "purpose": "Scala 命令行参数解析",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (com.github.scopt:scopt_2.13:4.1.0)",
+        "declared_in": ["project/Dependencies.scala:54"]
+      },
+      {
+        "name": "lightning-csv",
+        "ecosystem": "java",
+        "registry_name": "org.simpleflatmapper:lightning-csv",
+        "source_repo": "https://github.com/arnaudroger/SimpleFlatMapper",
+        "scope": "runtime",
+        "version": "9.0.2",
+        "purpose": "CSV feeder 高性能解析",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.simpleflatmapper:lightning-csv:9.0.2)",
+        "declared_in": ["project/Dependencies.scala:55"]
+      },
+      {
+        "name": "slf4j-api",
+        "ecosystem": "java",
+        "registry_name": "org.slf4j:slf4j-api",
+        "source_repo": "https://github.com/qos-ch/slf4j",
+        "scope": "runtime",
+        "version": "2.0.18",
+        "purpose": "SLF4J 日志门面",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.slf4j:slf4j-api:2.0.18)",
+        "declared_in": ["project/Dependencies.scala:56"]
+      },
+      {
+        "name": "jul-to-slf4j",
+        "ecosystem": "java",
+        "registry_name": "org.slf4j:jul-to-slf4j",
+        "source_repo": "https://github.com/qos-ch/slf4j",
+        "scope": "runtime",
+        "version": "2.0.18",
+        "purpose": "java.util.logging 桥接到 SLF4J",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.slf4j:jul-to-slf4j:2.0.18)",
+        "declared_in": ["project/Dependencies.scala:57"]
+      },
+      {
+        "name": "t-digest",
+        "ecosystem": "java",
+        "registry_name": "com.tdunning:t-digest",
+        "source_repo": "https://github.com/tdunning/t-digest",
+        "scope": "runtime",
+        "version": "3.3",
+        "purpose": "分位数近似算法，用于报告指标",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (com.tdunning:t-digest:3.3)",
+        "declared_in": ["project/Dependencies.scala:58"]
+      },
+      {
+        "name": "test-interface",
+        "ecosystem": "java",
+        "registry_name": "org.scala-sbt:test-interface",
+        "source_repo": "https://github.com/sbt/test-interface",
+        "scope": "runtime",
+        "version": "1.0",
+        "purpose": "sbt 测试框架接口，gatling-test-framework 依赖",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.scala-sbt:test-interface:1.0)",
+        "declared_in": ["project/Dependencies.scala:59"]
+      },
+      {
+        "name": "typetools",
+        "ecosystem": "java",
+        "registry_name": "net.jodah:typetools",
+        "source_repo": "https://github.com/jhalterman/typetools",
+        "scope": "runtime",
+        "version": "0.6.3",
+        "purpose": "Java 泛型类型解析工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (net.jodah:typetools:0.6.3)",
+        "declared_in": ["project/Dependencies.scala:60"]
+      },
+      {
+        "name": "xmlresolver",
+        "ecosystem": "java",
+        "registry_name": "org.xmlresolver:xmlresolver",
+        "source_repo": "https://github.com/xmlresolver/xmlresolver",
+        "scope": "runtime",
+        "version": "6.0.23",
+        "purpose": "XML 实体解析器",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.xmlresolver:xmlresolver:6.0.23 + classifier:data)",
+        "declared_in": ["project/Dependencies.scala:61-62"]
+      },
+      {
+        "name": "scala-parser-combinators",
+        "ecosystem": "java",
+        "registry_name": "org.scala-lang.modules:scala-parser-combinators_2.13",
+        "source_repo": "https://github.com/scala/scala-parser-combinators",
+        "scope": "runtime",
+        "version": "2.4.0",
+        "purpose": "Scala 解析器组合子库，用于 jsonpath 等模块",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.scala-lang.modules:scala-parser-combinators_2.13:2.4.0)",
+        "declared_in": ["project/Dependencies.scala:7"]
+      },
+      {
+        "name": "scala-swing",
+        "ecosystem": "java",
+        "registry_name": "org.scala-lang.modules:scala-swing_2.13",
+        "source_repo": "https://github.com/scala/scala-swing",
+        "scope": "runtime",
+        "version": "3.0.0",
+        "purpose": "Scala Swing 包装，recorder GUI 使用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.scala-lang.modules:scala-swing_2.13:3.0.0)",
+        "declared_in": ["project/Dependencies.scala:8"],
+        "used_symbols": ["scala.swing.Dialog", "scala.swing.Frame", "scala.swing.FileChooser"]
+      },
+      {
+        "name": "scala-reflect",
+        "ecosystem": "java",
+        "registry_name": "org.scala-lang:scala-reflect",
+        "source_repo": "https://github.com/scala/scala",
+        "scope": "provided",
+        "version": "2.13.18",
+        "purpose": "Scala 反射支持（Provided，编译期宏/反射）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "随 Scala 2.13.18 发行版提供",
+        "declared_in": ["project/Dependencies.scala:6"]
+      },
+      {
+        "name": "scalatest",
+        "ecosystem": "java",
+        "registry_name": "org.scalatest:scalatest_2.13",
+        "source_repo": "https://github.com/scalatest/scalatest",
+        "scope": "test",
+        "version": "3.2.20",
+        "purpose": "Scala 测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.scalatest:scalatest_2.13:3.2.20)",
+        "declared_in": ["project/Dependencies.scala:76"]
+      },
+      {
+        "name": "junit-jupiter",
+        "ecosystem": "java",
+        "registry_name": "org.junit.jupiter:junit-jupiter-api",
+        "source_repo": "https://github.com/junit-team/junit5",
+        "scope": "test",
+        "version": "5.6.1",
+        "purpose": "JUnit 5 测试 API 与引擎",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.junit.jupiter:junit-jupiter-api/engine:5.6.1)",
+        "declared_in": ["project/Dependencies.scala:69-71"]
+      },
+      {
+        "name": "jmh",
+        "ecosystem": "java",
+        "registry_name": "org.openjdk.jmh:jmh-core",
+        "source_repo": "https://github.com/openjdk/jmh",
+        "scope": "test",
+        "version": "1.37",
+        "purpose": "Java 微基准测试框架，gatling-benchmarks 使用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central (org.openjdk.jmh:jmh-core:1.37)",
+        "declared_in": ["project/Dependencies.scala:73"]
+      }
+    ],
+    "notes": "完整依赖清单见 project/Dependencies.scala。所有依赖均通过 sbt/Maven Central 远程获取；含多个按 classifier 分发的原生库（Netty epoll/io_uring/dns-macos/tcnative、Brotli4j），用于 Linux/macOS/Windows 平台加速。本次未通过 scripts/harmony_adapted.js 校验已鸿蒙化状态（该脚本当前仅覆盖 Python/C++ 包，Java/Maven 生态不在覆盖范围内）。"
+  },
+  "native_api": {
+    "summary": "Gatling 为 JVM 应用，自身不直接调用 POSIX/Win32 系统调用。平台相关能力主要委托给 Netty（原生传输、原生 SSL）、Brotli4j（原生解码）与 Scala Swing（recorder GUI）。所有原生增强均有 JDK/纯 Java 回退路径：Netty 不可用原生传输时回退 NIO，OpenSSL 不可用时回退 JSSE，Brotli 不可用时移除 br 编码支持。",
+    "groups": [
+      {
+        "type": "java_standard",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "java.nio.file.Files / java.nio.file.Path",
+            "purpose": "跨平台文件与目录操作（创建结果目录、读写 simulation.log）",
+            "count": 10,
+            "evidence": [
+              "gatling-core/src/main/scala/io/gatling/core/config/GatlingFiles.scala:30",
+              "gatling-core/src/main/scala/io/gatling/core/stats/writer/LogFileDataWriter.scala:226",
+              "gatling-recorder/src/main/scala/io/gatling/recorder/render/HttpTrafficRenderer.scala:51"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "java.net.HttpURLConnection",
+            "purpose": " Analytics 匿名统计上报（POST api.eu.amplitude.com）",
+            "count": 1,
+            "evidence": [
+              "gatling-app/src/main/scala/io/gatling/app/Analytics.scala:114"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "java.util.concurrent.ThreadPoolExecutor / Executors",
+            "purpose": "ActorSystem 与 Netty 事件循环使用的线程池",
+            "count": 3,
+            "evidence": [
+              "gatling-core/src/main/scala/io/gatling/core/actor/ActorSystem.scala:36"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "javax.net.ssl.SSLContext / KeyManagerFactory / TrustManagerFactory",
+            "purpose": "JDK 标准 TLS/SSL 上下文与密钥库管理",
+            "count": 4,
+            "evidence": [
+              "gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:97",
+              "gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:137-149"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "netty",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "io.netty.channel.nio.NioIoHandler / NioEventLoopGroup",
+            "purpose": "Netty 跨平台 NIO 事件循环（默认回退路径）",
+            "count": 3,
+            "evidence": [
+              "gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:51",
+              "gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:62"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "io.netty.bootstrap.Bootstrap",
+            "purpose": "Netty 客户端启动器，配置 TCP 选项与处理器链",
+            "count": 4,
+            "evidence": [
+              "gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:97",
+              "gatling-http-client/src/main/java/io/gatling/http/client/impl/DefaultHttpClient.java:104"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "netty_native_transport",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "io.netty.channel.epoll.Epoll.isAvailable",
+            "purpose": "检测 Linux epoll 原生库是否可用并选择 epoll 传输",
+            "count": 2,
+            "evidence": [
+              "gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:46",
+              "gatling-http-client/src/main/java/io/gatling/http/client/impl/DefaultHttpClient.java:36"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "io.netty.channel.uring.IoUring.isAvailable",
+            "purpose": "检测 Linux io_uring 原生库是否可用",
+            "count": 2,
+            "evidence": [
+              "gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:44",
+              "gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:88"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "netty_dns_native_macos",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "netty-resolver-dns-native-macos (classifier artifacts)",
+            "purpose": "macOS 平台原生 DNS 解析器加速（声明依赖，运行时由 Netty 自动加载）",
+            "count": 1,
+            "evidence": [
+              "project/Dependencies.scala:22-23"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "netty_tcnative_openssl",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "io.netty.handler.ssl.OpenSsl.isAvailable",
+            "purpose": "检测 Netty tcnative BoringSSL 原生库是否可用，可用时替代 JSSE",
+            "count": 2,
+            "evidence": [
+              "gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:109",
+              "gatling-recorder/src/main/scala/io/gatling/recorder/http/ssl/SslUtil.scala:1"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "brotli4j",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "com.aayushatharva.brotli4j.Brotli4jLoader.isAvailable",
+            "purpose": "检测 Brotli 原生解码库是否可用，不可用则在 Accept-Encoding 中移除 br",
+            "count": 1,
+            "evidence": [
+              "gatling-http-client/src/main/java/io/gatling/http/client/util/HttpUtils.java:156"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "swing",
+        "category": "platform",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "scala.swing / javax.swing",
+            "purpose": "recorder 的桌面 GUI（配置窗口、运行窗口、文件选择器、对话框）",
+            "count": 36,
+            "evidence": [
+              "gatling-recorder/src/main/scala/io/gatling/recorder/ui/swing/SwingFrontEnd.scala:31",
+              "gatling-recorder/src/main/scala/io/gatling/recorder/ui/swing/frame/ConfigurationFrame.scala:25",
+              "gatling-recorder/src/main/scala/io/gatling/recorder/ui/swing/frame/RunningFrame.scala:20"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "jvm_management",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "java.lang.management.ManagementFactory.getRuntimeMXBean",
+            "purpose": "headless recorder 获取当前 JVM PID 写入锁文件",
+            "count": 1,
+            "evidence": [
+              "gatling-recorder/src/main/scala/io/gatling/recorder/ui/headless/HeadlessFrontEnd.scala:91"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libnetty_transport_native_epoll.so",
+        "mechanism": "System.loadLibrary (via Netty native loader)",
+        "acquisition": "third_party",
+        "source": "Netty 通过 Maven classifier 分发 Linux x86_64 / aarch64 预编译 .so",
+        "description": "Linux epoll 原生 I/O 传输加速；不可用则回退到 Java NIO。",
+        "optional": true,
+        "evidence": ["project/Dependencies.scala:17-18", "gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:46"]
+      },
+      {
+        "name": "libnetty_transport_native_io_uring.so",
+        "mechanism": "System.loadLibrary (via Netty native loader)",
+        "acquisition": "third_party",
+        "source": "Netty 通过 Maven classifier 分发 Linux x86_64 / aarch64 预编译 .so",
+        "description": "Linux io_uring 原生 I/O 传输加速；不可用则回退到 epoll/NIO。",
+        "optional": true,
+        "evidence": ["project/Dependencies.scala:19-20", "gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:44"]
+      },
+      {
+        "name": "libnetty_resolver_dns_native_macos.jnilib",
+        "mechanism": "System.loadLibrary (via Netty native loader)",
+        "acquisition": "third_party",
+        "source": "Netty 通过 Maven classifier 分发 macOS x86_64 / aarch64 预编译库",
+        "description": "macOS 原生 DNS 解析器；缺失时使用 JDK 默认解析器。",
+        "optional": true,
+        "evidence": ["project/Dependencies.scala:22-23"]
+      },
+      {
+        "name": "libnetty_tcnative_boringssl.so/dll/jnilib",
+        "mechanism": "System.loadLibrary (via Netty tcnative loader)",
+        "acquisition": "third_party",
+        "source": "Netty-tcnative 通过 Maven classifier 分发 Linux/macOS/Windows 预编译库",
+        "description": "基于 BoringSSL 的原生 TLS 引擎；缺失时回退 JDK JSSE。",
+        "optional": true,
+        "evidence": ["project/Dependencies.scala:24-30", "gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:109"]
+      },
+      {
+        "name": "libbrotli4j-native-*.so/dll/dylib",
+        "mechanism": "System.loadLibrary (via Brotli4jLoader)",
+        "acquisition": "third_party",
+        "source": "Brotli4j 通过 Maven classifier 分发 Linux/macOS/Windows 预编译库",
+        "description": "Brotli 压缩算法原生解码器；缺失时不在 Accept-Encoding 中声明 br。",
+        "optional": true,
+        "evidence": ["project/Dependencies.scala:31-36", "gatling-http-client/src/main/java/io/gatling/http/client/util/HttpUtils.java:156"]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行时主要依赖 JVM 标准网络与文件 API。对外网络连接包括：被测目标系统的 HTTP/WebSocket/JMS/Redis 连接、默认向 gatling.io 发起的 warm-up 请求，以及可选的 Amplitude 匿名统计上报。文件系统用于读取 HOCON 配置、classpath 资源（请求体模板、feeder 数据）、写入结果目录与 simulation.log。无外部命令 shell-out 或硬件设备访问。",
+    "network": [
+      {
+        "detail": "HTTP/WebSocket/SSE 被测目标连接",
+        "purpose": "负载测试核心：向用户配置的目标地址发起高并发请求",
+        "evidence": ["gatling-http-client/src/main/java/io/gatling/http/client/impl/DefaultHttpClient.java"]
+      },
+      {
+        "detail": "https://gatling.io",
+        "purpose": "HTTP 协议栈 warm-up 默认地址（可通过 gatling.http.warmUpUrl 关闭）",
+        "evidence": ["gatling-core/src/main/resources/gatling-defaults.conf:81"]
+      },
+      {
+        "detail": "https://api.eu.amplitude.com/2/httpapi",
+        "purpose": "可选匿名使用统计上报（data.enableAnalytics 控制，默认开启）",
+        "evidence": ["gatling-app/src/main/scala/io/gatling/app/Analytics.scala:110"]
+      },
+      {
+        "detail": "JMS Broker / Redis Server / JDBC Database",
+        "purpose": "可选协议模块连接外部中间件与数据库",
+        "evidence": ["gatling-jms/src/main/scala/io/gatling/jms/protocol/JmsProtocol.scala", "gatling-redis/src/main/scala/io/gatling/redis/feeder/RedisFeederBuilder.scala"]
+      },
+      {
+        "detail": "DNS 解析（Netty 异步解析器 + 系统解析器回退）",
+        "purpose": "域名解析",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:195-198"]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "gatling-defaults.conf / gatling.conf（classpath 资源）",
+        "purpose": "加载默认与用户自定义 HOCON 配置",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:39-55"]
+      },
+      {
+        "detail": "用户通过 -Dgatling.conf.file 指定的自定义配置文件",
+        "purpose": "覆盖默认配置文件路径",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:41"]
+      },
+      {
+        "detail": "classpath 资源（请求体模板、feeder JSON/CSV、HAR 文件）",
+        "purpose": "读取测试数据与模板",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/util/Resource.scala:59", "gatling-recorder/src/main/scala/io/gatling/recorder/har/HarReader.scala"]
+      },
+      {
+        "detail": "resultsDirectory/<runUuid>/simulation.log",
+        "purpose": "写入运行时结果日志，供报告生成读取",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/stats/writer/LogFileDataWriter.scala:213-226", "gatling-core/src/main/scala/io/gatling/core/config/GatlingFiles.scala:27"]
+      },
+      {
+        "detail": "recorder 生成的 simulation 与请求体目录",
+        "purpose": "headless/Swing recorder 输出转换后的 Gatling 模拟脚本",
+        "evidence": ["gatling-recorder/src/main/scala/io/gatling/recorder/render/HttpTrafficRenderer.scala:51,87"]
+      },
+      {
+        "detail": ".gatling-recorder-pid",
+        "purpose": "headless recorder 在当前工作目录写入 PID 锁文件",
+        "evidence": ["gatling-recorder/src/main/scala/io/gatling/recorder/ui/headless/HeadlessFrontEnd.scala:31,46"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "gatling.conf.file",
+        "purpose": "通过系统属性指定自定义配置文件路径",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:41"]
+      },
+      {
+        "name": "gatling.js.simulation",
+        "purpose": "指定 JavaScript 模拟类名称（JVM 版本通过 JS 引擎加载时）",
+        "evidence": ["gatling-app/src/main/scala/io/gatling/app/SimulationClass.scala:37"]
+      },
+      {
+        "name": "java.class.path",
+        "purpose": "Analytics 检测是否在 IntelliJ IDEA 中启动",
+        "evidence": ["gatling-app/src/main/scala/io/gatling/app/Analytics.scala:64"]
+      },
+      {
+        "name": "java.library.path",
+        "purpose": "Analytics 检测是否在 Eclipse（Windows bundle JRE）中启动",
+        "evidence": ["gatling-app/src/main/scala/io/gatling/app/Analytics.scala:70"]
+      },
+      {
+        "name": "__CFBundleIdentifier",
+        "purpose": "Analytics 检测是否在 Eclipse（macOS）中启动",
+        "evidence": ["gatling-app/src/main/scala/io/gatling/app/Analytics.scala:68"]
+      },
+      {
+        "name": "io.netty.allocator.type / io.netty.maxThreadLocalCharBufferSize",
+        "purpose": "Netty 启动参数，Gatling 在加载配置时如未设置则写入默认值",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:156-157"]
+      },
+      {
+        "name": "jdk.tls.allowUnsafeServerCertChange / sun.security.ssl.allowUnsafeRenegotiation",
+        "purpose": "关闭主机名验证时由 Gatling 设置，允许不安全证书变更",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:190-191"]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Scala 2.13.18 / Java 11+",
+    "runtime_version": "JDK 11 或更高版本（CI 使用 JDK 25 构建）",
+    "build_system": "sbt 1.x",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": ["project/Dependencies.scala:17,19,26,32,165,169"]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": ["project/Dependencies.scala:18,20,27,33,166,168"]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": ["project/Dependencies.scala:22,28,34,167"]
+      },
+      {
+        "os": "macos",
+        "arch": "aarch64",
+        "evidence": ["project/Dependencies.scala:23,29,35"]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": ["project/Dependencies.scala:30,36,169"]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "main",
+        "name": "io.gatling.app.Gatling",
+        "command": "java -cp ... io.gatling.app.Gatling [options]（CLI 运行模拟）",
+        "evidence": ["gatling-app/src/main/scala/io/gatling/app/Gatling.scala:35"]
+      },
+      {
+        "type": "main",
+        "name": "io.gatling.recorder.GatlingRecorder",
+        "command": "java -cp ... io.gatling.recorder.GatlingRecorder [options]（启动录制器，默认 Swing GUI，--headless 启用命令行模式）",
+        "evidence": ["gatling-recorder/src/main/scala/io/gatling/recorder/GatlingRecorder.scala:25"]
+      },
+      {
+        "type": "framework_startup",
+        "name": "io.gatling.sbt.GatlingFramework",
+        "command": "sbt/Maven/Gradle 插件通过 sbt test-interface 发现并运行 Simulation 类",
+        "evidence": ["gatling-test-framework/src/main/scala/io/gatling/sbt/GatlingFramework.scala"]
+      }
+    ],
+    "packaging": "以 Maven Central JAR 族（io.gatling:gatling-*）分发核心库；gatling-app 与 gatling-recorder 可打包为独立 zip/tar.gz 分发包（sbt-native-packager）；也可通过 sbt/Maven/Gradle 插件作为测试依赖引入项目。",
+    "notes": "Scala 2.13.18 由 build.sbt 的 Global / scalaVersion 指定。构建插件包括 sbt-native-packager（打包）、sbt-jmh（基准测试）、sbt-wartremover/sbt-scalafix（静态检查）。"
+  },
+  "capability_profile": {
+    "summary": "Gatling 核心为计算/网络密集型负载测试框架，主要触及 GUI 场景（recorder 的 Swing 桌面界面）；不涉及 3D 渲染、媒体编解码或特定硬件。所有 GUI 功能均有 headless 命令行回退。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": true,
+        "kind": ["scala-swing", "javax.swing", "headless-cli"],
+        "via": ["scala-swing", "gatling-recorder"],
+        "harmony_status": "unknown",
+        "adaptation": "recorder 的 Swing GUI 依赖 headful AWT/Swing；若鸿蒙 JDK 不支持，可改用 --headless 命令行模式，或将 GUI 重写为 ArkUI。",
+        "evidence": [
+          "gatling-recorder/src/main/scala/io/gatling/recorder/ui/RecorderFrontEnd.scala:28",
+          "gatling-recorder/src/main/scala/io/gatling/recorder/ui/swing/SwingFrontEnd.scala:31",
+          "project/Dependencies.scala:8"
+        ]
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（按终端用户可启动运行的应用/工具评估；核心跑在已移植 JDK 上，recorder GUI 与桌面交付模型按模型 C 考量）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [10, 25]
+    },
+    "confidence": "medium",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "Gatling 主体为 Scala/JVM 应用，鸿蒙 PC 已移植 JDK，核心负载引擎可基于 JDK 标准 NIO/JSSE 直接运行。主要移植工作在于：1) 验证并禁用 Linux 原生 Netty 传输（epoll/io_uring）与 tcnative/Brotli4j 原生库，强制回退到 NIO 与 JDK SSL；2) 确认 recorder 若需 GUI 则鸿蒙 JDK 必须支持 headful AWT/Swing，否则使用 headless 模式或重写 GUI；3) 重新打包为鸿蒙可接受的桌面应用形态并验证网络权限。",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:jdk",
+        "capability": "Java JDK 17/21+ 在鸿蒙 PC 可用",
+        "required": true,
+        "target_status": "available",
+        "impact": "JDK 是运行基础；已确认已移植，不构成阻碍",
+        "source": "references/harmony-pc-capabilities.json#runtimes/java_jdk"
+      },
+      {
+        "id": "ta:awt_swing",
+        "capability": "headful AWT/Swing 桌面 GUI 支持",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "recorder 默认 Swing GUI 需要；若不可用可回退到 --headless 命令行模式，GUI 功能不可用",
+        "source": "references/harmony-pc-capabilities.json#gui/awt_headful"
+      },
+      {
+        "id": "ta:desktop_app",
+        "capability": "传统桌面应用交付形态（JAR + launcher + zip 分发）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "决定 Gatling 是否可直接以现有 zip/JAR 形式在鸿蒙 PC 分发运行；若仅支持 .hap 则需重新打包",
+        "source": "references/harmony-pc-capabilities.json#app_delivery/desktop_app"
+      },
+      {
+        "id": "ta:internet_permission",
+        "capability": "ohos.permission.INTERNET 或 PC 形态网络访问能力",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "负载测试工具必须对外发起大量 HTTP/TCP 连接；PC 形态授予方式待核实",
+        "source": "references/harmony-pc-capabilities.json#permissions/perm_internet"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "负载测试核心功能需要向目标系统发起 HTTP/WebSocket/JMS 等网络连接，且默认向 gatling.io  warm-up、amplitude 统计上报",
+        "source_capability": "network",
+        "harmony_status": "unknown",
+        "evidence": ["gatling-app/src/main/scala/io/gatling/app/Analytics.scala:110", "gatling-core/src/main/resources/gatling-defaults.conf:81"]
+      }
+    ],
+    "blockers": [
+      {
+        "id": "bk:swing_gui",
+        "issue": "recorder 默认 Swing GUI 依赖 headful AWT/Swing，其在鸿蒙 PC 的支持状态未核实",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "gui_toolkit_unavailable",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "若鸿蒙 JDK 无 headful AWT，则 recorder 以 --headless 模式运行（HAR/代理录制仍可工作），或基于 ArkUI 重写配置/运行界面。",
+        "caused_by": ["ta:awt_swing"],
+        "evidence": ["gatling-recorder/src/main/scala/io/gatling/recorder/ui/RecorderFrontEnd.scala:28", "gatling-recorder/src/main/scala/io/gatling/recorder/ui/swing/SwingFrontEnd.scala:31"]
+      },
+      {
+        "id": "bk:native_transport",
+        "issue": "Netty Linux 原生传输（epoll/io_uring）依赖 Linux 特定 JNI 库，鸿蒙 PC 非 Linux ABI，无法加载现有 Linux 原生库",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "通过配置 gatling.netty.useNativeTransport=false 禁用原生传输，强制使用 Netty NIO（已验证代码在 isAvailable() 失败时自动回退）。",
+        "evidence": ["gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:43-52", "gatling-core/src/main/resources/gatling-defaults.conf:37"]
+      },
+      {
+        "id": "bk:tcnative_boringssl",
+        "issue": "Netty-tcnative BoringSSL 无鸿蒙 PC 预编译库，无法使用原生 TLS 加速",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "OpenSsl.isAvailable() 返回 false 时自动回退 JDK JSSE；无需改动业务逻辑，性能略有下降。",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:107-120"]
+      },
+      {
+        "id": "bk:brotli4j_native",
+        "issue": "Brotli4j 无鸿蒙 PC 原生库，无法使用 Brotli 解码加速",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "Brotli4jLoader.isAvailable() 返回 false 时自动从 Accept-Encoding 中移除 br；被测服务器将回退 gzip/deflate。",
+        "evidence": ["gatling-http-client/src/main/java/io/gatling/http/client/util/HttpUtils.java:155-161"]
+      },
+      {
+        "id": "bk:desktop_delivery",
+        "issue": "鸿蒙 PC 是否支持传统 zip/JAR 桌面应用分发形态未核实",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "packaging",
+        "source_dimension": "build_env",
+        "harmony_status": "unknown",
+        "remediation": "若仅支持 .hap 形态，则需将 gatling-app/gatling-recorder 重新打包并配置 ability/签名；CLI 仍可作为命令行 ability 运行。",
+        "caused_by": ["ta:desktop_app"],
+        "evidence": ["build.sbt:133-139", "project/plugins.sbt:4"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "核心负载引擎与 Scala/Java DSL",
+        "note": "纯 JVM 字节码逻辑（场景编排、注入模式、断言、数据写入）可在已移植 JDK 上直接运行，无需修改。",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/scenario/Simulation.scala", "gatling-core/src/main/scala/io/gatling/core/inject"]
+      },
+      {
+        "aspect": "Netty NIO 回退路径",
+        "note": "当原生传输不可用时，Transports 已自动选择 NioIoHandler/NioSocketChannel，保证网络 I/O 可用。",
+        "evidence": ["gatling-netty-util/src/main/java/io/gatling/netty/util/Transports.java:50-52"]
+      },
+      {
+        "aspect": "JDK 标准 SSL/TLS",
+        "note": "OpenSSL 不可用时自动使用 javax.net.ssl.SSLContext，HTTPS 仍可工作。",
+        "evidence": ["gatling-core/src/main/scala/io/gatling/core/config/GatlingConfiguration.scala:97-104"]
+      },
+      {
+        "aspect": "headless recorder",
+        "note": "recorder 提供 --headless 模式，不依赖 GUI 即可完成 HAR 转换与代理录制。",
+        "evidence": ["gatling-recorder/src/main/scala/io/gatling/recorder/ui/headless/HeadlessFrontEnd.scala:33"]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC JDK 上构建并运行 sbt test，验证核心模块与 Netty NIO 路径",
+      "强制 gatling.netty.useNativeTransport=false 与 useIoUring=false，移除 netty-transport-native-epoll/io_uring/dns-macos/tcnative 依赖或确认其不可加载",
+      "验证 Brotli4jLoader 在鸿蒙上返回 false 时 HttpUtils 正确过滤 br 编码",
+      "决定 recorder 交付形态：若需 GUI 则确认 headful AWT/Swing 可用性，否则默认启用 --headless 并移除 scala-swing 依赖",
+      "将 gatling-app/gatling-recorder 按鸿蒙桌面应用交付模型重新打包（zip/JAR 或 .hap）",
+      "申请并验证 ohos.permission.INTERNET 等网络权限对高并发负载测试的授予方式"
+    ],
+    "notes": "评估主要按应用/工具口径（模型 C）进行：核心 JVM 逻辑跑在已移植 JDK 上，运行时本身不是阻碍。真正工作量集中在原生依赖回退验证、recorder GUI 形态决策与重新打包。由于 headful AWT/Swing、桌面应用交付形态、PC 形态网络权限均为 unknown，整体置信度降至 medium；若这些目标事实后续核实为 available，则可下调至 low 工作量。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [
+      "code-metrics 的 platform_branches/platform_adaptation 为空，因为 Gatling 是 JVM 项目，平台判断通过 Netty isAvailable() 与 Maven classifier 原生库完成，未在源码中出现 sys.platform/System.getProperty(\"os.name\") 等启发式命中。",
+      "scripts/harmony_adapted.js 当前仅支持 python/cpp 生态，未对 Java/Maven 依赖执行已鸿蒙化检查。",
+      "tests.test_cases 脚本仅识别出 JUnit 用例 120 个，未统计 ScalaTest 用例，已在 tests.notes 中说明。"
+    ],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "library.kind",
+        "kind": "ambiguity",
+        "value": "application",
+        "rationale": "Gatling 同时发布库（io.gatling:gatling-core）与可启动 CLI/录制器应用。本次按存在 main 入口、用户直接运行的应用/工具口径判为 application；若侧重 Maven 库分发角度，亦可判为 framework。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "maven_classifier_bundle",
+        "rationale": "Netty/Brotli4j 等依赖通过同一 artifact 不同 classifier（linux-x86_64、linux-aarch_64、osx-aarch64 等）分发平台原生库，现有 acquisition 推荐值未显式覆盖这种“主包+多 classifier 原生包”的 bundle 形态。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "netty_native_transport",
+        "rationale": "Netty 的 epoll/io_uring/kqueue 原生传输是 JVM 项目常见的平台相关面，既非纯标准库也非直接系统调用，建议作为独立 API 家族记录。"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "scenarios",
+        "kind": "new_value",
+        "value": "headless-cli",
+        "rationale": "对于同时提供 GUI 与 headless CLI 的工具，kind 中除 gui 外可补充 headless-cli，以表明 GUI 非唯一入口。"
+      }
+    ]
+  }
+}

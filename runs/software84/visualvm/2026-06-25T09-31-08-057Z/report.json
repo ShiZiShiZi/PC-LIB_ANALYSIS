@@ -1,0 +1,1824 @@
+{
+  "library": {
+    "name": "visualvm",
+    "kind": "application",
+    "package_name": "org.graalvm.visualvm",
+    "aliases": [
+      "VisualVM",
+      "org.graalvm.visualvm"
+    ],
+    "import_names": [
+      "org.graalvm.visualvm"
+    ],
+    "source_url": "https://github.com/oracle/visualvm",
+    "analyzed_at": "2026-06-25T09:31:08.057Z",
+    "commit": "518dd1f8b08df0aebf0bc2dc42b7e101c1039950",
+    "one_liner": "基于 NetBeans Platform 的 Java 桌面监控与性能分析工具，支持 JVM 进程发现、内存/线程/CPU 采样及 JMX 监控。",
+    "ecosystem": "java",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "VisualVM 是一款面向 Java 开发者与运维人员的桌面可视化监控及性能分析应用。它把 jps、jstat、jcmd、JMX 等 JDK 命令行能力集成到 Swing 图形界面中，支持本地与远程 JVM 进程的发现、堆转储、线程转储、内存/CPU 采样、Flight Recorder 查看以及 MBean 监控。应用基于 NetBeans Platform 构建，采用模块化的插件架构；同时提供 VS Code 扩展作为 IDE 集成入口。",
+    "categories": [
+      {
+        "name": "JVM 进程发现与管理",
+        "description": "通过 sun.jvmstat 性能计数器和 com.sun.tools.attach 接口枚举本地 Java 进程，并建立数据源进行生命周期管理。",
+        "evidence": [
+          "visualvm/jvmstat/src/org/graalvm/visualvm/jvmstat/application/JvmstatApplicationProvider.java:59-64",
+          "visualvm/attach/src/org/graalvm/visualvm/attach/AttachModelProvider.java:28-29",
+          "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/jps/JpsProxy.java:29-116"
+        ]
+      },
+      {
+        "name": "内存分析",
+        "description": "触发堆转储、生成堆直方图，并通过 OQL 查询与堆 walker 分析对象引用关系。",
+        "evidence": [
+          "visualvm/heapviewer/src",
+          "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxSupport.java:331-349"
+        ]
+      },
+      {
+        "name": "线程分析",
+        "description": "获取线程转储、展示线程状态与锁信息，辅助排查死锁与性能瓶颈。",
+        "evidence": [
+          "visualvm/threaddump/src",
+          "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxSupport.java:171-221"
+        ]
+      },
+      {
+        "name": "CPU 与内存采样 / Profiler",
+        "description": "对目标 JVM 进行 CPU 采样、内存采样及基于 JVMTI 原生 agent 的详细性能剖析。",
+        "evidence": [
+          "visualvm/sampler/src",
+          "visualvm/profiler/src",
+          "visualvm/libs.profiler/lib.profiler/native/src-jdk15/attach.c:35-144",
+          "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/server/ProfilerCalibrator.java:139"
+        ]
+      },
+      {
+        "name": "JMX 监控",
+        "description": "通过 JMX 连接远程或本地 JVM，暴露 MBean、运行时属性、诊断命令（jcmd）等。",
+        "evidence": [
+          "visualvm/jmx/src",
+          "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxSupport.java:28-29"
+        ]
+      },
+      {
+        "name": "桌面 UI 与插件框架",
+        "description": "基于 NetBeans Platform 的模块化桌面应用，提供窗口系统、菜单、选项面板、自动更新及 Swing 组件。",
+        "evidence": [
+          "visualvm/appui/nbproject/project.xml:98-117",
+          "visualvm/core/src/org/graalvm/visualvm/core/layer.xml",
+          "visualvm/startup/src/org/graalvm/visualvm/modules/startup/VisualVMStartup.java"
+        ]
+      },
+      {
+        "name": "IDE 集成",
+        "description": "提供 Visual Studio Code 扩展，支持在编辑器中启动 VisualVM、选择进程、触发线程/堆转储及采样。",
+        "evidence": [
+          "integrations/vscode/package.json",
+          "integrations/vscode/src/visualvm.ts:38-120"
+        ]
+      }
+    ],
+    "domain": "Java 性能监控与开发者工具",
+    "target_users": "Java 应用开发者、性能工程师、运维人员"
+  },
+  "languages": {
+    "primary": "Java",
+    "all": [
+      "Java",
+      "Text",
+      "XML",
+      "JSON",
+      "Properties",
+      "JavaScript",
+      "TypeScript",
+      "C"
+    ],
+    "breakdown": [
+      {
+        "language": "Java",
+        "files": 2420,
+        "code": 300658,
+        "pct": 80.15,
+        "production": {
+          "files": 2265,
+          "code": 282509
+        },
+        "test": {
+          "files": 83,
+          "code": 11855
+        },
+        "example": {
+          "files": 72,
+          "code": 6294
+        }
+      },
+      {
+        "language": "Text",
+        "files": 27,
+        "code": 32063,
+        "pct": 8.55,
+        "production": {
+          "files": 25,
+          "code": 4023
+        },
+        "test": {
+          "files": 2,
+          "code": 28040
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 269,
+        "code": 16994,
+        "pct": 4.53,
+        "production": {
+          "files": 231,
+          "code": 14387
+        },
+        "test": {
+          "files": 5,
+          "code": 822
+        },
+        "example": {
+          "files": 33,
+          "code": 1785
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 5,
+        "code": 7726,
+        "pct": 2.06,
+        "production": {
+          "files": 5,
+          "code": 7726
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Properties",
+        "files": 364,
+        "code": 4527,
+        "pct": 1.21,
+        "production": {
+          "files": 326,
+          "code": 4301
+        },
+        "test": {
+          "files": 3,
+          "code": 75
+        },
+        "example": {
+          "files": 35,
+          "code": 151
+        }
+      },
+      {
+        "language": "JavaScript",
+        "files": 10,
+        "code": 3738,
+        "pct": 1,
+        "production": {
+          "files": 10,
+          "code": 3738
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TypeScript",
+        "files": 21,
+        "code": 3152,
+        "pct": 0.84,
+        "production": {
+          "files": 15,
+          "code": 2687
+        },
+        "test": {
+          "files": 6,
+          "code": 465
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 9,
+        "code": 1669,
+        "pct": 0.44,
+        "production": {
+          "files": 9,
+          "code": 1669
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 4,
+        "code": 1000,
+        "pct": 0.27,
+        "production": {
+          "files": 4,
+          "code": 1000
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Ant",
+        "files": 90,
+        "code": 877,
+        "pct": 0.23,
+        "production": {
+          "files": 80,
+          "code": 822
+        },
+        "test": {
+          "files": 1,
+          "code": 10
+        },
+        "example": {
+          "files": 9,
+          "code": 45
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 4,
+        "code": 852,
+        "pct": 0.23,
+        "production": {
+          "files": 3,
+          "code": 648
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 204
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 17,
+        "code": 515,
+        "pct": 0.14,
+        "production": {
+          "files": 17,
+          "code": 515
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Maven",
+        "files": 4,
+        "code": 389,
+        "pct": 0.1,
+        "production": {
+          "files": 1,
+          "code": 89
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 3,
+          "code": 300
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 9,
+        "code": 279,
+        "pct": 0.07,
+        "production": {
+          "files": 7,
+          "code": 251
+        },
+        "test": {
+          "files": 1,
+          "code": 15
+        },
+        "example": {
+          "files": 1,
+          "code": 13
+        }
+      },
+      {
+        "language": "make",
+        "files": 4,
+        "code": 186,
+        "pct": 0.05,
+        "production": {
+          "files": 4,
+          "code": 186
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 14,
+        "code": 162,
+        "pct": 0.04,
+        "production": {
+          "files": 7,
+          "code": 90
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 7,
+          "code": 72
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 1,
+        "code": 152,
+        "pct": 0.04,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 152
+        }
+      },
+      {
+        "language": "Windows Resource File",
+        "files": 3,
+        "code": 76,
+        "pct": 0.02,
+        "production": {
+          "files": 3,
+          "code": 76
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Again Shell",
+        "files": 1,
+        "code": 54,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 54
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "D",
+        "files": 1,
+        "code": 37,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 37
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 2,
+        "code": 20,
+        "pct": 0.01,
+        "production": {
+          "files": 2,
+          "code": 20
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 6,
+        "pct": 0,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 6
+        }
+      },
+      {
+        "language": "DTD",
+        "files": 1,
+        "code": 6,
+        "pct": 0,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 6
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 3281,
+      "code": 375138,
+      "comment": 109097,
+      "blank": 81238,
+      "total_lines": 565473
+    },
+    "production": {
+      "files": 3016,
+      "code": 324828,
+      "comment": 103418,
+      "blank": 75963,
+      "total_lines": 504209
+    },
+    "test": {
+      "files": 102,
+      "code": 41288,
+      "comment": 3822,
+      "blank": 3732,
+      "total_lines": 48842
+    },
+    "example": {
+      "files": 163,
+      "code": 9022,
+      "comment": 1857,
+      "blank": 1543,
+      "total_lines": 12422
+    },
+    "top_dirs": [
+      {
+        "dir": "visualvm",
+        "code": 304724,
+        "category": "production",
+        "by_category": {
+          "production": 264271,
+          "test": 40453
+        }
+      },
+      {
+        "dir": "plugins",
+        "code": 45384,
+        "category": "production",
+        "by_category": {
+          "production": 45044,
+          "test": 340
+        }
+      },
+      {
+        "dir": "integrations",
+        "code": 12926,
+        "category": "production",
+        "by_category": {
+          "production": 11725,
+          "test": 495,
+          "example": 706
+        }
+      },
+      {
+        "dir": "samples",
+        "code": 8316,
+        "category": "example",
+        "by_category": {
+          "example": 8316
+        }
+      },
+      {
+        "dir": "templates",
+        "code": 3673,
+        "category": "production",
+        "by_category": {
+          "production": 3673
+        }
+      },
+      {
+        "dir": ".",
+        "code": 71,
+        "category": "production",
+        "by_category": {
+          "production": 71
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 44,
+        "category": "production",
+        "by_category": {
+          "production": 44
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": [
+        "samples"
+      ]
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 7,
+          "code": 17,
+          "macros": [
+            "WIN32"
+          ]
+        }
+      },
+      "total": 17,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "javascript": {
+          "files": 4,
+          "hits": 15
+        }
+      },
+      "by_platform": {
+        "windows": 4,
+        "macos": 11
+      },
+      "samples": [
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/download.ts",
+          "line": 92,
+          "text": "if (process.platform !== 'darwin') {"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/download.ts",
+          "line": 119,
+          "text": "if (process.platform === 'darwin') {"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/download.ts",
+          "line": 137,
+          "text": "openLabel: process.platform === 'darwin' ? 'Select Target Folder' : 'Select'"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/download.ts",
+          "line": 182,
+          "text": "const fileName = process.platform === 'darwin' ? `VisualVM_${releaseKey}.dmg` : `visualvm_${releaseKey}.zip`;"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/visualvm.ts",
+          "line": 77,
+          "text": "const macOS = process.platform === 'darwin';"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/visualvm.ts",
+          "line": 84,
+          "text": "openLabel: process.platform === 'darwin' ? 'Select VisualVM Installation' : 'Select'"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/visualvm.ts",
+          "line": 153,
+          "text": "const gvisualVMExecutable = path.join(visualVMPath, 'bin', process.platform === 'win32' ? 'visualvm.exe' : 'visualvm'); // GitHub VisualVM"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/visualvm.ts",
+          "line": 154,
+          "text": "const mvisualVMExecutable = process.platform === 'darwin' && visualVMPath.endsWith('.app') ? path.join(visualVMPath, 'Contents', 'MacOS', 'visualvm') : undefine"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/visualvm.ts",
+          "line": 155,
+          "text": "const jvisualVMExecutable = path.join(visualVMPath, 'bin', process.platform === 'win32' ? 'jvisualvm.exe' : 'jvisualvm'); // GraalVM VisualVM"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/jdk.ts",
+          "line": 103,
+          "text": "openLabel: process.platform !== 'darwin' ? 'Select JDK Installation' : 'Select'"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/jdk.ts",
+          "line": 106,
+          "text": "if (jdkPath && process.platform === 'darwin') {"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/jdk.ts",
+          "line": 120,
+          "text": "const jdkJpsPath = path.join(jdkPath, 'bin', process.platform === 'win32' ? 'jps.exe' : 'jps');"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/jdk.ts",
+          "line": 137,
+          "text": "if (process.platform === 'darwin') {"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/vscodeUtils.ts",
+          "line": 35,
+          "text": "if (process.platform === 'darwin') {"
+        },
+        {
+          "language": "javascript",
+          "file": "integrations/vscode/src/vscodeUtils.ts",
+          "line": 44,
+          "text": "if (process.platform === 'win32') {"
+        }
+      ],
+      "total": 15,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 102,
+    "test_cases": 148,
+    "frameworks": [
+      "JUnit/TestNG",
+      "jest/mocha"
+    ],
+    "by_language": {
+      "Java": {
+        "files": 83,
+        "cases": 128
+      },
+      "TypeScript": {
+        "files": 6,
+        "cases": 20
+      },
+      "Text": {
+        "files": 2,
+        "cases": 0
+      },
+      "XML": {
+        "files": 5,
+        "cases": 0
+      },
+      "Properties": {
+        "files": 3,
+        "cases": 0
+      },
+      "Markdown": {
+        "files": 1,
+        "cases": 0
+      },
+      "Ant": {
+        "files": 1,
+        "cases": 0
+      },
+      "DTD": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "Java 模块使用 JUnit/TestNG，VS Code 扩展使用 jest/mocha。计数为基于正则的启发式估计。"
+  },
+  "license": {
+    "spdx": "GPL-2.0-only WITH Classpath-exception-2.0",
+    "name": "GNU General Public License v2.0 only with Classpath Exception",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "LICENSE.txt 包含完整 GPL-2.0 文本及 'CLASSPATH EXCEPTION TO THE GPL' 章节；README.md 明确声明 'GNU General Public License, version 2, with the Classpath Exception'。",
+    "notes": "强 copyleft，但 Classpath Exception 允许独立模块以任意许可证链接。源代码文件头亦标注 Classpath Exception。"
+  },
+  "dependencies": {
+    "count": 11,
+    "manifests": [
+      "visualvm/build.xml",
+      "visualvm/nashorn.jdk15/external/binaries-list",
+      "visualvm/jfr.generic/external/binaries-list",
+      "plugins/jolokia/external/binaries-list",
+      "plugins/graaljs/external/binaries-list",
+      "plugins/jsyntaxpane-lib/nbproject/project.xml",
+      "integrations/vscode/package.json"
+    ],
+    "by_ecosystem": {
+      "java": [
+        "NetBeans Platform",
+        "nashorn-core",
+        "asm-util",
+        "flightrecorder",
+        "jolokia",
+        "graaljs",
+        "jsyntaxpane"
+      ],
+      "nodejs": [
+        "decompress"
+      ],
+      "system": [
+        "JDK"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "NetBeans Platform",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "22",
+        "purpose": "RCP 框架：提供模块化系统、窗口系统、Swing/AWT UI、选项面板、自动更新等核心桌面能力。",
+        "acquisition": "download_build",
+        "locality": "remote",
+        "source": "官方发布 zip（README 指向 https://github.com/oracle/visualvm/releases/download/2.2.1/nb220_platform_20260201.zip）",
+        "declared_in": [
+          "README.md:16-17"
+        ],
+        "used_symbols": [
+          "org.openide.modules",
+          "org.openide.windows",
+          "org.openide.awt",
+          "org.netbeans.core.windows",
+          "org.netbeans.modules.autoupdate"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "JDK",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": ">= 8",
+        "purpose": "运行 VisualVM 本身并 attach/监控目标 JVM；大量功能依赖 JDK 内部 API。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装 JDK，由启动器通过 JAVA_HOME/JDK_HOME 或注册表发现",
+        "declared_in": [
+          "visualvm/launcher/visualvm.conf:66-72",
+          "visualvm/launcher/windows-src/jvmfinder.cpp:32-45"
+        ],
+        "used_symbols": [
+          "com.sun.tools.attach.VirtualMachine",
+          "sun.tools.attach.HotSpotVirtualMachine",
+          "sun.jvmstat.monitor.MonitoredHost",
+          "com.sun.management.HotSpotDiagnosticMXBean"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "nashorn-core",
+        "ecosystem": "java",
+        "registry_name": "org.openjdk.nashorn:nashorn-core",
+        "scope": "runtime",
+        "version": "15.6",
+        "purpose": "在 JDK 15+ 中提供 Nashorn JavaScript 引擎支持。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central",
+        "declared_in": [
+          "visualvm/nashorn.jdk15/external/binaries-list:1"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "asm-util",
+        "ecosystem": "java",
+        "registry_name": "org.ow2.asm:asm-util",
+        "scope": "runtime",
+        "version": "9.7",
+        "purpose": "Nashorn 模块的 ASM 工具依赖。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central",
+        "declared_in": [
+          "visualvm/nashorn.jdk15/external/binaries-list:2"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "flightrecorder",
+        "ecosystem": "java",
+        "registry_name": "org.openjdk.jmc:flightrecorder",
+        "scope": "runtime",
+        "version": "8.3.1",
+        "purpose": "解析 JFR（Java Flight Recorder）记录文件。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central",
+        "declared_in": [
+          "visualvm/jfr.generic/external/binaries-list:1"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "lz4-java",
+        "ecosystem": "java",
+        "registry_name": "at.yawk.lz4:lz4-java",
+        "scope": "runtime",
+        "version": "1.10.3",
+        "purpose": "JFR 记录的 LZ4 压缩/解压。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central",
+        "declared_in": [
+          "visualvm/jfr.generic/external/binaries-list:3"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jolokia",
+        "ecosystem": "java",
+        "registry_name": "org.jolokia:jolokia-client-jmx-adapter",
+        "scope": "runtime",
+        "version": "2.2.2",
+        "purpose": "通过 HTTP/JSON 桥接远程 JMX，支持 Kubernetes 环境。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（binaries-list 同时拉取其传递依赖如 kubernetes-client、Jackson、okhttp 等）",
+        "declared_in": [
+          "plugins/jolokia/external/binaries-list"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "graaljs",
+        "ecosystem": "java",
+        "registry_name": "org.graalvm.js:js-scriptengine",
+        "scope": "runtime",
+        "version": "22.3.0",
+        "purpose": "插件中提供 GraalJS JavaScript 引擎。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven Central（binaries-list 同时拉取 truffle-api、graal-sdk、icu4j、asm 等）",
+        "declared_in": [
+          "plugins/graaljs/external/binaries-list"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jsyntaxpane",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": "0.9.4-visualvm",
+        "purpose": "OQL/控制台编辑器使用的 Swing 语法高亮组件。",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 release/modules/ext/jsyntaxpane-0.9.4-visualvm.jar",
+        "declared_in": [
+          "plugins/jsyntaxpane-lib/nbproject/project.xml:42-45"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "decompress",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^4.2.1",
+        "purpose": "VS Code 扩展下载并解压 VisualVM 分发包。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "integrations/vscode/package.json:574-576"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "VS Code API",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^1.76.0",
+        "purpose": "VS Code 扩展宿主 API，用于命令、视图、配置等。",
+        "acquisition": "system",
+        "locality": "runtime",
+        "source": "Visual Studio Code 运行时注入",
+        "declared_in": [
+          "integrations/vscode/package.json:21-23"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "核心运行时依赖 NetBeans Platform 与 JDK；插件通过 Maven binaries-list 引入 Jolokia、GraalJS、JMC FlightRecorder、Nashorn 等。传递依赖未逐条展开。"
+  },
+  "native_api": {
+    "summary": "VisualVM 是 Java 桌面应用，主体使用 Java SE 标准库与 NetBeans 模块 API；核心监控能力深度依赖 JDK 内部/专有 API（Attach、jvmstat、HotSpotDiagnostic MXBean）以及 JVMTI 原生 agent。Windows 原生启动器使用 Win32 API，但仅在 Windows 构建路径中生效。",
+    "groups": [
+      {
+        "type": "java_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "java.io / java.nio",
+            "purpose": "标准文件与 NIO 操作",
+            "count": 1,
+            "evidence": [
+              "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxSupport.java:37-39"
+            ]
+          },
+          {
+            "name": "java.lang.management",
+            "purpose": "标准 JMX 管理接口（RuntimeMXBean、ThreadMXBean 等）",
+            "count": 1,
+            "evidence": [
+              "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxSupport.java:31-36"
+            ]
+          },
+          {
+            "name": "javax.swing / java.awt",
+            "purpose": "Swing/AWT 桌面 GUI 组件",
+            "count": 1,
+            "evidence": [
+              "plugins/systray/src/org/graalvm/visualvm/modules/systray/SysTray.java:28-46"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "jdk_attach",
+        "category": "system",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "com.sun.tools.attach.VirtualMachine",
+            "purpose": "动态 attach 到目标 JVM",
+            "count": 8,
+            "evidence": [
+              "visualvm/attach/src/org/graalvm/visualvm/attach/AttachModelImpl.java:28",
+              "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxModelImpl.java:514"
+            ]
+          },
+          {
+            "name": "sun.tools.attach.HotSpotVirtualMachine",
+            "purpose": "HotSpot 专属 attach 操作（堆转储、jcmd、打印/设置 flag）",
+            "count": 4,
+            "evidence": [
+              "visualvm/attach/src/org/graalvm/visualvm/attach/AttachModelImpl.java:52",
+              "visualvm/attach/src/org/graalvm/visualvm/attach/AttachModelImpl.java:105-245"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "jdk_jvmstat",
+        "category": "system",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "sun.jvmstat.monitor.MonitoredHost",
+            "purpose": "发现本地 JVM 进程列表",
+            "count": 6,
+            "evidence": [
+              "visualvm/jvmstat/src/org/graalvm/visualvm/jvmstat/application/JvmstatApplicationProvider.java:59-64",
+              "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/jps/JpsProxy.java:57"
+            ]
+          },
+          {
+            "name": "sun.jvmstat.monitor.MonitoredVm",
+            "purpose": "读取单个 JVM 的 jvmstat 计数器",
+            "count": 5,
+            "evidence": [
+              "visualvm/jvmstat/src/org/graalvm/visualvm/jvmstat/JvmstatModelImpl.java:41-47",
+              "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/jps/JpsProxy.java:81-116"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "jdk_management_internal",
+        "category": "system",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "com.sun.management.HotSpotDiagnosticMXBean",
+            "purpose": "触发堆转储与读取 VMOption",
+            "count": 3,
+            "evidence": [
+              "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxSupport.java:28-29"
+            ]
+          },
+          {
+            "name": "com.sun.management.OperatingSystemMXBean",
+            "purpose": "读取操作系统信息（名称、内存、负载）",
+            "count": 2,
+            "evidence": [
+              "visualvm/host/src/org/graalvm/visualvm/host/model/LocalHostOverview.java:28-46"
+            ]
+          },
+          {
+            "name": "sun.misc.Unsafe",
+            "purpose": "Truffle 采样 agent 中使用的低层内存/对象操作",
+            "count": 3,
+            "evidence": [
+              "visualvm/sampler.truffle/libsrc/org/graalvm/visualvm/sampler/truffle/stagent/Truffle.java:49"
+            ]
+          },
+          {
+            "name": "sun.swing.SwingUtilities2",
+            "purpose": "Swing UI 渲染辅助",
+            "count": 1,
+            "evidence": [
+              "visualvm/uisupport/src/org/graalvm/visualvm/uisupport/ProfilerTabbedPane.java:52"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "jvmti",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "JVMTI AddToBootstrapClassLoaderSearch",
+            "purpose": "Profiler agent 启动时向 bootstrap classpath 注入 jar",
+            "count": 1,
+            "evidence": [
+              "visualvm/libs.profiler/lib.profiler/native/src-jdk15/attach.c:91"
+            ]
+          },
+          {
+            "name": "JVMTI GetTime / GetCurrentThreadCpuTime",
+            "purpose": "Profiler 高精度计时",
+            "count": 2,
+            "evidence": [
+              "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Timers.c:68-88"
+            ]
+          },
+          {
+            "name": "JVMTI SuspendThread / ResumeThread / StopThread",
+            "purpose": "Profiler 控制目标应用线程",
+            "count": 3,
+            "evidence": [
+              "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Threads.c:236-310"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "nanosleep",
+            "purpose": "Profiler agent 线程休眠",
+            "count": 1,
+            "evidence": [
+              "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Timers.c:103-108"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "solaris_procfs",
+        "category": "system",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "procfs (/proc/%d/ctl)",
+            "purpose": "Solaris 上开启/关闭微状态记账（microstate accounting）",
+            "count": 1,
+            "evidence": [
+              "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Timers.c:120-144"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "SHGetFolderPath / CSIDL_APPDATA / CSIDL_LOCAL_APPDATA",
+            "purpose": "Windows 启动器定位用户目录与缓存目录",
+            "count": 4,
+            "evidence": [
+              "visualvm/launcher/windows-src/visualvmlauncher.cpp:371-436"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "RegOpenKeyEx / HKEY_LOCAL_MACHINE registry reads",
+            "purpose": "Windows 启动器/JVM 查找器读取 Java 安装注册表",
+            "count": 6,
+            "evidence": [
+              "visualvm/launcher/windows-src/jvmfinder.cpp:95-115"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetNativeSystemInfo / GlobalMemoryStatusEx",
+            "purpose": "Windows 启动器检测架构与计算默认堆大小",
+            "count": 2,
+            "evidence": [
+              "visualvm/launcher/windows-src/visualvmlauncher.cpp:505-546"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "runtime_platform_check",
+        "category": "platform",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "System.getProperty(\"os.name\")",
+            "purpose": "Java 层运行时平台判断（影响文件路径、平台特性）",
+            "count": 5,
+            "evidence": [
+              "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/global/Platform.java:433",
+              "visualvm/libs.profiler/lib.profiler.ui/src/org/graalvm/visualvm/lib/ui/UIUtils.java:458"
+            ]
+          },
+          {
+            "name": "process.platform",
+            "purpose": "VS Code 扩展中区分 macOS/Windows/Linux 的安装路径与可执行文件名",
+            "count": 15,
+            "evidence": [
+              "integrations/vscode/src/visualvm.ts:77-155",
+              "integrations/vscode/src/download.ts:92-182"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "profilerinterface",
+        "mechanism": "System.loadLibrary",
+        "acquisition": "self_build",
+        "source": "本仓 libs.profiler/lib.profiler/native/src-jdk15 编译生成的 JVMTI agent（各平台预编译二进制位于 release/modules/ext/deployed/）",
+        "description": "Profiler 核心原生 agent，通过 JVMTI 对目标 JVM 进行 instrumentation 与采样。",
+        "optional": false,
+        "evidence": [
+          "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/server/ProfilerCalibrator.java:139"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "作为桌面应用，VisualVM 运行期高度依赖宿主 JDK、用户/缓存目录、环境变量以及跨进程 attach/JMX 服务。Windows 启动器额外依赖注册表与特殊文件夹 API。",
+    "network": [
+      {
+        "detail": "JMX/RMI 连接到本地或远程 JVM",
+        "purpose": "监控远程 JVM 的 MBean 与运行时状态",
+        "evidence": [
+          "visualvm/jmx/src"
+        ]
+      },
+      {
+        "detail": "Jolokia HTTP/JSON 与 Kubernetes API",
+        "purpose": "插件中通过 HTTP 桥接 JMX，Kubernetes 客户端拉取 Pod 列表",
+        "evidence": [
+          "plugins/jolokia/external/binaries-list"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "用户目录 ~/.visualvm 或 ~/Library/Application Support/VisualVM",
+        "purpose": "存储配置、设置与导入数据",
+        "evidence": [
+          "visualvm/launcher/visualvm:54-61",
+          "visualvm/launcher/visualvm.conf:54-55"
+        ]
+      },
+      {
+        "detail": "缓存目录 ~/.cache/visualvm 或 ~/Library/Caches/VisualVM",
+        "purpose": "NetBeans 平台缓存",
+        "evidence": [
+          "visualvm/launcher/visualvm:54-61"
+        ]
+      },
+      {
+        "detail": "/proc/meminfo",
+        "purpose": "Linux 启动器脚本计算默认堆大小",
+        "evidence": [
+          "visualvm/launcher/visualvm:138-144"
+        ]
+      },
+      {
+        "detail": "visualvm.clusters / visualvm.conf",
+        "purpose": "启动器读取模块集群与 JVM 启动选项",
+        "evidence": [
+          "visualvm/launcher/visualvm:107-132",
+          "visualvm/launcher/visualvm.conf:61"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "JAVA_HOME / JDK_HOME",
+        "purpose": "Windows 启动器与 launcher 脚本查找要使用的 JDK",
+        "evidence": [
+          "visualvm/launcher/windows-src/jvmfinder.cpp:44-45",
+          "visualvm/launcher/visualvm:219"
+        ]
+      },
+      {
+        "name": "USERPROFILE / HOME",
+        "purpose": "解析用户目录与缓存目录根路径",
+        "evidence": [
+          "visualvm/launcher/windows-src/visualvmlauncher.cpp:46-48",
+          "visualvm/launcher/visualvm:54-61"
+        ]
+      },
+      {
+        "name": "visualvm_default_userdir / visualvm_default_cachedir / visualvm_default_options",
+        "purpose": "conf 文件中通过变量控制启动目录与 JVM 参数",
+        "evidence": [
+          "visualvm/launcher/visualvm.conf:54-61"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "ProcessBuilder 启动目标 Java 应用",
+        "purpose": "Profiler 启动被分析应用",
+        "evidence": [
+          "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/TargetAppRunner.java:809-811"
+        ]
+      },
+      {
+        "command": "nbexec / visualvm 启动器 exec $sh $nbexec",
+        "purpose": "Unix 启动器脚本拉起 NetBeans 平台启动器",
+        "evidence": [
+          "visualvm/launcher/visualvm:176-202"
+        ]
+      },
+      {
+        "command": "unpack200",
+        "purpose": "自动更新模块中解压 packed jar",
+        "evidence": [
+          "visualvm/antsrc/org/netbeans/nbbuild/AutoUpdate.java:285-304"
+        ]
+      },
+      {
+        "command": "VS Code extension spawns VisualVM executable",
+        "purpose": "IDE 集成中启动 VisualVM 进程",
+        "evidence": [
+          "integrations/vscode/src/visualvm.ts:117-120"
+        ]
+      }
+    ],
+    "devices": [],
+    "services": [
+      {
+        "detail": "Attach API / JVMTI agent 附加到其它 JVM",
+        "purpose": "Profiler 与采样器附加到目标进程并采集数据",
+        "evidence": [
+          "visualvm/attach/src/org/graalvm/visualvm/attach/AttachModelImpl.java:67-245"
+        ]
+      },
+      {
+        "detail": "JMX / MBeanServerConnection",
+        "purpose": "通用监控、线程/堆转储、诊断命令",
+        "evidence": [
+          "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxSupport.java:147-481"
+        ]
+      },
+      {
+        "detail": "jvmstat / jstatd",
+        "purpose": "本地/远程 JVM 进程发现与性能计数器",
+        "evidence": [
+          "visualvm/jvmstat/src/org/graalvm/visualvm/jvmstat/application/JvmstatApplicationProvider.java:132-315"
+        ]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "Java 8（构建要求 Oracle JDK 8；部分 profiler 遗留源码目标为 1.4/1.5）",
+    "runtime_version": "JDK 8+（README 要求 Oracle JDK 8 构建；运行依赖系统 JDK）",
+    "build_system": "Apache Ant + NetBeans Platform harness（org.netbeans.modules.apisupport.project）",
+    "compiler_extensions": [
+      {
+        "detail": "C/C++ 启动器使用 Windows.h、SHGetFolderPath、registry API 等 Win32 专有调用",
+        "evidence": [
+          "visualvm/launcher/windows-src/visualvmlauncher.cpp:26-31"
+        ]
+      },
+      {
+        "detail": "C native agent 包含 Solaris 专用 /proc/ctl 微状态记账代码",
+        "evidence": [
+          "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Timers.c:39-44"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "visualvm/launcher/windows-src/visualvm.cpp",
+          "visualvm/launcher/windows-src/visualvmlauncher.cpp:181-182"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64 / arm64",
+        "evidence": [
+          "visualvm/launcher/visualvm:51-62",
+          "visualvm/launcher/visualvm.conf:36-38"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "visualvm/launcher/visualvm:57-62",
+          "visualvm/launcher/visualvm:138-144"
+        ]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "launcher",
+        "name": "visualvm",
+        "command": "Unix shell 启动器，解析配置后 exec nbexec 启动 NetBeans 平台",
+        "evidence": [
+          "visualvm/launcher/visualvm:1-225"
+        ]
+      },
+      {
+        "type": "launcher",
+        "name": "visualvm.exe",
+        "command": "Windows 原生 C++ 启动器，定位 JDK 后加载 nbexec.dll 启动 NetBeans 平台",
+        "evidence": [
+          "visualvm/launcher/windows-src/visualvm.cpp:29-32",
+          "visualvm/launcher/windows-src/visualvmlauncher.cpp:79-168"
+        ]
+      },
+      {
+        "type": "framework_startup",
+        "name": "nbexec",
+        "command": "NetBeans 平台启动器，加载模块集群并启动 VisualVM 品牌应用",
+        "evidence": [
+          "visualvm/launcher/visualvm:176-202"
+        ]
+      }
+    ],
+    "packaging": "Ant build-zip 目标生成 zip 分发包，包含 VisualVM 模块集群、NetBeans Platform 选定模块、Windows/Linux/macOS 启动器与配置；不捆绑 JDK，依赖系统 JDK。",
+    "notes": "NetBeans Platform 22 需从发布 zip 手动解压到 visualvm/visualvm/netbeans；这是构建前置条件。"
+  },
+  "capability_profile": {
+    "summary": "VisualVM 是典型桌面 Java 应用，核心触及 GUI（Swing/AWT + NetBeans RCP）与系统托盘场景；无 3D 渲染、媒体或特定硬件依赖。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": true,
+        "kind": [
+          "swing",
+          "awt",
+          "netbeans_rcp"
+        ],
+        "via": [
+          "NetBeans Platform",
+          "javax.swing",
+          "java.awt"
+        ],
+        "harmony_status": "unknown",
+        "adaptation": "需鸿蒙 PC JDK 支持 headful AWT/Swing；若不支持则整个应用需以 ArkUI/其它 GUI 重写或放弃。",
+        "evidence": [
+          "visualvm/appui/nbproject/project.xml:98-117",
+          "plugins/systray/src/org/graalvm/visualvm/modules/systray/SysTray.java:28-46"
+        ]
+      },
+      {
+        "key": "system_tray",
+        "present": true,
+        "kind": [
+          "java_awt_systemtray"
+        ],
+        "via": [
+          "java.awt.SystemTray",
+          "java.awt.TrayIcon"
+        ],
+        "harmony_status": "unknown",
+        "adaptation": "依赖 AWT SystemTray 支持；鸿蒙无对应能力时可关闭该插件或改用 @ohos.notificationManager。",
+        "evidence": [
+          "plugins/systray/src/org/graalvm/visualvm/modules/systray/SysTray.java:102-193"
+        ]
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（整包桌面应用模型 C；应用以已移植 JDK 17/8 运行，原生 agent 需 OHOS NDK 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "hard",
+    "effort": {
+      "person_days": [
+        30,
+        60
+      ]
+    },
+    "confidence": "medium",
+    "recommended_path": "port_as_desktop_app_rebuild_agent",
+    "summary": "VisualVM 是桌面 Java 应用，能否鸿蒙化首先取决于鸿蒙 PC JDK 是否支持 headful AWT/Swing 及 JDK 内部模块（attach/jvmstat/JVMTI）。在目标事实未核实前无法判定为可行。即便 JDK 能力具备，仍需用 OHOS NDK 重编 profiler 原生 agent、替换/适配 Windows 专用启动器、验证 NetBeans RCP 窗口系统，并评估跨进程 attach 权限。核心 Profiler 功能所依赖的预编译 libprofilerinterface 无现成 OHOS 版本，是主要部分不可适配点。",
+    "blockers": [
+      {
+        "id": "bk:libprofilerinterface",
+        "issue": "Profiler 核心依赖预编译原生 agent libprofilerinterface，无 HarmonyOS PC 现成二进制，需重编且依赖 JVMTI 可用性。",
+        "severity": "major",
+        "adaptability": "unadaptable",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "用 OHOS NDK 交叉编译 libprofilerinterface.so；若鸿蒙 JDK 不支持 JVMTI，则 CPU/采样等依赖 agent 的功能无法移植，需裁剪或重写。",
+        "caused_by": [
+          "ta:jvmti"
+        ],
+        "manifests_as": [
+          "ua:libprofilerinterface"
+        ],
+        "evidence": [
+          "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/server/ProfilerCalibrator.java:139",
+          "visualvm/libs.profiler/lib.profiler/native/src-jdk15/attach.c:35-144"
+        ]
+      },
+      {
+        "id": "bk:headful_awt_swing",
+        "issue": "整个桌面 UI 基于 headful AWT/Swing 与 NetBeans RCP 窗口系统，目标平台支持状态未核实。",
+        "severity": "blocker",
+        "adaptability": "partial",
+        "category": "gui_toolkit",
+        "source_dimension": "capability_profile",
+        "harmony_status": "unknown",
+        "remediation": "确认鸿蒙 PC JDK 是否带 headful AWT/Swing；若不支持，需以 ArkUI/其它 GUI 重写整个前端并替换 NetBeans RCP 窗口/ docking 能力。",
+        "caused_by": [
+          "ta:headful_awt",
+          "ta:swing",
+          "ta:netbeans_rcp"
+        ],
+        "evidence": [
+          "visualvm/appui/nbproject/project.xml:98-117",
+          "plugins/systray/src/org/graalvm/visualvm/modules/systray/SysTray.java:28-46"
+        ]
+      },
+      {
+        "id": "bk:jdk_attach_jvmstat",
+        "issue": "进程发现、attach、Profiler 大量调用 jdk.attach / jdk.internal.jvmstat 内部 API，目标 JDK 是否开放/包含这些模块未核实。",
+        "severity": "blocker",
+        "adaptability": "partial",
+        "category": "jdk_internal_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "确认鸿蒙 JDK 是否包含 jdk.attach 与 jdk.internal.jvmstat 模块并允许 --add-exports；缺失时核心监控功能无法运行。",
+        "caused_by": [
+          "ta:jdk_attach",
+          "ta:jdk_jvmstat",
+          "ta:add_opens"
+        ],
+        "evidence": [
+          "visualvm/attach/src/org/graalvm/visualvm/attach/AttachModelImpl.java:28-245",
+          "visualvm/jvmstat/src/org/graalvm/visualvm/jvmstat/application/JvmstatApplicationProvider.java:59-315",
+          "visualvm/launcher/visualvm.conf:61"
+        ]
+      },
+      {
+        "id": "bk:cross_process_attach",
+        "issue": "Profiler/采样器需要跨进程 attach 与 JVMTI 调试其它 JVM，鸿蒙 PC 进程/安全模型是否允许未核实。",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "process_security",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unknown",
+        "remediation": "确认鸿蒙 PC 是否允许跨进程 attach 与 ptrace 类调试；受限时需申请权限或放弃本地 attach 模式。",
+        "caused_by": [
+          "ta:cross_attach",
+          "ta:ptrace"
+        ],
+        "evidence": [
+          "visualvm/attach/src/org/graalvm/visualvm/attach/AttachModelImpl.java:187-245",
+          "visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxModelImpl.java:511-557"
+        ]
+      },
+      {
+        "id": "bk:desktop_delivery",
+        "issue": "VisualVM 以传统 zip + launcher + 系统 JDK 形态分发，鸿蒙 PC 是否支持该桌面应用交付模型未核实。",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "app_delivery",
+        "source_dimension": "build_env",
+        "harmony_status": "unknown",
+        "remediation": "确认鸿蒙 PC 支持传统桌面 zip 分发还是仅支持 .hap；后者需重写启动与打包流程。",
+        "caused_by": [
+          "ta:desktop_app"
+        ],
+        "evidence": [
+          "README.md:20-25",
+          "visualvm/build.xml:91-116"
+        ]
+      },
+      {
+        "id": "bk:system_tray",
+        "issue": "systray 插件使用 java.awt.SystemTray，鸿蒙 PC 是否提供系统托盘能力未核实。",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "desktop_integration",
+        "source_dimension": "capability_profile",
+        "harmony_status": "unknown",
+        "remediation": "若 SystemTray 不可用，可禁用 systray 插件或以 @ohos.notificationManager 替代托盘通知。",
+        "caused_by": [
+          "ta:tray"
+        ],
+        "evidence": [
+          "plugins/systray/src/org/graalvm/visualvm/modules/systray/SysTray.java:102-193"
+        ]
+      }
+    ],
+    "unadaptable_apis": [
+      {
+        "id": "ua:libprofilerinterface",
+        "caused_by": [
+          "ta:jvmti"
+        ],
+        "api": "libprofilerinterface (JVMTI native agent)",
+        "public_entry": "ProfilerCalibrator.main / ProfilerServer.load / TargetAppRunner.startTargetApp",
+        "reason": "仓库仅携带 Windows/macOS/Linux 预编译二进制，无 HarmonyOS PC 对应 .so；即便重编也依赖 JVMTI 在鸿蒙 JDK 中的可用性。",
+        "blocking_native_api": "JVMTI AddToBootstrapClassLoaderSearch / GetTime / SuspendThread / ResumeThread",
+        "category": "ffi",
+        "evidence": [
+          "visualvm/libs.profiler/lib.profiler/src/org/graalvm/visualvm/lib/jfluid/server/ProfilerCalibrator.java:139",
+          "visualvm/libs.profiler/lib.profiler/native/src-jdk15/attach.c:91-144",
+          "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Timers.c:68-88",
+          "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Threads.c:236-310"
+        ]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:headful_awt",
+        "capability": "headful AWT (java.awt)",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "VisualVM 所有 Swing 组件与系统托盘都依赖 headful AWT；不支持则无法显示任何界面。",
+        "source": "references/harmony-pc-capabilities.json#gui.awt_headful"
+      },
+      {
+        "id": "ta:swing",
+        "capability": "Swing (javax.swing)",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "整个桌面 UI 与 NetBeans RCP 建立在 Swing 之上；不支持则应用无法运行。",
+        "source": "references/harmony-pc-capabilities.json#gui.swing"
+      },
+      {
+        "id": "ta:netbeans_rcp",
+        "capability": "NetBeans RCP 窗口系统 / docking / 桌面集成",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "VisualVM 的模块管理、TopComponent 窗口、菜单、自动更新依赖 NetBeans Platform；需 Swing/AWT 与桌面窗口管理器配合。",
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.docking"
+      },
+      {
+        "id": "ta:jdk_attach",
+        "capability": "jdk.attach / sun.tools.attach（进程 attach）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "本地进程发现、堆转储、jcmd、Profiler attach 均依赖该模块；缺失则核心监控能力不可用。",
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_attach"
+      },
+      {
+        "id": "ta:jdk_jvmstat",
+        "capability": "jdk.internal.jvmstat / sun.jvmstat（性能计数器）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "本地 JVM 进程枚举与运行时计数器读取依赖该模块；缺失则进程树为空。",
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_jvmstat"
+      },
+      {
+        "id": "ta:jvmti",
+        "capability": "JVMTI（native agent 接口）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "Profiler 原生 agent 依赖 JVMTI 进行 instrumentation、线程控制、计时；缺失则采样/分析功能不可移植。",
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.jvmti"
+      },
+      {
+        "id": "ta:add_opens",
+        "capability": "--add-opens / --add-exports 启动参数支持",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "visualvm.conf 默认大量 --add-exports/--add-opens 以访问 JDK 内部包；不支持则启动即失败。",
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.add_opens"
+      },
+      {
+        "id": "ta:cross_attach",
+        "capability": "跨进程 attach / 检视其他进程",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "Profiler/采样器必须 attach 到其它 JVM；沙箱或权限限制会使核心功能失效。",
+        "source": "references/harmony-pc-capabilities.json#process_security.cross_attach"
+      },
+      {
+        "id": "ta:ptrace",
+        "capability": "ptrace / 调试其他进程",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "部分高级诊断能力可能受限；非核心功能。",
+        "source": "references/harmony-pc-capabilities.json#process_security.ptrace"
+      },
+      {
+        "id": "ta:tray",
+        "capability": "系统托盘 (SystemTray)",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "systray 插件功能；缺失时可禁用。",
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.tray"
+      },
+      {
+        "id": "ta:desktop_app",
+        "capability": "传统桌面应用（JVM + launcher + system JDK，zip 分发）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "决定 VisualVM 能否以现有形态在鸿蒙 PC 上打包并启动；若仅支持 .hap 则需重写启动与交付流程。",
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+      }
+    ],
+    "required_permissions": [],
+    "compatible": [
+      {
+        "aspect": "纯 Java 业务逻辑与插件框架",
+        "note": "在 JDK 与 AWT/Swing 可用的前提下，大量模块逻辑无需改动即可运行。",
+        "evidence": [
+          "visualvm/core/src",
+          "visualvm/application/src"
+        ]
+      },
+      {
+        "aspect": "VS Code 扩展",
+        "note": "TypeScript 扩展在鸿蒙 VS Code 可用时可运行，主要需适配 VisualVM 可执行文件路径。",
+        "evidence": [
+          "integrations/vscode/src/visualvm.ts:38-120"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "核实鸿蒙 PC JDK 是否支持 headful AWT/Swing、--add-exports/--add-opens、jdk.attach、jdk.internal.jvmstat、JVMTI。",
+      "用 OHOS NDK 交叉编译 libprofilerinterface.so（arm64/x86_64），验证 JVMTI 接口可用性。",
+      "适配或替换 Windows 专用启动器，提供鸿蒙可用的 launcher（复用 POSIX shell 启动器或新建原生启动器）。",
+      "验证 NetBeans Platform 22 在鸿蒙桌面窗口系统下的窗口/docking/菜单行为。",
+      "确认鸿蒙 PC 跨进程 attach 权限模型，必要时申请调试类权限或裁剪本地 attach 功能。",
+      "根据鸿蒙应用交付形态（zip 桌面应用 vs .hap）调整打包与签名流程。"
+    ],
+    "notes": "本评估按整包桌面应用模型 C 进行。由于多个关键目标能力（headful AWT/Swing、JDK 内部模块、JVMTI、跨进程 attach、传统桌面交付形态）在 harmony-pc-capabilities.json 中均为 unknown，置信度下调至 medium；在相关事实核实前不能判定为可行。Windows 启动器中的 Win32 注册表/SHGetFolderPath 调用仅影响 Windows 构建，不构成鸿蒙端口的全局阻碍。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [
+      "本报告为整包桌面应用评估（模型 C），大量结论依赖鸿蒙 PC JDK/桌面环境的目标事实，需人工核实 harmony-pc-capabilities.json 中相关条目。"
+    ],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "library.kind",
+        "kind": "new_value",
+        "value": "application",
+        "rationale": "VisualVM 是终端用户启动的桌面工具，有 launcher、zip 分发、GUI，不是被 API 调用的库；应在 kind 中明确标识。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "download_build",
+        "rationale": "NetBeans Platform 作为 RCP 框架通过官方发布 zip 下载并解压到构建目录，不是 Maven/Gradle 依赖；使用 download_build 描述。"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "scenarios",
+        "kind": "new_value",
+        "value": "system_tray",
+        "rationale": "VisualVM 的 systray 插件使用 java.awt.SystemTray，是桌面集成的一个独立场景，推荐场景清单中未包含，应补充。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "blockers[].category",
+        "kind": "new_value",
+        "value": "jdk_internal_api",
+        "rationale": "Java 桌面监控工具大量依赖 jdk.attach/jdk.internal.jvmstat/com.sun.management 等 JDK 内部 API，现有 blocker category 未突出此类，应作为独立类别。"
+      }
+    ]
+  }
+}
