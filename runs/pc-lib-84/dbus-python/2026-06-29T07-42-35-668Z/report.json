@@ -1,0 +1,949 @@
+{
+  "library": {
+    "name": "dbus-python",
+    "kind": "library",
+    "package_name": "dbus-python",
+    "aliases": ["dbus-python"],
+    "import_names": ["dbus", "_dbus_bindings", "_dbus_glib_bindings"],
+    "source_url": "https://gitlab.freedesktop.org/dbus/dbus-python",
+    "analyzed_at": "2026-06-29T07:42:35.668Z",
+    "commit": "ec32cda206c97c945c9a97f5f5620c5072b32e46",
+    "one_liner": "D-Bus 的原始 Python 绑定库，通过 C 扩展封装 libdbus，提供总线连接、对象导出、方法调用与信号收发能力。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "dbus-python 是 D-Bus 消息总线协议的官方 Python 绑定库，向上提供 Pythonic API，使 Python 程序能够连接系统总线或会话总线、导出服务对象、调用远程方法、订阅并发送信号，以及映射 D-Bus 数据类型。底层通过 _dbus_bindings C 扩展调用 libdbus；可选模块 _dbus_glib_bindings 与 vendored 的 dbus-gmain 子项目集成 GLib 主循环。该库被桌面应用、系统守护进程及脚本作为 IPC 基础设施调用，本身不提供可独立运行的终端用户程序。",
+    "categories": [
+      {
+        "name": "D-Bus 连接与会话管理",
+        "description": "建立并管理到系统总线、会话总线或启动总线的连接，包括总线名称请求、释放与激活。",
+        "evidence": ["dbus/bus.py", "dbus_bindings/bus.c", "dbus_bindings/conn.c"]
+      },
+      {
+        "name": "消息总线对象导出与方法调用",
+        "description": "在总线上导出对象、处理方法调用并返回结果；同时支持通过代理对象异步或同步调用远程方法。",
+        "evidence": ["dbus/service.py", "dbus/proxies.py", "dbus_bindings/message.c", "dbus_bindings/server.c"]
+      },
+      {
+        "name": "信号订阅与匹配",
+        "description": "按发送者、对象路径、接口、成员等条件订阅信号，并在回调中分发。",
+        "evidence": ["dbus/connection.py", "dbus_bindings/conn-methods.c"]
+      },
+      {
+        "name": "数据类型映射与 Unix 文件描述符传递",
+        "description": "在 Python 对象与 D-Bus 类型系统之间转换，包括数组、字典、结构体、对象路径、签名及 UnixFd。",
+        "evidence": ["dbus/types.py", "dbus_bindings/unixfd.c", "dbus_bindings/containers.c", "dbus_bindings/int.c"]
+      },
+      {
+        "name": "GLib 主循环集成",
+        "description": "通过 _dbus_glib_bindings 与 dbus-gmain 将 D-Bus 的 watch/timeout 机制接入 GLib 主循环。",
+        "evidence": ["dbus_glib_bindings/module.c", "subprojects/dbus-gmain/dbus-gmain.c", "dbus/mainloop/glib.py"]
+      }
+    ],
+    "domain": "IPC / 系统消息总线",
+    "target_users": "需要在 Python 中使用 D-Bus 进行进程间通信的桌面应用、系统守护进程及脚本开发者"
+  },
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "Python",
+      "Text",
+      "Meson",
+      "make",
+      "m4",
+      "Bourne Shell",
+      "C/C++ Header"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 32,
+        "code": 9270,
+        "pct": 51.57,
+        "production": {
+          "files": 25,
+          "code": 8777
+        },
+        "test": {
+          "files": 7,
+          "code": 493
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 45,
+        "code": 4639,
+        "pct": 25.81,
+        "production": {
+          "files": 21,
+          "code": 1978
+        },
+        "test": {
+          "files": 14,
+          "code": 2307
+        },
+        "example": {
+          "files": 10,
+          "code": 354
+        }
+      },
+      {
+        "language": "Text",
+        "files": 10,
+        "code": 1079,
+        "pct": 6.0,
+        "production": {
+          "files": 10,
+          "code": 1079
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Meson",
+        "files": 8,
+        "code": 641,
+        "pct": 3.57,
+        "production": {
+          "files": 3,
+          "code": 365
+        },
+        "test": {
+          "files": 5,
+          "code": 276
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 3,
+        "code": 514,
+        "pct": 2.86,
+        "production": {
+          "files": 3,
+          "code": 514
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "m4",
+        "files": 2,
+        "code": 512,
+        "pct": 2.85,
+        "production": {
+          "files": 2,
+          "code": 512
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 9,
+        "code": 402,
+        "pct": 2.24,
+        "production": {
+          "files": 8,
+          "code": 318
+        },
+        "test": {
+          "files": 1,
+          "code": 84
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 9,
+        "code": 383,
+        "pct": 2.13,
+        "production": {
+          "files": 7,
+          "code": 376
+        },
+        "test": {
+          "files": 2,
+          "code": 7
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 3,
+        "code": 254,
+        "pct": 1.41,
+        "production": {
+          "files": 3,
+          "code": 254
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 140,
+        "pct": 0.78,
+        "production": {
+          "files": 2,
+          "code": 140
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 16,
+        "code": 70,
+        "pct": 0.39,
+        "production": {
+          "files": 16,
+          "code": 70
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 44,
+        "pct": 0.24,
+        "production": {
+          "files": 1,
+          "code": 44
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 1,
+        "code": 22,
+        "pct": 0.12,
+        "production": {
+          "files": 1,
+          "code": 22
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 5,
+        "pct": 0.03,
+        "production": {
+          "files": 1,
+          "code": 5
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 142,
+      "code": 17975,
+      "comment": 4282,
+      "blank": 3760,
+      "total_lines": 26017
+    },
+    "production": {
+      "files": 103,
+      "code": 14454,
+      "comment": 3362,
+      "blank": 2914,
+      "total_lines": 20730
+    },
+    "test": {
+      "files": 29,
+      "code": 3167,
+      "comment": 605,
+      "blank": 677,
+      "total_lines": 4449
+    },
+    "example": {
+      "files": 10,
+      "code": 354,
+      "comment": 315,
+      "blank": 169,
+      "total_lines": 838
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 29,
+    "test_cases": 108,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 14,
+        "cases": 108
+      },
+      "Meson": {
+        "files": 5,
+        "cases": 0
+      },
+      "C": {
+        "files": 7,
+        "cases": 0
+      },
+      "Bourne Shell": {
+        "files": 1,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 2,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "Expat (MIT/X11)",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "COPYING",
+      "LICENSES/MIT.txt",
+      "LICENSES/GPL-3.0-or-later.txt",
+      "LICENSES/LicenseRef-AutoconfArchiveException.txt",
+      "subprojects/dbus-gmain/COPYING",
+      "subprojects/dbus-gmain/LICENSES/AFL-2.1.txt",
+      "subprojects/dbus-gmain/LICENSES/GPL-2.0-or-later.txt",
+      "subprojects/dbus-gmain/LICENSES/MIT.txt"
+    ],
+    "evidence": "项目根目录 COPYING 与 pyproject.toml 均声明为 Expat (MIT/X11)；所有生产源文件头均含 SPDX-License-Identifier: MIT；项目使用 REUSE 合规标注。",
+    "notes": "主体代码与 Python 包装层均为 MIT。例外：m4/ax_python_devel.m4 为 GPL-3.0-or-later WITH LicenseRef-AutoconfArchiveException；vendored 子项目 subprojects/dbus-gmain 为 AFL-2.1 OR GPL-2.0-or-later（dual-licensed），但该子项目属 dbus-python 的运行时依赖/组件，不影响 dbus-python 主体 MIT 授权。"
+  },
+  "dependencies": {
+    "count": 8,
+    "manifests": [
+      "pyproject.toml",
+      "setup.cfg",
+      "setup.py",
+      "meson.build",
+      "configure.ac",
+      "subprojects/dbus-gmain/meson.build"
+    ],
+    "by_ecosystem": {
+      "python": 1,
+      "cpp": 3,
+      "build": 4
+    },
+    "dependencies": [
+      {
+        "name": "Python",
+        "ecosystem": "python",
+        "registry_name": null,
+        "source_repo": "https://github.com/python/cpython",
+        "import_names": [],
+        "aliases": ["python3", "cpython"],
+        "scope": "runtime",
+        "version": ">=3.7",
+        "purpose": "解释器与 CPython C API，用于运行 Python 代码并编译 C 扩展。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装 Python 3.7+（CPython）。",
+        "declared_in": ["pyproject.toml", "setup.cfg", "meson.build", "configure.ac"],
+        "used_symbols": [
+          "PyArg_ParseTupleAndKeywords",
+          "PyModule_Create",
+          "PyType_Ready",
+          "Py_BuildValue",
+          "PyErr_SetString",
+          "PyObject_CallFunction",
+          "PyCapsule_GetPointer",
+          "PyImport_ImportModule"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC 文档（Python 已移植）"
+      },
+      {
+        "name": "dbus-1",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://gitlab.freedesktop.org/dbus/dbus",
+        "import_names": [],
+        "aliases": ["libdbus-1", "D-Bus"],
+        "scope": "runtime",
+        "version": ">=1.8",
+        "purpose": "D-Bus 协议参考实现的 C 库，_dbus_bindings 扩展直接调用其连接、消息、总线、服务端 API。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统通过 pkg-config 提供的 libdbus-1（>=1.8）。",
+        "declared_in": ["meson.build", "configure.ac", "dbus-python.pc.in"],
+        "used_symbols": [
+          "dbus_bus_get",
+          "dbus_connection_send",
+          "dbus_connection_dispatch",
+          "dbus_message_new_method_call",
+          "dbus_message_new_signal",
+          "dbus_message_iter_*",
+          "dbus_server_listen",
+          "dbus_watch_*",
+          "dbus_timeout_*",
+          "dbus_signature_*",
+          "dbus_validate_*"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "glib-2.0",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://gitlab.gnome.org/GNOME/glib",
+        "import_names": [],
+        "aliases": ["GLib", "gobject"],
+        "scope": "runtime",
+        "version": ">=2.40",
+        "purpose": "为 _dbus_glib_bindings 与 dbus-gmain 提供 GMainContext/GSource 主循环集成。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统通过 pkg-config 提供的 GLib 2.0（>=2.40）。",
+        "declared_in": ["meson.build", "configure.ac"],
+        "used_symbols": [
+          "g_main_context_default",
+          "g_main_context_ref/unref",
+          "g_main_context_wakeup",
+          "g_source_new/attach/destroy/unref",
+          "g_io_channel_unix_new",
+          "g_io_create_watch",
+          "g_timeout_source_new",
+          "g_slist_*"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "dbus-gmain",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://gitlab.freedesktop.org/dbus/dbus-glib",
+        "import_names": [],
+        "aliases": ["dbus-gmain"],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "将 D-Bus 连接/服务器的 watch 与 timeout 挂接到 GLib 主循环的辅助库，作为 meson subproject 嵌入。",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "本仓库 subprojects/dbus-gmain/ 目录（git submodule / meson subproject）。",
+        "declared_in": ["meson.build", "subprojects/dbus-gmain/meson.build"],
+        "used_symbols": [
+          "dbus_gmain_set_up_connection",
+          "dbus_gmain_set_up_server"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "meson-python",
+        "ecosystem": "python",
+        "registry_name": "meson-python",
+        "source_repo": "https://github.com/mesonbuild/meson-python",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": ">=0.8.1",
+        "purpose": "现代 Python wheel 构建后端，驱动 meson 构建 C 扩展。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（构建时由 pip 拉取）。",
+        "declared_in": ["pyproject.toml", "setup.cfg"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "meson",
+        "ecosystem": "python",
+        "registry_name": "meson",
+        "source_repo": "https://github.com/mesonbuild/meson",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": ">=0.60.0",
+        "purpose": "主要构建系统，负责编译 C 扩展、链接系统库并安装。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（构建时由 pip 拉取，亦可系统预装）。",
+        "declared_in": ["pyproject.toml", "setup.cfg", "setup.py", "meson.build"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ninja",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": "https://github.com/ninja-build/ninja",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "Meson 的底层构建执行工具。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装或构建环境提供。",
+        "declared_in": ["pyproject.toml", "setup.cfg"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "patchelf",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": "https://github.com/NixOS/patchelf",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "构建 wheel 时修复 ELF 共享库 rpath。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装或构建环境提供。",
+        "declared_in": ["pyproject.toml", "setup.cfg"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "文档构建额外依赖 sphinx、sphinx_rtd_theme（optional doc）；测试额外依赖 tap.py（optional test）。这些均不改变运行时能力，未计入核心依赖计数。"
+  },
+  "native_api": {
+    "summary": "核心 native 依赖是 D-Bus 参考实现 libdbus（跨平台 IPC 库）与 CPython C API；GLib 仅用于可选的 GLib 主循环集成。生产代码中仅在 UnixFd 与消息解包处直接调用 POSIX 文件描述符操作（dup/close/unistd.h），其余平台差异由 libdbus 与 GLib 抽象。",
+    "groups": [
+      {
+        "type": "python_c_api",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "PyArg_ParseTupleAndKeywords",
+            "purpose": "解析 Python 层传入的位置与关键字参数。",
+            "count": 30,
+            "evidence": ["dbus_bindings/message.c:121", "dbus_bindings/unixfd.c:114", "dbus_bindings/string.c:59"]
+          },
+          {
+            "name": "PyModule_Create / PyModule_AddObject",
+            "purpose": "创建并注册 _dbus_bindings 模块及其导出对象。",
+            "count": 5,
+            "evidence": ["dbus_bindings/module.c:237", "dbus_bindings/module.c:242"]
+          },
+          {
+            "name": "PyType_Ready",
+            "purpose": "初始化各 D-Bus 类型对象（Message、Connection、Signature 等）。",
+            "count": 15,
+            "evidence": ["dbus_bindings/message.c:1095", "dbus_bindings/signature.c:229", "dbus_bindings/unixfd.c:271"]
+          },
+          {
+            "name": "PyCapsule_GetPointer / PyCapsule_IsValid",
+            "purpose": "通过 C API capsule 在 _dbus_glib_bindings 中导入 _dbus_bindings 的内部 C API。",
+            "count": 3,
+            "evidence": ["include/dbus/dbus-python.h:82", "dbus_glib_bindings/module.c:191"]
+          }
+        ],
+        "evidence": ["dbus_bindings/*.c", "dbus_glib_bindings/module.c", "include/dbus/dbus-python.h"]
+      },
+      {
+        "type": "libdbus",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "dbus_connection_*",
+            "purpose": "D-Bus 连接的打开、关闭、引用、消息分发与 watch/timeout 设置。",
+            "count": 80,
+            "evidence": ["dbus_bindings/conn.c", "dbus_bindings/conn-methods.c", "dbus_bindings/mainloop.c"]
+          },
+          {
+            "name": "dbus_message_*",
+            "purpose": "构造、解析、复制与释放 D-Bus 消息（方法调用、返回、信号、错误）。",
+            "count": 120,
+            "evidence": ["dbus_bindings/message.c", "dbus_bindings/message-append.c", "dbus_bindings/message-get-args.c"]
+          },
+          {
+            "name": "dbus_bus_get / dbus_bus_register",
+            "purpose": "获取系统/会话总线连接。",
+            "count": 6,
+            "evidence": ["dbus_bindings/bus.c"]
+          },
+          {
+            "name": "dbus_server_*",
+            "purpose": "创建并运行 D-Bus 监听服务器。",
+            "count": 25,
+            "evidence": ["dbus_bindings/server.c"]
+          },
+          {
+            "name": "dbus_watch_* / dbus_timeout_*",
+            "purpose": "向 libdbus 注册/注销 IO 监视与超时回调。",
+            "count": 20,
+            "evidence": ["subprojects/dbus-gmain/dbus-gmain.c", "dbus_bindings/mainloop.c"]
+          }
+        ],
+        "evidence": ["dbus_bindings/dbus_bindings-internal.h", "dbus_bindings/*.c"]
+      },
+      {
+        "type": "glib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "g_main_context_*",
+            "purpose": "GLib 主上下文引用与唤醒。",
+            "count": 8,
+            "evidence": ["subprojects/dbus-gmain/dbus-gmain.c:136", "subprojects/dbus-gmain/dbus-gmain.c:483"]
+          },
+          {
+            "name": "g_source_*",
+            "purpose": "创建、附加、销毁 GSource 以驱动 D-Bus watch/timeout。",
+            "count": 15,
+            "evidence": ["subprojects/dbus-gmain/dbus-gmain.c:142", "subprojects/dbus-gmain/dbus-gmain.c:260"]
+          },
+          {
+            "name": "g_io_channel_unix_new / g_io_create_watch",
+            "purpose": "将 libdbus 的 Unix fd 包装为 GIOChannel 并创建 watch。",
+            "count": 2,
+            "evidence": ["subprojects/dbus-gmain/dbus-gmain.c:258"]
+          }
+        ],
+        "evidence": ["subprojects/dbus-gmain/dbus-gmain.c", "dbus_glib_bindings/module.c"]
+      },
+      {
+        "type": "posix_fd",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "dup",
+            "purpose": "复制 Unix 文件描述符，UnixFd 对象持有副本。",
+            "count": 1,
+            "evidence": ["dbus_bindings/unixfd.c:150"],
+            "conditional": true
+          },
+          {
+            "name": "close",
+            "purpose": "关闭 UnixFd 持有的文件描述符或在构造失败时清理。",
+            "count": 3,
+            "evidence": ["dbus_bindings/unixfd.c:158", "dbus_bindings/unixfd.c:172", "dbus_bindings/message-get-args.c:329"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["dbus_bindings/unixfd.c", "dbus_bindings/message-get-args.c"]
+      },
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "assert",
+            "purpose": "运行时断言。",
+            "count": 10,
+            "evidence": ["dbus_bindings/message-append.c:31"]
+          },
+          {
+            "name": "stdlib",
+            "purpose": "通用 C 工具函数（如 getenv 仅在调试中使用）。",
+            "count": 2,
+            "evidence": ["dbus_bindings/debug.c:30"]
+          }
+        ],
+        "evidence": ["dbus_bindings/message-append.c", "dbus_bindings/debug.c"]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时依赖宿主已运行 D-Bus 守护进程（系统总线或会话总线），通过标准 D-Bus 地址环境变量定位；库本身不主动发起网络连接，也不直接访问硬件设备。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "D-Bus Unix domain socket（由 dbus-daemon 创建）",
+        "purpose": "实际 IPC 传输通道，路径由 DBUS_SESSION_BUS_ADDRESS / DBUS_SYSTEM_BUS_ADDRESS 指定。",
+        "evidence": ["test/test-p2p.py:62", "README:11"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "DBUS_SESSION_BUS_ADDRESS",
+        "purpose": "会话总线地址；库通过它连接到用户会话 dbus-daemon。",
+        "evidence": ["test/test-p2p.py:62"]
+      },
+      {
+        "name": "DBUS_SYSTEM_BUS_ADDRESS",
+        "purpose": "系统总线地址；用于 SystemBus 连接。",
+        "evidence": ["dbus/_dbus.py"]
+      },
+      {
+        "name": "DBUS_STARTER_BUS_TYPE",
+        "purpose": "启动总线类型（会话/系统），用于 StarterBus。",
+        "evidence": ["dbus/_dbus.py"]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": [
+      {
+        "detail": "dbus-daemon / D-Bus message bus daemon",
+        "purpose": "提供系统总线与会话总线服务；本库所有总线通信均通过它路由。",
+        "evidence": ["README:9", "dbus/bus.py", "test/run-test.sh"]
+      },
+      {
+        "detail": "dbus-run-session",
+        "purpose": "测试阶段用于创建隔离的临时会话总线。",
+        "evidence": ["meson.build:228", "configure.ac:106"]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "C99（C 扩展）/ Python >=3.7",
+    "runtime_version": "CPython >=3.7",
+    "build_system": "Meson（首选），兼容 setuptools 包装与 Autotools（configure.ac + Makefile.am）",
+    "compiler_extensions": [
+      {
+        "detail": "GCC/Clang 扩展属性 __attribute__((unused))",
+        "purpose": "标记未使用参数，避免编译警告。",
+        "evidence": ["dbus_glib_bindings/module.c:34"]
+      },
+      {
+        "detail": "MSVC 条件编译分支（cc.get_id() != 'msvc'）",
+        "purpose": "为非 MSVC 编译器启用 GCC 风格警告选项。",
+        "evidence": ["meson.build:23"]
+      }
+    ],
+    "platforms": [
+        {
+        "os": "Linux",
+        "arch": "any",
+        "evidence": [".gitlab-ci.yml", "configure.ac:34"]
+      },
+      {
+        "os": "Windows (mingw)",
+        "arch": "any",
+        "evidence": ["configure.ac:34"]
+      },
+      {
+        "os": "POSIX (*BSD / macOS)",
+        "arch": "any",
+        "evidence": ["README", "meson.build"]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "通过 PyPI 分发源码包与 wheel；构建时可选 Meson/setuptools 后端，C 扩展随包编译，不捆绑 Python 运行时。",
+    "notes": "构建需要 pkg-config 定位系统 dbus-1 与 glib-2.0；可选的 GLib 绑定在 glib-2.0 不可用时会被跳过。"
+  },
+  "capability_profile": {
+    "summary": "本项目为底层 IPC 绑定库，不触及 GUI 桌面界面、3D 渲染、媒体编解码或特定硬件设备访问，鸿蒙化主要关注 libdbus/GLib 原生依赖与 D-Bus 守护进程可用性。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及 GUI，无需适配。",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及 3D 渲染，无需适配。",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及音视频媒体，无需适配。",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及专用硬件，无需适配。",
+        "evidence": []
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（已移植 Python 运行时口径）",
+    "feasibility": "feasible",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [0, 0],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python",
+        "capability": "Python (CPython) 运行时已在 HarmonyOS NEXT PC 移植",
+        "required": true,
+        "target_status": "available",
+        "impact": "Python 运行时是本库运行的前提；已确认可用。",
+        "source": "references/harmony-pc-capabilities.json#runtimes/python"
+      },
+      {
+        "id": "ta:dbus_daemon",
+        "capability": "HarmonyOS NEXT PC 提供 D-Bus 守护进程与会话/系统总线语义",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "若目标平台无 D-Bus 守护进程，则本库所有总线功能失效；但 OpenHarmony PC PyPI 镜像已提供 ohos 构建包，暗示运行时环境已具备或已被处理。",
+        "source": "OpenHarmony PC PyPI 镜像存在 dbus-python ohos wheel"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "use_existing_ohos_wheel",
+    "summary": "dbus-python 已在 OpenHarmony PC PyPI 镜像（pypi.cnb.cool/OpenHarmonyPCDeveloper）提供 ohos 构建包，因此在 HarmonyOS NEXT PC 上可直接通过 pip 安装使用，无需额外移植工作。若必须从源码构建，核心工作是将 C 扩展与依赖 libdbus、GLib 在 OHOS NDK 下重新编译；源码本身无 GUI、硬件或平台专有 API 阻塞点。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "Python 层代码",
+        "note": "纯 Python 包装层可直接运行在已移植的 CPython 上，无需修改。",
+        "evidence": ["dbus/*.py"]
+      },
+      {
+        "aspect": "跨平台 C 扩展",
+        "note": "C 扩展仅使用 libdbus、GLib 与 Python C API，均为跨平台库；平台相关代码仅限 Unix FD 的 dup/close，且已被条件编译保护。",
+        "evidence": ["dbus_bindings/unixfd.c:34-36"]
+      },
+      {
+        "aspect": "无 GUI/媒体/硬件依赖",
+        "note": "库不涉及桌面 GUI、3D、音视频或专用硬件， capability_profile 全部场景为 false。",
+        "evidence": ["capability_profile.scenarios"]
+      }
+    ],
+    "key_tasks": [
+      "若使用预构建 ohos wheel：直接 pip install dbus-python。",
+      "若从源码构建：确认目标系统已提供 ohos 化的 libdbus-1 与 glib-2.0，或使用 OHOS NDK 自行交叉编译。",
+      "验证 Unix FD 传递在目标 D-Bus 实现中可用（DBUS_TYPE_UNIX_FD）。"
+    ],
+    "notes": "已核实 OpenHarmony PC PyPI 镜像存在 dbus-python 的 ohos wheel，因此本报告将 porting_class 定为 no_adaptation。若仅评估源码而未考虑该预构建包，则应为 needs_adaptation_full（依赖 libdbus/GLib 需 ohos 化，但功能均可适配）。置信度 high 基于 ohos wheel 已存在；target_assumptions 中 D-Bus 守护进程状态记为 unknown 以保留未核实事实。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer (manual single-session analysis)",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "license",
+        "field": "is_dual_licensed",
+        "kind": "ambiguity",
+        "value": "mixed_licensing_subproject",
+        "rationale": "dbus-python 主体为 MIT，但 vendored 子项目 dbus-gmain 为 AFL-2.1 OR GPL-2.0-or-later，且单个构建辅助文件为 GPL-3.0-or-later WITH AutoconfArchiveException。当前 schema 的 is_dual_licensed 字段不足以表达“主体单一许可 + 子项目不同许可”的混合情形，建议在 notes 中补充说明。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "porting_class",
+        "kind": "new_value",
+        "value": "use_existing_ohos_wheel",
+        "rationale": "当目标平台 PyPI 镜像已提供 ohos wheel 时，推荐路径可明确记为 use_existing_ohos_wheel；此时 porting_class 可视为 no_adaptation，因为消费者无需源码级改造。"
+      }
+    ]
+  }
+}

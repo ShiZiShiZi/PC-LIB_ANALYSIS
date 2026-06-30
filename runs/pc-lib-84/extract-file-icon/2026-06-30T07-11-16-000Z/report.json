@@ -1,0 +1,729 @@
+{
+  "library": {
+    "name": "extract-file-icon",
+    "kind": "library",
+    "package_name": "extract-file-icon",
+    "aliases": [],
+    "import_names": ["extract-file-icon"],
+    "source_url": "https://github.com/sentialx/extract-file-icon.git",
+    "analyzed_at": "2026-06-30T07:11:16.000Z",
+    "commit": "d09a9c4391963e9535bc3a1c18aeeb31dfab4a2f",
+    "one_liner": "Node.js 原生扩展库，提取 Windows/macOS 文件关联图标并返回 PNG 缓冲区",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+
+  "function_summary": {
+    "summary": "extract-file-icon 是一个 Node.js 原生扩展库，用于提取操作系统为指定文件路径关联的图标，并以 PNG 图片缓冲区形式返回。在 Windows 上通过 Shell API（SHGetFileInfoW）和 GDI+ 获取图标并转换为 PNG；在 macOS 上通过 NSWorkspace 的 iconForFile: 方法获取图标。该库不支持 Linux。主要面向 Electron 桌面应用开发者，用于在应用界面中展示文件图标。",
+    "categories": [
+      {
+        "name": "文件图标提取",
+        "description": "根据文件路径获取操作系统关联的文件图标，支持指定图标尺寸（16/32/64/256 像素），返回 PNG 格式的 Buffer",
+        "evidence": ["src/index.ts:9-12", "lib/addon.cc:258-268", "lib/addon.mm:14-28"]
+      },
+      {
+        "name": "平台原生桥接",
+        "description": "通过 N-API（node-addon-api）将 Windows Shell API 和 macOS AppKit API 桥接到 Node.js，实现跨平台的原生图标提取",
+        "evidence": ["binding.gyp:1-34", "lib/addon.cc:4", "lib/addon.mm:2"]
+      }
+    ],
+    "domain": "桌面集成 / 文件系统",
+    "target_users": "Electron 桌面应用开发者、需要在 Node.js 应用中展示文件图标的开发者"
+  },
+
+  "languages": {
+    "primary": "C++",
+    "all": ["JSON", "C++", "Python", "Objective-C++", "Markdown", "TypeScript", "JavaScript"],
+    "breakdown": [
+      {
+        "language": "JSON",
+        "files": 5,
+        "code": 1118,
+        "pct": 78.13,
+        "production": { "files": 5, "code": 1118 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "C++",
+        "files": 1,
+        "code": 216,
+        "pct": 15.09,
+        "production": { "files": 1, "code": 216 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Python",
+        "files": 1,
+        "code": 35,
+        "pct": 2.45,
+        "production": { "files": 1, "code": 35 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Objective-C++",
+        "files": 1,
+        "code": 28,
+        "pct": 1.96,
+        "production": { "files": 1, "code": 28 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 17,
+        "pct": 1.19,
+        "production": { "files": 1, "code": 17 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "TypeScript",
+        "files": 1,
+        "code": 10,
+        "pct": 0.7,
+        "production": { "files": 1, "code": 10 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "JavaScript",
+        "files": 2,
+        "code": 7,
+        "pct": 0.49,
+        "production": { "files": 2, "code": 7 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      }
+    ]
+  },
+
+  "code_metrics": {
+    "tool": "cloc",
+    "total": { "files": 12, "code": 1431, "comment": 0, "blank": 86, "total_lines": 1517 },
+    "production": { "files": 12, "code": 1431, "comment": 0, "blank": 86, "total_lines": 1517 },
+    "test": { "files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0 },
+    "example": { "files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0 },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": { "javascript": { "files": 1, "hits": 1 } },
+      "by_platform": { "windows": 1 },
+      "samples": [
+        {
+          "language": "javascript",
+          "file": "install.js",
+          "line": 4,
+          "text": "if (os.platform() === \"win32\") {"
+        }
+      ],
+      "total": 1,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "notes": "该项目无测试文件。"
+  },
+
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件包含标准 MIT 许可证全文，版权人为 Eryk Rakowski (2019)；package.json 声明 \"license\": \"MIT\"。",
+    "notes": null
+  },
+
+  "dependencies": {
+    "count": 5,
+    "manifests": ["package.json", "binding.gyp"],
+    "by_ecosystem": { "nodejs": 5 },
+    "dependencies": [
+      {
+        "name": "node-addon-api",
+        "ecosystem": "nodejs",
+        "registry_name": "node-addon-api",
+        "source_repo": "https://github.com/nodejs/node-addon-api",
+        "import_names": ["napi.h"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "1.7.1",
+        "purpose": "Node.js C++ N-API 封装库，用于编写原生 Node.js 插件，提供 C++ 类来封装 N-API 的 C 接口",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json:29", "binding.gyp:30"],
+        "used_symbols": ["Napi::Env", "Napi::String", "Napi::Number", "Napi::Buffer", "Napi::CallbackInfo", "Napi::Object", "Napi::Function", "NODE_API_MODULE"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "node-gyp",
+        "ecosystem": "nodejs",
+        "registry_name": "node-gyp",
+        "source_repo": "https://github.com/nodejs/node-gyp",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": "6.0.1",
+        "purpose": "Node.js 原生插件编译工具，将 C++ 源码编译为 .node 二进制文件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json:34"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "@types/node",
+        "ecosystem": "nodejs",
+        "registry_name": "@types/node",
+        "source_repo": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+        "import_names": [],
+        "aliases": [],
+        "scope": "dev",
+        "version": "12.12.9",
+        "purpose": "Node.js 的 TypeScript 类型定义，用于 TypeScript 编译时的类型检查",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json:33"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "typescript",
+        "ecosystem": "nodejs",
+        "registry_name": "typescript",
+        "source_repo": "https://github.com/microsoft/TypeScript",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": "3.7.2",
+        "purpose": "TypeScript 编译器，将 src/index.ts 编译为 dist/index.js",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json:36"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "tslint",
+        "ecosystem": "nodejs",
+        "registry_name": "tslint",
+        "source_repo": "https://github.com/palantir/tslint",
+        "import_names": [],
+        "aliases": [],
+        "scope": "dev",
+        "version": "5.20.1",
+        "purpose": "TypeScript 代码风格检查工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json:35"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "运行时依赖仅 node-addon-api（N-API C++ 封装）；其余均为构建/开发依赖。Gdiplus.lib（Windows）和 AppKit.framework（macOS）为系统库链接，在 binding.gyp 中声明，不作为 npm 依赖。"
+  },
+
+  "native_api": {
+    "summary": "该库在 Windows 上大量使用 Win32 Shell API（SHGetFileInfoW、SHGetImageList）和 GDI+ 图形 API 获取并转换文件图标；在 macOS 上使用 AppKit 的 NSWorkspace 获取文件图标并转换为 PNG。两端均通过 N-API 桥接到 Node.js。整体平台依赖度极高，核心功能完全依赖平台专有 API。",
+    "groups": [
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "SHGetFileInfoW",
+            "purpose": "获取文件关联的图标信息（SHFILEINFOW 结构体），是 Windows 上文件图标提取的核心 API",
+            "count": 1,
+            "evidence": ["lib/addon.cc:224"],
+            "conditional": true
+          },
+          {
+            "name": "SHGetImageList",
+            "purpose": "获取系统图像列表，用于提取 64px 和 256px 大图标",
+            "count": 1,
+            "evidence": ["lib/addon.cc:236"],
+            "conditional": true
+          },
+          {
+            "name": "GetIconInfo",
+            "purpose": "从 HICON 句柄获取 ICONINFO 结构体（位图信息）",
+            "count": 1,
+            "evidence": ["lib/addon.cc:53"],
+            "conditional": false
+          },
+          {
+            "name": "GetDIBits",
+            "purpose": "从 HBITMAP 获取设备无关位图像素数据",
+            "count": 2,
+            "evidence": ["lib/addon.cc:73", "lib/addon.cc:87"],
+            "conditional": false
+          },
+          {
+            "name": "GetDC",
+            "purpose": "获取设备上下文句柄，用于 GDI 位图操作",
+            "count": 1,
+            "evidence": ["lib/addon.cc:61"],
+            "conditional": false
+          },
+          {
+            "name": "ReleaseDC",
+            "purpose": "释放设备上下文句柄",
+            "count": 1,
+            "evidence": ["lib/addon.cc:104"],
+            "conditional": false
+          },
+          {
+            "name": "CoInitializeEx",
+            "purpose": "初始化 COM 库，Shell API 调用的前置条件",
+            "count": 1,
+            "evidence": ["lib/addon.cc:20"],
+            "conditional": false
+          },
+          {
+            "name": "CoUninitialize",
+            "purpose": "释放 COM 库",
+            "count": 1,
+            "evidence": ["lib/addon.cc:22"],
+            "conditional": false
+          },
+          {
+            "name": "MultiByteToWideChar",
+            "purpose": "将 UTF-8 路径字符串转换为 Windows 宽字符（UTF-16），供 Shell API 使用",
+            "count": 2,
+            "evidence": ["lib/addon.cc:192", "lib/addon.cc:195"],
+            "conditional": false
+          },
+          {
+            "name": "GdiplusStartup",
+            "purpose": "初始化 GDI+ 库",
+            "count": 1,
+            "evidence": ["lib/addon.cc:33"],
+            "conditional": false
+          },
+          {
+            "name": "GdiplusShutdown",
+            "purpose": "关闭 GDI+ 库",
+            "count": 1,
+            "evidence": ["lib/addon.cc:37"],
+            "conditional": false
+          },
+          {
+            "name": "Gdiplus::Bitmap::Save",
+            "purpose": "将 GDI+ Bitmap 保存为 PNG 格式到 IStream",
+            "count": 1,
+            "evidence": ["lib/addon.cc:163"],
+            "conditional": false
+          },
+          {
+            "name": "GetImageEncodersSize",
+            "purpose": "获取 GDI+ 图像编码器数量和大小",
+            "count": 1,
+            "evidence": ["lib/addon.cc:119"],
+            "conditional": false
+          },
+          {
+            "name": "GetImageEncoders",
+            "purpose": "获取 GDI+ 图像编码器列表，用于查找 PNG 编码器 CLSID",
+            "count": 1,
+            "evidence": ["lib/addon.cc:133"],
+            "conditional": false
+          },
+          {
+            "name": "CreateStreamOnHGlobal",
+            "purpose": "在全局内存上创建 IStream，用于内存中保存 PNG 数据",
+            "count": 1,
+            "evidence": ["lib/addon.cc:157"],
+            "conditional": false
+          },
+          {
+            "name": "IStream::Stat",
+            "purpose": "获取 IStream 的统计信息（数据大小）",
+            "count": 1,
+            "evidence": ["lib/addon.cc:171"],
+            "conditional": false
+          },
+          {
+            "name": "IStream::Seek",
+            "purpose": "移动 IStream 读写指针",
+            "count": 1,
+            "evidence": ["lib/addon.cc:172"],
+            "conditional": false
+          },
+          {
+            "name": "IStream::Read",
+            "purpose": "从 IStream 读取 PNG 字节流",
+            "count": 1,
+            "evidence": ["lib/addon.cc:180"],
+            "conditional": false
+          },
+          {
+            "name": "DeleteObject",
+            "purpose": "删除 GDI 对象（位图），释放资源",
+            "count": 2,
+            "evidence": ["lib/addon.cc:109", "lib/addon.cc:110"],
+            "conditional": false
+          },
+          {
+            "name": "DestroyIcon",
+            "purpose": "销毁图标句柄，释放资源",
+            "count": 1,
+            "evidence": ["lib/addon.cc:254"],
+            "conditional": false
+          },
+          {
+            "name": "GetObject",
+            "purpose": "获取位图对象信息（BITMAP 结构体）",
+            "count": 1,
+            "evidence": ["lib/addon.cc:56"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["lib/addon.cc:1-3", "lib/addon.cc:16"]
+      },
+      {
+        "type": "appkit",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "NSWorkspace.iconForFile",
+            "purpose": "macOS 专有 API：获取指定文件路径的关联图标（NSImage）",
+            "count": 1,
+            "evidence": ["lib/addon.mm:20"],
+            "conditional": true
+          },
+          {
+            "name": "NSBitmapImageRep.representationUsingType",
+            "purpose": "将位图表示转换为指定格式（PNG）的 NSData",
+            "count": 1,
+            "evidence": ["lib/addon.mm:9"],
+            "conditional": true
+          },
+          {
+            "name": "NSImage.CGImageForProposedRect",
+            "purpose": "从 NSImage 获取底层 CGImage 引用",
+            "count": 1,
+            "evidence": ["lib/addon.mm:6"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["lib/addon.mm:1"]
+      },
+      {
+        "type": "napi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Napi::Buffer::Copy",
+            "purpose": "将 C++ 数据复制为 Node.js Buffer 对象返回给 JS 层",
+            "count": 2,
+            "evidence": ["lib/addon.cc:266-267", "lib/addon.mm:26-27"],
+            "conditional": false
+          },
+          {
+            "name": "NODE_API_MODULE",
+            "purpose": "N-API 模块注册宏，将 getIcon 函数导出为 Node.js 原生模块",
+            "count": 2,
+            "evidence": ["lib/addon.cc:277", "lib/addon.mm:37"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["lib/addon.cc:4", "lib/addon.mm:2"]
+      },
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::vector",
+            "purpose": "动态数组容器，用于存储图标像素数据",
+            "count": 5,
+            "evidence": ["lib/addon.cc:51", "lib/addon.cc:72", "lib/addon.cc:86", "lib/addon.cc:145", "lib/addon.cc:176"],
+            "conditional": false
+          },
+          {
+            "name": "std::unique_ptr",
+            "purpose": "智能指针，管理 GDI+ 对象和 IStream 的生命周期",
+            "count": 3,
+            "evidence": ["lib/addon.cc:50", "lib/addon.cc:125", "lib/addon.cc:161"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["lib/addon.cc:6-9"]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "addon.node",
+        "mechanism": "node N-API addon",
+        "acquisition": "self_build",
+        "source": "本仓库通过 node-gyp 编译的 N-API 原生模块（binding.gyp → build/Release/addon.node）",
+        "description": "Node.js 原生扩展模块，封装 Windows Shell API / macOS AppKit 调用，供 JS 层 require 加载",
+        "optional": false,
+        "evidence": ["src/index.ts:6", "binding.gyp:4"]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+
+  "runtime_surface": {
+    "summary": "该库运行时不访问网络，不读取配置文件，不设置环境变量，不启动子进程（install.js 仅在安装阶段使用）。仅访问本地文件系统路径（传入的文件路径参数）以查询关联图标。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "通过 SHGetFileInfoW / NSWorkspace iconForFile: 查询的任意文件路径",
+        "purpose": "查询该路径文件的关联图标",
+        "evidence": ["lib/addon.cc:224", "lib/addon.mm:20"]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+
+  "build_env": {
+    "language_standard": "C++11（使用 std::unique_ptr、std::addressof 等）/ TypeScript ES2015 / Objective-C++",
+    "runtime_version": "Node.js >= 10（N-API 支持）",
+    "build_system": "node-gyp（binding.gyp）+ TypeScript 编译器（tsc）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x64",
+        "evidence": ["binding.gyp:8-16", "package.json:13"]
+      },
+      {
+        "os": "macos",
+        "arch": "x64/arm64",
+        "evidence": ["binding.gyp:18-26"]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无（库）：通过 npm 发布为含预编译 .node 二进制的包，npm install 时自动执行 node-gyp rebuild 编译原生模块",
+    "notes": "不支持 Linux。binding.gyp 通过 OS 条件选择编译源文件（Windows 编译 addon.cc，macOS 编译 addon.mm）。"
+  },
+
+  "capability_profile": {
+    "summary": "本项目触及 GUI 桌面集成场景——通过平台原生 Shell/AppKit API 获取文件图标，属于桌面环境集成的一部分。不涉及 3D 渲染、媒体编解码或特定硬件依赖。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": true,
+        "kind": ["win32_shell", "appkit_nsworkspace"],
+        "specific_hardware": false,
+        "via": ["native_api.groups[type=win32]", "native_api.groups[type=appkit]"],
+        "harmony_status": "unknown",
+        "adaptation": "核心功能依赖 Windows Shell API（SHGetFileInfoW/SHGetImageList）和 macOS NSWorkspace，鸿蒙 PC 无等价 Shell 图标 API，需用 ArkUI/系统 API 重写图标获取逻辑，或走文件管理器接口",
+        "evidence": ["lib/addon.cc:208-256", "lib/addon.mm:14-28"]
+      }
+    ]
+  },
+
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (OHOS NDK + Node-API)",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
+    "effort": {
+      "person_days": [15, 30]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [
+      {
+        "id": "ua:shgetfileinfow",
+        "caused_by": ["ta:shell_icon_api"],
+        "api": "SHGetFileInfoW",
+        "public_entry": "getFileIcon",
+        "reason": "Windows Shell 图标 API 无鸿蒙等价——鸿蒙无 Shell 图标查询接口，无法通过文件路径获取关联图标",
+        "blocking_native_api": "SHGetFileInfoW",
+        "category": "platform",
+        "evidence": ["lib/addon.cc:224"]
+      },
+      {
+        "id": "ua:shgetimagelist",
+        "caused_by": ["ta:shell_icon_api"],
+        "api": "SHGetImageList",
+        "public_entry": "getFileIcon",
+        "reason": "Windows 系统图像列表 API 无鸿蒙等价，用于获取 64px/256px 大图标",
+        "blocking_native_api": "SHGetImageList",
+        "category": "platform",
+        "evidence": ["lib/addon.cc:236"]
+      },
+      {
+        "id": "ua:nsworkspace_iconforfile",
+        "caused_by": ["ta:appkit_icon_api"],
+        "api": "NSWorkspace.iconForFile",
+        "public_entry": "getFileIcon",
+        "reason": "macOS AppKit 专有 API，鸿蒙无等价 NSWorkspace 图标查询接口",
+        "blocking_native_api": "NSWorkspace.iconForFile",
+        "category": "platform",
+        "evidence": ["lib/addon.mm:20"]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:shell_icon_api",
+        "capability": "Shell 图标查询 API（SHGetFileInfoW / SHGetImageList 等价）",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "Windows 端核心功能完全不可用——无此 API 则无法从文件路径获取关联图标",
+        "source": "harmony-pc-capabilities.json — 无 Shell API 相关条目，鸿蒙桌面集成能力未知（desktop_integration 段均为 unknown）"
+      },
+      {
+        "id": "ta:appkit_icon_api",
+        "capability": "AppKit NSWorkspace 图标查询 API",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "macOS 端核心功能完全不可用——鸿蒙无 NSWorkspace 等价接口",
+        "source": "harmony-pc-capabilities.json — 无 AppKit 条目，鸿蒙桌面 GUI 能力未知（gui 段大多 unknown）"
+      },
+      {
+        "id": "ta:nodejs_napi",
+        "capability": "Node.js + N-API 原生模块编译",
+        "required": true,
+        "target_status": "available",
+        "impact": "Node.js 已移植至鸿蒙 PC，N-API 可用——原生模块的编译和加载层面不构成阻碍",
+        "source": "harmony-pc-capabilities.json — runtimes.nodejs: available"
+      },
+      {
+        "id": "ta:gdiplus",
+        "capability": "GDI+ 图形库",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "Windows 端 PNG 编码依赖 GDI+，鸿蒙无 GDI+——需替换为其他 PNG 编码方案",
+        "source": "harmony-pc-capabilities.json — 无 GDI+ 条目，Windows 专有图形栈"
+      },
+      {
+        "id": "ta:harmony_file_icon_api",
+        "capability": "鸿蒙文件图标查询接口（如 @ohos.file.icon 或文件管理器 API）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "若鸿蒙提供文件图标查询接口则可替代 Shell/AppKit API 重写核心逻辑；若不存在则需自行维护 MIME 类型→图标映射",
+        "source": "harmony-pc-capabilities.json — desktop_integration.file_dialog: unknown；无文件图标相关条目"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "读写存储（文件访问）",
+        "reason": "需要读取传入文件路径的元信息以获取关联图标",
+        "source_capability": "gui",
+        "harmony_status": "unknown",
+        "evidence": ["lib/addon.cc:224", "lib/addon.mm:20"]
+      }
+    ],
+    "recommended_path": "find_alternative",
+    "summary": "该库的核心功能——从操作系统获取文件关联图标——完全依赖 Windows Shell API（SHGetFileInfoW/SHGetImageList/GDI+）和 macOS AppKit（NSWorkspace），这些 API 在鸿蒙 PC 上均无等价实现。Node.js + N-API 层面可正常运行，但原生 C++ 层需要全面重写。推荐路径：寻找鸿蒙文件图标 API（@ohos.file 相关接口）替代，若无则需自行实现 MIME 类型→图标映射表，使用 libpng 或 stb_image_write 替代 GDI+ 做 PNG 编码。",
+    "blockers": [
+      {
+        "id": "bk:shell_icon",
+        "issue": "Windows Shell 图标查询 API（SHGetFileInfoW/SHGetImageList）在鸿蒙 PC 无等价实现",
+        "severity": "blocker",
+        "adaptability": "unadaptable",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "替换为鸿蒙文件图标查询 API（如 @ohos.file.icon）或自行维护 MIME→图标映射",
+        "caused_by": ["ta:shell_icon_api"],
+        "manifests_as": ["ua:shgetfileinfow", "ua:shgetimagelist"],
+        "evidence": ["lib/addon.cc:224", "lib/addon.cc:236"]
+      },
+      {
+        "id": "bk:appkit_icon",
+        "issue": "macOS NSWorkspace iconForFile: API 在鸿蒙 PC 无等价实现",
+        "severity": "blocker",
+        "adaptability": "unadaptable",
+        "category": "platform",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "替换为鸿蒙文件图标查询 API 或自行维护 MIME→图标映射",
+        "caused_by": ["ta:appkit_icon_api"],
+        "manifests_as": ["ua:nsworkspace_iconforfile"],
+        "evidence": ["lib/addon.mm:20"]
+      },
+      {
+        "id": "bk:gdiplus",
+        "issue": "GDI+ 图形库（PNG 编码）在鸿蒙 PC 不可用",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "使用 libpng / stb_image_write / OHOS 原生图像 API 替代 GDI+ 做 PNG 编码",
+        "caused_by": ["ta:gdiplus"],
+        "manifests_as": [],
+        "evidence": ["lib/addon.cc:16", "lib/addon.cc:163"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "N-API 模块框架",
+        "note": "node-addon-api + N-API 在鸿蒙 PC Node.js 上可正常工作，模块注册和 JS↔C++ 数据桥接无需修改",
+        "evidence": ["lib/addon.cc:270-277", "lib/addon.mm:30-37"]
+      },
+      {
+        "aspect": "TypeScript 接口层",
+        "note": "src/index.ts 的 getFileIcon 函数签名和平台判断逻辑可复用，仅需增加鸿蒙平台分支",
+        "evidence": ["src/index.ts:1-14"]
+      }
+    ],
+    "key_tasks": [
+      "调研鸿蒙 PC 是否提供文件图标查询 API（@ohos.file.icon / 文件管理器接口）",
+      "若鸿蒙有图标 API：编写鸿蒙平台原生插件（lib/addon.ohos.cpp），调用鸿蒙图标接口",
+      "若鸿蒙无图标 API：实现 MIME 类型→图标文件映射，内嵌常见文件类型图标资源",
+      "替换 GDI+ PNG 编码为 libpng / stb_image_write 等跨平台方案",
+      "替换 macOS 端 NSBitmapImageRep PNG 编码为跨平台方案（统一 PNG 编码路径）",
+      "在 src/index.ts 中增加鸿蒙平台分支（platform() === 'linux' 或新标识）",
+      "更新 binding.gyp 增加 OHOS 条件编译块"
+    ],
+    "notes": "Node.js 已在鸿蒙 PC 可用（harmony-pc-capabilities: available），因此原生模块的编译和加载框架层面不构成阻碍。核心困难在于平台专有的 Shell/AppKit 图标 API 无鸿蒙等价。若鸿蒙 PC 提供文件图标查询 API 则适配工作量大幅降低；否则需自行维护文件类型→图标映射。ta:harmony_file_icon_api 的 target_status 为 unknown，已据此下调 confidence 至 medium。"
+  },
+
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "appkit",
+        "rationale": "macOS AppKit API 作为一个独立的平台 API 家族，与 win32 并列；现有推荐值中无此分类，但属于平台专有 API，新增合理"
+      },
+      {
+        "dimension": "library",
+        "field": "kind",
+        "kind": "new_value",
+        "value": "library",
+        "rationale": "该包通过 npm 发布、被其他 Node.js/Electron 应用 require 使用，是典型的原生扩展库，非终端用户直接启动的应用"
+      }
+    ]
+  }
+}

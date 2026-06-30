@@ -1,0 +1,2038 @@
+{
+  "library": {
+    "name": "debugpy",
+    "kind": "application",
+    "package_name": "debugpy",
+    "aliases": [
+      "ptvsd"
+    ],
+    "import_names": [
+      "debugpy"
+    ],
+    "source_url": "https://github.com/microsoft/debugpy",
+    "analyzed_at": "2026-06-29T07:29:26.931Z",
+    "commit": "cd699b4c85e7c9aca3267d4282b5c34e62a2e886",
+    "one_liner": "微软开源的 Python 调试器，实现 Debug Adapter Protocol，支持启动/附加调试。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "debugpy 是面向 Python 3 的调试器实现，完整支持 Microsoft Debug Adapter Protocol（DAP）。它既可作为命令行工具（python -m debugpy / debugpy）启动被调试程序，也可通过 import debugpy 以 API 方式嵌入。核心调试能力（断点、单步、异常捕获、调用栈、变量查看）委托给内嵌的 pydevd；debugpy 自身负责 DAP 适配器、进程启动器、子进程调试以及 attach-to-PID 等跨进程注入能力。",
+    "categories": [
+      {
+        "name": "DAP 适配与会话管理",
+        "description": "实现 Debug Adapter Protocol，负责在 DAP 客户端（如 VS Code）与调试服务端之间转发请求/事件/响应，管理多会话、子进程连接与认证。",
+        "evidence": [
+          "src/debugpy/adapter/__main__.py",
+          "src/debugpy/adapter/clients.py",
+          "src/debugpy/adapter/servers.py",
+          "src/debugpy/adapter/sessions.py",
+          "src/debugpy/common/messaging.py"
+        ]
+      },
+      {
+        "name": "公共 API 与内嵌调试",
+        "description": "提供稳定的 Python API（debugpy.listen / connect / wait_for_client / breakpoint 等），允许用户在被调试进程中直接启动调试通道并等待客户端连接。",
+        "evidence": [
+          "src/debugpy/public_api.py",
+          "src/debugpy/server/api.py"
+        ]
+      },
+      {
+        "name": "命令行启动器",
+        "description": "通过 python -m debugpy 或 debugpy 入口脚本解析命令行参数，支持 --listen、--connect、--wait-for-client、--pid 等模式，并启动目标文件/模块/代码或被调试进程。",
+        "evidence": [
+          "src/debugpy/__main__.py",
+          "src/debugpy/server/cli.py"
+        ]
+      },
+      {
+        "name": "目标进程与子进程管理",
+        "description": "负责启动、连接和追踪被调试进程；通过 subprocess 派生适配器、启动器和目标程序，并支持子进程自动附加。",
+        "evidence": [
+          "src/debugpy/launcher/debuggee.py",
+          "src/debugpy/launcher/handlers.py",
+          "src/debugpy/adapter/launchers.py",
+          "src/debugpy/server/api.py:215"
+        ]
+      },
+      {
+        "name": "进程附加（Attach to PID）",
+        "description": "向运行中的 Python 进程注入调试代码：Windows 使用 DLL 注入与 CreateRemoteThread；Linux 使用 gdb + dlopen 加载 attach.so；macOS 使用 lldb + dylib。",
+        "evidence": [
+          "src/debugpy/server/cli.py:413",
+          "src/debugpy/server/attach_pid_injected.py",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/attach.cpp",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp"
+        ]
+      },
+      {
+        "name": "调试后端与性能扩展",
+        "description": "内嵌 pydevd 实现 Python 层面的跟踪、断点、异常处理；并通过 Cython 扩展（pydevd_cython、frame evaluator、sys_monitoring_cython）和原生 attach 二进制提升性能。",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd.py",
+          "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_cython.pyx",
+          "src/debugpy/_vendored/pydevd/_pydevd_frame_eval/pydevd_frame_evaluator.template.pyx",
+          "src/debugpy/_vendored/pydevd/_pydevd_sys_monitoring/_pydevd_sys_monitoring_cython.pyx"
+        ]
+      },
+      {
+        "name": "日志与诊断",
+        "description": "统一的日志系统，支持文件、stderr 输出，便于调试器各组件（adapter/server/launcher/pydevd）的问题定位。",
+        "evidence": [
+          "src/debugpy/common/log.py"
+        ]
+      }
+    ],
+    "domain": "developer_tools",
+    "target_users": "Python 开发者及使用 VS Code 等 DAP 客户端的调试人员"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "C",
+      "JSON",
+      "Cython",
+      "Markdown",
+      "C/C++ Header",
+      "YAML",
+      "C++"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 608,
+        "code": 110340,
+        "pct": 52.66,
+        "production": {
+          "files": 464,
+          "code": 80912
+        },
+        "test": {
+          "files": 135,
+          "code": 29336
+        },
+        "example": {
+          "files": 9,
+          "code": 92
+        }
+      },
+      {
+        "language": "C",
+        "files": 3,
+        "code": 84878,
+        "pct": 40.51,
+        "production": {
+          "files": 3,
+          "code": 84878
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 19,
+        "code": 5595,
+        "pct": 2.67,
+        "production": {
+          "files": 6,
+          "code": 4538
+        },
+        "test": {
+          "files": 13,
+          "code": 1057
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Cython",
+        "files": 6,
+        "code": 2894,
+        "pct": 1.38,
+        "production": {
+          "files": 6,
+          "code": 2894
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 44,
+        "code": 1777,
+        "pct": 0.85,
+        "production": {
+          "files": 42,
+          "code": 1492
+        },
+        "test": {
+          "files": 2,
+          "code": 285
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 15,
+        "code": 1253,
+        "pct": 0.6,
+        "production": {
+          "files": 15,
+          "code": 1253
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 19,
+        "code": 858,
+        "pct": 0.41,
+        "production": {
+          "files": 18,
+          "code": 825
+        },
+        "test": {
+          "files": 1,
+          "code": 33
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 5,
+        "code": 624,
+        "pct": 0.3,
+        "production": {
+          "files": 5,
+          "code": 624
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 7,
+        "code": 610,
+        "pct": 0.29,
+        "production": {
+          "files": 4,
+          "code": 585
+        },
+        "test": {
+          "files": 1,
+          "code": 23
+        },
+        "example": {
+          "files": 2,
+          "code": 2
+        }
+      },
+      {
+        "language": "Bourne Again Shell",
+        "files": 1,
+        "code": 121,
+        "pct": 0.06,
+        "production": {
+          "files": 1,
+          "code": 121
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 9,
+        "code": 120,
+        "pct": 0.06,
+        "production": {
+          "files": 9,
+          "code": 120
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 4,
+        "code": 113,
+        "pct": 0.05,
+        "production": {
+          "files": 4,
+          "code": 113
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 5,
+        "code": 94,
+        "pct": 0.04,
+        "production": {
+          "files": 5,
+          "code": 94
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 10,
+        "code": 81,
+        "pct": 0.04,
+        "production": {
+          "files": 8,
+          "code": 61
+        },
+        "test": {
+          "files": 2,
+          "code": 20
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 76,
+        "pct": 0.04,
+        "production": {
+          "files": 2,
+          "code": 76
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "VSCode Workspace",
+        "files": 2,
+        "code": 45,
+        "pct": 0.02,
+        "production": {
+          "files": 1,
+          "code": 28
+        },
+        "test": {
+          "files": 1,
+          "code": 17
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 3,
+        "code": 44,
+        "pct": 0.02,
+        "production": {
+          "files": 3,
+          "code": 44
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Properties",
+        "files": 3,
+        "code": 18,
+        "pct": 0.01,
+        "production": {
+          "files": 3,
+          "code": 18
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Dockerfile",
+        "files": 1,
+        "code": 7,
+        "pct": 0.0,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 766,
+      "code": 209548,
+      "comment": 69448,
+      "blank": 42297,
+      "total_lines": 321293
+    },
+    "production": {
+      "files": 600,
+      "code": 178683,
+      "comment": 65997,
+      "blank": 33351,
+      "total_lines": 278031
+    },
+    "test": {
+      "files": 155,
+      "code": 30771,
+      "comment": 3443,
+      "blank": 8891,
+      "total_lines": 43105
+    },
+    "example": {
+      "files": 11,
+      "code": 94,
+      "comment": 8,
+      "blank": 55,
+      "total_lines": 157
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 196967,
+        "category": "production",
+        "by_category": {
+          "production": 175374,
+          "test": 21499,
+          "example": 94
+        }
+      },
+      {
+        "dir": "tests",
+        "code": 9239,
+        "category": "test",
+        "by_category": {
+          "test": 9239
+        }
+      },
+      {
+        "dir": ".",
+        "code": 1729,
+        "category": "production",
+        "by_category": {
+          "production": 1729
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 887,
+        "category": "production",
+        "by_category": {
+          "production": 887
+        }
+      },
+      {
+        "dir": "azure-pipelines",
+        "code": 326,
+        "category": "production",
+        "by_category": {
+          "production": 293,
+          "test": 33
+        }
+      },
+      {
+        "dir": ".claude",
+        "code": 198,
+        "category": "production",
+        "by_category": {
+          "production": 198
+        }
+      },
+      {
+        "dir": "doc",
+        "code": 185,
+        "category": "production",
+        "by_category": {
+          "production": 185
+        }
+      },
+      {
+        "dir": ".devcontainer",
+        "code": 17,
+        "category": "production",
+        "by_category": {
+          "production": 17
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tests"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 6,
+          "code": 152,
+          "macros": [
+            "WIN32",
+            "_MSC_VER",
+            "_WIN32",
+            "__CYGWIN__"
+          ]
+        }
+      },
+      "total": 152,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "python": {
+          "files": 56,
+          "hits": 93
+        }
+      },
+      "by_platform": {
+        "windows": 37,
+        "macos": 12,
+        "linux": 8,
+        "posix": 6
+      },
+      "samples": [
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_process_net_command_json.py",
+          "line": 1374,
+          "text": "platform_info = pydevd_schema.PydevdPlatformInfo(name=sys.platform)"
+        },
+        {
+          "language": "python",
+          "file": "versioneer.py",
+          "line": 390,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "versioneer.py",
+          "line": 1187,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "versioneer.py",
+          "line": 1318,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydev_bundle/pydev_monkey.py",
+          "line": 311,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydev_bundle/pydev_monkey.py",
+          "line": 376,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevd_file_utils.py",
+          "line": 209,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/adapter/clients.py",
+          "line": 398,
+          "text": "if sudo and sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_constants.py",
+          "line": 67,
+          "text": "IS_IRONPYTHON = sys.platform == \"cli\""
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_constants.py",
+          "line": 97,
+          "text": "IS_WINDOWS = sys.platform == \"win32\""
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_constants.py",
+          "line": 98,
+          "text": "IS_LINUX = sys.platform in (\"linux\", \"linux2\")"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_constants.py",
+          "line": 99,
+          "text": "IS_MAC = sys.platform == \"darwin\""
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_constants.py",
+          "line": 100,
+          "text": "IS_WASM = sys.platform == \"emscripten\" or sys.platform == \"wasi\""
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_constants.py",
+          "line": 274,
+          "text": "INTERACTIVE_MODE_AVAILABLE = sys.platform in (\"darwin\", \"win32\") or os.getenv(\"DISPLAY\") is not None"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/adapter/servers.py",
+          "line": 569,
+          "text": "if sys.platform in (\"linux\", \"linux2\"):"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_version.py",
+          "line": 79,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_version.py",
+          "line": 240,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/tests_python/debugger_fixtures.py",
+          "line": 105,
+          "text": "if platform.system() != \"Windows\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/tests_python/debugger_fixtures.py",
+          "line": 106,
+          "text": "locale = \"en_US.utf8\" if platform.system() == \"Linux\" else \"en_US.UTF-8\""
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevconsole.py",
+          "line": 173,
+          "text": "if sys.platform != \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_utils.py",
+          "line": 392,
+          "text": "if os.name == \"posix\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_utils.py",
+          "line": 399,
+          "text": "elif os.name == \"nt\":"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py",
+          "line": 126,
+          "text": "IS_WINDOWS = sys.platform == \"win32\""
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py",
+          "line": 127,
+          "text": "IS_LINUX = sys.platform in (\"linux\", \"linux2\")"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py",
+          "line": 128,
+          "text": "IS_MAC = sys.platform == \"darwin\""
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py",
+          "line": 159,
+          "text": "arch = platform.machine()"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py",
+          "line": 183,
+          "text": "print(\"Unable to attach to process in platform: %s\", sys.platform)"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py",
+          "line": 248,
+          "text": "print(\"Unable to attach to process in platform: %s\" % (sys.platform,))"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py",
+          "line": 556,
+          "text": "print(\"Unable to attach to process in platform: %s\", sys.platform)"
+        },
+        {
+          "language": "python",
+          "file": "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_xml.py",
+          "line": 38,
+          "text": "_IS_JYTHON = sys.platform.startswith(\"java\")"
+        }
+      ],
+      "total": 93,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 155,
+    "test_cases": 1061,
+    "frameworks": [
+      "pytest",
+      "unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 135,
+        "cases": 1061
+      },
+      "Markdown": {
+        "files": 2,
+        "cases": 0
+      },
+      "JSON": {
+        "files": 13,
+        "cases": 0
+      },
+      "YAML": {
+        "files": 1,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      },
+      "VSCode Workspace": {
+        "files": 1,
+        "cases": 0
+      },
+      "HTML": {
+        "files": 2,
+        "cases": 0
+      }
+    },
+    "notes": "测试框架为 pytest，使用 pytest-xdist 并行运行（pytest.ini 中 -n8）。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件明确包含 MIT 许可证全文；setup.py 中 license='MIT' 与 PyPI badge 一致。",
+    "notes": "debugpy 本体为 MIT。仓库内嵌的 PyDev.Debugger（pydevd）主体按 EPL-1.0 授权，winappdbg/bytecode/six 等另有各自许可，详见 src/debugpy/ThirdPartyNotices.txt。"
+  },
+  "dependencies": {
+    "count": 22,
+    "manifests": [
+      "pyproject.toml",
+      "setup.py",
+      "setup.cfg",
+      "tests/requirements.txt",
+      "cgmanifest.json",
+      "src/debugpy/ThirdPartyNotices.txt"
+    ],
+    "by_ecosystem": {
+      "python": 22
+    },
+    "dependencies": [
+      {
+        "name": "pydevd",
+        "ecosystem": "python",
+        "registry_name": "pydevd",
+        "source_repo": "https://github.com/fabioz/PyDev.Debugger",
+        "import_names": [
+          "pydevd"
+        ],
+        "scope": "runtime",
+        "version": "3.5.0",
+        "purpose": "Python 调试后端，提供 settrace、断点、异常处理、调用栈等核心调试能力",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内嵌的 PyDev.Debugger 源码（src/debugpy/_vendored/pydevd）",
+        "declared_in": [
+          "src/debugpy/_vendored/__init__.py",
+          "setup.py:178",
+          "src/debugpy/ThirdPartyNotices.txt"
+        ],
+        "used_symbols": [
+          "pydevd.settrace",
+          "pydevd.enable_qt_support",
+          "pydevd.add_dont_terminate_child_pid",
+          "pydevd._wait_for_attach",
+          "pydevd._is_attached",
+          "pydevd.get_global_debugger",
+          "pydevd.log_to",
+          "pydevd.dispose_and_kill_all_pydevd_threads"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "winappdbg",
+        "ecosystem": "python",
+        "registry_name": "winappdbg",
+        "source_repo": "https://github.com/fabioz/winappdbg",
+        "import_names": [
+          "winappdbg"
+        ],
+        "scope": "runtime",
+        "version": "1.7.3",
+        "purpose": "Windows 进程调试辅助库，用于 attach-to-PID 时判断目标进程位数及调用 Win32 API",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内嵌的 winappdbg 源码（src/debugpy/_vendored/pydevd/pydevd_attach_to_process/winappdbg）",
+        "declared_in": [
+          "src/debugpy/ThirdPartyNotices.txt",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/winappdbg/__init__.py"
+        ],
+        "used_symbols": [
+          "winappdbg.process.Process",
+          "winappdbg.win32.kernel32.CreateEventA",
+          "winappdbg.win32.kernel32.WaitForSingleObject",
+          "winappdbg.win32.kernel32.CloseHandle",
+          "winappdbg.win32.kernel32.CreateMutex",
+          "winappdbg.win32.kernel32.CreateFileMapping",
+          "winappdbg.win32.kernel32.MapViewOfFile",
+          "winappdbg.win32.kernel32.UnmapViewOfFile"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "bytecode",
+        "ecosystem": "python",
+        "registry_name": "bytecode",
+        "source_repo": "https://github.com/vstinner/bytecode",
+        "import_names": [
+          "bytecode"
+        ],
+        "scope": "runtime",
+        "version": "0.13.0.dev",
+        "purpose": "字节码操作库，用于 frame evaluator 与智能步入等调试功能中的字节码改写",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内嵌的 bytecode 库（src/debugpy/_vendored/pydevd/_pydevd_frame_eval/vendored/bytecode）",
+        "declared_in": [
+          "src/debugpy/ThirdPartyNotices.txt",
+          "src/debugpy/_vendored/pydevd/_pydevd_frame_eval/vendored/bytecode/__init__.py"
+        ],
+        "used_symbols": [
+          "bytecode.dump_bytecode",
+          "bytecode.Bytecode",
+          "bytecode.ConcreteBytecode",
+          "bytecode.instr.Instr",
+          "bytecode.instr.Label",
+          "bytecode.cfg"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "Python 包构建后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（由 build-system requires 指定）",
+        "declared_in": [
+          "pyproject.toml:1"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "wheel",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建 wheel 分发包",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（由 build-system requires 指定）",
+        "declared_in": [
+          "pyproject.toml:2"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Cython",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "将 pydevd .pyx 编译为 C 扩展以提升性能",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（tests/requirements.txt 及 setup_pydevd_cython.py 使用）",
+        "declared_in": [
+          "tests/requirements.txt:29",
+          "src/debugpy/_vendored/pydevd/setup_pydevd_cython.py"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "vswhere",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "在 Windows 上定位 Visual Studio 以编译 pydevd 原生二进制",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（tests/requirements.txt）",
+        "declared_in": [
+          "tests/requirements.txt:28",
+          "build_attach_binaries.py:13"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=9.0.3",
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:3"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-xdist",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "pytest 并行执行插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:4"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-cov",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "pytest 覆盖率插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:5"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-timeout",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "pytest 超时插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:6"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-retry",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "pytest 重试插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:7"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "importlib_metadata",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试辅助：读取包元数据",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:11"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "psutil",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试辅助：进程与系统信息",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:12"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "untangle",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试辅助：XML 解析",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:13"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "django",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试用例中被调试的示例 Django 应用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:17"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "flask",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试用例中被调试的示例 Flask 应用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:18"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gevent",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试用例中验证 gevent 协程调试兼容性",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:19"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试用例中验证 numpy 数组等类型的显示/求值",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:20"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "requests",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=2.33.0",
+        "purpose": "测试用例中被调试代码的网络请求示例",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:21"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "urllib3",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": ">=2.7.0",
+        "purpose": "配合 requests 的安全版本约束",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:24"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "typing_extensions",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试用例类型提示兼容",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "tests/requirements.txt:25"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "无 PyPI 运行时依赖；核心调试后端 pydevd 与 winappdbg、bytecode 均通过 vendored 方式内嵌。原生 attach 二进制作为预构建产物随包分发。测试依赖见 tests/requirements.txt。"
+  },
+  "native_api": {
+    "summary": "核心调试逻辑为纯 Python，平台相关代码集中在：subprocess 派生适配器/调试目标、socket 通信、Windows/macOS/Linux 三路的 attach-to-PID 注入机制，以及 Cython/C 扩展对 Python C-API 的调用。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "socket.socket",
+            "purpose": "创建 TCP 套接字用于 DAP 通信",
+            "count": 8,
+            "evidence": [
+              "src/debugpy/common/sockets.py:15",
+              "src/debugpy/common/sockets.py:27",
+              "src/debugpy/common/sockets.py:102"
+            ]
+          },
+          {
+            "name": "socket.bind/listen/accept",
+            "purpose": "监听客户端/服务端连接",
+            "count": 6,
+            "evidence": [
+              "src/debugpy/common/sockets.py:75",
+              "src/debugpy/common/sockets.py:88",
+              "src/debugpy/common/sockets.py:162"
+            ]
+          },
+          {
+            "name": "subprocess.Popen",
+            "purpose": "派生 debugpy.adapter、launcher 及被调试进程",
+            "count": 6,
+            "evidence": [
+              "src/debugpy/server/api.py:215",
+              "src/debugpy/adapter/launchers.py:132",
+              "src/debugpy/launcher/debuggee.py:92"
+            ]
+          },
+          {
+            "name": "threading.Thread/Event",
+            "purpose": "并发处理 socket 监听与等待客户端连接",
+            "count": 12,
+            "evidence": [
+              "src/debugpy/common/sockets.py:176",
+              "src/debugpy/server/api.py:310",
+              "src/debugpy/adapter/__main__.py:28"
+            ]
+          },
+          {
+            "name": "os.environ.get / os.getenv",
+            "purpose": "读取调试器配置环境变量",
+            "count": 20,
+            "evidence": [
+              "src/debugpy/common/log.py:24",
+              "src/debugpy/common/__init__.py:15",
+              "src/debugpy/server/cli.py:254"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "os.fork",
+            "purpose": "adapter 在 POSIX 上二次 fork 守护化",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/adapter/__main__.py:39"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "os.setsid",
+            "purpose": "创建新会话以脱离父进程组",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/adapter/__main__.py:38"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "os.getsid",
+            "purpose": "判断当前是否已是会话 leader",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/adapter/__main__.py:37"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "dlopen",
+            "purpose": "Linux/macOS 通过 gdb/lldb 在目标进程加载 attach.so/.dylib",
+            "count": 2,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:469",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp:58"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ptrace",
+            "purpose": "gdb 在 Linux 上附加进程依赖 ptrace（可能受 ptrace_scope 限制）",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:398"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "CREATE_NO_WINDOW / CREATE_NEW_PROCESS_GROUP",
+            "purpose": "Windows 上创建 adapter 进程时避免继承控制台",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/server/api.py:199"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CreateRemoteThread",
+            "purpose": "Windows attach 向目标进程注入远程线程加载 DLL",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/inject_dll.cpp:113"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "VirtualAllocEx / WriteProcessMemory",
+            "purpose": "在目标进程分配内存并写入 DLL 路径",
+            "count": 2,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/inject_dll.cpp:89",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/inject_dll.cpp:99"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CreateToolhelp32Snapshot / Thread32First / OpenThread / SuspendThread",
+            "purpose": "Windows attach 枚举并暂停目标进程线程",
+            "count": 4,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/attach.cpp:211"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "LoadLibraryA",
+            "purpose": "Windows 注入器让目标进程加载 attach DLL",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/inject_dll.cpp:106"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CreateEventA / WaitForSingleObject / CreateMutex / CreateFileMapping / MapViewOfFile",
+            "purpose": "Windows attach 中进程间同步与共享内存",
+            "count": 6,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:91",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:324",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:349"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetLongPathNameW / GetShortPathNameW",
+            "purpose": "Windows 路径长/短名转换",
+            "count": 2,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_file_utils.py:214"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CtrlRoutine",
+            "purpose": "Windows 下发送控制台控制事件",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_utils.py:405"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "python_c_api",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Py_IsInitialized",
+            "purpose": "判断目标进程 Python 运行时是否已初始化",
+            "count": 2,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp:59",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/attach.cpp:283"
+            ]
+          },
+          {
+            "name": "PyGILState_Ensure / PyGILState_Release",
+            "purpose": "在 attach 线程获取/释放 GIL",
+            "count": 2,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp:61",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/attach.cpp:297"
+            ]
+          },
+          {
+            "name": "PyInterpreterState_Head",
+            "purpose": "获取目标进程解释器状态",
+            "count": 2,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp:73",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/attach.cpp:298"
+            ]
+          },
+          {
+            "name": "PyRun_SimpleString",
+            "purpose": "在目标进程执行注入的 Python 代码",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp:89"
+            ]
+          },
+          {
+            "name": "Py_AddPendingCall",
+            "purpose": "Windows attach 向目标解释器注册待执行回调",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/attach.cpp:297"
+            ]
+          },
+          {
+            "name": "PyEval_SetTrace",
+            "purpose": "设置跟踪函数以启用断点",
+            "count": 1,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/common/py_settrace.hpp"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ctypes",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ctypes.CDLL / ctypes.cdll.LoadLibrary",
+            "purpose": "加载原生 attach DLL/.so/.dylib",
+            "count": 3,
+            "evidence": [
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/attach.h:41",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:359"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ctypes.windll.*",
+            "purpose": "调用 kernel32/shell32/psapi 等 Windows DLL 函数",
+            "count": 15,
+            "evidence": [
+              "src/debugpy/launcher/winapi.py:74",
+              "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/winappdbg/win32/kernel32.py",
+              "src/debugpy/_vendored/pydevd/pydevd_file_utils.py:214"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "attach_amd64.dll / attach_x86.dll",
+        "mechanism": "LoadLibrary via CreateRemoteThread (inject_dll_.exe)",
+        "acquisition": "bundled",
+        "source": "本仓预构建的 Windows attach payload DLL",
+        "description": "Windows 下向目标 Python 进程注入的 attach 载荷 DLL",
+        "optional": false,
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:288",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/inject_dll.cpp:113"
+        ]
+      },
+      {
+        "name": "inject_dll_amd64.exe / inject_dll_x86.exe",
+        "mechanism": "subprocess",
+        "acquisition": "bundled",
+        "source": "本仓预构建的 Windows DLL 注入器可执行文件",
+        "description": "Windows 下负责打开目标进程并远程加载 attach DLL 的小工具",
+        "optional": false,
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:289",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/inject_dll.cpp:56"
+        ]
+      },
+      {
+        "name": "run_code_on_dllmain_amd64.dll / run_code_on_dllmain_x86.dll",
+        "mechanism": "LoadLibrary via CreateRemoteThread",
+        "acquisition": "bundled",
+        "source": "本仓预构建的 Windows 运行时代码注入 DLL",
+        "description": "Windows attach 第二阶段，在 DLL 入口执行注入代码",
+        "optional": false,
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:304"
+        ]
+      },
+      {
+        "name": "attach_linux_amd64.so / attach_linux_x86.so",
+        "mechanism": "dlopen via gdb",
+        "acquisition": "bundled",
+        "source": "本仓预构建的 Linux attach payload 共享库",
+        "description": "Linux 下通过 gdb 在目标进程加载并执行注入代码",
+        "optional": false,
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:398",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp"
+        ]
+      },
+      {
+        "name": "attach.dylib",
+        "mechanism": "dlopen via lldb",
+        "acquisition": "bundled",
+        "source": "本仓预构建的 macOS attach payload 动态库",
+        "description": "macOS 下通过 lldb 在目标进程加载并执行注入代码",
+        "optional": false,
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:496",
+          "src/debugpy/build_attach_binaries.py:37"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行期依赖 Python 解释器、本地 TCP 套接字、subprocess 派生进程，以及若干 DEBUGPY_/PYDEVD_ 环境变量；attach-to-PID 还会调用外部 gdb（Linux）或 lldb（macOS）。",
+    "network": [
+      {
+        "detail": "DAP over TCP",
+        "purpose": "适配器监听客户端连接，服务端（被调试进程）反向连接适配器",
+        "evidence": [
+          "src/debugpy/common/sockets.py",
+          "src/debugpy/server/api.py:166",
+          "src/debugpy/adapter/__main__.py:60"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "DEBUGPY_LOG_DIR / --log-to",
+        "purpose": "生成调试器日志文件（debugpy*.log、pydevd log）",
+        "evidence": [
+          "src/debugpy/common/log.py:24",
+          "src/debugpy/server/api.py:57"
+        ]
+      },
+      {
+        "detail": "DEBUGPY_ADAPTER_ENDPOINTS",
+        "purpose": "将适配器监听地址写入文件供父进程读取",
+        "evidence": [
+          "src/debugpy/adapter/__main__.py:103"
+        ]
+      },
+      {
+        "detail": "临时文件（sys.remote_exec）",
+        "purpose": "PEP 768 远程执行注入脚本时写入临时文件",
+        "evidence": [
+          "src/debugpy/server/cli.py:460"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "DEBUGPY_LOG_DIR",
+        "purpose": "启用并指定日志目录",
+        "evidence": [
+          "src/debugpy/common/log.py:24"
+        ]
+      },
+      {
+        "name": "DEBUGPY_LOG_STDERR",
+        "purpose": "控制输出到 stderr 的日志级别",
+        "evidence": [
+          "src/debugpy/common/log.py:378"
+        ]
+      },
+      {
+        "name": "DEBUGPY_EXTRA_ARGV",
+        "purpose": "从环境变量注入额外命令行参数",
+        "evidence": [
+          "src/debugpy/server/cli.py:254"
+        ]
+      },
+      {
+        "name": "DEBUGPY_ADAPTER_ENDPOINTS",
+        "purpose": "adapter 端点信息文件路径",
+        "evidence": [
+          "src/debugpy/adapter/__main__.py:103"
+        ]
+      },
+      {
+        "name": "DEBUGPY_PROCESS_SPAWN_TIMEOUT / DEBUGPY_PROCESS_EXIT_TIMEOUT",
+        "purpose": "控制进程启动/退出超时",
+        "evidence": [
+          "src/debugpy/common/__init__.py:15"
+        ]
+      },
+      {
+        "name": "DEBUGPY_ATTACH_BY_PID_DEBUG_INFO",
+        "purpose": "开启 attach-to-PID 调试输出",
+        "evidence": [
+          "src/debugpy/server/cli.py:506"
+        ]
+      },
+      {
+        "name": "DEBUGPY_RUNNING",
+        "purpose": "标记当前是否已处于 debugpy 运行态",
+        "evidence": [
+          "src/debugpy/server/cli.py:329"
+        ]
+      },
+      {
+        "name": "PYDEVD_GDB_SCAN_SHARED_LIBRARIES",
+        "purpose": "限制 gdb attach 时扫描的共享库",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:450"
+        ]
+      },
+      {
+        "name": "PYDEVD_USE_CYTHON / PYDEVD_LOAD_NATIVE_LIB / PYDEVD_USE_FRAME_EVAL",
+        "purpose": "控制是否使用 Cython 扩展与 native frame evaluator",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_constants.py:279"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "python -m debugpy.adapter",
+        "purpose": "主进程启动独立 adapter 进程",
+        "evidence": [
+          "src/debugpy/server/api.py:180"
+        ]
+      },
+      {
+        "command": "python <target>",
+        "purpose": "launcher 启动被调试的目标脚本/模块",
+        "evidence": [
+          "src/debugpy/launcher/debuggee.py:92"
+        ]
+      },
+      {
+        "command": "gdb --pid <pid> --batch -ex 'call dlopen(...)'",
+        "purpose": "Linux attach-to-PID 通过 gdb 注入 attach.so",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:398"
+        ]
+      },
+      {
+        "command": "lldb -o 'process attach --pid <pid>'",
+        "purpose": "macOS attach-to-PID 通过 lldb 注入 attach.dylib",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:496"
+        ]
+      },
+      {
+        "command": "inject_dll_.exe <pid> <dll>",
+        "purpose": "Windows attach 注入 payload DLL",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:299"
+        ]
+      }
+    ],
+    "devices": [],
+    "services": [
+      {
+        "detail": "DAP adapter 本地服务",
+        "purpose": "在指定 host:port 监听 DAP 客户端，并维护与被调试进程 server 的连接",
+        "evidence": [
+          "src/debugpy/adapter/__main__.py",
+          "src/debugpy/adapter/servers.py"
+        ]
+      },
+      {
+        "detail": "跨进程 attach 服务",
+        "purpose": "通过操作系统调试接口（gdb/lldb/DLL 注入）向运行中 Python 进程注入调试代码",
+        "evidence": [
+          "src/debugpy/server/cli.py:413",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py"
+        ]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "Python 3.10 / 3.11 / 3.12 / 3.13 / 3.14",
+    "build_system": "setuptools（含自定义 build_py 覆盖以打包 vendored 文件与编译 Cython 扩展）",
+    "compiler_extensions": [
+      {
+        "detail": "Cython 扩展（pydevd_cython、frame_evaluator、sys_monitoring_cython）",
+        "purpose": "用 Cython 将 Python 调试热路径编译为 C 扩展",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/setup_pydevd_cython.py",
+          "src/debugpy/setup.py:81"
+        ]
+      },
+      {
+        "detail": "原生 attach 二进制（C/C++）",
+        "purpose": "Windows/Linux/macOS 的进程注入与 Python C-API 调用",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/attach.cpp",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp",
+          "build_attach_binaries.py"
+        ]
+      },
+      {
+        "detail": "MSVC/GCC 平台编译脚本",
+        "purpose": "compile_windows.bat / compile_linux.sh / compile_mac.sh 按平台构建 attach 二进制",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/compile_windows.bat",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/compile_linux.sh",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/compile_mac.sh"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64 / x86",
+        "evidence": [
+          "setup.py:172",
+          "build_attach_binaries.py:25"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64 / x86",
+        "evidence": [
+          "setup.py:174",
+          "build_attach_binaries.py:28"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "setup.py:173",
+          "build_attach_binaries.py:36"
+        ]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "console_script",
+        "name": "debugpy",
+        "command": "debugpy = debugpy.server.cli:main",
+        "evidence": [
+          "setup.py:197"
+        ]
+      },
+      {
+        "type": "console_script",
+        "name": "debugpy-adapter",
+        "command": "debugpy-adapter = debugpy.adapter.__main__:main",
+        "evidence": [
+          "setup.py:200"
+        ]
+      },
+      {
+        "type": "module",
+        "name": "python -m debugpy",
+        "command": "通过 src/debugpy/__main__.py 进入 debugpy.server.cli",
+        "evidence": [
+          "src/debugpy/__main__.py:69"
+        ]
+      }
+    ],
+    "packaging": "PyPI 非纯 wheel 分发（setup.py 标记 has_ext_modules=True，随包附带预构建原生 attach 二进制与可选 Cython 扩展）；不捆绑 Python 运行时。",
+    "notes": "构建过程可选编译 pydevd Cython 扩展；发行 wheel 为平台相关非纯包。"
+  },
+  "capability_profile": {
+    "summary": "debugpy 不涉及 GUI、3D 渲染、媒体编解码或特定硬件；主要鸿蒙适配重点在于跨进程 attach（ptrace/gdb/lldb/DLL 注入）与原生存量重编。",
+    "scenarios": [
+      {
+        "key": "cross_process_attach",
+        "present": true,
+        "kind": [
+          "ptrace",
+          "gdb",
+          "lldb",
+          "dll_injection",
+          "windows_debug_api"
+        ],
+        "via": [
+          "gdb",
+          "lldb",
+          "attach_.so",
+          "attach_.dll",
+          "inject_dll_.exe",
+          "winappdbg"
+        ],
+        "harmony_status": "unknown",
+        "adaptation": "核心 launch 调试不依赖此项；--pid 附加功能取决于鸿蒙是否允许跨进程 attach/ptrace 及 gdb/lldb 可用性，若不支持则需禁用或改用鸿蒙原生调试接口",
+        "evidence": [
+          "src/debugpy/server/cli.py:413",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:398",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/add_code_to_python_process.py:496"
+        ]
+      },
+      {
+        "key": "dap_network",
+        "present": true,
+        "kind": [
+          "tcp_sockets"
+        ],
+        "via": [
+          "socket"
+        ],
+        "harmony_status": "available",
+        "adaptation": "DAP 基于纯 Python socket，已移植 Python 运行时可直接运行",
+        "evidence": [
+          "src/debugpy/common/sockets.py",
+          "src/debugpy/adapter/__main__.py:60"
+        ]
+      },
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（CLI 应用口径；跑在已移植 Python 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "feasible_with_effort",
+    "effort": {
+      "person_days": [
+        15,
+        35
+      ]
+    },
+    "confidence": "medium",
+    "recommended_path": "run_on_ported_python + recompile_native_attach_and_cython",
+    "summary": "debugpy 主体为纯 Python，可在鸿蒙已移植 Python 上直接运行；主要工作量是为 OHOS NDK 重编 pydevd Cython 扩展与 attach_to_process 原生二进制。--pid 跨进程附加功能依赖 gdb/lldb/ptrace，鸿蒙相关能力尚未核实，是置信度下调的主因。",
+    "blockers": [
+      {
+        "id": "bk:cython_extensions",
+        "issue": "pydevd Cython 加速扩展（pydevd_cython、frame evaluator、sys_monitoring_cython）需用 OHOS NDK 交叉编译为 .so",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "使用 ohos.toolchain.cmake 交叉编译 pydevd 的 .pyx 扩展，并在鸿蒙 Python 上验证 import 与功能；缺失内部 pycore 头文件时需要按 Python 版本做条件编译降级",
+        "evidence": [
+          "setup.py:81",
+          "src/debugpy/_vendored/pydevd/setup_pydevd_cython.py"
+        ]
+      },
+      {
+        "id": "bk:attach_binaries",
+        "issue": "attach_to_process 原生二进制（attach_.so / attach.dylib / inject_dll_.exe 等）需为 OHOS 重新编译或替换",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "用 OHOS NDK 编译 linux_and_mac/attach.cpp 为 attach_linux_*.so；Windows 专用 DLL 注入器在鸿蒙上无需使用。若鸿蒙不支持 ptrace/gdb/lldb，则 --pid 功能需条件禁用",
+        "evidence": [
+          "build_attach_binaries.py",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp",
+          "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/inject_dll.cpp"
+        ]
+      },
+      {
+        "id": "bk:win32_branches",
+        "issue": "多处 Windows 专有 API/路径分支需要确保在鸿蒙上走 POSIX 路径",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "保持现有 sys.platform/os.name 条件分支；OHOS 下按 POSIX 处理，避免调用 kernel32/CreateProcess flags 等 Windows 专用 API",
+        "evidence": [
+          "src/debugpy/server/api.py:199",
+          "src/debugpy/_vendored/pydevd/pydevd_file_utils.py:214",
+          "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_utils.py:405"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python_runtime",
+        "capability": "Python 运行时（>=3.10）",
+        "required": true,
+        "target_status": "available",
+        "impact": "debugpy 为 Python 包，主体逻辑依赖已移植 Python 运行时",
+        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+      },
+      {
+        "id": "ta:cross_attach",
+        "capability": "跨进程 attach / ptrace / 调试其他进程",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "--pid 附加功能依赖 gdb/lldb/ptrace 或等价能力；若不支持则该功能不可用",
+        "source": "references/harmony-pc-capabilities.json#process_security.cross_attach"
+      },
+      {
+        "id": "ta:spawn",
+        "capability": "启动外部进程（subprocess / exec）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "DAP 适配器与启动器需派生 Python 子进程；受限时 launch 调试会失败",
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+      },
+      {
+        "id": "ta:desktop_app",
+        "capability": "传统桌面/命令行应用交付形态",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "debugpy 作为 CLI 工具需以 Python 包或命令行应用形式安装分发",
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "DAP 适配器监听 TCP 端口并接受客户端连接（通常绑定 localhost，但也支持 0.0.0.0）",
+        "source_capability": "dap_network",
+        "harmony_status": "unknown",
+        "evidence": [
+          "src/debugpy/common/sockets.py",
+          "src/debugpy/adapter/__main__.py:60"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python DAP 适配器与消息通道",
+        "note": "socket/messaging/sessions 均基于 Python 标准库，可在鸿蒙 Python 上直接运行",
+        "evidence": [
+          "src/debugpy/common/sockets.py",
+          "src/debugpy/common/messaging.py"
+        ]
+      },
+      {
+        "aspect": "launcher 与 debuggee 进程管理",
+        "note": "subprocess 派生在已移植 Python 上可用，只需验证路径与环境变量",
+        "evidence": [
+          "src/debugpy/launcher/debuggee.py",
+          "src/debugpy/adapter/launchers.py"
+        ]
+      },
+      {
+        "aspect": "pydevd 跟踪与断点逻辑",
+        "note": "纯 Python 实现的跟踪、断点、异常处理可直接运行",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/pydevd.py"
+        ]
+      },
+      {
+        "aspect": "vendored bytecode 字节码操作",
+        "note": "纯 Python 库，无需改动",
+        "evidence": [
+          "src/debugpy/_vendored/pydevd/_pydevd_frame_eval/vendored/bytecode"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 pydevd Cython 扩展为 arm64/x86_64 .so，并替换/补充 setup.py 中的平台过滤逻辑",
+      "使用 OHOS NDK 交叉编译 attach_to_process 的 attach.cpp 为 OHOS 共享库；评估 gdb/lldb 在鸿蒙上的可用性以决定 --pid 功能是否保留",
+      "验证并适配 sys.platform/os.name 分支，确保鸿蒙 PC 走 POSIX/Linux 路径，禁用 Windows 专用 kernel32/CreateProcess flags 调用",
+      "在鸿蒙 Python 上跑通核心 launch/listen/breakpoint 单元测试，确认 DAP 客户端可正常连接",
+      "若跨进程 attach 不可行，则在 CLI/API 中对 --pid 模式给出明确降级提示或禁用"
+    ],
+    "notes": "按 CLI 应用口径评估（library.kind=application）。GUI/桌面集成不是必需。跨进程 attach 与外部进程派生在鸿蒙 PC 上的可用性尚未核实，因此整体置信度为 medium；若目标平台最终不支持 ptrace/gdb/lldb，则 --pid 功能需要从 needs_adaptation_full 降级为 needs_adaptation_partial。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "library.kind",
+        "kind": "ambiguity",
+        "value": "application vs cli",
+        "rationale": "debugpy 既是可 import 的 Python 库，也是终端用户直接运行的 CLI 工具；按代理说明中“终端用户启动运行的应用（桌面/CLI）”口径，判为 application，但亦可用 cli/tool 描述其形态。"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "scenarios",
+        "kind": "new_value",
+        "value": "cross_process_attach",
+        "rationale": "debugpy 不涉及 gui/rendering_3d/media/hardware，但其 attach-to-PID 能力严重依赖跨进程调试接口（ptrace/gdb/lldb/DLL 注入），是鸿蒙适配的关键场景，故新增 cross_process_attach 场景。"
+      }
+    ]
+  }
+}

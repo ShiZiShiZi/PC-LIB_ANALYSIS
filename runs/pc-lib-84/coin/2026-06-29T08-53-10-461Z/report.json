@@ -1,0 +1,789 @@
+{
+  "library": {
+    "name": "Coin",
+    "kind": "library",
+    "package_name": "Coin",
+    "aliases": ["Coin3D", "coin3d", "Coin4"],
+    "import_names": ["Inventor"],
+    "source_url": "https://github.com/coin3d/coin.git",
+    "analyzed_at": "2026-06-29T08:53:10.461Z",
+    "commit": "456aefc8340d947994ee95c0187087b83eff58e4",
+    "one_liner": "兼容 Open Inventor 2.1 API 的 OpenGL 三维场景图渲染库，用于科学可视化与工程仿真",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "Coin 是一个基于 OpenGL 的三维图形库，完整实现了 SGI Open Inventor 2.1 API。它采用场景图（scene graph）保留模式渲染架构，提供从基本几何体到复杂 VRML97 场景的建模、渲染与交互能力，广泛应用于科学可视化、CAD/CAE 和工程仿真领域。Coin 在 Open Inventor 基础上扩展了 GLSL 着色器支持、3D 音频（OpenAL）、阴影渲染、性能分析器以及多种文件格式（VRML97、STL、3DS）的导入导出能力。",
+    "categories": [
+      {
+        "name": "场景图管理与渲染",
+        "description": "基于 Open Inventor 场景图的保留模式 3D 渲染引擎，包含节点（SoNode）、动作（SoAction）、引擎（SoEngine）、传感器（SoSensor）等核心抽象，支持 OpenGL 实时渲染、离屏渲染和多通道渲染。",
+        "evidence": ["src/actions/SoGLRenderAction.cpp", "src/rendering/SoRenderManager.cpp", "src/nodes/SoSeparator.cpp", "src/engines/SoEngine.cpp"]
+      },
+      {
+        "name": "VRML97 支持",
+        "description": "完整的 VRML97 文件格式解析、场景构建与渲染能力，包含 VRML97 专有节点（如 SoVRMLShape、SoVRMLTransform）和 JavaScript 脚本引擎（SpiderMonkey）集成。",
+        "evidence": ["src/vrml97/", "src/glue/spidermonkey.cpp", "src/io/SoInput.cpp"]
+      },
+      {
+        "name": "交互控件（拖拽器与操纵器）",
+        "description": "提供拖拽器（Dragger）和操纵器（Manipulator）用于 3D 场景中的直接交互操作，如旋转、缩放、平移、轨迹球等。",
+        "evidence": ["src/draggers/SoDragger.cpp", "src/draggers/SoTrackballDragger.cpp", "src/manipulators/SoTransformManip.cpp"]
+      },
+      {
+        "name": "3D 音频",
+        "description": "通过 OpenAL 集成实现三维空间音频渲染，支持 VRML97 的 Sound 和 AudioClip 节点。",
+        "evidence": ["src/glue/openal_wrapper.cpp", "src/vrml97/Sound.cpp", "src/vrml97/AudioClip.cpp"]
+      },
+      {
+        "name": "文件格式导入导出",
+        "description": "支持 Inventor (.iv)、VRML97 (.wrl)、STL、3DS 等多种 3D 文件格式的读写，以及 PostScript/EPS 矢量输出。",
+        "evidence": ["src/io/SoInput.cpp", "src/io/SoOutput.cpp", "include/Inventor/annex/ForeignFiles/SoSTLFileKit.h", "include/Inventor/annex/HardCopy/SoVectorizePSAction.h"]
+      },
+      {
+        "name": "OpenGL 窗口系统适配层",
+        "description": "封装 GLX/EGL/WGL/CGL/AGL 等平台相关的 OpenGL 上下文创建与缓冲区管理，提供跨平台的离屏渲染与 PBuffer 支持。",
+        "evidence": ["src/glue/gl_glx.cpp", "src/glue/gl_wgl.cpp", "src/glue/gl_egl.cpp", "src/glue/gl_cgl.cpp", "src/rendering/CoinOffscreenGLCanvas.cpp"]
+      },
+      {
+        "name": "线程支持",
+        "description": "自研跨平台线程抽象层，封装 pthread/Win32 线程，提供互斥锁、条件变量、读写锁、线程池等原语，支持线程安全渲染遍历。",
+        "evidence": ["src/threads/thread.cpp", "src/threads/mutex.cpp", "src/threads/condvar.cpp", "src/threads/wpool.cpp"]
+      },
+      {
+        "name": "性能分析与调试",
+        "description": "内置性能分析器（Profiler）用于记录场景图遍历性能数据，支持生成分析报告；以及 GL 驱动特性数据库。",
+        "evidence": ["include/Inventor/annex/Profiler/", "src/rendering/SoGLDriverDatabase.cpp"]
+      }
+    ],
+    "domain": "3D 图形 / 科学可视化",
+    "target_users": "科学可视化、CAD/CAE、工程仿真领域的 C++ 开发者，需要基于场景图架构进行三维建模与渲染的应用程序"
+  },
+  "languages": {
+    "primary": "C++",
+    "all": ["C++", "XML", "C/C++ Header", "C", "make", "Text", "CMake", "SVG", "Perl", "BitBake", "diff", "CSS", "lex", "Scheme", "YAML", "Bourne Shell", "yacc", "Lisp", "Markdown", "Bourne Again Shell", "GLSL", "AppleScript", "sed", "HTML", "JSON"],
+    "breakdown": [
+      {"language": "C++", "files": 974, "code": 220615, "pct": 56.36, "production": {"files": 964, "code": 219058}, "test": {"files": 0, "code": 0}, "example": {"files": 10, "code": 1557}},
+      {"language": "XML", "files": 5, "code": 79272, "pct": 20.25, "production": {"files": 5, "code": 79272}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "C/C++ Header", "files": 1040, "code": 45284, "pct": 11.57, "production": {"files": 1037, "code": 45116}, "test": {"files": 0, "code": 0}, "example": {"files": 3, "code": 168}},
+      {"language": "C", "files": 10, "code": 12011, "pct": 3.07, "production": {"files": 10, "code": 12011}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "make", "files": 100, "code": 7716, "pct": 1.97, "production": {"files": 99, "code": 7693}, "test": {"files": 0, "code": 0}, "example": {"files": 1, "code": 23}},
+      {"language": "Text", "files": 88, "code": 7558, "pct": 1.93, "production": {"files": 88, "code": 7558}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "CMake", "files": 66, "code": 4896, "pct": 1.25, "production": {"files": 62, "code": 4836}, "test": {"files": 0, "code": 0}, "example": {"files": 4, "code": 60}},
+      {"language": "SVG", "files": 14, "code": 2809, "pct": 0.72, "production": {"files": 14, "code": 2809}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "Perl", "files": 8, "code": 2550, "pct": 0.65, "production": {"files": 8, "code": 2550}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "BitBake", "files": 1, "code": 1629, "pct": 0.42, "production": {"files": 1, "code": 1629}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "diff", "files": 13, "code": 1336, "pct": 0.34, "production": {"files": 13, "code": 1336}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "CSS", "files": 1, "code": 1168, "pct": 0.3, "production": {"files": 1, "code": 1168}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "lex", "files": 4, "code": 1105, "pct": 0.28, "production": {"files": 4, "code": 1105}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "Scheme", "files": 28, "code": 869, "pct": 0.22, "production": {"files": 28, "code": 869}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "YAML", "files": 8, "code": 728, "pct": 0.19, "production": {"files": 8, "code": 728}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "Bourne Shell", "files": 9, "code": 522, "pct": 0.13, "production": {"files": 9, "code": 522}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "yacc", "files": 3, "code": 387, "pct": 0.1, "production": {"files": 3, "code": 387}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "Lisp", "files": 1, "code": 378, "pct": 0.1, "production": {"files": 1, "code": 378}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "Markdown", "files": 1, "code": 153, "pct": 0.04, "production": {"files": 1, "code": 153}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "Bourne Again Shell", "files": 1, "code": 148, "pct": 0.04, "production": {"files": 1, "code": 148}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "GLSL", "files": 5, "code": 135, "pct": 0.03, "production": {"files": 5, "code": 135}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "AppleScript", "files": 1, "code": 71, "pct": 0.02, "production": {"files": 1, "code": 71}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "sed", "files": 1, "code": 68, "pct": 0.02, "production": {"files": 1, "code": 68}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "HTML", "files": 2, "code": 49, "pct": 0.01, "production": {"files": 2, "code": 49}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "JSON", "files": 1, "code": 5, "pct": 0.0, "production": {"files": 1, "code": 5}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}}
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {"files": 2385, "code": 391462, "comment": 151962, "blank": 77492, "total_lines": 620916},
+    "production": {"files": 2367, "code": 389654, "comment": 151435, "blank": 77039, "total_lines": 618128},
+    "test": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "example": {"files": 18, "code": 1808, "comment": 527, "blank": 453, "total_lines": 2788},
+    "top_dirs": [
+      {"dir": "src", "code": 249450, "category": "production", "by_category": {"production": 249450}},
+      {"dir": "html", "code": 78732, "category": "production", "by_category": {"production": 78732}},
+      {"dir": "include", "code": 38422, "category": "production", "by_category": {"production": 38422}},
+      {"dir": "docs", "code": 10718, "category": "production", "by_category": {"production": 10718}},
+      {"dir": "data", "code": 3715, "category": "production", "by_category": {"production": 3715}},
+      {"dir": "scripts", "code": 3042, "category": "production", "by_category": {"production": 3042}},
+      {"dir": "examples", "code": 1808, "category": "example", "by_category": {"example": 1808}},
+      {"dir": ".", "code": 1463, "category": "production", "by_category": {"production": 1463}},
+      {"dir": "testsuite", "code": 1199, "category": "production", "by_category": {"production": 1199}},
+      {"dir": "patches", "code": 1076, "category": "production", "by_category": {"production": 1076}},
+      {"dir": "test-code", "code": 1064, "category": "production", "by_category": {"production": 1064}},
+      {"dir": "packaging", "code": 294, "category": "production", "by_category": {"production": 294}},
+      {"dir": ".github", "code": 219, "category": "production", "by_category": {"production": 219}},
+      {"dir": "cmake", "code": 214, "category": "production", "by_category": {"production": 214}},
+      {"dir": "man", "code": 46, "category": "production", "by_category": {"production": 46}}
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": ["examples"]
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {"files": 34, "code": 164, "macros": ["_MSC_VER", "_WIN32", "_WIN64", "__CYGWIN__", "__MINGW32__"]},
+        "macos": {"files": 2, "code": 2, "macros": ["__APPLE__"]},
+        "posix": {"files": 2, "code": 3, "macros": ["_POSIX_C_SOURCE", "_POSIX_VERSION"]}
+      },
+      "total": 169,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates. The testsuite/ directory exists but cloc classified it as production code."
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["COPYING"],
+    "evidence": "COPYING file contains standard BSD 3-Clause license text with copyright holder 'Kongsberg Oil & Gas Technologies AS'. README.md also states 'BSD License (c) Kongsberg Oil & Gas Technologies AS'.",
+    "notes": null
+  },
+  "dependencies": {
+    "count": 11,
+    "manifests": ["CMakeLists.txt"],
+    "by_ecosystem": {"cpp": 11},
+    "dependencies": [
+      {
+        "name": "OpenGL",
+        "ecosystem": "cpp",
+        "registry_name": "OpenGL",
+        "source_repo": null,
+        "import_names": [],
+        "aliases": ["GL"],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "核心 3D 渲染后端，Coin 所有可视化输出依赖 OpenGL API",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(OpenGL REQUIRED)）",
+        "declared_in": ["CMakeLists.txt:219"],
+        "used_symbols": ["glEnable", "glDisable", "glGetIntegerv", "glAccum", "glDrawArrays", "glDrawElements", "glBindTexture", "glTexCoord2f", "glVertex3f"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "GLU",
+        "ecosystem": "cpp",
+        "registry_name": "OpenGL::GLU",
+        "source_repo": null,
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "OpenGL 实用库，提供 NURBS、二次曲面等辅助渲染功能",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（随 OpenGL 一起提供，或可选 superglu 替代）",
+        "declared_in": ["CMakeLists.txt:244"],
+        "used_symbols": ["gluPerspective", "gluLookAt", "gluNewQuadric"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "X11",
+        "ecosystem": "cpp",
+        "registry_name": "X11",
+        "source_repo": null,
+        "import_names": [],
+        "aliases": [],
+        "scope": "optional",
+        "version": null,
+        "purpose": "Linux/Unix X Window System 窗口系统集成，GLX 渲染所需",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(X11 REQUIRED)，仅 Linux/Mac X11 模式）",
+        "declared_in": ["CMakeLists.txt:191"],
+        "used_symbols": ["XOpenDisplay", "XCreateWindow"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ZLIB",
+        "ecosystem": "cpp",
+        "registry_name": "ZLIB",
+        "source_repo": "madler/zlib",
+        "import_names": ["zlib"],
+        "aliases": ["zlib"],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "数据压缩，用于 .iv/.wrl 等场景文件的 gz 压缩读写",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(ZLIB)，或运行时动态链接）",
+        "declared_in": ["CMakeLists.txt:343"],
+        "used_symbols": ["gzdopen", "gzread", "gzwrite", "inflate", "deflate"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "BZip2",
+        "ecosystem": "cpp",
+        "registry_name": "BZip2",
+        "source_repo": null,
+        "import_names": ["bzlib"],
+        "aliases": ["libbz2", "bzip2"],
+        "scope": "optional",
+        "version": null,
+        "purpose": "bzip2 压缩支持，用于场景文件压缩读写",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(BZip2)，或运行时动态链接）",
+        "declared_in": ["CMakeLists.txt:376"],
+        "used_symbols": ["BZ2_bzRead", "BZ2_bzWrite"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Freetype",
+        "ecosystem": "cpp",
+        "registry_name": "Freetype",
+        "source_repo": "freetype/freetype",
+        "import_names": ["freetype2"],
+        "aliases": ["freetype"],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "字体渲染，用于 3D 文本节点（SoText2/SoText3/SoVRMLText）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(Freetype)，或运行时动态链接）",
+        "declared_in": ["CMakeLists.txt:409"],
+        "used_symbols": ["FT_New_Face", "FT_Load_Glyph", "FT_Render_Glyph"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Fontconfig",
+        "ecosystem": "cpp",
+        "registry_name": "Fontconfig",
+        "source_repo": null,
+        "import_names": ["fontconfig"],
+        "aliases": [],
+        "scope": "optional",
+        "version": null,
+        "purpose": "系统字体发现与匹配，辅助 Freetype 字体渲染",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(Fontconfig)，或运行时动态链接）",
+        "declared_in": ["CMakeLists.txt:443"],
+        "used_symbols": ["FcInit", "FcFontMatch"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "OpenAL",
+        "ecosystem": "cpp",
+        "registry_name": "OpenAL",
+        "source_repo": "kcat/openal-soft",
+        "import_names": ["AL", "ALC"],
+        "aliases": ["openal-soft"],
+        "scope": "optional",
+        "version": null,
+        "purpose": "3D 音频渲染后端，用于 VRML97 Sound/AudioClip 节点",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(OpenAL)，或运行时动态链接）",
+        "declared_in": ["CMakeLists.txt:322"],
+        "used_symbols": ["alSourcePlay", "alListenerfv"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "SpiderMonkey",
+        "ecosystem": "cpp",
+        "registry_name": "SpiderMonkey",
+        "source_repo": "mozilla/gecko-dev",
+        "import_names": ["jsapi"],
+        "aliases": ["mozjs"],
+        "scope": "optional",
+        "version": null,
+        "purpose": "JavaScript 引擎，用于 VRML97 Script 节点的脚本执行",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(SpiderMonkey)，或运行时动态链接）",
+        "declared_in": ["CMakeLists.txt:460"],
+        "used_symbols": ["JS_NewContext", "JS_EvaluateScript"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "simage",
+        "ecosystem": "cpp",
+        "registry_name": "simage",
+        "source_repo": "coin3d/simage",
+        "import_names": ["simage"],
+        "aliases": [],
+        "scope": "optional",
+        "version": null,
+        "purpose": "图像加载库，用于纹理贴图加载（JPEG/PNG/TIFF/GIF 等）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(simage)，或运行时动态链接）",
+        "declared_in": ["CMakeLists.txt:477"],
+        "used_symbols": ["simage_read_image", "simage_get_screenshots"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Expat",
+        "ecosystem": "cpp",
+        "registry_name": "EXPAT",
+        "source_repo": "libexpat/libexpat",
+        "import_names": ["expat"],
+        "aliases": [],
+        "scope": "optional",
+        "version": null,
+        "purpose": "XML 解析，用于 X3D/VRML 场景文件解析（可选用内嵌 expat 替代）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装（find_package(EXPAT)，可选；默认内嵌 expat 副本）",
+        "declared_in": ["CMakeLists.txt:275"],
+        "used_symbols": ["XML_ParserCreate", "XML_Parse"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "Coin 采用运行时动态链接（runtime linking）策略：大部分可选依赖默认在运行时通过 dlopen/LoadLibrary 加载，编译时不强制要求存在。核心依赖仅有 OpenGL（必须）和 Threads（可选但默认开启）。内嵌了 expat 的源码副本作为默认 XML 解析器。"
+  },
+  "native_api": {
+    "summary": "Coin 是重度依赖 OpenGL 的 C++ 库，通过自研 glue 层封装了跨平台 OpenGL 上下文管理（GLX/EGL/WGL/CGL/AGL）。它使用 POSIX dlopen/Win32 LoadLibrary 进行运行时动态库加载，内建 pthread/Win32 线程抽象层，并包含平台相关的文件系统与时间操作。",
+    "groups": [
+      {
+        "type": "opengl",
+        "category": "platform",
+        "platform": "portable",
+        "apis": [
+          {"name": "glEnable", "purpose": "启用 OpenGL 状态", "count": 450, "evidence": ["src/rendering/SoRenderManagerP.cpp:286"], "conditional": false},
+          {"name": "glGetIntegerv", "purpose": "查询 OpenGL 状态值", "count": 120, "evidence": ["src/rendering/SoRenderManager.cpp:640"], "conditional": false},
+          {"name": "glDrawArrays", "purpose": "提交顶点数组绘制", "count": 80, "evidence": ["src/rendering/SoVertexArrayIndexer.cpp:247"], "conditional": false},
+          {"name": "glBindTexture", "purpose": "绑定纹理对象", "count": 95, "evidence": ["src/nodes/SoTexture2.cpp"], "conditional": false},
+          {"name": "glAccum", "purpose": "累积缓冲区操作（多通道抗锯齿）", "count": 8, "evidence": ["src/rendering/SoRenderManager.cpp:643"], "conditional": false}
+        ],
+        "evidence": ["src/rendering/", "src/nodes/So*.cpp", "src/glue/gl.cpp"]
+      },
+      {
+        "type": "glx",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "glXChooseVisual", "purpose": "选择合适的 X11 视觉格式", "count": 3, "evidence": ["src/glue/gl_glx.cpp"], "conditional": true},
+          {"name": "glXCreateContext", "purpose": "创建 GLX OpenGL 渲染上下文", "count": 2, "evidence": ["src/glue/gl_glx.cpp"], "conditional": true},
+          {"name": "glXMakeCurrent", "purpose": "绑定 GLX 上下文到当前线程", "count": 5, "evidence": ["src/glue/gl_glx.cpp"], "conditional": true},
+          {"name": "glXCreatePbuffer", "purpose": "创建 GLX PBuffer 离屏渲染缓冲区", "count": 2, "evidence": ["src/glue/gl_glx.cpp"], "conditional": true}
+        ],
+        "evidence": ["src/glue/gl_glx.cpp", "CMakeLists.txt:709"]
+      },
+      {
+        "type": "egl",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "eglGetDisplay", "purpose": "获取 EGL 显示连接", "count": 3, "evidence": ["src/glue/gl_egl.cpp:171"], "conditional": true},
+          {"name": "eglInitialize", "purpose": "初始化 EGL 显示连接", "count": 2, "evidence": ["src/glue/gl_egl.cpp:218"], "conditional": true},
+          {"name": "eglCreateContext", "purpose": "创建 EGL OpenGL 上下文", "count": 2, "evidence": ["src/glue/gl_egl.cpp"], "conditional": true},
+          {"name": "eglCreatePbufferSurface", "purpose": "创建 EGL PBuffer 离屏表面", "count": 2, "evidence": ["src/glue/gl_egl.cpp:342"], "conditional": true}
+        ],
+        "evidence": ["src/glue/gl_egl.cpp", "CMakeLists.txt:223"]
+      },
+      {
+        "type": "wgl",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "wglCreateContext", "purpose": "创建 Windows OpenGL 渲染上下文", "count": 3, "evidence": ["src/glue/gl_wgl.cpp", "CMakeLists.txt:673"], "conditional": true},
+          {"name": "wglMakeCurrent", "purpose": "绑定 WGL 上下文到当前线程", "count": 4, "evidence": ["src/glue/gl_wgl.cpp"], "conditional": true},
+          {"name": "wglCreatePbufferARB", "purpose": "创建 WGL PBuffer 离屏缓冲区", "count": 2, "evidence": ["src/glue/gl_wgl.cpp"], "conditional": true}
+        ],
+        "evidence": ["src/glue/gl_wgl.cpp"]
+      },
+      {
+        "type": "cgl",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {"name": "CGLGetCurrentContext", "purpose": "获取当前 CGL OpenGL 上下文", "count": 2, "evidence": ["CMakeLists.txt:700"], "conditional": true},
+          {"name": "CGLCreateContext", "purpose": "创建 CGL OpenGL 渲染上下文", "count": 2, "evidence": ["src/glue/gl_cgl.cpp"], "conditional": true}
+        ],
+        "evidence": ["src/glue/gl_cgl.cpp"]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "dlopen", "purpose": "运行时动态加载共享库", "count": 8, "evidence": ["src/glue/dl.cpp:594"], "conditional": true},
+          {"name": "dlsym", "purpose": "查找动态库中的符号", "count": 3, "evidence": ["src/glue/dl.cpp:805"], "conditional": true},
+          {"name": "gettimeofday", "purpose": "获取高精度时间", "count": 5, "evidence": ["src/base/SbTime.cpp"], "conditional": true},
+          {"name": "pthread_self", "purpose": "获取当前线程 ID", "count": 1, "evidence": ["src/threads/thread.cpp:174"], "conditional": true}
+        ],
+        "evidence": ["src/glue/dl.cpp", "src/threads/thread.cpp"]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "LoadLibrary", "purpose": "运行时动态加载 DLL", "count": 3, "evidence": ["src/misc/SoDBP.cpp:212", "src/glue/dl.cpp:693"], "conditional": true},
+          {"name": "GetEnvironmentVariable", "purpose": "读取 Windows 环境变量", "count": 2, "evidence": ["CMakeLists.txt:648"], "conditional": true},
+          {"name": "QueryPerformanceCounter", "purpose": "高精度计时器", "count": 2, "evidence": ["CMakeLists.txt:649"], "conditional": true}
+        ],
+        "evidence": ["src/glue/dl.cpp", "src/glue/win32api.cpp", "src/misc/SoDBP.cpp"]
+      },
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "std::vector", "purpose": "动态数组容器", "count": 300, "evidence": ["src/rendering/SoRenderManagerP.h:127"], "conditional": false},
+          {"name": "std::pair", "purpose": "二元组", "count": 50, "evidence": ["src/rendering/SoRenderManagerP.h:127"], "conditional": false},
+          {"name": "std::find", "purpose": "容器查找算法", "count": 20, "evidence": ["src/rendering/SoRenderManager.cpp:1790"], "conditional": false}
+        ],
+        "evidence": ["src/rendering/SoRenderManagerP.h", "src/rendering/SoRenderManager.cpp"]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libGL.so / OpenGL32.dll",
+        "mechanism": "dlopen / LoadLibrary",
+        "acquisition": "system",
+        "source": "系统 OpenGL 库，通过 cc_dl_open 运行时加载",
+        "description": "OpenGL 渲染库，Coin 的核心图形后端",
+        "optional": false,
+        "evidence": ["src/glue/gl.cpp"]
+      },
+      {
+        "name": "libGLU.so / Glu32.dll",
+        "mechanism": "dlopen / LoadLibrary",
+        "acquisition": "system",
+        "source": "系统 GLU 库，通过 GLUWrapper 运行时加载",
+        "description": "OpenGL 实用库（NURBS、二次曲面等辅助渲染）",
+        "optional": true,
+        "evidence": ["src/glue/GLUWrapper.cpp"]
+      },
+      {
+        "name": "libOpenAL.so / OpenAL32.dll",
+        "mechanism": "dlopen / LoadLibrary",
+        "acquisition": "system",
+        "source": "系统 OpenAL 库，通过 openal_wrapper 运行时加载",
+        "description": "3D 音频渲染库",
+        "optional": true,
+        "evidence": ["src/glue/openal_wrapper.cpp"]
+      },
+      {
+        "name": "libsimage.so",
+        "mechanism": "dlopen / LoadLibrary",
+        "acquisition": "system",
+        "source": "系统 simage 库，通过 simage_wrapper 运行时加载",
+        "description": "图像加载库（JPEG/PNG/TIFF/GIF 纹理贴图）",
+        "optional": true,
+        "evidence": ["src/glue/simage_wrapper.cpp"]
+      },
+      {
+        "name": "libz.so / zlib.dll",
+        "mechanism": "dlopen / LoadLibrary",
+        "acquisition": "system",
+        "source": "系统 zlib 库，通过 zlib wrapper 运行时加载",
+        "description": "数据压缩库（场景文件 gz 读写）",
+        "optional": true,
+        "evidence": ["src/glue/zlib.cpp"]
+      },
+      {
+        "name": "libSpiderMonkey.so / js32.dll",
+        "mechanism": "dlopen / LoadLibrary",
+        "acquisition": "system",
+        "source": "系统 SpiderMonkey JavaScript 引擎，运行时加载",
+        "description": "JavaScript 引擎（VRML97 Script 节点执行）",
+        "optional": true,
+        "evidence": ["src/glue/spidermonkey.cpp"]
+      },
+      {
+        "name": "libfontconfig.so",
+        "mechanism": "dlopen / LoadLibrary",
+        "acquisition": "system",
+        "source": "系统 Fontconfig 库，通过 freetype wrapper 运行时加载",
+        "description": "系统字体发现与匹配",
+        "optional": true,
+        "evidence": ["src/glue/freetype.cpp"]
+      },
+      {
+        "name": "kernel32.dll",
+        "mechanism": "LoadLibrary",
+        "acquisition": "system",
+        "source": "Windows 系统库，显式加载",
+        "description": "Windows 内核库，用于获取高性能计时器等系统功能",
+        "optional": true,
+        "evidence": ["src/misc/SoDBP.cpp:212"]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "Coin 在运行时通过环境变量进行配置调优，依赖 OpenGL 图形驱动，动态加载多个可选库（OpenAL/simage/zlib 等），并在文件系统中查找场景文件与字体。它不发起网络请求，不启动外部进程。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "COINDIR 环境变量指定的数据目录，用于查找场景文件、字体、驱动数据库等",
+        "purpose": "定位 Coin 运行时资源",
+        "evidence": ["src/misc/SoDB.cpp"]
+      },
+      {
+        "detail": "场景文件路径（.iv/.wrl），通过 SoInput 读取",
+        "purpose": "加载 3D 场景数据",
+        "evidence": ["src/io/SoInput.cpp"]
+      },
+      {
+        "detail": "系统字体目录（通过 Fontconfig 发现）",
+        "purpose": "查找可用字体用于文本渲染",
+        "evidence": ["src/glue/freetype.cpp"]
+      }
+    ],
+    "env_vars": [
+      {"name": "COIN_DEBUG_*", "purpose": "调试输出控制（多个子变量如 COIN_DEBUG_GLUWRAPPER、COIN_DEBUG_DL 等）", "evidence": ["src/glue/dl.cpp", "src/glue/GLUWrapper.cpp"]},
+      {"name": "COIN_GLXGLUE_NO_PBUFFERS", "purpose": "禁用 GLX PBuffer，回退到软件离屏渲染", "evidence": ["src/glue/gl_glx.cpp:36"]},
+      {"name": "COIN_EGLGLUE_NO_PBUFFERS", "purpose": "禁用 EGL PBuffer", "evidence": ["src/glue/gl_egl.cpp:36"]},
+      {"name": "COINDIR", "purpose": "指定 Coin 运行时数据根目录", "evidence": ["src/misc/SoDB.cpp"]},
+      {"name": "COIN_DEBUG_SOOFFSCREENRENDERER_TILEPREFIX", "purpose": "离屏渲染 tile 调试输出前缀", "evidence": ["src/rendering/SoOffscreenRenderer.cpp:467"]},
+      {"name": "COIN_ALLOW_SPIDERMONKEY", "purpose": "允许加载 SpiderMonkey JavaScript 引擎", "evidence": ["src/vrml97/Script.cpp:287"]}
+    ],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "OpenGL 图形设备（GPU）",
+        "purpose": "3D 渲染加速",
+        "evidence": ["src/glue/gl.cpp"]
+      }
+    ],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++11",
+    "runtime_version": "无特定运行时版本要求（原生 C++ 编译为共享库）",
+    "build_system": "CMake",
+    "compiler_extensions": [
+      {"detail": "__attribute__", "purpose": "GCC/Clang 函数属性（如 format 检查、deprecated 标记）", "evidence": ["src/base/SbBasic.h"]},
+      {"detail": "__builtin_expect", "purpose": "分支预测提示（优化热路径）", "evidence": ["CMakeLists.txt:808"]},
+      {"detail": "__declspec(dllexport/dllimport)", "purpose": "Windows DLL 导出/导入声明", "evidence": ["include/Inventor/SbBasic.h"]}
+    ],
+    "platforms": [
+      {"os": "Windows", "arch": "x86_64", "evidence": ["CMakeLists.txt:545", ".github/workflows/"]},
+      {"os": "Linux", "arch": "x86_64", "evidence": ["CMakeLists.txt:709", ".github/workflows/"]},
+      {"os": "macOS", "arch": "x86_64/arm64", "evidence": ["CMakeLists.txt:579", ".github/workflows/"]}
+    ],
+    "entry_points": [],
+    "packaging": "无（库）；构建产物为共享库（.so/.dll/.dylib）或静态库，通过 CMake install 部署",
+    "notes": "CMake 最低版本 3.0，支持 GLX/EGL/WGL/CGL/AGL 多种窗口系统后端。可选的 Mac Framework 构建模式。"
+  },
+  "capability_profile": {
+    "summary": "Coin 是一个深度依赖 OpenGL 的 3D 场景图渲染库，核心功能围绕 3D 渲染展开，附带可选的音频能力。不涉及桌面 GUI（自身不创建窗口，由宿主应用负责），不依赖特定硬件加速器。",
+    "scenarios": [
+      {
+        "key": "rendering_3d",
+        "present": true,
+        "kind": ["opengl", "glx", "egl", "wgl", "cgl"],
+        "specific_hardware": false,
+        "via": ["OpenGL", "X11", "native_api.groups[type=glx]", "native_api.groups[type=egl]", "native_api.groups[type=wgl]"],
+        "harmony_status": "partial",
+        "adaptation": "鸿蒙提供 OpenGL ES/EGL（partial），但 Coin 依赖桌面级完整 OpenGL（含 GLX/WGL 上下文管理）。需将 GLX/WGL/CGL 适配层替换为 EGL，并将完整 OpenGL 调用降级或替换为 OpenGL ES 等价调用。场景图逻辑与渲染管线本身可重用。",
+        "evidence": ["src/glue/gl_glx.cpp", "src/glue/gl_egl.cpp", "src/glue/gl_wgl.cpp", "src/rendering/SoGLRenderAction.cpp"]
+      },
+      {
+        "key": "media",
+        "present": true,
+        "kind": ["audio_playback", "openal"],
+        "specific_hardware": false,
+        "via": ["OpenAL", "native_api.dynamic_libraries[name='libOpenAL.so / OpenAL32.dll']"],
+        "harmony_status": "unknown",
+        "adaptation": "OpenAL 在鸿蒙 PC 上的可用性未知。音频功能为可选模块，若不可用可禁用而不影响核心渲染。可考虑替换为 @ohos.multimedia.audio。",
+        "evidence": ["src/glue/openal_wrapper.cpp", "src/vrml97/Sound.cpp"]
+      },
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "Coin 自身不创建窗口，由宿主应用（如 Qt/GTK/Win32 应用）提供 GUI 上下文。Coin 通过 SoRenderManager 接收 OpenGL 上下文。",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "Coin 仅依赖标准 GPU OpenGL，不使用 CUDA/OpenCL/特定硬件加速器。",
+        "evidence": []
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (自研内核, OHOS NDK native 层, Node-API bridge)",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [30, 90]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [
+      {
+        "id": "ua:glx",
+        "caused_by": ["ta:opengl_desktop"],
+        "api": "glXChooseVisual / glXCreateContext / glXMakeCurrent / glXCreatePbuffer",
+        "public_entry": "SoGLRenderAction / SoRenderManager",
+        "reason": "GLX 是 X11 专有的 OpenGL 窗口系统接口，鸿蒙无 X11。需替换为 EGL 等价调用。",
+        "blocking_native_api": "glX*",
+        "category": "platform",
+        "evidence": ["src/glue/gl_glx.cpp"]
+      },
+      {
+        "id": "ua:wgl",
+        "caused_by": ["ta:opengl_desktop"],
+        "api": "wglCreateContext / wglMakeCurrent / wglCreatePbufferARB",
+        "public_entry": "SoGLRenderAction / SoRenderManager",
+        "reason": "WGL 是 Windows 专有的 OpenGL 窗口系统接口，鸿蒙不支持。需替换为 EGL。",
+        "blocking_native_api": "wgl*",
+        "category": "platform",
+        "evidence": ["src/glue/gl_wgl.cpp"]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:opengl_desktop",
+        "capability": "桌面级完整 OpenGL + GLX/WGL 上下文管理",
+        "required": true,
+        "target_status": "partial",
+        "impact": "鸿蒙提供 OpenGL ES/EGL（partial），Coin 依赖完整桌面 OpenGL（含 GLU、累积缓冲区、显示列表等）。OpenGL ES 缺少的特性需逐一适配或降级处理。",
+        "source": "references/harmony-pc-capabilities.json → graphics_3d → opengl (partial), egl (partial)"
+      },
+      {
+        "id": "ta:posix_dl",
+        "capability": "POSIX dlopen/dlsym 动态链接",
+        "required": true,
+        "target_status": "available",
+        "impact": "OHOS NDK 提供 musl libc，包含 dlopen/dlsym，Coin 的运行时动态链接机制可直接使用。",
+        "source": "references/harmony-pc-capabilities.json → runtimes → C++ (通过 OHOS NDK)"
+      },
+      {
+        "id": "ta:posix_threads",
+        "capability": "pthread 线程库",
+        "required": false,
+        "target_status": "available",
+        "impact": "OHOS NDK 提供 pthread 支持，Coin 的线程层可直接使用。线程安全为可选功能。",
+        "source": "OHOS NDK musl pthread"
+      },
+      {
+        "id": "ta:openal",
+        "capability": "OpenAL 3D 音频库",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "OpenAL 在鸿蒙 PC 可用性未知。音频为可选功能，不可用时可禁用。",
+        "source": "references/harmony-pc-capabilities.json → media → audio_io (unknown)"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "cross_compile",
+    "summary": "Coin 可通过 OHOS NDK 交叉编译移植到鸿蒙 PC，但需要大量适配工作。核心挑战是将 GLX/WGL/CGL 窗口系统集成替换为 EGL，并将完整 OpenGL 调用降级为 OpenGL ES 等价实现。场景图核心逻辑、节点系统、文件 I/O 等纯逻辑层可保持不变。建议路径为：1) 用 OHOS NDK 交叉编译；2) 重写 glue 层，将 GLX/WGL 替换为 EGL；3) 逐一处理 OpenGL→OpenGL ES 的差异（显示列表→VBO、glBegin/glEnd→顶点数组等）；4) 可选依赖（OpenAL/SpiderMonkey）可暂时禁用。",
+    "blockers": [
+      {
+        "id": "bk:opengl_desktop",
+        "issue": "Coin 深度依赖桌面级完整 OpenGL（含 GLU、显示列表、累积缓冲区、即时模式等），鸿蒙仅提供 OpenGL ES/EGL（partial）",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "将 GLX/WGL/CGL 适配层替换为 EGL；将 glBegin/glEnd 即时模式改为顶点数组/VBO；将显示列表替换为 VBO；累积缓冲区抗锯齿改用多重采样；GLU 功能用自研或 superglu 替代",
+        "caused_by": ["ta:opengl_desktop"],
+        "manifests_as": ["ua:glx", "ua:wgl"],
+        "evidence": ["src/glue/gl_glx.cpp", "src/glue/gl_wgl.cpp", "src/glue/GLUWrapper.cpp", "src/rendering/SoGLRenderAction.cpp"]
+      },
+      {
+        "id": "bk:runtime_deps",
+        "issue": "多个运行时依赖（OpenAL/SpiderMonkey/Fontconfig/simage）在鸿蒙 PC 可用性未知",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "Coin 的运行时动态链接机制设计为可选——库加载失败时功能被禁用而非崩溃。可逐步在鸿蒙上验证每个依赖，或用鸿蒙等价 API 替代",
+        "caused_by": ["ta:openal"],
+        "manifests_as": [],
+        "evidence": ["src/glue/openal_wrapper.cpp", "src/glue/spidermonkey.cpp", "src/glue/simage_wrapper.cpp"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "场景图核心逻辑",
+        "note": "节点、引擎、传感器、动作等核心数据结构与遍历逻辑不依赖平台 API，可原样编译",
+        "evidence": ["src/nodes/", "src/engines/", "src/sensors/"]
+      },
+      {
+        "aspect": "文件 I/O 层",
+        "note": "Inventor/VRML97 文件格式解析与序列化不依赖平台 API",
+        "evidence": ["src/io/SoInput.cpp", "src/io/SoOutput.cpp"]
+      },
+      {
+        "aspect": "线程抽象层",
+        "note": "Coin 的线程层已抽象 pthread/Win32，OHOS NDK 的 pthread 可直接适配",
+        "evidence": ["src/threads/"]
+      },
+      {
+        "aspect": "动态链接层",
+        "note": "cc_dl_open/cc_dl_sym 已抽象 dlopen/LoadLibrary，OHOS NDK 的 dlopen 可直接适配",
+        "evidence": ["src/glue/dl.cpp"]
+      },
+      {
+        "aspect": "EGL 后端",
+        "note": "Coin 已有 EGL 适配代码（src/glue/gl_egl.cpp），鸿蒙 EGL 可直接使用",
+        "evidence": ["src/glue/gl_egl.cpp"]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK 交叉编译 Coin，解决编译配置与依赖路径",
+      "重写 glue 层：将 GLX/WGL/CGL 替换为 EGL（已有 gl_egl.cpp 基础可扩展）",
+      "将 OpenGL 即时模式（glBegin/glEnd）调用替换为 OpenGL ES 兼容的顶点数组/VBO",
+      "将显示列表（glNewList/glCallList）替换为 VBO/IBO",
+      "将 GLU 依赖替换为 superglu 或自研等价实现",
+      "将累积缓冲区抗锯齿替换为多重采样抗锯齿（MSAA）",
+      "验证 zlib/bzip2/freetype 在鸿蒙 PC 的可用性（cmd-pkgs 应有提供）",
+      "验证 OpenAL/SpiderMonkey/simage/Fontconfig 可用性，不可用时禁用对应功能"
+    ],
+    "notes": "Coin 是一个成熟的大型 C++ 库（~39 万行生产代码），其场景图架构与鸿蒙并不冲突。主要工作量在于 OpenGL→OpenGL ES 的降级适配和窗口系统集成层的替换。Coin 已有 EGL 适配代码，这是一个积极信号。运行时动态链接设计使得可选依赖不会阻塞核心功能。置信度为 medium，因为鸿蒙桌面级 OpenGL 的覆盖程度与 EGL 版本/扩展支持尚未核实。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "cgl",
+        "rationale": "macOS CGL (Core OpenGL) 是 macOS 专有的底层 OpenGL 接口，Coin 在 glue 层有完整封装，与 glx/wgl/egl 并列但现有推荐集未收录"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "agl",
+        "rationale": "AGL (Apple Graphics Library) 是旧版 macOS 的 OpenGL 窗口绑定接口，Coin 有遗留支持"
+      }
+    ]
+  }
+}

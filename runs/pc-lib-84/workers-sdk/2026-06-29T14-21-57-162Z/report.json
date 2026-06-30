@@ -1,0 +1,1710 @@
+{
+  "library": {
+    "name": "workers-sdk",
+    "kind": "cli",
+    "package_name": "wrangler",
+    "aliases": [
+      "cloudflare-workers-sdk",
+      "@cloudflare/workers-sdk"
+    ],
+    "import_names": [
+      "wrangler",
+      "miniflare",
+      "create-cloudflare"
+    ],
+    "source_url": "https://github.com/cloudflare/workers-sdk",
+    "analyzed_at": "2026-06-29T14:21:57.162Z",
+    "commit": null,
+    "one_liner": "Cloudflare Workers 官方开发工具集：包含 Wrangler CLI、Miniflare 本地模拟器及项目脚手架工具",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "Cloudflare Workers SDK 是 Cloudflare Workers 平台的官方开发工具集（monorepo），核心包含三大组件：Wrangler（命令行工具，负责 Worker 的开发、构建、部署与全生命周期管理）、Miniflare（基于 workerd 的本地模拟器，提供完整的 Workers 运行时仿真）以及 Create Cloudflare（C3，项目脚手架 CLI）。此外还包含 Vite 插件、Vitest 测试池、KV 资源处理器等辅助库。主要面向在 Cloudflare 边缘计算平台上开发无服务器应用的开发者。",
+    "categories": [
+      {
+        "name": "命令行开发工具",
+        "description": "Wrangler CLI 提供 Worker 项目的初始化、开发服务器、构建打包、部署上线、配置管理、密钥管理、日志追踪等全链路开发工作流",
+        "evidence": [
+          "packages/wrangler/src/index.ts",
+          "packages/wrangler/src/cli.ts",
+          "packages/wrangler/bin/wrangler.js"
+        ]
+      },
+      {
+        "name": "本地模拟与仿真",
+        "description": "Miniflare 基于 workerd 运行时提供本地开发服务器，模拟 KV、R2、D1、Durable Objects、队列、工作流等 Cloudflare 绑定服务的完整行为",
+        "evidence": [
+          "packages/miniflare/src/index.ts",
+          "packages/miniflare/src/workers/",
+          "packages/miniflare/src/runtime/"
+        ]
+      },
+      {
+        "name": "项目脚手架",
+        "description": "Create Cloudflare（C3）提供交互式项目创建向导，支持多种框架模板的一键初始化与部署",
+        "evidence": [
+          "packages/create-cloudflare/src/cli.ts",
+          "packages/create-cloudflare/templates/"
+        ]
+      },
+      {
+        "name": "构建与打包集成",
+        "description": "Vite 插件和 esbuild 集成，支持在标准前端构建流程中嵌入 Cloudflare Worker 开发体验；unenv 预设提供 Node.js 兼容层",
+        "evidence": [
+          "packages/vite-plugin-cloudflare/src/",
+          "packages/unenv-preset/src/"
+        ]
+      },
+      {
+        "name": "测试基础设施",
+        "description": "Vitest pool workers 提供在真实 workerd 运行时中运行测试的能力；mock-registry 和共享测试工具支持端到端测试",
+        "evidence": [
+          "packages/vitest-pool-workers/src/",
+          "packages/mock-npm-registry/src/"
+        ]
+      },
+      {
+        "name": "容器与边缘服务支持",
+        "description": "容器共享库支持 Cloudflare Containers 的构建与部署；各种辅助库处理 KV 资产、Pages 部署、工作流共享逻辑等",
+        "evidence": [
+          "packages/containers-shared/src/",
+          "packages/kv-asset-handler/src/",
+          "packages/workers-shared/"
+        ]
+      }
+    ],
+    "domain": "云计算/边缘计算开发工具",
+    "target_users": "在 Cloudflare Workers 平台上构建和部署无服务器应用的开发者"
+  },
+  "tests": {
+    "test_files": 925,
+    "test_cases": 8524,
+    "frameworks": [
+      "vitest"
+    ],
+    "by_language": {
+      "TypeScript": {
+        "files": 856,
+        "cases": 8507
+      },
+      "JavaScript": {
+        "files": 30,
+        "cases": 17
+      },
+      "Markdown": {
+        "files": 4,
+        "cases": 0
+      },
+      "YAML": {
+        "files": 2,
+        "cases": 0
+      },
+      "JSON": {
+        "files": 31,
+        "cases": 0
+      },
+      "Astro": {
+        "files": 1,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "notes": "主力测试框架为 Vitest（含 vitest-pool-workers 在真实 workerd 运行时中测试）；E2E 测试需要真实 Cloudflare 凭证。"
+  },
+  "license": {
+    "spdx": "MIT OR Apache-2.0",
+    "name": "MIT / Apache-2.0 dual license",
+    "confidence": "high",
+    "is_dual_licensed": true,
+    "license_files": [
+      "LICENSE-MIT",
+      "LICENSE-APACHE"
+    ],
+    "evidence": "根目录存在完整的 LICENSE-MIT 和 LICENSE-APACHE；根 package.json 声明 MIT OR Apache-2.0；wrangler 和 create-cloudflare 也声明相同双许可；miniflare 仅声明 MIT",
+    "notes": "双许可（MIT OR Apache-2.0）：用户可选择任一许可证条款使用。这是 Cloudflare 开源项目的标准许可模式。"
+  },
+  "dependencies": {
+    "count": 12,
+    "manifests": [
+      "package.json",
+      "pnpm-workspace.yaml",
+      "pnpm-lock.yaml"
+    ],
+    "by_ecosystem": {
+      "nodejs": 12
+    },
+    "dependencies": [
+      {
+        "name": "workerd",
+        "ecosystem": "nodejs",
+        "registry_name": "workerd",
+        "source_repo": "https://github.com/cloudflare/workerd",
+        "scope": "runtime",
+        "version": "1.20260629.1",
+        "purpose": "Cloudflare Workers 运行时的本地执行引擎，miniflare 和 wrangler 依赖它进行本地模拟",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry（含平台特定原生二进制）",
+        "declared_in": [
+          "packages/wrangler/package.json",
+          "packages/miniflare/package.json"
+        ],
+        "used_symbols": [
+          "Worker",
+          "Service"
+        ]
+      },
+      {
+        "name": "esbuild",
+        "ecosystem": "nodejs",
+        "registry_name": "esbuild",
+        "source_repo": "https://github.com/evanw/esbuild",
+        "scope": "runtime",
+        "version": "0.28.1",
+        "purpose": "JavaScript/TypeScript 快速打包器，用于 Worker 代码的构建和嵌入",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry（含平台特定原生二进制）",
+        "declared_in": [
+          "packages/wrangler/package.json",
+          "package.json"
+        ],
+        "used_symbols": [
+          "build",
+          "context"
+        ]
+      },
+      {
+        "name": "undici",
+        "ecosystem": "nodejs",
+        "registry_name": "undici",
+        "source_repo": "https://github.com/nodejs/undici",
+        "scope": "runtime",
+        "version": "7.28.0",
+        "purpose": "Node.js HTTP/1.1 客户端，用于 Cloudflare API 通信和 fetch 实现",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "packages/wrangler/package.json",
+          "packages/miniflare/package.json"
+        ],
+        "used_symbols": [
+          "fetch",
+          "Agent",
+          "Pool"
+        ]
+      },
+      {
+        "name": "miniflare",
+        "ecosystem": "nodejs",
+        "registry_name": "miniflare",
+        "source_repo": "https://github.com/cloudflare/workers-sdk",
+        "scope": "runtime",
+        "version": "4.20260625.0",
+        "purpose": "本地 Workers 模拟器，wrangler dev 的核心依赖",
+        "acquisition": "package_manager",
+        "locality": "local",
+        "source": "monorepo workspace 包",
+        "declared_in": [
+          "packages/wrangler/package.json"
+        ],
+        "used_symbols": [
+          "Miniflare"
+        ]
+      },
+      {
+        "name": "sharp",
+        "ecosystem": "nodejs",
+        "registry_name": "sharp",
+        "source_repo": "https://github.com/lovell/sharp",
+        "scope": "runtime",
+        "version": "0.34.5",
+        "purpose": "图像处理库，用于 miniflare 本地资源处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry（含平台特定原生二进制，依赖 libvips）",
+        "declared_in": [
+          "packages/miniflare/package.json"
+        ],
+        "used_symbols": [
+          "sharp"
+        ]
+      },
+      {
+        "name": "ws",
+        "ecosystem": "nodejs",
+        "registry_name": "ws",
+        "source_repo": "https://github.com/websockets/ws",
+        "scope": "runtime",
+        "version": "8.21.0",
+        "purpose": "WebSocket 服务端实现，用于 dev server 和 inspector proxy",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "packages/miniflare/package.json",
+          "packages/wrangler/package.json"
+        ],
+        "used_symbols": [
+          "WebSocketServer",
+          "WebSocket"
+        ]
+      },
+      {
+        "name": "cloudflare",
+        "ecosystem": "nodejs",
+        "registry_name": "cloudflare",
+        "source_repo": "https://github.com/cloudflare/cloudflare-typescript",
+        "scope": "runtime",
+        "version": "^5.2.0",
+        "purpose": "Cloudflare API 官方 TypeScript SDK，用于 Workers/Pages 的部署和管理操作",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "packages/wrangler/package.json"
+        ],
+        "used_symbols": [
+          "Cloudflare"
+        ]
+      },
+      {
+        "name": "blake3-wasm",
+        "ecosystem": "nodejs",
+        "registry_name": "blake3-wasm",
+        "source_repo": null,
+        "scope": "runtime",
+        "version": "2.1.5",
+        "purpose": "BLAKE3 哈希算法的 WASM 实现，用于 Worker 包的增量部署校验",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry（含 WASM 二进制）",
+        "declared_in": [
+          "packages/wrangler/package.json"
+        ],
+        "used_symbols": [
+          "hash"
+        ]
+      },
+      {
+        "name": "unenv",
+        "ecosystem": "nodejs",
+        "registry_name": "unenv",
+        "source_repo": "https://github.com/unjs/unenv",
+        "scope": "runtime",
+        "version": "2.0.0-rc.24",
+        "purpose": "Node.js API 兼容层预设，使 Worker 代码可引用 Node.js 模块",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "packages/wrangler/package.json"
+        ],
+        "used_symbols": [
+          "preset"
+        ]
+      },
+      {
+        "name": "@sentry/node",
+        "ecosystem": "nodejs",
+        "registry_name": "@sentry/node",
+        "source_repo": "https://github.com/getsentry/sentry-javascript",
+        "scope": "runtime",
+        "version": "^7.86.0",
+        "purpose": "Sentry 错误追踪 SDK，用于 wrangler 的遥测和错误上报",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "packages/wrangler/package.json"
+        ],
+        "used_symbols": [
+          "init",
+          "captureException"
+        ]
+      },
+      {
+        "name": "chokidar",
+        "ecosystem": "nodejs",
+        "registry_name": "chokidar",
+        "source_repo": "https://github.com/paulmillr/chokidar",
+        "scope": "runtime",
+        "version": "^4.0.1",
+        "purpose": "文件系统监视器，用于 dev 模式下的自动重载",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "packages/wrangler/package.json"
+        ],
+        "used_symbols": [
+          "watch"
+        ]
+      },
+      {
+        "name": "xxhash-wasm",
+        "ecosystem": "nodejs",
+        "registry_name": "xxhash-wasm",
+        "source_repo": null,
+        "scope": "runtime",
+        "version": "^1.0.1",
+        "purpose": "xxHash 的 WASM 实现，用于快速哈希计算",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry（含 WASM 二进制）",
+        "declared_in": [
+          "packages/wrangler/package.json"
+        ],
+        "used_symbols": [
+          "create"
+        ]
+      }
+    ],
+    "notes": "本仓库为 pnpm monorepo（约 33 个 workspace 包），上表仅列出核心外部运行时依赖。workerd 和 esbuild 含平台特定原生二进制。"
+  },
+  "native_api": {
+    "summary": "本项目为纯 TypeScript/Node.js 应用，大量使用 Node.js 标准库模块（fs、path、child_process、crypto、net、http、os、readline、stream 等），以及约 44 处 process.platform 运行时平台判断。无 C/C++ 原生代码，所有原生功能通过 npm 依赖的预编译二进制或 WASM 获得。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "node:fs",
+            "purpose": "文件系统读写、目录操作、文件监视",
+            "count": 80,
+            "evidence": [
+              "packages/wrangler/src/type-generation/index.ts",
+              "packages/wrangler/src/pages/build.ts",
+              "packages/miniflare/src/index.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:path",
+            "purpose": "路径拼接、解析、规范化",
+            "count": 120,
+            "evidence": [
+              "packages/wrangler/src/type-generation/index.ts",
+              "packages/wrangler/src/pages/validate.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:child_process",
+            "purpose": "子进程执行，用于构建命令、git 操作、workerd 进程管理",
+            "count": 12,
+            "evidence": [
+              "packages/wrangler/src/pages/deploy.ts",
+              "packages/workers-utils/src/cloudflared.ts",
+              "packages/containers-shared/src/build.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:crypto",
+            "purpose": "哈希计算、加密操作",
+            "count": 8,
+            "evidence": [
+              "packages/wrangler/src/type-generation/index.ts",
+              "packages/wrangler/src/pages/build.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:net",
+            "purpose": "TCP 套接字，用于 VPC 验证和开发代理",
+            "count": 3,
+            "evidence": [
+              "packages/wrangler/src/vpc/validation.ts",
+              "packages/miniflare/src/index.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:http",
+            "purpose": "HTTP 服务器，用于本地开发服务器和回调服务",
+            "count": 6,
+            "evidence": [
+              "packages/miniflare/src/http/fetch.ts",
+              "packages/wrangler/src/pipelines/client.ts",
+              "packages/workers-auth/src/callback-server.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:os",
+            "purpose": "操作系统信息",
+            "count": 5,
+            "evidence": [
+              "packages/wrangler/src/preview/preview.ts",
+              "packages/workers-utils/src/global-wrangler-config-path.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:readline",
+            "purpose": "终端交互式输入",
+            "count": 3,
+            "evidence": [
+              "packages/wrangler/src/utils/onKeyPress.ts",
+              "packages/wrangler/src/vectorize/insert.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:stream",
+            "purpose": "流处理",
+            "count": 4,
+            "evidence": [
+              "packages/wrangler/src/r2/object.ts",
+              "packages/wrangler/src/utils/onKeyPress.ts"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "node:timers/promises",
+            "purpose": "定时器 Promise 接口",
+            "count": 3,
+            "evidence": [
+              "packages/wrangler/src/utils/retry.ts",
+              "packages/wrangler/src/pipelines/client.ts"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "packages/wrangler/src/",
+          "packages/miniflare/src/"
+        ]
+      },
+      {
+        "type": "platform_branch",
+        "category": "platform",
+        "platform": "mixed",
+        "apis": [
+          {
+            "name": "process.platform",
+            "purpose": "运行时平台检测，区分 Windows/macOS/Linux 行为",
+            "count": 44,
+            "evidence": [
+              "packages/workers-utils/src/config/validation.ts:723",
+              "packages/miniflare/src/plugins/core/index.ts:98",
+              "packages/wrangler/src/pages/dev.ts:98",
+              "packages/workers-utils/src/cloudflared.ts:90",
+              "packages/containers-shared/src/utils.ts:33"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "packages/workers-utils/src/",
+          "packages/containers-shared/src/",
+          "packages/wrangler/src/"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "Wrangler CLI 是开发工具，运行时需要访问文件系统、网络、子进程以及环境变量。不涉及硬件设备。",
+    "network": [
+      {
+        "detail": "Cloudflare API (api.cloudflare.com)",
+        "purpose": "Worker 部署、配置管理、密钥操作、资源管理",
+        "evidence": [
+          "packages/wrangler/src/"
+        ]
+      },
+      {
+        "detail": "本地 HTTP/WebSocket 服务器（默认端口 8787/8777/9229）",
+        "purpose": "dev 模式下的本地开发服务器和 DevTools 调试代理",
+        "evidence": [
+          "packages/miniflare/src/index.ts",
+          "packages/wrangler/src/pages/dev.ts"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "wrangler.json / wrangler.jsonc / wrangler.toml 配置文件",
+        "purpose": "项目配置读取",
+        "evidence": [
+          "packages/workers-utils/src/config/"
+        ]
+      },
+      {
+        "detail": ".wrangler/ 临时目录",
+        "purpose": "本地开发服务器的临时文件、缓存和构建产物",
+        "evidence": [
+          "packages/wrangler/src/"
+        ]
+      },
+      {
+        "detail": "~/.wrangler/ 用户全局配置目录",
+        "purpose": "存储 API 凭证和全局配置",
+        "evidence": [
+          "packages/wrangler/src/user/"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "CLOUDFLARE_API_TOKEN",
+        "purpose": "Cloudflare API 认证令牌",
+        "evidence": [
+          "packages/wrangler/src/user/"
+        ]
+      },
+      {
+        "name": "CLOUDFLARE_ACCOUNT_ID",
+        "purpose": "指定 Cloudflare 账户 ID",
+        "evidence": [
+          "packages/wrangler/src/"
+        ]
+      },
+      {
+        "name": "WRANGLER_SEND_METRICS",
+        "purpose": "控制遥测数据发送",
+        "evidence": [
+          "packages/wrangler/src/metrics/"
+        ]
+      },
+      {
+        "name": "NODE_OPTIONS",
+        "purpose": "Node.js 运行时参数",
+        "evidence": [
+          "packages/wrangler/package.json"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "workerd",
+        "purpose": "启动 Workers 运行时进程进行本地模拟",
+        "evidence": [
+          "packages/miniflare/src/runtime/"
+        ]
+      },
+      {
+        "command": "esbuild",
+        "purpose": "Worker 代码打包",
+        "evidence": [
+          "packages/wrangler/src/"
+        ]
+      },
+      {
+        "command": "git",
+        "purpose": "获取提交信息、判断仓库状态",
+        "evidence": [
+          "packages/wrangler/src/pages/projects.ts"
+        ]
+      },
+      {
+        "command": "cloudflared",
+        "purpose": "Cloudflare Tunnel 隧道工具",
+        "evidence": [
+          "packages/workers-utils/src/cloudflared.ts"
+        ]
+      },
+      {
+        "command": "docker",
+        "purpose": "容器构建与部署",
+        "evidence": [
+          "packages/containers-shared/src/build.ts"
+        ]
+      }
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "TypeScript 5.8+（strict 模式）",
+    "runtime_version": "Node.js >= 22.0.0（推荐 22.22.1，Volta 管理版本）",
+    "build_system": "pnpm + Turborepo（monorepo 编排）+ tsup/tsdown（打包）+ esbuild（Worker 模板嵌入）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "Windows",
+        "arch": "x64",
+        "evidence": [
+          "packages/workers-utils/src/cloudflared.ts",
+          "packages/containers-shared/src/utils.ts"
+        ]
+      },
+      {
+        "os": "macOS",
+        "arch": "x64/arm64",
+        "evidence": [
+          "packages/cli/check-macos-version.ts"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "x64",
+        "evidence": [
+          "packages/workers-utils/src/cloudflared.ts"
+        ]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "launcher",
+        "name": "wrangler",
+        "command": "npx wrangler 或全局安装后 wrangler 命令，入口 bin/wrangler.js",
+        "evidence": [
+          "packages/wrangler/bin/wrangler.js"
+        ]
+      },
+      {
+        "type": "launcher",
+        "name": "cf-wrangler",
+        "command": "cf-wrangler 子命令的 dev/build 委托",
+        "evidence": [
+          "packages/wrangler/bin/cf-wrangler.js"
+        ]
+      },
+      {
+        "type": "launcher",
+        "name": "create-cloudflare",
+        "command": "npm create cloudflare 或 npx create-cloudflare",
+        "evidence": [
+          "packages/create-cloudflare/bin/c3.js"
+        ]
+      },
+      {
+        "type": "launcher",
+        "name": "miniflare",
+        "command": "miniflare CLI（已弃用，引导用户转向 wrangler dev）",
+        "evidence": [
+          "packages/miniflare/bootstrap.js"
+        ]
+      }
+    ],
+    "packaging": "通过 npm 发布为 Node.js CLI 工具包；用户通过 npm/pnpm/yarn 全局安装或 npx 运行。不捆绑 Node.js 运行时。workerd/esbuild/sharp 等原生依赖通过 npm 的平台特定可选依赖自动安装。",
+    "notes": "monorepo 使用 pnpm workspace + Turborepo 编排构建顺序；所有包的运行时依赖需 bundle 进产物。"
+  },
+  "capability_profile": {
+    "summary": "本项目为纯 CLI/开发工具，不涉及桌面 GUI、3D 渲染、媒体处理或特定硬件依赖。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无需 GUI 适配，纯终端工具",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及 3D 渲染",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及媒体处理",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不依赖特定硬件",
+        "evidence": []
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层，Node-API 桥接）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [
+        30,
+        90
+      ]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_compat",
+        "capability": "Node.js 运行时对 Node.js 核心模块的完整支持",
+        "required": true,
+        "target_status": "available",
+        "impact": "Node.js 已移植到鸿蒙 PC，核心模块可用，TypeScript/JS 代码可直接运行",
+        "source": "references/harmony-pc-capabilities.json nodejs 行"
+      },
+      {
+        "id": "ta:native_npm_bins",
+        "capability": "npm 原生二进制包（workerd/esbuild/sharp 等）的鸿蒙 PC 平台可用性",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "workerd 和 esbuild 是核心依赖，若无鸿蒙 PC 原生二进制则无法运行",
+        "source": "references/harmony-pc-capabilities.json npm 原生包段"
+      },
+      {
+        "id": "ta:subprocess_spawn",
+        "capability": "Node.js child_process 在鸿蒙 PC 的子进程创建能力",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "wrangler 大量依赖子进程启动 workerd、git 等工具；若鸿蒙 PC 限制子进程创建则核心功能受阻",
+        "source": "推测：鸿蒙 PC Node.js 是否支持 child_process 取决于内核与安全策略"
+      },
+      {
+        "id": "ta:network_bind",
+        "capability": "本地网络端口绑定（HTTP/WebSocket 服务器）能力",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "dev 模式需要绑定本地端口提供开发服务器；若鸿蒙 PC 限制端口绑定则 dev 功能不可用",
+        "source": "推测：鸿蒙 PC 安全模型可能限制非沙箱应用的端口绑定"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "需要与 Cloudflare API 通信进行部署和管理操作",
+        "source_capability": "",
+        "harmony_status": "available",
+        "evidence": [
+          "packages/wrangler/src/"
+        ]
+      }
+    ],
+    "recommended_path": "run_on_ported_runtime + native_rebuild",
+    "summary": "Workers SDK 的 TypeScript 代码可运行在鸿蒙 PC 已移植的 Node.js 上，但核心依赖 workerd（C++ Workers 运行时）和 esbuild（Go 打包器）需要为鸿蒙 PC 重新编译原生二进制。主要工作量在：(1) workerd 的 OHOS NDK 编译适配；(2) esbuild 的 Go 交叉编译；(3) 44 处 process.platform 平台分支的鸿蒙兼容处理；(4) sharp/libvips 等图像处理依赖的移植或替代。",
+    "blockers": [
+      {
+        "id": "bk:workerd_native",
+        "issue": "workerd（C++ Workers 运行时）无鸿蒙 PC 原生二进制，需从源码为 OHOS NDK 编译",
+        "severity": "blocker",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "使用 OHOS NDK 交叉编译 workerd，或寻找替代的 Workers 运行时模拟方案",
+        "caused_by": [
+          "ta:native_npm_bins"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "packages/wrangler/package.json",
+          "packages/miniflare/package.json"
+        ]
+      },
+      {
+        "id": "bk:esbuild_native",
+        "issue": "esbuild（Go 编写的 JS 打包器）无鸿蒙 PC 原生二进制",
+        "severity": "blocker",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "使用 Go 的 OHOS target 交叉编译 esbuild，或用其他打包器替代",
+        "caused_by": [
+          "ta:native_npm_bins"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "packages/wrangler/package.json",
+          "package.json"
+        ]
+      },
+      {
+        "id": "bk:sharp_native",
+        "issue": "sharp（图像处理库，依赖 libvips C 库）无鸿蒙 PC 原生二进制",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "编译 libvips 为 OHOS NDK 后重编 sharp，或使用纯 JS 图像处理库替代",
+        "caused_by": [
+          "ta:native_npm_bins"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "packages/miniflare/package.json"
+        ]
+      },
+      {
+        "id": "bk:subprocess_spawn",
+        "issue": "wrangler 依赖 child_process 启动子进程，鸿蒙 PC Node.js 对此支持不确定",
+        "severity": "blocker",
+        "adaptability": "adaptable",
+        "category": "subprocess_unavailable",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unknown",
+        "remediation": "确认鸿蒙 PC Node.js 对 child_process 的支持；若受限需改为内嵌方式",
+        "caused_by": [
+          "ta:subprocess_spawn"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "packages/wrangler/src/pages/deploy.ts",
+          "packages/workers-utils/src/cloudflared.ts"
+        ]
+      },
+      {
+        "id": "bk:platform_branches",
+        "issue": "44 处 process.platform 分支判断未覆盖鸿蒙场景",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "platform_branch",
+        "source_dimension": "native_api",
+        "harmony_status": "needs_adaptation",
+        "remediation": "在各 process.platform 判断中补充鸿蒙平台的处理逻辑（通常与 Linux/macOS 行为一致）",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": [
+          "packages/workers-utils/src/config/validation.ts:723",
+          "packages/miniflare/src/plugins/core/index.ts:98"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 TypeScript/JavaScript 业务逻辑",
+        "note": "核心业务代码为纯 TypeScript，可直接运行在鸿蒙 PC 的 Node.js 上",
+        "evidence": [
+          "packages/wrangler/src/",
+          "packages/miniflare/src/",
+          "packages/create-cloudflare/src/"
+        ]
+      },
+      {
+        "aspect": "Cloudflare API 通信",
+        "note": "基于 undici/fetch 的 HTTP 客户端通信，无平台依赖",
+        "evidence": [
+          "packages/wrangler/src/"
+        ]
+      },
+      {
+        "aspect": "配置文件解析",
+        "note": "JSON/TOML/YAML 配置解析为纯 JS 实现",
+        "evidence": [
+          "packages/workers-utils/src/config/"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK 编译 workerd C++ 运行时，生成鸿蒙 PC 原生二进制",
+      "使用 Go OHOS target 交叉编译 esbuild",
+      "编译 libvips 并重编 sharp（或改用纯 JS 图像处理库）",
+      "确认鸿蒙 PC Node.js 对 child_process/net/http 服务器的支持情况",
+      "在 44 处 process.platform 分支中补充鸿蒙平台处理",
+      "验证 cloudflared、docker 等外部工具在鸿蒙 PC 上的可用性",
+      "端到端测试 wrangler dev/deploy 工作流"
+    ],
+    "notes": "置信度为 medium，主要因为 4 项 target_assumptions 中有 2 项 status=unknown（原生 npm 二进制可用性、子进程创建能力）。若鸿蒙 PC Node.js 完整支持 child_process 且 workerd/esbuild 可成功编译，则可行性可升至 high。本项目的核心挑战不在 JS 代码本身，而在 C++/Go 原生依赖的移植。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer (opencode)",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "library",
+        "field": "kind",
+        "kind": "new_value",
+        "value": "cli",
+        "rationale": "本项目是终端用户直接运行的开发工具集（Wrangler CLI 等），既非传统库也非桌面应用，更准确归类为 CLI 工具"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "package_manager",
+        "rationale": "npm/pnpm 是 Node.js 生态的标准包管理方式，但 workerd/esbuild/sharp 含平台特定原生二进制需特殊处理"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "platform_branch",
+        "rationale": "process.platform 运行时平台判断分支在 Node.js 项目中是特有的平台适配模式，不同于 C/C++ 的编译宏守卫"
+      }
+    ]
+  },
+  "languages": {
+    "primary": "TypeScript",
+    "all": [
+      "TypeScript",
+      "Markdown",
+      "YAML",
+      "JSON",
+      "JavaScript",
+      "diff",
+      "HTML",
+      "Mustache"
+    ],
+    "breakdown": [
+      {
+        "language": "TypeScript",
+        "files": 3071,
+        "code": 446930,
+        "pct": 84.57,
+        "production": {
+          "files": 2037,
+          "code": 221667
+        },
+        "test": {
+          "files": 856,
+          "code": 221554
+        },
+        "example": {
+          "files": 178,
+          "code": 3709
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 195,
+        "code": 29521,
+        "pct": 5.59,
+        "production": {
+          "files": 190,
+          "code": 29208
+        },
+        "test": {
+          "files": 4,
+          "code": 300
+        },
+        "example": {
+          "files": 1,
+          "code": 13
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 43,
+        "code": 24637,
+        "pct": 4.66,
+        "production": {
+          "files": 40,
+          "code": 24398
+        },
+        "test": {
+          "files": 2,
+          "code": 239
+        },
+        "example": {
+          "files": 1,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 428,
+        "code": 12605,
+        "pct": 2.39,
+        "production": {
+          "files": 318,
+          "code": 11034
+        },
+        "test": {
+          "files": 31,
+          "code": 268
+        },
+        "example": {
+          "files": 79,
+          "code": 1303
+        }
+      },
+      {
+        "language": "JavaScript",
+        "files": 184,
+        "code": 6565,
+        "pct": 1.24,
+        "production": {
+          "files": 141,
+          "code": 5239
+        },
+        "test": {
+          "files": 30,
+          "code": 1225
+        },
+        "example": {
+          "files": 13,
+          "code": 101
+        }
+      },
+      {
+        "language": "diff",
+        "files": 16,
+        "code": 5097,
+        "pct": 0.96,
+        "production": {
+          "files": 16,
+          "code": 5097
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 85,
+        "code": 913,
+        "pct": 0.17,
+        "production": {
+          "files": 70,
+          "code": 684
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 15,
+          "code": 229
+        }
+      },
+      {
+        "language": "Mustache",
+        "files": 1,
+        "code": 687,
+        "pct": 0.13,
+        "production": {
+          "files": 1,
+          "code": 687
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 17,
+        "code": 433,
+        "pct": 0.08,
+        "production": {
+          "files": 11,
+          "code": 374
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 6,
+          "code": 59
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 9,
+        "code": 397,
+        "pct": 0.08,
+        "production": {
+          "files": 4,
+          "code": 210
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 5,
+          "code": 187
+        }
+      },
+      {
+        "language": "Vuejs Component",
+        "files": 4,
+        "code": 259,
+        "pct": 0.05,
+        "production": {
+          "files": 4,
+          "code": 259
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSX",
+        "files": 1,
+        "code": 140,
+        "pct": 0.03,
+        "production": {
+          "files": 1,
+          "code": 140
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 9,
+        "code": 58,
+        "pct": 0.01,
+        "production": {
+          "files": 9,
+          "code": 58
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Dockerfile",
+        "files": 5,
+        "code": 50,
+        "pct": 0.01,
+        "production": {
+          "files": 4,
+          "code": 43
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 7
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 2,
+        "code": 36,
+        "pct": 0.01,
+        "production": {
+          "files": 2,
+          "code": 36
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 4,
+        "code": 36,
+        "pct": 0.01,
+        "production": {
+          "files": 4,
+          "code": 36
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 20,
+        "code": 30,
+        "pct": 0.01,
+        "production": {
+          "files": 11,
+          "code": 21
+        },
+        "test": {
+          "files": 1,
+          "code": 1
+        },
+        "example": {
+          "files": 8,
+          "code": 8
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 29,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 29
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SQL",
+        "files": 6,
+        "code": 27,
+        "pct": 0.01,
+        "production": {
+          "files": 4,
+          "code": 20
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 2,
+          "code": 7
+        }
+      },
+      {
+        "language": "INI",
+        "files": 2,
+        "code": 18,
+        "pct": 0.0,
+        "production": {
+          "files": 2,
+          "code": 18
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "WebAssembly",
+        "files": 2,
+        "code": 14,
+        "pct": 0.0,
+        "production": {
+          "files": 2,
+          "code": 14
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Prisma Schema",
+        "files": 1,
+        "code": 13,
+        "pct": 0.0,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 13
+        }
+      },
+      {
+        "language": "Astro",
+        "files": 1,
+        "code": 6,
+        "pct": 0.0,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 1,
+          "code": 6
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Lua",
+        "files": 1,
+        "code": 1,
+        "pct": 0.0,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 1
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 4108,
+      "code": 528502,
+      "comment": 83315,
+      "blank": 79439,
+      "total_lines": 691256
+    },
+    "production": {
+      "files": 2872,
+      "code": 299272,
+      "comment": 52956,
+      "blank": 51782,
+      "total_lines": 404010
+    },
+    "test": {
+      "files": 925,
+      "code": 223593,
+      "comment": 30189,
+      "blank": 27102,
+      "total_lines": 280884
+    },
+    "example": {
+      "files": 311,
+      "code": 5637,
+      "comment": 170,
+      "blank": 555,
+      "total_lines": 6362
+    },
+    "top_dirs": [
+      {
+        "dir": "packages",
+        "code": 472463,
+        "category": "production",
+        "by_category": {
+          "production": 257918,
+          "test": 208908,
+          "example": 5637
+        }
+      },
+      {
+        "dir": "fixtures",
+        "code": 24495,
+        "category": "production",
+        "by_category": {
+          "production": 12375,
+          "test": 12120
+        }
+      },
+      {
+        "dir": ".",
+        "code": 23646,
+        "category": "production",
+        "by_category": {
+          "production": 23646
+        }
+      },
+      {
+        "dir": "tools",
+        "code": 4382,
+        "category": "test",
+        "by_category": {
+          "production": 2056,
+          "test": 2326
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 2802,
+        "category": "production",
+        "by_category": {
+          "production": 2563,
+          "test": 239
+        }
+      },
+      {
+        "dir": ".changeset",
+        "code": 327,
+        "category": "production",
+        "by_category": {
+          "production": 327
+        }
+      },
+      {
+        "dir": ".opencode",
+        "code": 275,
+        "category": "production",
+        "by_category": {
+          "production": 275
+        }
+      },
+      {
+        "dir": "patches",
+        "code": 112,
+        "category": "production",
+        "by_category": {
+          "production": 112
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tools"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "javascript": {
+          "files": 30,
+          "hits": 44
+        }
+      },
+      "by_platform": {
+        "windows": 29,
+        "macos": 3,
+        "linux": 2
+      },
+      "samples": [
+        {
+          "language": "javascript",
+          "file": "packages/workers-utils/src/config/validation.ts",
+          "line": 723,
+          "text": "ip = process.platform === \"win32\" ? \"127.0.0.1\" : \"localhost\","
+        },
+        {
+          "language": "javascript",
+          "file": "packages/miniflare/src/plugins/core/index.ts",
+          "line": 98,
+          "text": "process.platform === \"win32\" ? Array.from(tls.rootCertificates) : [];"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/miniflare/src/plugins/core/index.ts",
+          "line": 1389,
+          "text": "process.platform === \"win32\""
+        },
+        {
+          "language": "javascript",
+          "file": "packages/wrangler/src/pages/dev.ts",
+          "line": 98,
+          "text": "const DEFAULT_IP = process.platform === \"win32\" ? \"127.0.0.1\" : \"localhost\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/wrangler/src/pages/dev.ts",
+          "line": 1077,
+          "text": "return process.platform === \"win32\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/vite-plugin-cloudflare/src/miniflare-options.ts",
+          "line": 91,
+          "text": "const miniflareModulesRoot = process.platform === \"win32\" ? \"Z:\\\\\" : \"/\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/vitest-pool-workers/src/pool/index.ts",
+          "line": 521,
+          "text": "const modulesRoot = process.platform === \"win32\" ? \"Z:\\\\\" : \"/\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/workers-utils/src/cloudflared.ts",
+          "line": 90,
+          "text": "switch (process.platform) {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/workers-utils/src/cloudflared.ts",
+          "line": 259,
+          "text": "process.platform === \"win32\" ? \"cloudflared.exe\" : \"cloudflared\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/workers-utils/src/cloudflared.ts",
+          "line": 296,
+          "text": "if (process.platform === \"linux\") {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/workers-utils/src/cloudflared.ts",
+          "line": 509,
+          "text": "if (process.platform !== \"win32\") {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/create-cloudflare/e2e/helpers/framework-helpers.ts",
+          "line": 429,
+          "text": "!testConfig.unsupportedOSs?.includes(process.platform) &&"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/wrangler/src/core/handle-errors.ts",
+          "line": 563,
+          "text": "const currentPlatform = process.platform;"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/vitest-pool-workers/src/pool/module-fallback.ts",
+          "line": 20,
+          "text": "const isWindows = process.platform === \"win32\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/containers-shared/src/images.ts",
+          "line": 122,
+          "text": "if (process.platform === \"win32\") {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/containers-shared/src/utils.ts",
+          "line": 33,
+          "text": "detached: process.platform !== \"win32\","
+        },
+        {
+          "language": "javascript",
+          "file": "packages/containers-shared/src/utils.ts",
+          "line": 67,
+          "text": "if (process.platform === \"win32\") {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/containers-shared/src/utils.ts",
+          "line": 181,
+          "text": "if (process.platform === \"darwin\") {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/containers-shared/src/utils.ts",
+          "line": 183,
+          "text": "} else if (process.platform === \"win32\") {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/containers-shared/src/utils.ts",
+          "line": 364,
+          "text": "return process.platform === \"win32\""
+        },
+        {
+          "language": "javascript",
+          "file": "packages/containers-shared/src/utils.ts",
+          "line": 377,
+          "text": "return (fromEnv ?? process.platform === \"win32\")"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/vite-plugin-cloudflare/e2e/helpers.ts",
+          "line": 348,
+          "text": "const isWindows = process.platform === \"win32\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/local-explorer-ui/src/__e2e__/utils.ts",
+          "line": 364,
+          "text": "const isMac = process.platform === \"darwin\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/wrangler/src/dev/inspect.ts",
+          "line": 272,
+          "text": "switch (process.platform) {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/create-cloudflare/src/metrics.ts",
+          "line": 47,
+          "text": "const platform = process.platform;"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/miniflare/src/shared/dev-registry.ts",
+          "line": 67,
+          "text": "usePolling: process.platform === \"win32\","
+        },
+        {
+          "language": "javascript",
+          "file": "packages/workers-utils/src/config/config.ts",
+          "line": 306,
+          "text": "ip: process.platform === \"win32\" ? \"127.0.0.1\" : \"localhost\","
+        },
+        {
+          "language": "javascript",
+          "file": "packages/cli/command.ts",
+          "line": 168,
+          "text": "if (process.platform === \"win32\") {"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/wrangler/src/sentry/index.ts",
+          "line": 116,
+          "text": "process.platform === \"win32\" ? \"C:\\\\Project\\\\\" : \"/project/\";"
+        },
+        {
+          "language": "javascript",
+          "file": "packages/miniflare/src/runtime/structured-logs.ts",
+          "line": 125,
+          "text": "if (process.platform === \"win32\") {"
+        }
+      ],
+      "total": 44,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  }
+}

@@ -1,0 +1,783 @@
+{
+  "library": {
+    "name": "OpenCL-SDK",
+    "kind": "library",
+    "package_name": "OpenCL",
+    "aliases": ["OpenCL SDK", "Khronos OpenCL SDK"],
+    "import_names": ["CL/SDK", "CL/Utils", "OpenCL"],
+    "source_url": "https://github.com/KhronosGroup/OpenCL-SDK",
+    "analyzed_at": "2026-06-29T08:53:10Z",
+    "commit": null,
+    "one_liner": "Khronos 官方 OpenCL SDK，集成头文件、C++ 绑定、ICD 加载器、工具库与扩展开载器",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "OpenCL SDK 是 Khronos Group 发布的官方 OpenCL 开发工具包，将 OpenCL 开发所需的核心组件整合到同一仓库中：C 语言头文件（OpenCL-Headers）、C++ 绑定（OpenCL-CLHPP）、ICD 加载器（OpenCL-ICD-Loader）以及 SDK 工具库。工具库提供设备/上下文查询、文件读写、错误处理、命令行解析、图像 I/O、随机数生成和 OpenCL-OpenGL 互操作等便捷 API，降低 OpenCL 应用的开发门槛。仓库还包含 OpenCL 扩展函数加载器（从 XML 注册表自动生成）和多个示例程序。",
+    "categories": [
+      {
+        "name": "OpenCL 运行时封装",
+        "description": "对 OpenCL 核心 API（设备发现、上下文创建、程序编译、内存对象管理）的 C 和 C++ 封装，提供更安全、更易用的接口",
+        "evidence": ["lib/include/CL/Utils/Context.hpp", "lib/src/Utils/Context.c", "lib/src/Utils/Context.cpp"]
+      },
+      {
+        "name": "OpenCL 扩展加载器",
+        "description": "从 Khronos XML 注册表自动生成的扩展函数指针加载器，覆盖所有 Khronos 和厂商 OpenCL 扩展（cl_khr_*、cl_ext_*），按平台分发函数指针",
+        "evidence": ["lib/src/Extensions/src/openclext.cpp", "lib/src/Extensions/scripts/gen/__init__.py"]
+      },
+      {
+        "name": "文件与图像 I/O",
+        "description": "提供 OpenCL 程序二进制的读写、文本内核文件读取、可执行文件相对路径解析，以及基于 stb 的 PNG/BMP/JPG 图像读写",
+        "evidence": ["lib/src/Utils/File.c", "lib/src/Utils/File.cpp", "lib/src/SDK/Image.c", "lib/src/SDK/Image.cpp"]
+      },
+      {
+        "name": "命令行解析与设备选择",
+        "description": "基于 cargs 库的命令行选项解析框架，标准化诊断选项（-q/-v）和设备选择选项（平台/设备/类型三元组），供示例程序复用",
+        "evidence": ["lib/src/SDK/CLI.c", "lib/include/CL/SDK/CLI.h", "lib/include/CL/SDK/Options.h"]
+      },
+      {
+        "name": "OpenCL-OpenGL 互操作",
+        "description": "在 Windows 上通过 WGL、在 Linux 上通过 GLX 建立 OpenCL 与 OpenGL 上下文的互操作属性，提供 InteropWindow 类（基于 SFML）实现共享渲染循环",
+        "evidence": ["lib/src/SDK/InteropContext.cpp", "lib/src/SDK/InteropWindow.cpp", "lib/include/CL/SDK/InteropWindow.hpp"]
+      },
+      {
+        "name": "随机数生成",
+        "description": "基于 PCG32 算法的伪随机数生成器，支持均匀浮点数和整数区间填充",
+        "evidence": ["lib/src/SDK/Random.c", "lib/include/CL/SDK/Random.h"]
+      }
+    ],
+    "domain": "异构并行计算 / GPU 计算",
+    "target_users": "需要开发 OpenCL 应用的 C/C++ 开发者，以及 OpenCL 驱动/运行时的实现者"
+  },
+  "languages": {
+    "primary": "C/C++ Header",
+    "all": [
+      "C/C++ Header",
+      "C++",
+      "C",
+      "CMake",
+      "Markdown",
+      "YAML",
+      "Mako",
+      "OpenCL"
+    ],
+    "breakdown": [
+      {
+        "language": "C/C++ Header",
+        "files": 37,
+        "code": 17341,
+        "pct": 46.27,
+        "production": {"files": 31, "code": 798},
+        "test": {"files": 2, "code": 155},
+        "example": {"files": 4, "code": 16388}
+      },
+      {
+        "language": "C++",
+        "files": 29,
+        "code": 8134,
+        "pct": 21.7,
+        "production": {"files": 12, "code": 4562},
+        "test": {"files": 3, "code": 79},
+        "example": {"files": 14, "code": 3493}
+      },
+      {
+        "language": "C",
+        "files": 20,
+        "code": 4978,
+        "pct": 13.28,
+        "production": {"files": 10, "code": 1030},
+        "test": {"files": 2, "code": 251},
+        "example": {"files": 8, "code": 3697}
+      },
+      {
+        "language": "CMake",
+        "files": 48,
+        "code": 1825,
+        "pct": 4.87,
+        "production": {"files": 27, "code": 1325},
+        "test": {"files": 4, "code": 208},
+        "example": {"files": 17, "code": 292}
+      },
+      {
+        "language": "Markdown",
+        "files": 21,
+        "code": 1455,
+        "pct": 3.88,
+        "production": {"files": 8, "code": 566},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 13, "code": 889}
+      },
+      {
+        "language": "YAML",
+        "files": 6,
+        "code": 1191,
+        "pct": 3.18,
+        "production": {"files": 6, "code": 1191},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Mako",
+        "files": 2,
+        "code": 884,
+        "pct": 2.36,
+        "production": {"files": 2, "code": 884},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "OpenCL",
+        "files": 9,
+        "code": 759,
+        "pct": 2.03,
+        "production": {"files": 0, "code": 0},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 9, "code": 759}
+      },
+      {
+        "language": "Python",
+        "files": 6,
+        "code": 466,
+        "pct": 1.24,
+        "production": {"files": 6, "code": 466},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Text",
+        "files": 1,
+        "code": 150,
+        "pct": 0.4,
+        "production": {"files": 1, "code": 150},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Ruby",
+        "files": 4,
+        "code": 101,
+        "pct": 0.27,
+        "production": {"files": 4, "code": 101},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 1,
+        "code": 75,
+        "pct": 0.2,
+        "production": {"files": 1, "code": 75},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "GLSL",
+        "files": 4,
+        "code": 57,
+        "pct": 0.15,
+        "production": {"files": 0, "code": 0},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 4, "code": 57}
+      },
+      {
+        "language": "Dockerfile",
+        "files": 2,
+        "code": 31,
+        "pct": 0.08,
+        "production": {"files": 2, "code": 31},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "JSON",
+        "files": 2,
+        "code": 26,
+        "pct": 0.07,
+        "production": {"files": 2, "code": 26},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "SVG",
+        "files": 1,
+        "code": 3,
+        "pct": 0.01,
+        "production": {"files": 0, "code": 0},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 1, "code": 3}
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 193,
+      "code": 37476,
+      "comment": 2135,
+      "blank": 3549,
+      "total_lines": 43160
+    },
+    "production": {
+      "files": 112,
+      "code": 11205,
+      "comment": 650,
+      "blank": 1742,
+      "total_lines": 13597
+    },
+    "test": {
+      "files": 11,
+      "code": 693,
+      "comment": 46,
+      "blank": 144,
+      "total_lines": 883
+    },
+    "example": {
+      "files": 70,
+      "code": 25578,
+      "comment": 1439,
+      "blank": 1663,
+      "total_lines": 28680
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 2,
+          "code": 9,
+          "macros": ["_WIN32", "__CYGWIN__"]
+        },
+        "macos": {
+          "files": 1,
+          "code": 2,
+          "macros": ["__APPLE__"]
+        },
+        "linux": {
+          "files": 1,
+          "code": 6,
+          "macros": ["__linux__"]
+        }
+      },
+      "total": 17,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 11,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "C": {"files": 2, "cases": 0},
+      "C/C++ Header": {"files": 2, "cases": 0},
+      "CMake": {"files": 4, "cases": 0},
+      "C++": {"files": 3, "cases": 0}
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE", "LICENSES/Apache-2.0.txt"],
+    "evidence": "项目根目录 LICENSE 文件为完整的 Apache-2.0 全文；LICENSES/ 目录下亦有 Apache-2.0.txt；CMakeLists.txt 和源文件头部均有 'Licensed under the Apache License, Version 2.0' 声明。扩展加载器子模块声明 MIT or Apache-2.0 双许可（SPDX-License-Identifier: MIT or Apache-2.0），但整体 SDK 以 Apache-2.0 为主许可。",
+    "notes": "扩展加载器（lib/src/Extensions/）本身标注 MIT OR Apache-2.0 双许可；OpenCL-Headers、OpenCL-ICD-Loader、OpenCL-CLHPP 三个子模块各有独立许可（均为 Apache-2.0），但因 shallow clone 未包含子模块内容。"
+  },
+  "dependencies": {
+    "count": 15,
+    "manifests": ["CMakeLists.txt", "vcpkg.json", "cmake/Dependencies.cmake", ".gitmodules"],
+    "by_ecosystem": {"cpp": 15},
+    "dependencies": [
+      {
+        "name": "OpenCL-Headers",
+        "ecosystem": "cpp",
+        "registry_name": "OpenCLHeaders",
+        "source_repo": "https://github.com/KhronosGroup/OpenCL-Headers",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "OpenCL C API 头文件定义（cl.h, cl_ext.h, cl_gl.h 等），是整个 SDK 的基础接口定义",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "git submodule，路径 external/OpenCL-Headers/",
+        "declared_in": [".gitmodules", "CMakeLists.txt:48"],
+        "used_symbols": ["clGetPlatformIDs", "clGetDeviceIDs", "clCreateContext", "clCreateCommandQueue", "clCreateProgramWithSource", "clCreateProgramWithBinary", "clBuildProgram", "clCreateBuffer", "clEnqueueNDRangeKernel", "clEnqueueReadBuffer", "clReleaseMemObject", "clReleaseProgram", "clReleaseKernel", "clReleaseCommandQueue", "clReleaseContext"]
+      },
+      {
+        "name": "OpenCL-CLHPP",
+        "ecosystem": "cpp",
+        "registry_name": "OpenCLHeadersCpp",
+        "source_repo": "https://github.com/KhronosGroup/OpenCL-CLHPP",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "OpenCL C++ 绑定（opencl.hpp），提供面向对象的 C++ 封装",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "git submodule，路径 external/OpenCL-CLHPP/",
+        "declared_in": [".gitmodules", "CMakeLists.txt:50"],
+        "used_symbols": ["cl::Platform", "cl::Device", "cl::Context", "cl::CommandQueue", "cl::Program", "cl::Kernel", "cl::Buffer", "cl::Image2D", "cl::Event"]
+      },
+      {
+        "name": "OpenCL-ICD-Loader",
+        "ecosystem": "cpp",
+        "registry_name": "OpenCLICDLoader",
+        "source_repo": "https://github.com/KhronosGroup/OpenCL-ICD-Loader",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "OpenCL Installable Client Driver 加载器，负责发现和加载平台厂商的 OpenCL 驱动",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "git submodule，路径 external/OpenCL-ICD-Loader/",
+        "declared_in": [".gitmodules", "CMakeLists.txt:49"],
+        "used_symbols": []
+      },
+      {
+        "name": "whereami",
+        "ecosystem": "cpp",
+        "source_repo": "https://github.com/gpakosz/whereami",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "跨平台获取当前可执行文件路径，用于定位内核文件等资源",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 gpakosz/whereami",
+        "declared_in": ["cmake/Dependencies/whereami/whereami.cmake"],
+        "used_symbols": ["wai_getExecutablePath"]
+      },
+      {
+        "name": "cargs",
+        "ecosystem": "cpp",
+        "source_repo": "https://github.com/likle/cargs",
+        "scope": "runtime",
+        "version": "1.2.0",
+        "purpose": "轻量 C 命令行参数解析库，供 SDK CLI 选项解析和示例程序使用",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 likle/cargs v1.2.0",
+        "declared_in": ["cmake/Dependencies/cargs/cargs.cmake", "vcpkg.json"],
+        "used_symbols": ["cag_option_prepare", "cag_option_fetch", "cag_option_get", "cag_option_get_value"]
+      },
+      {
+        "name": "TCLAP",
+        "ecosystem": "cpp",
+        "registry_name": "tclap",
+        "source_repo": "https://github.com/mirror/tclap",
+        "scope": "optional",
+        "version": "1.2.5",
+        "purpose": "Templatized C++ Command Line Parser Library，供 C++ 示例程序的命令行解析",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 mirror/tclap v1.2.5",
+        "declared_in": ["cmake/Dependencies/TCLAP/TCLAP.cmake", "vcpkg.json"],
+        "used_symbols": []
+      },
+      {
+        "name": "stb",
+        "ecosystem": "cpp",
+        "source_repo": "https://github.com/nothings/stb",
+        "scope": "optional",
+        "version": null,
+        "purpose": "单头文件图像 I/O 库（stb_image.h / stb_image_write.h），供 SDK 图像读写功能",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 nothings/stb",
+        "declared_in": ["cmake/Dependencies/Stb/Stb.cmake", "vcpkg.json"],
+        "used_symbols": ["stbi_load", "stbi_failure_reason", "stbi_write_png", "stbi_write_bmp", "stbi_write_jpg"]
+      },
+      {
+        "name": "glm",
+        "ecosystem": "cpp",
+        "source_repo": "https://github.com/g-truc/glm",
+        "scope": "optional",
+        "version": "0.9.9.8",
+        "purpose": "OpenGL Mathematics 头文件数学库，供 OpenGL 互操作示例使用",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 g-truc/glm 0.9.9.8",
+        "declared_in": ["cmake/Dependencies/glm/glm.cmake", "vcpkg.json"],
+        "used_symbols": []
+      },
+      {
+        "name": "GLEW",
+        "ecosystem": "cpp",
+        "registry_name": "glew",
+        "source_repo": "https://github.com/Perlmint/glew-cmake",
+        "aliases": ["glew"],
+        "scope": "optional",
+        "version": "2.2.0",
+        "purpose": "OpenGL Extension Wrangler Library，加载 OpenGL 扩展函数指针，供 OpenCL-OpenGL 互操作示例",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 Perlmint/glew-cmake glew-cmake-2.2.0",
+        "declared_in": ["cmake/Dependencies/GLEW/GLEW.cmake", "vcpkg.json"],
+        "used_symbols": []
+      },
+      {
+        "name": "SFML",
+        "ecosystem": "cpp",
+        "source_repo": "https://github.com/SFML/SFML",
+        "scope": "optional",
+        "version": "2.6.2",
+        "purpose": "Simple and Fast Multimedia Library，提供窗口创建和事件循环，供 OpenCL-OpenGL 互操作示例的 InteropWindow",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 SFML/SFML 2.6.2",
+        "declared_in": ["cmake/Dependencies/SFML/SFML.cmake", "vcpkg.json"],
+        "used_symbols": []
+      },
+      {
+        "name": "OpenGL",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "系统 OpenGL 库，OpenCL-OpenGL 互操作所需",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 find_package(OpenGL)，需预装（Linux: libgl-dev，Windows: Windows SDK）",
+        "declared_in": ["cmake/Dependencies/OpenGL/OpenGL.cmake"],
+        "used_symbols": []
+      },
+      {
+        "name": "Vulkan",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Vulkan 图形 API，供 OpenCL-Vulkan 外部内存互操作示例",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 find_package(Vulkan REQUIRED)",
+        "declared_in": ["cmake/Dependencies/Vulkan/Vulkan.cmake"],
+        "used_symbols": []
+      },
+      {
+        "name": "Freetype",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": "2.11.1",
+        "purpose": "字体渲染库，SFML Graphics 的间接依赖",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 freetype/freetype VER-2-11-1",
+        "declared_in": ["cmake/Dependencies/Freetype/Freetype.cmake"],
+        "used_symbols": []
+      },
+      {
+        "name": "clinfo",
+        "ecosystem": "cpp",
+        "source_repo": "https://github.com/Oblomov/clinfo",
+        "scope": "optional",
+        "version": "3.0.25.02.14",
+        "purpose": "OpenCL 平台和设备信息查询工具",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "CMake FetchContent 从 GitHub 拉取 Oblomov/clinfo 3.0.25.02.14",
+        "declared_in": ["cmake/Dependencies/clinfo/clinfo.cmake"],
+        "used_symbols": []
+      },
+      {
+        "name": "X11",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "X Window System 开发库，Linux 上 OpenGL 互操作所需的间接依赖",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 find_package(X11)，Linux 上需预装 libx11-dev",
+        "declared_in": ["cmake/Dependencies/X11/X11.cmake"],
+        "used_symbols": []
+      }
+    ],
+    "notes": "SDK 的核心依赖（Headers/CLHPP/ICD-Loader）通过 git submodule 引入；whereami 和 cargs 是工具库的必需运行时依赖；TCLAP/stb/glm/GLEW/SFML/Freetype/OpenGL/Vulkan/X11 仅为示例程序（OPENCL_SDK_BUILD_SAMPLES=ON）和 OpenGL 互操作（OPENCL_SDK_BUILD_OPENGL_SAMPLES=ON）的可选依赖。扩展加载器代码由 Python 脚本从 XML 注册表自动生成。"
+  },
+  "native_api": {
+    "summary": "生产代码主要使用 C 标准库（stdio/stdlib/string/math）和 C++ STL（vector/string/iostream/filesystem），平台相关 API 仅出现在 OpenGL 互操作模块：Windows 上使用 WGL（wglGetCurrentDC/wglGetCurrentContext via wingdi.h/wtypes.h），Linux 上使用 GLX（glXGetCurrentDisplay/glXGetCurrentContext via GL/glxew.h）。扩展加载器通过编译宏控制符号导出（__declspec(dllexport) / __attribute__((visibility))）。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "fopen", "purpose": "打开文件进行读写操作", "count": 4, "evidence": ["lib/src/Utils/File.c:52"], "conditional": false},
+          {"name": "fread", "purpose": "读取文件内容", "count": 2, "evidence": ["lib/src/Utils/File.c:71"], "conditional": false},
+          {"name": "fwrite", "purpose": "写入文件内容", "count": 2, "evidence": ["lib/src/Utils/File.c:254"], "conditional": false},
+          {"name": "fclose", "purpose": "关闭文件", "count": 4, "evidence": ["lib/src/Utils/File.c:87"], "conditional": false},
+          {"name": "malloc", "purpose": "动态内存分配", "count": 8, "evidence": ["lib/src/Utils/Context.c:81"], "conditional": false},
+          {"name": "free", "purpose": "释放内存", "count": 8, "evidence": ["lib/src/Utils/Context.c:113"], "conditional": false},
+          {"name": "realloc", "purpose": "重新分配内存", "count": 4, "evidence": ["lib/src/Utils/File.c:66"], "conditional": false},
+          {"name": "fprintf", "purpose": "格式化输出到 stderr", "count": 4, "evidence": ["lib/src/Utils/Context.c:85"], "conditional": false},
+          {"name": "snprintf", "purpose": "安全格式化字符串", "count": 4, "evidence": ["lib/src/Utils/File.c:246"], "conditional": false},
+          {"name": "ldexpf", "purpose": "浮点数缩放，PCG32 随机数转浮点", "count": 3, "evidence": ["lib/src/SDK/Random.c:27"], "conditional": false}
+        ]
+      },
+      {
+        "type": "opengl",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "wglGetCurrentDC", "purpose": "获取当前 OpenGL 渲染上下文关联的设备上下文句柄（WGL），用于 OpenCL-OpenGL 互操作", "count": 1, "evidence": ["lib/src/SDK/InteropContext.cpp:30"], "conditional": true},
+          {"name": "wglGetCurrentContext", "purpose": "获取当前 WGL 渲染上下文句柄，用于 OpenCL-OpenGL 互操作", "count": 1, "evidence": ["lib/src/SDK/InteropContext.cpp:32"], "conditional": true}
+        ],
+        "evidence": ["lib/src/SDK/InteropContext.cpp:5-9"]
+      },
+      {
+        "type": "opengl",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "glXGetCurrentDisplay", "purpose": "获取当前 GLX 显示连接，用于 OpenCL-OpenGL 互操作", "count": 1, "evidence": ["lib/src/SDK/InteropContext.cpp:36"], "conditional": true},
+          {"name": "glXGetCurrentContext", "purpose": "获取当前 GLX 渲染上下文，用于 OpenCL-OpenGL 互操作", "count": 1, "evidence": ["lib/src/SDK/InteropContext.cpp:38"], "conditional": true}
+        ],
+        "evidence": ["lib/src/SDK/InteropContext.cpp:10-13"]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "__declspec(dllexport)", "purpose": "Windows 动态库符号导出声明（扩展加载器）", "count": 1, "evidence": ["lib/src/Extensions/src/openclext.cpp:18"], "conditional": true}
+        ],
+        "evidence": ["lib/src/Extensions/src/openclext.cpp:14-19"]
+      },
+      {
+        "type": "arch_simd",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "__attribute__((visibility(\"default\")))", "purpose": "GCC/Clang 符号可见性声明（扩展加载器，非 Windows 平台）", "count": 1, "evidence": ["lib/src/Extensions/src/openclext.cpp:22"], "conditional": true}
+        ],
+        "evidence": ["lib/src/Extensions/src/openclext.cpp:20-25"]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时依赖 OpenCL ICD 加载器发现系统已安装的 OpenCL 驱动（通过 /etc/OpenCL/vendors/ 或注册表），需要 GPU 驱动支持。文件 I/O 仅涉及内核源码和程序二进制的读写，无网络、子进程或设备节点直接访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "OpenCL 内核源码文件（.cl）和编译后的程序二进制文件（.bin），路径相对于可执行文件目录",
+        "purpose": "加载 OpenCL 计算内核源码和缓存编译产物",
+        "evidence": ["lib/src/Utils/File.c:17", "lib/src/Utils/File.c:278"]
+      },
+      {
+        "detail": "图像文件（PNG/BMP/JPG），用于示例程序的图像 I/O",
+        "purpose": "读写 OpenCL 处理的图像数据",
+        "evidence": ["lib/src/SDK/Image.c:20", "lib/src/SDK/Image.c:47"]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "OpenCL 兼容的 GPU/CPU/Accelerator 设备",
+        "purpose": "执行 OpenCL 计算内核",
+        "evidence": ["lib/src/Utils/Context.c:65"]
+      }
+    ],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C11 / C++14（CMakeLists.txt 设置 CMAKE_CXX_STANDARD 14；扩展加载器使用 C++11）",
+    "runtime_version": "无特定运行时版本要求，需系统安装 OpenCL 驱动",
+    "build_system": "CMake（>= 3.16）",
+    "compiler_extensions": [
+      {
+        "detail": "__declspec(dllexport) / __attribute__((visibility))",
+        "purpose": "扩展加载器符号导出控制",
+        "evidence": ["lib/src/Extensions/src/openclext.cpp:14-25"]
+      },
+      {
+        "detail": "#ifdef _WIN32 / __linux__ 条件编译",
+        "purpose": "平台相关代码路径选择（WGL vs GLX）",
+        "evidence": ["lib/src/SDK/InteropContext.cpp:5-13"]
+      }
+    ],
+    "platforms": [
+      {"os": "Windows", "arch": "x86_64", "evidence": ["CMakeLists.txt:33", "lib/src/SDK/InteropContext.cpp:5-9"]},
+      {"os": "Linux", "arch": "x86_64", "evidence": ["lib/src/SDK/InteropContext.cpp:10-13"]},
+      {"os": "macOS", "arch": "x86_64", "evidence": ["CMakeLists.txt:33"]}
+    ],
+    "entry_points": [],
+    "packaging": "库，通过 CMake install 导出 OpenCL::OpenCL / OpenCL::Utils / OpenCL::UtilsCpp / OpenCL::SDK / OpenCL::SDKCpp / OpenCL::OpenCLExt 目标及 Config 文件；支持 vcpkg 安装",
+    "notes": "构建时需要 git submodule 更新（或 --recursive 克隆）以获取 Headers/CLHPP/ICD-Loader 子模块；子模块为空时构建会失败。Python 3 仅用于扩展加载器代码生成，非构建必需。"
+  },
+  "capability_profile": {
+    "summary": "OpenCL SDK 作为异构并行计算库，核心触及 hardware 场景（GPU 计算/OpenCL 设备访问）；OpenGL 互操作模块触及 rendering_3d 场景；不涉及桌面 GUI、媒体编解码或特定硬件。",
+    "scenarios": [
+      {
+        "key": "hardware",
+        "present": true,
+        "kind": ["opencl", "gpu_compute"],
+        "specific_hardware": true,
+        "via": ["OpenCL-Headers", "OpenCL-ICD-Loader"],
+        "harmony_status": "unknown",
+        "adaptation": "OpenCL 运行时和驱动在鸿蒙 PC 上的支持状态未知；若无 OpenCL 驱动则核心功能完全不可用",
+        "evidence": ["lib/src/Utils/Context.c:65-95", "lib/include/CL/SDK/Context.h"]
+      },
+      {
+        "key": "rendering_3d",
+        "present": true,
+        "kind": ["opengl", "wgl", "glx"],
+        "specific_hardware": false,
+        "via": ["OpenGL", "GLEW"],
+        "harmony_status": "unknown",
+        "adaptation": "OpenCL-OpenGL 互操作为可选功能（OPENCL_SDK_BUILD_OPENGL_SAMPLES），可剥离；鸿蒙 PC 上 OpenGL/WGL/GLX 支持状态未知",
+        "evidence": ["lib/src/SDK/InteropContext.cpp:5-42"]
+      },
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及桌面 GUI",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及音视频媒体",
+        "evidence": []
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核、ArkTS 应用层、OHOS NDK 原生层、Node-API 桥接）",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
+    "effort": {
+      "person_days": [15, 40]
+    },
+    "confidence": "low",
+    "unadaptable_apis": [
+      {
+        "id": "ua:wgl",
+        "caused_by": ["ta:opengl_interop"],
+        "api": "wglGetCurrentDC / wglGetCurrentContext",
+        "public_entry": "cl::sdk::get_interop_context_properties",
+        "reason": "WGL 是 Windows 专有的 OpenGL-窗口系统接口，鸿蒙无对应实现",
+        "blocking_native_api": "wglGetCurrentDC / wglGetCurrentContext",
+        "category": "platform",
+        "evidence": ["lib/src/SDK/InteropContext.cpp:28-32"]
+      },
+      {
+        "id": "ua:glx",
+        "caused_by": ["ta:opengl_interop"],
+        "api": "glXGetCurrentDisplay / glXGetCurrentContext",
+        "public_entry": "cl::sdk::get_interop_context_properties",
+        "reason": "GLX 是 X11 专有的 OpenGL-窗口系统接口，鸿蒙不使用 X11",
+        "blocking_native_api": "glXGetCurrentDisplay / glXGetCurrentContext",
+        "category": "platform",
+        "evidence": ["lib/src/SDK/InteropContext.cpp:34-38"]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:opencl_runtime",
+        "capability": "鸿蒙 PC 上的 OpenCL 运行时（ICD 加载器 + 驱动）支持",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "OpenCL 是本库的核心基础；若无 OpenCL 运行时，SDK 所有功能完全不可用",
+        "source": "references/harmony-pc-capabilities.md GPU/计算加速段"
+      },
+      {
+        "id": "ta:opengl_interop",
+        "capability": "鸿蒙 PC 上的 OpenGL/WGL/GLX 支持",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "OpenGL 互操作为可选功能，不影响 SDK 核心库的使用；仅影响 OpenCL-OpenGL 互操作示例和 InteropContext 模块",
+        "source": "references/harmony-pc-capabilities.md 3D 图形栈段"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "cross_compile",
+    "summary": "OpenCL SDK 的核心工具库（Utils/SDK，不含 OpenGL 互操作）理论上可使用 OHOS NDK 交叉编译，但其运行完全依赖 OpenCL 运行时（ICD 加载器 + GPU 驱动）。鸿蒙 PC 上 OpenCL 运行时的支持状态未知，是决定性因素。OpenGL 互操作模块（WGL/GLX）为可选功能，可在鸿蒙构建中禁用（OPENCL_SDK_BUILD_OPENGL_SAMPLES=OFF）。",
+    "blockers": [
+      {
+        "id": "bk:opencl_runtime",
+        "issue": "鸿蒙 PC 上尚无已知的 OpenCL 运行时（ICD 加载器 + GPU 驱动）支持",
+        "severity": "blocker",
+        "adaptability": "unadaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "需要 GPU 厂商（如华为/ARM/Imagination）提供鸿蒙 PC 的 OpenCL 驱动；或考虑使用 Vulkan Compute / MNND 等替代异构计算方案",
+        "caused_by": ["ta:opencl_runtime"],
+        "manifests_as": [],
+        "evidence": ["lib/src/Utils/Context.c:65-95"]
+      },
+      {
+        "id": "bk:opengl_interop",
+        "issue": "OpenGL 互操作模块使用 WGL/GLX 平台专有 API，鸿蒙无对应实现",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "禁用 OPENCL_SDK_BUILD_OPENGL_SAMPLES 即可绕过；若需图形互操作，可研究 OpenCL-EGL 或 OpenCL-Vulkan 路径",
+        "caused_by": ["ta:opengl_interop"],
+        "manifests_as": ["ua:wgl", "ua:glx"],
+        "evidence": ["lib/src/SDK/InteropContext.cpp:5-42"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "C/C++ 工具库核心（Utils/SDK，不含 InteropContext）",
+        "note": "仅使用 C 标准库和 C++ STL，无平台专有 API，理论上可用 OHOS NDK 交叉编译",
+        "evidence": ["lib/src/Utils/File.c", "lib/src/Utils/Context.c", "lib/src/SDK/CLI.c", "lib/src/SDK/Random.c"]
+      },
+      {
+        "aspect": "扩展加载器（openclext）",
+        "note": "纯 OpenCL API 调用和函数指针管理，不直接使用平台 API；符号导出控制可适配 OHOS NDK 的 __attribute__((visibility))",
+        "evidence": ["lib/src/Extensions/src/openclext.cpp:14-25"]
+      },
+      {
+        "aspect": "PCG32 随机数生成器",
+        "note": "纯算法实现，仅依赖 stdint.h 和 math.h，完全可移植",
+        "evidence": ["lib/src/SDK/Random.c:1-102"]
+      }
+    ],
+    "key_tasks": [
+      "确认鸿蒙 PC 是否有 OpenCL 运行时支持（ICD 加载器 + GPU 驱动），这是决定性前提",
+      "使用 OHOS NDK 交叉编译核心工具库（Utils/SDK），禁用 OpenGL 互操作模块",
+      "适配 whereami 库在鸿蒙上的可执行文件路径获取（可能需要使用 /proc/self/exe 等机制）",
+      "确认 OpenCL-Headers 在鸿蒙 NDK 头文件搜索路径下可用",
+      "验证 clGetPlatformIDs / clGetDeviceIDs 等核心 API 在鸿蒙 OpenCL 运行时上的行为",
+      "若需图形互操作，研究 OpenCL-Vulkan 路径替代 OpenCL-OpenGL"
+    ],
+    "notes": "本评估置信度为低（low），因为鸿蒙 PC 上 OpenCL 运行时的支持状态未知。若 OpenCL 运行时可用，则 SDK 核心库的移植工作量可降至中等；若不可用，则整个 SDK 在鸿蒙上无实用价值。OpenGL 互操作为可选模块，不影响核心评估。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "low",
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "arch_simd",
+        "rationale": "扩展加载器使用 __attribute__((visibility)) 控制符号导出，不属于 arch_simd 但归入现有分类不便；实际是编译器特性/符号可见性控制，暂用 arch_simd 代替，但更精确的分类应为 compiler_attribute"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "gap",
+        "value": "cross_compile",
+        "rationale": "OpenCL SDK 核心是纯 C/C++ 库，理想路径是用 OHOS NDK 交叉编译（需 OpenCL 运行时），现有推荐值集缺少此场景的精确描述"
+      }
+    ]
+  }
+}

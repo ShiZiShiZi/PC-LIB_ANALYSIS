@@ -1,0 +1,547 @@
+{
+  "library": {
+    "name": "ClamAV",
+    "kind": "application",
+    "package_name": "clamav",
+    "aliases": ["clamav", "ClamAV"],
+    "import_names": [],
+    "source_url": "https://github.com/Cisco-Talos/clamav",
+    "analyzed_at": "2026-06-30T09:13:25Z",
+    "commit": null,
+    "one_liner": "开源跨平台反病毒引擎，提供恶意软件检测扫描、特征库管理与实时文件监控守护进程",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "ClamAV 是 Cisco Talos 维护的开源反病毒引擎，主要用于检测木马、病毒、恶意软件等安全威胁。核心库 libclamav 提供文件扫描引擎（支持 PE/ELF/Mach-O/PDF/Office 文档等数十种格式解析与特征匹配），配套守护进程 clamd（多线程扫描服务）、命令行扫描器 clamscan、实时文件监控 clamonacc（Linux fanotify/inotify）以及特征库更新工具 freshclam。Rust 组件（libclamav_rust）提供新版解析器与模糊哈希等新功能。",
+    "categories": [
+      {
+        "name": "恶意软件扫描引擎",
+        "description": "核心扫描库 libclamav，支持 PE/ELF/Mach-O/OLE2/PDF/HTML/邮件/压缩包等数十种文件格式的解析、特征匹配（AC 自动机/BM/PCRE/YARA 字节码）与启发式检测",
+        "evidence": ["libclamav/clamav.h", "libclamav/scan_layer.c", "libclamav/matcher-ac.c", "libclamav/matcher-bm.c", "libclamav/scanners.c"]
+      },
+      {
+        "name": "文件格式解析",
+        "description": "对 PE/ELF/Mach-O/OLE2/PDF/HTML/邮件/压缩包/DMG/ISO 等格式进行解析，识别可疑内容与提取嵌入文件",
+        "evidence": ["libclamav/pe.c", "libclamav/elf.c", "libclamav/macho.c", "libclamav/pdf.c", "libclamav/ole2_extract.c", "libclamav/htmlnorm.c", "libclamav/mbox.c"]
+      },
+      {
+        "name": "特征匹配与签名系统",
+        "description": "AC 自动机、BM 模式匹配、PCRE 正则、YARA 规则引擎和字节码虚拟机（可选 LLVM JIT）构成多层签名检测体系",
+        "evidence": ["libclamav/matcher-ac.c", "libclamav/matcher-bm.c", "libclamav/matcher-pcre.c", "libclamav/yara_compiler.c", "libclamav/bytecode.c", "libclamav/bytecode_vm.c"]
+      },
+      {
+        "name": "数据库更新服务",
+        "description": "freshclam 通过 HTTP/HTTPS 从 ClamAV 官方镜像下载并验证病毒特征库（CVD/CLD 格式），支持 DNS 查询与数字签名验证",
+        "evidence": ["libfreshclam/libfreshclam.h", "libfreshclam/libfreshclam_internal.c", "freshclam/freshclam.c"]
+      },
+      {
+        "name": "守护进程与网络扫描服务",
+        "description": "clamd 提供多线程 TCP/Unix socket 扫描服务，支持会话协议与并发扫描管理；clamdscan 为其命令行客户端",
+        "evidence": ["clamd/clamd.c", "clamd/server-th.c", "clamd/thrmgr.c", "clamdscan/clamdscan.c"]
+      },
+      {
+        "name": "实时文件监控",
+        "description": "clamonacc 利用 Linux fanotify/inotify 机制实现实时文件访问监控与自动扫描，需 root 权限",
+        "evidence": ["clamonacc/clamonacc.c", "clamonacc/fanotif/fanotif.c", "clamonacc/inotif/inotif.c"]
+      },
+      {
+        "name": "邮件过滤集成",
+        "description": "clamav-milter 作为 Sendmail/Postfix milter 插件，对邮件附件实时扫描",
+        "evidence": ["clamav-milter/clamav-milter.c", "clamav-milter/clamfi.c"]
+      }
+    ],
+    "domain": "网络安全/反病毒",
+    "target_users": "系统管理员、邮件服务器运维人员、安全研究人员、需要集成反病毒能力的企业"
+  },
+  "languages": {
+    "primary": "C",
+    "all": ["C", "C++", "C/C++ Header", "Markdown", "Rust", "CMake", "Python", "yacc"],
+    "breakdown": [
+      {"language": "C", "files": 313, "code": 170375, "pct": 69.18, "production": {"files": 285, "code": 166446}, "test": {"files": 9, "code": 1508}, "example": {"files": 19, "code": 2421}},
+      {"language": "C++", "files": 90, "code": 23260, "pct": 9.44, "production": {"files": 90, "code": 23260}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "C/C++ Header", "files": 336, "code": 22646, "pct": 9.2, "production": {"files": 333, "code": 22441}, "test": {"files": 3, "code": 205}, "example": {"files": 0, "code": 0}},
+      {"language": "Markdown", "files": 14, "code": 6986, "pct": 2.84, "production": {"files": 14, "code": 6986}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "Rust", "files": 18, "code": 6244, "pct": 2.54, "production": {"files": 18, "code": 6244}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "CMake", "files": 57, "code": 5405, "pct": 2.19, "production": {"files": 56, "code": 5341}, "test": {"files": 0, "code": 0}, "example": {"files": 1, "code": 64}},
+      {"language": "Python", "files": 31, "code": 5263, "pct": 2.14, "production": {"files": 3, "code": 719}, "test": {"files": 26, "code": 3981}, "example": {"files": 2, "code": 563}},
+      {"language": "yacc", "files": 1, "code": 1357, "pct": 0.55, "production": {"files": 1, "code": 1357}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}}
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {"files": 935, "code": 246286, "comment": 44905, "blank": 42671, "total_lines": 333862},
+    "production": {"files": 864, "code": 237048, "comment": 43072, "blank": 40373, "total_lines": 320493},
+    "test": {"files": 49, "code": 6190, "comment": 1300, "blank": 1655, "total_lines": 9145},
+    "example": {"files": 22, "code": 3048, "comment": 533, "blank": 643, "total_lines": 4224},
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {"files": 74, "code": 1056, "macros": ["WIN32", "_MSC_VER", "_WIN32", "_WIN64", "__MINGW32__", "__WIN32__"]},
+        "macos": {"files": 8, "code": 10, "macros": ["__APPLE__", "__MACH__"]},
+        "linux": {"files": 6, "code": 110, "macros": ["__linux", "__linux__"]},
+        "posix": {"files": 2, "code": 4, "macros": ["_POSIX_C_SOURCE"]}
+      },
+      "total": 1180,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "python": {"files": 1, "hits": 5},
+        "rust": {"files": 1, "hits": 1}
+      },
+      "by_platform": {"windows": 3, "macos": 1, "linux": 1},
+      "samples": [
+        {"language": "python", "file": "unit_tests/testcase.py", "line": 95, "text": "os_platform = platform.platform()"},
+        {"language": "python", "file": "unit_tests/testcase.py", "line": 617, "text": "if platform.system() == \"Windows\":"},
+        {"language": "rust", "file": "libclamav_rust/build.rs", "line": 256, "text": "if cfg!(target_os = \"linux\") {"}
+      ],
+      "total": 6,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 49,
+    "test_cases": 315,
+    "frameworks": ["googletest", "pytest/unittest"],
+    "by_language": {
+      "C": {"files": 9, "cases": 175},
+      "Python": {"files": 26, "cases": 140},
+      "Perl": {"files": 6, "cases": 0},
+      "C/C++ Header": {"files": 3, "cases": 0},
+      "Bourne Shell": {"files": 4, "cases": 0},
+      "HTML": {"files": 1, "cases": 0}
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "GPL-2.0-only",
+    "name": "GNU General Public License v2.0 only",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["COPYING.txt", "COPYING/COPYING.LGPL", "COPYING/COPYING.bzip2", "COPYING/COPYING.curl", "COPYING/COPYING.file", "COPYING/COPYING.getopt", "COPYING/COPYING.llvm", "COPYING/COPYING.lzma", "COPYING/COPYING.pcre", "COPYING/COPYING.regex", "COPYING/COPYING.unrar", "COPYING/COPYING.YARA", "COPYING/COPYING.zlib"],
+    "evidence": "COPYING.txt contains full GPLv2 text; all source headers state 'GNU General Public License version 2'; CMakeLists.txt CPACK_RPM_PACKAGE_LICENSE is 'GPLv2'. Sub-components under COPYING/ have their own licenses (bzip2 BSD, zlib MIT, PCRE BSD, etc.) but the overall project is GPLv2.",
+    "notes": "GPL-2.0-only（非 'or-later'）。内嵌子组件有各自许可证（COPYING/ 目录）。libclamunrar 使用 ClamAV 自有许可证（允许非商业逆向工程解压 RAR）。LGPL-2.1 在 COPYING/COPYING.LGPL 中供可能的组合使用。"
+  },
+  "dependencies": {
+    "count": 17,
+    "manifests": ["CMakeLists.txt", "vcpkg.json", "libclamav_rust/Cargo.toml", "Cargo.toml"],
+    "by_ecosystem": {"cpp": 11, "rust": 6},
+    "dependencies": [
+      {"name": "OpenSSL", "ecosystem": "cpp", "registry_name": "openssl", "source_repo": "openssl/openssl", "import_names": ["SSL", "ERR", "EVP", "BIO"], "scope": "runtime", "version": null, "purpose": "TLS/加密与数字签名验证（CVD 签名校验、HTTPS 连接）", "acquisition": "system", "locality": "system", "source": "find_package(OpenSSL REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:471"], "used_symbols": ["SSL_CTX_new", "SSL_new", "SSL_read", "SSL_write", "EVP_DigestInit", "EVP_DigestUpdate", "EVP_DigestFinal", "BIO_new", "BIO_read", "RSA_verify"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "zlib", "ecosystem": "cpp", "registry_name": "ZLIB", "source_repo": "madler/zlib", "import_names": ["zlib"], "scope": "runtime", "version": null, "purpose": "数据压缩/解压，扫描压缩文件", "acquisition": "system", "locality": "system", "source": "find_package(ZLIB REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:513"], "used_symbols": ["inflate", "deflate", "uncompress", "gzopen"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "BZip2", "ecosystem": "cpp", "registry_name": "BZip2", "source_repo": "libbzip", "import_names": ["bz2"], "scope": "runtime", "version": null, "purpose": "bzip2 压缩/解压，扫描 bz2 压缩文件", "acquisition": "system", "locality": "system", "source": "find_package(BZip2 REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:515"], "used_symbols": ["BZ2_bzReadOpen", "BZ2_bzDecompress"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "libxml2", "ecosystem": "cpp", "registry_name": "LibXml2", "source_repo": "GNOME/libxml2", "import_names": ["xmlReadMemory", "xmlDocGetRootElement"], "scope": "runtime", "version": null, "purpose": "XML 解析，扫描 XML 文档/Office Open XML", "acquisition": "system", "locality": "system", "source": "find_package(LibXml2 REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:522"], "used_symbols": ["xmlReadMemory", "xmlDocGetRootElement", "xmlFreeDoc"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "PCRE2", "ecosystem": "cpp", "registry_name": "PCRE2", "source_repo": "PCRE2Project/pcre2", "import_names": ["pcre2"], "scope": "runtime", "version": null, "purpose": "正则表达式匹配引擎，PCRE 签名检测", "acquisition": "system", "locality": "system", "source": "find_package(PCRE2 REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:527"], "used_symbols": ["pcre2_compile", "pcre2_match", "pcre2_code_free"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "json-c", "ecosystem": "cpp", "registry_name": "json-c", "source_repo": "json-c/json-c", "import_names": ["json-c"], "scope": "runtime", "version": null, "purpose": "JSON 解析/生成，扫描元数据输出", "acquisition": "system", "locality": "system", "source": "find_package(JSONC REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:541"], "used_symbols": ["json_object_new_object", "json_object_to_json_string"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "libcurl", "ecosystem": "cpp", "registry_name": "CURL", "source_repo": "curl/curl", "import_names": ["curl"], "scope": "runtime", "version": null, "purpose": "HTTP/HTTPS 下载，freshclam 特征库更新", "acquisition": "system", "locality": "system", "source": "find_package(CURL REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:599"], "used_symbols": ["curl_easy_init", "curl_easy_setopt", "curl_easy_perform", "curl_easy_cleanup"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "ncurses/pdcurses", "ecosystem": "cpp", "registry_name": null, "source_repo": null, "import_names": ["curses"], "scope": "runtime", "version": null, "purpose": "终端 UI，clamdtop 监控面板", "acquisition": "system", "locality": "system", "source": "find_package(CURSES REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:602"], "used_symbols": ["initscr", "printw", "endwin"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "libmilter", "ecosystem": "cpp", "registry_name": null, "source_repo": null, "import_names": ["milter"], "scope": "optional", "version": null, "purpose": "Sendmail/Postfix milter 接口，邮件过滤", "acquisition": "system", "locality": "system", "source": "find_package(Milter REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:605"], "used_symbols": ["smfi_register", "smfi_main"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "libcheck", "ecosystem": "cpp", "registry_name": null, "source_repo": "libcheck/check", "import_names": ["check"], "scope": "test", "version": null, "purpose": "C 单元测试框架", "acquisition": "system", "locality": "system", "source": "find_package(Libcheck REQUIRED)，系统预装", "declared_in": ["CMakeLists.txt:234"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pthreads", "ecosystem": "cpp", "registry_name": null, "source_repo": null, "import_names": ["pthread"], "scope": "runtime", "version": null, "purpose": "POSIX 线程库，clamd 多线程扫描", "acquisition": "system", "locality": "system", "source": "find_package(Threads)，系统预装", "declared_in": ["CMakeLists.txt:309"], "used_symbols": ["pthread_create", "pthread_join", "pthread_mutex_lock"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "flate2", "ecosystem": "rust", "registry_name": "flate2", "source_repo": "rust-lang/flate2-rs", "import_names": ["flate2"], "scope": "runtime", "version": "1", "purpose": "Rust 端 gzip/deflate 压缩解压", "acquisition": "package_manager", "locality": "remote", "source": "crates.io", "declared_in": ["libclamav_rust/Cargo.toml:8"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "sha2", "ecosystem": "rust", "registry_name": "sha2", "source_repo": "RustCrypto/hashes", "import_names": ["sha2"], "scope": "runtime", "version": "0.10", "purpose": "SHA-2 哈希计算，签名验证", "acquisition": "package_manager", "locality": "remote", "source": "crates.io", "declared_in": ["libclamav_rust/Cargo.toml:12"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "image", "ecosystem": "rust", "registry_name": "image", "source_repo": "image-rs/image", "import_names": ["image"], "scope": "runtime", "version": "0.25", "purpose": "图像解析与模糊哈希计算", "acquisition": "package_manager", "locality": "remote", "source": "crates.io", "declared_in": ["libclamav_rust/Cargo.toml:15"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "openssl", "ecosystem": "rust", "registry_name": "openssl", "source_repo": "sfackler/rust-openssl", "import_names": ["openssl"], "scope": "runtime", "version": "0.10.70", "purpose": "Rust 端 OpenSSL 绑定，证书与加密操作", "acquisition": "package_manager", "locality": "remote", "source": "crates.io", "declared_in": ["libclamav_rust/Cargo.toml:32"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "onenote_parser", "ecosystem": "rust", "registry_name": null, "source_repo": "Cisco-Talos/onenote.rs", "import_names": ["onenote_parser"], "scope": "runtime", "version": null, "purpose": "OneNote 文件解析器", "acquisition": "download_build", "locality": "remote", "source": "git https://github.com/Cisco-Talos/onenote.rs.git", "declared_in": ["libclamav_rust/Cargo.toml:23"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "clam-sigutil", "ecosystem": "rust", "registry_name": null, "source_repo": "Cisco-Talos/clamav-signature-util", "import_names": ["clam_sigutil"], "scope": "runtime", "version": "1.2.4", "purpose": "ClamAV 签名工具库", "acquisition": "download_build", "locality": "remote", "source": "git https://github.com/Cisco-Talos/clamav-signature-util", "declared_in": ["libclamav_rust/Cargo.toml:29"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null}
+    ],
+    "notes": "C/C++ 依赖均通过 CMake find_package 以系统包方式获取；Rust 依赖通过 Cargo.toml 从 crates.io 或 git 仓库获取。内嵌子库（libclammspack、libclamunrar、regex 引擎、LZMA SDK、YARA 子集、NSIS 解压）以源码方式编译入库（vendored）。"
+  },
+  "native_api": {
+    "summary": "ClamAV 大量使用 POSIX API（文件 I/O、进程管理、网络 socket、线程、mmap）以及 Linux 专有 API（fanotify/inotify/prctl），Windows 端有独立的 Win32 兼容层（win32/compat/）。动态加载库（dlopen/LoadLibraryA）用于可选功能模块加载。",
+    "groups": [
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "mmap", "purpose": "内存映射文件，提升大文件扫描性能", "count": 3, "evidence": ["libclamav/fmap.c:38", "libclamav/mpool.c:40", "libclamav/ishield.c:42"], "conditional": true},
+          {"name": "pthread_create", "purpose": "创建线程，clamd 多线程扫描", "count": 8, "evidence": ["clamd/server-th.c:27", "clamd/session.c:47", "clamd/thrmgr.c:28"], "conditional": false},
+          {"name": "fork", "purpose": "创建子进程执行扫描任务", "count": 5, "evidence": ["clamd/scanner.c", "common/misc.c"], "conditional": true},
+          {"name": "socket", "purpose": "TCP/Unix 域套接字，clamd 通信", "count": 10, "evidence": ["clamd/tcpserver.c:33", "clamd/localserver.c:30", "clamonacc/client/socket.c:25"], "conditional": false},
+          {"name": "stat/lstat/fstat", "purpose": "获取文件元信息", "count": 20, "evidence": ["libclamav/clamav.h:46-56", "clamd/scanner.c:33", "common/misc.c:34"], "conditional": false},
+          {"name": "open/read/write/close", "purpose": "文件 I/O 基本操作", "count": 40, "evidence": ["libclamav/others.c", "common/misc.c", "clamd/scanner.c"], "conditional": false},
+          {"name": "dlopen/dlsym", "purpose": "动态加载可选功能模块", "count": 4, "evidence": ["libclamav/others.c:204", "libclamav/others.c:230", "libclamav/others.c:289"], "conditional": true},
+          {"name": "syslog", "purpose": "系统日志记录", "count": 3, "evidence": ["common/output.c:51", "clamd/clamd.c:51", "freshclam/freshclam.c:48"], "conditional": true},
+          {"name": "getopt", "purpose": "命令行参数解析", "count": 2, "evidence": ["common/getopt.c:30"], "conditional": true},
+          {"name": "poll/select", "purpose": "I/O 多路复用", "count": 4, "evidence": ["clamd/clamd_others.c:61", "clamd/session.c:37"], "conditional": false},
+          {"name": "sigaction/signal", "purpose": "信号处理", "count": 5, "evidence": ["clamd/server-th.c:29", "clamonacc/clamonacc.c:29", "freshclam/freshclam.c:32"], "conditional": false}
+        ],
+        "evidence": ["common/misc.c", "common/output.c", "clamd/clamd.c"]
+      },
+      {
+        "type": "linux",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {"name": "fanotify_init", "purpose": "初始化 fanotify 实例，clamonacc 实时监控", "count": 2, "evidence": ["clamonacc/clamonacc.c:349", "clamonacc/clamonacc.c:351"], "conditional": true},
+          {"name": "fanotify_mark", "purpose": "添加/移除 fanotify 监控路径", "count": 4, "evidence": ["clamonacc/fanotif/fanotif.c:105", "clamonacc/inotif/inotif.c:236", "clamonacc/inotif/inotif.c:327"], "conditional": true},
+          {"name": "inotify_init1", "purpose": "初始化 inotify 实例", "count": 1, "evidence": ["clamonacc/inotif/inotif.c:432"], "conditional": true},
+          {"name": "inotify_add_watch", "purpose": "添加 inotify 监控路径", "count": 1, "evidence": ["clamonacc/inotif/inotif.c:220"], "conditional": true},
+          {"name": "prctl", "purpose": "设置线程名称等进程属性", "count": 3, "evidence": ["clamonacc/scan/onas_queue.c:151", "clamonacc/inotif/inotif.c:390", "clamonacc/c-thread-pool/thpool.c:327"], "conditional": true}
+        ],
+        "evidence": ["clamonacc/clamonacc.c", "clamonacc/fanotif/fanotif.c", "clamonacc/inotif/inotif.c"]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "CreateFileW", "purpose": "打开文件获取句柄", "count": 3, "evidence": ["libclamav/others_common.c:1579", "libclamav/7z/7zFile.c:65"], "conditional": true},
+          {"name": "CreateFileMapping", "purpose": "创建文件映射对象（替代 mmap）", "count": 2, "evidence": ["libclamav/fmap.c:212"], "conditional": true},
+          {"name": "LoadLibraryA", "purpose": "动态加载 DLL", "count": 5, "evidence": ["libclamav/others.c:116", "common/scanmem.c:120", "common/actions.c:273"], "conditional": true},
+          {"name": "GetProcAddress", "purpose": "获取 DLL 导出函数地址", "count": 4, "evidence": ["libclamav/others.c:260", "common/actions.c:278"], "conditional": true},
+          {"name": "WSAStartup", "purpose": "初始化 Winsock", "count": 3, "evidence": ["libclamav/libclamav_main.c:38", "libfreshclam/libfreshclam_main.c:36"], "conditional": true},
+          {"name": "RegOpenKeyEx/RegQueryValueEx", "purpose": "注册表读取配置路径", "count": 3, "evidence": ["common/optparser.c:731", "libclamav/readdb.c:5382"], "conditional": true},
+          {"name": "SetServiceStatus", "purpose": "Windows 服务状态管理", "count": 5, "evidence": ["common/service.c:163", "common/service.c:174"], "conditional": true}
+        ],
+        "evidence": ["win32/compat/net.c", "common/service.c", "libclamav/others.c"]
+      },
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "std::string", "purpose": "C++ 字符串操作，bytecode2llvm 模块", "count": 20, "evidence": ["libclamav/c++/bytecode2llvm.cpp"], "conditional": false},
+          {"name": "std::vector", "purpose": "动态数组容器", "count": 10, "evidence": ["libclamav/c++/bytecode2llvm.cpp"], "conditional": false}
+        ],
+        "evidence": ["libclamav/c++/bytecode2llvm.cpp", "libclamav/c++/detect.cpp"]
+      },
+      {
+        "type": "objc_foundation",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {"name": "SecCertificateCopyValues", "purpose": "macOS 证书操作", "count": 5, "evidence": ["common/mac/cert_util_mac.m"], "conditional": true},
+          {"name": "SecTrustEvaluate", "purpose": "macOS 证书信任评估", "count": 2, "evidence": ["common/mac/cert_util_mac.m"], "conditional": true}
+        ],
+        "evidence": ["common/mac/cert_util_mac.m"]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libclamav_rust.a",
+        "mechanism": "static link (Cargo build)",
+        "acquisition": "self_build",
+        "source": "本仓库 Rust 子 crate 编译产物，由 Corrosion CMake 模块静态链接",
+        "description": "Rust 编写的新版 libclamav 功能（模糊哈希、OneNote 解析、代码签名验证等），编译为静态库链接入 libclamav",
+        "optional": false,
+        "evidence": ["libclamav_rust/Cargo.toml:41", "libclamav_rust/CMakeLists.txt"]
+      },
+      {
+        "name": "advapi32.dll",
+        "mechanism": "LoadLibraryA",
+        "acquisition": "system",
+        "source": "Windows 系统库",
+        "description": "Windows 高级 API（注册表、服务管理），运行时动态加载",
+        "optional": true,
+        "evidence": ["common/scanmem.c:120"]
+      },
+      {
+        "name": "psapi.dll",
+        "mechanism": "LoadLibraryA",
+        "acquisition": "system",
+        "source": "Windows 系统库",
+        "description": "进程状态 API，内存使用统计",
+        "optional": true,
+        "evidence": ["common/scanmem.c:697"]
+      },
+      {
+        "name": "ntdll.dll",
+        "mechanism": "LoadLibraryA + GetProcAddress",
+        "acquisition": "system",
+        "source": "Windows 系统库",
+        "description": "NT 底层 API（NtCreateFile、RtlInitUnicodeString），文件操作替代方案",
+        "optional": true,
+        "evidence": ["common/actions.c:273"]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "ClamAV 运行时需要文件系统访问（扫描目标、临时文件、特征库目录）、网络访问（freshclam 下载特征库）、进程间通信（clamd Unix/TCP socket）、系统日志、以及 Linux 上 fanotify/inotify 文件系统监控。clamd 以守护进程方式运行，监听指定端口/socket 接收扫描请求。",
+    "network": [
+      {"detail": "clamd 监听 TCP 端口（默认 3310）或 Unix domain socket 接收扫描请求", "purpose": "扫描服务端口", "evidence": ["clamd/tcpserver.c", "clamd/localserver.c"]},
+      {"detail": "freshclam 通过 HTTPS 从 database.clamav.net 等镜像下载 CVD/CLD 特征库", "purpose": "特征库下载", "evidence": ["libfreshclam/libfreshclam_internal.c"]},
+      {"detail": "clamav-milter 与 Sendmail/Postfix 通过 milter 协议通信", "purpose": "邮件过滤集成", "evidence": ["clamav-milter/clamfi.c"]}
+    ],
+    "filesystem": [
+      {"detail": "/var/lib/clamav/ 或自定义数据库目录（CVD/CLD 特征库文件）", "purpose": "病毒特征库存储与读取", "evidence": ["CMakeOptions.cmake:17"]},
+      {"detail": "临时目录（/tmp 或自定义 TMPDIR）存放解压与中间文件", "purpose": "扫描过程中临时文件存储", "evidence": ["libclamav/others.c"]},
+      {"detail": "/etc/clamav/ 或自定义配置目录（clamd.conf、freshclam.conf）", "purpose": "配置文件读取", "evidence": ["CMakeOptions.cmake:15"]},
+      {"detail": "扫描目标文件（命令行参数或 clamonacc 监控触发）", "purpose": "被扫描文件读取", "evidence": ["clamscan/manager.c"]}
+    ],
+    "env_vars": [
+      {"name": "TMPDIR", "purpose": "指定临时文件目录", "evidence": ["libclamav/others.c"]},
+      {"name": "CLAMAV_NO_YARA", "purpose": "禁用 YARA 签名模块", "evidence": ["libclamav/others.c"]},
+      {"name": "CLAMAV_NO_JSON", "purpose": "禁用 JSON 输出", "evidence": ["libclamav/others.c"]}
+    ],
+    "subprocess": [
+      {"command": "clamd", "purpose": "反病毒扫描守护进程", "evidence": ["clamd/clamd.c"]},
+      {"command": "freshclam", "purpose": "特征库更新守护进程", "evidence": ["freshclam/freshclam.c"]}
+    ],
+    "devices": [],
+    "services": [
+      {"detail": "clamonacc 与 clamd 通信，基于 fanotify/inotify 实时监控文件访问并提交扫描", "purpose": "Linux 实时文件监控扫描", "evidence": ["clamonacc/clamonacc.c", "clamonacc/fanotif/fanotif.c"]}
+    ]
+  },
+  "build_env": {
+    "language_standard": "C90 (CMAKE_C_STANDARD 90)，C++14/11（可选，仅 LLVM bytecode JIT）",
+    "runtime_version": "Rust 2021 edition",
+    "build_system": "CMake（主构建）+ Cargo（Rust 子 crate，通过 Corrosion 集成到 CMake）",
+    "compiler_extensions": [
+      {"detail": "-D_GNU_SOURCE（Linux/glibc 扩展，O_LARGEFILE 等）", "purpose": "启用 GNU 扩展", "evidence": ["CMakeLists.txt:213"]},
+      {"detail": "-fPIC/-fPIE（位置无关代码）", "purpose": "共享库构建要求", "evidence": ["CMakeLists.txt:650"]},
+      {"detail": "MSVC 特有定义（_CRT_SECURE_NO_WARNINGS 等）", "purpose": "Windows 编译兼容", "evidence": ["libclamav/CMakeLists.txt:15-18"]}
+    ],
+    "platforms": [
+      {"os": "Linux", "arch": "x86_64, i686, aarch64", "evidence": ["README.md:58", "CMakeLists.txt:60", "INSTALL-cross-linux-arm64.md"]},
+      {"os": "macOS", "arch": "x86_64, arm64 (universal)", "evidence": ["README.md:59", "CMakeLists.txt:375"]},
+      {"os": "Windows", "arch": "win32, x64", "evidence": ["README.md:60", "CMakeLists.txt:347", "INSTALL-cross-windows-arm64.md"]},
+      {"os": "FreeBSD", "arch": "x86_64", "evidence": ["CMakeLists.txt:435"]}
+    ],
+    "entry_points": [
+      {"type": "service", "name": "clamd", "command": "clamd 守护进程，监听 TCP/Unix socket 提供扫描服务", "evidence": ["clamd/clamd.c"]},
+      {"type": "main", "name": "clamscan", "command": "clamscan 命令行文件扫描器", "evidence": ["clamscan/clamscan.c"]},
+      {"type": "main", "name": "freshclam", "command": "freshclam 特征库更新工具", "evidence": ["freshclam/freshclam.c"]},
+      {"type": "service", "name": "clamonacc", "command": "clamonacc Linux 实时文件监控扫描（需 root）", "evidence": ["clamonacc/clamonacc.c"]},
+      {"type": "main", "name": "clamdscan", "command": "clamdscan clamd 客户端", "evidence": ["clamdscan/clamdscan.c"]},
+      {"type": "main", "name": "clamdtop", "command": "clamdtop 监控面板（ncurses UI）", "evidence": ["clamdtop/clamdtop.c"]},
+      {"type": "main", "name": "sigtool", "command": "sigtool 签名管理与数据库工具", "evidence": ["sigtool/"]},
+      {"type": "service", "name": "clamav-milter", "command": "clamav-milter Sendmail/Postfix 邮件过滤插件", "evidence": ["clamav-milter/clamav-milter.c"]},
+      {"type": "main", "name": "clambc", "command": "clambc 字节码签名工具", "evidence": ["clambc/bcrun.c"]},
+      {"type": "main", "name": "clamconf", "command": "clamconf 配置检查工具", "evidence": ["clamconf/clamconf.c"]},
+      {"type": "main", "name": "clamsubmit", "command": "clamsubmit 样本提交工具", "evidence": ["clamsubmit/clamsubmit.c"]}
+    ],
+    "packaging": "Linux RPM/DEB 包、macOS PKG 安装器、Windows MSI/ZIP、Docker 镜像；不捆绑运行时",
+    "notes": "CMake 为主构建系统，需 Rust 工具链（1.56+，通过 Corrosion CMake 模块集成），可选 LLVM 8-13 用于字节码 JIT。vcpkg.json 提供依赖获取的备选方式。"
+  },
+  "capability_profile": {
+    "summary": "ClamAV 是纯 CLI/守护进程应用，无 GUI/3D/媒体/特定硬件场景。主要关注点是 POSIX 系统服务集成（fanotify 实时监控、syslog、系统服务管理）和网络功能（socket 服务、HTTP 下载）。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无 GUI，纯 CLI/守护进程，无需适配界面",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无 3D 渲染需求",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无音视频媒体需求",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无特定硬件依赖（仅使用标准 CPU/内存/磁盘/网络）",
+        "evidence": []
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (OHOS NDK native layer)",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [40, 90]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [
+      {
+        "id": "ua:fanotify",
+        "caused_by": ["ta:fanotify_inotify"],
+        "api": "fanotify_init/fanotify_mark",
+        "public_entry": "clamonacc",
+        "reason": "fanotify 是 Linux 内核专有文件系统事件通知机制，鸿蒙 OHOS NDK 无等价实现；clamonacc 整个模块依赖此功能",
+        "blocking_native_api": "fanotify_init",
+        "category": "system",
+        "evidence": ["clamonacc/clamonacc.c:349", "clamonacc/fanotif/fanotif.c:105"]
+      },
+      {
+        "id": "ua:inotify",
+        "caused_by": ["ta:fanotify_inotify"],
+        "api": "inotify_init1/inotify_add_watch",
+        "public_entry": "clamonacc",
+        "reason": "inotify 是 Linux 内核专有文件系统事件通知机制，鸿蒙无等价实现；作为 fanotify 的降级方案同样不可用",
+        "blocking_native_api": "inotify_init1",
+        "category": "system",
+        "evidence": ["clamonacc/inotif/inotif.c:432", "clamonacc/inotif/inotif.c:220"]
+      },
+      {
+        "id": "ua:prctl",
+        "caused_by": [],
+        "api": "prctl(PR_SET_NAME)",
+        "public_entry": "clamonacc",
+        "reason": "prctl 是 Linux 专有系统调用，用于设置线程名等；影响较小，可用 pthread_setname_np 替代",
+        "blocking_native_api": "prctl",
+        "category": "platform",
+        "evidence": ["clamonacc/scan/onas_queue.c:151", "clamonacc/inotif/inotif.c:390"]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:posix_subset",
+        "capability": "OHOS NDK POSIX 子集（pthread/socket/mmap/stat/fork 等标准 POSIX API）",
+        "required": true,
+        "target_status": "partial",
+        "impact": "libclamav 核心扫描功能依赖 POSIX API（文件 I/O、线程、mmap、socket）；如缺失则需逐项适配",
+        "source": "references/harmony-pc-capabilities.json musl/POSIX 段"
+      },
+      {
+        "id": "ta:fanotify_inotify",
+        "capability": "Linux fanotify/inotify 文件系统事件通知",
+        "required": false,
+        "target_status": "unavailable",
+        "impact": "clamonacc 实时监控功能不可用，但不影响核心扫描能力（clamd/clamscan 仍可工作）",
+        "source": "Linux 内核专有 API，鸿蒙无等价"
+      },
+      {
+        "id": "ta:openssl_availability",
+        "capability": "OpenSSL 在鸿蒙 PC 上的可用性（libssl/libcrypto）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "核心加密与签名验证功能依赖 OpenSSL，不可用则 CVD 签名校验和 TLS 连接失效",
+        "source": "references/harmony-pc-capabilities.json cmd-pkgs 段"
+      },
+      {
+        "id": "ta:curl_availability",
+        "capability": "libcurl 在鸿蒙 PC 上的可用性",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "freshclam 特征库更新依赖 libcurl HTTP/HTTPS 下载",
+        "source": "references/harmony-pc-capabilities.json cmd-pkgs 段"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "freshclam 需要网络访问下载特征库更新",
+        "source_capability": "",
+        "harmony_status": "available",
+        "evidence": ["libfreshclam/libfreshclam_internal.c"]
+      }
+    ],
+    "recommended_path": "cross_compile",
+    "summary": "ClamAV 是典型的 C/C++ 守护进程应用，核心扫描引擎（libclamav）主要依赖 POSIX 标准API，理论上可通过 OHOS NDK 交叉编译移植。主要障碍：1) clamonacc 依赖 Linux 专有 fanotify/inotify，在鸿蒙上无替代，该模块不可移植；2) 外部依赖（OpenSSL、libcurl、zlib 等）需确认鸿蒙端可用性；3) Rust 子组件需 ohos target 支持。建议路径：使用 OHOS NDK 交叉编译核心组件（libclamav + clamd + clamscan + freshclam），放弃 clamonacc 实时监控功能，其余子系统逐项验证依赖可用性。",
+    "blockers": [
+      {
+        "id": "bk:fanotify_inotify",
+        "issue": "clamonacc 实时文件监控依赖 Linux 专有 fanotify/inotify API，鸿蒙无等价实现",
+        "severity": "major",
+        "adaptability": "unadaptable",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "clamonacc 模块整体不可移植，放弃该功能或使用鸿蒙文件访问通知 API（如有）重写监控层",
+        "caused_by": ["ta:fanotify_inotify"],
+        "manifests_as": ["ua:fanotify", "ua:inotify"],
+        "evidence": ["clamonacc/clamonacc.c:349", "clamonacc/fanotif/fanotif.c:105", "clamonacc/inotif/inotif.c:432"]
+      },
+      {
+        "id": "bk:native_deps",
+        "issue": "核心运行时依赖（OpenSSL、libcurl、zlib、libxml2、PCRE2、json-c、bzip2）需在鸿蒙 PC 上可用或从源码编译",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "通过 cmd-pkgs 安装已移植版本或使用 OHOS NDK 从源码编译静态链接",
+        "caused_by": ["ta:openssl_availability", "ta:curl_availability"],
+        "manifests_as": [],
+        "evidence": ["CMakeLists.txt:471-541"]
+      },
+      {
+        "id": "bk:rust_ohos",
+        "issue": "libclamav_rust 需要 Rust ohos target 支持与交叉编译",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "partial",
+        "remediation": "Rust 已有 ohos target 支持，需配置交叉编译工具链",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": ["libclamav_rust/Cargo.toml", "CMakeOptions.cmake:127"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "核心扫描引擎 libclamav",
+        "note": "主要依赖 POSIX 标准API（文件 I/O、线程、mmap），可编译为共享库供鸿蒙原生应用链接",
+        "evidence": ["libclamav/clamav.h", "libclamav/others.c"]
+      },
+      {
+        "aspect": "clamd 守护进程",
+        "note": "网络 socket + 多线程模型，如鸿蒙支持 POSIX socket 则可工作",
+        "evidence": ["clamd/clamd.c", "clamd/server-th.c"]
+      },
+      {
+        "aspect": "clamscan 命令行扫描",
+        "note": "纯 CLI 工具，依赖 libclamav，无平台专有 API",
+        "evidence": ["clamscan/clamscan.c"]
+      },
+      {
+        "aspect": "freshclam 特征库更新",
+        "note": "依赖 libcurl，如鸿蒙端有 libcurl 则可工作",
+        "evidence": ["freshclam/freshclam.c"]
+      }
+    ],
+    "key_tasks": [
+      "配置 OHOS NDK 交叉编译工具链，验证 CMake 构建流程",
+      "确认/解决核心依赖（OpenSSL、libcurl、zlib、libxml2、PCRE2、json-c、bzip2）在鸿蒙 PC 上的可用性",
+      "配置 Rust ohos target 交叉编译 libclamav_rust",
+      "将 clamonacc 排除或用鸿蒙文件监控 API 重写",
+      "将 prctl(PR_SET_NAME) 替换为 pthread_setname_np 或移除",
+      "验证 mmap/fork/pthread 等核心 POSIX API 在 OHOS NDK 中的可用性",
+      "适配 Windows 兼容层代码（win32/compat/）的条件编译逻辑",
+      "测试签名加载与扫描引擎功能正确性"
+    ],
+    "notes": "核心扫描引擎（libclamav）是最大代码体（14 万行），但其平台依赖相对可控——主要是 POSIX 标准API。clamonacc 是唯一严重依赖 Linux 专有 API 的模块，但它是独立可选模块。不确定性主要来自外部 C/C++ 依赖在鸿蒙 PC 上的可用性，以及 Rust 交叉编译的实际可行性。如果 cmd-pkgs 中已有 openssl/curl/zlib 等，则大部分依赖问题可解。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "library",
+        "field": "kind",
+        "kind": "new_value",
+        "value": "application",
+        "rationale": "ClamAV 以守护进程和 CLI 工具为主要交付形态，终端用户直接启动运行，虽然 libclamav 也作为库被集成，但整体项目定位更偏应用"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "download_build",
+        "rationale": "Rust git 依赖（onenote_parser、clam-sigutil）通过 Cargo 从 git 仓库下载并编译，不同于 vendored/fetchcontent/package_manager"
+      }
+    ]
+  }
+}

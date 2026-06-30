@@ -1,0 +1,2320 @@
+{
+  "library": {
+    "name": "obs-studio",
+    "kind": "application",
+    "package_name": null,
+    "aliases": [
+      "obs-studio",
+      "OBS"
+    ],
+    "import_names": [],
+    "source_url": "https://github.com/obsproject/obs-studio",
+    "analyzed_at": "2026-06-29T09:27:24Z",
+    "commit": "3bba730f76bcecb1ac88be5740395291ca197a57",
+    "one_liner": "开源跨平台实时视频录制与直播软件，用于视频捕获、合成、编码和流媒体传输",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "OBS Studio 是一款开源的跨平台实时视频录制与直播应用程序，用于视频捕获、合成、编码和流媒体传输。它由核心库 libobs（提供场景图、源/滤镜/输出/编码器插件架构和音视频处理管线）、Qt6 前端 GUI、以及大量平台特定插件（Windows D3D11/DXGI 捕获、macOS Metal/AVFoundation、Linux X11/Wayland/PipeWire/ALSA/PulseAudio 等）组成。核心库 libobs 暴露 C API，供插件和前端调用；前端使用 Qt6 Widgets 构建桌面界面。应用本身是终端用户启动的桌面应用，不是被 API 调用的库。",
+    "categories": [
+      {
+        "name": "核心媒体处理引擎",
+        "description": "libobs 提供场景图、源/滤镜/输出/编码器插件系统、音视频 I/O 管线、编码/解码封装",
+        "evidence": [
+          "libobs/obs.c",
+          "libobs/obs-source.c",
+          "libobs/obs-output.c",
+          "libobs/obs-encoder.c"
+        ]
+      },
+      {
+        "name": "图形渲染后端",
+        "description": "跨平台 GPU 渲染抽象：OpenGL（跨平台）、Direct3D 11（Windows）、Metal（macOS），含着色器管线与纹理管理",
+        "evidence": [
+          "libobs-opengl/",
+          "libobs-d3d11/",
+          "libobs-metal/"
+        ]
+      },
+      {
+        "name": "平台音视频捕获插件",
+        "description": "各平台屏幕/窗口/音频捕获插件：Win32 Desktop Duplication/WASAPI、macOS CGDisplayStream/AVFoundation/CoreAudio、Linux X11/Wayland/PipeWire/ALSA/PulseAudio",
+        "evidence": [
+          "plugins/win-capture/",
+          "plugins/win-wasapi/",
+          "plugins/mac-capture/",
+          "plugins/mac-avcapture/",
+          "plugins/linux-capture/",
+          "plugins/linux-pipewire/",
+          "plugins/linux-pulseaudio/",
+          "plugins/linux-alsa/"
+        ]
+      },
+      {
+        "name": "编码器与流输出",
+        "description": "编码器插件（x264/NVENC/AMF/QSV/FFmpeg）、RTMP 输出、FLV/MKV/MP4 封装、WebRTC 输出",
+        "evidence": [
+          "plugins/obs-x264/",
+          "plugins/obs-nvenc/",
+          "plugins/obs-ffmpeg/",
+          "plugins/obs-outputs/",
+          "plugins/obs-webrtc/"
+        ]
+      },
+      {
+        "name": "桌面 GUI 前端",
+        "description": "Qt6 Widgets 前端，包含场景编辑器、源属性面板、设置对话框、自动配置向导等",
+        "evidence": [
+          "frontend/OBSApp.cpp",
+          "frontend/widgets/OBSBasic.cpp"
+        ]
+      }
+    ],
+    "domain": "媒体/直播",
+    "target_users": "内容创作者、直播主播、视频录制用户"
+  },
+  "license": {
+    "spdx": "GPL-2.0-or-later",
+    "name": "GNU General Public License v2 or later",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "COPYING"
+    ],
+    "evidence": "COPYING 文件包含完整的 GPL v2 全文；README.rst 明确声明 distributed under the GNU General Public License v2 (or any later version)",
+    "notes": "GPL v2+ 强 copyleft。部分插件可能使用不同许可。"
+  },
+  "dependencies": {
+    "count": 22,
+    "manifests": [
+      "CMakeLists.txt",
+      "libobs/CMakeLists.txt",
+      "frontend/CMakeLists.txt",
+      "plugins/obs-outputs/CMakeLists.txt"
+    ],
+    "by_ecosystem": {
+      "cpp": 22
+    },
+    "dependencies": [
+      {
+        "name": "Qt6",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "GUI 前端框架，构建 OBS Studio 桌面界面",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装 Qt6)",
+        "declared_in": [
+          "shared/qt/wrappers/CMakeLists.txt",
+          "shared/qt/plain-text-edit/CMakeLists.txt"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "source_repo": "https://github.com/qt/qtbase",
+        "used_symbols": [
+          "QApplication",
+          "QWidget",
+          "QDialog",
+          "QMainWindow"
+        ]
+      },
+      {
+        "name": "FFmpeg",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">=6.1",
+        "purpose": "视频/音频编解码与封装",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装 FFmpeg 6.1+)",
+        "declared_in": [
+          "libobs/CMakeLists.txt",
+          "shared/media-playback/CMakeLists.txt",
+          "plugins/obs-ffmpeg/CMakeLists.txt",
+          "frontend/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)",
+        "source_repo": "https://github.com/FFmpeg/FFmpeg",
+        "used_symbols": [
+          "avcodec_send_packet",
+          "avcodec_receive_frame",
+          "avformat_open_input",
+          "sws_scale",
+          "swr_convert"
+        ]
+      },
+      {
+        "name": "jansson",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "JSON 解析",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装 jansson)",
+        "declared_in": [
+          "libobs/CMakeLists.txt",
+          "plugins/obs-outputs/CMakeLists.txt",
+          "plugins/rtmp-services/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://github.com/akheron/jansson"
+      },
+      {
+        "name": "SIMDe",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "SIMD 指令的可移植封装",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "libobs/CMakeLists.txt"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "source_repo": "https://github.com/simd-everywhere/simde"
+      },
+      {
+        "name": "MbedTLS",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "TLS 加密（RTMPS 输出）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/obs-outputs/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://github.com/Mbed-TLS/mbedtls"
+      },
+      {
+        "name": "ZLIB",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "数据压缩",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "libobs/CMakeLists.txt",
+          "plugins/obs-outputs/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://github.com/madler/zlib"
+      },
+      {
+        "name": "CURL",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "HTTP 客户端",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "shared/file-updater/CMakeLists.txt",
+          "plugins/obs-webrtc/CMakeLists.txt",
+          "frontend/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://github.com/curl/curl"
+      },
+      {
+        "name": "Libx264",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "H.264 视频编码",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/obs-x264/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://code.videolan.org/videolan/x264"
+      },
+      {
+        "name": "Libfdk",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "AAC 音频编码",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/obs-libfdk/CMakeLists.txt"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "source_repo": "https://github.com/mstorsjo/fdk-aac"
+      },
+      {
+        "name": "Freetype",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "字体渲染",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/text-freetype2/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://github.com/freetype/freetype"
+      },
+      {
+        "name": "Fontconfig",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "字体发现与配置",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/text-freetype2/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://github.com/freedesktop/fontconfig"
+      },
+      {
+        "name": "LibDataChannel",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">=0.20",
+        "purpose": "WebRTC 数据通道",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/obs-webrtc/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://github.com/paullouisageneau/libdatachannel"
+      },
+      {
+        "name": "Uthash",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "哈希表数据结构",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "libobs/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包"
+      },
+      {
+        "name": "Luajit",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Lua 脚本引擎",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "shared/obs-scripting/obslua/CMakeLists.txt"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "source_repo": "https://github.com/LuaJIT/LuaJIT"
+      },
+      {
+        "name": "SWIG",
+        "ecosystem": "cpp",
+        "scope": "build",
+        "version": ">=4",
+        "purpose": "脚本绑定生成器",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "shared/obs-scripting/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包"
+      },
+      {
+        "name": "Python",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": "3.8",
+        "purpose": "Python 脚本引擎",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "shared/obs-scripting/obspython/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包"
+      },
+      {
+        "name": "PulseAudio",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Linux PulseAudio 音频捕获/输出",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/linux-pulseaudio/CMakeLists.txt",
+          "libobs/audio-monitoring/pulse/"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "source_repo": "https://gitlab.freedesktop.org/pulseaudio/pulseaudio"
+      },
+      {
+        "name": "PipeWire",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">=0.3.33",
+        "purpose": "Linux PipeWire 屏幕捕获",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/linux-pipewire/CMakeLists.txt"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "source_repo": "https://gitlab.freedesktop.org/pipewire/pipewire"
+      },
+      {
+        "name": "ALSA",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Linux ALSA 音频输入",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/linux-alsa/CMakeLists.txt"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "X11",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "X11 窗口捕获与显示",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/linux-capture/CMakeLists.txt",
+          "libobs-opengl/CMakeLists.txt",
+          "libobs/obs-nix-x11.c"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包"
+      },
+      {
+        "name": "FFnvcodec",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">=12",
+        "purpose": "NVIDIA NVENC 硬件编码",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "plugins/obs-nvenc/CMakeLists.txt"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "source_repo": "https://github.com/FFmpeg/nv-codec-headers"
+      },
+      {
+        "name": "nlohmann_json",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">=3.11",
+        "purpose": "JSON 解析（更新器）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package)",
+        "declared_in": [
+          "frontend/updater/CMakeLists.txt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包",
+        "source_repo": "https://github.com/nlohmann/json"
+      }
+    ],
+    "notes": "部分依赖为平台特定可选依赖（ALSA/PulseAudio/PipeWire/X11 仅 Linux，NVENC 仅 NVIDIA）。libcaption/json11/blake2/glad/w32-pthreads 为内嵌依赖。"
+  },
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "INI",
+      "C++",
+      "C/C++ Header",
+      "XML (Qt/GTK)",
+      "CMake",
+      "HTML",
+      "Objective-C"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 641,
+        "code": 166293,
+        "pct": 31.47,
+        "production": {
+          "files": 486,
+          "code": 157788
+        },
+        "test": {
+          "files": 155,
+          "code": 8505
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 2385,
+        "code": 127737,
+        "pct": 24.17,
+        "production": {
+          "files": 2385,
+          "code": 127737
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 319,
+        "code": 93798,
+        "pct": 17.75,
+        "production": {
+          "files": 318,
+          "code": 93638
+        },
+        "test": {
+          "files": 1,
+          "code": 160
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 614,
+        "code": 59958,
+        "pct": 11.35,
+        "production": {
+          "files": 612,
+          "code": 59811
+        },
+        "test": {
+          "files": 2,
+          "code": 147
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML (Qt/GTK)",
+        "files": 43,
+        "code": 21849,
+        "pct": 4.13,
+        "production": {
+          "files": 43,
+          "code": 21849
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CMake",
+        "files": 201,
+        "code": 11314,
+        "pct": 2.14,
+        "production": {
+          "files": 196,
+          "code": 11246
+        },
+        "test": {
+          "files": 5,
+          "code": 68
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 54,
+        "code": 8179,
+        "pct": 1.55,
+        "production": {
+          "files": 54,
+          "code": 8179
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Objective-C",
+        "files": 17,
+        "code": 6161,
+        "pct": 1.17,
+        "production": {
+          "files": 17,
+          "code": 6161
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Swift",
+        "files": 39,
+        "code": 5467,
+        "pct": 1.03,
+        "production": {
+          "files": 39,
+          "code": 5467
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 16,
+        "code": 5256,
+        "pct": 0.99,
+        "production": {
+          "files": 16,
+          "code": 5256
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Objective-C++",
+        "files": 21,
+        "code": 4522,
+        "pct": 0.86,
+        "production": {
+          "files": 20,
+          "code": 4391
+        },
+        "test": {
+          "files": 1,
+          "code": 131
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "IDL",
+        "files": 26,
+        "code": 3807,
+        "pct": 0.72,
+        "production": {
+          "files": 26,
+          "code": 3807
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 33,
+        "code": 3507,
+        "pct": 0.66,
+        "production": {
+          "files": 33,
+          "code": 3507
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 46,
+        "code": 3032,
+        "pct": 0.57,
+        "production": {
+          "files": 46,
+          "code": 3032
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 5,
+        "code": 1619,
+        "pct": 0.31,
+        "production": {
+          "files": 3,
+          "code": 908
+        },
+        "test": {
+          "files": 2,
+          "code": 711
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 207,
+        "code": 1228,
+        "pct": 0.23,
+        "production": {
+          "files": 207,
+          "code": 1228
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 8,
+        "code": 637,
+        "pct": 0.12,
+        "production": {
+          "files": 8,
+          "code": 637
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "zsh",
+        "files": 3,
+        "code": 637,
+        "pct": 0.12,
+        "production": {
+          "files": 3,
+          "code": 637
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 7,
+        "code": 624,
+        "pct": 0.12,
+        "production": {
+          "files": 7,
+          "code": 624
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 6,
+        "code": 589,
+        "pct": 0.11,
+        "production": {
+          "files": 6,
+          "code": 589
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XSD",
+        "files": 1,
+        "code": 458,
+        "pct": 0.09,
+        "production": {
+          "files": 1,
+          "code": 458
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Lua",
+        "files": 4,
+        "code": 361,
+        "pct": 0.07,
+        "production": {
+          "files": 4,
+          "code": 361
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "PowerShell",
+        "files": 6,
+        "code": 341,
+        "pct": 0.06,
+        "production": {
+          "files": 6,
+          "code": 341
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SWIG",
+        "files": 2,
+        "code": 213,
+        "pct": 0.04,
+        "production": {
+          "files": 2,
+          "code": 213
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 8,
+        "code": 196,
+        "pct": 0.04,
+        "production": {
+          "files": 7,
+          "code": 191
+        },
+        "test": {
+          "files": 1,
+          "code": 5
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Windows Resource File",
+        "files": 3,
+        "code": 192,
+        "pct": 0.04,
+        "production": {
+          "files": 3,
+          "code": 192
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 4,
+        "code": 133,
+        "pct": 0.03,
+        "production": {
+          "files": 4,
+          "code": 133
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 3,
+        "code": 94,
+        "pct": 0.02,
+        "production": {
+          "files": 3,
+          "code": 94
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "AppleScript",
+        "files": 1,
+        "code": 57,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 57
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XSLT",
+        "files": 2,
+        "code": 56,
+        "pct": 0.01,
+        "production": {
+          "files": 2,
+          "code": 56
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Visual Studio Solution",
+        "files": 1,
+        "code": 36,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 36
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Windows Module Definition",
+        "files": 3,
+        "code": 24,
+        "pct": 0.0,
+        "production": {
+          "files": 3,
+          "code": 24
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 3,
+        "code": 16,
+        "pct": 0.0,
+        "production": {
+          "files": 3,
+          "code": 16
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 1,
+        "code": 9,
+        "pct": 0.0,
+        "production": {
+          "files": 1,
+          "code": 9
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 4733,
+      "code": 528400,
+      "comment": 57837,
+      "blank": 88084,
+      "total_lines": 674321
+    },
+    "production": {
+      "files": 4566,
+      "code": 518673,
+      "comment": 48865,
+      "blank": 84861,
+      "total_lines": 652399
+    },
+    "test": {
+      "files": 167,
+      "code": 9727,
+      "comment": 8972,
+      "blank": 3223,
+      "total_lines": 21922
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "plugins",
+        "code": 193316,
+        "category": "production",
+        "by_category": {
+          "production": 193316
+        }
+      },
+      {
+        "dir": "frontend",
+        "code": 164624,
+        "category": "production",
+        "by_category": {
+          "production": 164624
+        }
+      },
+      {
+        "dir": "libobs",
+        "code": 64764,
+        "category": "production",
+        "by_category": {
+          "production": 64764
+        }
+      },
+      {
+        "dir": "deps",
+        "code": 53631,
+        "category": "production",
+        "by_category": {
+          "production": 45104,
+          "test": 8527
+        }
+      },
+      {
+        "dir": "shared",
+        "code": 16203,
+        "category": "production",
+        "by_category": {
+          "production": 16203
+        }
+      },
+      {
+        "dir": "libobs-opengl",
+        "code": 6831,
+        "category": "production",
+        "by_category": {
+          "production": 6831
+        }
+      },
+      {
+        "dir": "cmake",
+        "code": 6755,
+        "category": "production",
+        "by_category": {
+          "production": 6755
+        }
+      },
+      {
+        "dir": "libobs-d3d11",
+        "code": 5781,
+        "category": "production",
+        "by_category": {
+          "production": 5781
+        }
+      },
+      {
+        "dir": "libobs-metal",
+        "code": 5143,
+        "category": "production",
+        "by_category": {
+          "production": 5143
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 4525,
+        "category": "production",
+        "by_category": {
+          "production": 4525
+        }
+      },
+      {
+        "dir": "docs",
+        "code": 3252,
+        "category": "production",
+        "by_category": {
+          "production": 3252
+        }
+      },
+      {
+        "dir": "test",
+        "code": 1200,
+        "category": "test",
+        "by_category": {
+          "test": 1200
+        }
+      },
+      {
+        "dir": ".",
+        "code": 1151,
+        "category": "production",
+        "by_category": {
+          "production": 1151
+        }
+      },
+      {
+        "dir": "libobs-winrt",
+        "code": 618,
+        "category": "production",
+        "by_category": {
+          "production": 618
+        }
+      },
+      {
+        "dir": "build-aux",
+        "code": 606,
+        "category": "production",
+        "by_category": {
+          "production": 606
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 203,
+          "code": 2973,
+          "macros": [
+            "WIN32",
+            "_MSC_VER",
+            "_WIN32",
+            "_WIN64",
+            "__CYGWIN__",
+            "__MINGW32__",
+            "__MINGW64__"
+          ]
+        },
+        "macos": {
+          "files": 79,
+          "code": 630,
+          "macros": [
+            "__APPLE__",
+            "__MACH__"
+          ]
+        },
+        "linux": {
+          "files": 30,
+          "code": 546,
+          "macros": [
+            "__linux__"
+          ]
+        },
+        "posix": {
+          "files": 4,
+          "code": 11,
+          "macros": [
+            "_POSIX_C_SOURCE",
+            "__unix__"
+          ]
+        }
+      },
+      "total": 4160,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 167,
+    "test_cases": 0,
+    "frameworks": [
+      "cmocka"
+    ],
+    "by_language": {
+      "make": {
+        "files": 2,
+        "cases": 0
+      },
+      "C": {
+        "files": 155,
+        "cases": 0
+      },
+      "C++": {
+        "files": 1,
+        "cases": 0
+      },
+      "Objective-C++": {
+        "files": 1,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 2,
+        "cases": 0
+      },
+      "CMake": {
+        "files": 5,
+        "cases": 0
+      },
+      "Text": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates.",
+    "notes": "Test files primarily in test/cmocka/ using cmocka framework"
+  },
+  "native_api": {
+    "summary": "大量平台特有 API 调用：Windows Win32/D3D11/DXGI/WASAPI、Linux X11/XCB/Wayland/PipeWire/ALSA/PulseAudio、macOS Cocoa/Metal/AVFoundation/CoreAudio；跨平台 POSIX 线程/内存映射；OpenGL/EGL GPU 渲染；运行时动态加载多个平台库。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::filesystem",
+            "purpose": "跨平台路径与文件操作",
+            "count": 15,
+            "evidence": [
+              "frontend/OBSApp.cpp:1170"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "std::thread",
+            "purpose": "并发执行",
+            "count": 8,
+            "evidence": [
+              "libobs/util/task.c:7"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "pthread_mutex_init",
+            "purpose": "POSIX 互斥锁初始化",
+            "count": 12,
+            "evidence": [
+              "libobs/util/threading-posix.c:49"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "pthread_cond_wait",
+            "purpose": "POSIX 条件变量等待",
+            "count": 6,
+            "evidence": [
+              "libobs/util/threading-posix.c:81"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "dlopen",
+            "purpose": "运行时动态加载共享库",
+            "count": 8,
+            "evidence": [
+              "libobs/util/platform-nix.c:85",
+              "libobs/obs-module.c:160"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "posix_spawn",
+            "purpose": "启动子进程",
+            "count": 3,
+            "evidence": [
+              "libobs/util/platform-nix.c:54"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "LoadLibraryW",
+            "purpose": "Windows 动态加载 DLL",
+            "count": 8,
+            "evidence": [
+              "libobs/util/platform-windows.c:92",
+              "libobs/obs-win-crash-handler.c:120"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetProcAddress",
+            "purpose": "Windows 获取函数地址",
+            "count": 10,
+            "evidence": [
+              "libobs/util/platform-windows.c:128"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CreateFileMappingW",
+            "purpose": "Windows 内存映射文件",
+            "count": 2,
+            "evidence": [
+              "libobs/util/pipe-windows.c"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "x11_xcb",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "xcb_connect",
+            "purpose": "X11/XCB 窗口捕获连接",
+            "count": 5,
+            "evidence": [
+              "libobs/obs-nix-x11.c:24",
+              "plugins/linux-capture/xcomposite-input.c:4"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XOpenDisplay",
+            "purpose": "X11 显示连接",
+            "count": 4,
+            "evidence": [
+              "libobs/obs-nix-x11.c:28"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "wayland",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "wl_display_connect",
+            "purpose": "Wayland 显示连接",
+            "count": 3,
+            "evidence": [
+              "libobs/obs-nix-wayland.c:26"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "pipewire",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "pw_init",
+            "purpose": "PipeWire 屏幕捕获初始化",
+            "count": 3,
+            "evidence": [
+              "plugins/linux-pipewire/pipewire.c:27"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "cocoa",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "NSApplicationMain",
+            "purpose": "macOS 应用主循环",
+            "count": 2,
+            "evidence": [
+              "libobs/obs-cocoa.m:30"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CGDisplayStreamCreate",
+            "purpose": "macOS 屏幕捕获",
+            "count": 2,
+            "evidence": [
+              "plugins/mac-capture/mac-display-capture.m:7"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "opengl",
+        "category": "hardware",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "glTexImage2D",
+            "purpose": "OpenGL 纹理上传",
+            "count": 15,
+            "evidence": [
+              "libobs-opengl/gl-texture2d.c:229"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glDrawElements",
+            "purpose": "OpenGL 索引绘制",
+            "count": 8,
+            "evidence": [
+              "libobs-opengl/gl-subsystem.c:1144"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "eglCreateContext",
+            "purpose": "EGL 创建 GL 上下文",
+            "count": 4,
+            "evidence": [
+              "libobs-opengl/gl-x11-egl.c:197"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "directx",
+        "category": "hardware",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "D3D11CreateDevice",
+            "purpose": "Direct3D 11 设备创建",
+            "count": 3,
+            "evidence": [
+              "libobs-d3d11/d3d11-subsystem.cpp:232"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "cuda",
+        "category": "hardware",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "cuLaunchKernel",
+            "purpose": "NVIDIA CUDA GPU 通用计算",
+            "count": 2,
+            "evidence": [
+              "plugins/obs-nvenc/cuda-helpers.c:19"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "nvEncodeAPI64.dll / libnvidia-encode.so.1",
+        "mechanism": "os_dlopen",
+        "optional": true,
+        "acquisition": "system",
+        "source": "外部 NVIDIA 编码库",
+        "description": "NVIDIA NVENC 硬件视频编码 API，仅 NVIDIA GPU 可用",
+        "evidence": [
+          "plugins/obs-nvenc/nvenc-helpers.c:105"
+        ]
+      },
+      {
+        "name": "nvcuda.dll / libcuda.so.1",
+        "mechanism": "os_dlopen",
+        "optional": true,
+        "acquisition": "system",
+        "source": "外部 NVIDIA CUDA 运行时",
+        "description": "NVIDIA CUDA 运行时，NVENC 的 CUDA 加速路径依赖",
+        "evidence": [
+          "plugins/obs-nvenc/cuda-helpers.c:19"
+        ]
+      },
+      {
+        "name": "amfrt64.dll",
+        "mechanism": "LoadLibraryW",
+        "optional": true,
+        "acquisition": "system",
+        "source": "外部 AMD AMF 运行时",
+        "description": "AMD 硬件视频编码 API",
+        "evidence": [
+          "plugins/obs-ffmpeg/texture-amf.cpp:2762"
+        ]
+      },
+      {
+        "name": "wscapi.dll",
+        "mechanism": "LoadLibraryW",
+        "optional": false,
+        "acquisition": "system",
+        "source": "外部 Windows 系统库",
+        "description": "Windows Security Center API，检测杀毒软件状态",
+        "evidence": [
+          "libobs/obs-windows.c:319"
+        ]
+      },
+      {
+        "name": "DbgHelp",
+        "mechanism": "LoadLibraryW",
+        "optional": false,
+        "acquisition": "system",
+        "source": "外部 Windows 系统库",
+        "description": "Windows 调试符号库，崩溃处理用",
+        "evidence": [
+          "libobs/obs-win-crash-handler.c:120"
+        ]
+      },
+      {
+        "name": "d3d9.dll / dxgi.dll",
+        "mechanism": "LoadLibraryA",
+        "optional": true,
+        "acquisition": "system",
+        "source": "外部 Windows 系统库",
+        "description": "DirectX 图形偏移探测",
+        "evidence": [
+          "plugins/win-capture/get-graphics-offsets/dxgi-offsets.cpp:35"
+        ]
+      },
+      {
+        "name": "libvlc.so / libvlc.dll",
+        "mechanism": "os_dlopen",
+        "optional": true,
+        "acquisition": "system",
+        "source": "外部 VLC 播放器库",
+        "description": "VLC 视频源插件，按需加载",
+        "evidence": [
+          "plugins/vlc-video/vlc-video-plugin.c:173"
+        ]
+      },
+      {
+        "name": "opengl32.dll",
+        "mechanism": "LoadLibraryA / dlopen",
+        "optional": false,
+        "acquisition": "system",
+        "source": "外部 OpenGL 驱动",
+        "description": "OpenGL GL 函数加载（glad 加载器）",
+        "evidence": [
+          "deps/glad/src/glad.c:15"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "OBS Studio 运行时需要网络访问（RTMP 推流、API 更新）、读写配置/插件数据目录、动态加载平台特定库、访问音视频设备（麦克风/摄像头/屏幕捕获），以及启动外部进程（ffmpeg-mux）。",
+    "network": [
+      {
+        "detail": "RTMP 推流到直播平台",
+        "purpose": "视频流传输",
+        "evidence": [
+          "plugins/obs-outputs/"
+        ]
+      },
+      {
+        "detail": "HTTP API 调用（OAuth、服务更新检查）",
+        "purpose": "远程服务集成",
+        "evidence": [
+          "frontend/CMakeLists.txt",
+          "shared/file-updater/CMakeLists.txt"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "OBS_PLUGINS_PATH / OBS_DATA_PATH 指向的插件/数据目录",
+        "purpose": "加载插件与资源文件",
+        "evidence": [
+          "frontend/widgets/OBSBasic.cpp:120"
+        ]
+      },
+      {
+        "detail": "XDG_CONFIG_HOME/obs-studio 配置目录",
+        "purpose": "存储用户配置",
+        "evidence": [
+          "libobs/util/platform-nix.c:230"
+        ]
+      },
+      {
+        "detail": "ffmpeg-mux 可执行文件",
+        "purpose": "FLV/MKV 录制复用器",
+        "evidence": [
+          "plugins/obs-ffmpeg/ffmpeg-mux/CMakeLists.txt"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "OBS_PLUGINS_PATH",
+        "purpose": "覆盖插件搜索路径",
+        "evidence": [
+          "frontend/widgets/OBSBasic.cpp:120"
+        ]
+      },
+      {
+        "name": "OBS_PLUGINS_DATA_PATH",
+        "purpose": "覆盖插件数据路径",
+        "evidence": [
+          "frontend/widgets/OBSBasic.cpp:125"
+        ]
+      },
+      {
+        "name": "HOME",
+        "purpose": "定位用户配置目录",
+        "evidence": [
+          "libobs/util/platform-nix.c:235"
+        ]
+      },
+      {
+        "name": "XDG_CONFIG_HOME",
+        "purpose": "Linux 配置目录",
+        "evidence": [
+          "libobs/util/platform-nix.c:230"
+        ]
+      },
+      {
+        "name": "XDG_CURRENT_DESKTOP",
+        "purpose": "检测桌面环境",
+        "evidence": [
+          "libobs/obs-nix.c:388"
+        ]
+      },
+      {
+        "name": "QT_QPA_PLATFORMTHEME",
+        "purpose": "Qt 主题配置",
+        "evidence": [
+          "frontend/obs-main.cpp:522"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "ffmpeg-mux",
+        "purpose": "录制封装子进程",
+        "evidence": [
+          "plugins/obs-ffmpeg/ffmpeg-mux/"
+        ]
+      }
+    ],
+    "devices": [
+      {
+        "detail": "屏幕捕获（Win32 Desktop Duplication / macOS CGDisplayStream / X11/XCB / Wayland/PipeWire）",
+        "purpose": "实时屏幕录制",
+        "evidence": [
+          "plugins/win-capture/",
+          "plugins/mac-capture/",
+          "plugins/linux-capture/",
+          "plugins/linux-pipewire/"
+        ]
+      },
+      {
+        "detail": "音频设备（WASAPI / CoreAudio / PulseAudio / ALSA）",
+        "purpose": "音频捕获与监听",
+        "evidence": [
+          "plugins/win-wasapi/",
+          "plugins/linux-pulseaudio/",
+          "plugins/linux-alsa/"
+        ]
+      },
+      {
+        "detail": "摄像头（AVFoundation / V4L2 / DirectShow）",
+        "purpose": "视频源输入",
+        "evidence": [
+          "plugins/mac-avcapture/",
+          "plugins/linux-v4l2/",
+          "plugins/win-dshow/"
+        ]
+      },
+      {
+        "detail": "GPU（NVIDIA CUDA/NVENC、AMD AMF、Intel QSV）",
+        "purpose": "硬件编码加速",
+        "evidence": [
+          "plugins/obs-nvenc/",
+          "plugins/obs-ffmpeg/texture-amf.cpp",
+          "plugins/obs-qsv11/"
+        ]
+      }
+    ],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++17 (target_compile_features(libobs PUBLIC cxx_std_17))",
+    "runtime_version": "C/C++ 原生编译，无解释器运行时依赖",
+    "build_system": "CMake (>=3.28)",
+    "compiler_extensions": [
+      {
+        "detail": "SIMDe SIMD 可移植封装",
+        "evidence": [
+          "libobs/CMakeLists.txt"
+        ]
+      },
+      {
+        "detail": "平台特定编译宏 (_WIN32 / __APPLE__ / __linux__)",
+        "evidence": [
+          "libobs/obs-windows.c",
+          "libobs/obs-cocoa.m",
+          "libobs/obs-nix.c"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "libobs-d3d11/",
+          "libobs-winrt/",
+          "plugins/win-capture/",
+          "plugins/win-wasapi/"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "libobs-metal/",
+          "plugins/mac-capture/",
+          "plugins/mac-avcapture/"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "libobs-metal/",
+          "plugins/mac-capture/"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "plugins/linux-capture/",
+          "plugins/linux-pipewire/"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          "plugins/linux-capture/"
+        ]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "launcher",
+        "name": "obs64 (Windows) / obs (macOS/Linux)",
+        "command": "OBS Studio 桌面应用主可执行文件",
+        "evidence": [
+          "frontend/CMakeLists.txt (OUTPUT_NAME)"
+        ]
+      }
+    ],
+    "packaging": "各平台原生安装程序分发：Windows NSIS installer、macOS .app bundle、Linux Flatpak/PPA；不含捆绑运行时",
+    "notes": "Windows 下输出名为 obs64，其余平台为 obs。支持 Qt6 GUI 前端（可禁用）。"
+  },
+  "capability_profile": {
+    "summary": "OBS Studio 触及鸿蒙适配全部四大重点场景：桌面 GUI（Qt6）、3D/2D 图形渲染（OpenGL/D3D11/Metal）、媒体音视频编解码/捕获、以及特定硬件加速（NVIDIA CUDA/NVENC、AMD AMF、Intel QSV）。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": true,
+        "kind": [
+          "qt6",
+          "win32",
+          "x11",
+          "wayland",
+          "cocoa"
+        ],
+        "via": [
+          "Qt6",
+          "libobs/obs-cocoa.m",
+          "libobs/obs-nix-x11.c"
+        ],
+        "harmony_status": "partial",
+        "adaptation": "Qt6 社区已提供鸿蒙版，但 X11/Wayland 桌面集成需替换为鸿蒙窗口系统",
+        "evidence": [
+          "frontend/CMakeLists.txt",
+          "libobs/obs-nix.c"
+        ]
+      },
+      {
+        "key": "rendering_3d",
+        "present": true,
+        "kind": [
+          "opengl",
+          "directx",
+          "metal"
+        ],
+        "via": [
+          "libobs-opengl/",
+          "libobs-d3d11/",
+          "libobs-metal/"
+        ],
+        "harmony_status": "partial",
+        "adaptation": "鸿蒙支持 OpenGL ES/EGL（partial），Direct3D/Metal 需替换；需确认完整 OpenGL 覆盖程度",
+        "evidence": [
+          "libobs-opengl/gl-subsystem.c",
+          "libobs-d3d11/d3d11-subsystem.cpp"
+        ]
+      },
+      {
+        "key": "media",
+        "present": true,
+        "kind": [
+          "video_encode",
+          "audio_capture",
+          "screen_capture",
+          "ffmpeg"
+        ],
+        "via": [
+          "FFmpeg",
+          "plugins/obs-outputs/",
+          "plugins/linux-pulseaudio/",
+          "plugins/linux-pipewire/"
+        ],
+        "harmony_status": "partial",
+        "adaptation": "FFmpeg 已鸿蒙化；音频 I/O 需替换为 @ohos.multimedia.audio；屏幕捕获需替换为鸿蒙窗口捕获 API",
+        "evidence": [
+          "plugins/obs-ffmpeg/",
+          "plugins/obs-outputs/"
+        ]
+      },
+      {
+        "key": "hardware",
+        "present": true,
+        "kind": [
+          "gpu_cuda",
+          "gpu_nvenc",
+          "gpu_amf",
+          "gpu_qsv"
+        ],
+        "specific_hardware": true,
+        "via": [
+          "plugins/obs-nvenc/",
+          "plugins/obs-ffmpeg/texture-amf.cpp",
+          "plugins/obs-qsv11/"
+        ],
+        "harmony_status": "unavailable",
+        "adaptation": "CUDA/NVENC/AMF/QSV 均为特定硬件专有 API，鸿蒙无等价；相关 GPU 编码功能无法移植",
+        "evidence": [
+          "plugins/obs-nvenc/cuda-helpers.c",
+          "plugins/obs-ffmpeg/texture-amf.cpp"
+        ]
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (模型 C：整包桌面应用移植；自研内核，OHOS NDK 原生层，arm64/x86_64)",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
+    "effort": {
+      "person_days": [
+        60,
+        120
+      ]
+    },
+    "confidence": "low",
+    "recommended_path": "arkts_rewrite",
+    "summary": "OBS Studio 是重度平台耦合的桌面直播应用，核心功能依赖 Qt6 GUI、OpenGL/D3D11/Metal 渲染、多平台音视频捕获、以及 NVIDIA/AMD/Intel 硬件编码。鸿蒙 PC 上 Qt6 已有社区版（partial），OpenGL ES/EGL 为 partial，但 X11/Wayland/PulseAudio/ALSA 等桌面音视频栈在鸿蒙上不可用，需用 @ohos.* API 重写；CUDA/NVENC/AMF/QSV 硬件编码完全不可用。整体判断：部分功能可适配（软件编码路径、Qt6 GUI），但屏幕/音频捕获与硬件编码等核心功能需大量重写或不可用。",
+    "blockers": [
+      {
+        "id": "bk:screen_capture",
+        "issue": "屏幕捕获依赖平台特有 API（Win32 Desktop Duplication/X11 XComposite/Wayland PipeWire/macOS CGDisplayStream），鸿蒙无等价桌面窗口捕获 API",
+        "severity": "blocker",
+        "adaptability": "unadaptable",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "需使用鸿蒙 @ohos.display / @ohos.window 的屏幕捕获能力重写，但 PC 形态下该能力可用性未知",
+        "caused_by": [
+          "ta:desktop_wm"
+        ],
+        "manifests_as": [
+          "ua:cgdisplaystream",
+          "ua:xcomposite",
+          "ua:pipewire_screencast"
+        ],
+        "evidence": [
+          "plugins/win-capture/",
+          "plugins/linux-capture/xcomposite-input.c",
+          "plugins/linux-pipewire/screencast-portal.c"
+        ]
+      },
+      {
+        "id": "bk:audio_io",
+        "issue": "音频 I/O 依赖平台特有 API（WASAPI/PulseAudio/ALSA/CoreAudio），鸿蒙无等价底层音频 API",
+        "severity": "blocker",
+        "adaptability": "partial",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "需替换为 @ohos.multimedia.audio API，但功能覆盖范围待核实",
+        "caused_by": [
+          "ta:audio_io"
+        ],
+        "evidence": [
+          "plugins/win-wasapi/",
+          "plugins/linux-pulseaudio/",
+          "plugins/linux-alsa/"
+        ]
+      },
+      {
+        "id": "bk:hw_encode",
+        "issue": "GPU 硬件编码（NVENC/AMF/QSV）为 NVIDIA/AMD/Intel 专有，鸿蒙无等价",
+        "severity": "blocker",
+        "adaptability": "unadaptable",
+        "category": "hardware",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "硬件编码不可移植，需降级为软件编码（x264/FFmpeg 软编路径仍可用）或等待鸿蒙 GPU 编码 API",
+        "manifests_as": [
+          "ua:cuLaunchKernel",
+          "ua:amf_encode",
+          "ua:nvenc_encode"
+        ],
+        "evidence": [
+          "plugins/obs-nvenc/",
+          "plugins/obs-ffmpeg/texture-amf.cpp",
+          "plugins/obs-qsv11/"
+        ]
+      },
+      {
+        "id": "bk:desktop_integration",
+        "issue": "OBS 桌面应用依赖多窗口/docking、系统托盘、全局快捷键等桌面集成，鸿蒙 PC 桌面环境形态未核实",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "desktop_integration",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unknown",
+        "remediation": "需确认鸿蒙 PC 桌面窗口管理器能力，必要时重写桌面集成层",
+        "caused_by": [
+          "ta:desktop_wm",
+          "ta:desktop_app"
+        ],
+        "evidence": [
+          "frontend/OBSApp.cpp"
+        ]
+      },
+      {
+        "id": "bk:app_delivery",
+        "issue": "OBS 为传统桌面应用形态（installer/zip 分发），鸿蒙 PC 应用交付模型未核实",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "app_delivery",
+        "source_dimension": "build_env",
+        "harmony_status": "unknown",
+        "remediation": "需确认鸿蒙 PC 是否支持传统桌面应用打包，否则需重打包为 .hap 或其他鸿蒙格式",
+        "caused_by": [
+          "ta:desktop_app"
+        ],
+        "evidence": [
+          "frontend/CMakeLists.txt"
+        ]
+      }
+    ],
+    "unadaptable_apis": [
+      {
+        "id": "ua:cgdisplaystream",
+        "api": "CGDisplayStreamCreate",
+        "public_entry": "mac_capture_display",
+        "reason": "macOS 专有屏幕捕获 API，鸿蒙无等价",
+        "blocking_native_api": "CGDisplayStreamCreate",
+        "category": "platform",
+        "evidence": [
+          "plugins/mac-capture/mac-display-capture.m:7"
+        ],
+        "caused_by": [
+          "ta:desktop_wm"
+        ]
+      },
+      {
+        "id": "ua:xcomposite",
+        "api": "XCompositeRedirectSubwindows",
+        "public_entry": "linux_xcomposite_capture",
+        "reason": "X11 合成扩展，鸿蒙无 X11",
+        "blocking_native_api": "XCompositeRedirectSubwindows",
+        "category": "platform",
+        "evidence": [
+          "plugins/linux-capture/xcomposite-input.c:4"
+        ],
+        "caused_by": [
+          "ta:desktop_wm"
+        ]
+      },
+      {
+        "id": "ua:pipewire_screencast",
+        "api": "pw_stream_connect",
+        "public_entry": "linux_pipewire_capture",
+        "reason": "PipeWire 屏幕投射 API，鸿蒙无 PipeWire",
+        "blocking_native_api": "pw_stream_connect",
+        "category": "platform",
+        "evidence": [
+          "plugins/linux-pipewire/pipewire.c:27"
+        ],
+        "caused_by": [
+          "ta:desktop_wm"
+        ]
+      },
+      {
+        "id": "ua:cuLaunchKernel",
+        "api": "cuLaunchKernel",
+        "public_entry": "nvenc_cuda_encode",
+        "reason": "NVIDIA CUDA 运行时，鸿蒙无 CUDA",
+        "blocking_native_api": "cuLaunchKernel",
+        "category": "hardware",
+        "evidence": [
+          "plugins/obs-nvenc/cuda-helpers.c:19"
+        ]
+      },
+      {
+        "id": "ua:amf_encode",
+        "api": "AMFCreateContext",
+        "public_entry": "amf_h264_encode",
+        "reason": "AMD AMF 编码 API，鸿蒙无等价",
+        "blocking_native_api": "AMFCreateContext",
+        "category": "hardware",
+        "evidence": [
+          "plugins/obs-ffmpeg/texture-amf.cpp:2762"
+        ]
+      },
+      {
+        "id": "ua:nvenc_encode",
+        "api": "nvEncOpenEncodeSessionEx",
+        "public_entry": "nvenc_encode",
+        "reason": "NVIDIA NVENC 硬件编码 API，鸿蒙无等价",
+        "blocking_native_api": "nvEncOpenEncodeSessionEx",
+        "category": "hardware",
+        "evidence": [
+          "plugins/obs-nvenc/nvenc-helpers.c:105"
+        ]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:desktop_wm",
+        "capability": "桌面窗口管理器 / 屏幕捕获（多窗口环境）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "不支持则屏幕捕获功能无法运行，OBS 核心功能缺失",
+        "source": "harmony-pc-capabilities.json#wm"
+      },
+      {
+        "id": "ta:audio_io",
+        "capability": "音频 I/O（ALSA/PulseAudio/WASAPI 等价）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "不支持则音频捕获/监听无法运行",
+        "source": "harmony-pc-capabilities.json#audio_io"
+      },
+      {
+        "id": "ta:desktop_app",
+        "capability": "传统桌面应用交付形态",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "不支持则需重新打包为鸿蒙应用格式",
+        "source": "harmony-pc-capabilities.json#desktop_app"
+      },
+      {
+        "id": "ta:opengl_full",
+        "capability": "完整 OpenGL 支持（非仅 OpenGL ES）",
+        "required": true,
+        "target_status": "partial",
+        "impact": "OBS OpenGL 后端依赖完整 OpenGL，仅有 GLES 可能功能受限",
+        "source": "harmony-pc-capabilities.json#opengl"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.CAMERA",
+        "reason": "摄像头视频源输入",
+        "source_capability": "media",
+        "harmony_status": "unknown",
+        "evidence": [
+          "plugins/mac-avcapture/",
+          "plugins/linux-v4l2/"
+        ]
+      },
+      {
+        "permission": "ohos.permission.MICROPHONE",
+        "reason": "麦克风音频捕获",
+        "source_capability": "media",
+        "harmony_status": "unknown",
+        "evidence": [
+          "plugins/win-wasapi/",
+          "plugins/linux-pulseaudio/"
+        ]
+      },
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "RTMP 推流与 API 通信",
+        "source_capability": "media",
+        "harmony_status": "unknown",
+        "evidence": [
+          "plugins/obs-outputs/"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "libobs 核心引擎（场景图/源/滤镜/编码器插件架构）",
+        "note": "纯 C 逻辑，经 OHOS NDK 重编即可",
+        "evidence": [
+          "libobs/obs.c"
+        ]
+      },
+      {
+        "aspect": "软件编码路径（x264/FFmpeg 软编）",
+        "note": "FFmpeg 已鸿蒙化，x264 已鸿蒙化",
+        "evidence": [
+          "plugins/obs-x264/",
+          "plugins/obs-ffmpeg/"
+        ]
+      },
+      {
+        "aspect": "Qt6 GUI 前端",
+        "note": "Qt6 社区已有鸿蒙版",
+        "evidence": [
+          "frontend/CMakeLists.txt"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "用 OHOS NDK 交叉编译 libobs + 所有可移植插件（arm64/x86_64）",
+      "为鸿蒙实现屏幕捕获后端（替代 Win32/X11/Wayland/PipeWire/macOS 捕获插件）",
+      "为鸿蒙实现音频 I/O 后端（替代 WASAPI/PulseAudio/ALSA/CoreAudio）",
+      "将 Qt6 前端适配到鸿蒙 Qt6 版本，处理窗口/桌面集成差异",
+      "移除不可移植的硬件编码插件（NVENC/AMF/QSV），保留软件编码路径",
+      "确认鸿蒙 PC OpenGL/EGL 完整性，必要时降级 OpenGL 后端为 GLES 子集",
+      "处理应用打包形态（桌面应用 vs .hap）",
+      "申请必要权限（CAMERA/MICROPHONE/INTERNET）"
+    ],
+    "notes": "评估按模型 C（整包桌面应用移植）。多个核心目标能力（桌面窗口管理器/音频 I/O/应用交付形态）状态为 unknown，因此 confidence 下调为 low。CUDA/NVENC/AMF/QSV 为不可适配硬件 API，相关 GPU 编码功能确认无法移植，但软件编码路径仍可用。Qt6 与 FFmpeg 已有鸿蒙化版本，降低了一定工作量。platform_adaptation 显示 4160 行平台守卫代码，表明平台耦合度极高。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "low",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "kind",
+        "kind": "new_value",
+        "value": "application",
+        "rationale": "OBS Studio 是终端用户启动的桌面直播软件，不是被 API 调用的库；kind 判为 application，dim-9 走模型 C"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "pipewire",
+        "rationale": "PipeWire 屏幕捕获 API 作为一个独立的平台特有 API 家族出现，未在推荐清单中"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "arkts_rewrite",
+        "rationale": "作为桌面应用走模型 C，核心功能（屏幕/音频捕获）需用 @ohos.* API 重写，而非简单重编"
+      }
+    ]
+  }
+}

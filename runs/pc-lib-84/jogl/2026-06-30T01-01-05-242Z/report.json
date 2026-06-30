@@ -1,0 +1,2519 @@
+{
+  "library": {
+    "name": "jogl",
+    "kind": "library",
+    "package_name": "jogl",
+    "aliases": [
+      "JOGL",
+      "org.jogamp.jogl:jogl",
+      "JogAmp JOGL"
+    ],
+    "import_names": [
+      "com.jogamp.opengl",
+      "com.jogamp.nativewindow",
+      "com.jogamp.newt",
+      "com.jogamp.graph"
+    ],
+    "source_url": "https://github.com/sgothel/jogl.git",
+    "analyzed_at": "2026-06-30T01:01:05.242Z",
+    "commit": "0c2d62b50ab4fa56daf03c040221095154ab36db",
+    "one_liner": "Java 语言的高性能 OpenGL/OpenGL ES/EGL 图形绑定库，支持 NEWT/AWT/Swing/SWT 窗口集成与多媒体扩展。",
+    "ecosystem": "java",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "JOGL 是 JogAmp 项目开发的 Java 图形绑定库，为 Java 应用提供硬件加速的 OpenGL / OpenGL ES / EGL API 访问。它包含 NativeWindow 抽象层、NEWT 跨平台窗口工具包、AWT/Swing/SWT/JavaFX 集成、Graph/GraphUI 矢量 UI 与字体渲染，以及可选的 FFmpeg 视频播放和 JOAL 音频绑定。主要面向桌面/嵌入式 Java 图形应用、游戏和可视化工具开发者。",
+    "categories": [
+      {
+        "name": "OpenGL API 绑定",
+        "description": "通过 GlueGen 生成 JNI 封装，暴露 OpenGL 1.0-4.6、OpenGL ES 1/2/3、EGL 及几乎所有厂商扩展。",
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/GL.java",
+          "src/jogl/classes/com/jogamp/opengl/GL2ES2.java",
+          "make/config/jogl/gl-if-*.cfg",
+          "src/jogl/native/EGLContext.c"
+        ]
+      },
+      {
+        "name": "原生窗口抽象 (NativeWindow)",
+        "description": "跨平台 NativeWindow/NativeSurface 接口，封装 X11、Win32、macOS/iOS、DRM/GBM 等底层窗口句柄与显示连接。",
+        "evidence": [
+          "src/nativewindow/classes/com/jogamp/nativewindow/NativeWindow.java",
+          "src/nativewindow/classes/com/jogamp/nativewindow/NativeSurface.java",
+          "src/nativewindow/native/x11/Xmisc.c",
+          "src/nativewindow/native/win32/WindowsUser.c",
+          "src/nativewindow/native/macosx/OSXmisc.m"
+        ]
+      },
+      {
+        "name": "NEWT 窗口工具包",
+        "description": "自包含的跨平台窗口系统，支持 X11、Windows、macOS、EGL/GBM、Android 等后端，处理输入事件与显示器模式。",
+        "evidence": [
+          "src/newt/classes/com/jogamp/newt/Window.java",
+          "src/newt/native/X11Window.c",
+          "src/newt/native/WindowsWindow.c",
+          "src/newt/native/drm_gbm.c"
+        ]
+      },
+      {
+        "name": "AWT/Swing/SWT/JavaFX 集成",
+        "description": "提供 GLCanvas、GLJPanel、SWT GLCanvas 与 JavaFX 集成，允许在传统 Java UI 中嵌入 OpenGL。",
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/awt/GLCanvas.java",
+          "src/jogl/classes/com/jogamp/opengl/awt/GLJPanel.java",
+          "src/jogl/classes/jogamp/opengl/swt/",
+          "make/build-common.xml"
+        ]
+      },
+      {
+        "name": "Graph / GraphUI 2D/3D UI 渲染",
+        "description": "基于 GPU 的 NURBS 曲线、字体渲染、CSS 风格布局的沉浸式 UI。",
+        "evidence": [
+          "src/graphui/classes/com/jogamp/graph/",
+          "src/jogl/classes/jogamp/graph/curve/opengl/",
+          "src/jogl/classes/jogamp/graph/font/"
+        ]
+      },
+      {
+        "name": "多媒体扩展（可选）",
+        "description": "通过 FFmpeg 绑定实现视频解码/播放，通过 JOAL 绑定 OpenAL 音频。",
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/util/av/impl/FFMPEGDynamicLibraryBundleInfo.java",
+          "src/jogl/native/libav/ffmpeg_impl_template.c",
+          "make/build-common.xml"
+        ]
+      },
+      {
+        "name": "可选 OculusVR / Cg / OpenMAX",
+        "description": "立体 VR 设备、NVIDIA Cg 着色器语言、OpenMAX 实验绑定，默认不启用。",
+        "evidence": [
+          "src/oculusvr/classes/",
+          ".gitmodules",
+          "make/config/oculusvr/",
+          "make/build-jogl.xml"
+        ]
+      }
+    ],
+    "domain": "graphics",
+    "target_users": "Java 图形应用、游戏、数据可视化、媒体播放器开发者"
+  },
+  "languages": {
+    "primary": "Java",
+    "all": [
+      "Java",
+      "C/C++ Header",
+      "C",
+      "HTML",
+      "XML",
+      "Objective-C",
+      "MSBuild script",
+      "Bourne Shell"
+    ],
+    "breakdown": [
+      {
+        "language": "Java",
+        "files": 1506,
+        "code": 258269,
+        "pct": 66.2,
+        "production": {
+          "files": 953,
+          "code": 167522
+        },
+        "test": {
+          "files": 455,
+          "code": 72423
+        },
+        "example": {
+          "files": 98,
+          "code": 18324
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 392,
+        "code": 70665,
+        "pct": 18.11,
+        "production": {
+          "files": 392,
+          "code": 70665
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 93,
+        "code": 18114,
+        "pct": 4.64,
+        "production": {
+          "files": 93,
+          "code": 18114
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 85,
+        "code": 9258,
+        "pct": 2.37,
+        "production": {
+          "files": 85,
+          "code": 9258
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 51,
+        "code": 8501,
+        "pct": 2.18,
+        "production": {
+          "files": 50,
+          "code": 8428
+        },
+        "test": {
+          "files": 1,
+          "code": 73
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Objective-C",
+        "files": 12,
+        "code": 6816,
+        "pct": 1.75,
+        "production": {
+          "files": 12,
+          "code": 6816
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "MSBuild script",
+        "files": 4,
+        "code": 5286,
+        "pct": 1.35,
+        "production": {
+          "files": 4,
+          "code": 5286
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 114,
+        "code": 3096,
+        "pct": 0.79,
+        "production": {
+          "files": 111,
+          "code": 2965
+        },
+        "test": {
+          "files": 3,
+          "code": 131
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "GLSL",
+        "files": 58,
+        "code": 2353,
+        "pct": 0.6,
+        "production": {
+          "files": 38,
+          "code": 1272
+        },
+        "test": {
+          "files": 17,
+          "code": 1004
+        },
+        "example": {
+          "files": 3,
+          "code": 77
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 2,
+        "code": 2133,
+        "pct": 0.55,
+        "production": {
+          "files": 2,
+          "code": 2133
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 5,
+        "code": 1700,
+        "pct": 0.44,
+        "production": {
+          "files": 5,
+          "code": 1700
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 31,
+        "code": 1544,
+        "pct": 0.4,
+        "production": {
+          "files": 31,
+          "code": 1544
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 2,
+        "code": 856,
+        "pct": 0.22,
+        "production": {
+          "files": 2,
+          "code": 856
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Ant",
+        "files": 2,
+        "code": 576,
+        "pct": 0.15,
+        "production": {
+          "files": 1,
+          "code": 557
+        },
+        "test": {
+          "files": 1,
+          "code": 19
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Properties",
+        "files": 2,
+        "code": 467,
+        "pct": 0.12,
+        "production": {
+          "files": 2,
+          "code": 467
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Visual Studio Solution",
+        "files": 1,
+        "code": 200,
+        "pct": 0.05,
+        "production": {
+          "files": 1,
+          "code": 200
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 1,
+        "code": 139,
+        "pct": 0.04,
+        "production": {
+          "files": 1,
+          "code": 139
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 12,
+        "code": 81,
+        "pct": 0.02,
+        "production": {
+          "files": 11,
+          "code": 74
+        },
+        "test": {
+          "files": 1,
+          "code": 7
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "awk",
+        "files": 1,
+        "code": 47,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 47
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Again Shell",
+        "files": 3,
+        "code": 41,
+        "pct": 0.01,
+        "production": {
+          "files": 3,
+          "code": 41
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 5,
+        "pct": 0,
+        "production": {
+          "files": 1,
+          "code": 5
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 1,
+        "pct": 0,
+        "production": {
+          "files": 1,
+          "code": 1
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 2379,
+      "code": 390148,
+      "comment": 184519,
+      "blank": 68481,
+      "total_lines": 643148
+    },
+    "production": {
+      "files": 1800,
+      "code": 298090,
+      "comment": 161222,
+      "blank": 53284,
+      "total_lines": 512596
+    },
+    "test": {
+      "files": 478,
+      "code": 73657,
+      "comment": 17974,
+      "blank": 12686,
+      "total_lines": 104317
+    },
+    "example": {
+      "files": 101,
+      "code": 18401,
+      "comment": 5323,
+      "blank": 2511,
+      "total_lines": 26235
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 285229,
+        "category": "production",
+        "by_category": {
+          "production": 193636,
+          "test": 73192,
+          "example": 18401
+        }
+      },
+      {
+        "dir": "make",
+        "code": 88959,
+        "category": "production",
+        "by_category": {
+          "production": 88845,
+          "test": 114
+        }
+      },
+      {
+        "dir": "doc",
+        "code": 7757,
+        "category": "production",
+        "by_category": {
+          "production": 7757
+        }
+      },
+      {
+        "dir": "jnlp-files",
+        "code": 3807,
+        "category": "production",
+        "by_category": {
+          "production": 3807
+        }
+      },
+      {
+        "dir": "doxygen",
+        "code": 2108,
+        "category": "production",
+        "by_category": {
+          "production": 2108
+        }
+      },
+      {
+        "dir": ".",
+        "code": 781,
+        "category": "production",
+        "by_category": {
+          "production": 781
+        }
+      },
+      {
+        "dir": "www",
+        "code": 634,
+        "category": "production",
+        "by_category": {
+          "production": 634
+        }
+      },
+      {
+        "dir": "tools",
+        "code": 368,
+        "category": "test",
+        "by_category": {
+          "production": 41,
+          "test": 327
+        }
+      },
+      {
+        "dir": "nbproject",
+        "code": 289,
+        "category": "production",
+        "by_category": {
+          "production": 289
+        }
+      },
+      {
+        "dir": "etc",
+        "code": 170,
+        "category": "production",
+        "by_category": {
+          "production": 146,
+          "test": 24
+        }
+      },
+      {
+        "dir": ".externalToolBuilders",
+        "code": 45,
+        "category": "production",
+        "by_category": {
+          "production": 45
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 1,
+        "category": "production",
+        "by_category": {
+          "production": 1
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tools"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 27,
+          "code": 235,
+          "macros": [
+            "WIN32",
+            "_MSC_VER",
+            "_WIN32",
+            "__CYGWIN__",
+            "__MINGW64__",
+            "__WIN32__"
+          ]
+        },
+        "macos": {
+          "files": 6,
+          "code": 6,
+          "macros": [
+            "__APPLE__"
+          ]
+        },
+        "linux": {
+          "files": 3,
+          "code": 10,
+          "macros": [
+            "__linux__",
+            "linux"
+          ]
+        },
+        "posix": {
+          "files": 2,
+          "code": 13,
+          "macros": [
+            "__unix",
+            "__unix__"
+          ]
+        }
+      },
+      "total": 264,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 478,
+    "test_cases": 1128,
+    "frameworks": [
+      "JUnit/TestNG"
+    ],
+    "by_language": {
+      "Java": {
+        "files": 455,
+        "cases": 1128
+      },
+      "GLSL": {
+        "files": 17,
+        "cases": 0
+      },
+      "XML": {
+        "files": 1,
+        "cases": 0
+      },
+      "Bourne Shell": {
+        "files": 3,
+        "cases": 0
+      },
+      "Ant": {
+        "files": 1,
+        "cases": 0
+      },
+      "DOS Batch": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "BSD-2-Clause",
+    "name": "BSD 2-Clause \"Simplified\" License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "LICENSE.txt 明确说明 JOGL 源码主体采用 New BSD 2-Clause License；同时列出 Sun Microsystems (BSD-3-Clause)、LWJGL (BSD-3-Clause)、SGI Free Software License B、Apache-2.0、Ubuntu Font Licence、NVIDIA Cg、Oculus VR SDK 等可选/片段许可。",
+    "notes": "主体可视为 BSD-2-Clause 发行；构建时用到的 make/lib 二进制与 oculusvr-sdk 子模块不参与最终二进制分发，除非显式启用。"
+  },
+  "dependencies": {
+    "count": 27,
+    "manifests": [
+      "make/pom.xml",
+      "make/build.xml",
+      "make/build-common.xml",
+      "make/build-jogl.xml",
+      "make/build-nativewindow.xml",
+      "make/build-newt.xml",
+      "make/build-graphui.xml",
+      "make/build-oculusvr.xml",
+      "make/build-test.xml",
+      ".gitmodules"
+    ],
+    "by_ecosystem": {
+      "java": [
+        "gluegen-rt",
+        "gluegen-cpptasks",
+        "joal",
+        "swt",
+        "openjfx",
+        "junit",
+        "ant-contrib",
+        "antlr",
+        "android.jar",
+        "plugin3"
+      ],
+      "cpp": [
+        "OpenGL/libGL",
+        "X11",
+        "Xxf86vm",
+        "libXcursor",
+        "libXrandr",
+        "libXinerama",
+        "libXrender",
+        "libxcb",
+        "EGL",
+        "OpenGL ES",
+        "libdrm",
+        "libgbm",
+        "FFmpeg",
+        "OpenAL",
+        "NVIDIA Cg",
+        "OculusVR SDK",
+        "OpenMAX"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "gluegen-rt",
+        "ecosystem": "java",
+        "registry_name": "gluegen-rt",
+        "source_repo": "https://github.com/jogamp/gluegen",
+        "import_names": [
+          "com.jogamp.common.os.DynamicLibraryBundle",
+          "com.jogamp.common.jvm.JNILibLoaderBase"
+        ],
+        "aliases": [
+          "gluegen-rt-natives",
+          "org.jogamp.gluegen:gluegen-rt"
+        ],
+        "scope": "runtime",
+        "version": "[1.0-beta07-SNAPSHOT,)",
+        "purpose": "JOGL 依赖的运行时基础库，负责 JNI 库加载、动态符号解析与 GlueGen 生成代码支持",
+        "acquisition": "sibling_source_build",
+        "locality": "remote",
+        "source": "同级 gluegen 源码树构建，或 Maven/Sonatype 快照仓库",
+        "declared_in": [
+          "make/pom.xml:19-24",
+          "make/build-common.xml:22-24,298-300,510-513"
+        ],
+        "used_symbols": [
+          "DynamicLibraryBundle",
+          "JNILibLoaderBase.addNativeJarLibsJoglCfg",
+          "ProcAddressTable"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gluegen-cpptasks",
+        "ecosystem": "java",
+        "registry_name": "gluegen-cpptasks",
+        "source_repo": "https://github.com/jogamp/gluegen",
+        "aliases": [
+          "org.jogamp.gluegen:gluegen-cpptasks"
+        ],
+        "scope": "build",
+        "version": "[1.0-beta07-SNAPSHOT,)",
+        "purpose": "GlueGen Ant cpptasks 构建支持",
+        "acquisition": "sibling_source_build",
+        "locality": "remote",
+        "source": "同级 gluegen 源码树构建，或 Maven/Sonatype 快照仓库",
+        "declared_in": [
+          "make/pom.xml:25-29"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "joal",
+        "ecosystem": "java",
+        "registry_name": "joal",
+        "source_repo": "https://github.com/jogamp/joal",
+        "aliases": [
+          "JOAL"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "OpenAL 音频绑定，用于 fat-jar 与空间音频演示",
+        "acquisition": "sibling_source_build",
+        "locality": "remote",
+        "source": "同级 joal 源码树构建",
+        "declared_in": [
+          "make/build-common.xml:29,535-549",
+          "make/build.xml:190-209"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "swt",
+        "ecosystem": "java",
+        "registry_name": "org.eclipse.swt",
+        "source_repo": "https://github.com/eclipse-platform/eclipse.platform.swt",
+        "aliases": [
+          "Eclipse SWT"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "SWT GUI 工具包集成，用于 SWT GLCanvas",
+        "acquisition": "prebuilt_binary",
+        "locality": "local",
+        "source": "仓库内 make/lib/swt 下各平台预编译 swt.jar",
+        "declared_in": [
+          "make/build-common.xml:152-198,553-559",
+          "src/jogl/classes/jogamp/opengl/swt/"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "openjfx",
+        "ecosystem": "java",
+        "registry_name": "org.openjfx",
+        "source_repo": "https://github.com/openjdk/jfx",
+        "aliases": [
+          "JavaFX"
+        ],
+        "scope": "optional",
+        "version": "11",
+        "purpose": "JavaFX 集成与 Android d8 编译辅助 classpath",
+        "acquisition": "prebuilt_binary",
+        "locality": "local",
+        "source": "仓库内 make/lib/openjfx/11/javafx-base-11.jar、javafx-graphics-11.jar",
+        "declared_in": [
+          "make/build-common.xml:553-559,579-586",
+          "make/build.xml:296-299"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "junit",
+        "ecosystem": "java",
+        "registry_name": "junit",
+        "source_repo": "https://github.com/junit-team/junit4",
+        "scope": "test",
+        "version": null,
+        "purpose": "单元测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Maven 仓库或预置 jar",
+        "declared_in": [
+          "make/build-common.xml:148",
+          "make/build-test.xml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ant-contrib",
+        "ecosystem": "java",
+        "scope": "build",
+        "version": "1.0b3",
+        "purpose": "Ant outofdate 等任务",
+        "acquisition": "prebuilt_binary",
+        "locality": "local",
+        "source": "仓库内 make/lib/ant-contrib-1.0b3.jar（由 gluegen 提供）",
+        "declared_in": [
+          "make/build-common.xml:31",
+          "make/build-jogl.xml:65-68"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "antlr",
+        "ecosystem": "java",
+        "scope": "build",
+        "version": null,
+        "purpose": "GlueGen 代码生成使用的解析器生成器",
+        "acquisition": "prebuilt_binary",
+        "locality": "local",
+        "source": "由 gluegen 提供",
+        "declared_in": [
+          "make/build-common.xml:148"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "android.jar",
+        "ecosystem": "java",
+        "scope": "build",
+        "version": null,
+        "purpose": "编译 Android 变体所需的 Android SDK 存根",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Android SDK（需预装）",
+        "declared_in": [
+          "make/build-common.xml:148,550,579-586"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "plugin3",
+        "ecosystem": "java",
+        "scope": "optional",
+        "version": null,
+        "purpose": "浏览器插件 API 占位",
+        "acquisition": "prebuilt_binary",
+        "locality": "local",
+        "source": "仓库内 make/lib/plugin3/plugin3-public.jar",
+        "declared_in": [
+          "make/build-common.xml:200-204,591"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "OpenGL",
+        "ecosystem": "cpp",
+        "registry_name": "libGL",
+        "source_repo": "https://gitlab.freedesktop.org/mesa/mesa",
+        "aliases": [
+          "GL",
+          "libGL.so.1",
+          "OpenGL32"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "桌面 OpenGL 渲染与扩展加载",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 GPU 驱动提供的 libGL/OpenGL32/libGL.dylib",
+        "declared_in": [
+          "make/jogl.compiler.xml:9-11",
+          "src/jogl/classes/jogamp/opengl/x11/glx/X11GLXDynamicLibraryBundleInfo.java:53",
+          "src/jogl/classes/jogamp/opengl/windows/wgl/WindowsWGLDynamicLibraryBundleInfo.java:45",
+          "src/jogl/classes/jogamp/opengl/macosx/cgl/MacOSXCGLDynamicLibraryBundleInfo.java:46"
+        ],
+        "used_symbols": [
+          "glClear",
+          "glBindFramebuffer",
+          "glBindTexture",
+          "glGetString",
+          "glGetError",
+          "glXGetProcAddressARB",
+          "wglGetProcAddress"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "X11",
+        "ecosystem": "cpp",
+        "registry_name": "libX11",
+        "source_repo": "https://gitlab.freedesktop.org/xorg/lib/libx11",
+        "aliases": [
+          "libX11.so.6"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Linux/Unix 桌面窗口系统交互",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 X11 客户端库（已鸿蒙化预编译包）",
+        "declared_in": [
+          "make/jogl.compiler.xml:4-7",
+          "make/nativewindow.compiler.xml:4-7",
+          "make/newt.compiler.xml:4-7",
+          "src/newt/native/X11Window.c:917",
+          "src/nativewindow/classes/jogamp/nativewindow/x11/X11Util.java:536"
+        ],
+        "used_symbols": [
+          "XOpenDisplay",
+          "XCreateWindow",
+          "XMapWindow",
+          "XSendEvent",
+          "XInternAtom",
+          "XNextEvent"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "Xxf86vm",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "X11 视频模式扩展",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libXxf86vm",
+        "declared_in": [
+          "make/jogl.compiler.xml:5-6",
+          "make/nativewindow.compiler.xml:5-6",
+          "make/newt.compiler.xml:5-6"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libXcursor",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "X11 光标扩展",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libXcursor",
+        "declared_in": [
+          "src/newt/native/X11Display.c:31"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libXrandr",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "X11 RandR 显示器模式/热插拔",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libXrandr（已鸿蒙化预编译包）",
+        "declared_in": [
+          "src/newt/native/xrandr_utils.c",
+          "src/newt/native/X11RandR11.c",
+          "src/newt/native/X11RandR13.c"
+        ],
+        "used_symbols": [
+          "XRRGetScreenResources",
+          "XRRSetScreenConfig"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "libXinerama",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "X11 多显示器扩展",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libXinerama.so.1（运行时 dlopen）",
+        "declared_in": [
+          "src/nativewindow/native/x11/XineramaHelper.c:82"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libXrender",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "X11 合成/渲染扩展",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libXrender",
+        "declared_in": [
+          "src/nativewindow/native/x11/Xmisc.c:36"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libxcb",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "XCB 替代 Xlib 事件处理",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libxcb",
+        "declared_in": [
+          "src/newt/native/XCBEvent.c:6-9"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "EGL",
+        "ecosystem": "cpp",
+        "registry_name": "libEGL",
+        "source_repo": "https://gitlab.freedesktop.org/mesa/mesa",
+        "aliases": [
+          "libEGL.so.1",
+          "libEGL.so"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "OpenGL ES 显示/上下文管理",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 EGL 实现",
+        "declared_in": [
+          "src/jogl/classes/jogamp/opengl/egl/EGLDynamicLibraryBundleInfo.java:100",
+          "src/jogl/native/EGLContext.c:10"
+        ],
+        "used_symbols": [
+          "eglGetDisplay",
+          "eglCreateContext",
+          "eglSwapBuffers",
+          "eglGetProcAddress"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "OpenGL ES",
+        "ecosystem": "cpp",
+        "registry_name": "libGLESv2",
+        "source_repo": "https://gitlab.freedesktop.org/mesa/mesa",
+        "aliases": [
+          "GLESv2",
+          "libGLESv2.so.2",
+          "libGLESv3.so.3"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "移动端/嵌入式 OpenGL 渲染",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 GLES 驱动",
+        "declared_in": [
+          "src/jogl/classes/jogamp/opengl/egl/EGLES2DynamicLibraryBundleInfo.java:48"
+        ],
+        "used_symbols": [
+          "glClear",
+          "glUseProgram"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libdrm",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Linux DRM 直接显示",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libdrm（已鸿蒙化预编译包）",
+        "declared_in": [
+          "src/nativewindow/native/drm/DRMmisc.c:34",
+          "make/build-common.xml:124-126"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "libgbm",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "Generic Buffer Management，DRM 无 X 后端",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 libgbm",
+        "declared_in": [
+          "src/newt/native/drm_gbm.c:39",
+          "src/newt/native/drm_gbm_egl_test01.c:39"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "FFmpeg",
+        "ecosystem": "cpp",
+        "registry_name": "ffmpeg",
+        "source_repo": "https://git.ffmpeg.org/ffmpeg.git",
+        "aliases": [
+          "libavcodec",
+          "libavformat",
+          "libavutil",
+          "libavdevice",
+          "libswresample",
+          "libswscale"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "视频解码/播放与重采样/缩放",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 FFmpeg 库或内部静态绑定（已在 OpenHarmony PC cmd-pkgs 提供预编译包）",
+        "declared_in": [
+          "src/jogl/classes/jogamp/opengl/util/av/impl/FFMPEGDynamicLibraryBundleInfo.java:417",
+          "src/jogl/native/libav/ffmpeg_impl_template.c:32-36"
+        ],
+        "used_symbols": [
+          "av_read_frame",
+          "avcodec_close",
+          "swr_convert",
+          "swscale_version"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "OpenAL",
+        "ecosystem": "cpp",
+        "registry_name": "openal-soft",
+        "source_repo": "https://github.com/kcat/openal-soft",
+        "aliases": [
+          "OpenAL32",
+          "libopenal"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "JOAL 音频后端",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 OpenAL 实现",
+        "declared_in": [
+          "make/build-common.xml:535-549"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "NVIDIA Cg",
+        "ecosystem": "cpp",
+        "registry_name": "Cg",
+        "source_repo": "https://developer.nvidia.com/cg-toolkit-download",
+        "aliases": [
+          "Cg",
+          "CgGL"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "NVIDIA Cg 着色器语言运行时",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "NVIDIA Cg Toolkit 系统库",
+        "declared_in": [
+          "src/jogl/classes/com/jogamp/opengl/cg/CgDynamicLibraryBundleInfo.java:115",
+          "make/build-jogl.xml:76-82"
+        ],
+        "used_symbols": [
+          "cgCreateContext",
+          "cgGLLoadProgram"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "OculusVR SDK",
+        "ecosystem": "cpp",
+        "registry_name": "LibOVR",
+        "source_repo": "https://github.com/jogamp/oculusvr-sdk",
+        "aliases": [
+          "oculusvr-sdk"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "Oculus Rift VR 头显绑定",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "git 子模块 oculusvr-sdk",
+        "declared_in": [
+          ".gitmodules",
+          "make/build-common.xml:266-279",
+          "make/build-oculusvr.xml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "OpenMAX",
+        "ecosystem": "cpp",
+        "registry_name": "openmax",
+        "scope": "optional",
+        "version": null,
+        "purpose": "OpenMAX 媒体加速实验绑定",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Khronos OpenMAX 系统实现",
+        "declared_in": [
+          "make/build-jogl.xml:50",
+          "src/jogl/native/openmax/"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "JOGL 同时依赖 JDK 内置的 AWT/Swing/JAWT，列为系统运行时能力而非独立依赖；构建还需要同级 gluegen 源码树。"
+  },
+  "native_api": {
+    "summary": "JOGL 是 Java + JNI 的图形绑定库：核心大量调用 OpenGL/EGL API；原生层通过 NativeWindow/NEWT 深度耦合 X11、Win32、macOS/iOS Cocoa、DRM/GBM 等平台窗口系统；JNI 函数密集；运行时动态加载自身 native 库与系统 GL/EGL/窗口库。",
+    "groups": [
+      {
+        "type": "opengl",
+        "category": "hardware",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "glBindFramebuffer",
+            "purpose": "绑定帧缓冲对象",
+            "count": 18,
+            "evidence": [
+              "src/jogl/classes/com/jogamp/opengl/FBObject.java:2544"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glBindTexture",
+            "purpose": "绑定纹理对象",
+            "count": 18,
+            "evidence": [
+              "src/jogl/classes/com/jogamp/opengl/util/texture/Texture.java:379"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glUseProgram",
+            "purpose": "激活 GLSL 着色器程序",
+            "count": 2,
+            "evidence": [
+              "src/jogl/classes/com/jogamp/opengl/util/glsl/ShaderProgram.java:320"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glClear",
+            "purpose": "清除颜色/深度/模板缓冲",
+            "count": 12,
+            "evidence": [
+              "src/jogl/classes/com/jogamp/opengl/GLFBODrawableImpl.java:185"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glGenBuffers",
+            "purpose": "生成 VBO/PBO 缓冲对象",
+            "count": 3,
+            "evidence": [
+              "src/jogl/classes/com/jogamp/opengl/util/awt/TextRenderer.java:1798"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glBufferData",
+            "purpose": "上传缓冲数据",
+            "count": 10,
+            "evidence": [
+              "src/jogl/classes/jogamp/opengl/util/glsl/GLSLArrayHandler.java:83"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glGetString",
+            "purpose": "查询 GL 厂商/版本/扩展字符串",
+            "count": 11,
+            "evidence": [
+              "src/jogl/classes/com/jogamp/opengl/JoglVersion.java:192"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glGetError",
+            "purpose": "获取 OpenGL 错误码",
+            "count": 39,
+            "evidence": [
+              "src/jogl/classes/com/jogamp/opengl/GLContextImpl.java:2243"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "x11",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "XOpenDisplay",
+            "purpose": "打开 X11 显示连接",
+            "count": 5,
+            "evidence": [
+              "src/nativewindow/classes/jogamp/nativewindow/x11/X11Util.java:536"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XCreateWindow",
+            "purpose": "创建 X11 窗口",
+            "count": 2,
+            "evidence": [
+              "src/newt/native/X11Window.c:917"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XMapWindow",
+            "purpose": "映射/显示窗口",
+            "count": 2,
+            "evidence": [
+              "src/newt/native/X11Window.c:959"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XSendEvent",
+            "purpose": "发送 X11 事件",
+            "count": 5,
+            "evidence": [
+              "src/newt/native/X11Window.c:591"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XInternAtom",
+            "purpose": "获取 X11 原子",
+            "count": 9,
+            "evidence": [
+              "src/nativewindow/native/x11/Xmisc.c:441"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XNextEvent",
+            "purpose": "读取 X11 事件",
+            "count": 2,
+            "evidence": [
+              "src/newt/native/X11Event.c:33"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "XRandR",
+            "purpose": "X11 RandR 显示器模式与热插拔",
+            "count": 15,
+            "evidence": [
+              "src/newt/native/X11RandR11.c:36",
+              "src/newt/native/X11RandR13.c:36"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "glXGetProcAddressARB",
+            "purpose": "X11/GLX 扩展函数地址解析",
+            "count": 1,
+            "evidence": [
+              "src/jogl/native/GLXGetProcAddressARB.c:51"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "CreateWindowEx",
+            "purpose": "创建 Windows 窗口",
+            "count": 1,
+            "evidence": [
+              "src/nativewindow/native/win32/GDImisc.c:121"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "RegisterClassEx",
+            "purpose": "注册 Windows 窗口类",
+            "count": 1,
+            "evidence": [
+              "src/nativewindow/native/win32/GDImisc.c:273"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "DefWindowProc",
+            "purpose": "默认窗口消息处理",
+            "count": 4,
+            "evidence": [
+              "src/newt/native/WindowsWindow.c:975"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "PeekMessage",
+            "purpose": "轮询 Windows 消息",
+            "count": 3,
+            "evidence": [
+              "src/newt/native/WindowsWindow.c:1680"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SetWindowPos",
+            "purpose": "调整窗口 Z 序/位置",
+            "count": 14,
+            "evidence": [
+              "src/newt/native/WindowsWindow.c:647"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "wglGetProcAddress",
+            "purpose": "Windows WGL 扩展函数地址解析",
+            "count": 1,
+            "evidence": [
+              "src/jogl/classes/jogamp/opengl/windows/wgl/WindowsWGLDynamicLibraryBundleInfo.java:53"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "macos_cocoa",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "AppKit/NSWindow",
+            "purpose": "macOS Cocoa 窗口与视图",
+            "count": 5,
+            "evidence": [
+              "src/nativewindow/native/macosx/OSXmisc.m:34",
+              "src/newt/native/MacNewtNSWindow.m:40"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "Carbon/TIS",
+            "purpose": "macOS Carbon 键盘/文本输入服务",
+            "count": 2,
+            "evidence": [
+              "src/newt/native/MacNewtNSWindow.m:41"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CoreFoundation",
+            "purpose": "macOS/iOS 核心基础类型与 RunLoop",
+            "count": 4,
+            "evidence": [
+              "src/newt/native/MacNewtNSWindow.m:40",
+              "src/newt/native/IOSNewtUIWindow.m:34"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "mach-o/dyld",
+            "purpose": "动态加载与路径查询",
+            "count": 1,
+            "evidence": [
+              "src/jogl/native/macosx/MacOSXWindowSystemInterface.m:758"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "egl",
+        "category": "platform",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "eglGetDisplay",
+            "purpose": "获取 EGL 显示连接",
+            "count": 1,
+            "evidence": [
+              "src/jogl/native/EGLContext.c:10"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "eglCreateContext",
+            "purpose": "创建 EGL 渲染上下文",
+            "count": 3,
+            "evidence": [
+              "src/jogl/native/EGLContext.c:10"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "eglSwapBuffers",
+            "purpose": "交换 EGL 前后缓冲",
+            "count": 3,
+            "evidence": [
+              "src/jogl/native/EGLContext.c:10"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "eglGetProcAddress",
+            "purpose": "EGL 扩展函数地址解析",
+            "count": 3,
+            "evidence": [
+              "src/jogl/classes/jogamp/opengl/egl/EGLDynamicLibraryBundleInfo.java:81"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "dlopen/dlsym",
+            "purpose": "运行时动态加载/符号解析",
+            "count": 4,
+            "evidence": [
+              "src/jogl/native/GLXGetProcAddressARB.c:51",
+              "src/nativewindow/native/x11/XineramaHelper.c:82,117"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "sys/time",
+            "purpose": "高精度时间/超时",
+            "count": 6,
+            "evidence": [
+              "src/nativewindow/native/NativewindowCommon.c:4",
+              "src/jogl/native/timespec.c:2"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "fcntl/open",
+            "purpose": "打开 DRM 设备等文件描述符",
+            "count": 2,
+            "evidence": [
+              "src/nativewindow/native/drm/DRMmisc.c:34",
+              "src/newt/native/drm_gbm.c:34"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "termios",
+            "purpose": "控制台输入设置（DRM/GBM 裸机模式）",
+            "count": 1,
+            "evidence": [
+              "src/newt/native/drm_gbm.c:31"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "drm_gbm",
+        "category": "system",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "gbm_create_device",
+            "purpose": "创建 GBM 设备",
+            "count": 1,
+            "evidence": [
+              "src/newt/native/drm_gbm.c:39"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "gbm_surface_create",
+            "purpose": "创建 GBM 渲染 surface",
+            "count": 1,
+            "evidence": [
+              "src/newt/native/drm_gbm.c:39"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "drmModeSetCrtc",
+            "purpose": "设置 DRM CRTC 输出",
+            "count": 1,
+            "evidence": [
+              "src/newt/native/drm_gbm_egl_test01.c:37"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "jni",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "JNIEXPORT/JNICALL native methods",
+            "purpose": "Java 与 C/C++/ObjC 原生代码互操作",
+            "count": 280,
+            "evidence": [
+              "src/newt/native/X11Window.c:818",
+              "src/newt/native/WindowsWindow.c:1671",
+              "src/jogl/native/EGLContext.c:1"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "jogl_desktop",
+        "mechanism": "JNILibLoaderBase + DynamicLibraryBundle",
+        "acquisition": "self_build",
+        "source": "本仓构建的桌面 OpenGL JNI 库",
+        "description": "JOGL 桌面 OpenGL/EGL 核心 JNI 库",
+        "optional": false,
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/DesktopGLDynamicLibraryBundleInfo.java:39",
+          "make/build-jogl.xml:1785"
+        ]
+      },
+      {
+        "name": "jogl_mobile",
+        "mechanism": "JNILibLoaderBase + DynamicLibraryBundle",
+        "acquisition": "self_build",
+        "source": "本仓构建的 OpenGL ES/EGL JNI 库",
+        "description": "JOGL OpenGL ES/EGL 核心 JNI 库",
+        "optional": false,
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/egl/EGLDynamicLibraryBundleInfo.java:54",
+          "make/build-jogl.xml:1793"
+        ]
+      },
+      {
+        "name": "jogl_cg",
+        "mechanism": "JNILibLoaderBase + DynamicLibraryBundle",
+        "acquisition": "self_build",
+        "source": "本仓构建的 NVIDIA Cg JNI 库",
+        "description": "可选 NVIDIA Cg 着色器绑定",
+        "optional": true,
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/cg/CgDynamicLibraryBundleInfo.java:60",
+          "make/build-jogl.xml:1801"
+        ]
+      },
+      {
+        "name": "jogl_ffmpegv0600/0700/0800",
+        "mechanism": "JNILibLoaderBase + DynamicLibraryBundle",
+        "acquisition": "self_build",
+        "source": "本仓构建的 FFmpeg 版本化 JNI 库",
+        "description": "可选 FFmpeg 媒体解码 JNI 库",
+        "optional": true,
+        "evidence": [
+          "make/build-jogl.xml:1763-1773"
+        ]
+      },
+      {
+        "name": "nativewindow_x11/win32/macosx/ios/drm/awt",
+        "mechanism": "NWJNILibLoader.loadNativeWindow",
+        "acquisition": "self_build",
+        "source": "本仓构建的 NativeWindow 平台后端 JNI 库",
+        "description": "NativeWindow 各平台原生后端",
+        "optional": false,
+        "evidence": [
+          "src/nativewindow/classes/jogamp/nativewindow/NWJNILibLoader.java:45",
+          "make/build-nativewindow.xml:967-1002"
+        ]
+      },
+      {
+        "name": "newt_head",
+        "mechanism": "NEWTJNILibLoader.loadNEWTHead",
+        "acquisition": "self_build",
+        "source": "本仓构建的 NEWT 主窗口系统 JNI 库",
+        "description": "NEWT 窗口工具包主原生库",
+        "optional": false,
+        "evidence": [
+          "src/newt/classes/jogamp/newt/NEWTJNILibLoader.java:59",
+          "make/build-newt.xml:1023"
+        ]
+      },
+      {
+        "name": "newt_drm",
+        "mechanism": "NEWTJNILibLoader.loadNEWTDrmGbm",
+        "acquisition": "self_build",
+        "source": "本仓构建的 NEWT DRM/GBM JNI 库",
+        "description": "NEWT DRM/GBM 无 X 后端",
+        "optional": true,
+        "evidence": [
+          "src/newt/classes/jogamp/newt/NEWTJNILibLoader.java:75",
+          "make/build-newt.xml:1014"
+        ]
+      },
+      {
+        "name": "jawt",
+        "mechanism": "JNILibLoaderBase.loadLibrary",
+        "acquisition": "system",
+        "source": "JDK 自带的 JAWT 原生库",
+        "description": "AWT 原生绘图表面访问",
+        "optional": false,
+        "evidence": [
+          "src/nativewindow/classes/jogamp/nativewindow/jawt/JAWTJNILibLoader.java:66"
+        ]
+      },
+      {
+        "name": "libGL.so.1 / OpenGL32 / libGL.dylib",
+        "mechanism": "DynamicLibraryBundle",
+        "acquisition": "system",
+        "source": "系统 GPU 驱动提供的桌面 OpenGL 库",
+        "description": "桌面 OpenGL 函数加载目标",
+        "optional": false,
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/x11/glx/X11GLXDynamicLibraryBundleInfo.java:53",
+          "src/jogl/classes/jogamp/opengl/windows/wgl/WindowsWGLDynamicLibraryBundleInfo.java:45"
+        ]
+      },
+      {
+        "name": "libEGL.so.1 / libEGL.so",
+        "mechanism": "DynamicLibraryBundle",
+        "acquisition": "system",
+        "source": "系统 EGL 实现",
+        "description": "EGL 显示与上下文接口",
+        "optional": false,
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/egl/EGLDynamicLibraryBundleInfo.java:111"
+        ]
+      },
+      {
+        "name": "libGLESv2.so.2 / libGLESv3.so.3",
+        "mechanism": "DynamicLibraryBundle",
+        "acquisition": "system",
+        "source": "系统 GLES 驱动",
+        "description": "OpenGL ES 渲染函数库",
+        "optional": true,
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/egl/EGLES2DynamicLibraryBundleInfo.java:64-83"
+        ]
+      },
+      {
+        "name": "libXinerama.so.1",
+        "mechanism": "dlopen",
+        "acquisition": "system",
+        "source": "系统 Xinerama 扩展",
+        "description": "多显示器信息查询",
+        "optional": true,
+        "evidence": [
+          "src/nativewindow/native/x11/XineramaHelper.c:82"
+        ]
+      },
+      {
+        "name": "Cg / CgGL",
+        "mechanism": "DynamicLibraryBundle",
+        "acquisition": "system",
+        "source": "NVIDIA Cg Toolkit",
+        "description": "NVIDIA Cg 着色器运行时",
+        "optional": true,
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/cg/CgDynamicLibraryBundleInfo.java:115"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要通过 GlueGen 动态加载自身 JNI 库与系统 GL/EGL/窗口库；读取 DISPLAY/WAYLAND_DISPLAY 等环境变量定位显示；通过 DRM/GBM 或 X11 打开显示设备；无网络访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "用户属性文件 ${user.home}/jogl.properties / gluegen.properties",
+        "purpose": "构建与运行时读取主机特定路径配置",
+        "evidence": [
+          "make/build-common.xml:143-147"
+        ]
+      },
+      {
+        "detail": "TempJarCache 解压 native jar 到临时目录",
+        "purpose": "运行时释放并加载 native 库",
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/GLProfile.java:227-234"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "DISPLAY",
+        "purpose": "X11 显示服务器选择",
+        "evidence": [
+          "src/nativewindow/classes/com/jogamp/nativewindow/NativeWindowFactory.java:193"
+        ]
+      },
+      {
+        "name": "WAYLAND_DISPLAY",
+        "purpose": "Wayland 显示服务器选择",
+        "evidence": [
+          "src/nativewindow/classes/com/jogamp/nativewindow/NativeWindowFactory.java:202"
+        ]
+      },
+      {
+        "name": "sun.java2d.opengl",
+        "purpose": "启用 Java2D OpenGL 流水线",
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/awt/Java2D.java:138"
+        ]
+      },
+      {
+        "name": "NVAPSDK",
+        "purpose": "NVIDIA API SDK 路径",
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/util/glsl/sdk/CompileShaderNVidia.java:16"
+        ]
+      },
+      {
+        "name": "jogl.disable.opengldesktop/opengles/openglcore/openglarbcontext",
+        "purpose": "关闭特定 OpenGL profile",
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/GLProfile.java:157-161"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "GPU /dev/dri/card* (DRM/GBM 后端)",
+        "purpose": "无 X11 时直接打开 DRM 设备创建 EGL 显示",
+        "evidence": [
+          "src/newt/native/drm_gbm.c:34",
+          "src/nativewindow/native/drm/DRMmisc.c:34"
+        ]
+      },
+      {
+        "detail": "OpenGL/GLES GPU 渲染上下文",
+        "purpose": "通过 GLX/WGL/CGL/EGL 创建硬件渲染上下文",
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/x11/glx/X11GLXDynamicLibraryBundleInfo.java:53",
+          "src/jogl/classes/jogamp/opengl/egl/EGLDynamicLibraryBundleInfo.java:100"
+        ]
+      }
+    ],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Java 8+（build 脚本 target.sourcelevel 由 GlueGen 环境导入；源码使用 java.util.stream）",
+    "runtime_version": "JRE/JDK 8+；README 提及支持 Java 11",
+    "build_system": "Apache Ant 1.8+，配合 GlueGen 代码生成、cpptasks 原生编译",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "Windows",
+        "arch": "x86_64/x86/aarch64",
+        "evidence": [
+          "src/newt/native/WindowsWindow.c",
+          "make/nativewindow.compiler.xml"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "x86_64/x86/arm64/armv6",
+        "evidence": [
+          "src/newt/native/X11Window.c",
+          "make/jogl.compiler.xml"
+        ]
+      },
+      {
+        "os": "macOS",
+        "arch": "x86_64/aarch64",
+        "evidence": [
+          "src/newt/native/MacNewtNSWindow.m",
+          "src/nativewindow/native/macosx/OSXmisc.m"
+        ]
+      },
+      {
+        "os": "Android",
+        "arch": "various",
+        "evidence": [
+          "make/build-common.xml",
+          "make/resources/android/AndroidManifest-jogl.xml"
+        ]
+      },
+      {
+        "os": "iOS",
+        "arch": "arm64",
+        "evidence": [
+          "src/newt/native/IOSWindow.m",
+          "src/nativewindow/native/ios/IOSmisc.m"
+        ]
+      },
+      {
+        "os": "FreeBSD",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md:2025-08-27 FreeBSD support"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "按模块生成多个 JAR（atomic jar + natives jar），最终可打包为 jogl-all.jar / jogl-fat.jar 与 7z 发行包；库形态，无独立启动器。",
+    "notes": "构建依赖同级目录的 gluegen（必须）与可选的 joal 源码树，或从 Maven 仓库获取；Android/iOS 变体需要对应 SDK。"
+  },
+  "capability_profile": {
+    "summary": "JOGL 是典型的 3D 图形/窗口集成库：核心触及 OpenGL/OpenGL ES/EGL（3D 渲染），并深度集成 AWT/Swing/SWT/JavaFX/NEWT（GUI/窗口栈）；可选 FFmpeg/JOAL 媒体路径；可选 OculusVR 等特定硬件。鸿蒙 PC 上 3D 栈仅部分可用，桌面 GUI 与窗口管理器状态未知。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": true,
+        "kind": [
+          "awt",
+          "swing",
+          "swt",
+          "javafx",
+          "newt",
+          "x11",
+          "win32",
+          "cocoa"
+        ],
+        "via": [
+          "AWT",
+          "Swing",
+          "SWT",
+          "OpenJFX",
+          "NEWT"
+        ],
+        "harmony_status": "unknown",
+        "adaptation": "AWT/Swing/SWT/JavaFX 可用性依赖鸿蒙 JDK headful 支持；NEWT 需移植到鸿蒙显示后端或保留 X11（libX11 已鸿蒙化，但 X 窗口服务器存在性未知）",
+        "evidence": [
+          "make/build-common.xml:313-319",
+          "src/jogl/classes/com/jogamp/opengl/awt/GLCanvas.java",
+          "src/newt/classes/com/jogamp/newt/Window.java"
+        ]
+      },
+      {
+        "key": "rendering_3d",
+        "present": true,
+        "kind": [
+          "opengl",
+          "opengl_es",
+          "egl"
+        ],
+        "via": [
+          "libGL",
+          "OpenGL32",
+          "libEGL",
+          "libGLESv2",
+          "jogl_desktop",
+          "jogl_mobile"
+        ],
+        "harmony_status": "partial",
+        "adaptation": "桌面 OpenGL 完整覆盖度未知，OpenGL ES/EGL 部分可用；可优先走 GLES/EGL 路径，必要时用 ArkGraphics 3D 重写高端功能",
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/x11/glx/X11GLXDynamicLibraryBundleInfo.java:53",
+          "src/jogl/classes/jogamp/opengl/egl/EGLDynamicLibraryBundleInfo.java:100",
+          "src/jogl/native/EGLContext.c:10"
+        ]
+      },
+      {
+        "key": "media",
+        "present": true,
+        "kind": [
+          "video_decode",
+          "audio_playback",
+          "ffmpeg",
+          "openal"
+        ],
+        "via": [
+          "FFmpeg",
+          "JOAL/OpenAL"
+        ],
+        "harmony_status": "partial",
+        "adaptation": "FFmpeg/OpenAL 未鸿蒙化；可选媒体功能可改走 @ohos.multimedia，工作量较大",
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/util/av/impl/FFMPEGDynamicLibraryBundleInfo.java:417",
+          "make/build-common.xml:535-538"
+        ]
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（Java 库跑在已移植 JDK 17/8 运行时上；原生 JNI 库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
+    "effort": {
+      "person_days": [
+        25,
+        55
+      ]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [
+      {
+        "id": "ua:wgl",
+        "api": "wglGetProcAddress / WGL 上下文",
+        "public_entry": "jogamp.opengl.windows.wgl.WGL",
+        "reason": "Windows WGL 是 Win32 平台专有 OpenGL 上下文接口，鸿蒙无对应实现",
+        "blocking_native_api": "wglGetProcAddress",
+        "category": "platform",
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/windows/wgl/WindowsWGLDynamicLibraryBundleInfo.java:53"
+        ],
+        "caused_by": [
+          "ta:win32"
+        ]
+      },
+      {
+        "id": "ua:cgl",
+        "api": "CGL (macOS OpenGL framework)",
+        "public_entry": "jogamp.opengl.macosx.cgl.CGL",
+        "reason": "macOS CGL 与 CoreGraphics 是 Apple 平台专有，鸿蒙无等价",
+        "blocking_native_api": "CGLChoosePixelFormat",
+        "category": "platform",
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/macosx/cgl/MacOSXCGLDynamicLibraryBundleInfo.java:46"
+        ],
+        "caused_by": [
+          "ta:macos"
+        ]
+      },
+      {
+        "id": "ua:gbm",
+        "api": "gbm_create_device / gbm_surface_create",
+        "public_entry": "jogamp.newt.driver.egl.gbm.WindowDriver",
+        "reason": "GBM 为 Linux DRM 显示后端，鸿蒙非 Linux ABI 且 libgbm 未鸿蒙化",
+        "blocking_native_api": "gbm_create_device",
+        "category": "system",
+        "evidence": [
+          "src/newt/native/drm_gbm.c:39",
+          "src/newt/native/drm_gbm_egl_test01.c:39"
+        ],
+        "caused_by": [
+          "ta:drm_gbm"
+        ]
+      },
+      {
+        "id": "ua:cuda_cg",
+        "api": "NVIDIA Cg runtime (cgCreateContext / cgGLLoadProgram)",
+        "public_entry": "com.jogamp.opengl.cg.Cg",
+        "reason": "NVIDIA Cg 为专有运行时，鸿蒙无移植",
+        "blocking_native_api": "cgCreateContext",
+        "category": "hardware",
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/cg/CgDynamicLibraryBundleInfo.java:115"
+        ],
+        "caused_by": [
+          "ta:cuda_cg"
+        ]
+      },
+      {
+        "id": "ua:oculusvr",
+        "api": "Oculus VR LibOVR",
+        "public_entry": "com.jogamp.oculusvr.*",
+        "reason": "Oculus Rift 为特定 VR 硬件，鸿蒙无对应驱动与 SDK",
+        "blocking_native_api": "OVR_CAPI 函数",
+        "category": "hardware",
+        "evidence": [
+          "make/build-common.xml:267-279",
+          ".gitmodules"
+        ],
+        "caused_by": [
+          "ta:oculusvr"
+        ]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:java",
+        "capability": "Java JDK 运行时",
+        "required": true,
+        "target_status": "available",
+        "impact": "核心 Java 代码可直接运行",
+        "source": "harmony-pc-capabilities.json#runtimes.java_jdk"
+      },
+      {
+        "id": "ta:opengl",
+        "capability": "OpenGL / OpenGL ES 图形栈",
+        "required": true,
+        "target_status": "partial",
+        "impact": "核心渲染功能依赖；桌面 OpenGL 完整度受限，需优先使用 GLES/EGL",
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+      },
+      {
+        "id": "ta:egl",
+        "capability": "EGL 显示/上下文接口",
+        "required": true,
+        "target_status": "partial",
+        "impact": "GLES/EGL 后端依赖",
+        "source": "harmony-pc-capabilities.json#graphics_3d.egl"
+      },
+      {
+        "id": "ta:desktop_wm",
+        "capability": "桌面窗口管理器 / X11/Wayland 显示服务器",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "NEWT/AWT/Swing/SWT 窗口集成需要底层显示后端；若鸿蒙 PC 无 X 服务器则 X11 后端无法运行",
+        "source": "harmony-pc-capabilities.json#gui.wm"
+      },
+      {
+        "id": "ta:headful_awt",
+        "capability": "headful AWT/Swing",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "AWT/Swing 集成依赖 headful JDK；如不可用可禁用该集成",
+        "source": "harmony-pc-capabilities.json#gui.awt_headful"
+      },
+      {
+        "id": "ta:swt",
+        "capability": "SWT",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "SWT 集成为可选，可禁用",
+        "source": "harmony-pc-capabilities.json#gui.swt"
+      },
+      {
+        "id": "ta:javafx",
+        "capability": "JavaFX",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "JavaFX 集成为可选，可禁用",
+        "source": "harmony-pc-capabilities.json#gui.javafx"
+      },
+      {
+        "id": "ta:drm_gbm",
+        "capability": "DRM/GBM 无 X 显示后端",
+        "required": false,
+        "target_status": "partial",
+        "impact": "Linux DRM/GBM 后端依赖 libgbm，鸿蒙上不可直接复用",
+        "source": "native_api drm_gbm group"
+      },
+      {
+        "id": "ta:ffmpeg",
+        "capability": "FFmpeg 媒体库",
+        "required": false,
+        "target_status": "available",
+        "impact": "可选视频播放功能；OpenHarmony PC cmd-pkgs 已提供预编译包，可降低移植成本（仍需验证版本 ABI 匹配）",
+        "source": "scripts/harmony_adapted.js"
+      },
+      {
+        "id": "ta:joal_openal",
+        "capability": "OpenAL 音频后端",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "可选 JOAL 音频功能",
+        "source": "harmony-pc-capabilities.json#media.audio_io"
+      },
+      {
+        "id": "ta:cuda_cg",
+        "capability": "NVIDIA Cg 运行时",
+        "required": false,
+        "target_status": "unavailable",
+        "impact": "可选 Cg 着色器功能不可移植，可裁剪",
+        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+      },
+      {
+        "id": "ta:oculusvr",
+        "capability": "Oculus VR SDK/LibOVR",
+        "required": false,
+        "target_status": "unavailable",
+        "impact": "可选 VR 功能依赖特定硬件，可裁剪",
+        "source": "make/build-common.xml"
+      },
+      {
+        "id": "ta:win32",
+        "capability": "Win32 窗口/GDI/WGL",
+        "required": false,
+        "target_status": "unavailable",
+        "impact": "Windows 后端代码在鸿蒙上不可用；构建时排除即可",
+        "source": "native_api win32 group"
+      },
+      {
+        "id": "ta:macos",
+        "capability": "macOS Cocoa/CGL",
+        "required": false,
+        "target_status": "unavailable",
+        "impact": "macOS 后端代码在鸿蒙上不可用；构建时排除即可",
+        "source": "native_api macos_cocoa group"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "recompile_and_add_ohos_backend",
+    "summary": "JOGL 主体是 Java 库，在鸿蒙已移植 JDK 上可跑；但必须用 OHOS NDK 重编全部 JNI 原生库（jogl_desktop/mobile、nativewindow_*、newt_*）。核心图形路径可优先采用 OpenGL ES/EGL 后端以匹配鸿蒙 3D 栈；桌面 OpenGL、Win32、macOS、X11（若鸿蒙无 X 服务器）、GBM、Cg、OculusVR 等平台相关或可选功能无法直接移植，需要裁剪或重写；FFmpeg 已在 OpenHarmony PC 提供预编译包，可降低媒体路径成本。整体判定为部分可适配。",
+    "blockers": [
+      {
+        "id": "bk:opengl_egl_partial",
+        "issue": "核心图形栈 OpenGL/EGL 在鸿蒙上仅部分可用，桌面 OpenGL 完整度未知",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "opengl_egl_partial",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "优先启用 GLES/EGL 后端；桌面 GL 特性做条件降级或映射到 ArkGraphics 3D",
+        "caused_by": [
+          "ta:opengl",
+          "ta:egl"
+        ],
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/egl/EGLDynamicLibraryBundleInfo.java:100",
+          "src/jogl/classes/jogamp/opengl/x11/glx/X11GLXDynamicLibraryBundleInfo.java:53"
+        ]
+      },
+      {
+        "id": "bk:desktop_window_unknown",
+        "issue": "桌面窗口管理器 / X11/Wayland 存在性未知，NEWT/AWT/Swing/SWT 集成能否运行不确定",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "desktop_window_unknown",
+        "source_dimension": "capability_profile",
+        "harmony_status": "unknown",
+        "remediation": "若鸿蒙提供桌面窗口环境则重编译对应后端；否则为 NEWT/NativeWindow 新增 ArkUI/原生窗口后端",
+        "caused_by": [
+          "ta:desktop_wm"
+        ],
+        "evidence": [
+          "src/nativewindow/classes/com/jogamp/nativewindow/NativeWindowFactory.java:193",
+          "src/newt/classes/com/jogamp/newt/Window.java"
+        ]
+      },
+      {
+        "id": "bk:gbm_unavailable",
+        "issue": "DRM/GBM 无 X 后端依赖 libgbm，鸿蒙未提供",
+        "severity": "major",
+        "adaptability": "unadaptable",
+        "category": "drm_gbm",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "裁剪或禁用 GBM 后端；鸿蒙上使用 ArkUI/窗口系统提供的 surface",
+        "caused_by": [
+          "ta:drm_gbm"
+        ],
+        "manifests_as": [
+          "ua:gbm"
+        ],
+        "evidence": [
+          "src/newt/native/drm_gbm.c:39",
+          "src/newt/native/drm_gbm_egl_test01.c:39"
+        ]
+      },
+      {
+        "id": "bk:cg_unavailable",
+        "issue": "NVIDIA Cg 可选模块依赖专有运行时，鸿蒙无等价",
+        "severity": "major",
+        "adaptability": "unadaptable",
+        "category": "proprietary_runtime",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "编译时关闭 Cg（setup.addNativeNVidiaCG=false）",
+        "caused_by": [
+          "ta:cuda_cg"
+        ],
+        "manifests_as": [
+          "ua:cuda_cg"
+        ],
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/cg/CgDynamicLibraryBundleInfo.java:115",
+          "make/build-jogl.xml:76"
+        ]
+      },
+      {
+        "id": "bk:oculusvr_unavailable",
+        "issue": "OculusVR 可选模块依赖特定 VR 硬件与 LibOVR",
+        "severity": "major",
+        "adaptability": "unadaptable",
+        "category": "vr_hardware",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "不启用 oculusvr-sdk 子模块",
+        "caused_by": [
+          "ta:oculusvr"
+        ],
+        "manifests_as": [
+          "ua:oculusvr"
+        ],
+        "evidence": [
+          ".gitmodules",
+          "make/build-common.xml:267-279"
+        ]
+      },
+      {
+        "id": "bk:joal_unknown",
+        "issue": "JOAL/OpenAL 音频绑定可用性未知",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "audio_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "移植 OpenAL-soft 到 OHOS 或改用 @ohos.multimedia.audio",
+        "caused_by": [
+          "ta:joal_openal"
+        ],
+        "evidence": [
+          "make/build-common.xml:535-538"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "Java 层核心（OpenGL 接口生成、GLProfile、GLContext、GraphUI 算法）",
+        "note": "可在鸿蒙 JDK 直接运行",
+        "evidence": [
+          "src/jogl/classes/com/jogamp/opengl/GLProfile.java",
+          "src/graphui/classes/com/jogamp/graph/"
+        ]
+      },
+      {
+        "aspect": "OpenGL ES / EGL 后端",
+        "note": "与鸿蒙 3D 栈方向最接近，可优先启用",
+        "evidence": [
+          "src/jogl/classes/jogamp/opengl/egl/EGLDynamicLibraryBundleInfo.java"
+        ]
+      },
+      {
+        "aspect": "FFmpeg 预编译包",
+        "note": "OpenHarmony PC cmd-pkgs 已包含 FFmpeg，可选视频播放路径可直接链接或参考",
+        "evidence": [
+          "scripts/harmony_adapted.js"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "用 OHOS NDK 重编全部自研 JNI 库（jogl_desktop/mobile、nativewindow_*、newt_*）为 arm64/x86_64 .so",
+      "实现或启用鸿蒙显示后端（EGL + ArkUI/NativeWindow），替代/补充 X11/Win32/macOS 后端",
+      "验证并优先使用 OpenGL ES/EGL 路径，对桌面 OpenGL 独占特性做条件编译降级",
+      "关闭或裁剪 NVIDIA Cg、OculusVR、GBM 等不可移植模块",
+      "若需媒体功能，优先使用 OpenHarmony PC 预编译 FFmpeg 包并验证 ABI 版本匹配，必要时再迁移到 @ohos.multimedia",
+      "更新 Ant 构建脚本与 native jar 打包逻辑以支持 ohos 平台"
+    ],
+    "notes": "存在多个 unknown 目标假设（桌面窗口/GUI/FFmpeg/OpenAL），置信度为 medium；若鸿蒙 PC 不支持桌面应用形态或 headful JDK，则需整体改为 ArkTS/ArkUI 方案，结论将大幅收紧。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [
+      "未检测到 System.loadLibrary 直接调用；JNI 库通过 GlueGen JNILibLoaderBase/DynamicLibraryBundle 动态加载，库名推断自 DynamicLibraryBundleInfo 与编译脚本",
+      "metrics.json 将 src/demos 全部归为 example；JOGL 的 demos 目录确实为示例代码，已排除在平台 API/依赖结论外",
+      "gluegen/joal 源码树未随本次 checkout 提供，依赖信息来自构建脚本与 Maven stub"
+    ],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "sibling_source_build",
+        "rationale": "gluegen/joal 不是通过包管理器安装，而是期望与 jogl 同级的源码树或 Maven 快照；现有推荐 acquisition 值没有精确描述这种“兄弟源码构建”方式"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "egl",
+        "rationale": "EGL 是 Khronos 跨平台显示接口，但在鸿蒙评估中更接近 platform，因为它依赖底层显示系统与窗口表面"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "key",
+        "kind": "new_value",
+        "value": "vr_hardware",
+        "rationale": "可选 OculusVR 模块属于特定硬件场景，但可裁剪；未单独设 present 场景，仅在 summary 中说明"
+      }
+    ]
+  }
+}

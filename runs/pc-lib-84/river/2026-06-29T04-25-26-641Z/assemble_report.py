@@ -1,0 +1,836 @@
+#!/usr/bin/env python3
+"""Assemble the pc-lib-analyzer report for river."""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+RUN_DIR = Path(__file__).parent
+REPO_DIR = Path("/Users/yt/task/pc-lib-analysis/repos/pc-lib-84/river")
+
+with open(RUN_DIR / "metrics.json", "r", encoding="utf-8") as f:
+    metrics = json.load(f)
+
+report = {
+    "library": {
+        "name": "river",
+        "kind": "library",
+        "package_name": "river",
+        "aliases": [],
+        "import_names": ["river"],
+        "source_url": "https://github.com/online-ml/river/",
+        "analyzed_at": "2026-06-29T04:25:26.641Z",
+        "commit": "6ec4de7913c53f8de3352fdb1d4e6fa94b4f30ce",
+        "one_liner": "面向流数据的 Python 在线机器学习库",
+        "ecosystem": "python",
+        "bindings": []
+    },
+    "function_summary": {
+        "summary": "River 是一个 Python 在线（增量）机器学习库，面向无法一次性载入内存或持续到达的流式数据。它提供与 scikit-learn 风格相近的 learn_one/predict_one 接口，覆盖分类、回归、聚类、漂移检测、推荐、时间序列、多臂老虎机与主动学习等任务，并内置数据流工具、数据集和模型验证工具。",
+        "categories": [
+            {
+                "name": "在线监督学习",
+                "description": "提供可逐样本更新的分类、回归与排序模型，包括线性模型、决策树/Hoeffding 树、随机森林、朴素贝叶斯、最近邻、推荐系统、分解机、多分类/多输出包装器以及 Bagging/Boosting/Stacking 集成。",
+                "evidence": [
+                    "river/linear_model/",
+                    "river/tree/",
+                    "river/forest/",
+                    "river/naive_bayes/",
+                    "river/neighbors/",
+                    "river/reco/",
+                    "river/facto/",
+                    "river/ensemble/"
+                ]
+            },
+            {
+                "name": "在线无监督学习与异常检测",
+                "description": "提供聚类、异常检测、特征提取与特征选择等无监督/半监督能力，支持流式统计摘要。",
+                "evidence": [
+                    "river/cluster/",
+                    "river/anomaly/",
+                    "river/feature_extraction/",
+                    "river/feature_selection/"
+                ]
+            },
+            {
+                "name": "概念漂移检测",
+                "description": "集成 ADWIN、KSWIN、Page-Hinkley、DDM 等在线概念漂移检测器，用于监控数据分布变化。",
+                "evidence": ["river/drift/"]
+            },
+            {
+                "name": "数据流处理与特征工程",
+                "description": "提供 CSV/ARFF/DataFrame 迭代器、流水线组合、预处理（缩放、编码、缺失值填充）、缓存与 shuffle 等数据流工具。",
+                "evidence": [
+                    "river/stream/",
+                    "river/compose/",
+                    "river/preprocessing/"
+                ]
+            },
+            {
+                "name": "在线评估与统计",
+                "description": "提供分类/回归/聚类指标、在线统计量、概率分布、渐进验证与模型选择工具。",
+                "evidence": [
+                    "river/metrics/",
+                    "river/stats/",
+                    "river/proba/",
+                    "river/evaluate/",
+                    "river/model_selection/"
+                ]
+            },
+            {
+                "name": "内置数据集与生态兼容",
+                "description": "内置可下载数据集（含远程下载）及与 scikit-learn、SQLAlchemy、pandas、polars、vaex 等数据生态的互操作层。",
+                "evidence": [
+                    "river/datasets/",
+                    "river/compat/"
+                ]
+            },
+            {
+                "name": "强化学习与主动学习",
+                "description": "提供多臂老虎机环境/策略（依赖 gymnasium）以及主动学习查询策略。",
+                "evidence": [
+                    "river/bandit/",
+                    "river/active/"
+                ]
+            }
+        ],
+        "domain": "机器学习 / 数据科学",
+        "target_users": "Python 数据科学家、机器学习工程师与研究者"
+    },
+    "languages": metrics["languages"],
+    "code_metrics": metrics["code_metrics"],
+    "tests": {
+        **metrics["tests"],
+        "notes": "基于 pytest 与 doctest，测试框架识别为 pytest/unittest；计数来自正则匹配，为近似值。"
+    },
+    "license": {
+        "spdx": "BSD-3-Clause",
+        "name": "BSD 3-Clause License",
+        "confidence": "high",
+        "is_dual_licensed": False,
+        "license_files": ["LICENSE"],
+        "evidence": "pyproject.toml 声明 license = \"BSD-3-Clause\"；LICENSE 文件与标准 BSD-3-Clause 文本一致。",
+        "notes": "宽松许可，需保留版权声明。"
+    },
+    "dependencies": {
+        "count": 0,
+        "manifests": ["pyproject.toml", "Cargo.toml"],
+        "by_ecosystem": {},
+        "dependencies": [],
+        "notes": "pyproject.toml 的 dependency-groups.dev 中部分包（polars/gymnasium/graphviz）实际被生产代码使用，但未进入 runtime/optional 依赖声明；另有 requests/vaex 完全未在 manifest 中声明。"
+    },
+    "native_api": {
+        "summary": "纯 Python 库，主要使用 Python 标准库进行数值/集合/文件/网络操作；另有一个通过 PyO3 构建的 Rust 原生扩展 river._river_rust。没有 Win32/POSIX 专有 API 调用，也没有 GUI/3D/媒体/硬件访问。",
+        "groups": [
+            {
+                "type": "python_stdlib",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "math", "purpose": "数学函数", "count": 94, "evidence": ["river/utils/math.py:11"]},
+                    {"name": "random", "purpose": "随机数与抽样", "count": 89, "evidence": ["river/tree/splitter/random_splitter.py:4"]},
+                    {"name": "itertools", "purpose": "迭代器工具", "count": 29, "evidence": ["river/stream/shuffling.py:3"]},
+                    {"name": "collections", "purpose": "容器数据类型", "count": 94, "evidence": ["river/tree/utils.py:3"]},
+                    {"name": "functools", "purpose": "高阶函数与缓存", "count": 41, "evidence": ["river/utils/pandas.py:3"]},
+                    {"name": "copy", "purpose": "对象深/浅拷贝", "count": 31, "evidence": ["river/tree/utils.py:4"]},
+                    {"name": "re", "purpose": "正则表达式", "count": 13, "evidence": ["river/datasets/base.py:8"]},
+                    {"name": "typing", "purpose": "类型注解支持", "count": 83, "evidence": ["river/base/typing.py:1"]},
+                    {"name": "dataclasses", "purpose": "数据类定义", "count": 4, "evidence": ["river/stream/twitch_chat_stream.py:3"]},
+                    {"name": "enum", "purpose": "枚举类型", "count": 1, "evidence": ["river/stream/twitch_chat_stream.py:5"]},
+                    {"name": "inspect", "purpose": "运行时内省", "count": 11, "evidence": ["river/datasets/base.py:4"]},
+                    {"name": "abc", "purpose": "抽象基类", "count": 39, "evidence": ["river/datasets/base.py:3"]},
+                    {"name": "warnings", "purpose": "警告控制", "count": 6, "evidence": ["river/time_series/__init__.py:5"]},
+                    {"name": "statistics", "purpose": "统计函数", "count": 7, "evidence": ["river/tree/hoeffding_tree_regressor.py:4"]},
+                    {"name": "json", "purpose": "JSON 序列化", "count": 1, "evidence": ["river/stream/tweet_stream.py:3"]},
+                    {"name": "pickle", "purpose": "二进制对象序列化（stream.Cache）", "count": 2, "evidence": ["river/stream/cache.py:6"]}
+                ],
+                "evidence": ["river/ 各生产模块大量导入标准库"]
+            },
+            {
+                "type": "python_filesystem",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "os.path / os.makedirs / os.path.expanduser", "purpose": "路径拼接、创建数据目录、展开用户主目录", "count": 8, "evidence": ["river/datasets/base.py:29-32"]},
+                    {"name": "pathlib.Path", "purpose": "面向对象路径处理", "count": 4, "evidence": ["river/datasets/base.py:217"]},
+                    {"name": "glob.glob", "purpose": "枚举缓存文件", "count": 1, "evidence": ["river/stream/cache.py:96"]},
+                    {"name": "shutil.copyfileobj", "purpose": "复制远程下载内容到本地文件", "count": 2, "evidence": ["river/datasets/base.py:288"]},
+                    {"name": "zipfile.ZipFile", "purpose": "解压 zip 数据集归档", "count": 3, "evidence": ["river/datasets/base.py:297"]},
+                    {"name": "tarfile.open", "purpose": "解压 tar/gz 数据集归档", "count": 1, "evidence": ["river/datasets/base.py:302"]}
+                ]
+            },
+            {
+                "type": "python_network",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "urllib.request.urlopen", "purpose": "下载远程数据集", "count": 2, "evidence": ["river/datasets/base.py:275"]},
+                    {"name": "requests.request", "purpose": "Twitter API v2 调用", "count": 1, "evidence": ["river/stream/tweet_stream.py:99"]},
+                    {"name": "socket.socket", "purpose": "Twitch IRC 连接", "count": 1, "evidence": ["river/stream/twitch_chat_stream.py:159"]}
+                ]
+            },
+            {
+                "type": "python_environment",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "os.environ.get", "purpose": "读取 RIVER_DATA 数据主目录", "count": 2, "evidence": ["river/datasets/base.py:29"]}
+                ]
+            },
+            {
+                "type": "python_platform_detection",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "platform.system", "purpose": "判断操作系统以选择默认缓存目录", "count": 1, "evidence": ["river/stream/cache.py:82"]}
+                ]
+            },
+            {
+                "type": "pyo3_ffi",
+                "category": "ffi",
+                "platform": "portable",
+                "apis": [
+                    {"name": "pyo3::ffi::PyObject", "purpose": "直接操作 CPython 对象指针", "count": 20, "evidence": ["rust_src/vectordict.rs:768"]},
+                    {"name": "pyo3::types::PyBytes", "purpose": "Rust 侧构造 Python bytes 对象", "count": 6, "evidence": ["rust_src/pyo3_bindings.rs:55"]},
+                    {"name": "pyo3::types::PyDict", "purpose": "与 Python dict 交互", "count": 2, "evidence": ["rust_src/pyo3_bindings.rs:3"]},
+                    {"name": "pyo3::prelude::PyResult", "purpose": "Rust-Python 互操作结果类型", "count": 50, "evidence": ["rust_src/vectordict.rs:90"]}
+                ],
+                "evidence": ["rust_src/pyo3_bindings.rs", "rust_src/vectordict.rs"]
+            }
+        ],
+        "dynamic_libraries": [
+            {
+                "name": "river._river_rust",
+                "mechanism": "python_extension_module",
+                "acquisition": "self_build",
+                "source": "本仓 rust_src/ 经 maturin/PyO3 构建的 Python 原生扩展",
+                "description": "封装 Rust 在线统计、VectorDict、Mondrian 树等高性能实现，安装时随 wheel 一起编译发布",
+                "optional": False,
+                "evidence": [
+                    "river/stats/skew.py:4",
+                    "river/utils/vectordict.py:3",
+                    "river/tree/mondrian/mondrian_tree_classifier.py:4",
+                    "river/drift/adwin.py:3"
+                ]
+            }
+        ],
+        "platform_dependence": "cross-platform"
+    },
+    "runtime_surface": {
+        "summary": "运行期主要依赖宿主文件系统存放数据集与缓存，使用标准网络库访问远程数据集和 Twitter/Twitch；无子进程、无硬件访问。",
+        "network": [
+            {
+                "detail": "urllib.request.urlopen 下载远程数据集",
+                "purpose": "RemoteDataset 在首次迭代时自动下载数据集",
+                "evidence": ["river/datasets/base.py:275"]
+            },
+            {
+                "detail": "requests.request 访问 Twitter API v2",
+                "purpose": "TwitterLiveStream 获取实时推文流",
+                "evidence": ["river/stream/tweet_stream.py:99"]
+            },
+            {
+                "detail": "socket.socket 连接 Twitch IRC",
+                "purpose": "TwitchChatStream 接收频道聊天消息",
+                "evidence": ["river/stream/twitch_chat_stream.py:159"]
+            }
+        ],
+        "filesystem": [
+            {
+                "detail": "$RIVER_DATA 或 ~/.river_data 数据目录",
+                "purpose": "存放远程下载的数据集",
+                "evidence": ["river/datasets/base.py:29-32"]
+            },
+            {
+                "detail": "/tmp (Linux/macOS) 或 C:\\TEMP (Windows) 缓存目录",
+                "purpose": "stream.Cache 默认 pickle 缓存路径",
+                "evidence": ["river/stream/cache.py:82-92"]
+            },
+            {
+                "detail": "river/datasets/ 内置 CSV/GZ/ZIP 数据文件",
+                "purpose": "FileDataset 加载随包数据",
+                "evidence": ["river/datasets/base.py:218"]
+            },
+            {
+                "detail": "下载的 zip/tar/gz 归档临时文件",
+                "purpose": "RemoteDataset 下载后解压并删除归档",
+                "evidence": ["river/datasets/base.py:287-310"]
+            }
+        ],
+        "env_vars": [
+            {
+                "name": "RIVER_DATA",
+                "purpose": "指定远程数据集存储根目录",
+                "evidence": ["river/datasets/base.py:29"]
+            }
+        ],
+        "subprocess": [],
+        "devices": [],
+        "services": []
+    },
+    "build_env": {
+        "language_standard": "Python >=3.11; Rust edition 2021",
+        "runtime_version": "Python >=3.11",
+        "build_system": "maturin (Python build-backend) + Cargo (Rust)",
+        "compiler_extensions": [
+            {
+                "detail": "Rust release profile 启用 thin LTO 与 codegen-units=1",
+                "purpose": "优化 Rust 扩展体积与性能",
+                "evidence": ["Cargo.toml:38-39"]
+            },
+            {
+                "detail": "cibuildwheel 配置 macOS 最低部署目标 10.13",
+                "purpose": "macOS wheel 兼容性",
+                "evidence": ["pyproject.toml:105"]
+            }
+        ],
+        "platforms": [
+            {"os": "linux", "arch": "x86_64", "evidence": [".github/workflows/pypi.yml:30"]},
+            {"os": "linux", "arch": "aarch64", "evidence": [".github/workflows/pypi.yml:30"]},
+            {"os": "linux", "arch": "ppc64le", "evidence": [".github/workflows/pypi.yml:30"]},
+            {"os": "macos", "arch": "universal2 (x86_64 + arm64)", "evidence": [".github/workflows/pypi.yml:52"]},
+            {"os": "windows", "arch": "x86_64", "evidence": [".github/workflows/pypi.yml:74"]},
+            {"os": "linux", "arch": "musllinux (alpine)", "evidence": [".github/workflows/pypi.yml:15"]}
+        ],
+        "entry_points": [],
+        "packaging": "PyPI wheel/sdist，通过 maturin 构建含 Rust 扩展的跨平台 wheel；官方为 Linux/macOS/Windows 提供预编译 wheel，不捆绑 Python 运行时。",
+        "notes": "Rust toolchain 在 rust-toolchain.toml 中指定为 stable；CI 通过 cibuildwheel 构建多平台 wheel，并在 Linux 使用 QEMU 交叉编译。"
+    },
+    "capability_profile": {
+        "summary": "纯计算型 Python 机器学习库，不触及 GUI、3D 渲染、媒体编解码或特定硬件；额外场景是网络访问（远程数据集、Twitter/Twitch 实时流）。",
+        "scenarios": [
+            {"key": "gui", "present": False},
+            {"key": "rendering_3d", "present": False},
+            {"key": "media", "present": False},
+            {"key": "hardware", "present": False},
+            {
+                "key": "network",
+                "present": True,
+                "kind": ["http_client", "socket"],
+                "via": ["requests", "urllib.request", "socket"],
+                "harmony_status": "unknown",
+                "adaptation": "需申请 ohos.permission.INTERNET（鸿蒙 PC 权限模型待核实）",
+                "evidence": [
+                    "river/stream/tweet_stream.py:99",
+                    "river/stream/twitch_chat_stream.py:159",
+                    "river/datasets/base.py:275"
+                ]
+            }
+        ]
+    },
+    "harmony_adaptation": {
+        "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；Rust 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+        "porting_class": "recompile_only",
+        "feasibility": "feasible_with_effort",
+        "effort": {"person_days": [3, 8]},
+        "confidence": "medium",
+        "recommended_path": "run_on_ported_runtime",
+        "summary": "River 主体为纯 Python，可直接运行在鸿蒙已移植 Python 上；唯一原生工作是使用 OHOS NDK 交叉编译 PyO3 Rust 扩展 river._river_rust。numpy、scipy、pandas、scikit-learn、sqlalchemy 等核心依赖已有鸿蒙 PyPI wheel， narwhals/requests 为纯 Python 可随运行时分发。需补充 stream.Cache 对 HarmonyOS 的默认目录回退，并核实网络权限模型。",
+        "blockers": [
+            {
+                "id": "bk:cache_platform_fallback",
+                "issue": "stream.Cache 默认缓存目录仅识别 Linux/Darwin/Windows，当 platform.system() 返回其他值时会直接报错",
+                "severity": "minor",
+                "adaptability": "partial",
+                "category": "platform_branch_gap",
+                "source_dimension": "native_api",
+                "harmony_status": "partial",
+                "remediation": "在 river/stream/cache.py 的 system 映射中增加 HarmonyOS 默认目录（如 /tmp）回退，或要求用户显式传入 directory 参数",
+                "evidence": ["river/stream/cache.py:82-90"]
+            }
+        ],
+        "unadaptable_apis": [],
+        "target_assumptions": [
+            {
+                "id": "ta:python_runtime",
+                "capability": "Python 3.12 runtime on HarmonyOS PC",
+                "required": True,
+                "target_status": "available",
+                "impact": "库主体纯 Python 部分可直接运行",
+                "source": "references/harmony-pc-capabilities.json#runtimes.python"
+            },
+            {
+                "id": "ta:rust_pyo3_extension",
+                "capability": "Rust/PyO3 原生扩展可在 HarmonyOS PC 上经 OHOS NDK 编译并加载",
+                "required": True,
+                "target_status": "unknown",
+                "impact": "river._river_rust 必须在鸿蒙上重新编译，PyO3 与 CPython ABI 的可用性待核实",
+                "source": "references/harmony-pc-capabilities.json#runtimes.rust + OHOS NDK 推断"
+            }
+        ],
+        "required_permissions": [
+            {
+                "permission": "ohos.permission.INTERNET",
+                "reason": "Twitter/Twitch 实时流与远程数据集下载需要访问互联网",
+                "source_capability": "network",
+                "harmony_status": "unknown",
+                "evidence": [
+                    "river/stream/tweet_stream.py:99",
+                    "river/stream/twitch_chat_stream.py:159",
+                    "river/datasets/base.py:275"
+                ]
+            }
+        ],
+        "compatible": [
+            {
+                "aspect": "纯 Python 在线学习算法核心",
+                "note": "不依赖平台 API，可在鸿蒙 Python 上直接运行",
+                "evidence": ["river/ 各算法模块"]
+            },
+            {
+                "aspect": "numpy/scipy/pandas/scikit-learn/sqlalchemy 已鸿蒙化",
+                "note": "OpenHarmony PC PyPI 镜像提供 ohos wheel，可直接安装",
+                "evidence": ["pyproject.toml:9-61"]
+            },
+            {
+                "aspect": "Rust 扩展无平台特有代码",
+                "note": "统计/VectorDict/Mondrian 树实现均为数值计算，重编译即可",
+                "evidence": ["rust_src/lib.rs"]
+            }
+        ],
+        "key_tasks": [
+            "配置 OHOS NDK Rust target，使用 maturin 交叉编译 river._river_rust 为 arm64/x86_64 .so",
+            "在鸿蒙 Python 环境中安装 harmony-adapted 的 numpy/scipy/pandas",
+            "运行单元测试，验证 Rust 扩展与纯 Python 模块功能一致",
+            "为 stream.Cache 的 platform.system() 分支增加 HarmonyOS 默认目录回退",
+            "若启用网络功能，确认 ohos.permission.INTERNET 申请机制并文档化"
+        ],
+        "notes": "评估按模型 A（库跑在已移植 Python 运行时上）。核心风险在于 PyO3 Rust 扩展能否在 OHOS NDK 下顺利编译并加载；HarmonyOS PC 能力表未明确 native extension/PyO3 支持，故置信度为 medium。x86_64 目标状态为 unknown，但 arm64 已确认可用，可优先交付 arm64 版本。"
+    },
+    "meta": {
+        "schema_version": "1.0",
+        "analyzer": "pc-lib-analyzer",
+        "counter_tool": metrics["code_metrics"]["tool"],
+        "confidence_overall": "medium",
+        "warnings": [],
+        "observations": [
+            {
+                "dimension": "dependencies",
+                "field": "scope",
+                "kind": "ambiguity",
+                "value": "dev-group deps used in production",
+                "rationale": "pyproject.toml dependency-groups.dev 中的 polars、gymnasium、graphviz 等包，以及完全未声明的 requests、vaex，实际被 river/stream、river/bandit、river/tree 等生产模块使用；难以简单归为 dev 或 runtime，本报告按 optional 处理并记录。"
+            },
+            {
+                "dimension": "native_api",
+                "field": "dynamic_libraries.mechanism",
+                "kind": "new_value",
+                "value": "python_extension_module",
+                "rationale": "river._river_rust 是 maturin/PyO3 构建的 Python 原生扩展模块，通过正常 import 加载，不是 ctypes/dlopen/JNI/N-API，现有 mechanism 取值列表未覆盖。"
+            },
+            {
+                "dimension": "capability_profile",
+                "field": "scenarios.key",
+                "kind": "new_value",
+                "value": "network",
+                "rationale": "river 的 stream 模块包含 Twitter/Twitch 实时流与远程数据集下载等网络访问场景，不在默认 gui/rendering_3d/media/hardware 四键中，作为新键记录。"
+            }
+        ]
+    }
+}
+
+# --- dependencies -----------------------------------------------------------------
+
+deps = []
+
+def add_dep(**kw):
+    deps.append(kw)
+
+# runtime
+add_dep(
+    name="scipy",
+    ecosystem="python",
+    registry_name=None,
+    source_repo="https://github.com/scipy/scipy",
+    import_names=["scipy"],
+    scope="runtime",
+    version=">=1.14.1,<2",
+    purpose="科学计算与统计函数（稀疏矩阵、特殊函数、概率分布等）",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml [project].dependencies"],
+    used_symbols=["scipy.special", "scipy.io.arff", "scipy.sparse", "scipy.stats"],
+    harmony_adapted=True,
+    harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+)
+add_dep(
+    name="numpy",
+    ecosystem="python",
+    source_repo="https://github.com/numpy/numpy",
+    import_names=["numpy"],
+    scope="runtime",
+    version=">=2.2.5,<3",
+    purpose="数值数组与矩阵运算核心",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml [project].dependencies"],
+    used_symbols=["numpy.ndarray", "numpy.asarray", "numpy.typing.NDArray", "numpy.float64", "numpy.dot", "numpy.sqrt", "numpy.exp", "numpy.mean", "numpy.random"],
+    harmony_adapted=True,
+    harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+)
+add_dep(
+    name="narwhals",
+    ecosystem="python",
+    source_repo="https://github.com/narwhals-dev/narwhals",
+    import_names=["narwhals"],
+    scope="runtime",
+    version=">=2.0.0",
+    purpose="DataFrame 无关适配层，统一 pandas/polars/pyarrow 等后端",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml [project].dependencies"],
+    used_symbols=["narwhals.stable.v2.from_native", "narwhals.stable.v2.DataFrame", "narwhals.stable.v2.Series", "narwhals.stable.v2.to_native", "narwhals.stable.v2.new_series", "narwhals.stable.v2.get_native_namespace", "narwhals.stable.v2.maybe_get_index", "narwhals.stable.v2.from_dict", "narwhals.dependencies.is_polars_dataframe"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+
+# optional
+add_dep(
+    name="pandas",
+    ecosystem="python",
+    source_repo="https://github.com/pandas-dev/pandas",
+    import_names=["pandas"],
+    scope="optional",
+    version=">=2.2,<3",
+    purpose="迷你批处理（learn_many/predict_many）与 DataFrame 输入输出",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml [project.optional-dependencies].pandas", "river/utils/pandas.py"],
+    used_symbols=["pandas.DataFrame", "pandas.Series"],
+    harmony_adapted=True,
+    harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+)
+add_dep(
+    name="requests",
+    ecosystem="python",
+    source_repo="https://github.com/psf/requests",
+    import_names=["requests"],
+    scope="optional",
+    version=None,
+    purpose="Twitter API v2 实时流客户端的 HTTP 调用（manifest 未声明的懒加载可选依赖）",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["river/stream/tweet_stream.py:96"],
+    used_symbols=["requests.request", "requests.exceptions.RequestException"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="vaex",
+    ecosystem="python",
+    source_repo="https://github.com/vaexio/vaex",
+    import_names=["vaex"],
+    scope="optional",
+    version=None,
+    purpose="stream.iter_vaex 的惰性 DataFrame 输入（manifest 未声明的可选集成）",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["river/stream/iter_vaex.py"],
+    used_symbols=["vaex.dataframe.DataFrame", "vaex.expression.Expression", "vaex.utils._ensure_list", "vaex.utils._ensure_strings_from_expressions", "vaex.evaluate"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="polars",
+    ecosystem="python",
+    source_repo="https://github.com/pola-rs/polars",
+    import_names=["polars"],
+    scope="optional",
+    version=">=1.1.0",
+    purpose="已弃用的 stream.iter_polars DataFrame 输入（声明在 dev 组但用于生产）",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml dependency-groups.dev", "river/stream/iter_polars.py"],
+    used_symbols=["polars.DataFrame", "polars.Series"],
+    harmony_adapted=True,
+    harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+)
+add_dep(
+    name="gymnasium",
+    ecosystem="python",
+    source_repo="https://github.com/Farama-Foundation/Gymnasium",
+    import_names=["gymnasium"],
+    scope="optional",
+    version=">=0.29.0",
+    purpose="river.bandit 提供的多臂老虎机环境与 Gymnasium 接口集成（声明在 dev 组但用于生产）",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml dependency-groups.dev", "river/bandit/envs/__init__.py"],
+    used_symbols=["gymnasium.Env", "gymnasium.make", "gymnasium.utils.env_checker.check_env"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="graphviz",
+    ecosystem="python",
+    source_repo="https://github.com/xflr6/graphviz",
+    import_names=["graphviz"],
+    scope="optional",
+    version=">=0.20.1",
+    purpose="决策树/聚类可视化（声明在 dev 组但用于生产，懒加载）",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml dependency-groups.dev", "river/tree/hoeffding_tree.py:406", "river/cluster/odac.py:272"],
+    used_symbols=["graphviz.Digraph"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="scikit-learn",
+    ecosystem="python",
+    registry_name="scikit-learn",
+    source_repo="https://github.com/scikit-learn/scikit-learn",
+    import_names=["sklearn"],
+    scope="optional",
+    version=">=1.5.1,<2",
+    purpose="与 scikit-learn 的兼容层（river↔sklearn 包装器、Bunch 数据集迭代）",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml dependency-groups.compat", "river/compat/river_to_sklearn.py", "river/stream/iter_sklearn.py"],
+    used_symbols=["sklearn.base.BaseEstimator", "sklearn.base.RegressorMixin", "sklearn.pipeline.Pipeline", "sklearn.preprocessing", "sklearn.utils.validation.validate_data", "sklearn.utils.Bunch", "sklearn.datasets"],
+    harmony_adapted=True,
+    harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+)
+add_dep(
+    name="sqlalchemy",
+    ecosystem="python",
+    source_repo="https://github.com/sqlalchemy/sqlalchemy",
+    import_names=["sqlalchemy"],
+    scope="optional",
+    version=">=2.0.0,<3",
+    purpose="stream.iter_sql 的数据库查询结果流式迭代",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml dependency-groups.compat", "river/stream/iter_sql.py"],
+    used_symbols=["sqlalchemy.create_engine", "sqlalchemy.MetaData", "sqlalchemy.Table", "sqlalchemy.Column", "sqlalchemy.String", "sqlalchemy.Date", "sqlalchemy.Integer", "sqlalchemy.TextClause", "sqlalchemy.Select", "sqlalchemy.Connection", "sqlalchemy.sql.text", "sqlalchemy.sql.select"],
+    harmony_adapted=True,
+    harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+)
+
+# build (Python + Rust)
+add_dep(
+    name="maturin",
+    ecosystem="python",
+    source_repo="https://github.com/PyO3/maturin",
+    import_names=["maturin"],
+    scope="build",
+    version=">=1.13,<2",
+    purpose="Python build-backend，负责构建 PyO3 Rust 扩展",
+    acquisition="package_manager",
+    locality="remote",
+    source="PyPI",
+    declared_in=["pyproject.toml [build-system]"],
+    used_symbols=[],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="pyo3",
+    ecosystem="rust",
+    source_repo="https://github.com/PyO3/pyo3",
+    scope="build",
+    version="0.29.0",
+    purpose="Rust 与 CPython 的 FFI 绑定框架",
+    acquisition="package_manager",
+    locality="remote",
+    source="crates.io",
+    declared_in=["Cargo.toml:26"],
+    used_symbols=["pyo3::prelude::*", "pyo3::types::PyBytes", "pyo3::types::PyDict", "pyo3::ffi::PyObject"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="bincode",
+    ecosystem="rust",
+    source_repo="https://github.com/bincode-org/bincode",
+    scope="build",
+    version="1.3.3",
+    purpose="Rust 扩展状态序列化（pickle 支持）",
+    acquisition="package_manager",
+    locality="remote",
+    source="crates.io",
+    declared_in=["Cargo.toml:27"],
+    used_symbols=["bincode::serialize", "bincode::deserialize"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="serde",
+    ecosystem="rust",
+    source_repo="https://github.com/serde-rs/serde",
+    scope="build",
+    version="1.0",
+    purpose="Rust 结构体序列化派生",
+    acquisition="package_manager",
+    locality="remote",
+    source="crates.io",
+    declared_in=["Cargo.toml:28"],
+    used_symbols=["serde::Serialize", "serde::Deserialize"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="serde_json",
+    ecosystem="rust",
+    source_repo="https://github.com/serde-rs/json",
+    scope="build",
+    version="1.0",
+    purpose="JSON 序列化支持（备用）",
+    acquisition="package_manager",
+    locality="remote",
+    source="crates.io",
+    declared_in=["Cargo.toml:29"],
+    used_symbols=[],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="num",
+    ecosystem="rust",
+    source_repo="https://github.com/rust-num/num",
+    scope="build",
+    version="0.4",
+    purpose="数值抽象与 trait",
+    acquisition="package_manager",
+    locality="remote",
+    source="crates.io",
+    declared_in=["Cargo.toml:30"],
+    used_symbols=["num::Float"],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="ordered-float",
+    ecosystem="rust",
+    source_repo="https://github.com/reem/rust-ordered-float",
+    scope="build",
+    version="3.9",
+    purpose="可排序的浮点类型",
+    acquisition="package_manager",
+    locality="remote",
+    source="crates.io",
+    declared_in=["Cargo.toml:31"],
+    used_symbols=[],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+add_dep(
+    name="libm",
+    ecosystem="rust",
+    source_repo="https://github.com/rust-lang/libm",
+    scope="build",
+    version="0.2",
+    purpose="no_std 数学函数",
+    acquisition="package_manager",
+    locality="remote",
+    source="crates.io",
+    declared_in=["Cargo.toml:32"],
+    used_symbols=[],
+    harmony_adapted=False,
+    harmony_adapted_source=None
+)
+
+# dev/test
+for name, version, purpose, repo in [
+    ("mypy", ">=1.11.1", "静态类型检查", "https://github.com/python/mypy"),
+    ("prek", ">=0.2", "pre-commit 风格钩子", None),
+    ("pytest", ">=9.0.3", "测试框架", "https://github.com/pytest-dev/pytest"),
+    ("ruff", ">=0.15.8", "代码格式与 lint", "https://github.com/astral-sh/ruff"),
+    ("pytest-xdist", ">=3.3.1", "pytest 并行执行", "https://github.com/pytest-dev/pytest-xdist"),
+    ("jupyter", ">=1.0.0", "Jupyter 环境", "https://github.com/jupyter/jupyter"),
+    ("mike", None, "MkDocs 版本化部署", "https://github.com/squidfunk/mike"),
+    ("sympy", ">=1.12.1", "符号数学", "https://github.com/sympy/sympy"),
+    ("altair", ">=5.0.0", "声明式可视化", "https://github.com/vega/altair"),
+]:
+    add_dep(
+        name=name,
+        ecosystem="python",
+        source_repo=repo,
+        scope="dev",
+        version=version,
+        purpose=purpose,
+        acquisition="package_manager" if name != "mike" else "git_url",
+        locality="remote",
+        source="PyPI" if name != "mike" else "git+https://github.com/squidfunk/mike.git",
+        declared_in=["pyproject.toml dependency-groups.dev"],
+        harmony_adapted=(name in ("ruff",)),
+        harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)" if name in ("ruff",) else None
+    )
+
+# docs
+for name, version, purpose, repo in [
+    ("dominate", None, "HTML 生成", "https://github.com/Knio/dominate"),
+    ("flask", None, "文档本地服务", "https://github.com/pallets/flask"),
+    ("jupyter-client", None, "Jupyter 内核通信", "https://github.com/jupyter/jupyter_client"),
+    ("pygments", None, "语法高亮", "https://github.com/pygments/pygments"),
+    ("TA-Lib", None, "金融技术指标", "https://github.com/TA-Lib/ta-lib-python"),
+    ("zensical", ">=0.0.40", "MkDocs 插件", None),
+    ("nbconvert", None, "Notebook 转换", "https://github.com/jupyter/nbconvert"),
+    ("numpydoc", None, "NumPy 风格文档", "https://github.com/numpy/numpydoc"),
+    ("plotly", ">=6.3.0", "交互式可视化", "https://github.com/plotly/plotly.py"),
+    ("python-slugify", None, "URL slug 生成", "https://github.com/un33k/python-slugify"),
+    ("matplotlib", None, "绘图", "https://github.com/matplotlib/matplotlib"),
+    ("tabulate", None, "表格格式化", "https://github.com/astanin/python-tabulate"),
+    ("tqdm", None, "进度条", "https://github.com/tqdm/tqdm"),
+    ("watermark", None, "Notebook 环境信息", "https://github.com/rasbt/watermark"),
+    ("notebook", "<7", "Jupyter Notebook 服务器", "https://github.com/jupyter/notebook"),
+    ("jupyter-contrib-nbextensions", ">=0.7.0,<0.8", "Jupyter 扩展", "https://github.com/ipython-contrib/jupyter_contrib_nbextensions"),
+]:
+    add_dep(
+        name=name,
+        ecosystem="python",
+        source_repo=repo,
+        scope="dev",
+        version=version,
+        purpose=purpose,
+        acquisition="package_manager",
+        locality="remote",
+        source="PyPI",
+        declared_in=["pyproject.toml dependency-groups.docs"],
+        harmony_adapted=(name in ("TA-Lib", "matplotlib")),
+        harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)" if name in ("TA-Lib", "matplotlib") else None
+    )
+
+# benchmark
+for name, version, purpose, repo in [
+    ("asv", None, "Airspeed Velocity 性能基准", "https://github.com/airspeed-velocity/asv"),
+    ("virtualenv", None, "基准测试隔离环境", "https://github.com/pypa/virtualenv"),
+]:
+    add_dep(
+        name=name,
+        ecosystem="python",
+        source_repo=repo,
+        scope="dev",
+        version=version,
+        purpose=purpose,
+        acquisition="package_manager",
+        locality="remote",
+        source="PyPI",
+        declared_in=["pyproject.toml dependency-groups.benchmark"],
+        harmony_adapted=False,
+        harmony_adapted_source=None
+    )
+
+# fill derived fields
+report["dependencies"]["dependencies"] = deps
+report["dependencies"]["count"] = len(deps)
+by_eco = {}
+for d in deps:
+    by_eco.setdefault(d["ecosystem"], []).append(d["name"])
+report["dependencies"]["by_ecosystem"] = by_eco
+
+with open(RUN_DIR / "report.json", "w", encoding="utf-8") as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+
+print(f"Wrote report.json with {len(deps)} dependencies")

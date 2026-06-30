@@ -1,0 +1,550 @@
+#!/usr/bin/env python3
+"""Assemble report.json for jnumpy analysis."""
+import json
+import pathlib
+
+RUN_DIR = pathlib.Path(__file__).parent
+METRICS_PATH = RUN_DIR / "metrics.json"
+REPORT_PATH = RUN_DIR / "report.json"
+
+metrics = json.loads(METRICS_PATH.read_text())
+
+report = {
+    "library": {
+        "name": "jnumpy",
+        "kind": "library",
+        "package_name": "julia-numpy",
+        "aliases": ["jnumpy", "TyPython"],
+        "import_names": ["jnumpy", "TyPython"],
+        "source_url": "https://github.com/Suzhou-Tongyuan/jnumpy.git",
+        "analyzed_at": "2026-06-29T07:38:53.308Z",
+        "commit": "499481c1e5c66f867baf36f11c1eb0523d7c85cb",
+        "one_liner": "基于 Julia 编写 Python C 扩展的运行时桥接库，支持在 Python 中直接调用 Julia 函数并零拷贝共享 NumPy 数组。",
+        "ecosystem": "python",
+        "bindings": []
+    },
+    "function_summary": {
+        "summary": "JNumPy（Python 包名 julia-numpy）及其内置的 Julia 包 TyPython 是一个让 Python 开发者用 Julia 编写高性能 Python C 扩展的双向桥接库。Python 侧通过 ctypes 加载 libjulia 并启动 Julia 运行时；Julia 侧通过 Libdl 反向绑定 Python C API，实现 Python 与 Julia 对象的双向转换、GIL 管理、NumPy 数组零拷贝共享，并通过宏把 Julia 函数导出为 Python 可调用的 C 函数。",
+        "categories": [
+            {
+                "name": "Python-Julia 运行时桥接",
+                "description": "定位并动态加载 libjulia/libpython，启动 Julia 运行时，在 Python 进程中执行 Julia 代码。",
+                "evidence": ["jnumpy/init.py:init_libjulia", "jnumpy/init.py:init_jl_from_lib", "jnumpy/utils.py:try_search_libjulia"]
+            },
+            {
+                "name": "Julia 函数导出为 Python C 扩展",
+                "description": "提供 @export_py / @export_pymodule 宏，将带类型标注的 Julia 函数包装成 PyCFunction 并注册到 Python 模块。",
+                "evidence": ["TyPython/src/CPython.Dev.jl:@export_py", "TyPython/src/CPython.Dev.DevOnly.jl:@export_pymodule", "TyPython/src/CPython.APIs.jl:PyCFunction_NewEx"]
+            },
+            {
+                "name": "双向数据类型转换",
+                "description": "在 Python int/float/str/bool/complex/tuple/ndarray 与 Julia 对应类型之间进行 cast/coerce，并通过 __array_struct__ capsule 共享数组内存。",
+                "evidence": ["TyPython/src/CPython.ORM.jl:py_cast", "TyPython/src/CPython.Julia.jl:py_coerce", "TyPython/src/CPython.NumPy.jl:mk_capsule"]
+            },
+            {
+                "name": "GIL 与异常处理",
+                "description": "在 Julia 回调中显式获取/释放 Python GIL，并将 Julia 异常映射为 Python 异常。",
+                "evidence": ["TyPython/src/CPython.APIs.jl:WITH_GIL", "TyPython/src/CPython.Dev.jl:_to_py_error", "TyPython/src/CPython.APIs.jl:py_throw"]
+            },
+            {
+                "name": "Julia 包环境管理",
+                "description": "激活用户 Julia project、解析依赖、安装 TyPython，并支持自动选择 Julia 包镜像。",
+                "evidence": ["jnumpy/apis.py:activate_project_checked", "jnumpy/InitTools.jl:setup_environment", "jnumpy/utils.py:set_julia_mirror"]
+            }
+        ],
+        "domain": "语言互操作 / 科学计算扩展",
+        "target_users": "希望用 Julia 为 Python 编写高性能扩展的开发者，或需要在 Python 生态中复用 Julia 算法库的开发者。"
+    },
+    "languages": metrics["languages"],
+    "code_metrics": metrics["code_metrics"],
+    "tests": metrics["tests"],
+    "license": {
+        "spdx": "MIT",
+        "name": "MIT License",
+        "confidence": "high",
+        "is_dual_licensed": False,
+        "license_files": ["LICENSE"],
+        "evidence": '根目录 LICENSE 文件完整包含 The MIT License 全文，且 pyproject.toml 声明 license = "MIT"。',
+        "notes": ""
+    },
+    "dependencies": {
+        "count": 11,
+        "manifests": ["pyproject.toml", "TyPython/Project.toml"],
+        "by_ecosystem": {"python": 4, "julia": 7},
+        "dependencies": [
+            {
+                "name": "numpy",
+                "ecosystem": "python",
+                "registry_name": "numpy",
+                "source_repo": "https://github.com/numpy/numpy",
+                "scope": "runtime",
+                "version": "^1.18",
+                "purpose": "NumPy 数组与 Julia 数组之间的零拷贝桥接与类型转换",
+                "acquisition": "package_manager",
+                "locality": "remote",
+                "source": "PyPI",
+                "declared_in": ["pyproject.toml"],
+                "used_symbols": ["numpy.asarray", "numpy.ndarray"],
+                "harmony_adapted": True,
+                "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+            },
+            {
+                "name": "tomli",
+                "ecosystem": "python",
+                "registry_name": "tomli",
+                "source_repo": "https://github.com/hukkin/tomli",
+                "scope": "runtime",
+                "version": "^2.0.1",
+                "purpose": "解析 Julia Project.toml 以获取模块名",
+                "acquisition": "package_manager",
+                "locality": "remote",
+                "source": "PyPI",
+                "declared_in": ["pyproject.toml"],
+                "used_symbols": ["tomli.load"],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "jill",
+                "ecosystem": "python",
+                "registry_name": "jill",
+                "source_repo": "https://github.com/johnnychen94/jill.py",
+                "scope": "optional",
+                "version": None,
+                "purpose": "当系统未安装 Julia 时自动下载安装 Julia",
+                "acquisition": "package_manager",
+                "locality": "remote",
+                "source": "PyPI（未在 pyproject.toml 声明，由 jnumpy/defaults.py 按需导入）",
+                "declared_in": ["jnumpy/defaults.py"],
+                "used_symbols": ["jill.install.install_julia", "jill.utils.interactive_utils.query_yes_no"],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "poetry-core",
+                "ecosystem": "python",
+                "registry_name": "poetry-core",
+                "source_repo": "https://github.com/python-poetry/poetry-core",
+                "scope": "build",
+                "version": ">=1.0.0",
+                "purpose": "Python 包构建后端",
+                "acquisition": "package_manager",
+                "locality": "remote",
+                "source": "PyPI",
+                "declared_in": ["pyproject.toml"],
+                "used_symbols": [],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "IOCapture",
+                "ecosystem": "julia",
+                "registry_name": "IOCapture",
+                "source_repo": "https://github.com/JuliaIO/IOCapture.jl",
+                "scope": "runtime",
+                "version": "0.2, 1",
+                "purpose": "捕获 stdout/stderr 以生成 Python 异常信息",
+                "acquisition": "package_manager",
+                "locality": "remote",
+                "source": "Julia General registry",
+                "declared_in": ["TyPython/Project.toml"],
+                "used_symbols": ["IOCapture.capture"],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "Libdl",
+                "ecosystem": "julia",
+                "registry_name": "Libdl",
+                "source_repo": None,
+                "scope": "runtime",
+                "version": None,
+                "purpose": "在 Julia 侧动态加载 libpython 并解析 Python C API 符号",
+                "acquisition": "runtime_builtin",
+                "locality": "system",
+                "source": "Julia 标准库（随 Julia 运行时提供）",
+                "declared_in": ["TyPython/Project.toml"],
+                "used_symbols": ["Libdl.dlopen", "Libdl.dlsym", "Libdl.dlpath", "Libdl.RTLD_LAZY", "Libdl.RTLD_DEEPBIND", "Libdl.RTLD_GLOBAL"],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "LinearAlgebra",
+                "ecosystem": "julia",
+                "registry_name": "LinearAlgebra",
+                "source_repo": None,
+                "scope": "runtime",
+                "version": None,
+                "purpose": "处理 Julia 数组转置以映射到 NumPy 布局",
+                "acquisition": "runtime_builtin",
+                "locality": "system",
+                "source": "Julia 标准库（随 Julia 运行时提供）",
+                "declared_in": ["TyPython/Project.toml"],
+                "used_symbols": ["LinearAlgebra.transpose"],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "REPL",
+                "ecosystem": "julia",
+                "registry_name": "REPL",
+                "source_repo": None,
+                "scope": "runtime",
+                "version": None,
+                "purpose": "Project.toml 声明的依赖（生产代码中未见直接调用）",
+                "acquisition": "runtime_builtin",
+                "locality": "system",
+                "source": "Julia 标准库（随 Julia 运行时提供）",
+                "declared_in": ["TyPython/Project.toml"],
+                "used_symbols": [],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "SHA",
+                "ecosystem": "julia",
+                "registry_name": "SHA",
+                "source_repo": None,
+                "scope": "runtime",
+                "version": None,
+                "purpose": "验证 DevOnly 预编译文件的完整性",
+                "acquisition": "runtime_builtin",
+                "locality": "system",
+                "source": "Julia 标准库（随 Julia 运行时提供）",
+                "declared_in": ["TyPython/Project.toml"],
+                "used_symbols": ["SHA.sha224"],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "Serialization",
+                "ecosystem": "julia",
+                "registry_name": "Serialization",
+                "source_repo": None,
+                "scope": "runtime",
+                "version": None,
+                "purpose": "序列化/反序列化 DevOnly 预编译 AST，以及 C.Ptr 类型的序列化支持",
+                "acquisition": "runtime_builtin",
+                "locality": "system",
+                "source": "Julia 标准库（随 Julia 运行时提供）",
+                "declared_in": ["TyPython/Project.toml"],
+                "used_symbols": ["Serialization.serialize", "Serialization.deserialize", "Serialization.writetag"],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            },
+            {
+                "name": "UUIDs",
+                "ecosystem": "julia",
+                "registry_name": "UUIDs",
+                "source_repo": None,
+                "scope": "runtime",
+                "version": None,
+                "purpose": "在 InitTools 中通过 UUID 判断 TyPython 是否已安装",
+                "acquisition": "runtime_builtin",
+                "locality": "system",
+                "source": "Julia 标准库（随 Julia 运行时提供）",
+                "declared_in": ["TyPython/Project.toml"],
+                "used_symbols": ["UUIDs.UUID"],
+                "harmony_adapted": False,
+                "harmony_adapted_source": None
+            }
+        ],
+        "notes": "jill 为未声明的可选运行时依赖；Julia 侧 Libdl/LinearAlgebra/REPL/SHA/Serialization/UUIDs 均为 Julia 标准库，但 TyPython/Project.toml 仍显式列出。"
+    },
+    "native_api": {
+        "summary": "跨平台 FFI 桥接库。Julia 侧通过 Libdl 反向绑定 Python C API；Python 侧通过 ctypes 调用 Julia C API。另有按 platform.system() 划分的 libjulia/sysimage 路径搜索分支。",
+        "groups": [
+            {
+                "type": "python_c_api",
+                "category": "ffi",
+                "platform": "portable",
+                "apis": [
+                    {"name": "Py_IncRef", "purpose": "增加 Python 对象引用计数", "count": 10, "evidence": ["TyPython/src/CPython.APIs.jl:28", "TyPython/src/CPython.NumPy.jl:52"]},
+                    {"name": "Py_DecRef", "purpose": "减少 Python 对象引用计数", "count": 6, "evidence": ["TyPython/src/CPython.APIs.jl:59", "TyPython/src/CPython.ORM.jl:61"]},
+                    {"name": "PyGILState_Ensure", "purpose": "获取 Python GIL", "count": 4, "evidence": ["TyPython/src/CPython.APIs.jl:229", "TyPython/src/CPython.APIs.jl:239"]},
+                    {"name": "PyGILState_Release", "purpose": "释放 Python GIL", "count": 4, "evidence": ["TyPython/src/CPython.APIs.jl:231", "TyPython/src/CPython.APIs.jl:245"]},
+                    {"name": "PyObject_Call", "purpose": "调用 Python callable", "count": 3, "evidence": ["TyPython/src/CPython.ORM.jl:59"]},
+                    {"name": "PyObject_CallObject", "purpose": "无参/单参调用 Python callable", "count": 4, "evidence": ["TyPython/src/CPython.APIs.jl:282", "TyPython/src/CPython.ORM.jl:51"]},
+                    {"name": "PyTuple_New / PyTuple_SetItem", "purpose": "创建 Python tuple 并设置元素", "count": 4, "evidence": ["TyPython/src/CPython.ORM.jl:26", "TyPython/src/CPython.ORM.jl:29"]},
+                    {"name": "PyDict_New / PyDict_SetItem", "purpose": "创建 Python dict 并设置键值", "count": 2, "evidence": ["TyPython/src/CPython.ORM.jl:69", "TyPython/src/CPython.ORM.jl:76"]},
+                    {"name": "PyImport_ImportModule", "purpose": "导入 Python 模块", "count": 3, "evidence": ["TyPython/src/CPython.APIs.jl:386", "TyPython/src/CPython.Boot.jl:77"]},
+                    {"name": "PyErr_Fetch / PyErr_NormalizeException", "purpose": "获取并规范化 Python 异常", "count": 5, "evidence": ["TyPython/src/CPython.APIs.jl:294", "TyPython/src/CPython.APIs.jl:298"]},
+                    {"name": "PyCapsule_New / PyCapsule_GetPointer", "purpose": "通过 capsule 共享数组接口指针", "count": 5, "evidence": ["TyPython/src/CPython.Julia.jl:149", "TyPython/src/CPython.Julia.jl:64"]},
+                    {"name": "PyUnicode_AsUTF8AndSize", "purpose": "将 Python str 转换为 UTF-8 缓冲区", "count": 3, "evidence": ["TyPython/src/CPython.APIs.jl:360", "TyPython/src/CPython.ORM.jl:190"]},
+                    {"name": "PyLong_AsSsize_t / PyLong_FromLongLong", "purpose": "Python int 与 Julia 整数互转", "count": 4, "evidence": ["TyPython/src/CPython.ORM.jl:165", "TyPython/src/CPython.ORM.jl:328"]},
+                    {"name": "PyFloat_AsDouble / PyFloat_FromDouble", "purpose": "Python float 与 Julia 浮点互转", "count": 4, "evidence": ["TyPython/src/CPython.ORM.jl:263", "TyPython/src/CPython.ORM.jl:320"]},
+                    {"name": "PyCFunction_NewEx", "purpose": "将 C 函数指针注册为 Python 方法对象", "count": 2, "evidence": ["TyPython/src/CPython.Dev.jl:149"]}
+                ]
+            },
+            {
+                "type": "julia_c_api",
+                "category": "ffi",
+                "platform": "portable",
+                "apis": [
+                    {"name": "jl_init_with_image", "purpose": "初始化 Julia 运行时并加载 sysimage", "count": 1, "evidence": ["jnumpy/init.py:195", "jnumpy/init.py:206"]},
+                    {"name": "jl_init_with_image__threading", "purpose": "多线程版 Julia 运行时初始化回退", "count": 1, "evidence": ["jnumpy/init.py:197"]},
+                    {"name": "jl_eval_string", "purpose": "在 Python 进程中执行 Julia 代码字符串", "count": 2, "evidence": ["jnumpy/init.py:208", "jnumpy/init.py:228"]},
+                    {"name": "jl_exception_occurred / jl_exception_clear", "purpose": "检查并清除 Julia C 异常", "count": 2, "evidence": ["jnumpy/init.py:229", "jnumpy/init.py:209"]},
+                    {"name": "jl_parse_opts", "purpose": "解析 Julia 启动选项", "count": 1, "evidence": ["jnumpy/init.py:202"]},
+                    {"name": "Libdl.dlpath(\"libjulia\")", "purpose": "通过 Julia 查询 libjulia 路径", "count": 1, "evidence": ["jnumpy/init.py:35"]},
+                    {"name": "ctypes.pythonapi._handle", "purpose": "获取 Python 共享库句柄供 Julia 侧反向绑定", "count": 1, "evidence": ["jnumpy/init.py:121", "jnumpy/init.py:131"]}
+                ]
+            },
+            {
+                "type": "python_ctypes",
+                "category": "ffi",
+                "platform": "portable",
+                "apis": [
+                    {"name": "ctypes.PyDLL", "purpose": "加载 libjulia 共享库", "count": 1, "evidence": ["jnumpy/init.py:193"]},
+                    {"name": "ctypes.pythonapi._handle", "purpose": "获取当前 Python 解释器 API 句柄", "count": 2, "evidence": ["jnumpy/init.py:121", "jnumpy/init.py:131"]},
+                    {"name": "ctypes.c_int / ctypes.POINTER / ctypes.c_char_p", "purpose": "构造 argc/argv 参数以传递给 jl_parse_opts", "count": 1, "evidence": ["jnumpy/init.py:83", "jnumpy/init.py:84"]},
+                    {"name": "ctypes.RTLD_GLOBAL", "purpose": "以全局符号表加载 libjulia", "count": 1, "evidence": ["jnumpy/init.py:193"]}
+                ]
+            },
+            {
+                "type": "julia_libdl",
+                "category": "ffi",
+                "platform": "portable",
+                "apis": [
+                    {"name": "Libdl.dlopen", "purpose": "在 Julia 侧加载 Python 共享库", "count": 1, "evidence": ["TyPython/src/CPython.Boot.jl:21"]},
+                    {"name": "Libdl.dlsym", "purpose": "解析 Python C API 符号地址", "count": 1, "evidence": ["TyPython/src/CPython.Boot.jl:7"]},
+                    {"name": "Libdl.dlpath", "purpose": "查询 libjulia 路径", "count": 1, "evidence": ["jnumpy/init.py:35", "TyPython/src/CPython.Boot.jl:1"]},
+                    {"name": "Libdl.RTLD_LAZY / RTLD_DEEPBIND / RTLD_GLOBAL", "purpose": "设置动态加载标志", "count": 1, "evidence": ["TyPython/src/CPython.Boot.jl:21"]}
+                ]
+            },
+            {
+                "type": "python_stdlib",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "subprocess.run / subprocess.check_output", "purpose": "调用 julia 查询初始化参数或校验版本", "count": 4, "evidence": ["jnumpy/init.py:160", "jnumpy/defaults.py:38", "jnumpy/utils.py:113"]},
+                    {"name": "os.environ / os.getenv", "purpose": "读取配置与状态环境变量", "count": 12, "evidence": ["jnumpy/envars.py", "jnumpy/init.py:117", "jnumpy/utils.py:37"]},
+                    {"name": "os.getpid", "purpose": "记录 Python 进程 ID 以校验 ctypes 句柄", "count": 1, "evidence": ["jnumpy/init.py:122"]},
+                    {"name": "os.chdir", "purpose": "切换到 libjulia 目录后加载", "count": 1, "evidence": ["jnumpy/init.py:192"]},
+                    {"name": "platform.system", "purpose": "运行时判断操作系统类型", "count": 6, "evidence": ["jnumpy/utils.py:143", "jnumpy/utils.py:149", "jnumpy/utils.py:155"]},
+                    {"name": "http.client.HTTPSConnection", "purpose": "探测 Julia 镜像服务器响应时间", "count": 1, "evidence": ["jnumpy/utils.py:82"]},
+                    {"name": "threading.Thread", "purpose": "并发探测多个 Julia 镜像", "count": 2, "evidence": ["jnumpy/utils.py:84", "jnumpy/utils.py:90"]}
+                ]
+            },
+            {
+                "type": "julia_stdlib",
+                "category": "standard",
+                "platform": "portable",
+                "apis": [
+                    {"name": "Pkg.activate / Pkg.resolve / Pkg.instantiate", "purpose": "管理 Julia 包环境", "count": 6, "evidence": ["jnumpy/InitTools.jl:21", "jnumpy/InitTools.jl:29", "jnumpy/apis.py:30"]},
+                    {"name": "Base.@cfunction", "purpose": "将 Julia 函数导出为 C 可调用的函数指针", "count": 2, "evidence": ["TyPython/src/CPython.Dev.jl:141", "TyPython/src/CPython.Julia.jl:152"]},
+                    {"name": "Base.Threads.threadid", "purpose": "限制非主线程执行 deferred decref", "count": 1, "evidence": ["TyPython/src/CPython.APIs.jl:38"]},
+                    {"name": "Base.Libc.malloc / Base.Libc.free", "purpose": "分配/释放数组接口 capsule 内存", "count": 2, "evidence": ["TyPython/src/CPython.Julia.jl:128", "TyPython/src/CPython.Julia.jl:123"]}
+                ]
+            },
+            {
+                "type": "platform_detection_windows",
+                "category": "platform",
+                "platform": "windows",
+                "apis": [
+                    {"name": "platform.system().lower() == \"windows\"", "purpose": "fast init 模式下定位 libjulia.dll / sys.dll", "count": 2, "evidence": ["jnumpy/utils.py:143", "jnumpy/utils.py:174"]}
+                ]
+            },
+            {
+                "type": "platform_detection_linux",
+                "category": "platform",
+                "platform": "linux",
+                "apis": [
+                    {"name": "platform.system().lower() == \"linux\"", "purpose": "fast init 模式下定位 libjulia.so / sys.so", "count": 2, "evidence": ["jnumpy/utils.py:149", "jnumpy/utils.py:180"]}
+                ]
+            },
+            {
+                "type": "platform_detection_macos",
+                "category": "platform",
+                "platform": "macos",
+                "apis": [
+                    {"name": "platform.system().lower() == \"darwin\"", "purpose": "fast init 模式下定位 libjulia.dylib / sys.dylib", "count": 2, "evidence": ["jnumpy/utils.py:155", "jnumpy/utils.py:186"]}
+                ]
+            }
+        ],
+        "dynamic_libraries": [
+            {
+                "name": "libjulia.so / libjulia.dylib / libjulia.dll",
+                "mechanism": "ctypes.PyDLL",
+                "acquisition": "system",
+                "source": "Julia 安装目录下的 libjulia 共享库",
+                "description": "Julia 运行时库，提供 jl_init_with_image/jl_eval_string 等 C API，供 Python 侧嵌入 Julia",
+                "optional": False,
+                "evidence": ["jnumpy/init.py:193"]
+            },
+            {
+                "name": "libpython3.x.so / python3.x.dll / libpython3.x.dylib",
+                "mechanism": "Libdl.dlopen",
+                "acquisition": "system",
+                "source": "Python 安装目录下的 libpython 共享库",
+                "description": "Python 运行时库，提供 CPython C API，供 Julia 侧反向调用 Python",
+                "optional": False,
+                "evidence": ["TyPython/src/CPython.Boot.jl:21", "TyPython/src/CPython.Boot.jl:40"]
+            }
+        ],
+        "platform_dependence": "cross-platform"
+    },
+    "runtime_surface": {
+        "summary": "运行时依赖外部 Julia 与 Python 共享库；通过环境变量定位可执行文件与项目目录；启动时会发起 HTTPS 探测选择 Julia 包镜像，并调用 julia 子进程查询初始化参数。",
+        "network": [
+            {"detail": "HTTP HEAD 请求到多个 Julia 镜像服务器的 /julia/registries", "purpose": "选择响应最快的 Julia 包服务器", "evidence": ["jnumpy/utils.py:75"]}
+        ],
+        "filesystem": [
+            {"detail": "$JNUMPY_HOME（默认 ~/.jnumpy）下的 julias/、bin/ 等目录", "purpose": "存放/链接自动安装的 Julia 与包环境", "evidence": ["jnumpy/defaults.py:11", "jnumpy/envars.py:11"]},
+            {"detail": "当前 Python 包目录下的 Project.toml 与 src/*.jl", "purpose": "作为 Julia project 激活并导入用户 Julia 模块", "evidence": ["jnumpy/apis.py:61", "jnumpy/apis.py:83"]}
+        ],
+        "env_vars": [
+            {"name": "JNUMPY_HOME", "purpose": "JNumPy 配置与安装目录根路径", "evidence": ["jnumpy/defaults.py:11", "jnumpy/envars.py:11"]},
+            {"name": "TYPY_JL_EXE", "purpose": "指定使用的 julia 可执行文件路径", "evidence": ["jnumpy/defaults.py:25", "jnumpy/utils.py:18"]},
+            {"name": "TYPY_JL_OPTS", "purpose": "传递给 julia 的命令行选项", "evidence": ["jnumpy/init.py:138", "jnumpy/envars.py:10"]},
+            {"name": "TYPY_PY_APIPTR", "purpose": "从 Python 传入的 libpython 句柄，避免重复 dlopen", "evidence": ["jnumpy/init.py:120", "jnumpy/envars.py:5"]},
+            {"name": "TYPY_PY_DLL", "purpose": "显式指定 Python 共享库路径", "evidence": ["jnumpy/init.py:37", "jnumpy/envars.py:6"]},
+            {"name": "TYPY_MODE / TYPY_PID", "purpose": "标记 Python-Julia 互操作模式与进程 ID，防止跨进程句柄复用", "evidence": ["jnumpy/init.py:117", "jnumpy/envars.py:4", "jnumpy/envars.py:12"]},
+            {"name": "JULIA_PKG_SERVER", "purpose": "Julia 包服务器地址", "evidence": ["jnumpy/utils.py:39"]},
+            {"name": "JULIA_NUM_THREADS", "purpose": "设置 Julia 线程数", "evidence": ["jnumpy/init.py:102"]}
+        ],
+        "subprocess": [
+            {"command": "julia --startup-file=no -O0 --compile=min -e ...", "purpose": "查询 Julia 绑定目录、libjulia 路径与默认项目目录", "evidence": ["jnumpy/init.py:150"]},
+            {"command": "julia --version", "purpose": "校验 Julia 可执行文件可用性", "evidence": ["jnumpy/defaults.py:37"]},
+            {"command": "jill install_julia ...", "purpose": "自动下载安装 Julia（当本地无 Julia 时）", "evidence": ["jnumpy/defaults.py:85"]}
+        ],
+        "devices": [],
+        "services": []
+    },
+    "build_env": {
+        "language_standard": "Python >= 3.7; Julia >= 1.6",
+        "runtime_version": "Python ^3.7 / Julia ^1.6",
+        "build_system": "Poetry (poetry-core)",
+        "compiler_extensions": [],
+        "platforms": [
+            {"os": "linux", "arch": "x86_64", "evidence": [".github/workflows/test.yml:28"]},
+            {"os": "macos", "arch": "x86_64", "evidence": [".github/workflows/test.yml:31"]},
+            {"os": "windows", "arch": "x86_64", "evidence": [".github/workflows/test.yml:29"]}
+        ],
+        "entry_points": [],
+        "packaging": "Python wheel 通过 poetry build 构建；TyPython 作为 vendored Julia 源码随包分发，运行时由 Pkg.develop 安装到 Julia 环境。",
+        "notes": "CI 覆盖 Ubuntu 22.04 / macOS 12 / Windows 2022 x86_64；未声明官方 arm64 wheel。"
+    },
+    "capability_profile": {
+        "summary": "本项目不涉及 GUI、3D 渲染、媒体编解码或硬件访问等鸿蒙高成本场景；核心为 Python-Julia 双向 FFI 桥接与 NumPy 数组共享。",
+        "scenarios": []
+    },
+    "harmony_adaptation": {
+        "target": "HarmonyOS NEXT PC（库跑在已移植的 Python 3.12 / Julia 1.10 运行时上；原生扩展经 OHOS NDK/musl；arm64/x86_64；自研内核，无 Linux ABI）",
+        "feasibility": "feasible_with_effort",
+        "porting_class": "needs_adaptation_full",
+        "effort": {"person_days": [5, 12]},
+        "confidence": "medium",
+        "unadaptable_apis": [],
+        "target_assumptions": [
+            {
+                "id": "ta:python_runtime",
+                "capability": "Python 运行时（CPython）及 libpython 共享库",
+                "required": True,
+                "target_status": "available",
+                "impact": "Python 侧 ctypes 加载 libpython 与 Julia C API 依赖 CPython；已确认移植",
+                "source": "harmony-pc-capabilities.json#runtimes.python"
+            },
+            {
+                "id": "ta:julia_runtime",
+                "capability": "Julia 运行时及 libjulia 共享库",
+                "required": True,
+                "target_status": "available",
+                "impact": "init_libjulia 动态加载 libjulia；Julia 1.10.6 已确认移植",
+                "source": "harmony-pc-capabilities.json#runtimes.julia"
+            },
+            {
+                "id": "ta:spawn",
+                "capability": "启动外部进程（subprocess/ProcessBuilder）",
+                "required": True,
+                "target_status": "unknown",
+                "impact": "init_libjulia 通过 subprocess.run 启动 julia 查询绑定目录与 sysimage；若受限则核心初始化失败",
+                "source": "harmony-pc-capabilities.json#process_security.spawn"
+            }
+        ],
+        "required_permissions": [],
+        "recommended_path": "run_on_ported_runtime",
+        "summary": "JNumPy 是 Python + Julia 双运行时桥接库。Python 与 Julia 运行时在鸿蒙 PC 均已确认可用，因此运行时本身不是阻碍；主要工作量在于验证动态加载 libpython/libjulia、补全 experimental_fast_init 的平台路径分支，并确认子进程 spawn 行为。无明确不可适配的底层 API，整体可适配。",
+        "blockers": [
+            {
+                "id": "bk:fast_init_platform",
+                "issue": "experimental_fast_init 模式按 platform.system() 查找 libjulia/sysimage 的路径分支未覆盖 HarmonyOS",
+                "severity": "minor",
+                "adaptability": "adaptable",
+                "category": "platform_branch_gap",
+                "source_dimension": "native_api",
+                "harmony_status": "partial",
+                "remediation": "为 OHOS 增加 elif 分支（或复用 Linux 路径），并在未识别时回退到默认的 julia 子进程查询路径",
+                "caused_by": [],
+                "manifests_as": [],
+                "evidence": ["jnumpy/utils.py:143", "jnumpy/utils.py:149", "jnumpy/utils.py:155"]
+            },
+            {
+                "id": "bk:jill_unadapted",
+                "issue": "自动安装 Julia 的可选依赖 jill 未在 OpenHarmony PC 镜像中适配",
+                "severity": "minor",
+                "adaptability": "adaptable",
+                "category": "native_dependency",
+                "source_dimension": "dependencies",
+                "harmony_status": "partial",
+                "remediation": "预装 Julia 或提供 OHOS 版 jill/替换为从 OpenHarmony 源安装 Julia",
+                "caused_by": [],
+                "manifests_as": [],
+                "evidence": ["jnumpy/defaults.py:82"]
+            }
+        ],
+        "compatible": [
+            {"aspect": "纯 Python 与 Julia 源码", "note": "无需重新编译，可直接运行在已移植的运行时上", "evidence": ["pyproject.toml", "TyPython/Project.toml"]},
+            {"aspect": "NumPy 数组共享", "note": "NumPy 已有 OpenHarmony PC 官方 ohos wheel，数组桥接可复用", "evidence": ["TyPython/src/CPython.NumPy.jl:mk_capsule"]},
+            {"aspect": "核心初始化路径", "note": "默认通过 julia 子进程查询 libjulia 路径，不依赖硬编码平台路径", "evidence": ["jnumpy/init.py:150"]}
+        ],
+        "key_tasks": [
+            "验证 Python 3.12 / Julia 1.10 在 HarmonyOS PC 上的共享库可被 ctypes/Libdl 加载",
+            "为 experimental_fast_init 的 platform.system() 分支增加 HarmonyOS/OHOS 路径或回退逻辑",
+            "确认 subprocess.run 调用 julia 在鸿蒙进程模型下可用",
+            "验证 TyPython Julia 包依赖（IOCapture 等）可在鸿蒙 Julia 环境中通过 Pkg 安装",
+            "运行单元测试验证 Python-Julia 双向转换与 NumPy 数组共享"
+        ],
+        "notes": "结论按模型 A（库跑在已移植的 Python/Julia 运行时上）评估。两个运行时均已确认 available，因此不判 infeasible。但核心初始化依赖 subprocess.spawn（目标状态 unknown），故置信度降至 medium。若目标是 ArkTS 沙箱应用（模型 B），则 Python/Julia 运行时不可用，需整体重写，结论将完全不同。"
+    },
+    "meta": {
+        "schema_version": "1.0",
+        "analyzer": "pc-lib-analyzer",
+        "counter_tool": metrics["code_metrics"]["tool"],
+        "warnings": [],
+        "confidence_overall": "medium",
+        "observations": [
+            {
+                "dimension": "dependencies",
+                "field": "ecosystem",
+                "kind": "gap",
+                "value": "julia",
+                "rationale": "dependencies[].ecosystem 推荐取值未包含 julia，但该仓包含 Julia 包依赖，暂用 julia 以便分组。"
+            },
+            {
+                "dimension": "dependencies",
+                "field": "acquisition",
+                "kind": "new_value",
+                "value": "runtime_builtin",
+                "rationale": "Julia 标准库依赖（Libdl/LinearAlgebra/SHA 等）随 Julia 运行时一并提供，非独立下载，现有 recommended acquisition 值无法准确描述。"
+            },
+            {
+                "dimension": "native_api",
+                "field": "category",
+                "kind": "ambiguity",
+                "value": "python_c_api_as_ffi",
+                "rationale": "Python C API 既属于 CPython 运行时，也是 Python↔Julia FFI 的实质互操作接口；按互操作桥口径归入 ffi。"
+            },
+            {
+                "dimension": "capability_profile",
+                "field": "key",
+                "kind": "new_value",
+                "value": "language_runtime_bridge",
+                "rationale": "本项目核心为 Python-Julia 运行时桥接，不在 gui/rendering_3d/media/hardware 推荐场景内，但属于鸿蒙适配需关注的能力（依赖两个已移植运行时）。"
+            }
+        ]
+    }
+}
+
+REPORT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+print(f"Wrote {REPORT_PATH}")

@@ -1,0 +1,776 @@
+#!/usr/bin/env python3
+# Assemble MuJoCo analysis report.
+import json
+import os
+from collections import defaultdict
+
+REPO = "repos/pc-lib-84/mujoco"
+RUN = "runs/pc-lib-84/mujoco/2026-06-29T04-22-35-583Z"
+
+with open(os.path.join(RUN, "metrics.json"), "r", encoding="utf-8") as f:
+    metrics = json.load(f)
+
+# ---- library ---------------------------------------------------------------
+library = {
+    "name": "mujoco",
+    "kind": "library",
+    "package_name": "mujoco",
+    "aliases": ["mujoco::mujoco", "mujoco-mjx"],
+    "import_names": ["mujoco"],
+    "source_url": "https://github.com/google-deepmind/mujoco.git",
+    "analyzed_at": "2026-06-29T04:22:35.583Z",
+    "commit": "79f6deac99d56a4b5c085c82bd8c1b6f00275db6",
+    "one_liner": "Google DeepMind 维护的通用多关节接触动力学物理引擎，提供 C API、OpenGL 可视化与 Python/JS/C#/Unity 绑定，面向机器人与机器学习研究。",
+    "ecosystem": "cpp",
+    "bindings": ["python", "nodejs", "dotnet"],
+}
+
+# ---- function_summary ------------------------------------------------------
+function_summary = {
+    "summary": "MuJoCo（Multi-Joint dynamics with Contact）是一个通用物理引擎，专注于高效、准确地模拟带约束的多体系统及其接触碰撞。它以 C/C++ 实现核心并提供稳定的 C API，内置 XML（MJCF/URDF）模型编译器、OpenGL 渲染器、原生交互式 UI，同时通过 Python、JavaScript/WASM、C#/Unity 等绑定覆盖更广泛的开发者与研究者。",
+    "categories": [
+        {
+            "name": "物理仿真核心",
+            "description": "刚体动力学、接触与约束求解、执行器与传感器仿真；提供 mj_step、mj_forward、mj_inverse 等核心步进 API。",
+            "evidence": ["include/mujoco/mujoco.h:186-207", "src/engine/engine_core_constraint.c", "src/engine/engine_support.c"]
+        },
+        {
+            "name": "模型编译与资源管理",
+            "description": "解析 MJCF/URDF 模型、编译为低层 mjModel/mjData，管理虚拟文件系统（VFS）与资源缓存。",
+            "evidence": ["include/mujoco/mujoco.h:79-184", "src/user/user_vfs.cc", "src/xml/xml_native_reader.cc"]
+        },
+        {
+            "name": "碰撞检测与几何",
+            "description": "基本几何体、凸体、网格、SDF 等形状之间的碰撞检测与距离查询，并支持插件化扩展。",
+            "evidence": ["src/engine/engine_collision_*.c", "plugin/sdf", "plugin/obj_decoder/obj_decoder.cc"]
+        },
+        {
+            "name": "渲染与可视化",
+            "description": "基于 OpenGL 的经典渲染器（mjr_*）与场景可视化（mjv_*），支持离屏渲染；可选 Filament 后端。",
+            "evidence": ["include/mujoco/mjrender.h", "src/render/classic/render_context.c", "src/render/filament/mjrfilament.cc"]
+        },
+        {
+            "name": "原生交互式 UI",
+            "description": "基于 OpenGL 的即时模式 UI 面板与控件（mjui_*），供 simulate 等交互式工具使用。",
+            "evidence": ["include/mujoco/mjui.h", "src/ui/ui_main.c"]
+        },
+        {
+            "name": "插件系统",
+            "description": "支持通过动态库加载 actuator、sensor、elasticity、SDF 等插件，并扫描插件目录。",
+            "evidence": ["include/mujoco/mjplugin.h", "src/engine/engine_plugin.cc:691", "plugin/"]
+        },
+        {
+            "name": "多语言绑定",
+            "description": "官方提供 Python 绑定、JavaScript/WASM 绑定以及 C#/Unity 插件，方便集成到不同生态。",
+            "evidence": ["python/mujoco/__init__.py", "wasm/README.md", "unity/Runtime/Bindings/MjBindings.cs"]
+        }
+    ],
+    "domain": "机器人 / 物理仿真 / 强化学习",
+    "target_users": "机器人、生物力学、图形动画与机器学习领域的研究者与开发者"
+}
+
+# ---- license ---------------------------------------------------------------
+license_block = {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": False,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件与 Apache-2.0 文本一致；pyproject.toml 与 README 均声明 source code 使用 Apache-2.0。",
+    "notes": "doc 目录下的 ReStructuredText、图片与视频采用 CC BY 4.0 授权，与源代码许可证不同。"
+}
+
+# ---- dependencies ----------------------------------------------------------
+def cpp_dep(name, **kwargs):
+    d = {"name": name, "ecosystem": "cpp"}
+    d.update(kwargs)
+    return d
+
+def py_dep(name, **kwargs):
+    d = {"name": name, "ecosystem": "python"}
+    d.update(kwargs)
+    return d
+
+dependencies = [
+    cpp_dep("lodepng", scope="runtime", version="17d08dd26cac4d63f43af217ebd70318bfb8189c",
+            purpose="PNG 纹理/资源编解码", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/lvandeve/lodepng.git（CMake FetchContent 拉取源码构建）",
+            declared_in=["cmake/MujocoDependencies.cmake:92"],
+            source_repo="https://github.com/lvandeve/lodepng", registry_name="lodepng",
+            used_symbols=["lodepng_decode", "lodepng_error_text", "lodepng_get_raw_size"],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("tinyxml2", scope="runtime", version="e6caeae85799003f4ca74ff26ee16a789bc2af48",
+            purpose="MJCF/URDF XML 解析", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/leethomason/tinyxml2.git",
+            declared_in=["cmake/MujocoDependencies.cmake:160"],
+            source_repo="https://github.com/leethomason/tinyxml2", registry_name="tinyxml2",
+            used_symbols=["tinyxml2::XMLDocument", "tinyxml2::XMLElement"],
+            harmony_adapted=True, harmony_adapted_source="OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"),
+    cpp_dep("tinyobjloader", scope="runtime", version="1421a10d6ed9742f5b2c1766d22faa6cfbc56248",
+            purpose="OBJ 网格加载（obj_decoder 插件）", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/tinyobjloader/tinyobjloader.git",
+            declared_in=["cmake/MujocoDependencies.cmake:183"],
+            source_repo="https://github.com/tinyobjloader/tinyobjloader", registry_name="tinyobjloader",
+            used_symbols=["tinyobj::ObjReader::ParseFromString", "tinyobj::ObjReader::GetAttrib", "tinyobj::ObjReader::GetShapes"],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("ccd", scope="runtime", version="7931e764a19ef6b21b443376c699bbc9c6d4fba8",
+            purpose="凸体碰撞检测（MPR/GJK）", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/danfis/libccd.git",
+            declared_in=["cmake/MujocoDependencies.cmake:216"],
+            source_repo="https://github.com/danfis/libccd", registry_name="ccd",
+            used_symbols=["ccdMPRPenetration", "ccdVec3Eq", "ccd_vec3_origin"],
+            harmony_adapted=True, harmony_adapted_source="OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"),
+    cpp_dep("qhull", scope="runtime", version="d1c2fc0caa5f644f3a0f220290d4a868c68ed4f6",
+            purpose="凸包计算", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/qhull/qhull.git",
+            declared_in=["cmake/MujocoDependencies.cmake:135"],
+            source_repo="https://github.com/qhull/qhull", registry_name="qhull",
+            used_symbols=["qh_init_A", "qh_initflags", "qh_qhull", "qh_freeqhull"],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("MarchingCubeCpp", scope="runtime", version="f03a1b3ec29b1d7d865691ca8aea4f1eb2c2873d",
+            purpose="SDF 插件的 Marching Cubes 等值面提取", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/aparis69/MarchingCubeCpp.git",
+            declared_in=["cmake/MujocoDependencies.cmake:116"],
+            source_repo="https://github.com/aparis69/MarchingCubeCpp", registry_name="marchingcubecpp",
+            used_symbols=[],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("miniz", scope="runtime", version="d10b03cc73475af673df40f06e5cefd1d5f940d9",
+            purpose="mjz 模型资源 ZIP 压缩/解压", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/richgel999/miniz.git",
+            declared_in=["cmake/MujocoDependencies.cmake:257"],
+            source_repo="https://github.com/richgel999/miniz", registry_name="miniz",
+            used_symbols=["mz_zip_reader_init_mem", "mz_zip_reader_extract_to_mem", "mz_zip_writer_init_heap"],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("glfw3", scope="runtime", version="7b6aead9fb88b3623e3b3725ebb42670cbe4c579",
+            purpose="simulate/viewer 与 Python 绑定的窗口与输入", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/glfw/glfw.git",
+            declared_in=["simulate/cmake/SimulateDependencies.cmake:77"],
+            source_repo="https://github.com/glfw/glfw", registry_name="glfw",
+            aliases=["glfw"],
+            used_symbols=["glfwCreateWindow", "glfwMakeContextCurrent", "glfwPollEvents"],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("Threads", scope="runtime", version=None,
+            purpose="线程支持", acquisition="find_package", locality="system",
+            source="系统 (pthreads / Win32 threads，需预装)",
+            declared_in=["CMakeLists.txt:142", "simulate/cmake/SimulateDependencies.cmake:38"],
+            source_repo=None, registry_name=None,
+            used_symbols=["std::thread", "std::mutex"],
+            harmony_adapted=False, harmony_adapted_source=None),
+    # build / test / optional
+    cpp_dep("abseil-cpp", scope="build", version="5650e9cf76d3be4318d5fa3af38ee483ddfd5e4a",
+            purpose="测试与实验性 Studio/Filament 使用的 C++ 工具库", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/abseil/abseil-cpp.git",
+            declared_in=["cmake/MujocoDependencies.cmake:285", "python/mujoco/CMakeLists.txt:234"],
+            source_repo="https://github.com/abseil/abseil-cpp", registry_name="abseil",
+            aliases=["absl"],
+            used_symbols=["absl::Span", "absl::flat_hash_map"],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("googletest", scope="test", version="52eb8108c5bdec04579160ae17225d66034bd723",
+            purpose="C++ 单元测试框架", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/google/googletest.git",
+            declared_in=["cmake/MujocoDependencies.cmake:317"],
+            source_repo="https://github.com/google/googletest", registry_name="gtest",
+            used_symbols=[],
+            harmony_adapted=True, harmony_adapted_source="OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"),
+    cpp_dep("benchmark", scope="test", version="834a61fc65e8b7885fcf177f1230ae4b897118fa",
+            purpose="性能基准测试", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/google/benchmark.git",
+            declared_in=["cmake/MujocoDependencies.cmake:349"],
+            source_repo="https://github.com/google/benchmark", registry_name="benchmark",
+            used_symbols=[],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("Eigen3", scope="build", version="ea13a98decd497a8c5588fb5de71b57bcf10d864",
+            purpose="Python 绑定与测试工具的头文件-only 线性代数库", acquisition="fetchcontent", locality="remote",
+            source="https://gitlab.com/libeigen/eigen.git",
+            declared_in=["cmake/MujocoDependencies.cmake:374", "python/mujoco/CMakeLists.txt:267"],
+            source_repo="https://gitlab.com/libeigen/eigen", registry_name="eigen",
+            aliases=["eigen"],
+            used_symbols=["Eigen::Matrix", "Eigen::Vector"],
+            harmony_adapted=True, harmony_adapted_source="OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"),
+    cpp_dep("pybind11", scope="build", version="c7fb32eea8c92bebeea9f0735041a72aa20c75f5",
+            purpose="Python C++ 绑定生成", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/pybind/pybind11.git",
+            declared_in=["python/mujoco/CMakeLists.txt:284"],
+            source_repo="https://github.com/pybind/pybind11", registry_name="pybind11",
+            used_symbols=[],
+            harmony_adapted=False, harmony_adapted_source=None),
+    # optional / studio
+    cpp_dep("filament", scope="optional", version="da22932b543b59810caf490d7f9e8859ec3fe204",
+            purpose="可选的基于 PBR 的渲染后端（实验性 Studio）", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/google/filament.git",
+            declared_in=["cmake/third_party_deps/filament.cmake"],
+            source_repo="https://github.com/google/filament", registry_name="filament",
+            used_symbols=[],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("dear_imgui", scope="optional", version="3109131a882daec56a530aff540416983c240443",
+            purpose="实验性 Studio 的即时模式 UI", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/ocornut/imgui.git",
+            declared_in=["cmake/third_party_deps/dear_imgui.cmake"],
+            source_repo="https://github.com/ocornut/imgui", registry_name="imgui",
+            aliases=["imgui"],
+            used_symbols=[],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("implot", scope="optional", version="0d4d87c3e005349c1aeb7ceacfd20a67f23c42b8",
+            purpose="实验性 Studio 的图表 UI", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/epezent/implot.git",
+            declared_in=["cmake/third_party_deps/implot.cmake"],
+            source_repo="https://github.com/epezent/implot", registry_name="implot",
+            used_symbols=[],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("sdl2", scope="optional", version="98d1f3a45aae568ccd6ed5fec179330f47d4d356",
+            purpose="实验性 Studio 的窗口抽象与 ImGui 后端", acquisition="fetchcontent", locality="remote",
+            source="https://github.com/libsdl-org/SDL.git",
+            declared_in=["cmake/third_party_deps/sdl2.cmake"],
+            source_repo="https://github.com/libsdl-org/SDL", registry_name="sdl2",
+            aliases=["SDL2"],
+            used_symbols=[],
+            harmony_adapted=False, harmony_adapted_source=None),
+    cpp_dep("OpenUSD", scope="optional", version=None,
+            purpose="可选的 USD 模型导入/导出", acquisition="find_package", locality="system",
+            source="系统预装 pxr/OpenUSD，或按 cmake/third_party_deps/openusd 构建",
+            declared_in=["cmake/third_party_deps/openusd.cmake", "CMakeLists.txt:280"],
+            source_repo="https://github.com/PixarAnimationStudios/USD", registry_name="usd-core",
+            aliases=["USD", "pxr"],
+            used_symbols=[],
+            harmony_adapted=False, harmony_adapted_source=None),
+    # Python runtime
+    py_dep("numpy", scope="runtime", version=None,
+           purpose="Python 绑定的数值数组与类型桥接", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:31"],
+           used_symbols=["numpy.ndarray", "numpy.dtype"],
+           harmony_adapted=True, harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"),
+    py_dep("absl-py", scope="runtime", version=None,
+           purpose="Python 工具库（flags/logging）", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:28"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("etils", scope="runtime", version=None,
+           purpose="路径与 epath 工具", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:29"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("glfw", scope="runtime", version=None,
+           purpose="Python 版 viewer 窗口管理", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:30"],
+           used_symbols=["glfw.create_window", "glfw.make_context_current"],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("pyopengl", scope="runtime", version=None,
+           purpose="Python 版 OpenGL 绑定", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:32"],
+           used_symbols=["OpenGL.GL"],
+           harmony_adapted=True, harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"),
+    # Python optional / MJX
+    py_dep("jax", scope="optional", version=None,
+           purpose="MJX 子包的 XLA 可微分物理后端", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["mjx/pyproject.toml:31"],
+           used_symbols=["jax.jit", "jax.numpy"],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("jaxlib", scope="optional", version=None,
+           purpose="JAX 的 XLA 运行时", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["mjx/pyproject.toml:32"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("scipy", scope="optional", version=None,
+           purpose="MJX 与 sysid 的科学计算", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["mjx/pyproject.toml:34", "python/pyproject.toml:75"],
+           used_symbols=[],
+           harmony_adapted=True, harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"),
+    py_dep("trimesh", scope="optional", version=None,
+           purpose="MJX 的网格处理", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["mjx/pyproject.toml:35"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("warp-lang", scope="optional", version="1.14.0",
+           purpose="MJX Warp 后端", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["mjx/pyproject.toml:40"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("imageio", scope="optional", version=None,
+           purpose="sysid 报告生成 MP4 视频", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:70"],
+           used_symbols=["imageio.get_writer"],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("usd-core", scope="optional", version=None,
+           purpose="USD 导出/导入", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:80"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("pillow", scope="optional", version=None,
+           purpose="USD 导出的图像处理", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:81"],
+           used_symbols=[],
+           harmony_adapted=True, harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"),
+    py_dep("colorama", scope="optional", version=None,
+           purpose="sysid 报告终端颜色", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:69"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("jinja2", scope="optional", version=None,
+           purpose="sysid HTML 报告模板", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:71"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("matplotlib", scope="optional", version=None,
+           purpose="sysid 报告绘图", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:72"],
+           used_symbols=[],
+           harmony_adapted=True, harmony_adapted_source="OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"),
+    py_dep("plotly", scope="optional", version=None,
+           purpose="sysid 报告交互图表", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:73"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("pyyaml", scope="optional", version=None,
+           purpose="sysid 配置", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:74"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("tabulate", scope="optional", version=None,
+           purpose="sysid 表格输出", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:76"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+    py_dep("typing_extensions", scope="optional", version=None,
+           purpose="Python 类型扩展", acquisition="package_manager", locality="remote",
+           source="PyPI", declared_in=["python/pyproject.toml:77"],
+           used_symbols=[],
+           harmony_adapted=False, harmony_adapted_source=None),
+]
+
+by_ecosystem = defaultdict(list)
+for d in dependencies:
+    by_ecosystem[d["ecosystem"]].append(d["name"])
+
+dependencies_block = {
+    "count": len(dependencies),
+    "manifests": ["CMakeLists.txt", "cmake/MujocoDependencies.cmake", "simulate/cmake/SimulateDependencies.cmake",
+                  "python/pyproject.toml", "mjx/pyproject.toml"],
+    "by_ecosystem": dict(by_ecosystem),
+    "dependencies": dependencies,
+    "notes": "核心 libmujoco 依赖 lodepng/tinyxml2/tinyxml2/tinyobjloader/ccd/qhull/miniz 与系统 Threads；simulate/viewer 依赖 glfw3；实验性 Studio 依赖 SDL2/Dear ImGui/Implot/Filament；USD 与 JAX/MJX 为可选。CMake 使用 FetchContent/fetchpackage/findorfetch 自动下载第三方源码。"
+}
+
+# ---- native_api ------------------------------------------------------------
+native_api = {
+    "summary": "核心物理引擎主要使用 C/C++ 标准库与 POSIX/Win32 封装；渲染依赖 OpenGL/EGL/GLX/WGL/CGL 平台加载器；simulate/viewer 使用 GLFW；实验性 Studio 使用 SDL2/ImGui/Filament；包含可选 AVX 加速与插件动态加载。",
+    "groups": [
+        {
+            "type": "cpp_stl",
+            "category": "standard",
+            "platform": "portable",
+            "apis": [
+                {"name": "std::filesystem", "purpose": "跨平台路径解析与文件存在性检查", "count": 12, "evidence": ["src/experimental/platform/sys_utils.cc:37", "src/user/user_model.cc:1627"]},
+                {"name": "std::thread", "purpose": "线程池并发", "count": 8, "evidence": ["src/user/user_threadpool.cc:30", "src/engine/engine_thread.cc:32"]},
+                {"name": "std::mutex", "purpose": "资源与缓存互斥", "count": 20, "evidence": ["src/user/user_cache.cc:45", "src/xml/xml_global.cc:39"]}
+            ]
+        },
+        {
+            "type": "posix",
+            "category": "platform",
+            "platform": "posix",
+            "apis": [
+                {"name": "stat", "purpose": "获取文件元数据", "count": 4, "evidence": ["src/user/user_vfs.cc:51"]},
+                {"name": "dlopen / dlsym / dlclose", "purpose": "运行时加载插件与 OpenGL 平台库", "count": 10, "evidence": ["src/engine/engine_plugin.cc:695", "src/render/classic/glad/glad.c:176", "src/render/classic/glad/glad.c:211"]},
+                {"name": "dladdr / dl_iterate_phdr", "purpose": "模块路径自省与已加载 DSO 遍历", "count": 3, "evidence": ["src/experimental/platform/sys_utils.cc:43", "src/render/classic/glad/glad.c:200"]},
+                {"name": "sysctlbyname", "purpose": "macOS Rosetta 检测", "count": 1, "evidence": ["src/engine/engine_crossplatform.cc:35"], "conditional": True},
+                {"name": "popen / fgets", "purpose": "Linux 文件对话框调用 zenity", "count": 1, "evidence": ["src/experimental/platform/ux/file_dialog_zenity.cc:40"], "conditional": True}
+            ]
+        },
+        {
+            "type": "win32",
+            "category": "platform",
+            "platform": "windows",
+            "apis": [
+                {"name": "LoadLibraryA / LoadLibraryW", "purpose": "Windows 下加载插件、OpenGL 与 GLFW", "count": 4, "evidence": ["src/render/classic/glad/glad.c:91", "src/engine/engine_plugin.cc:693", "simulate/glfw_dispatch.cc:53"]},
+                {"name": "GetProcAddress / FreeLibrary", "purpose": "解析动态库符号", "count": 4, "evidence": ["src/render/classic/glad/glad.c:94", "simulate/glfw_dispatch.cc:60"]},
+                {"name": "FindFirstFileA / FindNextFileA", "purpose": "Windows 下扫描插件目录", "count": 1, "evidence": ["src/engine/engine_plugin.cc:734"]},
+                {"name": "GetModuleHandleExA / GetModuleFileNameA", "purpose": "获取模块所在目录", "count": 1, "evidence": ["src/experimental/platform/sys_utils.cc:31"]},
+                {"name": "IFileDialog (COM)", "purpose": "Windows 原生文件对话框", "count": 1, "evidence": ["src/experimental/platform/ux/file_dialog_win.cc:158"], "conditional": True}
+            ]
+        },
+        {
+            "type": "opengl",
+            "category": "hardware",
+            "platform": "portable",
+            "apis": [
+                {"name": "glBindFramebuffer", "purpose": "绑定默认/离屏 framebuffer", "count": 2, "evidence": ["src/render/classic/render_context.c:1552"]},
+                {"name": "glCheckFramebufferStatus", "purpose": "检测窗口 framebuffer 可用性", "count": 1, "evidence": ["src/render/classic/render_context.c:1553"]},
+                {"name": "glDebugMessageCallback", "purpose": "OpenGL 调试输出", "count": 1, "evidence": ["src/render/classic/render_context.c:1566"]},
+                {"name": "gladLoadGL", "purpose": "初始化 OpenGL 函数指针", "count": 1, "evidence": ["src/render/classic/render_context.c:1537"]}
+            ]
+        },
+        {
+            "type": "gl_platform",
+            "category": "platform",
+            "platform": "posix",
+            "apis": [
+                {"name": "glXGetProcAddressARB", "purpose": "Linux/X11 OpenGL 符号解析", "count": 2, "evidence": ["src/render/classic/glad/glad.c:190", "src/render/classic/glad/glad.c:218"], "conditional": True},
+                {"name": "eglGetProcAddress", "purpose": "EGL 头less/嵌入式 OpenGL 符号解析", "count": 2, "evidence": ["src/render/classic/glad/glad.c:180", "src/experimental/platform/hal/egl_utils.cc:32"], "conditional": True},
+                {"name": "OSMesaGetProcAddress", "purpose": "OSMesa 纯 CPU 渲染符号解析", "count": 2, "evidence": ["src/render/classic/glad/glad.c:185", "src/render/classic/glad/glad.c:224"], "conditional": True}
+            ]
+        },
+        {
+            "type": "cgl",
+            "category": "platform",
+            "platform": "macos",
+            "apis": [
+                {"name": "CGLSetCurrentContext / CGLLockContext", "purpose": "macOS CGL OpenGL 上下文切换", "count": 1, "evidence": ["python/mujoco/cgl/__init__.py:54"], "conditional": True}
+            ]
+        },
+        {
+            "type": "glfw",
+            "category": "platform",
+            "platform": "portable",
+            "apis": [
+                {"name": "glfwCreateWindow", "purpose": "创建交互式 viewer 窗口", "count": 1, "evidence": ["simulate/glfw_dispatch.cc:82"]},
+                {"name": "glfwPollEvents", "purpose": "处理输入事件", "count": 1, "evidence": ["simulate/glfw_dispatch.cc:98"]},
+                {"name": "glfwMakeContextCurrent", "purpose": "设置 OpenGL 当前上下文", "count": 1, "evidence": ["simulate/glfw_dispatch.cc:97"]}
+            ]
+        },
+        {
+            "type": "arch_simd",
+            "category": "hardware",
+            "platform": "portable",
+            "apis": [
+                {"name": "__m256d / _mm256_*", "purpose": "AVX 稀疏/稠密向量运算加速", "count": 6, "evidence": ["src/engine/engine_util_sparse_avx.h:40", "src/engine/engine_util_blas_avx.h:33"], "conditional": True}
+            ]
+        }
+    ],
+    "dynamic_libraries": [
+        {
+            "name": "libGL.so / libGLX.so",
+            "mechanism": "dlopen",
+            "acquisition": "system",
+            "source": "系统 OpenGL/GLX 平台库",
+            "description": "Linux/X11 OpenGL 平台库，由 GLAD 运行时加载以解析 OpenGL 函数",
+            "optional": True,
+            "evidence": ["src/render/classic/glad/glad.c:211"]
+        },
+        {
+            "name": "libEGL.so",
+            "mechanism": "dlopen",
+            "acquisition": "system",
+            "source": "系统 EGL 库",
+            "description": "EGL headless/嵌入式 OpenGL 平台库",
+            "optional": True,
+            "evidence": ["src/render/classic/glad/glad.c:157"]
+        },
+        {
+            "name": "libOSMesa.so",
+            "mechanism": "dlopen",
+            "acquisition": "system",
+            "source": "系统 OSMesa 库",
+            "description": "纯 CPU Mesa OpenGL 渲染平台库",
+            "optional": True,
+            "evidence": ["src/render/classic/glad/glad.c:158"]
+        },
+        {
+            "name": "opengl32.dll",
+            "mechanism": "LoadLibraryW",
+            "acquisition": "system",
+            "source": "Windows 系统 OpenGL DLL",
+            "description": "Windows OpenGL 平台库",
+            "optional": True,
+            "evidence": ["src/render/classic/glad/glad.c:91"]
+        },
+        {
+            "name": "glfw3.dll",
+            "mechanism": "LoadLibraryA / dlopen",
+            "acquisition": "system",
+            "source": "系统或随包分发的 GLFW 库（仅当 SIMULATE_GLFW_DYNAMIC_SYMBOLS 启用）",
+            "description": "simulate/viewer 窗口与输入库",
+            "optional": True,
+            "evidence": ["simulate/glfw_dispatch.cc:53"]
+        },
+        {
+            "name": "mujoco.dll / libmujoco.so",
+            "mechanism": "ctypes.CDLL / ctypes.WinDLL",
+            "acquisition": "self_build",
+            "source": "本仓库构建的 libmujoco 共享库",
+            "description": "Python 绑定在运行时加载的核心 C 库",
+            "optional": False,
+            "evidence": ["python/mujoco/__init__.py:38"]
+        },
+        {
+            "name": "<plugin>.dll / .so",
+            "mechanism": "LoadLibraryA / dlopen",
+            "acquisition": "third_party",
+            "source": "用户/第三方提供的插件动态库",
+            "description": "通过 mj_loadPluginLibrary / mj_loadAllPluginLibraries 加载的 actuator/sensor/SDF 等插件",
+            "optional": True,
+            "evidence": ["src/engine/engine_plugin.cc:691"]
+        }
+    ],
+    "platform_dependence": "mixed"
+}
+
+# ---- runtime_surface -------------------------------------------------------
+runtime_surface = {
+    "summary": "运行时主要读取环境变量选择渲染后端、日志主题与资源路径；通过 VFS 与文件系统加载模型和资源；simulate/viewer 与实验性 Studio 依赖窗口系统；实验性 Studio 在 Linux 通过 zenity 弹出文件对话框。",
+    "network": [],
+    "filesystem": [
+        {"detail": "MJCF/URDF/MJB/MJZ 模型与资源文件", "purpose": "加载、编译与保存仿真模型", "evidence": ["include/mujoco/mujoco.h:132", "src/user/user_vfs.cc"]},
+        {"detail": "插件目录扫描", "purpose": "运行时发现并加载动态插件", "evidence": ["src/engine/engine_plugin.cc:708"]},
+        {"detail": "实验性 Studio 资源目录与资产", "purpose": "加载字体、图标等 UI 资源", "evidence": ["src/experimental/studio/main.cc:41"]}
+    ],
+    "env_vars": [
+        {"name": "MUJOCO_GL", "purpose": "Python 绑定选择 OpenGL 后端（glfw/glx/egl/osmesa/cgl）", "evidence": ["python/mujoco/rendering/classic/gl_context.py:24"]},
+        {"name": "MUJOCO_GL_DEBUG", "purpose": "开启 OpenGL 调试输出", "evidence": ["src/render/classic/render_context.c:1519"]},
+        {"name": "MUJOCO_LOG_TOPICS", "purpose": "设置日志主题掩码", "evidence": ["src/engine/engine_util_errmem.c:112"]},
+        {"name": "MUJOCO_PATH", "purpose": "Python 绑定构建时定位 libmujoco 与头文件", "evidence": ["python/setup.py:167"]},
+        {"name": "MUJOCO_PLUGIN_PATH", "purpose": "Python 绑定构建时定位插件库", "evidence": ["python/setup.py:169"]},
+        {"name": "MUJOCO_EGL_DEVICE_ID", "purpose": "EGL 渲染选择 GPU 设备", "evidence": ["python/mujoco/egl/__init__.py:38"]},
+        {"name": "PYOPENGL_PLATFORM", "purpose": "PyOpenGL 平台选择（egl/osmesa）", "evidence": ["python/mujoco/osmesa/__init__.py:19"]},
+        {"name": "DISPLAY", "purpose": "实验性 Studio 选择 X11 显示", "evidence": ["python/mujoco/experimental/studio/native_viewer.cc:49"]},
+        {"name": "HOME / XDG_SESSION_TYPE / WAYLAND_DISPLAY", "purpose": "实验性 Studio 检测桌面会话类型", "evidence": ["src/experimental/studio/main.cc:88-121"]},
+        {"name": "MJPYTHON_BIN / MJPYTHON_LIBPYTHON", "purpose": "macOS mjpython 启动器定位 Python 解释器", "evidence": ["python/mujoco/mjpython/mjpython.py:48", "python/mujoco/mjpython/mjpython.mm:232"]},
+        {"name": "DYLD_FALLBACK_LIBRARY_PATH", "purpose": "macOS mjpython 设置库搜索路径", "evidence": ["python/mujoco/mjpython/mjpython.py:83"]}
+    ],
+    "subprocess": [
+        {"command": "zenity", "purpose": "实验性 Studio 在 Linux 弹出文件/保存/目录对话框", "evidence": ["src/experimental/platform/ux/file_dialog_zenity.cc:40"]},
+        {"command": "sysctl -n sysctl.proc_translated", "purpose": "Python 绑定在 macOS 检测 Rosetta 并拒绝运行", "evidence": ["python/mujoco/__init__.py:40"]}
+    ],
+    "devices": [
+        {"detail": "GPU（通过 OpenGL/EGL/CGL/WGL 上下文）", "purpose": "硬件加速渲染与离屏 framebuffer", "evidence": ["src/render/classic/render_context.c:1537", "python/mujoco/rendering/classic/gl_context.py"]}
+    ],
+    "services": []
+}
+
+# ---- build_env --------------------------------------------------------------
+build_env = {
+    "language_standard": "C11 / C++20",
+    "runtime_version": "Python >= 3.10（Python bindings）",
+    "build_system": "CMake（使用 FetchContent / fetchpackage / findorfetch 管理依赖）",
+    "compiler_extensions": [
+        {"detail": "AVX/AVX2  intrinsics（__m256d、_mm256_* 等）", "purpose": "稀疏/稠密线性代数加速", "evidence": ["src/engine/engine_util_sparse_avx.h", "src/engine/engine_util_blas_avx.h"]},
+        {"detail": "__attribute__((constructor, target(\"no-avx\")))", "purpose": "macOS Rosetta 启动检测", "evidence": ["src/engine/engine_crossplatform.cc:30"]},
+        {"detail": "MSVC / GCC / Clang 特定编译选项", "purpose": "跨平台编译器适配", "evidence": ["CMakeLists.txt", "cmake/MujocoOptions.cmake"]}
+    ],
+    "platforms": [
+        {"os": "linux", "arch": "x86_64", "evidence": ["README.md:78", ".github/workflows/build.yml"]},
+        {"os": "linux", "arch": "aarch64", "evidence": ["README.md:78"]},
+        {"os": "windows", "arch": "x86_64", "evidence": ["README.md:78"]},
+        {"os": "macos", "arch": "universal", "evidence": ["README.md:78", "simulate/CMakeLists.txt:39"]}
+    ],
+    "entry_points": [],
+    "packaging": "C++ 共享库 + CMake 安装包；Python 通过 setuptools/pip 分发 wheel；macOS 可选 Framework 与 App Bundle；Unity 插件包；WASM 通过 npm/JS 分发。",
+    "notes": "核心构建产物为 libmujoco 共享库；simulate 与 Python 绑定为额外构建目标。"
+}
+
+# ---- capability_profile -----------------------------------------------------
+capability_profile = {
+    "summary": "本项目触及 GUI（GLFW/ImGui 窗口）、3D 渲染（OpenGL/Filament）与可选媒体（sysid 视频生成）场景；核心物理计算本身不依赖特定硬件。",
+    "scenarios": [
+        {
+            "key": "gui",
+            "present": True,
+            "kind": ["glfw", "imgui", "native_opengl_ui"],
+            "specific_hardware": False,
+            "via": ["glfw3", "dear_imgui", "src/ui/ui_main.c", "simulate/glfw_adapter.cc", "src/experimental/platform/ux/imgui_widgets.h"],
+            "harmony_status": "unknown",
+            "adaptation": "simulate/viewer 的 GLFW+ImGui 窗口与输入层需替换为鸿蒙桌面窗口/输入能力，或仅保留无窗口 offscreen 渲染",
+            "evidence": ["simulate/CMakeLists.txt:180", "simulate/glfw_adapter.cc:33", "src/ui/ui_main.c:15", "src/experimental/platform/ux/imgui_widgets.h:27"]
+        },
+        {
+            "key": "rendering_3d",
+            "present": True,
+            "kind": ["opengl", "egl", "glx", "wgl", "cgl", "filament"],
+            "specific_hardware": False,
+            "via": ["src/render/classic/glad/glad.c", "src/render/classic/render_context.c", "src/render/filament/mjrfilament.cc", "filament"],
+            "harmony_status": "partial",
+            "adaptation": "经典 OpenGL 渲染器需迁移到 OpenGL ES/EGL（鸿蒙部分支持）或改用 ArkGraphics 3D；Filament 后端需验证鸿蒙图形栈",
+            "evidence": ["src/render/classic/render_context.c:1537", "src/render/classic/glad/glad.c:176", "src/render/filament/mjrfilament.cc:1"]
+        },
+        {
+            "key": "media",
+            "present": True,
+            "kind": ["video_encode"],
+            "specific_hardware": False,
+            "via": ["imageio[ffmpeg]", "python/mujoco/sysid/report/sections/video.py"],
+            "harmony_status": "unknown",
+            "adaptation": "sysid 报告视频生成为可选功能，可关闭或迁移到 @ohos.multimedia.videoEncoder",
+            "evidence": ["python/mujoco/sysid/report/sections/video.py:151", "python/pyproject.toml:70"]
+        }
+    ]
+}
+
+# ---- harmony_adaptation -----------------------------------------------------
+harmony_adaptation = {
+    "target": "HarmonyOS NEXT PC（库默认模型 A：跑在已移植语言运行时 / 经 OHOS NDK 重编原生层；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {"person_days": [15, 35]},
+    "confidence": "medium",
+    "recommended_path": "recompile_napi",
+    "summary": "MuJoCo 核心物理引擎为跨平台 C/C++ 算法代码，经 OHOS NDK 重编即可运行；主要工作量在将 OpenGL 渲染器适配到鸿蒙 OpenGL ES/EGL（或 ArkGraphics 3D），以及将 GLFW/ImGui viewer 替换为鸿蒙桌面窗口能力。可选的 USD、JAX/MJX、sysid 视频等功能可默认关闭或另行移植。",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+        {
+            "id": "ta:opengl_egl",
+            "capability": "OpenGL ES / EGL 桌面可用性（经典渲染器）",
+            "required": True,
+            "target_status": "partial",
+            "impact": "渲染路径需在鸿蒙图形栈上运行；若 OpenGL ES/EGL 覆盖不足，需改写为 noop 或 ArkGraphics 3D",
+            "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl / #graphics_3d.egl"
+        },
+        {
+            "id": "ta:glfw_windowing",
+            "capability": "GLFW / ImGui / SDL2 窗口与输入后端（simulate/viewer 与实验性 Studio）",
+            "required": False,
+            "target_status": "unknown",
+            "impact": "库核心可脱离 GUI 运行；若需移植交互式 viewer，需替换为鸿蒙桌面窗口/输入能力",
+            "source": "references/harmony-pc-capabilities.json#gui.wm / #desktop_integration"
+        },
+        {
+            "id": "ta:posix_dlopen",
+            "capability": "POSIX dlopen/dlsym 与 musl 兼容性",
+            "required": True,
+            "target_status": "available",
+            "impact": "插件加载与 GLAD 符号解析依赖动态加载，musl 已支持",
+            "source": "references/harmony-pc-capabilities.json intro"
+        },
+        {
+            "id": "ta:python_runtime",
+            "capability": "Python 3.12 运行时（仅 Python bindings）",
+            "required": False,
+            "target_status": "available",
+            "impact": "Python 绑定可直接跑在已移植的鸿蒙 Python 上，原生扩展需 NDK 重编",
+            "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        }
+    ],
+    "required_permissions": [],
+    "blockers": [
+        {
+            "id": "bk:opengl_egl_partial",
+            "issue": "经典 OpenGL 渲染器依赖 OpenGL/EGL/GLX/WGL/CGL 平台加载器，鸿蒙 PC 对 OpenGL ES/EGL 仅部分支持",
+            "severity": "major",
+            "adaptability": "partial",
+            "category": "opengl_platform_gap",
+            "source_dimension": "native_api",
+            "harmony_status": "partial",
+            "remediation": "在鸿蒙上优先使用 EGL/GLES 后端构建 GLAD；若桌面 OpenGL 扩展不足，使用 noop 渲染器或将渲染迁移到 ArkGraphics 3D",
+            "caused_by": ["ta:opengl_egl"],
+            "evidence": ["src/render/classic/glad/glad.c:91", "src/render/classic/glad/glad.c:176", "src/render/classic/render_context.c:1537"]
+        },
+        {
+            "id": "bk:glfw_gui",
+            "issue": "simulate/viewer 与实验性 Studio 依赖 GLFW+ImGui（及 SDL2/Filament）窗口栈，鸿蒙桌面窗口能力未核实",
+            "severity": "major",
+            "adaptability": "partial",
+            "category": "gui_windowing",
+            "source_dimension": "capability_profile",
+            "harmony_status": "unknown",
+            "remediation": "将 viewer 层替换为 ArkUI/鸿蒙窗口 API，或仅提供无窗口 offscreen 渲染 + 命令行接口",
+            "caused_by": ["ta:glfw_windowing"],
+            "evidence": ["simulate/CMakeLists.txt:180", "simulate/glfw_adapter.cc:33", "src/experimental/platform/ux/imgui_widgets.h:27"]
+        },
+        {
+            "id": "bk:zenity_subprocess",
+            "issue": "实验性 Studio 的 Linux 文件对话框通过 popen 调用 zenity，鸿蒙环境可能无该外部命令",
+            "severity": "minor",
+            "adaptability": "adaptable",
+            "category": "subprocess_unavailable",
+            "source_dimension": "runtime_surface",
+            "harmony_status": "replace_with_ohos",
+            "remediation": "文件对话框改用鸿蒙 @ohos.filePicker 或移除该 UI 功能",
+            "evidence": ["src/experimental/platform/ux/file_dialog_zenity.cc:40"]
+        },
+        {
+            "id": "bk:win32_file_dialog",
+            "issue": "Windows 构建使用 Win32 COM 文件对话框，不适用于鸿蒙",
+            "severity": "minor",
+            "adaptability": "adaptable",
+            "category": "win32_api",
+            "source_dimension": "native_api",
+            "harmony_status": "unavailable",
+            "remediation": "条件编译排除 file_dialog_win.cc，使用 ArkUI 文件选择器",
+            "evidence": ["src/experimental/platform/ux/file_dialog_win.cc:28"]
+        },
+        {
+            "id": "bk:optional_usd",
+            "issue": "可选 USD 导出/导入依赖 OpenUSD（pxr），该库未在鸿蒙官方镜像中提供",
+            "severity": "minor",
+            "adaptability": "adaptable",
+            "category": "native_dependency",
+            "source_dimension": "dependencies",
+            "harmony_status": "replace_with_ohos",
+            "remediation": "默认关闭 MUJOCO_WITH_USD；如需该功能，先移植 OpenUSD 或改用其他格式",
+            "evidence": ["cmake/third_party_deps/openusd.cmake:19"]
+        },
+        {
+            "id": "bk:optional_mjx_jax",
+            "issue": "mujoco-mjx 依赖 JAX/JAXlib，目前未在鸿蒙 PyPI 镜像中提供",
+            "severity": "minor",
+            "adaptability": "adaptable",
+            "category": "native_dependency",
+            "source_dimension": "dependencies",
+            "harmony_status": "unknown",
+            "remediation": "mujoco-mjx 为可选子包；核心 mujoco Python 包可独立于 JAX 使用",
+            "evidence": ["mjx/pyproject.toml:31"]
+        },
+        {
+            "id": "bk:optional_sysid_ffmpeg",
+            "issue": "可选 sysid 视频报告依赖 imageio[ffmpeg] 生成 MP4，鸿蒙通用视频编码栈待核实",
+            "severity": "minor",
+            "adaptability": "partial",
+            "category": "media_dependency",
+            "source_dimension": "dependencies",
+            "harmony_status": "unknown",
+            "remediation": "默认关闭视频生成或迁移到 @ohos.multimedia.videoEncoder",
+            "evidence": ["python/mujoco/sysid/report/sections/video.py:151"]
+        }
+    ],
+    "compatible": [
+        {"aspect": "核心物理引擎算法", "note": "刚体动力学、约束求解、碰撞检测等均为跨平台数值算法，不依赖平台 API", "evidence": ["src/engine/engine_core_constraint.c", "src/engine/engine_collision_*.c"]},
+        {"aspect": "模型编译与 VFS", "note": "MJCF/URDF 解析、资源缓存、ZIP 读写使用标准 C/C++ 与 miniz，可在 musl 上重编", "evidence": ["src/user/user_vfs.cc", "src/xml/mjz/mjz_decoder.cc"]},
+        {"aspect": "插件系统", "note": "动态加载基于 POSIX dlopen/musl，鸿蒙原生层已支持", "evidence": ["src/engine/engine_plugin.cc:695"]},
+        {"aspect": "已适配的核心依赖", "note": "tinyxml2、ccd、googletest、eigen、numpy、pyopengl、scipy、pillow、matplotlib 已有鸿蒙官方镜像", "evidence": ["cmake/MujocoDependencies.cmake", "python/pyproject.toml"]}
+    ],
+    "key_tasks": [
+        "使用 OHOS NDK 与 ohos.toolchain.cmake 交叉编译 libmujoco 及核心 C/C++ 依赖",
+        "验证并适配 GLAD OpenGL 加载器到鸿蒙 EGL/GLES，必要时提供 noop 渲染后端",
+        "将 GLFW/ImGui viewer 替换为 ArkUI/鸿蒙桌面窗口，或默认禁用交互式 viewer",
+        "重新构建 Python 绑定（pybind11、ctypes）并在鸿蒙 Python 上验证",
+        "对可选功能（USD、MJX/JAX、sysid 视频）默认关闭或单独评估移植",
+        "运行核心单元测试，验证跨平台物理计算结果一致"
+    ],
+    "notes": "本评估按库模型 A（跑在已移植运行时 + NDK 重编）进行；OpenGL/GUI 目标能力存在未知/部分支持事实，因此 confidence 为 medium。若将 simulate 视为独立桌面应用（模型 C），则 GUI/窗口栈会成为更强阻碍。"
+}
+
+# ---- meta ------------------------------------------------------------------
+meta = {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": metrics["code_metrics"]["tool"],
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": [
+        {"dimension": "dependencies", "field": "acquisition", "kind": "new_value", "value": "fetchpackage / findorfetch", "rationale": "MuJoCo 使用自定义 CMake 包装 fetchpackage 与 findorfetch 管理第三方源码，建议将这类 wrapper 归入 fetchcontent 变体或新增 acquisition 值"},
+        {"dimension": "function_summary", "field": "scope", "kind": "gap", "value": "repo_contains_multiple_packages", "rationale": "同一仓库包含 mujoco 核心库、mujoco-mjx 子包、Unity 插件与 WASM 绑定，function_summary 以核心 C/C++ 库为主，MJX 等作为可选/附加能力"},
+        {"dimension": "harmony_adaptation", "field": "target_assumptions", "kind": "ambiguity", "value": "opengl_egl_partial", "rationale": "鸿蒙 PC OpenGL ES/EGL 的桌面完整度未知，导致渲染器适配工作量与可行性存在不确定性"},
+        {"dimension": "capability_profile", "field": "key", "kind": "new_value", "value": "video_encode_optional", "rationale": "sysid 报告生成 MP4 属于可选媒体场景，但未使用摄像头/麦克风等硬件，仅依赖 imageio/ffmpeg"}
+    ]
+}
+
+# ---- assemble --------------------------------------------------------------
+report = {
+    "library": library,
+    "function_summary": function_summary,
+    "languages": metrics["languages"],
+    "code_metrics": metrics["code_metrics"],
+    "tests": metrics["tests"],
+    "license": license_block,
+    "dependencies": dependencies_block,
+    "native_api": native_api,
+    "runtime_surface": runtime_surface,
+    "build_env": build_env,
+    "capability_profile": capability_profile,
+    "harmony_adaptation": harmony_adaptation,
+    "meta": meta,
+}
+
+out_path = os.path.join(RUN, "report.json")
+with open(out_path, "w", encoding="utf-8") as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+
+print(f"Wrote {out_path}")

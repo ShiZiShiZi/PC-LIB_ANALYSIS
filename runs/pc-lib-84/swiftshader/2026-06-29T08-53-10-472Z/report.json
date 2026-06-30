@@ -1,0 +1,1132 @@
+{
+  "library": {
+    "name": "SwiftShader",
+    "kind": "library",
+    "package_name": null,
+    "aliases": ["vk_swiftshader"],
+    "import_names": [],
+    "source_url": "https://github.com/google/swiftshader.git",
+    "analyzed_at": "2026-06-29T08:53:10.472Z",
+    "commit": null,
+    "one_liner": "基于 CPU 的高性能 Vulkan 1.3 图形 API 软件实现，可作为显卡驱动的即插即用替代",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "SwiftShader 是 Google 开发的高性能 CPU 端 Vulkan 1.3 图形 API 软件渲染器。它完整实现了 Vulkan ICD（Installable Client Driver）接口，使不具备 GPU 硬件或驱动不可用的环境也能运行 Vulkan 应用程序。其核心是一个名为 Reactor 的 JIT 编译器，利用 LLVM 或 Subzero 后端在运行时将 SPIR-V 着色器编译为宿主 CPU 原生机器码，从而实现高效的软件光栅化。项目广泛用于 Chrome/Android 等平台的测试与回退渲染。",
+    "categories": [
+      {
+        "name": "Vulkan ICD 实现",
+        "description": "完整实现 Vulkan 1.3 Installable Client Driver 接口，导出 vk_icdGetInstanceProcAddr 等 ICD 入口，支持实例/设备创建、命令缓冲区、管线、描述符集、同步对象等全部 Vulkan 核心对象与操作",
+        "evidence": ["src/Vulkan/libVulkan.cpp:252 (vk_icdGetInstanceProcAddr)", "src/Vulkan/VkDevice.cpp", "src/Vulkan/VkCommandBuffer.cpp", "src/Vulkan/VkPhysicalDevice.cpp"]
+      },
+      {
+        "name": "SPIR-V 着色器编译与执行",
+        "description": "解析 SPIR-V 二进制模块，将着色器指令翻译为可执行代码；涵盖算术、控制流、图像采样、内存操作等全部 SPIR-V 指令集",
+        "evidence": ["src/Pipeline/SpirvShader.cpp", "src/Pipeline/SpirvShaderArithmetic.cpp", "src/Pipeline/SpirvShaderControlFlow.cpp", "src/Pipeline/SpirvShaderImage.cpp", "src/Pipeline/SpirvShaderSampling.cpp"]
+      },
+      {
+        "name": "Reactor JIT 编译器",
+        "description": "自研 JIT 编译框架，支持 LLVM 和 Subzero 两个后端；在运行时将着色器及渲染管线阶段编译为优化的宿主 CPU 原生代码，支持 SIMD 向量化",
+        "evidence": ["src/Reactor/LLVMReactor.cpp", "src/Reactor/LLVMJIT.cpp", "src/Reactor/SubzeroReactor.cpp", "src/Reactor/SIMD.cpp", "src/Reactor/Reactor.cpp"]
+      },
+      {
+        "name": "软件光栅化渲染管线",
+        "description": "纯 CPU 实现完整的图形渲染管线，包括顶点处理、图元装配、裁剪、光栅化和像素着色；支持多种纹理压缩格式解码（BC/ETC/ASTC）",
+        "evidence": ["src/Device/Renderer.cpp", "src/Device/VertexProcessor.cpp", "src/Device/SetupProcessor.cpp", "src/Device/PixelProcessor.cpp", "src/Device/QuadRasterizer.cpp", "src/Device/ASTC_Decoder.cpp", "src/Device/BC_Decoder.cpp", "src/Device/ETC_Decoder.cpp"]
+      },
+      {
+        "name": "窗口系统集成（WSI）",
+        "description": "支持多平台窗口系统呈现：Win32 (GDI)、XCB/X11、Wayland、macOS Metal、DirectFB、Fuchsia、Headless 无头模式；动态加载平台显示库",
+        "evidence": ["src/WSI/Win32SurfaceKHR.cpp", "src/WSI/XcbSurfaceKHR.cpp", "src/WSI/WaylandSurfaceKHR.cpp", "src/WSI/MetalSurface.mm", "src/WSI/HeadlessSurfaceKHR.cpp", "src/WSI/libXCB.cpp", "src/WSI/libWaylandClient.cpp"]
+      }
+    ],
+    "domain": "图形渲染",
+    "target_users": "需要在无 GPU 环境下运行 Vulkan 应用的开发者（如 Chrome/Android 团队、CI/CD 自动化测试、嵌入式设备）；也可配合 ANGLE 实现 OpenGL ES 软件渲染（SwANGLE）"
+  },
+  "languages": {
+    "primary": "C/C++ Header",
+    "all": [
+      "Text",
+      "C/C++ Header",
+      "C++",
+      "Go",
+      "CMake",
+      "Markdown",
+      "Bourne Shell",
+      "Windows Module Definition"
+    ],
+    "breakdown": [
+      {
+        "language": "Text",
+        "files": 115,
+        "code": 3354762,
+        "pct": 88.06,
+        "production": { "files": 4, "code": 242 },
+        "test": { "files": 111, "code": 3354520 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 219,
+        "code": 368367,
+        "pct": 9.67,
+        "production": { "files": 206, "code": 367888 },
+        "test": { "files": 13, "code": 479 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "C++",
+        "files": 149,
+        "code": 77375,
+        "pct": 2.03,
+        "production": { "files": 116, "code": 69053 },
+        "test": { "files": 33, "code": 8322 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Go",
+        "files": 23,
+        "code": 4792,
+        "pct": 0.13,
+        "production": { "files": 0, "code": 0 },
+        "test": { "files": 23, "code": 4792 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "CMake",
+        "files": 18,
+        "code": 1761,
+        "pct": 0.05,
+        "production": { "files": 8, "code": 1381 },
+        "test": { "files": 10, "code": 380 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Markdown",
+        "files": 12,
+        "code": 1214,
+        "pct": 0.03,
+        "production": { "files": 12, "code": 1214 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 12,
+        "code": 316,
+        "pct": 0.01,
+        "production": { "files": 3, "code": 79 },
+        "test": { "files": 9, "code": 237 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Windows Module Definition",
+        "files": 1,
+        "code": 241,
+        "pct": 0.01,
+        "production": { "files": 1, "code": 241 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Lisp",
+        "files": 1,
+        "code": 162,
+        "pct": 0.0,
+        "production": { "files": 1, "code": 162 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Objective-C++",
+        "files": 1,
+        "code": 156,
+        "pct": 0.0,
+        "production": { "files": 1, "code": 156 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 116,
+        "pct": 0.0,
+        "production": { "files": 1, "code": 116 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "JSON",
+        "files": 6,
+        "code": 93,
+        "pct": 0.0,
+        "production": { "files": 3, "code": 67 },
+        "test": { "files": 3, "code": 26 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Windows Resource File",
+        "files": 1,
+        "code": 85,
+        "pct": 0.0,
+        "production": { "files": 1, "code": 85 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Python",
+        "files": 3,
+        "code": 81,
+        "pct": 0.0,
+        "production": { "files": 2, "code": 56 },
+        "test": { "files": 1, "code": 25 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 4,
+        "code": 71,
+        "pct": 0.0,
+        "production": { "files": 1, "code": 27 },
+        "test": { "files": 3, "code": 44 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "diff",
+        "files": 1,
+        "code": 11,
+        "pct": 0.0,
+        "production": { "files": 0, "code": 0 },
+        "test": { "files": 1, "code": 11 },
+        "example": { "files": 0, "code": 0 }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 567,
+      "code": 3809603,
+      "comment": 40515,
+      "blank": 70733,
+      "total_lines": 3920851
+    },
+    "production": {
+      "files": 360,
+      "code": 440767,
+      "comment": 38126,
+      "blank": 67820,
+      "total_lines": 546713
+    },
+    "test": {
+      "files": 207,
+      "code": 3368836,
+      "comment": 2389,
+      "blank": 2913,
+      "total_lines": 3374138
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": { "files": 30, "code": 284, "macros": ["_MSC_VER", "_WIN32", "_WIN64"] },
+        "macos": { "files": 8, "code": 79, "macros": ["__APPLE__", "__MACH__"] },
+        "linux": { "files": 5, "code": 75, "macros": ["__linux__"] },
+        "posix": { "files": 4, "code": 21, "macros": ["__unix__"] }
+      },
+      "total": 459,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 207,
+    "test_cases": 164,
+    "frameworks": ["googletest"],
+    "by_language": {
+      "C++": { "files": 33, "cases": 164 },
+      "Text": { "files": 111, "cases": 0 },
+      "Go": { "files": 23, "cases": 0 },
+      "C/C++ Header": { "files": 13, "cases": 0 },
+      "Bourne Shell": { "files": 9, "cases": 0 },
+      "CMake": { "files": 10, "cases": 0 },
+      "DOS Batch": { "files": 3, "cases": 0 },
+      "Python": { "files": 1, "cases": 0 },
+      "JSON": { "files": 3, "cases": 0 },
+      "diff": { "files": 1, "cases": 0 }
+    },
+    "notes": "C++ 单元测试使用 googletest；Text 文件为 dEQP 测试用例数据；Go 代码为 regres 回归测试框架"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE.txt"],
+    "evidence": "项目根目录 LICENSE.txt 为完整的 Apache License 2.0 全文；README.md 与源文件头均标注 Apache-2.0；third_party 子目录各有独立许可证（LLVM 为 Apache-2.0 WITH LLVM-exception，Subzero 为 BSD 风格 Illinois License，marl/astc-encoder/SPIRV-Tools 为 Apache-2.0）",
+    "notes": "主项目 Apache-2.0；捆绑的 LLVM 受 Apache-2.0 WITH LLVM-exception 约束（非 copyleft）；Subzero 受 University of Illinois/NCSA 开源许可证约束（BSD 风格，与 LLVM 同源）"
+  },
+  "dependencies": {
+    "count": 14,
+    "manifests": ["CMakeLists.txt", ".gitmodules"],
+    "by_ecosystem": { "cpp": 14 },
+    "dependencies": [
+      {
+        "name": "LLVM",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/llvm/llvm-project.git",
+        "import_names": [],
+        "aliases": ["llvm-10.0", "llvm-16.0"],
+        "scope": "runtime",
+        "version": "10.0 / 16.0",
+        "purpose": "Reactor JIT 编译器的默认后端，用于将运行时生成的 IR 编译为宿主 CPU 原生机器码",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "third_party/llvm-10.0/ 和 third_party/llvm-16.0/ 内联源码",
+        "declared_in": ["CMakeLists.txt:689"],
+        "used_symbols": ["llvm::orc::LLJIT", "llvm::IRBuilder", "llvm::Module", "llvm::Function", "llvm::ExecutionEngine"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Subzero",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://chromium.googlesource.com/native_client/pnacl-subzero/",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Reactor JIT 编译器的可选后端（替代 LLVM），更轻量的 Subzero 编译器",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "third_party/subzero/ 内联源码（git-subtree 引入）",
+        "declared_in": ["CMakeLists.txt:717"],
+        "used_symbols": ["Ice::Compiler", "Ice::GlobalContext"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "llvm-subzero",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": null,
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Subzero 所需的最小化 LLVM 依赖子集",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "third_party/llvm-subzero/ 内联源码",
+        "declared_in": ["CMakeLists.txt:716"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "marl",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/google/marl",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "轻量级 C++ 并行任务调度库，用于 SwiftShader 的多线程渲染任务调度",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "third_party/marl/ 内联源码",
+        "declared_in": ["CMakeLists.txt:724"],
+        "used_symbols": ["marl::Scheduler", "marl::Window", "marl::mutex", "marl::Thread"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "SPIRV-Tools",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/KhronosGroup/SPIRV-Tools",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "SPIR-V 着色器二进制的验证、反汇编与优化工具库",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "third_party/SPIRV-Tools/ 内联源码",
+        "declared_in": ["CMakeLists.txt:821"],
+        "used_symbols": ["spvBinaryParse", "spvValidate"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "SPIRV-Headers",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/KhronosGroup/SPIRV-Headers",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "SPIR-V 规范的 C/C++ 头文件，供 SPIRV-Tools 和 SwiftShader 引用",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "third_party/SPIRV-Headers/ 内联源码",
+        "declared_in": ["CMakeLists.txt:817"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "astc-encoder",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/ARM-software/astc-encoder",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "ASTC 纹理压缩格式的编解码器",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "third_party/astc-encoder/ 内联源码",
+        "declared_in": ["CMakeLists.txt:744"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "googletest",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/google/googletest.git",
+        "import_names": [],
+        "aliases": ["gtest"],
+        "scope": "test",
+        "version": null,
+        "purpose": "C++ 单元测试框架",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "third_party/googletest/ git 子模块",
+        "declared_in": [".gitmodules:5", "CMakeLists.txt:755"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "glslang",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/KhronosGroup/glslang.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "test",
+        "version": null,
+        "purpose": "GLSL/ESSL 着色器编译器前端，用于测试中编译着色器到 SPIR-V",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "third_party/glslang/ git 子模块",
+        "declared_in": [".gitmodules:19", "CMakeLists.txt:281"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "benchmark",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/google/benchmark.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "test",
+        "version": null,
+        "purpose": "C++ 微基准测试框架",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "third_party/benchmark/ git 子模块",
+        "declared_in": [".gitmodules:16", "CMakeLists.txt:979"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libbacktrace",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/ianlancetaylor/libbacktrace.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "栈回溯库，用于 Reactor 调试信息功能（REACTOR_EMIT_DEBUG_INFO）",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "third_party/libbacktrace/src/ git 子模块",
+        "declared_in": [".gitmodules:10", "CMakeLists.txt:682"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "cppdap",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/google/cppdap",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "C++ Debug Adapter Protocol 实现，用于 Vulkan 调试器功能",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "third_party/cppdap/ git 子模块",
+        "declared_in": [".gitmodules:2", "CMakeLists.txt:737"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "nlohmann/json",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/nlohmann/json.git",
+        "import_names": [],
+        "aliases": ["json"],
+        "scope": "build",
+        "version": null,
+        "purpose": "C++ JSON 库，用于 Vulkan 调试器（cppdap 依赖）",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "third_party/json/ git 子模块",
+        "declared_in": [".gitmodules:8", "CMakeLists.txt:301"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "PowerVR_Examples",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/powervr-graphics/Native_SDK.git",
+        "import_names": [],
+        "aliases": ["PowerVR SDK"],
+        "scope": "test",
+        "version": null,
+        "purpose": "PowerVR 图形 SDK 示例应用，用于 SwiftShader 端到端验证",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "third_party/PowerVR_Examples/ git 子模块",
+        "declared_in": [".gitmodules:13", "CMakeLists.txt:297"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "绝大多数依赖为 vendored（源码内嵌）或 git submodule；运行时核心依赖为 LLVM（JIT 后端）、marl（线程调度）、SPIRV-Tools（着色器验证）；系统级依赖（XCB/Wayland/dl 等）通过 dlopen/LoadLibrary 动态加载，不在 CMake 中声明链接"
+  },
+  "native_api": {
+    "summary": "SwiftShader 大量使用 POSIX/Win32 平台 API 进行内存管理和可执行内存映射（JIT 编译），通过 dlopen/LoadLibrary 动态加载 XCB/Wayland 等显示库实现 WSI，并在 WSI 呈现层调用各平台窗口系统的原生绘图 API。此外使用了 x86 内联汇编/SIMD 指令和 Android 专有 API。",
+    "groups": [
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "mmap",
+            "purpose": "分配可执行内存页，供 Reactor JIT 编译器存放生成的机器码",
+            "count": 3,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:297", "src/Reactor/ExecutableMemory.cpp:347"],
+            "conditional": true
+          },
+          {
+            "name": "mprotect",
+            "purpose": "修改内存页权限（读/写/执行），用于 JIT 代码段的权限切换",
+            "count": 2,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:389", "src/Reactor/ExecutableMemory.cpp:415"],
+            "conditional": true
+          },
+          {
+            "name": "munmap",
+            "purpose": "释放 JIT 编译器分配的可执行内存映射",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:406"],
+            "conditional": true
+          },
+          {
+            "name": "sysconf",
+            "purpose": "获取系统页大小，用于内存对齐",
+            "count": 2,
+            "evidence": ["src/System/Memory.cpp:69", "src/Reactor/ExecutableMemory.cpp:229"],
+            "conditional": true
+          },
+          {
+            "name": "dlopen",
+            "purpose": "动态加载共享库（libxcb、libwayland-client 等）",
+            "count": 2,
+            "evidence": ["src/System/SharedLibrary.hpp:94", "src/System/SharedLibrary.hpp:103"],
+            "conditional": true
+          },
+          {
+            "name": "dlsym",
+            "purpose": "从已加载库中查找符号地址",
+            "count": 1,
+            "evidence": ["src/System/SharedLibrary.hpp:124"],
+            "conditional": true
+          },
+          {
+            "name": "dlclose",
+            "purpose": "关闭动态加载的共享库句柄",
+            "count": 1,
+            "evidence": ["src/System/SharedLibrary.hpp:117"],
+            "conditional": true
+          },
+          {
+            "name": "posix_memalign",
+            "purpose": "分配对齐的内存块",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:79"],
+            "conditional": true
+          },
+          {
+            "name": "shmget",
+            "purpose": "创建 X11 共享内存段（MIT-SHM 扩展），用于高效图像呈现",
+            "count": 1,
+            "evidence": ["src/WSI/XcbSurfaceKHR.cpp:121"],
+            "conditional": true
+          },
+          {
+            "name": "shmat",
+            "purpose": "附加 X11 共享内存段",
+            "count": 1,
+            "evidence": ["src/WSI/XcbSurfaceKHR.cpp:122"],
+            "conditional": true
+          },
+          {
+            "name": "shmdt",
+            "purpose": "分离 X11 共享内存段",
+            "count": 1,
+            "evidence": ["src/WSI/XcbSurfaceKHR.cpp:152"],
+            "conditional": true
+          },
+          {
+            "name": "shmctl",
+            "purpose": "控制 X11 共享内存段（IPC_RMID 删除标记）",
+            "count": 1,
+            "evidence": ["src/WSI/XcbSurfaceKHR.cpp:125"],
+            "conditional": true
+          },
+          {
+            "name": "syscall",
+            "purpose": "直接系统调用（memfd_create），用于为 JIT 代码创建命名的匿名内存映射",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:165"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/Reactor/ExecutableMemory.cpp", "src/System/Memory.cpp", "src/System/SharedLibrary.hpp", "src/WSI/XcbSurfaceKHR.cpp"]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "VirtualAlloc",
+            "purpose": "分配可执行内存页，供 Reactor JIT 编译器存放生成的机器码",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:280"],
+            "conditional": true
+          },
+          {
+            "name": "VirtualProtect",
+            "purpose": "修改内存页权限，用于 JIT 代码段权限切换和释放前的写权限恢复",
+            "count": 2,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:379", "src/Reactor/ExecutableMemory.cpp:398"],
+            "conditional": true
+          },
+          {
+            "name": "VirtualFree",
+            "purpose": "释放 JIT 编译器分配的可执行内存",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:401"],
+            "conditional": true
+          },
+          {
+            "name": "GetSystemInfo",
+            "purpose": "获取系统页大小",
+            "count": 2,
+            "evidence": ["src/System/Memory.cpp:66", "src/Reactor/ExecutableMemory.cpp:226"],
+            "conditional": true
+          },
+          {
+            "name": "LoadLibrary",
+            "purpose": "动态加载 DLL",
+            "count": 1,
+            "evidence": ["src/System/SharedLibrary.hpp:72"],
+            "conditional": true
+          },
+          {
+            "name": "GetProcAddress",
+            "purpose": "从 DLL 中查找函数地址",
+            "count": 1,
+            "evidence": ["src/System/SharedLibrary.hpp:89"],
+            "conditional": true
+          },
+          {
+            "name": "FreeLibrary",
+            "purpose": "释放已加载的 DLL",
+            "count": 1,
+            "evidence": ["src/System/SharedLibrary.hpp:84"],
+            "conditional": true
+          },
+          {
+            "name": "GetDC",
+            "purpose": "获取 Win32 窗口设备上下文，用于 GDI 呈现",
+            "count": 1,
+            "evidence": ["src/WSI/Win32SurfaceKHR.cpp:45"],
+            "conditional": true
+          },
+          {
+            "name": "StretchDIBits",
+            "purpose": "将 SwiftShader 渲染的像素数据通过 GDI 绘制到 Win32 窗口",
+            "count": 1,
+            "evidence": ["src/WSI/Win32SurfaceKHR.cpp:110"],
+            "conditional": true
+          },
+          {
+            "name": "DllMain",
+            "purpose": "DLL 入口点，处理进程附加/分离",
+            "count": 1,
+            "evidence": ["src/Vulkan/main.cpp:60"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/Reactor/ExecutableMemory.cpp", "src/System/Memory.cpp", "src/System/SharedLibrary.hpp", "src/WSI/Win32SurfaceKHR.cpp", "src/Vulkan/main.cpp"]
+      },
+      {
+        "type": "macos",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "mmap (MAP_JIT)",
+            "purpose": "macOS 10.14+ 上使用 MAP_JIT 标志分配可写可执行内存，满足代码签名运行时要求",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:347"],
+            "conditional": true
+          },
+          {
+            "name": "MTLCreateSystemDefaultDevice",
+            "purpose": "创建 Metal 默认设备，用于 Metal WSI 呈现层",
+            "count": 1,
+            "evidence": ["src/WSI/MetalSurface.mm:43"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/Reactor/ExecutableMemory.cpp", "src/WSI/MetalSurface.mm"]
+      },
+      {
+        "type": "arch_simd",
+        "category": "hardware",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "__stosd",
+            "purpose": "x86 rep stosl 内联汇编，高效内存填充",
+            "count": 1,
+            "evidence": ["src/System/Memory.cpp:144"],
+            "conditional": true
+          },
+          {
+            "name": "__stosw",
+            "purpose": "x86 rep stosw 内联汇编，高效内存填充",
+            "count": 1,
+            "evidence": ["src/System/Memory.cpp:127"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/System/Memory.cpp"]
+      },
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::atomic",
+            "purpose": "无锁原子操作，用于多线程同步",
+            "count": 10,
+            "evidence": ["src/System/Synchronization.hpp"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["src/System/Synchronization.hpp"]
+      },
+      {
+        "type": "android",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "__android_log_print",
+            "purpose": "Android 日志输出",
+            "count": 1,
+            "evidence": ["src/Vulkan/libVulkan.cpp:88"],
+            "conditional": true
+          },
+          {
+            "name": "prctl (PR_SET_VMA)",
+            "purpose": "Android 专有：为匿名内存映射设置名称，满足 SELinux 对可执行映射的限制",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:311"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/Vulkan/libVulkan.cpp", "src/Reactor/ExecutableMemory.cpp"]
+      },
+      {
+        "type": "fuchsia",
+        "category": "platform",
+        "platform": "unknown",
+        "apis": [
+          {
+            "name": "zx_vmar_map",
+            "purpose": "Fuchsia 虚拟内存地址映射",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:328"],
+            "conditional": true
+          },
+          {
+            "name": "zx_vmo_create",
+            "purpose": "Fuchsia 虚拟内存对象创建",
+            "count": 1,
+            "evidence": ["src/Reactor/ExecutableMemory.cpp:317"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/Reactor/ExecutableMemory.cpp"]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libxcb.so.1",
+        "mechanism": "dlopen",
+        "acquisition": "system",
+        "source": "系统安装的 XCB 库",
+        "description": "X C Binding 库，用于 Linux/X11 平台 Vulkan WSI 窗口呈现",
+        "optional": true,
+        "evidence": ["src/WSI/libXCB.cpp:60"]
+      },
+      {
+        "name": "libxcb-shm.so.0",
+        "mechanism": "dlopen",
+        "acquisition": "system",
+        "source": "系统安装的 XCB SHM 扩展库",
+        "description": "XCB MIT-SHM 共享内存扩展，用于 XCB 高效图像传输",
+        "optional": true,
+        "evidence": ["src/WSI/libXCB.cpp:69"]
+      },
+      {
+        "name": "libwayland-client.so.0",
+        "mechanism": "dlopen",
+        "acquisition": "system",
+        "source": "系统安装的 Wayland 客户端库",
+        "description": "Wayland 协议客户端库，用于 Linux Wayland 平台 Vulkan WSI 窗口呈现",
+        "optional": true,
+        "evidence": ["src/WSI/libWaylandClient.cpp:59"]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "SwiftShader 在运行时需要可执行内存分配能力（JIT 编译），以及可选的窗口系统库（XCB/Wayland）进行画面呈现。它通过环境变量配置日志级别和调试行为，无需网络连接或持久化文件。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "vk_swiftshader_icd.json",
+        "purpose": "Vulkan ICD 描述文件，Vulkan Loader 据此发现 SwiftShader 驱动；构建时生成到 build 目录",
+        "evidence": ["README.md:43"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "VK_ICD_FILENAMES",
+        "purpose": "指定 Vulkan ICD 描述文件路径，使 Vulkan Loader 加载 SwiftShader",
+        "evidence": ["README.md:43"]
+      },
+      {
+        "name": "SWIFTSHADER_DISABLE_DEBUGGER_WAIT_DIALOG",
+        "purpose": "Windows 下禁用调试器等待对话框",
+        "evidence": ["src/Vulkan/main.cpp:68"]
+      },
+      {
+        "name": "SWIFTSHADER_LOGGING_LEVEL",
+        "purpose": "控制 SwiftShader 日志输出级别",
+        "evidence": ["CMakeLists.txt:231"]
+      },
+      {
+        "name": "CMAKE_BUILD_PARALLEL_LEVEL",
+        "purpose": "控制 CMake 并行编译级别",
+        "evidence": ["README.md:28"]
+      }
+    ],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "CPU",
+        "purpose": "SwiftShader 是纯 CPU 软件渲染器，所有图形计算在 CPU 上执行；使用 SIMD 指令加速",
+        "evidence": ["src/Reactor/SIMD.cpp", "src/Device/Renderer.cpp"]
+      }
+    ],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++17",
+    "runtime_version": "无运行时解释器依赖（原生 C++ 库）",
+    "build_system": "CMake",
+    "compiler_extensions": [
+      {
+        "detail": "__attribute__",
+        "purpose": "GCC/Clang 编译器属性",
+        "evidence": ["src/System/Memory.cpp:129"]
+      },
+      {
+        "detail": "__asm__ __volatile__",
+        "purpose": "x86 内联汇编（rep stosw/stosl），高效内存填充",
+        "evidence": ["src/System/Memory.cpp:129", "src/System/Memory.cpp:146"]
+      },
+      {
+        "detail": "__has_feature",
+        "purpose": "Clang 编译器特性检测宏",
+        "evidence": ["src/System/Memory.cpp:46"]
+      },
+      {
+        "detail": "MSVC intrinsics (__stosd, __stosw)",
+        "purpose": "MSVC x86 内联内存填充",
+        "evidence": ["src/System/Memory.cpp:127", "src/System/Memory.cpp:144"]
+      }
+    ],
+    "platforms": [
+      { "os": "Windows", "arch": "x86/x86_64/ARM64", "evidence": ["CMakeLists.txt:37", "CMakeLists.txt:97-103"] },
+      { "os": "Linux", "arch": "x86/x86_64/aarch64/mips/ppc/loongarch", "evidence": ["CMakeLists.txt:32-33", "CMakeLists.txt:47-76"] },
+      { "os": "macOS", "arch": "x86_64/aarch64", "evidence": ["CMakeLists.txt:38", "CMakeLists.txt:81-93"] },
+      { "os": "Android", "arch": "arm/aarch64", "evidence": ["CMakeLists.txt:34-35"] },
+      { "os": "Fuchsia", "arch": "x86_64/aarch64", "evidence": ["CMakeLists.txt:39"] }
+    ],
+    "entry_points": [],
+    "packaging": "无（库）；构建产物为共享库（Linux: libvk_swiftshader.so, Windows: vk_swiftshader.dll, macOS: libvk_swiftshader.dylib）+ ICD JSON 描述文件，作为 Vulkan ICD 驱动被 Vulkan Loader 动态加载",
+    "notes": "CMake 最低版本 3.22.1；支持 ccache 加速编译；LLVM 10.0 为默认版本，龙芯架构使用 LLVM 16.0"
+  },
+  "capability_profile": {
+    "summary": "SwiftShader 是纯 CPU 软件渲染器，核心场景为 3D 图形渲染（Vulkan API 软件实现）。它不直接依赖 GPU 硬件，但需要可执行内存映射（JIT）能力。WSI 层涉及桌面窗口系统集成。",
+    "scenarios": [
+      {
+        "key": "rendering_3d",
+        "present": true,
+        "kind": ["vulkan"],
+        "specific_hardware": false,
+        "via": ["src/Vulkan/libVulkan.cpp", "src/Pipeline/SpirvShader.cpp", "src/Device/Renderer.cpp"],
+        "harmony_status": "unknown",
+        "adaptation": "SwiftShader 本身是 Vulkan 的软件实现而非消费者——它提供 Vulkan API 而非调用系统 Vulkan 驱动。若鸿蒙 PC 支持 Vulkan Loader 机制（ICD 发现与加载），SwiftShader 可作为软件回退驱动编译运行；否则需适配 ICD 加载路径",
+        "evidence": ["src/Vulkan/libVulkan.cpp:252 (vk_icdGetInstanceProcAddr)", "README.md:43 (VK_ICD_FILENAMES)"]
+      },
+      {
+        "key": "gui",
+        "present": true,
+        "kind": ["win32", "xcb", "wayland", "metal"],
+        "specific_hardware": false,
+        "via": ["src/WSI/Win32SurfaceKHR.cpp", "src/WSI/XcbSurfaceKHR.cpp", "src/WSI/WaylandSurfaceKHR.cpp", "src/WSI/MetalSurface.mm"],
+        "harmony_status": "partial",
+        "adaptation": "WSI 层需要适配鸿蒙桌面窗口系统；现有 Win32/XCB/Wayland/Metal 实现需要替换为鸿蒙等价 API（或使用 Headless 模式跳过呈现）",
+        "evidence": ["src/WSI/", "src/WSI/HeadlessSurfaceKHR.cpp"]
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (自研内核, OHOS NDK, 无 Linux ABI)",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [40, 120]
+    },
+    "confidence": "low",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:execmem",
+        "capability": "可执行内存映射（mmap PROT_EXEC / VirtualAlloc PAGE_EXECUTE）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "JIT 编译器核心依赖——若无此能力则整个 Reactor JIT 不可运行，必须切换到解释器或 AOT 模式",
+        "source": "references/harmony-pc-capabilities.json (无直接条目，OHOS NDK musl + POSIX 子集的 mmap 行为待核实)"
+      },
+      {
+        "id": "ta:vulkan_loader",
+        "capability": "Vulkan Loader / ICD 发现机制",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "SwiftShader 以 ICD 驱动形态被加载——若鸿蒙 PC 无 Vulkan Loader 则需应用直接链接 SwiftShader",
+        "source": "references/harmony-pc-capabilities.json graphics_3d.vulkan (unknown)"
+      },
+      {
+        "id": "ta:posix_mmap",
+        "capability": "POSIX mmap/mprotect/munmap（OHOS NDK musl 子集）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "可执行内存分配依赖 mmap PROT_EXEC——若 musl 不支持 PROT_EXEC 则 JIT 不可运行",
+        "source": "references/harmony-pc-capabilities.json (无直接条目)"
+      },
+      {
+        "id": "ta:dlopen",
+        "capability": "dlopen/dlsym 动态库加载",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "WSI 动态加载 XCB/Wayland 库——若无 dlopen 可改为编译时链接；亦可用 Headless 模式绕过",
+        "source": "references/harmony-pc-capabilities.json (无直接条目)"
+      },
+      {
+        "id": "ta:desktop_wsi",
+        "capability": "桌面窗口系统集成（XCB/Wayland 等价）",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "若无桌面窗口系统可用，WSI 呈现功能不可用，但 Headless 模式仍可正常工作",
+        "source": "references/harmony-pc-capabilities.json gui.wm (unknown)"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "cross_compile",
+    "summary": "SwiftShader 是纯 CPU 软件渲染库，核心逻辑不依赖 GPU 硬件，理论上可用 OHOS NDK 交叉编译。主要适配工作集中在：(1) JIT 可执行内存分配需确认 OHOS NDK musl 的 mmap PROT_EXEC 支持；(2) WSI 层需适配鸿蒙桌面窗口系统或使用 Headless 模式；(3) LLVM 作为内嵌 JIT 后端需在 OHOS NDK 下成功编译。由于多个关键目标能力状态为 unknown，置信度较低。",
+    "blockers": [
+      {
+        "id": "bk:execmem",
+        "issue": "JIT 编译器依赖可执行内存映射（mmap PROT_EXEC），鸿蒙 PC 的 OHOS NDK musl 是否支持该能力未知",
+        "severity": "blocker",
+        "adaptability": "partial",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "若 musl 不支持 PROT_EXEC，需切换 Reactor 后端为解释模式或使用 AOT 预编译方案；也可考虑使用 Node-API 桥接 JIT",
+        "caused_by": ["ta:execmem", "ta:posix_mmap"],
+        "manifests_as": [],
+        "evidence": ["src/Reactor/ExecutableMemory.cpp:297 (mmap PROT_EXEC)", "src/Reactor/ExecutableMemory.cpp:347 (MAP_JIT)"]
+      },
+      {
+        "id": "bk:vulkan_icd",
+        "issue": "SwiftShader 以 Vulkan ICD 驱动形态运行，依赖 Vulkan Loader 的 ICD 发现机制；鸿蒙 PC 上 Vulkan 支持状态未知",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "platform_api",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unknown",
+        "remediation": "若无 Vulkan Loader，可改为应用直接链接 SwiftShader 共享库并调用 vkGetInstanceProcAddr；也可作为独立渲染库嵌入应用",
+        "caused_by": ["ta:vulkan_loader"],
+        "manifests_as": [],
+        "evidence": ["src/Vulkan/libVulkan.cpp:252 (vk_icdGetInstanceProcAddr)", "README.md:43 (VK_ICD_FILENAMES)"]
+      },
+      {
+        "id": "bk:wsi",
+        "issue": "WSI 呈现层依赖 Win32/XCB/Wayland/Metal 等平台窗口系统，鸿蒙 PC 无直接等价 API",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "实现鸿蒙 WSI 后端（基于 ArkUI 窗口或 OHOS 原生窗口 API）；或使用 HeadlessSurfaceKHR 无头模式跳过呈现",
+        "caused_by": ["ta:desktop_wsi"],
+        "manifests_as": [],
+        "evidence": ["src/WSI/Win32SurfaceKHR.cpp", "src/WSI/XcbSurfaceKHR.cpp", "src/WSI/WaylandSurfaceKHR.cpp"]
+      },
+      {
+        "id": "bk:llvm_ndk",
+        "issue": "内嵌 LLVM 10.0/16.0 需在 OHOS NDK 环境下成功编译，LLVM 构建系统对交叉编译工具链有复杂要求",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "OHOS NDK 提供的 Clang 编译器通常能编译 LLVM；也可切换为 Subzero 后端（更轻量）降低编译难度",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": ["third_party/llvm-10.0/", "CMakeLists.txt:689"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "核心软件渲染逻辑",
+        "note": "纯 CPU 计算的 SPIR-V 编译、光栅化、纹理采样等核心渲染逻辑不依赖平台 API，可跨平台编译运行",
+        "evidence": ["src/Device/Renderer.cpp", "src/Pipeline/SpirvShader.cpp"]
+      },
+      {
+        "aspect": "Headless 无头模式",
+        "note": "已有 HeadlessSurfaceKHR 实现，不依赖任何窗口系统即可运行 Vulkan 计算/离屏渲染工作负载",
+        "evidence": ["src/WSI/HeadlessSurfaceKHR.cpp"]
+      },
+      {
+        "aspect": "CMake 构建系统",
+        "note": "CMake 构建系统支持交叉编译配置，已有 Android NDK 交叉编译支持作为参考",
+        "evidence": ["CMakeLists.txt:34-35 (ANDROID)"]
+      }
+    ],
+    "key_tasks": [
+      "确认 OHOS NDK musl 对 mmap PROT_EXEC 的支持情况",
+      "确认鸿蒙 PC 的 Vulkan 可用性与 ICD 加载机制",
+      "实现鸿蒙 WSI 后端（基于 OHOS 原生窗口 API）",
+      "使用 OHOS NDK 交叉编译 SwiftShader（含内嵌 LLVM）",
+      "验证 Reactor JIT 在鸿蒙 PC 上的可执行内存分配与代码生成",
+      "验证 Headless 模式下的 SPIR-V 着色器编译与执行正确性"
+    ],
+    "notes": "多个关键目标能力（可执行内存映射、Vulkan 支持、dlopen）在鸿蒙 PC 上的状态均为 unknown，导致整体置信度低。SwiftShader 的 Android 构建经验（NDK 编译 + __ANDROID__ 条件分支）说明项目已有跨平台适配传统，但鸿蒙的自研内核与 Android NDK 有本质差异。项目生产代码约 44 万行（含内嵌 LLVM），编译时间与二进制体积是实际考量因素。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "low",
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "android",
+        "rationale": "Android 专有 API（__android_log_print、prctl PR_SET_VMA）不属于 POSIX 也不属于 Linux 通用，单独归类"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "fuchsia",
+        "rationale": "Fuchsia Zircon syscall API 是独立平台类别，不属于 POSIX/Win32"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "key",
+        "kind": "ambiguity",
+        "value": "rendering_3d",
+        "rationale": "SwiftShader 是 Vulkan 的软件提供方而非消费方——它提供 3D 渲染能力而非使用 3D 渲染。harmony_status 取值'unknown'反映的是'鸿蒙是否有 Vulkan 可用'，而非 SwiftShader 自身的渲染能力适配问题"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "cross_compile",
+        "rationale": "对于 C++ 库移植到鸿蒙，核心路径是 OHOS NDK 交叉编译而非 recompile_napi（后者暗示桥接至 ArkTS 层）"
+      }
+    ]
+  }
+}

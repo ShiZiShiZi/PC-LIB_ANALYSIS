@@ -1,0 +1,69 @@
+{
+  "library": {
+    "name": "hidapi",
+    "kind": "library",
+    "package_name": "hidapi",
+    "aliases": [
+      "libhidapi",
+      "hidapi-libusb",
+      "hidapi-hidraw"
+    ],
+    "import_names": [
+      "hidapi"
+    ],
+    "source_url": "https://github.com/libusb/hidapi.git",
+    "analyzed_at": "2026-06-29T09:06:58Z",
+    "commit": "ee022f543807ebfa29e4759076cf1ea2ac7ec7ae",
+    "one_liner": "跨平台 USB/蓝牙 HID 设备通信 C 库，支持 Windows/Linux/macOS/FreeBSD/NetBSD",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "HIDAPI 是一个多平台 C 库，提供与 USB 和蓝牙 HID 类设备通信的统一 API。它在 Windows 上通过 hid.dll、Linux 上通过 hidraw 内核驱动或 libusb、macOS 上通过 IOKit/IOHidManager、NetBSD 上通过 UHID 实现跨平台 HID 设备的枚举、打开、读写和特征报告收发。库以单一公共头文件 hidapi.h 对外暴露接口，各平台后端编译为独立的共享库，应用在链接时选择后端。",
+    "categories": [
+      {
+        "name": "HID 设备枚举与发现",
+        "description": "按 VID/PID 或全量枚举系统中已连接的 HID 设备，返回设备路径、厂商/产品字符串、序列号、Usage Page/Usage、总线类型等信息",
+        "evidence": [
+          "hidapi/hidapi.h:252 (hid_enumerate)",
+          "hidapi/hidapi.h:262 (hid_free_enumeration)",
+          "linux/hid.c:938",
+          "windows/hid.c:841"
+        ]
+      },
+      {
+        "name": "HID 设备读写与报告传输",
+        "description": "打开设备后支持 Input/Output/Feature 三类报告的发送与接收，含阻塞/非阻塞读写、超时读、以及通过控制端点发送输出报告",
+        "evidence": [
+          "hidapi/hidapi.h:332 (hid_write)",
+          "hidapi/hidapi.h:357 (hid_read_timeout)",
+          "hidapi/hidapi.h:381 (hid_read)",
+          "hidapi/hidapi.h:453 (hid_send_feature_report)",
+          "hidapi/hidapi.h:479 (hid_get_feature_report)"
+        ]
+      },
+      {
+        "name": "设备信息与字符串获取",
+        "description": "获取已打开设备的厂商字符串、产品字符串、序列号、索引字符串、报告描述符等描述性信息",
+        "evidence": [
+          "hidapi/hidapi.h:561 (hid_get_manufacturer_string)",
+          "hidapi/hidapi.h:574 (hid_get_product_string)",
+          "hidapi/hidapi.h:635 (hid_get_report_descriptor)"
+        ]
+      },
+      {
+        "name": "平台后端抽象",
+        "description": "各平台独立实现同一 API：Windows 后端用 Win32 HID API + cfgmgr32；Linux/hidraw 后端用 ioctl + udev + sysfs；libusb 后端用 libusb-1.0；macOS 后端用 IOKit/IOHidManager；NetBSD 后端用 UHID/drvctl",
+        "evidence": [
+          "windows/hid.c",
+          "linux/hid.c",
+          "libusb/hid.c",
+          "mac/hid.c",
+          "netbsd/hid.c"
+        ]
+      }
+    ],
+    "domain": "USB/蓝牙 HID 设备通信",
+    "target_users": "需要与 HID 类设备（游戏手柄、传感器、工业控制器、自定义 USB HID 外设等）通信的桌面/嵌入式应用开发者"
+  }
+}

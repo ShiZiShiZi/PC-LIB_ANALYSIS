@@ -49,7 +49,11 @@ const DEFAULT_PROMPT =
   'IMPORTANT: write the report, metrics, and ALL intermediate/scratch files inside ' +
   'the project (under the run directory) — never use /tmp or any path outside the ' +
   'project, because the headless runner auto-rejects external directories and the ' +
-  'run will abort. Finish with a short digest.';
+  'run will abort. ' +
+  'When reading source files, always use relative paths from the project root ' +
+  '(e.g., {repoPath}/pyproject.toml) or paths already returned by a prior tool result — ' +
+  'do NOT construct absolute paths manually, as self-built absolutes are frequently wrong ' +
+  'and will be rejected. Finish with a short digest.';
 
 // Previous DEFAULT_PROMPT values. A persisted settings.promptTemplate that exactly
 // matches one of these is a stale default (it predates a DEFAULT_PROMPT change — e.g.
@@ -64,6 +68,23 @@ const LEGACY_PROMPTS = [
   'with `--out {metricsPath}`, reason through every dimension (function summary, ' +
   'license, dependencies, native/platform API), and write the final report to ' +
   '{reportPath}. Conform to references/report_schema.json. ' +
+  '语言要求：function_summary 里所有自然语言字段（summary、每个 category 的 name 与 ' +
+  'description、domain、target_users）以及 library.one_liner 必须用简体中文书写；' +
+  'SPDX 许可证标识、编程语言名、依赖包名等专有名词保持原文。' +
+  'IMPORTANT: write the report, metrics, and ALL intermediate/scratch files inside ' +
+  'the project (under the run directory) — never use /tmp or any path outside the ' +
+  'project, because the headless runner auto-rejects external directories and the ' +
+  'run will abort. Finish with a short digest.',
+  // pre-"relative-path read" default (lacked the "do NOT construct absolute paths" warning)
+  'Analyze the PC open-source software project (a third-party library OR an application) ' +
+  'checked out at {repoPath}. First decide library.kind (library/application/...). Follow the ' +
+  'method and JSON output contract in {agentFile} and the skills it references. ' +
+  'The source is already cloned — do NOT clone again. Do NOT spawn sub-agents or use the ' +
+  '`task` tool — do all evidence-gathering yourself in this single session (codegraph + ' +
+  'Grep/Glob/Read) so every step streams to the live log. {codegraphHint}Run the deterministic ' +
+  'code-metrics script with `--out {metricsPath}`, reason through every dimension ' +
+  '(function summary, license, dependencies, native/platform API), and write the ' +
+  'final report to {reportPath}. Conform to references/report_schema.json. ' +
   '语言要求：function_summary 里所有自然语言字段（summary、每个 category 的 name 与 ' +
   'description、domain、target_users）以及 library.one_liner 必须用简体中文书写；' +
   'SPDX 许可证标识、编程语言名、依赖包名等专有名词保持原文。' +
@@ -418,6 +439,13 @@ function activeJobFor(name, group) {
 function reportSummary(name, run, group) {
   try {
     const r = JSON.parse(fs.readFileSync(path.join(runLibDir(group, name), run, 'report.json'), 'utf8'));
+    // dim-9 鸿蒙适配结论（serve-time 派生，口径同 /api/report 的 normalizeHarmony）：
+    // 磁盘报告常有 porting_class 但无 effort.level，故现算难度等级，不直接读。
+    const ha = r.harmony_adaptation || null;
+    const portingClass = ha ? derivePortingClass(r) : null;
+    const personDays = effortDays(ha);
+    const difficultyLevel = portingClass
+      ? deriveDifficultyLevel(portingClass, personDays ? personDays[1] : 0) : null;
     return {
       oneLiner: (r.library && r.library.one_liner) || (r.function_summary && r.function_summary.summary) || '',
       primary: r.languages && r.languages.primary,
@@ -427,6 +455,7 @@ function reportSummary(name, run, group) {
       testCases: r.tests && r.tests.test_cases,
       license: r.license && r.license.spdx,
       analyzedAt: r.library && r.library.analyzed_at,
+      portingClass, difficultyLevel, personDays,
     };
   } catch { return null; }
 }
@@ -1548,6 +1577,42 @@ const server = http.createServer(async (req, res) => {
       for (const [id, s] of recursionSessions)          // 清以该库为 root 的递归会话
         if (s.root === name && safeGroup(s.group) === g) recursionSessions.delete(id);
       return send(res, 200, { ok: true });
+    }
+
+    // 将库（代码 + 分析记录 + 标签）迁移到另一个分组。
+    if (req.method === 'POST' && pathname === '/api/library/migrate') {
+      const body = await readBody(req);
+      const name = body.name;
+      const fromG = safeGroup(body.fromGroup);
+      const toG = safeGroup(body.toGroup);
+      if (!name) return send(res, 400, { error: 'name required' });
+      if (/[\\/]|\.\./.test(name)) return send(res, 400, { error: 'invalid name' });
+      if (fromG === toG) return send(res, 400, { error: 'fromGroup and toGroup must differ' });
+      if (activeJobFor(name, fromG)) return send(res, 409, { error: '该库有进行中的任务，请先停止/等待完成再迁移' });
+      const srcRepo = repoDir(fromG, name);
+      const srcRuns = runLibDir(fromG, name);
+      const hasSrcRepo = fs.existsSync(srcRepo);
+      const hasSrcRuns = fs.existsSync(srcRuns);
+      if (!hasSrcRepo && !hasSrcRuns) return send(res, 404, { error: '源库不存在' });
+      const dstRepo = repoDir(toG, name);
+      const dstRuns = runLibDir(toG, name);
+      if (fs.existsSync(dstRepo) || fs.existsSync(dstRuns))
+        return send(res, 409, { error: `目标分组「${toG}」中已存在同名库「${name}」` });
+      ensureGroupDirs(toG);
+      try {
+        if (hasSrcRepo) fs.renameSync(srcRepo, dstRepo);
+        if (hasSrcRuns) fs.renameSync(srcRuns, dstRuns);
+      } catch (e) { return send(res, 500, { error: '迁移失败: ' + e.message }); }
+      // 更新标签 key：fromG/name → toG/name
+      const tags = loadTags();
+      const oldKey = fromG + '/' + name;
+      const newKey = toG + '/' + name;
+      if (tags[oldKey] !== undefined) {
+        tags[newKey] = tags[oldKey];
+        delete tags[oldKey];
+        saveTags(tags);
+      }
+      return send(res, 200, { ok: true, name, fromGroup: fromG, toGroup: toG });
     }
 
     if (req.method === 'POST' && pathname === '/api/analyze') {

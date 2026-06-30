@@ -1,0 +1,835 @@
+{
+  "library": {
+    "name": "google-workspace-mcp",
+    "kind": "service",
+    "package_name": "@presto-ai/google-workspace-mcp",
+    "aliases": ["google-workspace-mcp", "@presto-ai/google-workspace-mcp"],
+    "import_names": [],
+    "source_url": "https://github.com/jrenaldi79/google-workspace-mcp",
+    "analyzed_at": "2026-06-30T07:13:41.559Z",
+    "commit": "4fe8468b27c4bbc223f49930832d59e293d5ab43",
+    "one_liner": "基于 MCP 协议的 Google Workspace 服务网关，为 AI 客户端提供 Gmail/日历/云盘/文档/表格/聊天等操作的统一工具接口",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "Google Workspace MCP Server 是一个基于 Model Context Protocol（MCP）的服务端程序，为 Claude Desktop 等 AI 客户端提供与 Google Workspace 服务的交互能力。它通过 OAuth2 认证连接用户的 Google 账号，将 Gmail、Google 日历、Google Drive、Google Docs、Google Sheets、Google Slides、Google Chat 和 Google People 等服务封装为 MCP 工具，支持邮件收发搜索、日历事件管理、文件搜索下载、文档读写、表格读取、幻灯片读取、聊天消息收发和联系人查询等操作。服务通过 stdio 传输层与客户端通信，首次使用时自动启动浏览器完成 OAuth 授权流程。",
+    "categories": [
+      {
+        "name": "邮件管理",
+        "description": "通过 Gmail API 提供邮件搜索、读取、发送、草稿管理、标签管理和附件下载功能",
+        "evidence": ["src/services/GmailService.ts", "src/index.ts:936-1188"]
+      },
+      {
+        "name": "日历与时间服务",
+        "description": "管理 Google 日历事件（创建/查询/更新/删除/响应邀请），查找空闲时段，获取当前时间与时区",
+        "evidence": ["src/services/CalendarService.ts", "src/services/TimeService.ts", "src/index.ts:557-771"]
+      },
+      {
+        "name": "云盘与文件管理",
+        "description": "搜索 Google Drive 文件和文件夹，创建文件夹，下载文件，支持 URL 解析和查询语法",
+        "evidence": ["src/services/DriveService.ts", "src/index.ts:502-555"]
+      },
+      {
+        "name": "文档编辑",
+        "description": "创建 Google Docs（支持 Markdown 转 HTML），读取/插入/追加/替换文档文本内容，支持多标签页",
+        "evidence": ["src/services/DocsService.ts", "src/index.ts:152-336"]
+      },
+      {
+        "name": "表格与幻灯片读取",
+        "description": "读取 Google Sheets 数据（支持 text/csv/json 格式）和 Google Slides 内容与元数据，支持缩略图和图片下载",
+        "evidence": ["src/services/SheetsService.ts", "src/services/SlidesService.ts", "src/index.ts:338-500"]
+      },
+      {
+        "name": "聊天服务",
+        "description": "在 Google Chat 空间发送消息、列出空间与线程、发送私信、创建新空间",
+        "evidence": ["src/services/ChatService.ts", "src/index.ts:773-933"]
+      },
+      {
+        "name": "OAuth2 认证与令牌管理",
+        "description": "管理 Google OAuth2 认证流程，包括本地回调服务器、浏览器启动、令牌刷新与凭证持久化（文件加密或系统钥匙串）",
+        "evidence": ["src/auth/AuthManager.ts", "src/auth/token-storage/hybrid-token-storage.ts", "src/auth/token-storage/file-token-storage.ts", "src/auth/token-storage/keychain-token-storage.ts"]
+      }
+    ],
+    "domain": "云办公与协作",
+    "target_users": "使用 Claude Desktop 等 AI 客户端并需要操作 Google Workspace 服务的个人与企业用户"
+  },
+  "languages": {
+    "primary": "TypeScript",
+    "all": [
+      "TypeScript",
+      "JSON",
+      "Markdown",
+      "YAML",
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "TypeScript",
+        "files": 29,
+        "code": 6685,
+        "pct": 59.13,
+        "production": { "files": 29, "code": 6685 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "JSON",
+        "files": 4,
+        "code": 4265,
+        "pct": 37.73,
+        "production": { "files": 4, "code": 4265 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 182,
+        "pct": 1.61,
+        "production": { "files": 2, "code": 182 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 143,
+        "pct": 1.26,
+        "production": { "files": 2, "code": 143 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "JavaScript",
+        "files": 1,
+        "code": 30,
+        "pct": 0.27,
+        "production": { "files": 1, "code": 30 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 38,
+      "code": 11305,
+      "comment": 533,
+      "blank": 840,
+      "total_lines": 12678
+    },
+    "production": {
+      "files": 38,
+      "code": 11305,
+      "comment": 533,
+      "blank": 840,
+      "total_lines": 12678
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      { "dir": "src", "code": 6685, "category": "production", "by_category": { "production": 6685 } },
+      { "dir": ".", "code": 4477, "category": "production", "by_category": { "production": 4477 } },
+      { "dir": ".github", "code": 143, "category": "production", "by_category": { "production": 143 } }
+    ],
+    "test_example_dirs": { "test": [], "example": [] },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": { "javascript": { "files": 1, "hits": 1 } },
+      "by_platform": {},
+      "samples": [
+        { "language": "javascript", "file": "src/utils/paths.ts", "line": 15, "text": "switch (process.platform) {" }
+      ],
+      "total": 1,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "notes": "本项目为上游代码的 npm 分发包包装，不包含测试。上游仓库负责测试。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件包含完整 MIT License 文本，Copyright 2025 Presto AI；package.json 声明 license 为 Apache-2.0（与 LICENSE 文件不一致，以 LICENSE 文件为准）；源码文件头部标注 SPDX-License-Identifier: Apache-2.0（版权属于 Google LLC）。存在 LICENSE 文件(MIT) 与源码头部(Apache-2.0) 及 package.json(Apache-2.0) 的许可声明不一致。",
+    "notes": "LICENSE 文件为 MIT（Copyright Presto AI），但源码头部统一标注 Apache-2.0（Copyright Google LLC）。这是上游 Google 代码（Apache-2.0）被 Presto AI 包装发布（MIT）的双许可场景。实际使用时需同时遵守两个许可：源码部分受 Apache-2.0 约束，包装发布受 MIT 约束。"
+  },
+  "dependencies": {
+    "count": 13,
+    "manifests": ["package.json"],
+    "by_ecosystem": { "nodejs": 13 },
+    "dependencies": [
+      {
+        "name": "@modelcontextprotocol/sdk",
+        "ecosystem": "nodejs",
+        "registry_name": "@modelcontextprotocol/sdk",
+        "source_repo": "https://github.com/modelcontextprotocol/typescript-sdk",
+        "import_names": ["@modelcontextprotocol/sdk"],
+        "scope": "runtime",
+        "version": "^1.24.3",
+        "purpose": "MCP 协议核心 SDK，提供 McpServer 和 StdioServerTransport，用于定义和运行 MCP 工具服务",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": ["McpServer", "StdioServerTransport"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "googleapis",
+        "ecosystem": "nodejs",
+        "registry_name": "googleapis",
+        "source_repo": "https://github.com/googleapis/google-api-nodejs-client",
+        "import_names": ["googleapis"],
+        "scope": "runtime",
+        "version": "^168.0.0",
+        "purpose": "Google API Node.js 客户端，提供 Gmail/Calendar/Drive/Docs/Sheets/Slides/Chat 等服务的 API 访问",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": ["google", "gmail_v1", "docs_v1", "drive_v3"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "google-auth-library",
+        "ecosystem": "nodejs",
+        "registry_name": "google-auth-library",
+        "source_repo": "https://github.com/googleapis/google-auth-library-nodejs",
+        "import_names": ["google-auth-library"],
+        "scope": "runtime",
+        "version": "^10.5.0",
+        "purpose": "Google 认证库，提供 OAuth2Client 用于 Google API 认证",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": ["Auth.OAuth2Client", "Auth.Credentials"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "@google-cloud/local-auth",
+        "ecosystem": "nodejs",
+        "registry_name": "@google-cloud/local-auth",
+        "source_repo": "https://github.com/googleapis/nodejs-local-auth",
+        "import_names": ["@google-cloud/local-auth"],
+        "scope": "runtime",
+        "version": "^3.0.1",
+        "purpose": "Google Cloud 本地认证辅助（package.json 声明但代码中未直接引用，可能被 googleapis 传递依赖使用）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "@googleapis/docs",
+        "ecosystem": "nodejs",
+        "registry_name": "@googleapis/docs",
+        "source_repo": "https://github.com/googleapis/google-api-nodejs-client",
+        "import_names": ["@googleapis/docs"],
+        "scope": "runtime",
+        "version": "^9.0.0",
+        "purpose": "Google Docs API 类型定义（独立包，补充 googleapis 中的 docs 类型）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "@googleapis/drive",
+        "ecosystem": "nodejs",
+        "registry_name": "@googleapis/drive",
+        "source_repo": "https://github.com/googleapis/google-api-nodejs-client",
+        "import_names": ["@googleapis/drive"],
+        "scope": "runtime",
+        "version": "^19.2.1",
+        "purpose": "Google Drive API 类型定义（独立包，补充 googleapis 中的 drive 类型）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "@google-apps/chat",
+        "ecosystem": "nodejs",
+        "registry_name": "@google-apps/chat",
+        "source_repo": null,
+        "import_names": ["@google-apps/chat"],
+        "scope": "runtime",
+        "version": "^0.21.0",
+        "purpose": "Google Chat API 客户端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gaxios",
+        "ecosystem": "nodejs",
+        "registry_name": "gaxios",
+        "source_repo": "https://github.com/googleapis/gaxios-nodejs",
+        "import_names": ["gaxios"],
+        "scope": "runtime",
+        "version": "^6.1.1",
+        "purpose": "基于 fetch 的 HTTP 客户端，为 Google API 请求提供配置（超时、重试等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "keytar",
+        "ecosystem": "nodejs",
+        "registry_name": "keytar",
+        "source_repo": "https://github.com/atom/node-keytar",
+        "import_names": ["keytar"],
+        "aliases": ["node-keytar"],
+        "scope": "runtime",
+        "version": "^7.9.0",
+        "purpose": "原生系统钥匙串访问（macOS Keychain / Windows Credential Manager / Linux libsecret），用于安全存储 OAuth 令牌",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表（含原生编译模块，需系统预装 libsecret 等依赖）",
+        "declared_in": ["package.json"],
+        "used_symbols": ["getPassword", "setPassword", "deletePassword", "findCredentials"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jsdom",
+        "ecosystem": "nodejs",
+        "registry_name": "jsdom",
+        "source_repo": "https://github.com/jsdom/jsdom",
+        "import_names": ["jsdom"],
+        "scope": "runtime",
+        "version": "^27.3.0",
+        "purpose": "在 Node.js 中提供 DOM 实现，用于 DOMPurify HTML 消毒的宿主环境",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": ["JSDOM"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "dompurify",
+        "ecosystem": "nodejs",
+        "registry_name": "dompurify",
+        "source_repo": "https://github.com/cure53/DOMPurify",
+        "import_names": ["dompurify"],
+        "scope": "runtime",
+        "version": "^3.3.1",
+        "purpose": "HTML 消毒库，用于在 Markdown 转 HTML 创建 Google Docs 时清理 XSS 风险",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": ["createDOMPurify"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "marked",
+        "ecosystem": "nodejs",
+        "registry_name": "marked",
+        "source_repo": "https://github.com/markedjs/marked",
+        "import_names": ["marked"],
+        "scope": "runtime",
+        "version": "^17.0.1",
+        "purpose": "Markdown 解析器，将 Markdown 文本转为 HTML 以创建 Google Docs",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": ["marked.parse"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "zod",
+        "ecosystem": "nodejs",
+        "registry_name": "zod",
+        "source_repo": "https://github.com/colinhacks/zod",
+        "import_names": ["zod"],
+        "scope": "runtime",
+        "version": "^3.24.0",
+        "purpose": "TypeScript 优先的 schema 验证库，用于定义 MCP 工具的输入参数校验",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": ["package.json"],
+        "used_symbols": ["z.string", "z.number", "z.array", "z.object", "z.enum", "z.union", "z.boolean"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "devDependencies（esbuild、typescript）仅用于构建，不计入运行时依赖。keytar 是唯一的原生编译依赖，需要系统级 libsecret 等库支持。"
+  },
+  "native_api": {
+    "summary": "本项目主要使用 Node.js 标准库和平台 API。关键的平台相关调用包括：通过 child_process.execFile 启动浏览器（macOS: open, Windows: powershell.exe, Linux: xdg-open），通过 keytar 访问系统钥匙串，以及通过 process.platform 进行平台判断。网络方面使用 Node.js http/net 模块创建本地 OAuth 回调服务器。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "http.createServer",
+            "purpose": "创建 OAuth 回调 HTTP 服务器，监听认证回调",
+            "count": 1,
+            "evidence": ["src/auth/AuthManager.ts:329"],
+            "conditional": false
+          },
+          {
+            "name": "net.createServer",
+            "purpose": "创建 TCP 服务器获取可用端口用于 OAuth 回调",
+            "count": 1,
+            "evidence": ["src/auth/AuthManager.ts:277"],
+            "conditional": false
+          },
+          {
+            "name": "crypto.randomBytes",
+            "purpose": "生成 CSRF 令牌和加密主密钥",
+            "count": 3,
+            "evidence": ["src/auth/AuthManager.ts:307", "src/auth/token-storage/file-token-storage.ts:43", "src/auth/token-storage/keychain-token-storage.ts:224"],
+            "conditional": false
+          },
+          {
+            "name": "crypto.createCipheriv",
+            "purpose": "AES-256-GCM 加密令牌文件",
+            "count": 1,
+            "evidence": ["src/auth/token-storage/file-token-storage.ts:60"],
+            "conditional": false
+          },
+          {
+            "name": "crypto.createDecipheriv",
+            "purpose": "AES-256-GCM 解密令牌文件",
+            "count": 1,
+            "evidence": ["src/auth/token-storage/file-token-storage.ts:80"],
+            "conditional": false
+          },
+          {
+            "name": "crypto.scryptSync",
+            "purpose": "从主密钥派生 AES 加密密钥",
+            "count": 1,
+            "evidence": ["src/auth/token-storage/file-token-storage.ts:55"],
+            "conditional": false
+          },
+          {
+            "name": "fs.promises.writeFile",
+            "purpose": "写入下载文件、令牌文件和加密密钥",
+            "count": 3,
+            "evidence": ["src/services/GmailService.ts:237", "src/auth/token-storage/file-token-storage.ts:44", "src/auth/token-storage/file-token-storage.ts:131"],
+            "conditional": false
+          },
+          {
+            "name": "fs.promises.mkdir",
+            "purpose": "创建目录（下载目标路径、令牌存储目录）",
+            "count": 2,
+            "evidence": ["src/services/GmailService.ts:233", "src/auth/token-storage/file-token-storage.ts:94"],
+            "conditional": false
+          },
+          {
+            "name": "os.homedir",
+            "purpose": "获取用户主目录用于配置路径",
+            "count": 1,
+            "evidence": ["src/utils/paths.ts:11"],
+            "conditional": false
+          },
+          {
+            "name": "os.hostname",
+            "purpose": "获取主机名用于加密密钥派生盐值",
+            "count": 1,
+            "evidence": ["src/auth/token-storage/file-token-storage.ts:52"],
+            "conditional": false
+          },
+          {
+            "name": "os.platform",
+            "purpose": "检测操作系统平台用于浏览器启动",
+            "count": 1,
+            "evidence": ["src/utils/secure-browser-launcher.ts:68"],
+            "conditional": false
+          },
+          {
+            "name": "process.platform",
+            "purpose": "检测操作系统平台用于配置目录选择",
+            "count": 1,
+            "evidence": ["src/utils/paths.ts:15"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["src/auth/AuthManager.ts", "src/auth/token-storage/file-token-storage.ts", "src/utils/paths.ts", "src/utils/secure-browser-launcher.ts"]
+      },
+      {
+        "type": "platform_command",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "execFile('open')",
+            "purpose": "macOS 上打开默认浏览器",
+            "count": 1,
+            "evidence": ["src/utils/secure-browser-launcher.ts:75-76"],
+            "conditional": true
+          },
+          {
+            "name": "execFile('xdg-open')",
+            "purpose": "Linux 上打开默认浏览器（含 gnome-open/kde-open 等回退）",
+            "count": 1,
+            "evidence": ["src/utils/secure-browser-launcher.ts:98-99"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/utils/secure-browser-launcher.ts"]
+      },
+      {
+        "type": "platform_command",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "execFile('powershell.exe')",
+            "purpose": "Windows 上通过 PowerShell Start-Process 打开浏览器",
+            "count": 1,
+            "evidence": ["src/utils/secure-browser-launcher.ts:82-90"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["src/utils/secure-browser-launcher.ts"]
+      },
+      {
+        "type": "native_addon",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "keytar (dynamic import)",
+            "purpose": "通过 keytar 原生模块访问系统钥匙串（macOS Keychain / Windows Credential Manager / Linux libsecret），用于安全存储 OAuth 令牌",
+            "count": 1,
+            "evidence": ["src/auth/token-storage/keychain-token-storage.ts:41-43"],
+            "conditional": false
+          }
+        ],
+        "evidence": ["src/auth/token-storage/keychain-token-storage.ts"]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "keytar",
+        "mechanism": "node N-API addon (dynamic import)",
+        "acquisition": "third_party",
+        "source": "npm 包 keytar，编译为原生 Node addon，链接系统钥匙串库（macOS Security.framework / Windows credui.dll / Linux libsecret）",
+        "description": "系统钥匙串访问桥接，通过原生 addon 调用各平台的安全凭证存储 API",
+        "optional": true,
+        "evidence": ["src/auth/token-storage/keychain-token-storage.ts:41-43"]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时依赖网络（Google API + OAuth 云函数）、文件系统（令牌存储与文件下载）、环境变量（配置目录/代理/OAuth端口/浏览器控制）、子进程（浏览器启动）和系统钥匙串（可选）。核心功能为网络服务客户端。",
+    "network": [
+      {
+        "detail": "Google Workspace API（gmail.googleapis.com, www.googleapis.com 等）",
+        "purpose": "调用 Gmail/Calendar/Drive/Docs/Sheets/Slides/Chat/People API 读写用户数据",
+        "evidence": ["src/services/GmailService.ts:84", "src/services/CalendarService.ts", "src/services/DriveService.ts:44"]
+      },
+      {
+        "detail": "OAuth 云函数（配置中的 CLOUD_FUNCTION_URL）",
+        "purpose": "令牌刷新端点，持有 OAuth client secret，代为完成令牌刷新",
+        "evidence": ["src/auth/AuthManager.ts:228-236"]
+      },
+      {
+        "detail": "本地 HTTP 回调服务器（localhost:随机端口）",
+        "purpose": "接收 OAuth 授权回调",
+        "evidence": ["src/auth/AuthManager.ts:329"]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "~/.config/google-workspace-mcp/ (或 %APPDATA%/google-workspace-mcp/)",
+        "purpose": "存储加密 OAuth 令牌文件和主密钥文件",
+        "evidence": ["src/utils/paths.ts:10-24", "src/auth/token-storage/file-token-storage.ts:26-28"]
+      },
+      {
+        "detail": "用户指定本地路径",
+        "purpose": "下载 Gmail 附件、Google Drive 文件、Slides 图片/缩略图",
+        "evidence": ["src/services/GmailService.ts:237", "src/services/DriveService.ts:433", "src/services/SlidesService.ts"]
+      }
+    ],
+    "env_vars": [
+      { "name": "GOOGLE_WORKSPACE_MCP_HOME", "purpose": "覆盖凭证存储目录路径", "evidence": ["src/utils/paths.ts:12-13"] },
+      { "name": "OAUTH_CALLBACK_PORT", "purpose": "指定 OAuth 回调服务器监听端口", "evidence": ["src/auth/AuthManager.ts:268"] },
+      { "name": "OAUTH_CALLBACK_HOST", "purpose": "指定 OAuth 回调服务器监听主机（默认 localhost）", "evidence": ["src/auth/AuthManager.ts:300"] },
+      { "name": "GEMINI_CLI_WORKSPACE_FORCE_FILE_STORAGE", "purpose": "强制使用文件存储而非系统钥匙串", "evidence": ["src/auth/token-storage/hybrid-token-storage.ts:12"] },
+      { "name": "BROWSER", "purpose": "控制浏览器启动行为（值为 www-browser 时禁用）", "evidence": ["src/utils/secure-browser-launcher.ts:199"] },
+      { "name": "CI", "purpose": "CI 环境检测，禁止浏览器启动", "evidence": ["src/utils/secure-browser-launcher.ts:205"] },
+      { "name": "SSH_CONNECTION", "purpose": "SSH 会话检测，非 Linux 下禁止浏览器启动", "evidence": ["src/utils/secure-browser-launcher.ts:212"] },
+      { "name": "DISPLAY / WAYLAND_DISPLAY / MIR_SOCKET", "purpose": "Linux 显示服务器检测，判断是否有 GUI 可用", "evidence": ["src/utils/secure-browser-launcher.ts:217"] },
+      { "name": "APPDATA", "purpose": "Windows 特定：用户应用数据目录", "evidence": ["src/utils/paths.ts:18"] }
+    ],
+    "subprocess": [
+      {
+        "command": "open (macOS) / xdg-open (Linux) / powershell.exe (Windows)",
+        "purpose": "启动默认浏览器打开 OAuth 授权页面",
+        "evidence": ["src/utils/secure-browser-launcher.ts:72-103"]
+      }
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "TypeScript (ES2020 target, CommonJS modules)",
+    "runtime_version": "Node.js >= 18",
+    "build_system": "esbuild (零配置打包)",
+    "compiler_extensions": [],
+    "platforms": [
+      { "os": "macOS", "arch": "x86_64/arm64", "evidence": ["src/utils/secure-browser-launcher.ts:73", "src/utils/paths.ts:15-23"] },
+      { "os": "Linux", "arch": "x86_64/arm64", "evidence": ["src/utils/secure-browser-launcher.ts:94-99", "src/utils/paths.ts:22"] },
+      { "os": "Windows", "arch": "x86_64/arm64", "evidence": ["src/utils/secure-browser-launcher.ts:79-90", "src/utils/paths.ts:16-20"] }
+    ],
+    "entry_points": [
+      {
+        "type": "console_script",
+        "name": "google-workspace-mcp",
+        "command": "npx @presto-ai/google-workspace-mcp 或全局安装后 google-workspace-mcp，启动 MCP 服务端通过 stdio 通信",
+        "evidence": ["bin/cli.js", "package.json:6"]
+      }
+    ],
+    "packaging": "npm 包分发（npx 一键运行），esbuild 打包为单文件 dist/index.js；无 JRE/Node 捆绑，需用户预装 Node.js >= 18",
+    "notes": "esbuild 打包时将 open 包替换为自定义 open-wrapper，并将 jsdom 标记为外部依赖。keytar 为可选原生依赖，加载失败时回退到加密文件存储。"
+  },
+  "capability_profile": {
+    "summary": "本项目为纯网络服务客户端，不涉及桌面 GUI、3D 渲染、媒体处理或特定硬件。唯一与硬件/平台相关的能力是通过系统钥匙串（keytar）安全存储凭证，以及通过浏览器启动进行 OAuth 认证。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无需 GUI 适配，本项目不包含图形界面",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及 3D 渲染",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及音视频处理",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及特定硬件",
+        "evidence": []
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [5, 15]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_runtime",
+        "capability": "Node.js 运行时",
+        "required": true,
+        "target_status": "available",
+        "impact": "已移植 Node.js 可直接运行纯 JS/TS 代码",
+        "source": "references/harmony-pc-capabilities.json runtimes.nodejs"
+      },
+      {
+        "id": "ta:browser_launch",
+        "capability": "启动外部浏览器进行 OAuth 认证",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "鸿蒙 PC 上是否可通过命令行启动浏览器打开 URL 尚未核实；若不支持，OAuth 流程需改为手动复制 URL 方式",
+        "source": "references/harmony-pc-capabilities.json process_security.spawn + desktop_integration"
+      },
+      {
+        "id": "ta:keychain_access",
+        "capability": "系统钥匙串/安全凭证存储",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "keytar 在鸿蒙 PC 上无法编译/运行时，回退到加密文件存储，不影响核心功能",
+        "source": "references/harmony-pc-capabilities.json process_security.sandbox"
+      },
+      {
+        "id": "ta:network_access",
+        "capability": "网络访问（Google API + OAuth 云函数）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "需要 ohos.permission.INTERNET 权限；Google API 为公网 HTTPS 端点，鸿蒙 PC 网络连通性未核实",
+        "source": "references/harmony-pc-capabilities.json permissions.perm_internet"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "需要访问 Google Workspace API 和 OAuth 云函数进行认证与数据读写",
+        "source_capability": "",
+        "harmony_status": "unknown",
+        "evidence": ["src/services/GmailService.ts:84", "src/auth/AuthManager.ts:228"]
+      }
+    ],
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "本项目为纯 TypeScript/Node.js 应用，核心逻辑（Google API 调用、MCP 协议通信）在已移植的 Node.js 运行时上可直接运行。主要适配工作在三个方面：1) keytar 原生模块需要移植或替换（已有文件存储回退方案）；2) 浏览器启动功能需适配鸿蒙 PC 的浏览器启动方式或改用手动 URL 复制；3) 确保网络访问权限可用。jsdom 在 esbuild 打包时已标记为 external，需在鸿蒙环境可用。",
+    "blockers": [
+      {
+        "id": "bk:keytar_native",
+        "issue": "keytar 原生模块依赖系统钥匙串 API（macOS Security.framework / Windows credui.dll / Linux libsecret），在鸿蒙 PC 上无法编译运行",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "项目已有 HybridTokenStorage 回退机制——keytar 加载失败时自动切换到加密文件存储(FileTokenStorage)，无需额外适配即可在鸿蒙上运行。若需钥匙串功能，可编写 @ohos 等价模块替换。",
+        "caused_by": ["ta:keychain_access"],
+        "manifests_as": [],
+        "evidence": ["src/auth/token-storage/hybrid-token-storage.ts:23-49", "src/auth/token-storage/keychain-token-storage.ts:41-48"]
+      },
+      {
+        "id": "bk:browser_launch",
+        "issue": "secure-browser-launcher 使用平台特定命令（open/xdg-open/powershell.exe）启动浏览器，鸿蒙 PC 上这些命令可能不可用",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "subprocess_unavailable",
+        "source_dimension": "native_api",
+        "harmony_status": "needs_permission",
+        "remediation": "1) 适配鸿蒙 PC 浏览器启动命令；2) open-wrapper 已有回退逻辑——浏览器启动失败时打印 URL 供用户手动打开；3) 可考虑检测鸿蒙平台并使用对应启动方式",
+        "caused_by": ["ta:browser_launch"],
+        "manifests_as": [],
+        "evidence": ["src/utils/secure-browser-launcher.ts:72-103", "src/utils/open-wrapper.ts:38-54"]
+      },
+      {
+        "id": "bk:network_unknown",
+        "issue": "Google API 为公网 HTTPS 端点，鸿蒙 PC 的网络访问权限和连通性尚未核实",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "network_access",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "needs_permission",
+        "remediation": "申请 ohos.permission.INTERNET 权限；确保鸿蒙 PC 可访问 googleapis.com 等域名（无防火墙/代理限制）",
+        "caused_by": ["ta:network_unknown"],
+        "manifests_as": [],
+        "evidence": ["src/services/GmailService.ts:84"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "MCP 协议通信（stdio 传输层）",
+        "note": "基于 stdin/stdout 的 JSON-RPC 通信，不依赖平台特有 API，在鸿蒙 Node.js 上可直接运行",
+        "evidence": ["src/index.ts:1285-1286"]
+      },
+      {
+        "aspect": "Google API 客户端调用",
+        "note": "googleapis 库为纯 JavaScript HTTP 客户端，不依赖原生模块，在鸿蒙 Node.js 上可直接运行",
+        "evidence": ["src/services/GmailService.ts:45-49"]
+      },
+      {
+        "aspect": "加密文件令牌存储",
+        "note": "FileTokenStorage 使用 Node.js crypto 模块（AES-256-GCM），不依赖系统钥匙串，可作为 keytar 的回退方案",
+        "evidence": ["src/auth/token-storage/file-token-storage.ts"]
+      },
+      {
+        "aspect": "HTML 消毒与 Markdown 解析",
+        "note": "DOMPurify + jsdom + marked 均为纯 JavaScript 实现",
+        "evidence": ["src/services/DocsService.ts:12-15"]
+      }
+    ],
+    "key_tasks": [
+      "确认鸿蒙 PC Node.js 运行时对 npm 包的兼容性（特别是 jsdom 和 googleapis）",
+      "适配浏览器启动方式：检测鸿蒙平台并使用对应命令，或依赖 open-wrapper 的回退逻辑",
+      "确保 keytar 加载失败时 HybridTokenStorage 正确回退到 FileTokenStorage",
+      "申请 ohos.permission.INTERNET 权限并验证 Google API 网络连通性",
+      "验证 paths.ts 中 process.platform 在鸿蒙上的返回值（可能非 win32/darwin/linux），确保配置目录路径正确"
+    ],
+    "notes": "本项目为上游 Google 代码的 npm 包装分发包，核心源码来自 gemini-cli-extensions/workspace，仅 paths.ts 为自定义修改。Node.js 已移植至鸿蒙 PC（v24.13.0），纯 JS 依赖理论上可直接运行。主要不确定性在于：1) 鸿蒙 PC process.platform 返回值（影响配置路径和浏览器启动分支）；2) jsdom 在鸿蒙 Node.js 上的兼容性；3) 网络权限与 Google API 连通性。因存在多个 required 且 target_status=unknown 的假设，confidence 降为 medium。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "license",
+        "field": "spdx",
+        "kind": "ambiguity",
+        "value": "MIT vs Apache-2.0 dual declaration",
+        "rationale": "LICENSE 文件声明 MIT（Copyright Presto AI），源码头部声明 Apache-2.0（Copyright Google LLC），package.json 声明 Apache-2.0。这是上游代码（Google, Apache-2.0）被包装发布（Presto AI, MIT）的双许可场景，无法用单一 SPDX 标识表示，以 LICENSE 文件为准标记为 MIT。"
+      },
+      {
+        "dimension": "library",
+        "field": "kind",
+        "kind": "new_value",
+        "value": "service",
+        "rationale": "本项目是一个 MCP 服务端程序，通过 stdio 通信为 AI 客户端提供工具接口。它不是传统意义上的库（被 API 调用）也不是终端用户直接启动的应用，而是一个协议服务。归入 service 最贴切。"
+      }
+    ]
+  }
+}

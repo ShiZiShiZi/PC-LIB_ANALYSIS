@@ -1,0 +1,965 @@
+{
+  "library": {
+    "name": "onnx",
+    "kind": "library",
+    "package_name": "onnx",
+    "aliases": ["Open Neural Network Exchange"],
+    "import_names": ["onnx"],
+    "source_url": "https://github.com/onnx/onnx.git",
+    "analyzed_at": "2026-06-29T04:25:26.637Z",
+    "commit": "66c357e7ebcfef1c241a7eec1fc5ed8c222ede42",
+    "one_liner": "开放的 AI/ML 模型交换格式与 Python/C++ 运行时库，用于序列化、校验、转换和推理 ONNX 计算图。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "ONNX（Open Neural Network Exchange）是一个开放的 AI/ML 模型序列化标准及配套运行时库。它以 Protocol Buffers 定义可扩展的计算图、内置算子与数据类型，提供 Python 与 C++ 两套 API，支持模型加载/保存、结构校验、形状推断、版本转换以及参考实现执行。该库主要面向深度学习框架开发者、模型转换工具作者以及需要在不同推理引擎间交换模型的 AI 应用开发者。",
+    "categories": [
+      {
+        "name": "模型序列化与反序列化",
+        "description": "在内存中的 protobuf 对象与 .onnx/.pb 二进制/文本格式之间进行互相转换，支持外部数据（external data）分片存储。",
+        "evidence": ["onnx/serialization.py", "onnx/external_data_helper.py", "onnx/utils.py"]
+      },
+      {
+        "name": "模型结构校验",
+        "description": "检查计算图、节点、张量、类型与 IR 版本的合规性，并在 C++ 层实现外部数据路径安全校验（防御符号链接与硬链接攻击）。",
+        "evidence": ["onnx/checker.py", "onnx/checker.cc", "onnx/bin/checker.py"]
+      },
+      {
+        "name": "形状与类型推断",
+        "description": "根据算子定义对图的输出形状和类型进行静态推断，并传播常量值以支持编译期优化。",
+        "evidence": ["onnx/shape_inference.py", "onnx/shape_inference/implementation.h"]
+      },
+      {
+        "name": "算子定义与模式",
+        "description": "在 C++ 中注册 ONNX 所有内置算子的签名、类型约束、版本与文档，是 IR 规范的可执行来源。",
+        "evidence": ["onnx/defs/schema.h", "onnx/defs/"]
+      },
+      {
+        "name": "版本转换",
+        "description": "在不同 opset 版本之间自动重写/适配模型，以便旧模型在新运行时或新模型在旧运行时上可用。",
+        "evidence": ["onnx/version_converter.py", "onnx/version_converter/convert.h"]
+      },
+      {
+        "name": "参考执行器与前端/后端工具",
+        "description": "提供纯 Python 参考实现（reference evaluator）以及后端测试框架、模型可视化等辅助工具。",
+        "evidence": ["onnx/reference/", "onnx/backend/", "onnx/tools/net_drawer.py"]
+      }
+    ],
+    "domain": "machine learning / deep learning",
+    "target_users": "AI 框架开发者、模型转换工具作者、需要在不同推理引擎间交换或校验 ONNX 模型的应用开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Markdown",
+      "Python",
+      "C++",
+      "C/C++ Header",
+      "YAML",
+      "CMake",
+      "Protocol Buffers",
+      "TOML"
+    ],
+    "breakdown": [
+      {
+        "language": "Markdown",
+        "files": 106,
+        "code": 97690,
+        "pct": 39.44,
+        "production": {"files": 105, "code": 97682},
+        "test": {"files": 1, "code": 8},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Python",
+        "files": 546,
+        "code": 83890,
+        "pct": 33.87,
+        "production": {"files": 289, "code": 18404},
+        "test": {"files": 254, "code": 65461},
+        "example": {"files": 3, "code": 25}
+      },
+      {
+        "language": "C++",
+        "files": 74,
+        "code": 50553,
+        "pct": 20.41,
+        "production": {"files": 58, "code": 47417},
+        "test": {"files": 16, "code": 3136},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 100,
+        "code": 10129,
+        "pct": 4.09,
+        "production": {"files": 100, "code": 10129},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "YAML",
+        "files": 30,
+        "code": 2011,
+        "pct": 0.81,
+        "production": {"files": 28, "code": 1948},
+        "test": {"files": 2, "code": 63},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "CMake",
+        "files": 20,
+        "code": 1168,
+        "pct": 0.47,
+        "production": {"files": 19, "code": 1162},
+        "test": {"files": 1, "code": 6},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Protocol Buffers",
+        "files": 8,
+        "code": 978,
+        "pct": 0.39,
+        "production": {"files": 8, "code": 978},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "TOML",
+        "files": 5,
+        "code": 785,
+        "pct": 0.32,
+        "production": {"files": 5, "code": 785},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Text",
+        "files": 6,
+        "code": 96,
+        "pct": 0.04,
+        "production": {"files": 5, "code": 83},
+        "test": {"files": 1, "code": 13},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "JSON",
+        "files": 11,
+        "code": 89,
+        "pct": 0.04,
+        "production": {"files": 2, "code": 80},
+        "test": {"files": 9, "code": 9},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "SVG",
+        "files": 2,
+        "code": 83,
+        "pct": 0.03,
+        "production": {"files": 2, "code": 83},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "JSON5",
+        "files": 1,
+        "code": 60,
+        "pct": 0.02,
+        "production": {"files": 1, "code": 60},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 2,
+        "code": 54,
+        "pct": 0.02,
+        "production": {"files": 2, "code": 54},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "DOS Batch",
+        "files": 2,
+        "code": 34,
+        "pct": 0.01,
+        "production": {"files": 2, "code": 34},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "CSS",
+        "files": 2,
+        "code": 29,
+        "pct": 0.01,
+        "production": {"files": 2, "code": 29},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "PowerShell",
+        "files": 1,
+        "code": 25,
+        "pct": 0.01,
+        "production": {"files": 1, "code": 25},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 9,
+        "pct": 0,
+        "production": {"files": 1, "code": 9},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "INI",
+        "files": 1,
+        "code": 5,
+        "pct": 0,
+        "production": {"files": 1, "code": 5},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "JavaScript",
+        "files": 1,
+        "code": 1,
+        "pct": 0,
+        "production": {"files": 1, "code": 1},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 919,
+      "code": 247689,
+      "comment": 16451,
+      "blank": 45770,
+      "total_lines": 309910
+    },
+    "production": {
+      "files": 632,
+      "code": 178968,
+      "comment": 10814,
+      "blank": 37559,
+      "total_lines": 227341
+    },
+    "test": {
+      "files": 284,
+      "code": 68696,
+      "comment": 5632,
+      "blank": 8200,
+      "total_lines": 82528
+    },
+    "example": {
+      "files": 3,
+      "code": 25,
+      "comment": 5,
+      "blank": 11,
+      "total_lines": 41
+    },
+    "top_dirs": [
+      {
+        "dir": "onnx",
+        "code": 145074,
+        "category": "production",
+        "by_category": {
+          "production": 76429,
+          "test": 68620,
+          "example": 25
+        }
+      },
+      {
+        "dir": "docs",
+        "code": 96917,
+        "category": "production",
+        "by_category": {"production": 96917}
+      },
+      {
+        "dir": ".",
+        "code": 2483,
+        "category": "production",
+        "by_category": {
+          "production": 2470,
+          "test": 13
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 1848,
+        "category": "production",
+        "by_category": {
+          "production": 1785,
+          "test": 63
+        }
+      },
+      {
+        "dir": "cmake",
+        "code": 447,
+        "category": "production",
+        "by_category": {"production": 447}
+      },
+      {
+        "dir": ".agents",
+        "code": 441,
+        "category": "production",
+        "by_category": {"production": 441}
+      },
+      {
+        "dir": "community",
+        "code": 194,
+        "category": "production",
+        "by_category": {"production": 194}
+      },
+      {
+        "dir": "tools",
+        "code": 156,
+        "category": "production",
+        "by_category": {"production": 156}
+      },
+      {
+        "dir": "workflow_scripts",
+        "code": 59,
+        "category": "production",
+        "by_category": {"production": 59}
+      },
+      {
+        "dir": "LICENSES",
+        "code": 46,
+        "category": "production",
+        "by_category": {"production": 46}
+      },
+      {
+        "dir": ".claude",
+        "code": 24,
+        "category": "production",
+        "by_category": {"production": 24}
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 6,
+          "code": 144,
+          "macros": ["_MSC_VER", "_WIN32"]
+        },
+        "linux": {
+          "files": 1,
+          "code": 10,
+          "macros": ["__linux__", "linux"]
+        }
+      },
+      "total": 154,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 284,
+    "test_cases": 1677,
+    "frameworks": ["googletest", "pytest/unittest"],
+    "by_language": {
+      "Python": {"files": 254, "cases": 1564},
+      "C++": {"files": 16, "cases": 113},
+      "YAML": {"files": 2, "cases": 0},
+      "Text": {"files": 1, "cases": 0},
+      "Markdown": {"files": 1, "cases": 0},
+      "CMake": {"files": 1, "cases": 0},
+      "JSON": {"files": 9, "cases": 0}
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates. 注意：onnx/test/、onnx/backend/test/、onnx/fuzz/ 为测试代码，不计入生产代码结论。"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "顶层 LICENSE 为完整 Apache-2.0 文本；README 与 pyproject.toml 均声明 license = Apache-2.0；源码文件头普遍含 SPDX-License-Identifier: Apache-2.0。",
+    "notes": "宽松许可；需保留 NOTICE/版权头。C++ 依赖 protobuf 为 BSD-3-Clause，nanobind 为 BSD-3-Clause，均与 Apache-2.0 兼容。"
+  },
+  "dependencies": {
+    "count": 10,
+    "manifests": ["pyproject.toml", "CMakeLists.txt", "sbom.cdx.json"],
+    "by_ecosystem": {
+      "python": ["numpy", "protobuf", "typing_extensions", "ml_dtypes", "Pillow"],
+      "cpp": ["protobuf", "abseil-cpp", "nanobind"]
+    },
+    "dependencies": [
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "registry_name": "numpy",
+        "source_repo": "https://github.com/numpy/numpy",
+        "import_names": ["numpy"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": ">=1.23.2",
+        "purpose": "张量数据与 dtype 互操作，numpy_helper 与 reference evaluator 的核心依赖",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "used_symbols": ["numpy.ndarray", "numpy.dtype", "numpy.frombuffer", "numpy.prod"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "protobuf",
+        "ecosystem": "python",
+        "registry_name": "protobuf",
+        "source_repo": "https://github.com/protocolbuffers/protobuf",
+        "import_names": ["google.protobuf"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": ">=4.25.1",
+        "purpose": "Python 端序列化/反序列化 ONNX protobuf 消息",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "used_symbols": ["google.protobuf.message.Message", "SerializeToString", "ParseFromString"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "typing_extensions",
+        "ecosystem": "python",
+        "registry_name": "typing_extensions",
+        "source_repo": "https://github.com/python/typing_extensions",
+        "import_names": ["typing_extensions"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": ">=4.7.1",
+        "purpose": "向后兼容的类型提示扩展（如 TypeAliasType、Annotated 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ml_dtypes",
+        "ecosystem": "python",
+        "registry_name": "ml_dtypes",
+        "source_repo": "https://github.com/jax-ml/ml_dtypes",
+        "import_names": ["ml_dtypes"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": ">=0.5.4",
+        "purpose": "提供 bfloat16/float8 等 ML 专用 NumPy dtype",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "used_symbols": ["ml_dtypes.bfloat16", "ml_dtypes.float8_e4m3fn"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "Pillow",
+        "ecosystem": "python",
+        "registry_name": "Pillow",
+        "source_repo": "https://github.com/python-pillow/Pillow",
+        "import_names": ["PIL"],
+        "aliases": ["PIL"],
+        "scope": "optional",
+        "version": null,
+        "purpose": "参考实现中可选的图像输入/输出支持（[reference] extra）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "used_symbols": ["PIL.Image"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "scikit-build-core",
+        "ecosystem": "python",
+        "registry_name": "scikit-build-core",
+        "source_repo": "https://github.com/scikit-build/scikit-build-core",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": ">=0.11",
+        "purpose": "PEP 517 构建后端，驱动 CMake 构建 Python wheel",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": ["pyproject.toml"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "protobuf",
+        "ecosystem": "cpp",
+        "registry_name": "protobuf",
+        "source_repo": "https://github.com/protocolbuffers/protobuf",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "25.1",
+        "purpose": "C++ 核心库链接的 protobuf 运行时，用于生成与解析 .pb.cc/.pb.h",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "GitHub release protobuf-25.1.tar.gz（当系统未预装时通过 FetchContent 下载构建）",
+        "declared_in": ["CMakeLists.txt", "sbom.cdx.json"],
+        "used_symbols": ["google::protobuf::Message", "SerializeToString", "ParseFromString", "protobuf::libprotobuf"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "abseil-cpp",
+        "ecosystem": "cpp",
+        "registry_name": "abseil-cpp",
+        "source_repo": "https://github.com/abseil/abseil-cpp",
+        "import_names": [],
+        "aliases": ["absl"],
+        "scope": "build",
+        "version": "20250127.0",
+        "purpose": "protobuf 4.x 的传递依赖，提供字符串/容器/日志等基础库",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "GitHub release abseil-cpp-20250127.0.tar.gz（通过 FetchContent 随 protobuf 一起下载）",
+        "declared_in": ["CMakeLists.txt", "sbom.cdx.json"],
+        "used_symbols": [],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "nanobind",
+        "ecosystem": "cpp",
+        "registry_name": "nanobind",
+        "source_repo": "https://github.com/wjakob/nanobind",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": "2.12.0",
+        "purpose": "C++ ↔ Python 绑定库，用于编译 onnx_cpp2py_export 扩展模块",
+        "acquisition": "fetchcontent",
+        "locality": "remote",
+        "source": "GitHub 仓库 wjakob/nanobind（通过 FetchContent 下载）",
+        "declared_in": ["CMakeLists.txt", "sbom.cdx.json"],
+        "used_symbols": ["nanobind::module_", "nanobind::bytes", "nanobind::cast", "nanobind_add_module"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Python",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": null,
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": ">=3.10",
+        "purpose": "构建 C++ 扩展所需的 Python 开发头文件与稳定 ABI（cp312）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预装 Python 开发包（find_package(Python3 Development.Module Development.SABIModule)）",
+        "declared_in": ["CMakeLists.txt"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "生产依赖均已鸿蒙化或可在已移植 Python 上直接运行；C++ 侧 protobuf/abseil 已有 cmd-pkgs 预编译包。nanobind 未在 cmd-pkgs 列表中，但它是与 ONNX 一起从源码构建的轻量绑定头库，需用 OHOS NDK 重新编译。typing_extensions 为纯 Python 包，无需原生移植。"
+  },
+  "native_api": {
+    "summary": "ONNX 核心以 C++17 与标准库为主，平台相关代码集中在 Windows 宽字符路径转换、文件句柄 RAII 以及外部数据安全打开路径。所有平台相关调用均被 #ifdef _WIN32 / __linux__ 守卫，非 Windows 平台走 POSIX 分支，具备明确回退路径。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::filesystem",
+            "purpose": "跨平台路径解析、规范化与文件打开",
+            "count": 20,
+            "evidence": ["onnx/common/path.h:71", "onnx/common/file_utils.h:19", "onnx/checker.cc:1298"],
+            "conditional": false
+          },
+          {
+            "name": "std::from_chars",
+            "purpose": " locale-independent 浮点数解析（主路径）",
+            "count": 2,
+            "evidence": ["onnx/defs/parser.cc:51"],
+            "conditional": false
+          },
+          {
+            "name": "std::unordered_map / std::vector",
+            "purpose": "算子注册表与容器数据结构",
+            "count": 50,
+            "evidence": ["onnx/defs/schema.h", "onnx/common/ir.h"],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "MultiByteToWideChar / WideCharToMultiByte",
+            "purpose": "Windows 下 UTF-8 与宽字符路径互转",
+            "count": 4,
+            "evidence": ["onnx/common/path.h:30", "onnx/common/path.h:51"],
+            "conditional": true
+          },
+          {
+            "name": "CreateFileW",
+            "purpose": "Windows 下以 FILE_FLAG_OPEN_REPARSE_POINT 打开外部数据文件，防御符号链接逃逸",
+            "count": 2,
+            "evidence": ["onnx/checker.cc:1328", "onnx/checker.cc:1352"],
+            "conditional": true
+          },
+          {
+            "name": "GetFileInformationByHandle",
+            "purpose": "Windows 下获取文件信息以进行 inode/硬链接校验",
+            "count": 2,
+            "evidence": ["onnx/checker.cc:1343", "onnx/checker.cc:1365"],
+            "conditional": true
+          },
+          {
+            "name": "CloseHandle",
+            "purpose": "Windows 句柄 RAII 关闭",
+            "count": 1,
+            "evidence": ["onnx/common/scoped_resource.h:57"],
+            "conditional": true
+          },
+          {
+            "name": "_open_osfhandle",
+            "purpose": "Windows 下将 HANDLE 转换为 CRT 文件描述符",
+            "count": 1,
+            "evidence": ["onnx/checker.cc:1380"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "open",
+            "purpose": "POSIX 下打开目录/文件，配合 O_DIRECTORY | O_CLOEXEC",
+            "count": 2,
+            "evidence": ["onnx/checker.cc:1398", "onnx/checker.cc:1428"],
+            "conditional": true
+          },
+          {
+            "name": "openat",
+            "purpose": "相对目录文件描述符安全打开外部数据文件",
+            "count": 1,
+            "evidence": ["onnx/checker.cc:1429"],
+            "conditional": true
+          },
+          {
+            "name": "close",
+            "purpose": "POSIX 文件描述符关闭",
+            "count": 1,
+            "evidence": ["onnx/common/scoped_resource.h:66"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "linux_syscall",
+        "category": "system",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "syscall(SYS_openat2)",
+            "purpose": "Linux 5.6+ 内核级受控打开（RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS），失败时回退到 openat",
+            "count": 1,
+            "evidence": ["onnx/checker.cc:1414"],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "compiler_extensions",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "__builtin_mul_overflow",
+            "purpose": "GCC/Clang 下安全乘法溢出检测",
+            "count": 1,
+            "evidence": ["onnx/common/safe_math.h:22"],
+            "conditional": true
+          },
+          {
+            "name": "ONNX_EXPORT / ONNX_IMPORT",
+            "purpose": "跨平台符号可见性控制（MSVC __declspec vs GCC __attribute__ visibility）",
+            "count": 4,
+            "evidence": ["onnx/onnx_pb.h:11", "onnx/onnx_pb.h:21"],
+            "conditional": true
+          },
+          {
+            "name": "#pragma GCC diagnostic ignored",
+            "purpose": "局部抑制编译器警告",
+            "count": 2,
+            "evidence": ["onnx/common/assertions.cc:30"],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "ONNX 核心库为纯本地模型处理库：不监听端口、不启动常驻服务、不访问 GPU/摄像头等硬件。运行期主要与文件系统交互（加载/保存 .onnx 模型与外部数据），并通过环境变量控制可选行为；子进程与网络访问仅出现在构建脚本或后端测试框架中，不属于库本体运行时依赖。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": ".onnx / .pb 模型文件读写",
+        "purpose": "加载与保存 ONNX 模型",
+        "evidence": ["onnx/__init__.py:64", "onnx/serialization.py", "onnx/utils.py:220"]
+      },
+      {
+        "detail": "external data 分片文件",
+        "purpose": "大模型张量外置存储的读写与校验",
+        "evidence": ["onnx/external_data_helper.py:28", "onnx/checker.cc:1310"]
+      },
+      {
+        "detail": "tarfile 模型归档解包",
+        "purpose": "utils.py 中提供的模型 tar 归档提取工具",
+        "evidence": ["onnx/utils.py:312"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "ONNX_ML",
+        "purpose": "控制是否启用传统 ML 类型（默认值 ON），影响文档生成与构建",
+        "evidence": ["onnx/defs/gen_doc.py:24", "CMakeLists.txt:56"]
+      },
+      {
+        "name": "ONNX_HOME",
+        "purpose": "后端测试运行器查找模型缓存的根目录（默认 ~/.onnx）",
+        "evidence": ["onnx/backend/test/runner/__init__.py:256"]
+      },
+      {
+        "name": "ONNX_MODELS",
+        "purpose": "后端测试运行器模型目录覆盖",
+        "evidence": ["onnx/backend/test/runner/__init__.py:258"]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "protoc",
+        "purpose": "构建期生成 protobuf C++/Python 代码（onnx/gen_proto.py）",
+        "evidence": ["onnx/gen_proto.py:116"]
+      },
+      {
+        "command": "git",
+        "purpose": "后端测试节点用例维护脚本中调用 git（测试基础设施，非库运行时）",
+        "evidence": ["onnx/backend/test/case/node/__init__.py:434"]
+      }
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++17 / Python >= 3.10",
+    "runtime_version": "CPython >= 3.10；wheel 使用 cp312 稳定 ABI（abi3）",
+    "build_system": "CMake >= 3.26 + scikit-build-core（PEP 517 后端）",
+    "compiler_extensions": [
+      {
+        "detail": "__builtin_mul_overflow 溢出检测（GCC/Clang），MSVC 回退到手动比较",
+        "evidence": ["onnx/common/safe_math.h:21"]
+      },
+      {
+        "detail": "条件符号可见性：MSVC __declspec(dllexport/dllimport) 与 GCC __attribute__((visibility(\"default\")))",
+        "evidence": ["onnx/onnx_pb.h:11"]
+      },
+      {
+        "detail": "MSVC 特定编译选项 /utf-8 /nologo /wd5287 /Zc:lambda",
+        "evidence": ["CMakeLists.txt:115"]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64 / aarch64",
+        "evidence": [".github/workflows/main.yml", "pyproject.toml:101"]
+      },
+      {
+        "os": "macos",
+        "arch": "universal2 (x86_64 + arm64)",
+        "evidence": ["pyproject.toml:105"]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": ["onnx/common/path.h", ".github/workflows/main.yml"]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "console_script",
+        "name": "check-model",
+        "command": "命令行校验 ONNX 模型文件",
+        "evidence": ["pyproject.toml:39", "onnx/bin/checker.py:11"]
+      },
+      {
+        "type": "console_script",
+        "name": "check-node",
+        "command": "命令行校验单个 ONNX 节点",
+        "evidence": ["pyproject.toml:40", "onnx/bin/checker.py:20"]
+      },
+      {
+        "type": "console_script",
+        "name": "backend-test-tools",
+        "command": "后端测试工具入口",
+        "evidence": ["pyproject.toml:38"]
+      }
+    ],
+    "packaging": "通过 scikit-build-core 构建 Python wheel，产物为 abi3 稳定 ABI 的 cp312 wheel，支持 Linux/macOS/Windows；同时可安装 C++ 头文件与 ONNX::onnx CMake 目标。",
+    "notes": "构建选项包括 ONNX_ML、ONNX_BUILD_PYTHON、ONNX_USE_LITE_PROTO、ONNX_BUILD_TESTS 等；默认启用异常与静态注册。"
+  },
+  "capability_profile": {
+    "summary": "ONNX 是纯粹的 AI/ML 模型格式与计算库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件访问，因此没有 GUI/3D/媒体/硬件等鸿蒙适配高成本场景。",
+    "scenarios": [
+      {"key": "gui", "present": false},
+      {"key": "rendering_3d", "present": false},
+      {"key": "media", "present": false},
+      {"key": "hardware", "present": false, "specific_hardware": false}
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（Python 库跑在已移植的 Python 3.12 运行时上；C++ 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "feasible_with_effort",
+    "effort": {
+      "person_days": [5, 15]
+    },
+    "confidence": "high",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "ONNX 主体为 Python + C++17，核心逻辑高度可移植：纯 Python 部分可直接运行于鸿蒙 PC 已移植 Python；C++ 扩展（checker、shape inference、version converter 等）与 nanobind 绑定需用 OHOS NDK 重新编译。所有平台相关代码均已按 Win32/POSIX 分支守卫，非 Windows 平台走标准 POSIX 路径，并有 openat2 失败回退机制，无不可适配的核心功能。",
+    "blockers": [
+      {
+        "id": "bk:openat2_fallback",
+        "issue": "Linux 特定 syscall(SYS_openat2) 在鸿蒙 PC 上可能不存在，需确认回退到 openat/O_RESOLVE_BENEATH 的路径可用",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "在 OHOS NDK 下验证 openat/O_CLOEXEC 行为；若 openat2 不可用，代码已自动回退到 openat，必要时可强制关闭 ONNX_HAS_OPENAT2 宏。",
+        "evidence": ["onnx/checker.cc:1406"]
+      },
+      {
+        "id": "bk:nanobind_build",
+        "issue": "nanobind 未在 cmd-pkgs 中提供预编译包，需随 ONNX 一起用 OHOS NDK 构建",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "使用 ohos.toolchain.cmake 交叉编译 nanobind + onnx_cpp2py_export；nanobind 为现代 C++ 绑定头库，无额外平台依赖，通常只需调整 CMake 工具链。",
+        "evidence": ["CMakeLists.txt:544", "CMakeLists.txt:564"]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python_runtime",
+        "capability": "Python 3.12 运行时已移植到 HarmonyOS PC",
+        "required": true,
+        "target_status": "available",
+        "impact": "ONNX 为 Python 包，纯 Python 逻辑直接依赖 Python 运行时",
+        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+      },
+      {
+        "id": "ta:ohos_ndk_posix",
+        "capability": "OHOS NDK 支持 C++17、musl libc 及 open/openat/close 等 POSIX 文件 API",
+        "required": true,
+        "target_status": "available",
+        "impact": "C++ 扩展与外部数据安全打开路径依赖 POSIX 子集",
+        "source": "references/harmony-pc-capabilities.json#intro"
+      }
+    ],
+    "required_permissions": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python 模型工具链",
+        "note": "helper、serialization、parser、printer、reference evaluator 等无需改动即可在鸿蒙 Python 上运行",
+        "evidence": ["onnx/helper.py", "onnx/serialization.py", "onnx/reference/"]
+      },
+      {
+        "aspect": "已鸿蒙化的运行时依赖",
+        "note": "numpy、protobuf、ml_dtypes、Pillow 在 OpenHarmony PC PyPI 镜像已有 ohos wheel；C++ protobuf/abseil 在 cmd-pkgs 已有预编译包",
+        "evidence": ["scripts/harmony_adapted.js 输出"]
+      },
+      {
+        "aspect": "跨平台 C++ 核心",
+        "note": "checker、shape inference、version converter 等核心代码使用 C++17 标准库，平台相关分支已隔离到 #ifdef _WIN32 / __linux__ 中",
+        "evidence": ["onnx/checker.cc", "onnx/shape_inference/implementation.h"]
+      }
+    ],
+    "key_tasks": [
+      "配置 OHOS NDK 工具链（ohos.toolchain.cmake）并设置 scikit-build-core 交叉编译环境",
+      "用鸿蒙 Python 3.12 重新构建 onnx_cpp2py_export 扩展，确保 nanobind 正确编译链接",
+      "在鸿蒙上验证 C++ checker 的外部数据安全打开路径（openat / O_CLOEXEC / 路径包含校验）",
+      "安装 OpenHarmony PC 镜像中的 numpy/protobuf/ml_dtypes ohos wheel，运行 ONNX 单元测试",
+      "可选：验证 check-model / check-node 控制台脚本在鸿蒙终端可正常调用"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。ONNX 不涉及 GUI/3D/媒体/硬件，无特定硬件阻塞点；Win32 专有 API 仅在 Windows 分支使用，不影响鸿蒙 POSIX 构建。typing_extensions 为纯 Python 包，虽未在鸿蒙镜像中列出，但可直接随 Python 运行。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "harmony_adapted",
+        "kind": "gap",
+        "value": "typing_extensions 未在鸿蒙 PyPI 镜像列出",
+        "rationale": "typing_extensions 为标准库 typing 的纯 Python 回填包，未出现在 OpenHarmony PC PyPI 镜像中，但可在已移植 Python 上直接运行，不属于迁移阻碍。当前 skill 未明确说明'未镜像的纯 Python 包'如何处理，建议在依赖分析口径中补充。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "category",
+        "kind": "new_value",
+        "value": "compiler_extensions",
+        "rationale": "ONNX 使用 __builtin_mul_overflow、条件 __declspec/__attribute__ 符号可见性、#pragma GCC diagnostic 等编译器扩展。它们既不是标准库 API，也不是平台/系统 API，单列 compiler_extensions 组更清晰。"
+      },
+      {
+        "dimension": "code_metrics",
+        "field": "test_example_dirs",
+        "kind": "gap",
+        "value": "onnx/test/ 与 onnx/backend/test/ 未被脚本识别为测试目录",
+        "rationale": "metrics.json 的 test_example_dirs 为空，但仓库明显包含 onnx/test/、onnx/backend/test/、onnx/fuzz/ 等测试目录。cloc 可能按文件内容分类，未按目录名识别。已在 tests.note 与生产代码结论中手工排除这些目录。"
+      }
+    ]
+  }
+}

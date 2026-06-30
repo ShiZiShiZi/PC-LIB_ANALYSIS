@@ -1,0 +1,1054 @@
+{
+  "library": {
+    "name": "quiche",
+    "kind": "library",
+    "package_name": "quiche",
+    "aliases": ["cloudflare/quiche"],
+    "import_names": ["quiche"],
+    "source_url": "https://github.com/cloudflare/quiche",
+    "analyzed_at": "2026-06-29T14:21:57Z",
+    "commit": "c4c0b97",
+    "one_liner": "Cloudflare 出品的 QUIC 传输协议与 HTTP/3 开源实现库，提供低级 API 处理 QUIC 包和连接状态",
+    "ecosystem": "rust",
+    "bindings": ["c"]
+  },
+  "function_summary": {
+    "summary": "quiche 是 Cloudflare 开发的 IETF QUIC 传输协议和 HTTP/3 的 Rust 实现库。它提供了处理 QUIC 数据包和管理连接状态的低级 API，应用程序负责提供 I/O（如套接字处理）和支持定时器的事件循环。该库实现了完整的 QUIC 握手、流多路复用、流量控制、拥塞控制（Cubic 与 BBRv2）、丢包检测与恢复、路径 MTU 发现以及 DATAGRAM 帧支持。其 TLS 握手基于 BoringSSL，同时暴露 C FFI 供 C/C++ 应用集成。已被 Cloudflare 边缘网络、Android DNS 解析器和 curl 等项目采用。",
+    "categories": [
+      {
+        "name": "QUIC 传输协议引擎",
+        "description": "QUIC 协议核心实现：数据包解析与生成、连接生命周期管理、帧编解码、连接 ID 管理、路径管理与迁移、路径 MTU 发现",
+        "evidence": [
+          "quiche/src/lib.rs",
+          "quiche/src/packet.rs",
+          "quiche/src/frame.rs",
+          "quiche/src/cid.rs",
+          "quiche/src/path.rs",
+          "quiche/src/pmtud.rs"
+        ]
+      },
+      {
+        "name": "HTTP/3 协议实现",
+        "description": "HTTP/3 应用层协议实现：请求/响应流管理、QPACK 头部压缩、DATAGRAM 帧支持",
+        "evidence": [
+          "quiche/src/h3/mod.rs",
+          "quiche/src/h3/qpack/mod.rs",
+          "quiche/src/h3/qpack/encoder.rs",
+          "quiche/src/h3/qpack/decoder.rs",
+          "quiche/src/dgram.rs"
+        ]
+      },
+      {
+        "name": "TLS 握手与加密",
+        "description": "基于 BoringSSL 的 TLS 1.3 握手与 QUIC 加密：数据包保护密钥派生、加解密、TLS 回调接口",
+        "evidence": [
+          "quiche/src/tls/mod.rs",
+          "quiche/src/tls/boringssl.rs",
+          "quiche/src/crypto/mod.rs",
+          "quiche/src/crypto/boringssl.rs"
+        ]
+      },
+      {
+        "name": "拥塞控制与丢包检测",
+        "description": "Cubic 与 BBRv2 拥塞控制算法、ACK 处理、丢包检测与恢复（基于 RFC 9002）",
+        "evidence": [
+          "quiche/src/recovery/mod.rs",
+          "quiche/src/recovery/congestion/mod.rs",
+          "quiche/src/recovery/gcongestion/mod.rs"
+        ]
+      },
+      {
+        "name": "流与流量控制",
+        "description": "双向/单向流的创建与管理、流级与连接级流量控制、流窗口更新",
+        "evidence": [
+          "quiche/src/stream/mod.rs",
+          "quiche/src/flowcontrol.rs"
+        ]
+      },
+      {
+        "name": "C FFI 绑定",
+        "description": "为 C/C++ 应用提供的薄 C API 层，导出静态库 (libquiche.a) 和动态库 (libquiche.so)，覆盖连接、配置、流、HTTP/3 等全部功能",
+        "evidence": [
+          "quiche/src/ffi.rs",
+          "quiche/include/quiche.h"
+        ]
+      },
+      {
+        "name": "异步集成（tokio-quiche）",
+        "description": "基于 tokio 的异步 QUIC 服务器/客户端封装：每连接 IO Worker、GSO/GRO 发送、数据包路由与解复用",
+        "evidence": [
+          "tokio-quiche/src/quic/io/worker.rs",
+          "tokio-quiche/src/quic/router/mod.rs",
+          "tokio-quiche/src/socket/capabilities.rs"
+        ]
+      },
+      {
+        "name": "qlog 协议日志",
+        "description": "IETF qlog 数据模型实现，支持 JSON-SEQ 流式写入与读取，可选 gzip/zstd 压缩",
+        "evidence": [
+          "qlog/src/lib.rs",
+          "qlog/src/streamer.rs",
+          "qlog/src/reader.rs"
+        ]
+      }
+    ],
+    "domain": "网络协议",
+    "target_users": "需要在应用中集成 QUIC/HTTP3 协议栈的开发者（如 CDN、浏览器、DNS 解析器、网络工具）"
+  },
+  "languages": {
+    "primary": "Rust",
+    "all": [
+      "Rust",
+      "Markdown",
+      "C",
+      "TOML",
+      "JavaScript",
+      "C/C++ Header",
+      "YAML",
+      "HTML"
+    ],
+    "breakdown": [
+      {
+        "language": "Rust",
+        "files": 217,
+        "code": 92625,
+        "pct": 93.94,
+        "production": { "files": 185, "code": 86322 },
+        "test": { "files": 20, "code": 4521 },
+        "example": { "files": 12, "code": 1782 }
+      },
+      {
+        "language": "Markdown",
+        "files": 22,
+        "code": 1887,
+        "pct": 1.91,
+        "production": { "files": 20, "code": 1822 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 2, "code": 65 }
+      },
+      {
+        "language": "C",
+        "files": 4,
+        "code": 1381,
+        "pct": 1.4,
+        "production": { "files": 0, "code": 0 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 4, "code": 1381 }
+      },
+      {
+        "language": "TOML",
+        "files": 17,
+        "code": 579,
+        "pct": 0.59,
+        "production": { "files": 17, "code": 579 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "JavaScript",
+        "files": 1,
+        "code": 571,
+        "pct": 0.58,
+        "production": { "files": 1, "code": 571 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 1,
+        "code": 523,
+        "pct": 0.53,
+        "production": { "files": 1, "code": 523 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "YAML",
+        "files": 7,
+        "code": 445,
+        "pct": 0.45,
+        "production": { "files": 7, "code": 445 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "HTML",
+        "files": 1,
+        "code": 183,
+        "pct": 0.19,
+        "production": { "files": 1, "code": 183 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 4,
+        "code": 144,
+        "pct": 0.15,
+        "production": { "files": 3, "code": 129 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 1, "code": 15 }
+      },
+      {
+        "language": "CSS",
+        "files": 1,
+        "code": 122,
+        "pct": 0.12,
+        "production": { "files": 1, "code": 122 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "make",
+        "files": 2,
+        "code": 70,
+        "pct": 0.07,
+        "production": { "files": 1, "code": 40 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 1, "code": 30 }
+      },
+      {
+        "language": "Dockerfile",
+        "files": 2,
+        "code": 60,
+        "pct": 0.06,
+        "production": { "files": 2, "code": 60 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "SVG",
+        "files": 3,
+        "code": 7,
+        "pct": 0.01,
+        "production": { "files": 3, "code": 7 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 5,
+        "pct": 0.01,
+        "production": { "files": 1, "code": 5 },
+        "test": { "files": 0, "code": 0 },
+        "example": { "files": 0, "code": 0 }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 283,
+      "code": 98602,
+      "comment": 21560,
+      "blank": 21877,
+      "total_lines": 142039
+    },
+    "production": {
+      "files": 243,
+      "code": 90808,
+      "comment": 20120,
+      "blank": 19905,
+      "total_lines": 130833
+    },
+    "test": {
+      "files": 20,
+      "code": 4521,
+      "comment": 821,
+      "blank": 941,
+      "total_lines": 6283
+    },
+    "example": {
+      "files": 20,
+      "code": 3273,
+      "comment": 619,
+      "blank": 1031,
+      "total_lines": 4923
+    },
+    "top_dirs": [
+      { "dir": "quiche", "code": 51825, "category": "production", "by_category": { "production": 48432, "test": 676, "example": 2717 } },
+      { "dir": "tokio-quiche", "code": 11731, "category": "production", "by_category": { "production": 9338, "test": 1970, "example": 423 } },
+      { "dir": "qlog-dancer", "code": 10650, "category": "production", "by_category": { "production": 10650 } },
+      { "dir": "octets", "code": 5957, "category": "production", "by_category": { "production": 5957 } },
+      { "dir": "h3i", "code": 5680, "category": "production", "by_category": { "production": 5547, "example": 133 } },
+      { "dir": "qlog", "code": 3650, "category": "production", "by_category": { "production": 2960, "test": 690 } },
+      { "dir": "apps", "code": 2322, "category": "production", "by_category": { "production": 2322 } },
+      { "dir": "tools", "code": 1796, "category": "test", "by_category": { "production": 611, "test": 1185 } },
+      { "dir": "netlog", "code": 1569, "category": "production", "by_category": { "production": 1569 } },
+      { "dir": "datagram-socket", "code": 1341, "category": "production", "by_category": { "production": 1341 } },
+      { "dir": "buffer-pool", "code": 512, "category": "production", "by_category": { "production": 512 } },
+      { "dir": ".", "code": 463, "category": "production", "by_category": { "production": 463 } },
+      { "dir": "fuzz", "code": 451, "category": "production", "by_category": { "production": 451 } },
+      { "dir": ".github", "code": 418, "category": "production", "by_category": { "production": 418 } },
+      { "dir": "task-killswitch", "code": 237, "category": "production", "by_category": { "production": 237 } }
+    ],
+    "test_example_dirs": {
+      "test": ["tools"],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": { "files": 1, "code": 5, "macros": ["WIN32", "_MSC_VER", "_WIN32", "__WIN32__"] },
+        "posix": { "files": 1, "code": 1, "macros": ["__unix__"] }
+      },
+      "total": 6,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": { "rust": { "files": 14, "hits": 61 } },
+      "by_platform": { "linux": 61 },
+      "samples": [
+        { "language": "rust", "file": "tokio-quiche/src/quic/router/mod.rs", "line": 62, "text": "#[cfg(target_os = \"linux\")]" },
+        { "language": "rust", "file": "tokio-quiche/src/socket/capabilities.rs", "line": 27, "text": "#[cfg(target_os = \"linux\")]" },
+        { "language": "rust", "file": "datagram-socket/src/datagram.rs", "line": 592, "text": "#[cfg(target_os = \"linux\")]" }
+      ],
+      "total": 61,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(cfg!(target_os)/cfg_attr(target_os…))的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 20,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": { "Rust": { "files": 20, "cases": 0 } },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "BSD-2-Clause",
+    "name": "BSD 2-Clause \"Simplified\" License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["COPYING"],
+    "evidence": "COPYING 文件包含标准 BSD-2-Clause 全文；Cargo.toml workspace.package.license = \"BSD-2-Clause\"",
+    "notes": null
+  },
+  "dependencies": {
+    "count": 12,
+    "manifests": [
+      "Cargo.toml",
+      "quiche/Cargo.toml",
+      "tokio-quiche/Cargo.toml",
+      "apps/Cargo.toml",
+      "h3i/Cargo.toml",
+      "datagram-socket/Cargo.toml",
+      "qlog/Cargo.toml",
+      "qlog-dancer/Cargo.toml",
+      "buffer-pool/Cargo.toml",
+      "task-killswitch/Cargo.toml",
+      "netlog/Cargo.toml",
+      "octets/Cargo.toml"
+    ],
+    "by_ecosystem": { "rust": 12 },
+    "dependencies": [
+      {
+        "name": "boring",
+        "ecosystem": "rust",
+        "registry_name": "boring",
+        "source_repo": "https://github.com/cloudflare/boring",
+        "import_names": ["boring", "boring::ssl", "boring::ssl::SslContextBuilder"],
+        "aliases": ["boring-ssl", "boringssl"],
+        "scope": "runtime",
+        "version": "4.3",
+        "purpose": "BoringSSL Rust 绑定，提供 TLS 1.3 握手与加密功能，QUIC 协议的核心依赖",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io (boring-sys 编译 BoringSSL C 库)",
+        "declared_in": ["quiche/Cargo.toml", "tokio-quiche/Cargo.toml"],
+        "used_symbols": ["SslContextBuilder", "SslMethod", "SslRef", "SslFiletype"]
+      },
+      {
+        "name": "boring-sys",
+        "ecosystem": "rust",
+        "registry_name": "boring-sys",
+        "source_repo": "https://github.com/cloudflare/boring",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "BoringSSL C 库的编译脚本（boring 的构建依赖），自动从源码编译 BoringSSL",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io（通过 boring 间接引入）",
+        "declared_in": ["quiche/Cargo.toml"],
+        "used_symbols": []
+      },
+      {
+        "name": "libc",
+        "ecosystem": "rust",
+        "registry_name": "libc",
+        "source_repo": "https://github.com/rust-lang/libc",
+        "import_names": ["libc"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "0.2.76",
+        "purpose": "POSIX C 库绑定：提供 c_void/c_int/c_char 等类型、CLOCK_MONOTONIC/in_pktinfo/in6_pktinfo 等常量，用于 FFI 与平台 socket 操作",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["quiche/Cargo.toml", "tokio-quiche/Cargo.toml", "datagram-socket/Cargo.toml", "apps/Cargo.toml"],
+        "used_symbols": ["c_void", "c_int", "c_char", "c_uint", "CLOCK_MONOTONIC", "in_pktinfo", "in6_pktinfo", "sock_txtime"]
+      },
+      {
+        "name": "nix",
+        "ecosystem": "rust",
+        "registry_name": "nix",
+        "source_repo": "https://github.com/nix-rust/nix",
+        "import_names": ["nix"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "0.30.1",
+        "purpose": "Unix/Linux 系统调用封装：sendmsg/recvmmsg (GSO/GRO)、信号处理、socket 选项设置",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["tokio-quiche/Cargo.toml", "apps/Cargo.toml"],
+        "used_symbols": ["sendmsg", "recvmsg", "ControlMessage", "MsgFlags", "SockaddrStorage", "setsockopt", "UdpGsoSegment", "UdpGroSegment", "TxTime", "Ipv4PacketInfo", "Ipv6PacketInfo"]
+      },
+      {
+        "name": "windows-sys",
+        "ecosystem": "rust",
+        "registry_name": "windows-sys",
+        "source_repo": "https://github.com/microsoft/windows-rs",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "0.59",
+        "purpose": "Windows 系统API绑定：WinSock2 与加密 API，用于 Windows 平台编译",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["quiche/Cargo.toml"],
+        "used_symbols": ["Win32_Networking_WinSock", "Win32_Security_Cryptography"]
+      },
+      {
+        "name": "tokio",
+        "ecosystem": "rust",
+        "registry_name": "tokio",
+        "source_repo": "https://github.com/tokio-rs/tokio",
+        "import_names": ["tokio"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "1.44",
+        "purpose": "异步运行时：为 tokio-quiche 提供异步 IO、任务调度、定时器、网络",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["tokio-quiche/Cargo.toml", "datagram-socket/Cargo.toml", "task-killswitch/Cargo.toml", "h3i/Cargo.toml"],
+        "used_symbols": ["spawn", "net::UdpSocket", "sync::mpsc", "time::Instant", "io::Interest"]
+      },
+      {
+        "name": "mio",
+        "ecosystem": "rust",
+        "registry_name": "mio",
+        "source_repo": "https://github.com/tokio-rs/mio",
+        "import_names": ["mio"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "1",
+        "purpose": "非阻塞 IO 事件循环：用于同步客户端（apps/h3i）的事件驱动包处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["apps/Cargo.toml", "h3i/Cargo.toml"],
+        "used_symbols": ["Poll", "Events", "Token", "Interest"]
+      },
+      {
+        "name": "ring",
+        "ecosystem": "rust",
+        "registry_name": "ring",
+        "source_repo": "https://github.com/briansmith/ring",
+        "import_names": ["ring"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "0.17.8",
+        "purpose": "密码学原语库：用于 QUIC 初始包加密（HMAC、HKDF、AES-128-GCM 等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["quiche/Cargo.toml", "apps/Cargo.toml", "h3i/Cargo.toml"],
+        "used_symbols": ["hmac", "hkdf", "aead"]
+      },
+      {
+        "name": "foundations",
+        "ecosystem": "rust",
+        "registry_name": "foundations",
+        "source_repo": null,
+        "import_names": ["foundations"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": ">=4,<6",
+        "purpose": "Cloudflare 内部框架：结构化日志 (slog)、遥测指标 (Prometheus)、配置管理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["tokio-quiche/Cargo.toml", "buffer-pool/Cargo.toml", "qlog/Cargo.toml"],
+        "used_symbols": ["telemetry::metrics", "settings::Settings"]
+      },
+      {
+        "name": "serde",
+        "ecosystem": "rust",
+        "registry_name": "serde",
+        "source_repo": "https://github.com/serde-rs/serde",
+        "import_names": ["serde"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "1",
+        "purpose": "序列化框架：qlog 事件/数据模型的 JSON 序列化与反序列化",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["quiche/Cargo.toml", "qlog/Cargo.toml", "tokio-quiche/Cargo.toml", "h3i/Cargo.toml", "netlog/Cargo.toml", "qlog-dancer/Cargo.toml"],
+        "used_symbols": ["Serialize", "Deserialize"]
+      },
+      {
+        "name": "serde_json",
+        "ecosystem": "rust",
+        "registry_name": "serde_json",
+        "source_repo": "https://github.com/serde-rs/json",
+        "import_names": ["serde_json"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "1",
+        "purpose": "JSON 序列化/反序列化：qlog 日志读写与 HTTP/3 头部处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["quiche/Cargo.toml", "qlog/Cargo.toml", "tokio-quiche/Cargo.toml", "h3i/Cargo.toml", "netlog/Cargo.toml", "qlog-dancer/Cargo.toml"],
+        "used_symbols": ["to_string", "from_str", "Value"]
+      },
+      {
+        "name": "intrusive-collections",
+        "ecosystem": "rust",
+        "registry_name": "intrusive-collections",
+        "source_repo": null,
+        "import_names": ["intrusive_collections"],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "0.9.5",
+        "purpose": "侵入式链表：用于流优先级队列的高性能 intrusive 集合",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "crates.io",
+        "declared_in": ["quiche/Cargo.toml"],
+        "used_symbols": ["intrusive_adapter", "RBTree", "LinkedList"]
+      }
+    ],
+    "notes": "工作空间内部 crate（octets、qlog、datagram-socket、task-killswitch、buffer-pool、netlog、h3i、quiche、tokio-quiche、apps）通过 path 依赖互连，不计入外部依赖。boring/boring-sys 编译 BoringSSL C 库需 cmake。"
+  },
+  "native_api": {
+    "summary": "quiche 使用 POSIX/Unix socket API（通过 libc/nix crate）和 Linux 特有 socket 选项（GSO/GRO/SO_TXTIME）实现高性能 UDP 收发；TLS 层通过 FFI 直接调用 BoringSSL C 函数；Windows 平台通过 windows-sys crate 访问 WinSock2 和加密 API。大部分核心 QUIC 协议代码是纯 Rust 跨平台实现，平台特定代码集中在 socket 能力层（Linux GSO/GRO）和 TLS 加密层。",
+    "groups": [
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "sendmsg",
+            "purpose": "发送 UDP 数据包（支持 GSO/GRO 控制消息）",
+            "count": 8,
+            "evidence": ["tokio-quiche/src/quic/io/gso.rs:36", "tokio-quiche/src/quic/io/gso.rs:130"],
+            "conditional": true
+          },
+          {
+            "name": "recvmsg",
+            "purpose": "接收 UDP 数据包（支持 GRO 控制消息）",
+            "count": 3,
+            "evidence": ["datagram-socket/src/mmsg.rs"],
+            "conditional": true
+          },
+          {
+            "name": "sendmmsg",
+            "purpose": "批量发送 UDP 数据包（Linux 专用高性能发送）",
+            "count": 4,
+            "evidence": ["datagram-socket/src/mmsg.rs"],
+            "conditional": true
+          },
+          {
+            "name": "recvmmsg",
+            "purpose": "批量接收 UDP 数据包（Linux 专用高性能接收）",
+            "count": 4,
+            "evidence": ["datagram-socket/src/mmsg.rs"],
+            "conditional": true
+          },
+          {
+            "name": "setsockopt",
+            "purpose": "设置 socket 选项（UDP_GRO、UDP_SEGMENT、SO_TXTIME、IP_PKTINFO 等）",
+            "count": 12,
+            "evidence": [
+              "tokio-quiche/src/socket/capabilities.rs:173",
+              "tokio-quiche/src/socket/capabilities.rs:196",
+              "tokio-quiche/src/socket/capabilities.rs:223"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "tokio-quiche/src/quic/io/gso.rs",
+          "tokio-quiche/src/socket/capabilities.rs",
+          "datagram-socket/src/mmsg.rs"
+        ]
+      },
+      {
+        "type": "linux_socket",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {
+            "name": "UDP_SEGMENT",
+            "purpose": "UDP Generic Segmentation Offload 发送侧分段卸载",
+            "count": 2,
+            "evidence": ["tokio-quiche/src/socket/capabilities.rs:173"],
+            "conditional": true
+          },
+          {
+            "name": "UDP_GRO",
+            "purpose": "UDP Generic Receive Offload 接收侧合并卸载",
+            "count": 2,
+            "evidence": ["tokio-quiche/src/socket/capabilities.rs:223"],
+            "conditional": true
+          },
+          {
+            "name": "SO_TXTIME",
+            "purpose": "UDP 数据包发送时间戳控制（QUIC pacing）",
+            "count": 2,
+            "evidence": ["tokio-quiche/src/socket/capabilities.rs:196"],
+            "conditional": true
+          },
+          {
+            "name": "IP_PKTINFO / IPV6_PKTINFO",
+            "purpose": "获取/设置 UDP 包的源/目标 IP 地址信息",
+            "count": 4,
+            "evidence": ["tokio-quiche/src/socket/capabilities.rs:232", "tokio-quiche/src/socket/capabilities.rs:253"],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "tokio-quiche/src/socket/capabilities.rs",
+          "tokio-quiche/src/quic/io/gso.rs"
+        ]
+      },
+      {
+        "type": "boringssl",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "SSL_CTX_new",
+            "purpose": "创建 BoringSSL SSL_CTX 上下文",
+            "count": 1,
+            "evidence": ["quiche/src/tls/mod.rs:138"],
+            "conditional": false
+          },
+          {
+            "name": "SSL_new",
+            "purpose": "创建 BoringSSL SSL 连接对象",
+            "count": 1,
+            "evidence": ["quiche/src/tls/mod.rs"],
+            "conditional": false
+          },
+          {
+            "name": "SSL_CTX_set_alpn_protos",
+            "purpose": "设置 ALPN 协议列表",
+            "count": 1,
+            "evidence": ["quiche/src/tls/mod.rs"],
+            "conditional": false
+          },
+          {
+            "name": "EVP_AEAD_CTX_open",
+            "purpose": "AEAD 解密（QUIC 数据包保护）",
+            "count": 2,
+            "evidence": ["quiche/src/crypto/boringssl.rs:98"],
+            "conditional": false
+          },
+          {
+            "name": "EVP_AEAD_CTX_seal_scatter",
+            "purpose": "AEAD 加密（QUIC 数据包保护，分离 tag）",
+            "count": 2,
+            "evidence": ["quiche/src/crypto/boringssl.rs:141"],
+            "conditional": false
+          },
+          {
+            "name": "SSL_CTX_set_quic_method",
+            "purpose": "注册 QUIC TLS 回调（set_read_secret/set_write_secret/add_handshake_data/flush_flight/send_alert）",
+            "count": 1,
+            "evidence": ["quiche/src/tls/boringssl.rs"],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "quiche/src/tls/mod.rs",
+          "quiche/src/tls/boringssl.rs",
+          "quiche/src/crypto/boringssl.rs"
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "Win32_Networking_WinSock",
+            "purpose": "Windows WinSock2 API（socket 操作）",
+            "count": 1,
+            "evidence": ["quiche/Cargo.toml:90"],
+            "conditional": true
+          },
+          {
+            "name": "Win32_Security_Cryptography",
+            "purpose": "Windows 加密 API（BoringSSL 在 Windows 上的系统证书加载）",
+            "count": 1,
+            "evidence": ["quiche/Cargo.toml:92"],
+            "conditional": true
+          }
+        ],
+        "evidence": ["quiche/Cargo.toml:89-93"]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libssl",
+        "mechanism": "static linking (via boring-sys build.rs)",
+        "acquisition": "self_build",
+        "source": "BoringSSL 静态库，由 boring-sys 从源码编译（需 cmake）",
+        "description": "BoringSSL TLS 库：提供 TLS 1.3 握手与 QUIC 加密",
+        "optional": false,
+        "evidence": ["quiche/src/build.rs:48"]
+      },
+      {
+        "name": "libcrypto",
+        "mechanism": "static linking (via boring-sys build.rs)",
+        "acquisition": "self_build",
+        "source": "BoringSSL 密码学库，由 boring-sys 从源码编译（需 cmake）",
+        "description": "BoringSSL 密码学库：提供 AEAD 加解密、HKDF、EVP 等",
+        "optional": false,
+        "evidence": ["quiche/src/build.rs:49"]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行时对宿主环境的依赖集中在 UDP socket 收发和 TLS 证书验证路径；核心 QUIC 协议本身是纯 Rust 状态机，不依赖外部进程/服务/设备。应用层工具（apps/h3i）需要读取命令行参数和本地证书文件。",
+    "network": [
+      {
+        "detail": "UDP socket 收发 QUIC 数据包",
+        "purpose": "QUIC 传输协议运行在 UDP 之上，需要发送/接收数据包",
+        "evidence": ["quiche/examples/server.rs", "quiche/examples/client.rs", "apps/src/common.rs"]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "读取 TLS 证书/密钥 PEM 文件（Config::load_cert_chain_from_pem_file / load_priv_key_from_pem_file）",
+        "purpose": "加载 TLS 证书和私钥用于 QUIC 握手",
+        "evidence": ["quiche/src/lib.rs:689", "quiche/src/tls/mod.rs"]
+      },
+      {
+        "detail": "写入 qlog 日志文件（可选）",
+        "purpose": "记录 QUIC 协议事件日志用于调试分析",
+        "evidence": ["quiche/src/lib.rs", "qlog/src/streamer.rs"]
+      },
+      {
+        "detail": "读取系统 CA 证书路径（/etc/ssl/certs 等，仅 Unix）",
+        "purpose": "TLS 证书验证",
+        "evidence": ["quiche/src/tls/mod.rs"]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "BORING_BSSL_PATH",
+        "purpose": "指定自定义 BoringSSL 源码路径（覆盖 boring-sys 默认下载）",
+        "evidence": ["README.md:342"]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Rust 2021 edition",
+    "runtime_version": "Rust >= 1.88（MSRV）",
+    "build_system": "Cargo",
+    "compiler_extensions": [
+      {
+        "detail": "BoringSSL 构建需 cmake（boring-sys 依赖）",
+        "purpose": "编译 BoringSSL C 库",
+        "evidence": ["README.md:332"]
+      },
+      {
+        "detail": "NASM 汇编器（仅 Windows）",
+        "purpose": "BoringSSL 在 Windows 上的汇编优化",
+        "evidence": ["README.md:335"]
+      }
+    ],
+    "platforms": [
+      { "os": "linux", "arch": "x86_64", "evidence": ["tokio-quiche/src/socket/capabilities.rs", "datagram-socket/src/mmsg.rs"] },
+      { "os": "linux", "arch": "aarch64", "evidence": ["tokio-quiche/Cargo.toml:117-119"] },
+      { "os": "macos", "arch": "x86_64", "evidence": ["quiche/src/build.rs:54"] },
+      { "os": "macos", "arch": "aarch64", "evidence": ["quiche/src/build.rs:54"] },
+      { "os": "windows", "arch": "x86_64", "evidence": ["quiche/Cargo.toml:89-93"] },
+      { "os": "android", "arch": "arm64", "evidence": ["README.md:351"] },
+      { "os": "ios", "arch": "arm64", "evidence": ["README.md:390"] }
+    ],
+    "entry_points": [],
+    "packaging": "无（库）；作为 Cargo crate 分发，quiche crate 同时构建 lib + staticlib + cdylib 供 C/C++ 应用链接",
+    "notes": "BoringSSL 由 boring-sys 在构建时从源码编译，需 cmake。构建产物包含 Rust 库（libquiche.rlib）、C 静态库（libquiche.a）和 C 动态库（libquiche.so/.dylib/.dll）。"
+  },
+  "capability_profile": {
+    "summary": "quiche 是纯网络协议库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其适配关注点集中在 UDP socket API 可用性和 BoringSSL 编译。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及",
+        "evidence": []
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，musl + POSIX 子集）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [15, 40]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [
+      {
+        "id": "ua:sendmmsg",
+        "caused_by": ["ta:posix_api"],
+        "api": "sendmmsg",
+        "public_entry": "DatagramSocketSendExt::send_many",
+        "reason": "Linux 特有批量发送系统调用，鸿蒙 NDK musl 可能不提供",
+        "blocking_native_api": "sendmmsg",
+        "category": "platform",
+        "evidence": ["datagram-socket/src/mmsg.rs"]
+      },
+      {
+        "id": "ua:recvmmsg",
+        "caused_by": ["ta:posix_api"],
+        "api": "recvmmsg",
+        "public_entry": "DatagramSocketRecvExt::recv_many",
+        "reason": "Linux 特有批量接收系统调用，鸿蒙 NDK musl 可能不提供",
+        "blocking_native_api": "recvmmsg",
+        "category": "platform",
+        "evidence": ["datagram-socket/src/mmsg.rs"]
+      },
+      {
+        "id": "ua:udp_gso",
+        "caused_by": ["ta:linux_socket"],
+        "api": "UDP_SEGMENT (setsockopt UDP_GSO)",
+        "public_entry": "SocketCapabilitiesBuilder::gso",
+        "reason": "Linux 专有 UDP 分段卸载 socket 选项，鸿蒙内核无对应功能",
+        "blocking_native_api": "setsockopt UDP_GSO",
+        "category": "platform",
+        "evidence": ["tokio-quiche/src/socket/capabilities.rs:173"]
+      },
+      {
+        "id": "ua:udp_gro",
+        "caused_by": ["ta:linux_socket"],
+        "api": "UDP_GRO (setsockopt)",
+        "public_entry": "SocketCapabilitiesBuilder::gro",
+        "reason": "Linux 专有 UDP 接收合并卸载 socket 选项，鸿蒙内核无对应功能",
+        "blocking_native_api": "setsockopt UDP_GRO",
+        "category": "platform",
+        "evidence": ["tokio-quiche/src/socket/capabilities.rs:223"]
+      },
+      {
+        "id": "ua:so_txtime",
+        "caused_by": ["ta:linux_socket"],
+        "api": "SO_TXTIME (setsockopt)",
+        "public_entry": "SocketCapabilitiesBuilder::txtime",
+        "reason": "Linux 专有发送时间戳控制 socket 选项，用于 QUIC pacing，鸿蒙无对应",
+        "blocking_native_api": "setsockopt SO_TXTIME",
+        "category": "platform",
+        "evidence": ["tokio-quiche/src/socket/capabilities.rs:196"]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:rust_ohos",
+        "capability": "Rust 编译器（1.89+）支持 OHOS target（aarch64-unknown-linux-ohos）",
+        "required": true,
+        "target_status": "available",
+        "impact": "已确认可用；quiche MSRV 1.88 满足要求",
+        "source": "references/harmony-pc-capabilities.json runtimes.rust"
+      },
+      {
+        "id": "ta:posix_api",
+        "capability": "POSIX socket API（sendmsg/recvmsg/setsockopt 等）在 OHOS NDK 中可用",
+        "required": true,
+        "target_status": "available",
+        "impact": "OHOS NDK 基于 musl libc，提供 POSIX 子集；基础 sendmsg/recvmsg/setsockopt 应可用",
+        "source": "OHOS NDK 文档（musl libc POSIX 子集）"
+      },
+      {
+        "id": "ta:linux_socket",
+        "capability": "Linux 特有 socket 选项（UDP_GSO/UDP_GRO/SO_TXTIME/IP_PKTINFO 等）在鸿蒙内核中可用",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "这些是 Linux 内核专有扩展，用于性能优化；鸿蒙自研内核未必实现；缺失时降级到标准 POSIX socket 路径，功能不受影响但性能下降",
+        "source": "references/harmony-pc-capabilities.json（无对应条目）"
+      },
+      {
+        "id": "ta:boringssl_build",
+        "capability": "BoringSSL 可在 OHOS NDK 环境下编译",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "quiche 的 TLS 层硬依赖 BoringSSL（通过 boring/boring-sys crate）；若无法编译则整个库无法构建。可能需要适配 boring-sys 的交叉编译脚本以支持 ohos target",
+        "source": "quiche/Cargo.toml（boring 依赖）"
+      },
+      {
+        "id": "ta:tokio_ohos",
+        "capability": "tokio 异步运行时可在 OHOS 上运行",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "tokio-quiche 依赖 tokio；若 tokio 不支持 OHOS 则异步封装不可用，但核心 quiche 库（同步 API）仍可工作",
+        "source": "tokio-quiche/Cargo.toml"
+      },
+      {
+        "id": "ta:cmake",
+        "capability": "cmake 构建工具在鸿蒙开发环境中可用",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "boring-sys 编译 BoringSSL 需要 cmake；缺失则无法构建",
+        "source": "README.md:332"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "QUIC 协议库需要 UDP 网络访问权限",
+        "source_capability": "",
+        "harmony_status": "unknown",
+        "evidence": ["quiche/examples/server.rs", "quiche/examples/client.rs"]
+      }
+    ],
+    "recommended_path": "recompile_napi",
+    "summary": "quiche 的核心 QUIC 协议实现是纯 Rust 跨平台代码，可编译到鸿蒙 OHOS target。主要工作集中在：(1) 适配 BoringSSL 编译（boring-sys 需要支持 ohos target 的交叉编译）；(2) Linux 特有 socket 选项（GSO/GRO/SO_TXTIME）在鸿蒙不可用时的降级处理（已有 cfg(target_os) 条件守卫，降级路径已存在）；(3) 确保 tokio 在 OHOS 上运行（异步封装层需要）。核心库（同步 API）可独立于 tokio 使用。",
+    "blockers": [
+      {
+        "id": "bk:boringssl",
+        "issue": "BoringSSL（通过 boring-sys）可能无法在 OHOS NDK 环境下编译",
+        "severity": "blocker",
+        "adaptability": "partial",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "需验证 boring-sys 在 aarch64-unknown-linux-ohos target 下的编译；可能需要修改 boring-sys 的构建脚本以支持 OHOS 交叉编译；替代方案是使用 ring crate（已有依赖）作为 crypto 后端，但需重写 tls/ 模块",
+        "caused_by": ["ta:boringssl_build"],
+        "manifests_as": [],
+        "evidence": ["quiche/Cargo.toml:71", "quiche/src/build.rs:48-49"]
+      },
+      {
+        "id": "bk:linux_socket_opts",
+        "issue": "Linux 特有 socket 选项（UDP_GSO/UDP_GRO/SO_TXTIME）在鸿蒙内核中不可用",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "已有 cfg(target_os = \"linux\") 条件守卫，非 Linux 平台自动降级到标准 POSIX socket 路径；性能下降但功能完整",
+        "caused_by": ["ta:linux_socket"],
+        "manifests_as": ["ua:udp_gso", "ua:udp_gro", "ua:so_txtime", "ua:sendmmsg", "ua:recvmmsg"],
+        "evidence": [
+          "tokio-quiche/src/socket/capabilities.rs:27",
+          "datagram-socket/src/mmsg.rs",
+          "tokio-quiche/src/quic/io/gso.rs:34"
+        ]
+      },
+      {
+        "id": "bk:tokio_ohos",
+        "issue": "tokio 异步运行时在 OHOS 上的可用性未确认",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "若 tokio 不支持 OHOS，可使用核心 quiche 库（同步 API）+ mio 事件循环作为替代；或贡献 tokio OHOS 支持",
+        "caused_by": ["ta:tokio_ohos"],
+        "manifests_as": [],
+        "evidence": ["tokio-quiche/Cargo.toml:69-101"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "核心 QUIC 协议实现（纯 Rust）",
+        "note": "quiche/src/lib.rs、packet.rs、frame.rs、stream/ 等核心代码是纯 Rust 跨平台实现，可在 OHOS 上直接编译",
+        "evidence": ["quiche/src/lib.rs", "quiche/src/packet.rs", "quiche/src/frame.rs"]
+      },
+      {
+        "aspect": "HTTP/3 协议实现（纯 Rust）",
+        "note": "h3/mod.rs、qpack/ 等是纯 Rust 跨平台代码",
+        "evidence": ["quiche/src/h3/mod.rs"]
+      },
+      {
+        "aspect": "C FFI 接口",
+        "note": "ffi.rs 和 quiche.h 的 C API 可供 C/C++ 应用在鸿蒙上链接使用（需编译 staticlib/cdylib）",
+        "evidence": ["quiche/src/ffi.rs", "quiche/include/quiche.h"]
+      },
+      {
+        "aspect": "密码学（ring crate 部分）",
+        "note": "ring crate 用于 QUIC 初始包加密，是纯 Rust 密码学原语，可在 OHOS 上编译",
+        "evidence": ["quiche/Cargo.toml:77"]
+      }
+    ],
+    "key_tasks": [
+      "验证并适配 boring-sys/boring 在 aarch64-unknown-linux-ohos target 下的交叉编译",
+      "验证 tokio 在 OHOS 上是否可运行（如不可用则核心库仍可用，仅异步封装不可用）",
+      "验证 cmake 在鸿蒙开发环境中的可用性（boring-sys 编译 BoringSSL 需要）",
+      "确保 quiche 的 Cargo.toml 能正确解析 ohos target（可能需添加 target cfg）",
+      "测试核心 QUIC 功能在 OHOS 上的正确性（连接建立、流管理、丢包恢复等）"
+    ],
+    "notes": "BoringSSL 编译是最大的不确定因素。若 boring-sys 无法在 OHOS 上编译，替代路径是：(1) 使用 ring crate（已有依赖）重写 tls/ 和 crypto/ 模块；或 (2) 使用 OHOS 原生 TLS API（如存在）替代 BoringSSL。Linux 特有 socket 选项的降级路径已通过 cfg(target_os) 守卫实现，功能影响有限。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "linux_socket",
+        "rationale": "Linux 特有 socket 选项（UDP_GSO/UDP_GRO/SO_TXTIME 等）不属于标准 posix 也不属于 win32，需要新的 type 值来描述"
+      }
+    ]
+  }
+}

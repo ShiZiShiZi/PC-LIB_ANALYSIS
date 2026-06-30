@@ -1,0 +1,1591 @@
+{
+  "library": {
+    "name": "libimobiledevice",
+    "kind": "library",
+    "package_name": "libimobiledevice",
+    "aliases": [
+      "imobiledevice"
+    ],
+    "import_names": [],
+    "source_url": "https://github.com/libimobiledevice/libimobiledevice.git",
+    "analyzed_at": "2026-06-29T13:49:05.120Z",
+    "commit": "fa0f79190142bc309307967c058f89c1b36eb6b8",
+    "one_liner": "用于通过原生协议与 iOS 设备通信的跨平台 C 库",
+    "ecosystem": "cpp",
+    "bindings": [
+      "python"
+    ]
+  },
+  "function_summary": {
+    "summary": "libimobiledevice 是一个跨平台 C 库，实现了 Apple iOS 设备原生服务协议（lockdown、AFC、backup、sync、diagnostics、screenshot、syslog 等），供应用与 iOS 设备建立连接、交换 plist 消息、启用 SSL 加密并操作各类设备服务。库本身附带命令行工具作为使用示例，核心定位是被其他程序以 API 方式调用。",
+    "categories": [
+      {
+        "name": "设备连接与发现",
+        "description": "通过 usbmuxd（USB）或 TCP（WiFi sync）发现、连接 iOS 设备，并订阅设备增删事件。",
+        "evidence": [
+          "src/idevice.c:idevice_connect",
+          "src/idevice.c:idevice_get_device_list",
+          "src/idevice.c:usbmuxd_events_subscribe"
+        ]
+      },
+      {
+        "name": "安全通信与 SSL/TLS",
+        "description": "读取主机与设备的配对记录，与设备建立 TLS 1.0+ 加密连接；支持 OpenSSL、GnuTLS、MbedTLS 三种后端。",
+        "evidence": [
+          "src/idevice.c:idevice_connection_enable_ssl",
+          "common/userpref.c"
+        ]
+      },
+      {
+        "name": "Lockdown 服务",
+        "description": "与 lockdownd 握手、查询设备信息、启动后续各项服务。",
+        "evidence": [
+          "src/lockdown.c",
+          "src/lockdown-cu.c"
+        ]
+      },
+      {
+        "name": "文件与存储服务",
+        "description": "通过 AFC/House Arrest 访问设备文件系统及应用共享文档。",
+        "evidence": [
+          "src/afc.c",
+          "src/house_arrest.c"
+        ]
+      },
+      {
+        "name": "备份与同步",
+        "description": "提供与 iTunes 兼容的原生备份/恢复（mobilebackup/mobilebackup2）及数据同步（mobilesync）能力。",
+        "evidence": [
+          "src/mobilebackup.c",
+          "src/mobilebackup2.c",
+          "src/mobilesync.c"
+        ]
+      },
+      {
+        "name": "设备管理",
+        "description": "安装/卸载应用、管理描述文件、挂载镜像、激活、诊断、截图、系统日志、通知代理等。",
+        "evidence": [
+          "src/installation_proxy.c",
+          "src/mobile_image_mounter.c",
+          "src/diagnostics_relay.c",
+          "src/screenshotr.c",
+          "src/syslog_relay.c",
+          "src/notification_proxy.c"
+        ]
+      },
+      {
+        "name": "无线配对与证书",
+        "description": "在启用 wireless-pairing 时使用仓库内嵌的 ed25519 与 SRP6a-SHA512 实现完成配对与密钥交换。",
+        "evidence": [
+          "src/lockdown-cu.c",
+          "3rd_party/ed25519",
+          "3rd_party/libsrp6a-sha512"
+        ]
+      },
+      {
+        "name": "Python 绑定",
+        "description": "通过 Cython 将核心 C API 暴露给 Python，实现 Python 应用调用。",
+        "evidence": [
+          "cython/imobiledevice.pyx",
+          "cython/Makefile.am"
+        ]
+      }
+    ],
+    "domain": "移动设备管理 / iOS 配套工具库",
+    "target_users": "需要与 iOS 设备交互的应用开发者，如设备管理、备份、调试、自动化测试工具开发者"
+  },
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "C/C++ Header",
+      "Cython",
+      "CSS",
+      "m4",
+      "make",
+      "Markdown",
+      "YAML"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 71,
+        "code": 29707,
+        "pct": 73.26,
+        "production": {
+          "files": 71,
+          "code": 29707
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 74,
+        "code": 4197,
+        "pct": 10.35,
+        "production": {
+          "files": 74,
+          "code": 4197
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Cython",
+        "files": 20,
+        "code": 2576,
+        "pct": 6.35,
+        "production": {
+          "files": 20,
+          "code": 2576
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 1,
+        "code": 1412,
+        "pct": 3.48,
+        "production": {
+          "files": 1,
+          "code": 1412
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "m4",
+        "files": 6,
+        "code": 1323,
+        "pct": 3.26,
+        "production": {
+          "files": 6,
+          "code": 1323
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 10,
+        "code": 413,
+        "pct": 1.02,
+        "production": {
+          "files": 10,
+          "code": 413
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 4,
+        "code": 340,
+        "pct": 0.84,
+        "production": {
+          "files": 4,
+          "code": 340
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 265,
+        "pct": 0.65,
+        "production": {
+          "files": 2,
+          "code": 265
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 1,
+        "code": 214,
+        "pct": 0.53,
+        "production": {
+          "files": 1,
+          "code": 214
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 2,
+        "code": 54,
+        "pct": 0.13,
+        "production": {
+          "files": 2,
+          "code": 54
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 2,
+        "code": 41,
+        "pct": 0.1,
+        "production": {
+          "files": 2,
+          "code": 41
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 5,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 5
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 1,
+        "code": 1,
+        "pct": 0,
+        "production": {
+          "files": 1,
+          "code": 1
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 195,
+      "code": 40548,
+      "comment": 9307,
+      "blank": 6685,
+      "total_lines": 56540
+    },
+    "production": {
+      "files": 195,
+      "code": 40548,
+      "comment": 9307,
+      "blank": 6685,
+      "total_lines": 56540
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 12561,
+        "category": "production",
+        "by_category": {
+          "production": 12561
+        }
+      },
+      {
+        "dir": "tools",
+        "code": 11817,
+        "category": "production",
+        "by_category": {
+          "production": 11817
+        }
+      },
+      {
+        "dir": "3rd_party",
+        "code": 7470,
+        "category": "production",
+        "by_category": {
+          "production": 7470
+        }
+      },
+      {
+        "dir": "cython",
+        "code": 2647,
+        "category": "production",
+        "by_category": {
+          "production": 2647
+        }
+      },
+      {
+        "dir": "docs",
+        "code": 1706,
+        "category": "production",
+        "by_category": {
+          "production": 1706
+        }
+      },
+      {
+        "dir": "include",
+        "code": 1489,
+        "category": "production",
+        "by_category": {
+          "production": 1489
+        }
+      },
+      {
+        "dir": "common",
+        "code": 1048,
+        "category": "production",
+        "by_category": {
+          "production": 1048
+        }
+      },
+      {
+        "dir": "m4",
+        "code": 1002,
+        "category": "production",
+        "by_category": {
+          "production": 1002
+        }
+      },
+      {
+        "dir": ".",
+        "code": 543,
+        "category": "production",
+        "by_category": {
+          "production": 543
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 265,
+        "category": "production",
+        "by_category": {
+          "production": 265
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 28,
+          "code": 238,
+          "macros": [
+            "_MSC_VER",
+            "_WIN32",
+            "_WIN64"
+          ]
+        },
+        "macos": {
+          "files": 3,
+          "code": 12,
+          "macros": [
+            "__APPLE__"
+          ]
+        }
+      },
+      "total": 250,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的生产代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name/process.platform/runtime.GOOS/cfg!(target_os)…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "notes": "代码库未包含测试文件/测试用例。"
+  },
+  "license": {
+    "spdx": "LGPL-2.1-or-later",
+    "name": "GNU Lesser General Public License v2.1 or later",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "COPYING.LESSER",
+      "COPYING"
+    ],
+    "evidence": "所有源文件头均声明 LGPL-2.1-or-later；仓库根目录提供 COPYING.LESSER（LGPL 2.1 全文），README 亦明确说明 LGPL v2.1。",
+    "notes": "弱 copyleft；作为库使用需遵守 LGPL。COPYING 文件本身为 GPL-2.0-only 文本，仅作为授权体系参考，项目实际授权以源文件头与 README 为准。"
+  },
+  "dependencies": {
+    "count": 18,
+    "manifests": [
+      "configure.ac",
+      "Makefile.am",
+      "common/Makefile.am",
+      "src/Makefile.am",
+      "tools/Makefile.am",
+      "cython/Makefile.am",
+      "3rd_party/Makefile.am"
+    ],
+    "by_ecosystem": {
+      "cpp": [
+        "libusbmuxd-2.0",
+        "libplist-2.0",
+        "libimobiledevice-glue-1.0",
+        "libtatsu-1.0",
+        "openssl",
+        "gnutls",
+        "mbedtls",
+        "readline",
+        "pthread",
+        "ed25519",
+        "libsrp6a-sha512"
+      ],
+      "python": [
+        "cython",
+        "python"
+      ],
+      "other": [
+        "autoconf",
+        "automake",
+        "libtool",
+        "pkg-config",
+        "doxygen"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "libusbmuxd-2.0",
+        "ecosystem": "cpp",
+        "registry_name": "libusbmuxd-2.0",
+        "source_repo": "https://github.com/libimobiledevice/libusbmuxd",
+        "aliases": [
+          "libusbmuxd"
+        ],
+        "scope": "runtime",
+        "version": ">=2.0.2",
+        "purpose": "USB multiplexer 客户端库，负责 USB 设备发现、连接与事件订阅",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config libusbmuxd-2.0，需预装)",
+        "declared_in": [
+          "configure.ac:44",
+          "common/Makefile.am:14",
+          "src/Makefile.am:19"
+        ],
+        "used_symbols": [
+          "usbmuxd_connect",
+          "usbmuxd_get_device_list",
+          "usbmuxd_events_subscribe",
+          "usbmuxd_device_list_free",
+          "usbmuxd_send",
+          "usbmuxd_disconnect",
+          "usbmuxd_read_buid"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libplist-2.0",
+        "ecosystem": "cpp",
+        "registry_name": "libplist-2.0",
+        "source_repo": "https://github.com/libimobiledevice/libplist",
+        "aliases": [
+          "libplist"
+        ],
+        "scope": "runtime",
+        "version": ">=2.3.0",
+        "purpose": "Apple property list 序列化/反序列化",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config libplist-2.0，需预装)",
+        "declared_in": [
+          "configure.ac:45",
+          "src/Makefile.am:20",
+          "common/Makefile.am:18"
+        ],
+        "used_symbols": [
+          "plist_new_dict",
+          "plist_dict_get_item",
+          "plist_to_xml",
+          "plist_get_string_val",
+          "plist_get_node_type",
+          "plist_free",
+          "plist_from_json"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libimobiledevice-glue-1.0",
+        "ecosystem": "cpp",
+        "registry_name": "libimobiledevice-glue-1.0",
+        "source_repo": "https://github.com/libimobiledevice/libimobiledevice-glue",
+        "aliases": [
+          "limd-glue",
+          "libimobiledevice-glue"
+        ],
+        "scope": "runtime",
+        "version": ">=1.3.0",
+        "purpose": "内部 socket、thread、mutex、debug、utils 封装",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config libimobiledevice-glue-1.0，需预装)",
+        "declared_in": [
+          "configure.ac:46",
+          "src/Makefile.am:21",
+          "common/Makefile.am:17"
+        ],
+        "used_symbols": [
+          "socket_connect_addr",
+          "socket_send",
+          "socket_receive",
+          "socket_receive_timeout",
+          "socket_close",
+          "socket_addr_to_string",
+          "thread_new",
+          "mutex_init",
+          "mutex_lock",
+          "debug_info",
+          "debug_plist"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libtatsu-1.0",
+        "ecosystem": "cpp",
+        "registry_name": "libtatsu-1.0",
+        "source_repo": "https://github.com/libimobiledevice/libtatsu",
+        "aliases": [
+          "libtatsu"
+        ],
+        "scope": "runtime",
+        "version": ">=1.0.3",
+        "purpose": "TSS 请求，用于 ideviceimagemounter 工具获取签名固件",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config libtatsu-1.0，需预装)",
+        "declared_in": [
+          "configure.ac:47",
+          "tools/Makefile.am:78-79"
+        ],
+        "used_symbols": [
+          "tss_set_debug_level",
+          "tss_request_new",
+          "tss_parameters_add_from_manifest",
+          "tss_request_add_ap_tags",
+          "tss_request_add_common_tags",
+          "tss_request_add_ap_img4_tags",
+          "tss_request_send"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "openssl",
+        "ecosystem": "cpp",
+        "registry_name": "openssl",
+        "source_repo": "https://github.com/openssl/openssl",
+        "aliases": [
+          "libssl",
+          "libcrypto",
+          "LibreSSL"
+        ],
+        "scope": "runtime",
+        "version": ">=0.9.8",
+        "purpose": "默认 TLS/SSL 后端，用于与设备建立加密连接",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config openssl，需预装；macOS 构建也可链系统 LibreSSL)",
+        "declared_in": [
+          "configure.ac:224-268",
+          "src/Makefile.am:17"
+        ],
+        "used_symbols": [
+          "SSL_CTX_new",
+          "SSL_new",
+          "SSL_write",
+          "SSL_read",
+          "SSL_do_handshake",
+          "SSL_get_error",
+          "SSL_shutdown",
+          "BIO_new_mem_buf",
+          "PEM_read_bio_X509",
+          "X509_free",
+          "EVP_PKEY_free",
+          "TLS_method"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "gnutls",
+        "ecosystem": "cpp",
+        "registry_name": "gnutls",
+        "source_repo": "https://gitlab.com/gnutls/gnutls",
+        "aliases": [
+          "GnuTLS"
+        ],
+        "scope": "optional",
+        "version": ">=2.2.0",
+        "purpose": "可选 TLS/SSL 后端（替代 OpenSSL），需同时链接 libtasn1 与 libgcrypt",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config gnutls/libtasn1，需预装；libgcrypt 由 configure 检查)",
+        "declared_in": [
+          "configure.ac:271-286",
+          "src/Makefile.am:17"
+        ],
+        "used_symbols": [
+          "gnutls_init",
+          "gnutls_handshake",
+          "gnutls_record_send",
+          "gnutls_record_recv",
+          "gnutls_certificate_allocate_credentials",
+          "gnutls_bye"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "mbedtls",
+        "ecosystem": "cpp",
+        "registry_name": "mbedtls",
+        "source_repo": "https://github.com/Mbed-TLS/mbedtls",
+        "aliases": [
+          "mbedtls"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选 TLS/SSL 后端（替代 OpenSSL）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(通过 --with-mbedtls 启用，需预装 mbedtls、mbedx509、mbedcrypto)",
+        "declared_in": [
+          "configure.ac:198-221",
+          "src/Makefile.am:17"
+        ],
+        "used_symbols": [
+          "mbedtls_ssl_setup",
+          "mbedtls_ssl_handshake",
+          "mbedtls_ssl_write",
+          "mbedtls_ssl_read",
+          "mbedtls_ssl_config_defaults",
+          "mbedtls_ctr_drbg_seed",
+          "mbedtls_ssl_close_notify"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "readline",
+        "ecosystem": "cpp",
+        "registry_name": "readline",
+        "source_repo": "https://git.savannah.gnu.org/git/readline.git",
+        "aliases": [],
+        "scope": "optional",
+        "version": ">=1.0",
+        "purpose": "afcclient 交互式命令行历史与编辑",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(pkg-config readline，可选)",
+        "declared_in": [
+          "configure.ac:48-58",
+          "tools/Makefile.am:140-143"
+        ],
+        "used_symbols": [
+          "readline",
+          "add_history"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "pthread",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": null,
+        "aliases": [
+          "libpthread"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "非 Windows 平台下的线程/互斥支持",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(AC_CHECK_LIB(pthread)，需预装)",
+        "declared_in": [
+          "configure.ac:120-121",
+          "src/Makefile.am:18"
+        ],
+        "used_symbols": [
+          "pthread_once"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "cython",
+        "ecosystem": "python",
+        "registry_name": "cython",
+        "source_repo": "https://github.com/cython/cython",
+        "aliases": [],
+        "scope": "build",
+        "version": ">=3.0.0",
+        "purpose": "构建 Python 绑定",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(AC_PROG_CYTHON，可选)",
+        "declared_in": [
+          "configure.ac:129-172",
+          "cython/Makefile.am"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "python",
+        "ecosystem": "python",
+        "registry_name": "python",
+        "source_repo": null,
+        "aliases": [],
+        "scope": "optional",
+        "version": ">=3.0",
+        "purpose": "运行 Cython 绑定需要 Python 解释器",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(AM_PATH_PYTHON，可选)",
+        "declared_in": [
+          "configure.ac:138",
+          "cython/Makefile.am"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "autoconf",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "autotools 构建：生成 configure 脚本",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(构建工具)",
+        "declared_in": [
+          "configure.ac:4-5",
+          "autogen.sh"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "automake",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "autotools 构建：生成 Makefile.in",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(构建工具)",
+        "declared_in": [
+          "configure.ac:6",
+          "autogen.sh"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libtool",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "autotools 构建：生成共享库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(构建工具)",
+        "declared_in": [
+          "configure.ac:41",
+          "autogen.sh"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pkg-config",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "检测系统依赖的编译/链接参数",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(构建工具)",
+        "declared_in": [
+          "configure.ac:44-58"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "doxygen",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "生成 API 文档（可选）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(构建工具，可选)",
+        "declared_in": [
+          "README.md:77-82",
+          "docs/Makefile.am"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ed25519",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": null,
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "无线配对时的 ed25519 签名",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 3rd_party/ed25519",
+        "declared_in": [
+          "3rd_party/Makefile.am",
+          "3rd_party/ed25519/Makefile.am",
+          "src/Makefile.am:26"
+        ],
+        "used_symbols": [
+          "ed25519_create_seed",
+          "ed25519_create_keypair",
+          "ed25519_sign"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "libsrp6a-sha512",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": null,
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "无线配对时的 SRP6a SHA-512 密钥交换",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "仓库内 3rd_party/libsrp6a-sha512",
+        "declared_in": [
+          "3rd_party/Makefile.am",
+          "3rd_party/libsrp6a-sha512/Makefile.am",
+          "src/Makefile.am:26"
+        ],
+        "used_symbols": [
+          "SRP_initialize_library",
+          "SRP_new",
+          "SRP_set_params",
+          "SRP_set_auth_password_raw",
+          "SRP_gen_pub",
+          "SRP_compute_key",
+          "SRP_respond",
+          "SRP_verify"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "SSL 后端三选一，默认 OpenSSL；ed25519 与 libsrp6a-sha512 仅在启用 wireless-pairing 时编译进库；readline 与 Cython/Python 绑定为可选。"
+  },
+  "native_api": {
+    "summary": "跨平台 C 库；平台相关代码主要集中在 USB/网络连接入口、TLS 后端封装以及少量 Windows/macOS 条件分支；核心 iOS 协议逻辑为平台无关 C。",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "asprintf/vasprintf",
+            "purpose": "动态格式化字符串",
+            "evidence": [
+              "src/reverse_proxy.c:97",
+              "configure.ac:73"
+            ]
+          },
+          {
+            "name": "strdup/strndup/stpcpy",
+            "purpose": "字符串复制",
+            "evidence": [
+              "configure.ac:73",
+              "common/userpref.c:175"
+            ]
+          },
+          {
+            "name": "strerror",
+            "purpose": "错误信息输出",
+            "evidence": [
+              "src/idevice.c:528"
+            ]
+          },
+          {
+            "name": "gettimeofday/localtime_r",
+            "purpose": "时间处理",
+            "evidence": [
+              "configure.ac:73"
+            ]
+          },
+          {
+            "name": "malloc/free/realloc",
+            "purpose": "内存分配",
+            "evidence": [
+              "src/service.c:71",
+              "src/idevice.c:539"
+            ]
+          },
+          {
+            "name": "nanosleep/Sleep",
+            "purpose": "SSL 握手轮询等待",
+            "evidence": [
+              "src/idevice.c:1348-1352"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix_socket",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "AF_INET/AF_INET6 address handling",
+            "purpose": "WiFi sync 网络地址族判断",
+            "count": 2,
+            "evidence": [
+              "src/idevice.c:551-555"
+            ]
+          },
+          {
+            "name": "socket_connect_addr / socket_send / socket_receive / socket_close",
+            "purpose": "TCP 连接与收发（由 libimobiledevice-glue 封装）",
+            "count": 10,
+            "evidence": [
+              "src/idevice.c:571",
+              "src/idevice.c:615",
+              "src/idevice.c:649",
+              "src/idevice.c:764",
+              "src/reverse_proxy.c:191-264"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "posix_fs",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "opendir/readdir/closedir",
+            "purpose": "枚举系统配对记录目录",
+            "count": 3,
+            "evidence": [
+              "common/userpref.c:247-250"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "macos_frameworks",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "SCDynamicStoreCopyComputerName",
+            "purpose": "获取 macOS 计算机名用于配对",
+            "evidence": [
+              "src/lockdown-cu.c:656"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CoreFoundation / SystemConfiguration",
+            "purpose": "macOS 框架链接与头文件",
+            "evidence": [
+              "src/lockdown-cu.c:67-68",
+              "src/Makefile.am:30"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "macos_sysctl",
+        "category": "system",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "sysctlbyname(\"hw.model\")",
+            "purpose": "读取 macOS 硬件型号用于配对信息",
+            "evidence": [
+              "src/lockdown-cu.c:672"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "winsock2.h / ws2tcpip.h / windows.h",
+            "purpose": "Windows 套接字与系统头",
+            "evidence": [
+              "src/idevice.c:33-36"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SHGetSpecialFolderLocation / SHGetPathFromIDListW / CoTaskMemFree",
+            "purpose": "Windows 下获取系统配置目录",
+            "evidence": [
+              "common/userpref.c:165-170"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "Sleep",
+            "purpose": "Windows 下 SSL 握手等待",
+            "evidence": [
+              "src/idevice.c:1349"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时依赖外部 usbmuxd 守护进程通过 USB 与 iOS 设备通信；也支持通过 TCP（WiFi sync）直连设备；配对记录与系统 BUID 存放在系统级配置目录。",
+    "network": [
+      {
+        "detail": "通过 usbmuxd 本地 socket 与 iOS 设备进行 USB 通信",
+        "purpose": "USB 多路复用连接",
+        "evidence": [
+          "src/idevice.c:526"
+        ]
+      },
+      {
+        "detail": "通过 AF_INET/AF_INET6 TCP 连接支持 WiFi sync 的设备",
+        "purpose": "网络直连 iOS 设备",
+        "evidence": [
+          "src/idevice.c:549-571"
+        ]
+      },
+      {
+        "detail": "reverse_proxy 服务通过 TCP 连接外部 host:port 做反向代理",
+        "purpose": "代理数据通道",
+        "evidence": [
+          "src/reverse_proxy.c:191"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "系统级配对记录目录：Linux /var/lib/lockdown、macOS /var/db/lockdown、Windows %CommonAppData%\\Apple\\Lockdown",
+        "purpose": "存放主机与设备配对证书/公钥及 SystemConfiguration.plist",
+        "evidence": [
+          "common/userpref.c:152-194"
+        ]
+      },
+      {
+        "detail": "备份/恢复时由调用方或命令行工具指定目标目录",
+        "purpose": "读写本地备份数据",
+        "evidence": [
+          "tools/idevicebackup2.c"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "BACKUP_PASSWORD",
+        "purpose": "idevicebackup2 工具读取备份密码",
+        "evidence": [
+          "tools/idevicebackup2.c:1981"
+        ]
+      },
+      {
+        "name": "BACKUP_PASSWORD_NEW",
+        "purpose": "idevicebackup2 工具读取新备份密码",
+        "evidence": [
+          "tools/idevicebackup2.c:1975"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": [
+      {
+        "detail": "usbmuxd 守护进程",
+        "purpose": "Apple Mobile Device USB 多路复用服务，库通过它发现/连接 iOS 设备",
+        "evidence": [
+          "src/idevice.c:261-526"
+        ]
+      },
+      {
+        "detail": "Apple lockdownd / device services",
+        "purpose": "通过 lockdownd 启动后续服务（AFC、backup、syslog 等）",
+        "evidence": [
+          "src/lockdown.c",
+          "src/service.c"
+        ]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "C99（configure 仅要求 C 编译器；使用 stdint.h、stdint 类型）",
+    "runtime_version": "无特定运行时版本要求；可选 Python 3.x + Cython 3.0.0 用于构建绑定",
+    "build_system": "GNU Autotools（autoconf/automake/libtool），配合 pkg-config",
+    "compiler_extensions": [
+      {
+        "detail": "-fvisibility=hidden 隐藏内部符号",
+        "evidence": [
+          "configure.ac:316"
+        ]
+      },
+      {
+        "detail": "INITIALIZER 属性用于库初始化",
+        "evidence": [
+          "src/idevice.c:184"
+        ]
+      },
+      {
+        "detail": "大文件支持 AC_SYS_LARGEFILE",
+        "evidence": [
+          "configure.ac:325"
+        ]
+      },
+      {
+        "detail": "Windows 下链接 ole32/ws2_32/gdi32；macOS 下链接 CoreFoundation/SystemConfiguration",
+        "evidence": [
+          "src/Makefile.am:29-31",
+          "src/Makefile.am:65-66"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/build.yml:10-74"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64/x86_64",
+        "evidence": [
+          ".github/workflows/build.yml:75-178"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64/i686",
+        "evidence": [
+          ".github/workflows/build.yml:179-264"
+        ]
+      },
+      {
+        "os": "android",
+        "arch": null,
+        "evidence": [
+          "README.md:19"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "通过 autotools 构建为 libimobiledevice-1.0.so/.dylib/.dll 与 pkg-config 文件分发；附带命令行工具但无独立应用包；不捆绑运行时。",
+    "notes": "Cython 绑定构建为 Python 扩展模块 imobiledevice.la。"
+  },
+  "capability_profile": {
+    "summary": "本项目核心场景是 Apple iOS 移动设备的 USB/网络通信与设备管理，属于硬件设备访问；无 GUI/3D/媒体；网络 TCP 部分为标准 socket。",
+    "scenarios": [
+      {
+        "key": "hardware",
+        "present": true,
+        "kind": [
+          "usb_ios",
+          "mobile_device"
+        ],
+        "via": [
+          "libusbmuxd",
+          "usbmuxd daemon"
+        ],
+        "specific_hardware": true,
+        "harmony_status": "unknown",
+        "adaptation": "需要鸿蒙 PC 具备通过 usbmuxd 与 Apple iOS 设备通信的 USB 协议栈与守护进程支持；当前目标侧事实未知。",
+        "evidence": [
+          "src/idevice.c:261-526",
+          "README.md:20"
+        ]
+      },
+      {
+        "key": "network",
+        "present": true,
+        "kind": [
+          "tcp_socket"
+        ],
+        "via": [
+          "libimobiledevice-glue socket",
+          "src/idevice.c"
+        ],
+        "harmony_status": "available",
+        "adaptation": "标准 TCP socket 路径可直接复用。",
+        "evidence": [
+          "src/idevice.c:549-571",
+          "src/reverse_proxy.c:191"
+        ]
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（原生 C/C++ 库经 OHOS NDK 重编，arm64/x86_64；自研内核，无 Linux ABI）",
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "hard",
+    "effort": {
+      "person_days": [
+        15,
+        40
+      ]
+    },
+    "confidence": "medium",
+    "recommended_path": "recompile_napi / recompile_only（取决于是否封装为 Node-API/ArkTS 可用形态，核心前提是 usbmuxd 可用）",
+    "summary": "libimobiledevice 是跨平台 C 库，协议逻辑本身可在 OHOS NDK 下重编；但其核心价值——通过 USB 与 iOS 设备通信——完全依赖外部 usbmuxd/Apple Mobile Device 协议栈，而这是鸿蒙 PC 目标侧尚未核实的能力。若目标环境不支持该能力，USB 路径不可用，仅能降级使用 WiFi sync，整体判定为 hard/needs_adaptation_partial。",
+    "blockers": [
+      {
+        "id": "bk:usbmuxd",
+        "issue": "核心 USB 连接路径依赖 usbmuxd/Apple Mobile Device 协议栈，鸿蒙 PC 上该能力未知/大概率缺失",
+        "severity": "blocker",
+        "adaptability": "unadaptable",
+        "category": "native_dependency",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unknown",
+        "remediation": "若鸿蒙 PC 无法运行 usbmuxd 或缺少 Apple USB 协议实现，则 USB 路径不可用；只能依赖 WiFi sync 且需确保网络可达。",
+        "caused_by": [
+          "ta:usbmuxd"
+        ],
+        "manifests_as": [
+          "ua:usbmuxd"
+        ],
+        "evidence": [
+          "src/idevice.c:261-526"
+        ]
+      },
+      {
+        "id": "bk:deps-port",
+        "issue": "原生依赖链中 libusbmuxd、libplist、libimobiledevice-glue、libtatsu 需移植到鸿蒙 PC 并交叉编译；OpenSSL/MbedTLS/readline/ed25519 已可在 OpenHarmony PC cmd-pkgs 获取",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "使用 OHOS NDK 交叉编译 libusbmuxd、libplist、libimobiledevice-glue、libtatsu；SSL 后端优先使用已鸿蒙化的 OpenSSL/MbedTLS，readline/ed25519 可直接使用鸿蒙预编译包。",
+        "caused_by": ["ta:libusbmuxd-deps"],
+        "evidence": ["configure.ac:44-58", "dependencies[].harmony_adapted"]
+      },
+      {
+        "id": "bk:macos-frameworks",
+        "issue": "macOS 专有框架（CoreFoundation/SystemConfiguration）与 sysctl 仅在 Apple 平台使用，鸿蒙无需处理",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "platform_specific",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "鸿蒙构建不启用 DARWIN 分支，相关代码被 #ifdef __APPLE__ 条件编译隔离，无需移植。",
+        "evidence": [
+          "src/lockdown-cu.c:65-70",
+          "src/lockdown-cu.c:656",
+          "src/lockdown-cu.c:672",
+          "common/userpref.c:174-175"
+        ]
+      },
+      {
+        "id": "bk:windows-winsock",
+        "issue": "Windows Winsock/SHGetSpecialFolderLocation 仅用于 Windows 构建，鸿蒙无需处理",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "鸿蒙构建不启用 WIN32 分支，相关代码被 #ifdef _WIN32 隔离。",
+        "evidence": [
+          "src/idevice.c:33-36",
+          "src/idevice.c:1348",
+          "common/userpref.c:72-74",
+          "common/userpref.c:159-172"
+        ]
+      },
+      {
+        "id": "bk:internet-perm",
+        "issue": "WiFi sync 使用 TCP socket，鸿蒙 PC 应用可能需要申请网络权限",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "permission",
+        "source_dimension": "capability_profile",
+        "harmony_status": "unknown",
+        "remediation": "在鸿蒙应用配置中声明 ohos.permission.INTERNET；具体 PC 形态授予方式待核实。",
+        "caused_by": [
+          "ta:network"
+        ],
+        "evidence": [
+          "src/idevice.c:549-571"
+        ]
+      }
+    ],
+    "unadaptable_apis": [
+      {
+        "id": "ua:usbmuxd",
+        "api": "usbmuxd / Apple Mobile Device USB multiplexer protocol",
+        "public_entry": "idevice_connect",
+        "reason": "鸿蒙 PC 上 usbmuxd 及 Apple USB 协议支持未知/可能缺失，库的 USB 连接路径无法通过代码适配解决。",
+        "blocking_native_api": "usbmuxd_connect",
+        "category": "system",
+        "evidence": [
+          "src/idevice.c:526"
+        ],
+        "caused_by": [
+          "ta:usbmuxd"
+        ]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:usbmuxd",
+        "capability": "鸿蒙 PC 上存在可正常工作的 usbmuxd / Apple Mobile Device USB 多路复用协议栈",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "库核心 USB 连接与设备发现依赖 usbmuxd；缺失则 USB 路径不可用，WiFi-only 功能受限。",
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial + 项目特定 Apple USB 协议事实"
+      },
+      {
+        "id": "ta:libusbmuxd-deps",
+        "capability": "依赖库 libusbmuxd/libplist/libimobiledevice-glue/libtatsu/SSL 后端可在鸿蒙 PC 上获得或移植",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "C 库需 OHOS NDK 交叉编译，依赖链若未鸿蒙化需自行移植。",
+        "source": "dependency-analysis + references/harmony-pc-capabilities.json"
+      },
+      {
+        "id": "ta:x86_64",
+        "capability": "鸿蒙 PC x86_64 架构支持",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "仅影响是否同时构建 x86_64 产物；arm64 已确认可用。",
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+      },
+      {
+        "id": "ta:network",
+        "capability": "标准 TCP/IPv4/IPv6 socket 与本地 socket 可用",
+        "required": true,
+        "target_status": "available",
+        "impact": "WiFi sync 与本地通信可用。",
+        "source": "OHOS NDK POSIX 子集支持 sockets"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "WiFi sync 与 reverse_proxy 通过 TCP 与 iOS 设备或外部主机通信",
+        "source_capability": "network",
+        "harmony_status": "unknown",
+        "evidence": [
+          "src/idevice.c:549-571",
+          "src/reverse_proxy.c:191"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "跨平台 C 核心与 plist 协议实现",
+        "note": "无桌面 GUI/3D/媒体；协议逻辑可在 OHOS NDK 下重编。",
+        "evidence": ["src/lockdown.c", "src/property_list_service.c"]
+      },
+      {
+        "aspect": "WiFi sync 网络路径",
+        "note": "标准 TCP socket 连接在鸿蒙 NDK POSIX 子集下可用。",
+        "evidence": ["src/idevice.c:549-571"]
+      },
+      {
+        "aspect": "Windows/macOS 条件分支隔离",
+        "note": "平台相关代码被 #ifdef 包裹，不影响鸿蒙构建。",
+        "evidence": ["code_metrics.platform_adaptation"]
+      },
+      {
+        "aspect": "部分依赖已鸿蒙化",
+        "note": "OpenSSL、MbedTLS、readline、ed25519 已在 OpenHarmony PC cmd-pkgs 提供预编译包，可降低移植工作量。",
+        "evidence": ["dependencies[].harmony_adapted"]
+      }
+    ],
+    "key_tasks": [
+      "确认/移植 usbmuxd 与 Apple Mobile Device USB 协议到鸿蒙 PC，或评估仅支持 WiFi sync 场景",
+      "用 OHOS NDK 交叉编译 libusbmuxd、libplist、libimobiledevice-glue、libtatsu",
+      "SSL 后端优先使用已鸿蒙化的 OpenSSL 或 MbedTLS，readline/ed25519 可直接使用鸿蒙预编译包",
+      "在鸿蒙 PC 上构建 libimobiledevice 并运行命令行工具验证 USB/WiFi 连接",
+      "若打包为 ArkTS 应用，需通过 Node-API 封装核心接口并申请必要权限"
+    ],
+    "notes": "评估默认按 C 库模型 A（经 OHOS NDK 重编为原生库）展开。库的核心价值依赖 usbmuxd/Apple USB 协议栈，而这是鸿蒙 PC 目标侧未核实的能力，因此结论为 hard/needs_adaptation_partial。OpenSSL、MbedTLS、readline、ed25519 已可在 OpenHarmony PC cmd-pkgs 获取，降低了部分依赖移植工作量。若目标环境确认无法连接 iOS 设备，则应升级为 infeasible；若仅使用 WiFi sync 且 usbmuxd 不必须，则工作量可降低。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [
+      "仓库未包含测试代码（tests=0）"
+    ],
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "domain",
+        "kind": "new_value",
+        "value": "移动设备管理 / iOS 配套工具库",
+        "rationale": "该库专注于 Apple iOS 设备通信，不属于通用网络/图形/数据领域。"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "key",
+        "kind": "new_value",
+        "value": "network",
+        "rationale": "除硬件外，WiFi sync 与 reverse_proxy 涉及标准 TCP socket，适合作为独立场景标注。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "autotools_pkgconfig",
+        "rationale": "C/C++ 项目通过 configure.ac + Makefile.am 使用 pkg-config 检测系统依赖，推荐取值中未明确列出。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,955 @@
+{
+  "library": {
+    "name": "koffi",
+    "kind": "library",
+    "package_name": "koffi",
+    "aliases": [],
+    "import_names": [
+      "koffi"
+    ],
+    "source_url": "https://github.com/Koromix/koffi.git",
+    "analyzed_at": "2026-06-29T14:21:57Z",
+    "commit": "59865a5afe1bed8e8c8b118da2f3746bf452d677",
+    "one_liner": "Node.js 动态 C FFI 模块，支持同步/异步调用、结构体/联合/回调及多种调用约定",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "Koffi 是一个快速且易用的 Node.js 动态 C 外部函数接口（FFI）模块，允许 JavaScript 代码在运行时加载原生共享库并调用其中的 C 函数，无需编写静态的 Node-API 绑定代码。它支持基本类型与聚合类型（结构体、联合、定长数组）的按值和按引用传递、同步与异步调用、JavaScript 函数作为 C 回调、以及多种 x86 调用约定（cdecl/stdcall/fastcall/thiscall）。目标用户为需要在 Node.js 中调用原生 C 库而不想编写 C++ 绑定代码的开发者。",
+    "categories": [
+      {
+        "name": "动态库加载",
+        "description": "在运行时加载共享库（Linux .so / Windows .dll / macOS .dylib），解析并绑定导出符号，支持 RTLD_LAZY/RTLD_GLOBAL/RTLD_DEEPBIND 等加载选项",
+        "evidence": [
+          "README.md:11",
+          "https://koffi.dev/load"
+        ]
+      },
+      {
+        "name": "C 调用约定桥接",
+        "description": "通过手写汇编实现 C 函数调用约定的参数压栈/寄存器传递与返回值提取，支持 cdecl、stdcall、MS fastcall、thiscall 等调用约定，以及可变参数函数",
+        "evidence": [
+          "README.md:28",
+          "https://koffi.dev/contribute — 'Koffi is programmed in a mix of C++ and assembly code (architecture-specific code)'"
+        ]
+      },
+      {
+        "name": "类型系统与数据封送",
+        "description": "定义并管理 C 类型（基本类型、结构体、联合、定长数组、指针、枚举、opaque 句柄），在 JavaScript 与 C 内存布局之间自动转换数据，支持输出参数、编解码函数",
+        "evidence": [
+          "https://koffi.dev/primitives",
+          "https://koffi.dev/composites"
+        ]
+      },
+      {
+        "name": "C 回调支持",
+        "description": "允许将 JavaScript 函数注册为 C 回调函数指针，支持同步回调和异步回调（从非主线程调用），生成调用桥接的汇编跳板代码",
+        "evidence": [
+          "https://koffi.dev/callbacks"
+        ]
+      },
+      {
+        "name": "异步 FFI 调用",
+        "description": "支持在独立线程中执行 C 函数调用，避免阻塞 Node.js 事件循环，提供异步调用队列与可配置的并发限制",
+        "evidence": [
+          "https://koffi.dev/ — 'Support for synchronous and asynchronous calls'"
+        ]
+      }
+    ],
+    "domain": "FFI/互操作",
+    "target_users": "需要在 Node.js 中调用原生 C 库的 JavaScript/TypeScript 开发者"
+  },
+  "languages": {
+    "primary": null,
+    "all": [
+      "Markdown",
+      "Text",
+      "JSON",
+      "YAML"
+    ],
+    "breakdown": [
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 37,
+        "pct": 58.73,
+        "production": {
+          "files": 1,
+          "code": 37
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 1,
+        "code": 18,
+        "pct": 28.57,
+        "production": {
+          "files": 1,
+          "code": 18
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 5,
+        "pct": 7.94,
+        "production": {
+          "files": 1,
+          "code": 5
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 3,
+        "pct": 4.76,
+        "production": {
+          "files": 1,
+          "code": 3
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 4,
+      "code": 63,
+      "comment": 0,
+      "blank": 27,
+      "total_lines": 90
+    },
+    "production": {
+      "files": 4,
+      "code": 63,
+      "comment": 0,
+      "blank": 27,
+      "total_lines": 90
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 60,
+        "category": "production",
+        "by_category": {
+          "production": 60
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 3,
+        "category": "production",
+        "by_category": {
+          "production": 3
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "克隆仓库为前端仓库（仅含 README/LICENSE），实际源码位于 Codeberg 单仓 https://codeberg.org/Koromix/rygel/ 的 src/koffi 目录。前端仓库无可计数的 C/C++ 代码。实际源码含大量平台编译宏（_WIN32/__APPLE__/__linux__），但前端仓库无法机械统计。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "前端仓库无生产代码可供统计。实际 Koffi 源码（C++ + JS）包含运行时平台判断（process.platform 等）与编译宏，但此处无法机械计数。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "notes": "前端仓库不含测试代码。实际 Koffi 源码含完整测试套件（Node.js test.js + C 测试代码），在 https://codeberg.org/Koromix/rygel/src/koffi/test/ 下。"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "LICENSE.txt 包含完整 MIT License 文本（Copyright 2023 Niels Martignène）；README.md 第 58 行确认 'MIT License'；npm package.json 声明 'license: MIT'。历史版本曾使用 LGPL-3.0（2.2.5 版，2023-01-23），2.3.9 版（2023-03-10）重新许可为 MIT。",
+    "notes": "当前版本为 MIT 许可。历史曾短暂使用 LGPL-3.0（v2.2.5 至 v2.3.8），v2.3.9 起切换为 MIT 并沿用至今。"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "node-addon-api"
+      ],
+      "cpp": [
+        "cnoke"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "node-addon-api",
+        "ecosystem": "nodejs",
+        "registry_name": "node-addon-api",
+        "source_repo": "https://github.com/nodejs/node-addon-api",
+        "import_names": [
+          "napi"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Node.js N-API 的 C++ 封装库，Koffi 用它与 Node.js 运行时交互（创建/调用 JS 对象、管理引用、异常处理）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表",
+        "declared_in": [
+          "package.json (通过 cnoke 构建系统引用 node-api-headers)"
+        ],
+        "used_symbols": [
+          "napi_create_function",
+          "napi_create_object",
+          "napi_get_value_external",
+          "napi_call_function",
+          "napi_create_reference",
+          "Napi::Env",
+          "Napi::Object",
+          "Napi::Function",
+          "Napi::Value"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "cnoke",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://codeberg.org/Koromix/rygel",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "Koffi 的自定义 CMake 封装构建工具，管理 CMake 配置、编译与预编译二进制的生成流程",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "同单仓 src/cnoke/（与 Koffi 同属 rygel 单仓）",
+        "declared_in": [
+          "package.json (scripts.install: node ./cnoke.cjs)"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "Koffi 的实际源码位于 Codeberg 单仓 https://codeberg.org/Koromix/rygel/ 的 src/koffi 目录，此克隆仓库仅为前端。npm 包 koffi 的 optionalDependencies 包含 13 个平台预编译二进制子包（@koromix/koffi-{platform}-{arch}），如 @koromix/koffi-linux-arm64、@koromix/koffi-win32-x64 等——这些是预编译分发产物而非开发依赖。node-addon-api 是唯一的运行时原生依赖；cnoke 是同仓的构建工具。"
+  },
+  "native_api": {
+    "summary": "Koffi 是深度平台相关的 FFI 库，核心功能依赖手写汇编实现 C 调用约定的参数封送，并使用 dlopen/LoadLibrary 动态加载共享库。跨 Windows/Linux/macOS/FreeBSD/OpenBSD 多平台，每平台有特定的 ABI 实现（x86/x86_64/ARM64/RISC-V）。使用 N-API 与 Node.js 交互，Win32 上支持 SEH 结构化异常处理，POSIX 上使用 pthread/mmap/信号等。实际源码在 Codeberg 单仓，此克隆仓库无源码可供直接检查。",
+    "groups": [
+      {
+        "type": "napi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "napi_create_function",
+            "purpose": "创建 JS 函数对象以暴露 C FFI 接口",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "napi_call_function",
+            "purpose": "从 C 回调中调用 JS 函数",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "napi_create_reference",
+            "purpose": "创建 JS 值的持久引用以防止 GC 回收",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "napi_create_external",
+            "purpose": "包装 C 数据指针为 JS 外部对象",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "src/koffi — 基于 node-addon-api (N-API C++ wrapper)"
+        ]
+      },
+      {
+        "type": "posix_dl",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "dlopen",
+            "purpose": "动态加载共享库（.so/.dylib）",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — lib.load() 实现"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "dlsym",
+            "purpose": "解析共享库中的导出符号地址",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — lib.func() / lib.symbol() 实现"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "dlclose",
+            "purpose": "卸载共享库（lib.unload()）",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "RTLD_LAZY",
+            "purpose": "延迟绑定的动态加载标志",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — koffi.load() 选项"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "RTLD_GLOBAL",
+            "purpose": "使加载库的符号对后续加载可见",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — koffi.load() 选项"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "RTLD_DEEPBIND",
+            "purpose": "优先使用库自身的符号而非已加载的全局符号",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — koffi.load() 选项"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "src/koffi — POSIX 动态加载实现"
+        ]
+      },
+      {
+        "type": "win32_dl",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "LoadLibraryEx",
+            "purpose": "Windows 动态加载 DLL",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — lib.load() Win32 实现"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetProcAddress",
+            "purpose": "获取 DLL 中导出函数地址",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — lib.func() Win32 实现"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "FreeLibrary",
+            "purpose": "卸载 DLL（lib.unload() Win32）",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "src/koffi — Win32 动态加载实现"
+        ]
+      },
+      {
+        "type": "arch_simd",
+        "category": "hardware",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "hand_written_assembly_trampolines",
+            "purpose": "手写汇编跳板代码实现 C 调用约定的参数封送（按架构定制：x86 cdecl/stdcall/fastcall/thiscall, x86_64 System V / MSVC, ARM64 AAPCS, RISC-V LP64D）",
+            "count": 5,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — architecture-specific assembly code per ISA/ABI"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "https://koffi.dev/contribute — 'Koffi is programmed in a mix of C++ and assembly code (architecture-specific code)'"
+        ]
+      },
+      {
+        "type": "win32_seh",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "SetUnhandledExceptionFilter",
+            "purpose": "设置 Windows 结构化异常处理（SEH）未处理异常过滤器",
+            "count": 1,
+            "evidence": [
+              "CHANGELOG — Koffi 2.15.3: 'Support SetUnhandledExceptionFilter on Windows x64 and x86'"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SEH_stack_frame",
+            "purpose": "在 x86/x64/ARM64 调用栈帧中设置 SEH 记录以安全调用可能崩溃的 C 代码",
+            "count": 1,
+            "evidence": [
+              "CHANGELOG — Koffi 2.2.3: 'Support native code that uses Structured Exception Handling (SEH) on Windows'"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "src/koffi — Windows SEH 支持"
+        ]
+      },
+      {
+        "type": "posix_thread",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "pthread_create",
+            "purpose": "创建异步 FFI 调用的后台线程",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓) — 异步调用线程池实现"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "pthread_mutex_lock",
+            "purpose": "同步对共享状态（如回调注册表、异步调用队列）的访问",
+            "count": 1,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "mmap",
+            "purpose": "为异步调用分配栈空间（使用 MAP_STACK/OpenBSD 兼容标志）",
+            "count": 1,
+            "evidence": [
+              "CHANGELOG — Koffi 1.3.4: 'Fix crashes on OpenBSD caused by missing MAP_STACK flag'"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "sigaction",
+            "purpose": "设置信号处理器，处理异步回调中的信号",
+            "count": 1,
+            "evidence": [
+              "CHANGELOG — Koffi 2.5.0: 'Don't mess with Node.js signal handling on POSIX systems'"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "src/koffi — POSIX 线程与内存管理"
+        ]
+      },
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::vector",
+            "purpose": "动态数组容器（类型注册、回调管理等）",
+            "count": 5,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "std::string",
+            "purpose": "字符串处理（类型名、符号名解析）",
+            "count": 3,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "std::unordered_map",
+            "purpose": "哈希表（类型缓存、符号查找）",
+            "count": 2,
+            "evidence": [
+              "src/koffi (Codeberg 单仓)"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "src/koffi — C++ 标准库使用"
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "<user_specified>",
+        "mechanism": "dlopen / LoadLibrary",
+        "acquisition": "system",
+        "source": "用户指定路径的任意共享库（.so/.dll/.dylib），由 koffi.load() 加载",
+        "description": "Koffi 的核心功能：用户通过 koffi.load('libc.so.6') 或 koffi.load('user32.dll') 等指定要加载的外部共享库，Koffi 负责动态加载并提供 JS 调用接口",
+        "optional": false,
+        "evidence": [
+          "README.md:14",
+          "https://koffi.dev/load — koffi.load() API"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "Koffi 在运行时通过 dlopen/LoadLibrary 动态加载用户指定的共享库，读取环境变量控制调试行为，不主动发起网络请求。核心运行时交互是动态库加载与进程间回调中继。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "koffi.load() 指定的共享库路径",
+        "purpose": "动态加载用户指定的 C 共享库文件",
+        "evidence": [
+          "https://koffi.dev/load"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "DUMP_CALLS",
+        "purpose": "调试：设为 1 时打印 Koffi FFI 调用详情（参数与返回值）",
+        "evidence": [
+          "CHANGELOG — Koffi 2.16.0: 'Fix nonsensical addresses in Koffi call dumps (when using DUMP_CALLS=1 environment variable)'"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++20",
+    "runtime_version": "Node.js >= 16",
+    "build_system": "CMake (通过自定义封装 cnoke 驱动)",
+    "compiler_extensions": [
+      {
+        "detail": "手写内联汇编（x86/x86_64/ARM64/RISC-V 架构特定调用约定实现），禁用异常（-fno-exceptions），禁用 RTTI",
+        "evidence": [
+          "https://koffi.dev/contribute — 'Exceptions are disabled'",
+          "CHANGELOG — Koffi 2.5.11: 'Build in C++20 mode'"
+        ]
+      },
+      {
+        "detail": "MSVC 特有：静态 CRT 链接、SEH 支持、x86 调用约定扩展",
+        "evidence": [
+          "CHANGELOG — Koffi 2.3.6: 'Build Koffi with static CRT on Windows'"
+        ]
+      },
+      {
+        "detail": "GCC/Clang 扩展：-fno-semantic-interposition（优化符号可见性）、-z noexecstack（清除 ELF 可执行栈标志）",
+        "evidence": [
+          "CHANGELOG — Koffi 2.16.0: 'Optimize Koffi binaries produced by GCC (with -fno-semantic-interposition)'",
+          "Koffi 2.10.0: 'Clear out executable stack bit from ELF targets (-z noexecstack)'"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86",
+        "evidence": [
+          "README.md — 'x86 (IA32) Windows ✅'"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md — 'x86_64 Windows ✅'"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "arm64",
+        "evidence": [
+          "README.md — 'ARM64 Windows ✅'"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86",
+        "evidence": [
+          "README.md — 'x86 Linux ✅'"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md — 'x86_64 Linux ✅'"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "arm64",
+        "evidence": [
+          "README.md — 'ARM64 Linux ✅'"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [
+          "README.md — 'RISC-V 64 Linux ✅'"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "loong64",
+        "evidence": [
+          "README.md — 'LoongArch64 Linux ✅'"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md — 'x86_64 macOS ✅'"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "README.md — 'ARM64 macOS ✅'"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86",
+        "evidence": [
+          "README.md — 'x86 FreeBSD ✅'"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md — 'x86_64 FreeBSD ✅'"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "arm64",
+        "evidence": [
+          "README.md — 'ARM64 FreeBSD ✅'"
+        ]
+      },
+      {
+        "os": "openbsd",
+        "arch": "x86",
+        "evidence": [
+          "README.md — 'x86 OpenBSD ✅'"
+        ]
+      },
+      {
+        "os": "openbsd",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md — 'x86_64 OpenBSD ✅'"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm 包分发，内含各平台预编译 .node 二进制（由 13 个 @koromix/koffi-{platform}-{arch} optionalDependencies 提供）；无预编译二进制时自动从源码构建",
+    "notes": "构建依赖 CMake + C++ 编译器（MSVC/gcc/clang >= 8.3）+ Node.js >= 16。cnoke 是同单仓的自定义 CMake 封装工具。编译禁用异常与 RTTI，采用 C 风格的 C++ 编程范式。"
+  },
+  "capability_profile": {
+    "summary": "Koffi 是纯 FFI 桥接库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其核心能力是动态库加载与 C 调用约定桥接，属于系统级互操作领域。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (自研内核, 无 Linux ABI; OHOS NDK musl + POSIX 子集; arm64/x86_64; 库跑在已移植 Node.js 24 运行时上)",
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "feasible_with_effort",
+    "effort": {
+      "person_days": [
+        15,
+        40
+      ]
+    },
+    "confidence": "medium",
+    "recommended_path": "recompile_napi",
+    "summary": "Koffi 是 Node.js 原生 N-API 插件（C++ + 手写汇编），鸿蒙 PC 已移植 Node.js 24 运行时，因此 JS 层可正常使用。主要移植工作在原生层：(1) 手写汇编跳板代码需要为鸿蒙的 OHOS NDK 编译环境适配，尤其是 ARM64 AAPCS 和 x86_64 System V ABI 在 musl/clang 下的行为需逐一验证；(2) dlopen/dlsym 在 OHOS NDK musl 环境下可用但需确认符号可见性与 RTLD 标志支持范围；(3) Win32 专有代码（LoadLibrary/SEH）在鸿蒙上不需要但需条件编译裁剪；(4) mmap(MAP_STACK)/pthread 等在 OHOS POSIX 子集中的支持程度需逐项确认。核心 FFI 功能可适配但工作量大，不涉及不可替代的硬件/专有 API。",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_napi",
+        "capability": "Node.js N-API 原生插件加载",
+        "required": true,
+        "target_status": "available",
+        "impact": "已移植 Node.js 支持 N-API 插件，Koffi 的 JS 层与 N-API 桥接可直接使用",
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+      },
+      {
+        "id": "ta:ohos_dlopen",
+        "capability": "dlopen/dlsym 动态库加载（musl libc）",
+        "required": true,
+        "target_status": "partial",
+        "impact": "OHOS NDK musl 支持 dlopen/dlsym 基本功能，但 RTLD_GLOBAL/RTLD_DEEPBIND 等扩展标志可能受限或行为不同",
+        "source": "OHOS NDK musl libc 提供 POSIX 子集"
+      },
+      {
+        "id": "ta:ohos_mmap",
+        "capability": "mmap (含 MAP_STACK) 与 pthread 线程管理",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "Koffi 异步调用依赖 mmap 分配栈空间和 pthread 创建工作线程；若 OHOS musl 不完全支持这些标志则需替代方案",
+        "source": "需核实 OHOS NDK musl 对 mmap 标志与 pthread 的完整支持度"
+      },
+      {
+        "id": "ta:ohos_clang_asm",
+        "capability": "OHOS NDK clang 对内联汇编的支持（ARM64/x86_64）",
+        "required": true,
+        "target_status": "available",
+        "impact": "clang 支持内联汇编，Koffi 的手写汇编跳板可编译，但需验证汇编代码在 musl/clang 下的 ABI 行为一致性",
+        "source": "OHOS NDK 使用 clang 工具链"
+      }
+    ],
+    "required_permissions": [],
+    "blockers": [
+      {
+        "id": "bk:asm_trampoline",
+        "issue": "手写汇编跳板代码（x86/x86_64/ARM64 多种调用约定）需在 OHOS NDK clang + musl 环境下重新验证和适配",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "在 OHOS NDK 环境下逐架构编译并运行 ABI 测试：验证 ARM64 AAPCS 和 x86_64 System V 调用约定在 musl/clang 下的行为是否与 glibc/gcc 一致，特别关注结构体按值传递、浮点寄存器使用和可变参数函数的 ABI 细节。不一致处需修改汇编代码。",
+        "caused_by": [
+          "ta:ohos_clang_asm"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "https://koffi.dev/contribute — 'Koffi is programmed in a mix of C++ and assembly code (architecture-specific code)'"
+        ]
+      },
+      {
+        "id": "bk:dlopen_flags",
+        "issue": "dlopen 的 RTLD_GLOBAL/RTLD_DEEPBIND 扩展标志在 OHOS musl 中可能不支持或行为不同",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "逐项测试 RTLD_GLOBAL/RTLD_DEEPBIND 在 OHOS musl 中的可用性。不支持的标志需条件编译降级（跳过该选项或用 RTLD_NOW 替代），并在文档中注明鸿蒙上的功能限制。",
+        "caused_by": [
+          "ta:ohos_dlopen"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "https://koffi.dev/load — koffi.load() 支持 RTLD_LAZY/RTLD_GLOBAL/RTLD_DEEPBIND 选项"
+        ]
+      },
+      {
+        "id": "bk:pthread_mmap",
+        "issue": "异步 FFI 调用依赖 mmap(MAP_STACK) 分配栈和 pthread_create 创建工作线程，OHOS POSIX 子集支持程度待核实",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "验证 OHOS NDK musl 是否支持 mmap 的 MAP_STACK 标志（不支持则改用标准 mmap + 手动保护页方案）；pthread_create 在 OHOS 上基本可用，但线程信号处理需适配（Koffi 曾需特殊处理 Node.js 信号冲突）。参考 Koffi 已有的 OpenBSD 适配经验做条件编译。",
+        "caused_by": [
+          "ta:ohos_mmap"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "CHANGELOG — Koffi 1.3.4: 'Fix crashes on OpenBSD caused by missing MAP_STACK flag'",
+          "CHANGELOG — Koffi 2.5.0: 'Don't mess with Node.js signal handling on POSIX systems'"
+        ]
+      },
+      {
+        "id": "bk:win32_removal",
+        "issue": "Win32 专有代码（LoadLibrary/SEH/x86 stdcall）在鸿蒙上不需要，需确保条件编译正确裁剪",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "toolchain",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "Win32 代码已有 #ifdef _WIN32 守卫，OHOS NDK 编译时自然排除。需确认 OHOS 编译宏（如 __OHOS__ 或等效）不会意外触发 Win32/Apple 分支。必要时添加 __OHOS__ 特定守卫。",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": [
+          "https://koffi.dev/contribute — 多平台 #ifdef 条件编译"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "JavaScript API 层（koffi.load/struct/func/proto 等用户接口）",
+        "note": "鸿蒙 Node.js 24 上可直接运行，无需修改",
+        "evidence": []
+      },
+      {
+        "aspect": "N-API 桥接层（与 Node.js 运行时的交互）",
+        "note": "鸿蒙 Node.js 支持 N-API 8+，Koffi 使用的 N-API 函数均可使用",
+        "evidence": []
+      },
+      {
+        "aspect": "类型系统与数据封送逻辑（C++ 层）",
+        "note": "跨平台 C++ 逻辑，与平台无关，重编即可",
+        "evidence": []
+      }
+    ],
+    "key_tasks": [
+      "在 OHOS NDK 环境下编译 Koffi，解决编译错误与警告（musl 头文件差异、clang 兼容性）",
+      "为 ARM64 和 x86_64 架构逐一验证手写汇编跳板在 OHOS 上的 ABI 正确性（结构体按值传递、浮点参数、可变参数）",
+      "测试 dlopen/dlsym 在 OHOS musl 中的功能完整性，特别是 RTLD_GLOBAL/RTLD_DEEPBIND 支持",
+      "验证 mmap(MAP_STACK) 和 pthread 在 OHOS 上的行为，不支持时实现替代方案",
+      "添加 __OHOS__ 平台宏守卫，确保 Win32/Apple 专有代码正确排除",
+      "在鸿蒙 Node.js 上运行 Koffi 测试套件验证功能完整性"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。Koffi 的核心难点是手写汇编——调用约定桥接代码需要与目标平台的 C ABI 精确匹配，这是移植工作量最大的部分。该库不依赖特定硬件或不可替代的 API，所有平台专有代码都有条件编译守卫，理论上可全部适配，但需要逐架构的 ABI 验证工作。若目标是 ArkTS 沙箱应用（模型 B），则 Node.js 运行时不可用于应用层，需要改走 N-API 桥接到 ArkTS 的路径，工作量更大。克隆仓库为前端仓库（仅含 README/LICENSE），实际源码位于 Codeberg 单仓 https://codeberg.org/Koromix/rygel/ 的 src/koffi 目录，本报告基于官方文档、npm 包元数据、CHANGELOG 及贡献指南分析，未直接读取 C++/汇编源码——置信度受此影响评为 medium。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [
+      "克隆仓库为前端仓库（仅含 README.md/LICENSE.txt/.github/FUNDING.yml/.identity.json），实际 Koffi 源码位于 Codeberg 单仓 https://codeberg.org/Koromix/rygel/ 的 src/koffi 目录。code-metrics 仅统计前端仓库的 4 个文件/63 行代码，远低于实际项目规模。本报告基于官方文档、npm 注册表元数据、CHANGELOG 及贡献指南进行分析，native_api 的 evidence 引用为推断来源而非直接读取的 file:line。",
+      "code_metrics 的 language/code 体积数据仅反映前端仓库（Markdown 37 行 + Text 18 行 + JSON 5 行 + YAML 3 行），不代表实际 Koffi 项目（C++/ASM/JS 约 28.7 MB 解压后 npm 包）。"
+    ],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "ecosystem",
+        "kind": "ambiguity",
+        "value": "nodejs",
+        "rationale": "Koffi 是 Node.js 原生插件，核心语言为 C++ + 汇编，但分发生态和消费方式是 npm/Node.js，故归为 nodejs 生态而非 cpp"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "arch_simd",
+        "rationale": "Koffi 使用手写汇编实现 C 调用约定桥接（非 SIMD 指令，而是 ABI 跳板代码），推荐分类 arch_simd 不完全匹配（'架构特定代码'更准确），但闭轴中无更贴切选项，选用最接近的"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "porting_class",
+        "kind": "ambiguity",
+        "value": "needs_adaptation_full",
+        "rationale": "Koffi 需大量适配工作（汇编重验证、POSIX 子集缺口），但所有功能理论上均可在鸿蒙适配、无不可替代 API——归为 needs_adaptation_full（全部可适配）而非 needs_adaptation_partial（部分不可适配）。person_days 区间偏高（15–40）反映汇编验证工作量，但 porting_class 仍为 full 因 unadaptable_apis 为空"
+      }
+    ]
+  }
+}

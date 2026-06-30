@@ -1,0 +1,496 @@
+{
+  "library": {
+    "name": "pycxx",
+    "kind": "tool",
+    "package_name": null,
+    "aliases": [],
+    "import_names": [],
+    "source_url": "https://github.com/LEW21/pycxx.git",
+    "analyzed_at": "2026-06-29T11:47:51.696Z",
+    "commit": "d6d89a5f0bd32a939dd422a24602e601fc2687f5",
+    "one_liner": "将 Python 风格语法转译为 C++ 代码的编译器前端工具，100% 兼容 C++",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "pycxx 是一种以 Python 语法为基础、借鉴 Rust 理念的新编程语言，其核心功能是将 .pycxx 源文件编译为可读的 C++ 代码。它包含完整的词法分析、语法解析和代码生成三个编译阶段，生成的 C++ 代码可通过标准 C++ 编译器编译运行。项目目前处于早期实验阶段，支持函数声明、变量绑定、循环等基本语句，并附带了轻量的运行时库提供 print/freeze/type_name 等基础功能。",
+    "categories": [
+      {
+        "name": "词法分析",
+        "description": "将 .pycxx 源代码文本切分为 Token 流，处理缩进和代码块结构，支持标识符、字面量、运算符等多种词法单元的识别",
+        "evidence": ["pycxx/tokenize.cpp", "pycxx/tokenize.hpp", "pycxx/token_tree.hpp"]
+      },
+      {
+        "name": "语法解析",
+        "description": "将 Token 流解析为 AST（抽象语法树），支持函数声明（def/fn）、变量绑定（let/mut）、循环（loop/for）、表达式等语法结构的递归下降解析",
+        "evidence": ["pycxx/parse.cpp", "pycxx/ast.hpp", "pycxx/read_funcdecl.hpp", "pycxx/read_letdecl.hpp", "pycxx/read_loop.hpp", "pycxx/read_expr.hpp", "pycxx/read_pat.hpp"]
+      },
+      {
+        "name": "C++ 代码生成",
+        "description": "将 AST 翻译为合法的 C++ 源代码，包括命名空间映射、函数签名转换、变量声明生成和代码缩进格式化",
+        "evidence": ["compile.cpp", "CXXWriter.hpp"]
+      },
+      {
+        "name": "运行时支持库",
+        "description": "提供 pycxx_runtime 命名空间下的基础功能：print（输出）、freeze（不可变绑定语义）、type_name（类型名获取，含 ABI demangle）",
+        "evidence": ["pycxx_runtime/__init__.hpp", "pycxx_runtime/_print.hpp", "pycxx_runtime/_freeze.hpp", "pycxx_runtime/_type_name.hpp"]
+      },
+      {
+        "name": "错误处理",
+        "description": "定义语法错误、缩进错误等异常类型，支持在词法分析和语法解析阶段报告期望词法单元与实际输入的匹配错误",
+        "evidence": ["pycxx/errors.hpp"]
+      }
+    ],
+    "domain": "编译器/语言工具",
+    "target_users": "编程语言研究者与实验性语言爱好者"
+  },
+  "languages": {
+    "primary": "C/C++ Header",
+    "all": [
+      "C/C++ Header",
+      "C++",
+      "make",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "C/C++ Header",
+        "files": 26,
+        "code": 970,
+        "pct": 62.18,
+        "production": {
+          "files": 25,
+          "code": 956
+        },
+        "test": {
+          "files": 1,
+          "code": 14
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 8,
+        "code": 555,
+        "pct": 35.58,
+        "production": {
+          "files": 5,
+          "code": 445
+        },
+        "test": {
+          "files": 3,
+          "code": 110
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 22,
+        "pct": 1.41,
+        "production": {
+          "files": 1,
+          "code": 22
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 8,
+        "pct": 0.51,
+        "production": {
+          "files": 1,
+          "code": 8
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 5,
+        "pct": 0.32,
+        "production": {
+          "files": 1,
+          "code": 5
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 37,
+      "code": 1560,
+      "comment": 40,
+      "blank": 368,
+      "total_lines": 1968
+    },
+    "production": {
+      "files": 33,
+      "code": 1436,
+      "comment": 40,
+      "blank": 346,
+      "total_lines": 1822
+    },
+    "test": {
+      "files": 4,
+      "code": 124,
+      "comment": 0,
+      "blank": 22,
+      "total_lines": 146
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "pycxx",
+        "code": 1030,
+        "category": "production",
+        "by_category": {
+          "production": 1030
+        }
+      },
+      {
+        "dir": ".",
+        "code": 434,
+        "category": "production",
+        "by_category": {
+          "production": 310,
+          "test": 124
+        }
+      },
+      {
+        "dir": "pycxx_runtime",
+        "code": 96,
+        "category": "production",
+        "by_category": {
+          "production": 96
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 4,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "C++": {
+        "files": 3,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates. 测试使用手写 assert 断言而非框架。"
+  },
+  "license": {
+    "spdx": "AGPL-3.0-only",
+    "name": "GNU Affero General Public License v3.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件包含完整的 GNU Affero General Public License Version 3 全文",
+    "notes": "AGPL-3.0 是强 copyleft 许可证，要求网络服务使用时也须公开源代码"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": ["Makefile", ".gitmodules"],
+    "by_ecosystem": {
+      "cpp": 2
+    },
+    "dependencies": [
+      {
+        "name": "boost",
+        "ecosystem": "cpp",
+        "registry_name": "boost",
+        "source_repo": null,
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供字符串算法(boost::algorithm)、optional(boost::optional)和范围适配器(boost::range)功能",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统安装的 Boost 库（编译时 -I 指定头文件路径）",
+        "declared_in": ["Makefile", "str.hpp", "compile.cpp", "pycxx/ast.hpp", "pycxx/token_stream.hpp", "pycxx/tokenize.cpp"],
+        "used_symbols": ["boost::algorithm::split", "boost::algorithm::starts_with", "boost::algorithm::ends_with", "boost::optional", "boost::none", "boost::adaptors::transformed"],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "cmd-pkgs"
+      },
+      {
+        "name": "variantxx",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/LEW21/variantxx.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供 C++14 兼容的 variant 类型（类似 std::variant），用于 AST 节点的多态表示",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "git submodule，位于 variantxx/ 目录",
+        "declared_in": [".gitmodules", "pycxx/ast.hpp"],
+        "used_symbols": ["xx::variant"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "无包管理器配置；依赖通过 Makefile 手动编译链接和 git submodule 引入"
+  },
+  "native_api": {
+    "summary": "项目主要使用 C++ 标准库和 Boost 库，平台依赖极少。仅 _type_name.hpp 中有条件地使用了 POSIX 特有的 cxxabi.h（ABI demangle），通过 #ifndef _MSC_VER 守卫。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::string",
+            "purpose": "字符串操作与存储",
+            "count": 60,
+            "evidence": ["pycxx/tokenize.cpp:8", "pycxx/ast.hpp:15", "str.hpp:8"],
+            "conditional": false
+          },
+          {
+            "name": "std::vector",
+            "purpose": "动态数组容器，用于 Token/Statement/AST 节点列表",
+            "count": 25,
+            "evidence": ["pycxx/token_tree.hpp:4", "pycxx/ast.hpp:5", "pycxx/token_stream.hpp:6"],
+            "conditional": false
+          },
+          {
+            "name": "std::unique_ptr",
+            "purpose": "智能指针，用于 AST 间接引用(indirect)",
+            "count": 5,
+            "evidence": ["pycxx/copy_ptr.hpp:1"],
+            "conditional": false
+          },
+          {
+            "name": "std::unordered_map",
+            "purpose": "哈希表，用于内建函数映射和编译期符号查找",
+            "count": 3,
+            "evidence": ["compile.cpp:7", "pycxx/token_stream.hpp:7"],
+            "conditional": false
+          },
+          {
+            "name": "std::ifstream",
+            "purpose": "文件输入流，读取 .pycxx 源文件",
+            "count": 1,
+            "evidence": ["compile.cpp:219"],
+            "conditional": false
+          },
+          {
+            "name": "std::cout",
+            "purpose": "标准输出，输出编译结果和运行时 print",
+            "count": 3,
+            "evidence": ["compile.cpp:215", "pycxx_runtime/_print.hpp:17"],
+            "conditional": false
+          },
+          {
+            "name": "std::regex",
+            "purpose": "正则表达式，用于词法分析中的 Token 匹配",
+            "count": 1,
+            "evidence": ["pycxx/tokenize.cpp:5"],
+            "conditional": false
+          },
+          {
+            "name": "typeid",
+            "purpose": "运行时类型识别，用于 type_name 功能",
+            "count": 1,
+            "evidence": ["pycxx_runtime/_type_name.hpp:26"],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "posix_cxxabi",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "abi::__cxa_demangle",
+            "purpose": "GCC/Clang ABI 符号名解码，将 mangled 名还原为可读类型名",
+            "count": 1,
+            "evidence": ["pycxx_runtime/_type_name.hpp:29"],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时依赖极低：仅通过标准输入输出流读写数据，读取本地 .pycxx 源文件并输出 C++ 代码到标准输出。无网络、设备、子进程或环境变量依赖。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": ".pycxx 源文件",
+        "purpose": "编译器读取 .pycxx 源文件进行转译",
+        "evidence": ["compile.cpp:219"]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++14",
+    "runtime_version": "无需运行时（编译为原生二进制）",
+    "build_system": "Make",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "Linux",
+        "arch": "x86_64",
+        "evidence": ["Makefile:1 (CXX=clang++)"]
+      },
+      {
+        "os": "macOS",
+        "arch": "aarch64",
+        "evidence": ["Makefile:1 (CXX=clang++)"]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无（通过 Makefile 编译为 bin/compile 二进制）",
+    "notes": "Makefile 硬编码 CXX=clang++，依赖系统安装的 Boost 和 variantxx submodule；无 CMake 或其它构建系统"
+  },
+  "capability_profile": {
+    "summary": "pycxx 是一个编译器前端工具，不涉及 GUI、3D 渲染、媒体或硬件设备场景。其核心功能是纯文本处理（词法分析→语法解析→代码生成），无鸿蒙适配重点场景。",
+    "scenarios": []
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC",
+    "feasibility": "feasible",
+    "porting_class": "recompile_only",
+    "effort": {
+      "person_days": [1, 3]
+    },
+    "confidence": "high",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:cpp_compiler",
+        "capability": "C++14 兼容编译器（clang++/g++）",
+        "required": true,
+        "target_status": "available",
+        "impact": "若鸿蒙 PC 无 C++14 编译器则无法编译",
+        "source": "references/harmony-pc-capabilities.json runtimes 段——C/C++ 编译工具链随 OHOS NDK 提供"
+      },
+      {
+        "id": "ta:boost_headers",
+        "capability": "Boost 库头文件（boost::algorithm, boost::optional, boost::range）",
+        "required": true,
+        "target_status": "available",
+        "impact": "若鸿蒙 PC 无 Boost 则需替换为标准库等价实现",
+        "source": "cmd-pkgs 已提供 boost 预编译包"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "cross_compile",
+    "summary": "pycxx 是纯 C++ 编译器前端工具，无 GUI/硬件/平台 API 依赖，仅有一个条件编译的 POSIX cxxabi.h 调用。使用 OHOS NDK 交叉编译即可移植，Boost 已在鸿蒙 PC 预编译包中可用，variantxx 是 header-only 的 git submodule 可直接包含。仅需确保编译工具链支持 C++14。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "核心编译逻辑",
+        "note": "词法分析、语法解析、代码生成全部基于 C++ 标准库和 Boost，可跨平台编译",
+        "evidence": ["pycxx/tokenize.cpp", "pycxx/parse.cpp", "compile.cpp"]
+      },
+      {
+        "aspect": "运行时库",
+        "note": "pycxx_runtime 仅使用标准库 iostream/type_traits，print/freeze 功能跨平台可用",
+        "evidence": ["pycxx_runtime/_print.hpp", "pycxx_runtime/_freeze.hpp"]
+      },
+      {
+        "aspect": "variantxx 依赖",
+        "note": "git submodule，header-only 库，无平台代码",
+        "evidence": [".gitmodules", "pycxx/ast.hpp:7"]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK 交叉编译 pycxx（clang++ --std=c++14）",
+      "确认 Boost 头文件在鸿蒙编译环境中可用（cmd-pkgs 已提供）",
+      "验证 abi::__cxa_demangle 在 OHOS NDK 的可用性（_type_name.hpp 条件守卫，不可用时降级为 mangled 名）"
+    ],
+    "notes": "项目规模极小（约 1400 行生产代码），无 GUI/网络/设备依赖，移植难度极低。_type_name.hpp 中的 abi::__cxa_demangle 已被 #ifndef _MSC_VER 守卫，属于条件编译的平台特有代码，即使 OHOS NDK 不提供该符号，type_name 功能仅降级为返回 mangled 名而非编译失败。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "library.kind",
+        "kind": "new_value",
+        "value": "tool",
+        "rationale": "pycxx 是一个编译器前端工具——它不作为库被 API 调用（无 package_name/无 install 目标），也不是终端用户直接运行的完整应用（无打包/无 GUI），而是开发者通过 make 编译后使用的编译工具。归为 tool 最贴切。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "posix_cxxabi",
+        "rationale": "cxxabi.h 是 GCC/Clang 的 C++ ABI 支持库头文件，提供 __cxa_demangle 等符号。它不属于标准 POSIX API，也不完全是编译器扩展，而是 C++ 运行时 ABI 的平台实现。现有推荐 type（posix/win32/cpp_stl 等）无法精确覆盖，单独列为 posix_cxxabi。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,1899 @@
+{
+  "library": {
+    "name": "vision",
+    "kind": "library",
+    "package_name": "torchvision",
+    "aliases": [
+      "torchvision",
+      "pytorch/vision"
+    ],
+    "import_names": [
+      "torchvision"
+    ],
+    "source_url": "https://github.com/pytorch/vision.git",
+    "analyzed_at": "2026-06-29T04:28:05.249Z",
+    "commit": "f098790b9608140814981b700237cad809a5ac31",
+    "one_liner": "PyTorch 官方计算机视觉库，提供预训练模型、数据集、图像变换与 C++ 加速的图像编解码/算子。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "torchvision 是 PyTorch 生态的核心计算机视觉库，面向深度学习研究者与工程师。它封装了常用的图像/视频数据集加载器、经典与先进的预训练模型架构（分类、检测、分割、光流、视频理解）、v1/v2 图像变换与数据增强，以及高性能 C++ 扩展实现的图像编解码和底层 CV 算子。Python 层负责 API 与模型逻辑，C++/CUDA/MPS 扩展负责计算密集型图像与算子加速。",
+    "categories": [
+      {
+        "name": "预训练模型与骨干网络",
+        "description": "提供 ResNet、ConvNeXt、EfficientNet、Swin Transformer、MobileNet 等图像分类骨干，以及 Faster R-CNN、Mask R-CNN、RetinaNet、FCOS、SSD、DeepLabV3、FCRN 等检测、分割、光流与视频理解模型，支持通过 WeightsEnum 下载预训练权重。",
+        "evidence": [
+          "torchvision/models/__init__.py",
+          "torchvision/models/_api.py:WeightsEnum",
+          "torchvision/models/resnet.py",
+          "torchvision/models/detection/__init__.py",
+          "torchvision/models/segmentation/__init__.py"
+        ]
+      },
+      {
+        "name": "图像与视频数据集",
+        "description": "封装 MNIST、CIFAR、ImageNet、COCO、Kinetics、HMDB51 等常见视觉数据集的下载、校验与加载逻辑，支持自定义 folder 数据集与 sampler。",
+        "evidence": [
+          "torchvision/datasets/__init__.py",
+          "torchvision/datasets/mnist.py",
+          "torchvision/datasets/coco.py",
+          "torchvision/datasets/kinetics.py",
+          "torchvision/datasets/utils.py:download_url"
+        ]
+      },
+      {
+        "name": "图像变换与数据增强",
+        "description": "提供 v1/v2 两套变换 API，包括裁剪、缩放、旋转、颜色抖动、归一化、AutoAugment、CutMix/MixUp，以及面向 bounding box、mask、keypoint 的几何变换。",
+        "evidence": [
+          "torchvision/transforms/__init__.py",
+          "torchvision/transforms/v2/__init__.py",
+          "torchvision/transforms/functional.py",
+          "torchvision/transforms/v2/functional/_geometry.py"
+        ]
+      },
+      {
+        "name": "图像编解码 IO",
+        "description": "通过 C++ 扩展实现 PNG、JPEG、GIF、WebP 图像的读取、解码与编码，支持 CPU 与 CUDA（nvjpeg）双路径，并提供 read_file/write_file 等底层文件 IO。",
+        "evidence": [
+          "torchvision/io/image.py",
+          "torchvision/csrc/io/image/cpu/decode_jpeg.cpp",
+          "torchvision/csrc/io/image/cpu/decode_png.cpp",
+          "torchvision/csrc/io/image/cpu/decode_webp.cpp",
+          "torchvision/csrc/io/image/cuda/decode_jpegs_cuda.cpp"
+        ]
+      },
+      {
+        "name": "底层计算机视觉算子",
+        "description": "提供 NMS、RoIAlign/RoIPool、PSRoIAlign/PSRoIPool、Deformable Convolution、Rotated Box IoU 等算子的 CPU、CUDA 与 MPS 实现，供模型与自定义前向使用。",
+        "evidence": [
+          "torchvision/ops/__init__.py",
+          "torchvision/csrc/ops/nms.cpp",
+          "torchvision/csrc/ops/cpu/nms_kernel.cpp",
+          "torchvision/csrc/ops/cuda/nms_kernel.cu",
+          "torchvision/csrc/ops/mps/nms_kernel.mm"
+        ]
+      },
+      {
+        "name": "tv_tensors 统一张量类型",
+        "description": "为 image、bounding box、mask、keypoint、video 提供统一的张量封装，使其能够携带元信息并通过 torch_function 机制参与变换。",
+        "evidence": [
+          "torchvision/tv_tensors/__init__.py",
+          "torchvision/tv_tensors/_tv_tensor.py",
+          "torchvision/tv_tensors/_bounding_boxes.py"
+        ]
+      }
+    ],
+    "domain": "computer vision / deep learning",
+    "target_users": "PyTorch 深度学习研究者、应用开发者及依赖 PyTorch 视觉能力的下游框架"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "C++",
+      "CUDA",
+      "C/C++ Header",
+      "C",
+      "Markdown",
+      "reStructuredText",
+      "YAML"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 290,
+        "code": 67394,
+        "pct": 80.64,
+        "production": {
+          "files": 256,
+          "code": 46653
+        },
+        "test": {
+          "files": 33,
+          "code": 20732
+        },
+        "example": {
+          "files": 1,
+          "code": 9
+        }
+      },
+      {
+        "language": "C++",
+        "files": 34,
+        "code": 4912,
+        "pct": 5.88,
+        "production": {
+          "files": 32,
+          "code": 4809
+        },
+        "test": {
+          "files": 1,
+          "code": 50
+        },
+        "example": {
+          "files": 1,
+          "code": 53
+        }
+      },
+      {
+        "language": "CUDA",
+        "files": 7,
+        "code": 2679,
+        "pct": 3.21,
+        "production": {
+          "files": 7,
+          "code": 2679
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 37,
+        "code": 2457,
+        "pct": 2.94,
+        "production": {
+          "files": 37,
+          "code": 2457
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 4,
+        "code": 1253,
+        "pct": 1.5,
+        "production": {
+          "files": 4,
+          "code": 1253
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 17,
+        "code": 1215,
+        "pct": 1.45,
+        "production": {
+          "files": 15,
+          "code": 1138
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 2,
+          "code": 77
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 59,
+        "code": 1035,
+        "pct": 1.24,
+        "production": {
+          "files": 59,
+          "code": 1035
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 19,
+        "code": 951,
+        "pct": 1.14,
+        "production": {
+          "files": 19,
+          "code": 951
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Objective-C++",
+        "files": 6,
+        "code": 906,
+        "pct": 1.08,
+        "production": {
+          "files": 6,
+          "code": 906
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 9,
+        "code": 313,
+        "pct": 0.37,
+        "production": {
+          "files": 9,
+          "code": 313
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CMake",
+        "files": 3,
+        "code": 191,
+        "pct": 0.23,
+        "production": {
+          "files": 2,
+          "code": 178
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 13
+        }
+      },
+      {
+        "language": "DOS Batch",
+        "files": 4,
+        "code": 65,
+        "pct": 0.08,
+        "production": {
+          "files": 4,
+          "code": 65
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "INI",
+        "files": 2,
+        "code": 59,
+        "pct": 0.07,
+        "production": {
+          "files": 2,
+          "code": 59
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 2,
+        "code": 56,
+        "pct": 0.07,
+        "production": {
+          "files": 2,
+          "code": 56
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 27,
+        "pct": 0.03,
+        "production": {
+          "files": 1,
+          "code": 27
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 1,
+        "code": 20,
+        "pct": 0.02,
+        "production": {
+          "files": 1,
+          "code": 20
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 4,
+        "code": 12,
+        "pct": 0.01,
+        "production": {
+          "files": 3,
+          "code": 7
+        },
+        "test": {
+          "files": 1,
+          "code": 5
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 1,
+        "code": 11,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 11
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 2,
+        "code": 9,
+        "pct": 0.01,
+        "production": {
+          "files": 2,
+          "code": 9
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 1,
+        "code": 7,
+        "pct": 0.01,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 503,
+      "code": 83572,
+      "comment": 20272,
+      "blank": 21379,
+      "total_lines": 125223
+    },
+    "production": {
+      "files": 463,
+      "code": 62633,
+      "comment": 18711,
+      "blank": 16286,
+      "total_lines": 97630
+    },
+    "test": {
+      "files": 35,
+      "code": 20787,
+      "comment": 1555,
+      "blank": 5051,
+      "total_lines": 27393
+    },
+    "example": {
+      "files": 5,
+      "code": 152,
+      "comment": 6,
+      "blank": 42,
+      "total_lines": 200
+    },
+    "top_dirs": [
+      {
+        "dir": "torchvision",
+        "code": 48919,
+        "category": "production",
+        "by_category": {
+          "production": 48919
+        }
+      },
+      {
+        "dir": "test",
+        "code": 20787,
+        "category": "test",
+        "by_category": {
+          "test": 20787
+        }
+      },
+      {
+        "dir": "references",
+        "code": 8110,
+        "category": "production",
+        "by_category": {
+          "production": 8110
+        }
+      },
+      {
+        "dir": "docs",
+        "code": 1471,
+        "category": "production",
+        "by_category": {
+          "production": 1471
+        }
+      },
+      {
+        "dir": ".",
+        "code": 1274,
+        "category": "production",
+        "by_category": {
+          "production": 1274
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 1059,
+        "category": "production",
+        "by_category": {
+          "production": 1059
+        }
+      },
+      {
+        "dir": "gallery",
+        "code": 920,
+        "category": "production",
+        "by_category": {
+          "production": 920
+        }
+      },
+      {
+        "dir": "packaging",
+        "code": 413,
+        "category": "production",
+        "by_category": {
+          "production": 413
+        }
+      },
+      {
+        "dir": "scripts",
+        "code": 299,
+        "category": "production",
+        "by_category": {
+          "production": 299
+        }
+      },
+      {
+        "dir": "examples",
+        "code": 152,
+        "category": "example",
+        "by_category": {
+          "example": 152
+        }
+      },
+      {
+        "dir": "benchmarks",
+        "code": 88,
+        "category": "production",
+        "by_category": {
+          "production": 88
+        }
+      },
+      {
+        "dir": "release",
+        "code": 53,
+        "category": "production",
+        "by_category": {
+          "production": 53
+        }
+      },
+      {
+        "dir": "cmake",
+        "code": 27,
+        "category": "production",
+        "by_category": {
+          "production": 27
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": [
+        "examples"
+      ]
+    },
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 7,
+          "code": 48,
+          "macros": [
+            "_WIN32"
+          ]
+        }
+      },
+      "total": 48,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "python": {
+          "files": 6,
+          "hits": 17
+        }
+      },
+      "by_platform": {
+        "windows": 4,
+        "macos": 5,
+        "linux": 4,
+        "posix": 3
+      },
+      "samples": [
+        {
+          "language": "python",
+          "file": "torchvision/transforms/v2/functional/_geometry.py",
+          "line": 275,
+          "text": "return torch.backends.cpu.get_cpu_capability() in (\"AVX2\", \"AVX512\") or platform.machine() in ("
+        },
+        {
+          "language": "python",
+          "file": "setup.py",
+          "line": 128,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "setup.py",
+          "line": 293,
+          "text": "if sys.platform in (\"linux\", \"darwin\", \"aix\"):"
+        },
+        {
+          "language": "python",
+          "file": "setup.py",
+          "line": 347,
+          "text": "if sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "setup.py",
+          "line": 356,
+          "text": "if sys.platform == \"linux\":"
+        },
+        {
+          "language": "python",
+          "file": "setup.py",
+          "line": 363,
+          "text": "if sys.platform == \"darwin\":"
+        },
+        {
+          "language": "python",
+          "file": "setup.py",
+          "line": 437,
+          "text": "webp_library = \"libwebp\" if sys.platform == \"win32\" else \"webp\""
+        },
+        {
+          "language": "python",
+          "file": "torchvision/datasets/mnist.py",
+          "line": 517,
+          "text": "if sys.byteorder == \"little\" or sys.platform == \"aix\":"
+        },
+        {
+          "language": "python",
+          "file": "torchvision/datasets/mnist.py",
+          "line": 530,
+          "text": "if sys.byteorder == \"big\" and not sys.platform == \"aix\":"
+        },
+        {
+          "language": "python",
+          "file": "packaging/wheel/relocate.py",
+          "line": 17,
+          "text": "if sys.platform == \"linux\":"
+        },
+        {
+          "language": "python",
+          "file": "packaging/wheel/relocate.py",
+          "line": 66,
+          "text": "PLATFORM_ARCH = platform.machine()"
+        },
+        {
+          "language": "python",
+          "file": "packaging/wheel/relocate.py",
+          "line": 96,
+          "text": "if sys.platform == \"darwin\" and basename.endswith(\".app\") and osp.exists(basename):"
+        },
+        {
+          "language": "python",
+          "file": "packaging/wheel/relocate.py",
+          "line": 112,
+          "text": "if os.name == \"nt\":"
+        },
+        {
+          "language": "python",
+          "file": "packaging/wheel/relocate.py",
+          "line": 380,
+          "text": "if sys.platform == \"linux\":"
+        },
+        {
+          "language": "python",
+          "file": "packaging/wheel/relocate.py",
+          "line": 382,
+          "text": "elif sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "benchmarks/encoding_decoding.py",
+          "line": 12,
+          "text": "print(\"Platform:\", platform.platform())"
+        },
+        {
+          "language": "python",
+          "file": "torchvision/_internally_replaced_utils.py",
+          "line": 29,
+          "text": "if os.name == \"nt\":"
+        }
+      ],
+      "total": 17,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 35,
+    "test_cases": 1041,
+    "frameworks": [
+      "googletest",
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 33,
+        "cases": 1039
+      },
+      "C++": {
+        "files": 1,
+        "cases": 2
+      },
+      "JSON": {
+        "files": 1,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件首行明确为 BSD 3-Clause License；setup.py license 字段声明为 BSD；两者一致。",
+    "notes": "宽松许可。预训练模型与部分数据集可能有独立授权（README 已声明）。"
+  },
+  "dependencies": {
+    "count": 12,
+    "manifests": [
+      "setup.py",
+      "CMakeLists.txt",
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "torch",
+        "numpy",
+        "pillow",
+        "gdown",
+        "scipy"
+      ],
+      "cpp": [
+        "Torch",
+        "PNG",
+        "JPEG",
+        "WebP",
+        "nvjpeg",
+        "Metal",
+        "Foundation"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "torch",
+        "ecosystem": "python",
+        "registry_name": "torch",
+        "source_repo": "https://github.com/pytorch/pytorch",
+        "import_names": [
+          "torch"
+        ],
+        "aliases": [
+          "pytorch"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "PyTorch 核心运行时与张量计算，torchvision 所有模型与变换的底层依赖",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI / conda 安装，也可通过 TORCH_PACKAGE_NAME/PYTORCH_VERSION 环境变量指定版本",
+        "declared_in": [
+          "setup.py:100-102"
+        ],
+        "used_symbols": [
+          "torch.nn",
+          "torch.ops.load_library",
+          "torch.utils.model_zoo.tqdm",
+          "torch.hub.load_state_dict_from_url"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "registry_name": "numpy",
+        "source_repo": "https://github.com/numpy/numpy",
+        "import_names": [
+          "numpy"
+        ],
+        "aliases": [
+          "np"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "数组与数值计算，数据集加载与 PFM 文件读取使用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.py:101"
+        ],
+        "used_symbols": [
+          "numpy.fromfile",
+          "numpy.ndarray"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "pillow",
+        "ecosystem": "python",
+        "registry_name": "pillow",
+        "source_repo": "https://github.com/python-pillow/Pillow",
+        "import_names": [
+          "PIL"
+        ],
+        "aliases": [
+          "Pillow",
+          "pillow-simd"
+        ],
+        "scope": "runtime",
+        "version": ">= 5.3.0, !=8.3.*",
+        "purpose": "默认图像后端，部分 transforms 与数据集加载走 PIL 图像处理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI；安装时若已装 pillow-simd 则优先依赖 pillow-simd",
+        "declared_in": [
+          "setup.py:106-108"
+        ],
+        "used_symbols": [
+          "PIL.Image"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "gdown",
+        "ecosystem": "python",
+        "registry_name": "gdown",
+        "source_repo": "https://github.com/wkentaro/gdown",
+        "import_names": [
+          "gdown"
+        ],
+        "scope": "optional",
+        "version": ">=4.7.3",
+        "purpose": "从 Google Drive 下载数据集/权重，仅 datasets/utils.py 中可选使用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.py:548"
+        ],
+        "used_symbols": [
+          "gdown.download"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "scipy",
+        "ecosystem": "python",
+        "registry_name": "scipy",
+        "source_repo": "https://github.com/scipy/scipy",
+        "import_names": [
+          "scipy"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选数值/科学计算依赖（extras_require 中声明）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "setup.py:549"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "torchvision-extra-decoders",
+        "ecosystem": "python",
+        "registry_name": "torchvision-extra-decoders",
+        "source_repo": "https://github.com/meta-pytorch/torchvision-extra-decoders",
+        "import_names": [
+          "torchvision_extra_decoders"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "可选 AVIF/HEIC 图像解码插件，当前仅官方支持 Linux",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（仅在 Linux 上提供原生实现，其他平台为占位包）",
+        "declared_in": [
+          "torchvision/io/image.py:434-455"
+        ],
+        "used_symbols": [
+          "torchvision_extra_decoders.expose_extra_decoders"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Torch",
+        "ecosystem": "cpp",
+        "registry_name": "LibTorch",
+        "source_repo": "https://github.com/pytorch/pytorch",
+        "aliases": [
+          "libtorch",
+          "torch"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "C++ 扩展链接的 PyTorch C++ 前端与 ATen 库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package(Torch REQUIRED)，由 PyTorch 安装提供)",
+        "declared_in": [
+          "CMakeLists.txt:27",
+          "setup.py:17"
+        ],
+        "used_symbols": [
+          "torch::Tensor",
+          "torch::empty",
+          "torch::from_file",
+          "torch::library",
+          "torch::headeronly"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "随 PyTorch Python 包已鸿蒙化（OpenHarmony PC PyPI 镜像）"
+      },
+      {
+        "name": "libpng",
+        "ecosystem": "cpp",
+        "registry_name": "libpng",
+        "source_repo": "https://github.com/glennrp/libpng",
+        "aliases": [
+          "PNG"
+        ],
+        "scope": "runtime",
+        "version": ">=1.6.0",
+        "purpose": "PNG 图像编解码",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(libpng-config/pkg-config 或标准路径预装；Windows 通过 pngfix 探测)",
+        "declared_in": [
+          "CMakeLists.txt:29-32",
+          "setup.py:291-325",
+          "setup.py:399-410"
+        ],
+        "used_symbols": [
+          "png_create_read_struct",
+          "png_create_write_struct",
+          "png_read_row",
+          "png_write_row"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "libjpeg",
+        "ecosystem": "cpp",
+        "registry_name": "libjpeg",
+        "source_repo": "https://github.com/libjpeg-turbo/libjpeg-turbo",
+        "aliases": [
+          "JPEG",
+          "jpeg"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "JPEG 图像编解码",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(通过 jpeglib.h 头文件在标准路径或 conda 前缀探测)",
+        "declared_in": [
+          "CMakeLists.txt:34-37",
+          "setup.py:328-371",
+          "setup.py:412-425"
+        ],
+        "used_symbols": [
+          "jpeg_create_decompress",
+          "jpeg_read_scanlines",
+          "jpeg_create_compress",
+          "jpeg_write_scanlines"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "libwebp",
+        "ecosystem": "cpp",
+        "registry_name": "libwebp",
+        "source_repo": "https://github.com/webmproject/libwebp",
+        "aliases": [
+          "WebP"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "WebP 图像解码",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(通过 webp/decode.h 头文件探测；CMake 默认关闭)",
+        "declared_in": [
+          "CMakeLists.txt:39-42",
+          "setup.py:427-441"
+        ],
+        "used_symbols": [
+          "WebPGetFeatures",
+          "WebPDecodeRGB",
+          "WebPDecodeRGBA"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "nvjpeg",
+        "ecosystem": "cpp",
+        "registry_name": "nvjpeg",
+        "source_repo": "https://developer.nvidia.com/nvjpeg",
+        "aliases": [
+          "NVJPEG"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "NVIDIA GPU 上 JPEG 编解码加速，仅 CUDA 构建路径使用",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(CUDA Toolkit 中的 nvjpeg 库，通过 CUDA_HOME 探测)",
+        "declared_in": [
+          "setup.py:443-454",
+          "torchvision/csrc/io/image/cuda/decode_jpegs_cuda.h:8-9"
+        ],
+        "used_symbols": [
+          "nvjpegDecode",
+          "nvjpegEncodeImage"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Metal",
+        "ecosystem": "cpp",
+        "registry_name": "Metal",
+        "source_repo": "https://developer.apple.com/metal/",
+        "aliases": [
+          "Foundation"
+        ],
+        "scope": "optional",
+        "version": null,
+        "purpose": "macOS MPS 后端算子实现所需 Apple 框架，仅 WITH_MPS 构建路径使用",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(macOS 系统框架，find_library(Metal/Foundation))",
+        "declared_in": [
+          "CMakeLists.txt:22-25",
+          "CMakeLists.txt:125-128"
+        ],
+        "used_symbols": [
+          "aoti_torch_mps_create_shader_library",
+          "aoti_torch_mps_run_command_block"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "setup.py 通过 torch.utils.cpp_extension 构建 torchvision._C/_C_stable/image/image_stable 四个 C++/CUDA 扩展。视频解码模块 torchvision.io.video 在开源版本中仅导入内部 pytorch.vision.fb.io.video，实际功能在当前源码中不可用。"
+  },
+  "native_api": {
+    "summary": "torchvision 的核心平台依赖集中在 C++ 扩展中：图像 IO 使用 libjpeg/libpng/libwebp 标准库 API；算子提供 CPU、CUDA、MPS 三种后端实现。Windows 下有几处 UTF-8 路径转换与文件 API 调用，均有 POSIX 回退。Python 层主要使用标准库 urllib 进行网络下载，并通过 ctypes 在 Windows 调用 kernel32.dll 管理 DLL 搜索路径。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::optional",
+            "purpose": "延迟构造 tensor 以配合 setjmp/longjmp 错误处理",
+            "count": 5,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/decode_jpeg.cpp:150",
+              "torchvision/csrc/io/image/cpu/encode_jpeg.cpp:46",
+              "torchvision/csrc/io/image/cpu/decode_png.cpp:54"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "std::clamp",
+            "purpose": "CMYK 到 RGB 转换时裁剪像素值",
+            "count": 1,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/decode_jpeg.cpp:88"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "torchvision/csrc/io/image/cpu/*.cpp"
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "stat",
+            "purpose": "非 Windows 平台获取文件大小与状态",
+            "count": 1,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/read_write_file.cpp:49"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "fopen/fread/fwrite/fclose",
+            "purpose": "非 Windows 平台文件读写回退",
+            "count": 3,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/read_write_file.cpp:75-77",
+              "torchvision/csrc/io/image/cpu/read_write_file.cpp:103-109"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "setjmp/longjmp",
+            "purpose": "libjpeg/libpng 错误恢复机制",
+            "count": 5,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/decode_jpeg.cpp:158",
+              "torchvision/csrc/io/image/cpu/encode_jpeg.cpp:52",
+              "torchvision/csrc/io/image/cpu/decode_png.cpp:56",
+              "torchvision/csrc/io/image/cpu/encode_png.cpp:90"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "torchvision/csrc/io/image/cpu/read_write_file.cpp"
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "MultiByteToWideChar",
+            "purpose": "UTF-8 路径转宽字符以支持 Windows 文件 API",
+            "count": 2,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/read_write_file.cpp:21-31"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "_wstat64",
+            "purpose": "Windows 下 64 位文件状态查询",
+            "count": 1,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/read_write_file.cpp:46"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "_wfopen",
+            "purpose": "Windows 下宽字符文件打开",
+            "count": 2,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/read_write_file.cpp:65",
+              "torchvision/csrc/io/image/cpu/read_write_file.cpp:101"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "torchvision/csrc/io/image/cpu/read_write_file.cpp:7-10"
+        ]
+      },
+      {
+        "type": "image_codec",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "jpeg_create_decompress / jpeg_read_scanlines / jpeg_destroy_decompress",
+            "purpose": "JPEG 解码",
+            "count": 8,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/decode_jpeg.cpp:170-255"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "jpeg_create_compress / jpeg_write_scanlines / jpeg_destroy_compress",
+            "purpose": "JPEG 编码",
+            "count": 6,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/encode_jpeg.cpp:89-116"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "png_create_read_struct / png_read_row / png_destroy_read_struct",
+            "purpose": "PNG 解码",
+            "count": 10,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/decode_png.cpp:36-229"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "png_create_write_struct / png_write_row / png_destroy_write_struct",
+            "purpose": "PNG 编码",
+            "count": 8,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/encode_png.cpp:71-180"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "WebPGetFeatures / WebPDecodeRGB[A] / WebPFree",
+            "purpose": "WebP 解码",
+            "count": 4,
+            "evidence": [
+              "torchvision/csrc/io/image/cpu/decode_webp.cpp:29-57"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "torchvision/csrc/io/image/cpu/common_jpeg.h",
+          "torchvision/csrc/io/image/cpu/common_png.h",
+          "torchvision/csrc/io/image/cpu/decode_webp.cpp"
+        ]
+      },
+      {
+        "type": "cuda",
+        "category": "hardware",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "cuda_runtime.h APIs",
+            "purpose": "CUDA 算子核函数启动与流管理",
+            "count": 6,
+            "evidence": [
+              "torchvision/csrc/ops/cuda/nms_kernel.cu:12",
+              "torchvision/csrc/ops/cuda/cuda_helpers.h:7-14",
+              "torchvision/csrc/io/image/cuda/decode_jpegs_cuda.h:9"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "nvjpeg.h APIs",
+            "purpose": "NVIDIA GPU 硬件 JPEG 编解码",
+            "count": 2,
+            "evidence": [
+              "torchvision/csrc/io/image/cuda/decode_jpegs_cuda.h:8",
+              "torchvision/csrc/io/image/cuda/encode_jpegs_cuda.h:8"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "torchvision/csrc/ops/cuda/*.cu",
+          "torchvision/csrc/io/image/cuda/*.cpp"
+        ]
+      },
+      {
+        "type": "mps_metal",
+        "category": "hardware",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "aoti_torch_mps_create_shader_library",
+            "purpose": "为 MPS 后端懒加载编译 Metal shader 库",
+            "count": 1,
+            "evidence": [
+              "torchvision/csrc/ops/mps/nms_kernel.mm:35"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "aoti_torch_mps_run_command_block",
+            "purpose": "在 MPS 流队列上派发 Metal 计算内核",
+            "count": 1,
+            "evidence": [
+              "torchvision/csrc/ops/mps/nms_kernel.mm:156"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "torchvision/csrc/ops/mps/*.mm"
+        ]
+      },
+      {
+        "type": "torch_ffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "torch.ops.load_library",
+            "purpose": "运行时加载 torchvision C++/CUDA 扩展共享库",
+            "count": 3,
+            "evidence": [
+              "torchvision/extension.py:15",
+              "torchvision/extension.py:21",
+              "torchvision/extension.py:29"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "TORCH_LIBRARY_FRAGMENT",
+            "purpose": "向 torch 注册 torchvision 自定义算子",
+            "count": 2,
+            "evidence": [
+              "torchvision/csrc/vision.cpp:30-31",
+              "torchvision/csrc/ops/mps/nms_kernel.mm:199-200"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "torchvision/extension.py",
+          "torchvision/csrc/vision.cpp"
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "torchvision._C / _C_stable / image / image_stable",
+        "mechanism": "torch.ops.load_library + importlib.machinery.ExtensionFileLoader",
+        "acquisition": "self_build",
+        "source": "本仓 C++/CUDA 扩展构建产物（setuptools / torch.utils.cpp_extension）",
+        "description": "torchvision 自构建的 Python C++ 扩展，包含图像编解码与 CV 算子实现",
+        "optional": false,
+        "evidence": [
+          "torchvision/extension.py:8-22",
+          "setup.py:526-531",
+          "torchvision/_internally_replaced_utils.py:26-49"
+        ]
+      },
+      {
+        "name": "kernel32.dll",
+        "mechanism": "ctypes.WinDLL",
+        "acquisition": "system",
+        "source": "Windows 系统 DLL",
+        "description": "Windows 下调用 AddDllDirectory / SetErrorMode 管理扩展 DLL 加载路径",
+        "optional": false,
+        "evidence": [
+          "torchvision/_internally_replaced_utils.py:29-42"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要依赖网络下载数据集/预训练权重、本地文件系统缓存与读取图像/压缩包，以及可选的 CUDA/MPS 加速设备。无外部命令调用，无守护进程集成。",
+    "network": [
+      {
+        "detail": "urllib.request 下载数据集与模型权重",
+        "purpose": "datasets/utils.py 中下载公开数据集；models/_api.py 通过 torch.hub.load_state_dict_from_url 下载预训练权重",
+        "evidence": [
+          "torchvision/datasets/utils.py:28-32",
+          "torchvision/datasets/utils.py:58-71",
+          "torchvision/models/_api.py:15-91"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "~/.torch/datasets/vision 下的数据集缓存",
+        "purpose": "默认数据集下载与解压目录",
+        "evidence": [
+          "torchvision/_internally_replaced_utils.py:7"
+        ]
+      },
+      {
+        "detail": "图像文件读写与压缩包解压",
+        "purpose": "C++ 扩展读取/写入 PNG/JPEG 等文件；Python 层解压 tar/zip/gz/bz2/xz 数据集",
+        "evidence": [
+          "torchvision/csrc/io/image/cpu/read_write_file.cpp:37-110",
+          "torchvision/datasets/utils.py:209-229"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "TORCHVISION_USE_PNG",
+        "purpose": "控制是否编译 PNG 支持，默认开启",
+        "evidence": [
+          "setup.py:22"
+        ]
+      },
+      {
+        "name": "TORCHVISION_USE_JPEG",
+        "purpose": "控制是否编译 JPEG 支持，默认开启",
+        "evidence": [
+          "setup.py:23"
+        ]
+      },
+      {
+        "name": "TORCHVISION_USE_WEBP",
+        "purpose": "控制是否编译 WebP 支持，默认开启",
+        "evidence": [
+          "setup.py:24"
+        ]
+      },
+      {
+        "name": "TORCHVISION_USE_NVJPEG",
+        "purpose": "控制是否编译 NVJPEG CUDA 支持，默认开启",
+        "evidence": [
+          "setup.py:25"
+        ]
+      },
+      {
+        "name": "TORCHVISION_INCLUDE / TORCHVISION_LIBRARY",
+        "purpose": "手动指定图像编解码库头文件与库搜索路径",
+        "evidence": [
+          "setup.py:28-31"
+        ]
+      },
+      {
+        "name": "FORCE_CUDA / FORCE_MPS / NVCC_FLAGS / DEBUG",
+        "purpose": "强制启用 CUDA/MPS 构建、传递 NVCC 参数或开启调试编译",
+        "evidence": [
+          "setup.py:19-27"
+        ]
+      },
+      {
+        "name": "TORCHVISION_WARN_WHEN_EXTENSION_LOADING_FAILS",
+        "purpose": "C++ 扩展加载失败时是否打印警告",
+        "evidence": [
+          "torchvision/extension.py:18"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "CUDA GPU",
+        "purpose": "decode_jpeg(device='cuda')、CUDA 算子核函数等可选加速路径",
+        "evidence": [
+          "torchvision/io/image.py:229-238",
+          "torchvision/csrc/ops/cuda/nms_kernel.cu"
+        ]
+      },
+      {
+        "detail": "Apple MPS",
+        "purpose": "macOS 上 MPS 后端 NMS 等算子加速",
+        "evidence": [
+          "torchvision/csrc/ops/mps/nms_kernel.mm"
+        ]
+      }
+    ],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++20 / Python >=3.10, !=3.14.1",
+    "runtime_version": "PyTorch 2.x（setup.py 中 TORCH_TARGET_VERSION 锁定 0x020b000000000000，对应 torch 2.11）",
+    "build_system": "setuptools（setup.py 主导）+ 可选 CMake",
+    "compiler_extensions": [
+      {
+        "detail": "setjmp/longjmp 跨 C 库错误处理",
+        "evidence": [
+          "torchvision/csrc/io/image/cpu/decode_jpeg.cpp:158-168",
+          "torchvision/csrc/io/image/cpu/encode_png.cpp:90-109"
+        ]
+      },
+      {
+        "detail": "CUDA __host__ __device__ 核函数宏",
+        "evidence": [
+          "torchvision/csrc/ops/cuda/cuda_helpers.h:6-15"
+        ]
+      },
+      {
+        "detail": "MSVC 特定编译选项 /Zc:preprocessor、/wd4819 及 CUDA 诊断抑制",
+        "evidence": [
+          "setup.py:128-135",
+          "CMakeLists.txt:54-80"
+        ]
+      },
+      {
+        "detail": "Objective-C++ .mm 源文件用于 MPS/Metal 后端",
+        "evidence": [
+          "torchvision/csrc/ops/mps/nms_kernel.mm"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/build-cmake.yml:13-39"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          ".github/workflows/build-wheels-aarch64-linux.yml"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64 / arm64",
+        "evidence": [
+          ".github/workflows/build-wheels-windows.yml",
+          ".github/workflows/build_wheel_windows_arm64.yml"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          ".github/workflows/build-wheels-m1.yml"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "Python wheel 分发（setup.py），包含编译后的 .so/.dll/.dylib 扩展；可选 CMake 构建生成共享库与 TorchVisionConfig.cmake。",
+    "notes": "核心产物为 Python 包 + C++/CUDA 扩展。视频解码在开源版本中依赖内部 pytorch.vision.fb.io.video 模块，未实际随包可用。"
+  },
+  "capability_profile": {
+    "summary": "torchvision 主要触及媒体（图像编解码）与硬件（GPU 计算加速）两大鸿蒙适配重点场景；不涉及 GUI/3D 渲染。CUDA/MPS 为可选加速路径，鸿蒙无 CUDA，相关硬件加速功能无法移植，但 CPU 路径可完整覆盖。",
+    "scenarios": [
+      {
+        "key": "media",
+        "present": true,
+        "kind": [
+          "image_decode",
+          "image_encode",
+          "jpeg",
+          "png",
+          "gif",
+          "webp",
+          "video_decode_stub"
+        ],
+        "specific_hardware": false,
+        "via": [
+          "libjpeg",
+          "libpng",
+          "libwebp",
+          "torchvision-extra-decoders"
+        ],
+        "harmony_status": "partial",
+        "adaptation": "图像编解码可复用鸿蒙已适配的 libjpeg/libpng/libwebp 重新编译；AVIF/HEIC 依赖的 torchvision-extra-decoders 当前仅官方支持 Linux 且未鸿蒙化，相关功能需裁剪或寻找 @ohos.multimedia 替代。视频解码在开源版中依赖内部模块，基本不可用。",
+        "evidence": [
+          "torchvision/csrc/io/image/cpu/decode_jpeg.cpp",
+          "torchvision/csrc/io/image/cpu/decode_png.cpp",
+          "torchvision/csrc/io/image/cpu/decode_webp.cpp",
+          "torchvision/io/image.py:434-455"
+        ]
+      },
+      {
+        "key": "hardware",
+        "present": true,
+        "kind": [
+          "gpu_cuda",
+          "gpu_mps"
+        ],
+        "specific_hardware": true,
+        "via": [
+          "nvjpeg",
+          "cuda_runtime",
+          "Metal",
+          "MPS"
+        ],
+        "harmony_status": "unavailable",
+        "adaptation": "CUDA/NVJPEG 为 NVIDIA 专有，鸿蒙无等价实现；MPS/Metal 为 macOS 专有。两者均为可选加速路径，所有功能均有 CPU 实现，可关闭 WITH_CUDA/WITH_MPS 后仅编译 CPU 版本。",
+        "evidence": [
+          "torchvision/csrc/ops/cuda/*.cu",
+          "torchvision/csrc/io/image/cuda/decode_jpegs_cuda.cpp",
+          "torchvision/csrc/ops/mps/nms_kernel.mm"
+        ]
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（Python 库跑在已移植的 Python 3.12 运行时上；原生 C++/CUDA 扩展需经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [
+        15,
+        30
+      ]
+    },
+    "confidence": "medium",
+    "recommended_path": "run_on_ported_runtime_with_native_extension_rebuild",
+    "summary": "torchvision 是纯 Python + C++ 扩展库。Python 部分（模型、数据集、变换）可直接运行在已移植的鸿蒙 Python 与 PyTorch 上；主要工作量是将 torchvision._C/_C_stable/image/image_stable 四个 C++ 扩展用 OHOS NDK 重新编译，并链接鸿蒙已适配的 libjpeg/libpng/libwebp。所有 CUDA/MPS 加速路径均为可选，关闭后 CPU 路径可完整覆盖。x86_64 架构覆盖情况未核实，是主要置信度下调因素。",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python_runtime",
+        "capability": "Python 3.12 运行时已在鸿蒙 PC 移植",
+        "required": true,
+        "target_status": "available",
+        "impact": "Python 层无需改动即可运行",
+        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+      },
+      {
+        "id": "ta:pytorch_python",
+        "capability": "PyTorch Python 包已在鸿蒙 PC 移植",
+        "required": true,
+        "target_status": "available",
+        "impact": "torch、torchvision 核心 Python 依赖可直接安装",
+        "source": "dependencies[].harmony_adapted + references/harmony-pc-capabilities.json#runtimes.python"
+      },
+      {
+        "id": "ta:libtorch_ohos",
+        "capability": "PyTorch C++ 前端（LibTorch）可在 OHOS NDK 下编译/可用",
+        "required": true,
+        "target_status": "partial",
+        "impact": "C++ 扩展需要 LibTorch 的 OHOS 头文件与库；已移植的 torch Python 包通常意味着 C++ 库可用，但需验证",
+        "source": "由 torch Python 包已鸿蒙化推导"
+      },
+      {
+        "id": "ta:arm64",
+        "capability": "arm64 (aarch64) 架构支持",
+        "required": true,
+        "target_status": "available",
+        "impact": "可生成 arm64 原生扩展",
+        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+      },
+      {
+        "id": "ta:x86_64",
+        "capability": "x86_64 架构支持",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "若鸿蒙 PC 当前主推 arm64、x86_64 覆盖未核实，则 x86 设备上可能无法提供预编译 wheel",
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+      },
+      {
+        "id": "ta:codec_system_libs",
+        "capability": "鸿蒙 PC 上 libjpeg/libpng/libwebp 系统库可用或可经 cmd-pkgs 安装",
+        "required": true,
+        "target_status": "available",
+        "impact": "C++ 图像扩展可链接这些库完成 JPEG/PNG/WebP 编解码",
+        "source": "dependencies[].harmony_adapted + references/harmony-pc-capabilities.json"
+      },
+      {
+        "id": "ta:no_cuda",
+        "capability": "CUDA/NVJPEG 在鸿蒙 PC 不可用",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "强制关闭 WITH_CUDA，CUDA 算子与 nvjpeg 解码路径不可用；CPU 路径可完整替代",
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "datasets/utils.py 与 models/_api.py 运行期下载数据集与预训练权重",
+        "source_capability": "media",
+        "harmony_status": "unknown",
+        "evidence": [
+          "torchvision/datasets/utils.py:28-32",
+          "torchvision/models/_api.py:91"
+        ]
+      },
+      {
+        "permission": "读写存储（文件访问）",
+        "reason": "数据集缓存、图像文件读写、压缩包解压需要本地文件系统访问",
+        "source_capability": "media",
+        "harmony_status": "unknown",
+        "evidence": [
+          "torchvision/_internally_replaced_utils.py:7",
+          "torchvision/csrc/io/image/cpu/read_write_file.cpp:37-110"
+        ]
+      }
+    ],
+    "blockers": [
+      {
+        "id": "bk:native_extension_rebuild",
+        "issue": "四个 C++/CUDA 原生扩展（_C、_C_stable、image、image_stable）需用 OHOS NDK 重新编译",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "使用 ohos.toolchain.cmake + clang/musl 交叉编译 torchvision 的 C++ 扩展；关闭 WITH_CUDA/WITH_MPS，链接鸿蒙已适配的 libjpeg/libpng/libwebp；通过 pip install -e . 在鸿蒙 Python 上重新构建。",
+        "caused_by": [
+          "ta:libtorch_ohos"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "setup.py:526-531",
+          "CMakeLists.txt:1-196"
+        ]
+      },
+      {
+        "id": "bk:cuda_acceleration_unavailable",
+        "issue": "CUDA/NVJPEG 加速路径在鸿蒙 PC 上不可用",
+        "severity": "major",
+        "adaptability": "unadaptable",
+        "category": "specific_hardware",
+        "source_dimension": "capability_profile",
+        "harmony_status": "unavailable",
+        "remediation": "编译时关闭 WITH_CUDA 与 USE_NVJPEG，所有 JPEG 解码/算子回退到 CPU 路径；模型训练推理仍可通过 CPU 或鸿蒙支持的其它后端（如未来 OpenCL/NPU）运行，但当前 CUDA 代码无法复用。",
+        "caused_by": [
+          "ta:no_cuda"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "torchvision/csrc/ops/cuda/*.cu",
+          "torchvision/csrc/io/image/cuda/decode_jpegs_cuda.cpp"
+        ]
+      },
+      {
+        "id": "bk:mps_macos_only",
+        "issue": "MPS/Metal 算子后端仅 macOS 可用，鸿蒙无法编译运行",
+        "severity": "minor",
+        "adaptability": "unadaptable",
+        "category": "platform_specific_backend",
+        "source_dimension": "capability_profile",
+        "harmony_status": "unavailable",
+        "remediation": "关闭 WITH_MPS，相关算子使用 CPU 或 PyTorch 鸿蒙支持的其它后端实现。",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": [
+          "torchvision/csrc/ops/mps/nms_kernel.mm",
+          "CMakeLists.txt:22-25"
+        ]
+      },
+      {
+        "id": "bk:extra_decoders_linux_only",
+        "issue": "AVIF/HEIC 可选解码器 torchvision-extra-decoders 当前仅官方支持 Linux 且未鸿蒙化",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "若需要 AVIF/HEIC 支持，裁剪该功能或使用鸿蒙 @ohos.multimedia 媒体能力重新实现；默认可关闭该可选功能。",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": [
+          "torchvision/io/image.py:434-455"
+        ]
+      },
+      {
+        "id": "bk:x86_64_uncertain",
+        "issue": "鸿蒙 PC x86_64 架构覆盖情况未核实",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "partial",
+        "remediation": "优先在 arm64 鸿蒙 PC 上验证与分发；如需要 x86_64，需先确认 OHOS NDK 与 PyTorch 对该架构的支持状态。",
+        "caused_by": [
+          "ta:x86_64"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          ".github/workflows/build-wheels-linux.yml",
+          ".github/workflows/build_wheel_windows_arm64.yml"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 模型与变换逻辑",
+        "note": "所有 torchvision.models、transforms、datasets、tv_tensors 均为 Python 实现，可直接运行在已移植的鸿蒙 Python 与 PyTorch 上",
+        "evidence": [
+          "torchvision/models/resnet.py",
+          "torchvision/transforms/functional.py"
+        ]
+      },
+      {
+        "aspect": "CPU 算子与图像编解码路径",
+        "note": "关闭 CUDA/MPS 后，NMS、RoI 系列、deform_conv 等算子及 JPEG/PNG/GIF/WebP 编解码均有 CPU 实现可完整覆盖",
+        "evidence": [
+          "torchvision/csrc/ops/cpu/nms_kernel.cpp",
+          "torchvision/csrc/io/image/cpu/decode_jpeg.cpp",
+          "torchvision/csrc/io/image/cpu/decode_png.cpp"
+        ]
+      },
+      {
+        "aspect": "核心 Python 依赖已鸿蒙化",
+        "note": "torch、numpy、pillow、scipy 均已在 OpenHarmony PC PyPI 镜像提供 ohos 包，无需额外移植",
+        "evidence": [
+          "dependencies[].harmony_adapted"
+        ]
+      },
+      {
+        "aspect": "图像编解码系统库已鸿蒙化",
+        "note": "libjpeg、libpng、libwebp 已在 OpenHarmony PC cmd-pkgs 提供预编译包，C++ 扩展重编时可直接链接",
+        "evidence": [
+          "dependencies[].harmony_adapted"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 上安装已移植的 torch、numpy、pillow",
+      "使用 OHOS NDK（ohos.toolchain.cmake）交叉编译 torchvision C++ 扩展，关闭 WITH_CUDA/WITH_MPS，链接鸿蒙版 libjpeg/libpng/libwebp",
+      "适配 setup.py 中 Windows/macOS/Linux 特定的库探测逻辑（libpng-config、conda 前缀、homebrew 路径），使其能在鸿蒙上找到对应系统库",
+      "运行 torchvision 测试套件，重点验证 image IO、ops、transforms、models 在 CPU 路径下的正确性",
+      "若需要 AVIF/HEIC，评估是否裁剪或基于 @ohos.multimedia 重新实现",
+      "若需要 x86_64 分发，先核实鸿蒙 PC 对该架构的 NDK/运行时支持"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。所有 CUDA/MPS 路径均为可选加速，CPU 路径可完整覆盖核心功能，因此 porting_class 定为 needs_adaptation_full（无不可适配的核心 API）。置信度为 medium，主要因为 x86_64 架构状态未核实，以及 LibTorch OHOS C++ 库可用性需实际验证。开源版 torchvision.io.video 依赖内部 pytorch.vision.fb.io.video，当前不可用，不影响图像/模型核心能力。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "kind",
+        "kind": "new_value",
+        "value": "library",
+        "rationale": "torchvision 是被下游通过 import torchvision 调用的 PyPI 库，无终端用户启动入口，判定为 library。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "system_find_package_or_header_probe",
+        "rationale": "C++ 图像编解码库（libpng/libjpeg/libwebp）在 setup.py 中通过 libpng-config、头文件存在性、conda 前缀、homebrew 路径等多种启发式方式探测，并非简单的 find_package，现有推荐 acquisition 值无法精确描述。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "dynamic_libraries.mechanism",
+        "kind": "new_value",
+        "value": "torch.ops.load_library",
+        "rationale": "torchvision 使用 torch.ops.load_library 加载本仓构建的 .so/.dylib/.dll 扩展，与常见 dlopen/ctypes/N-API 机制不同。"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "hardware.kind",
+        "kind": "new_value",
+        "value": "gpu_mps",
+        "rationale": "torchvision 的 MPS/Metal 使用属于 GPU 计算加速（算子后端），而非 3D 渲染，故归入 hardware 场景而非 rendering_3d。"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "media.kind",
+        "kind": "new_value",
+        "value": "video_decode_stub",
+        "rationale": "torchvision.io.video 在开源版中仅导入内部 pytorch.vision.fb.io.video，实际未提供可用实现，应标记为 stub 而非完整视频编解码。"
+      }
+    ]
+  }
+}

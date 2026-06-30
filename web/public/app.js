@@ -89,6 +89,8 @@ const TOPO_STATUS = {
   unanalyzed:               { label: '未分析', color: '#9aa4b2' },
 };
 const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'infeasible', 'unanalyzed'];
+// 移植分级（porting_class）的 5 个取值——用于列表过滤选项；不含拓扑专用的 harmonized/unanalyzed
+const PORTING_CLASS_ORDER = ['no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'infeasible'];
 const topoStatusMeta = (s) => TOPO_STATUS[s] || { label: s || '未知', color: '#9aa4b2' };
 
 // HarmonyOS-PC mirror adaptation status (already-ported packages), cached client-side.
@@ -219,6 +221,18 @@ async function renderDashboard() {
           <option value="passive">被动依赖</option>
         </select>
       </div>
+      <div class="filter">
+        <select id="portingFilter">
+          <option value="">全部移植分级</option>
+          ${PORTING_CLASS_ORDER.map((k) => `<option value="${esc(k)}">${esc(TOPO_STATUS[k].label)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="filter">
+        <select id="levelFilter">
+          <option value="">全部难度</option>
+          ${Object.entries(LVL_LABELS).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}
+        </select>
+      </div>
       <button class="btn sm primary" id="batchAnalyze" disabled>分析选中</button>
       <button class="btn sm" id="refreshBtn">刷新</button>
     </div>
@@ -231,6 +245,8 @@ async function renderDashboard() {
   $('#ecoFilter').onchange = () => { page = 1; renderList(); };
   $('#statusFilter').onchange = () => { page = 1; renderList(); };
   $('#tagFilter').onchange = () => { page = 1; renderList(); };
+  $('#portingFilter').onchange = () => { page = 1; renderList(); };
+  $('#levelFilter').onchange = () => { page = 1; renderList(); };
   $('#batchAnalyze').onclick = batchAnalyze;
   $('#groupSelect').onchange = () => {
     activeGroup = $('#groupSelect').value || 'default';
@@ -276,13 +292,17 @@ function visibleLibs() {
   const eco = ($('#ecoFilter') ? $('#ecoFilter').value : '');
   const stf = ($('#statusFilter') ? $('#statusFilter').value : '');
   const tag = ($('#tagFilter') ? $('#tagFilter').value : '');
+  const pf = ($('#portingFilter') ? $('#portingFilter').value : '');
+  const lf = ($('#levelFilter') ? $('#levelFilter').value : '');
   const filtered = libsCache.filter((l) => {
     const matchesSearch = !q || l.name.toLowerCase().includes(q) ||
       ((l.summary && l.summary.oneLiner) || '').toLowerCase().includes(q);
     const matchesEco = !eco || (l.summary && l.summary.ecosystem === eco);
     const matchesStatus = !stf || statusKey(l) === stf;
     const matchesTag = !tag || (l.tags || []).includes(tag);
-    return matchesSearch && matchesEco && matchesStatus && matchesTag;
+    const matchesPorting = !pf || (l.summary && l.summary.portingClass === pf);
+    const matchesLevel = !lf || (l.summary && l.summary.difficultyLevel === lf);
+    return matchesSearch && matchesEco && matchesStatus && matchesTag && matchesPorting && matchesLevel;
   });
   // 默认排序：最近一次分析时间倒序；无分析时间者按添加（克隆）时间。
   const sortKey = (l) => (l.analyzedAt != null ? l.analyzedAt : (l.addedAt != null ? l.addedAt : 0));
@@ -323,7 +343,8 @@ function renderList() {
     <thead><tr>
       <th class="c-chk"><input type="checkbox" id="selAll" ${allSel ? 'checked' : ''} title="全选/取消" /></th>
       <th>名称</th><th class="c-st">状态</th><th>生态</th><th>语言</th>
-      <th class="c-num">生产代码</th><th class="c-num">测试</th><th>协议</th><th class="c-act">操作</th>
+      <th class="c-num">生产代码</th><th class="c-num">测试</th><th>协议</th>
+      <th class="c-st">移植分级</th><th class="c-st">难度等级</th><th class="c-act">操作</th>
     </tr></thead><tbody>${slice.map((lib) => {
       const st = libStatus(lib); const s = lib.summary || {};
       return `<tr data-name="${esc(lib.name)}">
@@ -337,11 +358,14 @@ function renderList() {
         <td class="c-num">${s.prodCode != null ? num(s.prodCode) : '—'}</td>
         <td class="c-num">${s.testCases != null ? num(s.testCases) : '—'}</td>
         <td>${esc(s.license || '—')}</td>
+        <td class="c-st">${s.portingClass ? (() => { const m = topoStatusMeta(s.portingClass); return `<span class="badge" style="background:${m.color};color:#fff">${esc(m.label)}</span>`; })() : '—'}</td>
+        <td class="c-st">${s.difficultyLevel ? `<span class="badge ${LVL_CLS[s.difficultyLevel] || 'gray'}"${s.personDays ? ` title="${esc(fmtDays(s.personDays))}"` : ''}>${esc(LVL_LABELS[s.difficultyLevel] || s.difficultyLevel)}</span>` : '—'}</td>
         <td class="c-act">
           <a class="btn sm ghost" href="#/lib/${enc(lib.name)}">详情</a>
           ${lib.latest && lib.latest.reportAvailable ? `<a class="btn sm ghost" href="#/topology/${enc(lib.name)}" title="在依赖拓扑中查看">🕸 拓扑</a>` : ''}
           <button class="btn sm ghost" data-act="tags" data-name="${esc(lib.name)}" title="编辑来源标签">🏷</button>
           <button class="btn sm primary" data-act="analyze" data-name="${esc(lib.name)}" ${lib.active || !lib.cloned ? 'disabled' : ''}>分析</button>
+          <button class="btn sm ghost" data-act="migrate" data-name="${esc(lib.name)}" ${lib.active ? 'disabled' : ''} title="迁移到其他分组">↗ 迁移</button>
           <button class="btn sm danger ghost" data-act="del" data-name="${esc(lib.name)}" ${lib.active ? 'disabled' : ''} title="彻底删除该库（代码 + 分析记录 + 标签）">🗑 删除</button>
         </td></tr>`;
     }).join('')}</tbody></table>`;
@@ -357,6 +381,7 @@ function renderList() {
   $$('[data-act="analyze"]', box).forEach((b) => b.onclick = () => analyzeOne(b.dataset.name));
   $$('[data-act="tags"]', box).forEach((b) => b.onclick = () => openTagsModal(b.dataset.name));
   $$('[data-act="del"]', box).forEach((b) => b.onclick = () => deleteLib(b.dataset.name));
+  $$('[data-act="migrate"]', box).forEach((b) => b.onclick = () => openMigrateModal(b.dataset.name));
 
   $('#pager').innerHTML = `
     <div class="pager-nav">
@@ -439,6 +464,40 @@ async function deleteLib(name) {
   selected.delete(name);            // 清掉批量选择残留
   toast('已删除', 'ok');
   loadDash();
+}
+
+async function openMigrateModal(name) {
+  let groups;
+  try { ({ groups } = await api('/api/groups')); }
+  catch { return toast('获取分组列表失败', 'err'); }
+  const targets = groups.filter((g) => g !== activeGroup);
+  showModal(`<h2>迁移库「${esc(name)}」</h2>
+    <p class="hint">将此库的克隆代码、全部分析记录和标签迁移到另一个分组。</p>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="width:80px;text-align:right">当前分组</span>
+      <span class="chip">${esc(activeGroup)}</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <span style="width:80px;text-align:right">目标分组</span>
+      ${targets.length
+        ? `<select id="mgTarget" class="sel">${targets.map((g) => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select>`
+        : `<span class="hint">暂无其他分组，请先创建分组</span>`}
+    </label>
+    <div class="actions">
+      <button class="btn" data-close>取消</button>
+      <button class="btn primary" id="mgConfirm" ${targets.length ? '' : 'disabled'}>确认迁移</button>
+    </div>`);
+  if (!targets.length) return;
+  $('#mgConfirm').onclick = async () => {
+    const toGroup = $('#mgTarget').value;
+    let r;
+    try { r = await api('/api/library/migrate', { method: 'POST', headers: JSONH, body: JSON.stringify({ name, fromGroup: activeGroup, toGroup }) }); }
+    catch { return toast('迁移失败', 'err'); }
+    if (r && r.error) return toast(r.error, 'err');
+    closeModal();
+    toast(`已迁移到分组「${toGroup}」`, 'ok');
+    loadDash();
+  };
 }
 
 // ===========================================================================

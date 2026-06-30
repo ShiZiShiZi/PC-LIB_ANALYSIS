@@ -1,0 +1,377 @@
+{
+  "library": {
+    "name": "ipykernel",
+    "kind": "library",
+    "package_name": "ipykernel",
+    "aliases": [],
+    "import_names": ["ipykernel"],
+    "source_url": "https://github.com/ipython/ipykernel",
+    "analyzed_at": "2026-06-29T06:34:32.374Z",
+    "commit": "6301f3a87932f96cea0704d7b55dba8e365721f8",
+    "one_liner": "为 Jupyter 提供 IPython 计算引擎的 Python 库，基于 ZeroMQ 与前端通信",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "ipykernel 是 Jupyter 生态的 IPython 内核实现。它作为一个长期运行的 Python 进程，通过 ZeroMQ 套接字接收前端（Notebook、JupyterLab、qtconsole 等）发来的 Jupyter 协议消息，执行 Python 代码并把结果/输出回传。除了核心执行引擎，它还提供 IOPub 输出转发、调试器（debugpy）集成、Comm 双向通信、子 shell、GUI 事件循环集成（Qt/GTK/wx/Tk/Cocoa）以及内核安装规格生成等能力。目标用户是 Jupyter 前端开发者与需要在自己的工具中嵌入交互式 Python 内核的开发者。",
+    "categories": [
+      {
+        "name": "Jupyter 协议内核",
+        "description": "实现 Jupyter kernel 协议的消息接收、分发与回复，包括 execute、complete、inspect、history、comm 等请求类型。",
+        "evidence": ["ipykernel/kernelbase.py:Kernel", "ipykernel/ipkernel.py:IPythonKernel", "ipykernel/kernelapp.py:IPKernelApp"]
+      },
+      {
+        "name": "代码执行与 IPython 集成",
+        "description": "委托 IPython 的 InteractiveShell 执行用户代码，管理 user_ns、magics、completer，并捕获 stdout/stderr。",
+        "evidence": ["ipykernel/ipkernel.py:IPythonKernel", "ipykernel/zmqshell.py:ZMQInteractiveShell"]
+      },
+      {
+        "name": "ZeroMQ 网络通信",
+        "description": "通过 ROUTER/DEALER/XPUB/PULL/PUSH/PAIR 等 ZeroMQ 套接字构建 shell、control、iopub、stdin、heartbeat、debugpy 通道。",
+        "evidence": ["ipykernel/kernelapp.py:init_sockets", "ipykernel/iostream.py:IOPubThread", "ipykernel/heartbeat.py:Heartbeat"]
+      },
+      {
+        "name": "输出流转发",
+        "description": "在后台线程中把 sys.stdout/stderr 重定向并封装为 stream 消息，经 IOPub 发送给前端。",
+        "evidence": ["ipykernel/iostream.py:OutStream", "ipykernel/iostream.py:IOPubThread"]
+      },
+      {
+        "name": "调试器支持",
+        "description": "通过 debugpy 实现 Jupyter 调试器协议（DAP）适配，支持断点、单步、变量查看等。",
+        "evidence": ["ipykernel/debugger.py:Debugger"]
+      },
+      {
+        "name": "GUI 事件循环集成",
+        "description": "可选地让 kernel 与 Qt、wxWidgets、Tk、GTK、macOS Cocoa 等 GUI 事件循环协同工作，使交互式绘图/界面代码可在内核中运行。",
+        "evidence": ["ipykernel/eventloops.py", "ipykernel/gui/gtkembed.py", "ipykernel/gui/gtk3embed.py", "ipykernel/_eventloop_macos.py"]
+      },
+      {
+        "name": "Kernelspec 与安装",
+        "description": "生成并安装 Jupyter kernelspec，使 Jupyter 客户端可以发现并启动该内核。",
+        "evidence": ["ipykernel/kernelspec.py", "ipykernel_launcher.py"]
+      }
+    ],
+    "domain": "interactive computing / Jupyter kernel",
+    "target_users": "Jupyter 前端开发者、需要嵌入交互式 Python 执行引擎的科学计算/数据科学工具开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": ["Python", "Markdown", "YAML", "SVG", "TOML", "DOS Batch", "make", "reStructuredText"],
+    "breakdown": [
+      {"language": "Python", "files": 80, "code": 10190, "pct": 77.53, "production": {"files": 48, "code": 5890}, "test": {"files": 27, "code": 4125}, "example": {"files": 5, "code": 175}},
+      {"language": "Markdown", "files": 4, "code": 1465, "pct": 11.15, "production": {"files": 4, "code": 1465}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "YAML", "files": 10, "code": 569, "pct": 4.33, "production": {"files": 10, "code": 569}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "SVG", "files": 1, "code": 263, "pct": 2.0, "production": {"files": 1, "code": 263}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "TOML", "files": 1, "code": 237, "pct": 1.8, "production": {"files": 1, "code": 237}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "DOS Batch", "files": 1, "code": 227, "pct": 1.73, "production": {"files": 1, "code": 227}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "make", "files": 1, "code": 156, "pct": 1.19, "production": {"files": 1, "code": 156}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "reStructuredText", "files": 5, "code": 32, "pct": 0.24, "production": {"files": 5, "code": 32}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
+      {"language": "JSON", "files": 1, "code": 5, "pct": 0.04, "production": {"files": 1, "code": 5}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}}
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {"files": 104, "code": 13144, "comment": 3174, "blank": 4348, "total_lines": 20666},
+    "production": {"files": 72, "code": 8844, "comment": 2385, "blank": 2963, "total_lines": 14192},
+    "test": {"files": 27, "code": 4125, "comment": 669, "blank": 1293, "total_lines": 6087},
+    "example": {"files": 5, "code": 175, "comment": 120, "blank": 92, "total_lines": 387},
+    "platform_adaptation": {"by_platform": {}, "total": 0, "notes": "无 C/C++/ObjC 生产代码，platform_adaptation 为空。"},
+    "platform_branches": {
+      "by_language": {"python": {"files": 8, "hits": 15}},
+      "by_platform": {"windows": 5, "macos": 2, "linux": 1, "posix": 3},
+      "samples": [
+        {"language": "python", "file": "ipykernel/kernelbase.py", "line": 26, "text": "if sys.platform != \"win32\":"},
+        {"language": "python", "file": "ipykernel/kernelbase.py", "line": 1041, "text": "if os.name == \"nt\":"},
+        {"language": "python", "file": "ipykernel/kernelapp.py", "line": 241, "text": "if sys.platform == \"win32\":"},
+        {"language": "python", "file": "ipykernel/iostream.py", "line": 561, "text": "(sys.platform.startswith(\"linux\") or sys.platform.startswith(\"darwin\"))"},
+        {"language": "python", "file": "ipykernel/zmqshell.py", "line": 365, "text": "if os.name == \"posix\":"}
+      ],
+      "total": 15,
+      "notes": "Python 运行时平台判断分支，主要分布在父进程轮询、信号处理、GUI 事件循环、文件描述符重定向等场景。"
+    }
+  },
+  "tests": {
+    "test_files": 27,
+    "test_cases": 181,
+    "frameworks": ["pytest/unittest"],
+    "by_language": {"Python": {"files": 27, "cases": 181}},
+    "notes": "基于 pytest 的测试集，metrics.py 机械计数。"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "LICENSE 文件为 BSD 3-Clause 全文；pyproject.toml [project].license = \"BSD-3-Clause\"；源码文件头标注 Distributed under the terms of the Modified BSD License。",
+    "notes": "宽松许可证，需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 33,
+    "manifests": ["pyproject.toml"],
+    "by_ecosystem": {"python": 33},
+    "dependencies": [
+      {"name": "debugpy", "ecosystem": "python", "scope": "runtime", "version": ">=1.6.5", "purpose": "Jupyter 调试器协议（DAP）后端", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["debugpy"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "ipython", "ecosystem": "python", "scope": "runtime", "version": ">=7.23.1", "purpose": "IPython 交互式 shell 核心，执行用户代码并提供 magics/completer", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["IPython.core.interactiveshell.InteractiveShellABC", "IPython.core.error.StdinNotImplementedError", "IPython.core.completer", "IPython.external.qt_for_kernel"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "comm", "ecosystem": "python", "scope": "runtime", "version": ">=0.1.1", "purpose": "Jupyter Comm 双向通信协议", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["comm.create_comm", "comm.get_comm_manager"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "traitlets", "ecosystem": "python", "scope": "runtime", "version": ">=5.4.0", "purpose": "类型化配置系统与可配置对象", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["traitlets.config.configurable.SingletonConfigurable", "traitlets.traitlets"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "jupyter_client", "ecosystem": "python", "scope": "runtime", "version": ">=8.9.0", "purpose": "Jupyter 客户端与会话管理", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies", "pyproject.toml:[build-system].requires"], "used_symbols": ["jupyter_client.session.Session", "jupyter_client.connect.ConnectionFileMixin"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "jupyter_core", "ecosystem": "python", "scope": "runtime", "version": ">=5.1,!=6.0.*", "purpose": "Jupyter 核心路径与配置", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["jupyter_core.paths.jupyter_runtime_dir"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "nest_asyncio2", "ecosystem": "python", "scope": "runtime", "version": ">=1.7.0", "purpose": "允许在已运行的事件循环中嵌套运行 asyncio（主要用于 Tk 事件循环集成）", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["nest_asyncio2.apply"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "tornado", "ecosystem": "python", "scope": "runtime", "version": ">=6.5.7", "purpose": "IOLoop 与异步网络基础", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["tornado.ioloop.IOLoop"], "harmony_adapted": true, "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"},
+      {"name": "matplotlib-inline", "ecosystem": "python", "scope": "runtime", "version": ">=0.1", "purpose": "Jupyter 内联 matplotlib 后端", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["matplotlib_inline.backend_inline"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "appnope", "ecosystem": "python", "scope": "runtime", "version": ">=0.1.2", "purpose": "macOS 上禁用 App Nap（仅在 Darwin 平台安装）", "acquisition": "package_manager", "locality": "remote", "source": "PyPI（条件依赖 platform_system==\"Darwin\"）", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["appnope"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pyzmq", "ecosystem": "python", "scope": "runtime", "version": ">=25", "purpose": "ZeroMQ 的 Python 绑定，提供内核与前端的底层网络通信", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["zmq.Context", "zmq.Socket", "zmq.ROUTER", "zmq.PAIR", "zmq.eventloop.zmqstream.ZMQStream"], "harmony_adapted": true, "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"},
+      {"name": "psutil", "ecosystem": "python", "scope": "runtime", "version": ">=5.7", "purpose": "进程枚举与信号发送，用于优雅关闭子进程", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["psutil.Process", "psutil.Process.children", "psutil.NoSuchProcess"], "harmony_adapted": true, "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"},
+      {"name": "packaging", "ecosystem": "python", "scope": "runtime", "version": ">=22", "purpose": "版本解析与打包元数据工具", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project].dependencies"], "used_symbols": ["packaging.version.Version"], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "hatchling", "ecosystem": "python", "scope": "build", "version": ">=1.22", "purpose": "PEP 517 构建后端", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[build-system]"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "sphinx", "ecosystem": "python", "scope": "dev", "version": null, "purpose": "文档构建", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].docs"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "myst_parser", "ecosystem": "python", "scope": "dev", "version": null, "purpose": "Markdown 文档解析", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].docs"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pydata_sphinx_theme", "ecosystem": "python", "scope": "dev", "version": null, "purpose": "PyData Sphinx 主题", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].docs"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "sphinxcontrib_github_alt", "ecosystem": "python", "scope": "dev", "version": null, "purpose": "Sphinx GitHub 扩展", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].docs"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "sphinxcontrib-spelling", "ecosystem": "python", "scope": "dev", "version": null, "purpose": "Sphinx 拼写检查", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].docs"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "sphinx-autodoc-typehints", "ecosystem": "python", "scope": "dev", "version": null, "purpose": "Sphinx 类型提示文档", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].docs"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "intersphinx_registry", "ecosystem": "python", "scope": "dev", "version": null, "purpose": "Sphinx intersphinx 注册表", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].docs"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "trio", "ecosystem": "python", "scope": "dev", "version": null, "purpose": "异步库（文档/测试可选依赖）", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].docs", "pyproject.toml:[project.optional-dependencies].cov"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pytest", "ecosystem": "python", "scope": "test", "version": ">=7.0,<10", "purpose": "测试框架", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].test"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pytest-cov", "ecosystem": "python", "scope": "test", "version": null, "purpose": "pytest 覆盖率插件", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].test", "pyproject.toml:[project.optional-dependencies].cov"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "flaky", "ecosystem": "python", "scope": "test", "version": null, "purpose": "不稳定测试重试", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].test"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "ipyparallel", "ecosystem": "python", "scope": "test", "version": null, "purpose": "并行计算测试依赖", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].test"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pre-commit", "ecosystem": "python", "scope": "test", "version": null, "purpose": "代码提交前检查", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].test"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pytest-asyncio", "ecosystem": "python", "scope": "test", "version": ">=0.23.5", "purpose": "pytest 异步测试插件", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].test"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pytest-timeout", "ecosystem": "python", "scope": "test", "version": null, "purpose": "pytest 超时插件", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].test"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "coverage", "ecosystem": "python", "scope": "test", "version": null, "purpose": "代码覆盖率工具", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].cov"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "matplotlib", "ecosystem": "python", "scope": "test", "version": null, "purpose": "绘图库（覆盖率测试可选）", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].cov"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pyqt5", "ecosystem": "python", "scope": "optional", "version": null, "purpose": "可选 Qt5 GUI 事件循环集成", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].pyqt5"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null},
+      {"name": "pyside6", "ecosystem": "python", "scope": "optional", "version": null, "purpose": "可选 Qt6 GUI 事件循环集成", "acquisition": "package_manager", "locality": "remote", "source": "PyPI", "declared_in": ["pyproject.toml:[project.optional-dependencies].pyside6"], "used_symbols": [], "harmony_adapted": false, "harmony_adapted_source": null}
+    ],
+    "notes": "核心运行时依赖中 pyzmq、psutil、tornado 已有 OpenHarmony PC PyPI 镜像；其余多为纯 Python 包。build-system 同时依赖 jupyter_client，已在 runtime 中列出。"
+  },
+  "native_api": {
+    "summary": "ipykernel 本身为纯 Python 库，无本仓原生扩展。平台相关调用主要集中在三类：Unix 父进程轮询/POSIX 进程组信号、Windows 父进程轮询（ctypes 调用 kernel32，条件执行）、macOS Cocoa/CoreFoundation 事件循环（ctypes，条件执行）。核心网络通信通过 pyzmq 完成。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "os.getpid", "purpose": "获取当前进程 ID", "count": 5, "evidence": ["ipykernel/iostream.py:68", "ipykernel/kernelbase.py:1174"]},
+          {"name": "os.pipe / os.dup / os.dup2", "purpose": "stdout/stderr 重定向到 ZMQ 输出线程", "count": 4, "evidence": ["ipykernel/iostream.py:620-622"]},
+          {"name": "signal.signal", "purpose": "设置/恢复 SIGINT 处理函数", "count": 6, "evidence": ["ipykernel/kernelbase.py:499", "ipykernel/ipkernel.py:358"]},
+          {"name": "socket.gethostname", "purpose": "kernel_info_reply 返回主机名", "count": 1, "evidence": ["ipykernel/kernelbase.py:1174"]},
+          {"name": "subprocess.Popen", "purpose": "启动 qtconsole 子进程", "count": 1, "evidence": ["ipykernel/connect.py:126"]}
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {"name": "os.getppid", "purpose": "Unix 父进程轮询，检测父进程是否退出", "count": 2, "evidence": ["ipykernel/parentpoller.py:44", "ipykernel/parentpoller.py:56"]},
+          {"name": "os.getpgid / os.getpgrp", "purpose": "获取进程组 ID，用于向同组子进程发信号", "count": 3, "evidence": ["ipykernel/kernelbase.py:1045", "ipykernel/kernelbase.py:1493", "ipykernel/kernelbase.py:1497"]},
+          {"name": "os.killpg", "purpose": "向进程组发送 SIGINT", "count": 1, "evidence": ["ipykernel/kernelbase.py:1050"]},
+          {"name": "os.kill", "purpose": "向进程发送 SIGINT/SIGTERM", "count": 2, "evidence": ["ipykernel/kernelbase.py:1052", "ipykernel/kernelbase.py:1055"]},
+          {"name": "signal.SIGKILL / signal.SIGTERM", "purpose": "终止子进程", "count": 3, "evidence": ["ipykernel/kernelbase.py:1473", "ipykernel/kernelbase.py:1475", "ipykernel/kernelbase.py:1511"]}
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "WaitForMultipleObjects", "purpose": "Windows 父进程/中断事件轮询", "count": 1, "evidence": ["ipykernel/parentpoller.py:115"], "conditional": true},
+          {"name": "ResetEvent", "purpose": "重置 Windows 事件句柄", "count": 1, "evidence": ["ipykernel/parentpoller.py:124"], "conditional": true},
+          {"name": "GetLongPathNameW", "purpose": "Windows 长路径转换（调试器临时文件）", "count": 1, "evidence": ["ipykernel/compiler.py:56"], "conditional": true}
+        ]
+      },
+      {
+        "type": "macos_cocoa",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {"name": "objc.objc_msgSend", "purpose": "调用 Objective-C 运行时获取 NSApplication 实例", "count": 1, "evidence": ["ipykernel/_eventloop_macos.py:21"], "conditional": true},
+          {"name": "CFRunLoopGetCurrent / CFRunLoopGetMain / CFRunLoopStop / CFRunLoopTimerCreate / CFRunLoopAddTimer", "purpose": "macOS Cocoa 事件循环集成", "count": 5, "evidence": ["ipykernel/_eventloop_macos.py:51-76"], "conditional": true},
+          {"name": "NSApplication.sharedApplication / NSApplication.run / NSApplication.stop:", "purpose": "驱动 macOS NSApp 事件循环", "count": 1, "evidence": ["ipykernel/_eventloop_macos.py:80-118"], "conditional": true}
+        ]
+      },
+      {
+        "type": "zmq",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "zmq.Context.socket", "purpose": "创建 ZeroMQ 套接字", "count": 10, "evidence": ["ipykernel/kernelapp.py:370", "ipykernel/kernelapp.py:376", "ipykernel/kernelapp.py:393"]},
+          {"name": "zmq.Socket.bind", "purpose": "绑定 tcp/ipc 地址", "count": 2, "evidence": ["ipykernel/kernelapp.py:256", "ipykernel/kernelapp.py:266"]},
+          {"name": "zmq.Socket.connect", "purpose": "连接 ZMQ 端点", "count": 2, "evidence": ["ipykernel/kernelapp.py:406", "ipykernel/iostream.py:223"]},
+          {"name": "zmq.Socket.send_multipart / recv_multipart", "purpose": "收发多帧消息", "count": 4, "evidence": ["ipykernel/kernelbase.py:593", "ipykernel/kernelbase.py:1420"]}
+        ]
+      },
+      {
+        "type": "psutil",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "psutil.Process", "purpose": "获取当前进程对象", "count": 1, "evidence": ["ipykernel/kernelbase.py:1489"]},
+          {"name": "psutil.Process.children", "purpose": "递归枚举子进程", "count": 2, "evidence": ["ipykernel/kernelbase.py:1490"]},
+          {"name": "psutil.Process.terminate / kill / send_signal", "purpose": "优雅/强制终止子进程", "count": 3, "evidence": ["ipykernel/kernelbase.py:1474", "ipykernel/kernelbase.py:1476", "ipykernel/kernelbase.py:1478"]}
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行时主要与 ZeroMQ 网络、Jupyter 连接文件、标准 I/O 文件描述符以及少量环境变量交互；会通过 subprocess 启动 qtconsole；无硬件/外部服务依赖。",
+    "network": [
+      {"detail": "ZeroMQ tcp:// 与 ipc:// 传输", "purpose": "内核各通道（shell/control/iopub/stdin/heartbeat/debugpy）网络通信", "evidence": ["ipykernel/kernelapp.py:256", "ipykernel/kernelapp.py:266", "ipykernel/heartbeat.py:79"]},
+      {"detail": "本地回环 tcp://127.0.0.1", "purpose": "IOPub 内部管道通信", "evidence": ["ipykernel/iostream.py:285"]}
+    ],
+    "filesystem": [
+      {"detail": "Jupyter connection file (kernel-*.json)", "purpose": "读取/写入连接信息供前端连接", "evidence": ["ipykernel/kernelapp.py", "ipykernel/connect.py:76"]},
+      {"detail": "ipykernel_<pid> 临时目录", "purpose": "缓存编译后的用户代码单元文件", "evidence": ["ipykernel/compiler.py:77-79"]},
+      {"detail": "share/jupyter/kernels/python3 kernelspec", "purpose": "构建 wheel 时写入内核规格", "evidence": ["pyproject.toml:[tool.hatch.build.targets.wheel.shared-data]", "ipykernel/kernelspec.py"]}
+    ],
+    "env_vars": [
+      {"name": "JPY_PARENT_PID", "purpose": "父进程 PID，用于 Unix 父进程轮询", "evidence": ["ipykernel/kernelapp.py:199"]},
+      {"name": "JPY_INTERRUPT_EVENT", "purpose": "Windows 中断事件句柄", "evidence": ["ipykernel/kernelapp.py:205"]},
+      {"name": "JPY_SESSION_NAME", "purpose": "调试器会话名", "evidence": ["ipykernel/ipkernel.py:150"]},
+      {"name": "MPLBACKEND", "purpose": "未设置时默认改为 matplotlib inline 后端", "evidence": ["ipykernel/kernelapp.py:651-652"]},
+      {"name": "QT_API", "purpose": "根据请求的 Qt 版本设置 pyqt5/pyside2/pyqt6/pyside6", "evidence": ["ipykernel/eventloops.py:512-580"]},
+      {"name": "IPYKERNEL_CELL_NAME", "purpose": "用户代码单元文件名，覆盖临时文件命名", "evidence": ["ipykernel/compiler.py:89"]},
+      {"name": "PYTEST_CURRENT_TEST", "purpose": "检测是否运行在 pytest 中，避免 fd 重定向冲突", "evidence": ["ipykernel/iostream.py:563"]}
+    ],
+    "subprocess": [
+      {"command": "sys.executable -c \"from qtconsole import qtconsoleapp; qtconsoleapp.main()\" --existing <connection_file>", "purpose": "%qtconsole magic 启动一个连接到当前内核的 qtconsole 前端", "evidence": ["ipykernel/connect.py:119-132"]}
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "CPython >= 3.10（pyproject.toml requires-python）",
+    "build_system": "hatchling（PEP 517 后端，自定义 build hook 生成 kernelspec）",
+    "compiler_extensions": [],
+    "platforms": [
+      {"os": "windows", "arch": "x86_64", "evidence": ["ipykernel/parentpoller.py:ParentPollerWindows", "ipykernel/compiler.py:51"]},
+      {"os": "macos", "arch": "x86_64/arm64", "evidence": ["ipykernel/_eventloop_macos.py", "ipykernel/eventloops.py:21"]},
+      {"os": "linux", "arch": "x86_64/arm64", "evidence": ["ipykernel/iostream.py:561", "ipykernel/parentpoller.py:ParentPollerUnix"]}
+    ],
+    "entry_points": [
+      {"type": "console_script", "name": "ipykernel_launcher", "command": "python -m ipykernel_launcher -f {connection_file}", "evidence": ["ipykernel_launcher.py", "ipykernel/kernelspec.py:56", "pyproject.toml:[tool.hatch.build.force-include]"]}
+    ],
+    "packaging": "Python wheel，通过 hatchling 构建，安装后注册 Jupyter kernelspec",
+    "notes": "本包不含 C/C++ 扩展；原生能力完全来自 pyzmq/psutil 等依赖。"
+  },
+  "capability_profile": {
+    "summary": "ipykernel 核心为交互式计算内核，触及 GUI 场景仅因其可选的 GUI 事件循环集成（Qt/GTK/wx/Tk/Cocoa）；无 3D 渲染、媒体、特定硬件访问。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": true,
+        "kind": ["qt", "gtk", "wx", "tk", "cocoa"],
+        "specific_hardware": false,
+        "via": ["eventloops.py", "gui/gtkembed.py", "gui/gtk3embed.py", "_eventloop_macos.py", "pyqt5", "pyside6"],
+        "harmony_status": "partial",
+        "adaptation": "Qt/GTK 已有鸿蒙社区版，可作为主路径；wx/tk/Cocoa  availability 未知，相关可选功能需条件化或禁用。",
+        "evidence": ["ipykernel/eventloops.py:148", "ipykernel/eventloops.py:253", "ipykernel/eventloops.py:350", "ipykernel/_eventloop_macos.py:9"]
+      },
+      {"key": "rendering_3d", "present": false},
+      {"key": "media", "present": false},
+      {"key": "hardware", "present": false}
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（库跑在已移植 Python 3.12 运行时上；关键原生依赖经 OpenHarmony PC PyPI 镜像复用；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {"person_days": [5, 12]},
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python",
+        "capability": "Python 3.12 运行时已移植",
+        "required": true,
+        "target_status": "available",
+        "impact": "Python 运行时可用，纯 Python 部分无需改写即可运行",
+        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+      },
+      {
+        "id": "ta:posix_spawn",
+        "capability": "POSIX 进程组/信号模型（os.getpgid/os.killpg/os.kill/SIGKILL 等）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "内核中断子进程、优雅关机等核心功能依赖；OHOS POSIX 子集是否完整支持待核实",
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn（类推）"
+      },
+      {
+        "id": "ta:qt",
+        "capability": "Qt GUI 事件循环",
+        "required": false,
+        "target_status": "available",
+        "impact": "可选 Qt 集成路径可用",
+        "source": "references/harmony-pc-capabilities.json#gui.qt"
+      },
+      {
+        "id": "ta:gtk",
+        "capability": "GTK GUI 事件循环",
+        "required": false,
+        "target_status": "available",
+        "impact": "可选 GTK 集成路径可用",
+        "source": "references/harmony-pc-capabilities.json#gui.gtk"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "ipykernel 是纯 Python 库，核心 Jupyter 协议/ZeroMQ 功能可在鸿蒙已移植 Python 上直接运行；pyzmq、psutil、tornado 已有鸿蒙 PyPI 镜像。主要适配工作在于验证 OHOS 对 POSIX 进程组/信号语义的支持，并处理可选 GUI 工具包（wx/tk/Cocoa）的可用性缺口；Windows/macOS 专有分支为条件代码，在鸿蒙上不会触发。",
+    "blockers": [
+      {
+        "id": "bk:posix_signals",
+        "issue": "POSIX 进程组与信号语义在 HarmonyOS 上的完整度未知，影响子进程中断与优雅终止",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "在鸿蒙 Python 上实测 os.getpgid/os.killpg/os.kill/SIGKILL 行为；缺失处改用 psutil 提供的跨进程接口或条件化降级（跳过进程组信号，仅向目标进程发信号）。",
+        "caused_by": ["ta:posix_spawn"],
+        "manifests_as": [],
+        "evidence": ["ipykernel/kernelbase.py:1041-1055", "ipykernel/kernelbase.py:1473-1511"]
+      },
+      {
+        "id": "bk:optional_gui_toolkits",
+        "issue": "可选 GUI 事件循环集成中的 wx/tk/Cocoa 在鸿蒙 PC 上的可用性未知",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "native_dependency",
+        "source_dimension": "capability_profile",
+        "harmony_status": "unknown",
+        "remediation": "主推 Qt/GTK 路径（已有鸿蒙版）；对 wx/tk/Cocoa 路径在鸿蒙上条件化禁用或提供友好错误提示。",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": ["ipykernel/eventloops.py:184", "ipykernel/eventloops.py:253", "ipykernel/eventloops.py:382"]
+      }
+    ],
+    "compatible": [
+      {"aspect": "核心 Jupyter 协议处理与消息路由", "note": "纯 Python 逻辑，无需改动", "evidence": ["ipykernel/kernelbase.py", "ipykernel/ipkernel.py"]},
+      {"aspect": "ZeroMQ 网络通信", "note": "pyzmq 已有鸿蒙镜像，tcp/ipc 传输在已移植 Python 上可复用", "evidence": ["ipykernel/kernelapp.py:370-423"]},
+      {"aspect": "已适配的关键原生依赖", "note": "pyzmq、psutil、tornado 已在 OpenHarmony PC PyPI 镜像提供 ohos wheel", "evidence": ["scripts/harmony_adapted.js 查询结果"]}
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 环境中安装 ipykernel 及其依赖，确认 pyzmq/psutil/tornado 的 ohos wheel 可用",
+      "运行 ipykernel 单元测试，验证内核启动、execute、complete、shutdown 等核心消息流",
+      "实测 os.getpgid/os.killpg/os.kill 在 OHOS 上的行为，必要时条件化降级中断/终止逻辑",
+      "验证 ZMQ ipc:// 传输在鸿蒙上的路径/权限语义",
+      "测试 Qt/GTK 事件循环集成的可用性，并对 wx/tk/Cocoa 路径做鸿蒙兼容性处理",
+      "验证 %qtconsole magic 在鸿蒙上能否正确启动 qtconsole 子进程"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。Windows/macOS 专有代码路径均为 sys.platform/os.name 条件分支，在鸿蒙（非 win32/darwin）上不会执行，因此不构成 unadaptable_apis。POSIX 进程组/信号为唯一需要核实的核心能力，若目标平台支持度不足会降级为 needs_adaptation_partial。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [],
+    "observations": []
+  }
+}

@@ -1,0 +1,617 @@
+{
+  "library": {
+    "name": "QWindowKit",
+    "kind": "library",
+    "package_name": "QWindowKit",
+    "aliases": ["QWK", "qwindowkit"],
+    "import_names": ["QWKCore", "QWKWidgets", "QWKQuick", "QWK"],
+    "source_url": "https://github.com/stdware/qwindowkit",
+    "analyzed_at": "2026-06-29T11:47:51.695Z",
+    "commit": "c783b89d119a672b0aa4262b520c0783d0612689",
+    "one_liner": "跨平台 Qt 窗口自定义框架，为 Qt Widgets 和 Qt Quick 提供无边框窗口、系统按钮集成与平台特效支持",
+    "ecosystem": "cpp",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "QWindowKit 是一个跨平台的 Qt 窗口自定义框架，支持 Qt Widgets 和 Qt Quick 两种 UI 技术。它在 Windows 上实现 Win32 窗口过程钩子、DWM 特效（Mica/Acrylic）、Snap Layout 和顶部边框修复；在 macOS 上通过 Objective-C 运行时 swizzle NSWindow 方法、拦截系统按钮事件和全屏通知；在 Linux 上通过运行时动态加载 libX11/libwayland-client 实现 X11/Wayland 系统菜单。同时提供 StyleAgent 监听系统主题/强调色变化。继承自 FramelessHelper 并进行了架构重构升级。",
+    "categories": [
+      {
+        "name": "无边框窗口定制",
+        "description": "移除系统标题栏、自定义窗口边框与拖拽区域，管理标题栏交互（拖拽移动、双击最大化、系统按钮区域映射）",
+        "evidence": ["src/core/windowagentbase.h", "src/core/windowagentbase.cpp", "src/core/contexts/abstractwindowcontext.cpp"]
+      },
+      {
+        "name": "Windows 原生窗口集成",
+        "description": "钩住 Win32 窗口过程处理 WM_NCCALCSIZE/WM_NCHITTEST 等消息，实现 Windows 10 顶部边框修复、Windows 11 Snap Layout、系统菜单和 DPI 感知",
+        "evidence": ["src/core/contexts/win32windowcontext.cpp", "src/core/shared/qwkwindowsextra_p.h"]
+      },
+      {
+        "name": "macOS 原生窗口集成",
+        "description": "通过 ObjC runtime method swizzle 修改 NSWindow 行为，强制启用 FullSizeContentView、拦截系统按钮事件、监听全屏/主题变化通知",
+        "evidence": ["src/core/contexts/cocoawindowcontext.mm"]
+      },
+      {
+        "name": "Linux 平台窗口集成",
+        "description": "运行时动态加载 libX11.so / libwayland-client.so，通过 X11 ClientMessage 或 Wayland xdg_toplevel 协议实现系统菜单弹出",
+        "evidence": ["src/core/contexts/linuxx11context.cpp", "src/core/contexts/linuxwaylandcontext.cpp", "src/core/qwindowkit_linux.cpp"]
+      },
+      {
+        "name": "DWM 视觉特效",
+        "description": "在 Windows 10/11 上启用 Mica、Acrylic、暗色模式等 DWM 窗口材质特效，以及窗口边框颜色定制",
+        "evidence": ["src/core/contexts/win32windowcontext.cpp:996-1138", "src/core/shared/qwkwindowsextra_p.h:66-107"]
+      },
+      {
+        "name": "系统主题/强调色检测",
+        "description": "通过 Win32 注册表/WMMac NSUserDefaults+NSDistributedNotificationCenter 监听系统暗色模式切换和强调色变化",
+        "evidence": ["src/core/style/styleagent.h", "src/core/style/styleagent_win.cpp", "src/core/style/styleagent_mac.mm"]
+      }
+    ],
+    "domain": "桌面 GUI / 窗口管理",
+    "target_users": "使用 Qt 开发桌面应用且需要自定义无边框窗口外观与行为的开发者"
+  },
+  "languages": {
+    "primary": "C++",
+    "all": [
+      "C++",
+      "C/C++ Header",
+      "Objective-C++",
+      "CMake",
+      "QML",
+      "Markdown",
+      "SVG",
+      "YAML"
+    ],
+    "breakdown": [
+      {
+        "language": "C++",
+        "files": 31,
+        "code": 4394,
+        "pct": 52.93,
+        "production": {"files": 25, "code": 3619},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 6, "code": 775}
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 35,
+        "code": 1869,
+        "pct": 22.52,
+        "production": {"files": 29, "code": 1676},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 6, "code": 193}
+      },
+      {
+        "language": "Objective-C++",
+        "files": 2,
+        "code": 790,
+        "pct": 9.52,
+        "production": {"files": 2, "code": 790},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "CMake",
+        "files": 12,
+        "code": 516,
+        "pct": 6.22,
+        "production": {"files": 7, "code": 469},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 5, "code": 47}
+      },
+      {
+        "language": "QML",
+        "files": 3,
+        "code": 327,
+        "pct": 3.94,
+        "production": {"files": 0, "code": 0},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 3, "code": 327}
+      },
+      {
+        "language": "Markdown",
+        "files": 3,
+        "code": 277,
+        "pct": 3.34,
+        "production": {"files": 3, "code": 277},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "SVG",
+        "files": 8,
+        "code": 87,
+        "pct": 1.05,
+        "production": {"files": 0, "code": 0},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 8, "code": 87}
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 36,
+        "pct": 0.43,
+        "production": {"files": 1, "code": 36},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 5,
+        "pct": 0.06,
+        "production": {"files": 1, "code": 5},
+        "test": {"files": 0, "code": 0},
+        "example": {"files": 0, "code": 0}
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 96,
+      "code": 8301,
+      "comment": 1563,
+      "blank": 1925,
+      "total_lines": 11789
+    },
+    "production": {
+      "files": 68,
+      "code": 6872,
+      "comment": 1507,
+      "blank": 1649,
+      "total_lines": 10028
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 28,
+      "code": 1429,
+      "comment": 56,
+      "blank": 276,
+      "total_lines": 1761
+    },
+    "top_dirs": [
+      {"dir": "src", "code": 6385, "category": "production", "by_category": {"production": 6385}},
+      {"dir": "examples", "code": 1429, "category": "example", "by_category": {"example": 1429}},
+      {"dir": ".", "code": 338, "category": "production", "by_category": {"production": 338}},
+      {"dir": "share", "code": 75, "category": "production", "by_category": {"production": 75}},
+      {"dir": "docs", "code": 74, "category": "production", "by_category": {"production": 74}}
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": ["examples"]
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "notes": "项目无测试代码。"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": ["LICENSE"],
+    "evidence": "根目录 LICENSE 文件为完整的 Apache License 2.0 全文，源文件头部均标注 SPDX-License-Identifier: Apache-2.0",
+    "notes": "版权归属 Stdware Collections (2023-2025) 及 wangwenx190 (2021-2023)。"
+  },
+  "dependencies": {
+    "count": 3,
+    "manifests": ["CMakeLists.txt", "src/core/CMakeLists.txt", ".gitmodules"],
+    "by_ecosystem": {"cpp": 3},
+    "dependencies": [
+      {
+        "name": "Qt",
+        "ecosystem": "cpp",
+        "registry_name": "Qt",
+        "source_repo": null,
+        "import_names": ["QtCore", "QtGui", "QtWidgets", "QtQuick"],
+        "aliases": ["Qt5", "Qt6"],
+        "scope": "runtime",
+        "version": ">=5.12",
+        "purpose": "核心 GUI 框架依赖，提供事件循环、窗口系统、控件和 QML 引擎",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统预安装（find_package(Qt) 查找）",
+        "declared_in": ["src/core/CMakeLists.txt:94", "src/widgets/CMakeLists.txt:25", "src/quick/CMakeLists.txt:26"],
+        "used_symbols": ["QWindow", "QGuiApplication", "QObject", "QEvent", "QMouseEvent", "QPlatformNativeInterface", "QNativeInterface::QX11Application", "QNativeInterface::QWaylandApplication", "QLibrary"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "qmsetup",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": "https://github.com/stdware/qmsetup",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "CMake 辅助库，提供构建系统函数（qm_import, qm_add_library, qm_configure_target, qm_sync_include 等）",
+        "acquisition": "submodule",
+        "locality": "local",
+        "source": "git submodule（qmsetup/ 目录），若未克隆则就地编译安装",
+        "declared_in": ["CMakeLists.txt:108-131", ".gitmodules"],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "uxtheme",
+        "ecosystem": "cpp",
+        "registry_name": null,
+        "source_repo": null,
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Windows UX 主题库，用于调用未文档化的暗色模式/主题刷新 API（RefreshImmersiveColorPolicyState, AllowDarkModeForWindow, SetPreferredAppMode 等）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Windows 系统库（QSystemLibrary 动态加载 uxtheme.dll）",
+        "declared_in": ["src/core/CMakeLists.txt:50", "src/core/shared/qwkwindowsextra_p.h:252-257"],
+        "used_symbols": ["RefreshImmersiveColorPolicyState", "AllowDarkModeForWindow", "AllowDarkModeForApp", "FlushMenuThemes", "SetPreferredAppMode"],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "Qt 是核心运行时依赖；qmsetup 是纯构建工具依赖（不影响运行时）；uxtheme 是 Windows 平台运行时动态加载的系统库。此外 Win32 平台隐式链接 dwmapi/user32/shcore/ntdll，macOS 平台链接 Foundation/Cocoa/AppKit 框架，Linux 平台运行时动态加载 libX11/libwayland-client——这些已在 native_api 中记录。"
+  },
+  "native_api": {
+    "summary": "QWindowKit 深度使用三大桌面平台的原生窗口管理 API：Windows 上通过 Win32 窗口过程钩子和 DWM API 实现无边框窗口及视觉特效；macOS 上通过 ObjC runtime swizzle 操作 NSWindow/NSButton；Linux 上运行时动态加载 X11/Wayland 客户端库。大量平台 API 调用被 CMake 编译条件（WIN32/APPLE/else）守卫。",
+    "groups": [
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "SetWindowLongPtrW", "purpose": "设置窗口过程钩子（hook WndProc）和窗口样式", "count": 5, "evidence": ["src/core/contexts/win32windowcontext.cpp:678", "src/core/contexts/win32windowcontext.cpp:904", "src/core/contexts/win32windowcontext.cpp:906", "src/core/contexts/win32windowcontext.cpp:2062", "src/core/contexts/win32windowcontext.cpp:2065"], "conditional": true},
+          {"name": "GetWindowLongPtrW", "purpose": "读取窗口样式/扩展样式/原始窗口过程地址", "count": 6, "evidence": ["src/core/contexts/win32windowcontext.cpp:189", "src/core/contexts/win32windowcontext.cpp:255", "src/core/contexts/win32windowcontext.cpp:357", "src/core/contexts/win32windowcontext.cpp:361", "src/core/contexts/win32windowcontext.cpp:842", "src/core/contexts/win32windowcontext.cpp:902"], "conditional": true},
+          {"name": "CallWindowProcW", "purpose": "调用原始 Qt 窗口过程转发消息", "count": 3, "evidence": ["src/core/contexts/win32windowcontext.cpp:633", "src/core/contexts/win32windowcontext.cpp:644", "src/core/contexts/win32windowcontext.cpp:659"], "conditional": true},
+          {"name": "SetWindowPos", "purpose": "调整窗口位置和大小，触发 WM_NCCALCSIZE 重绘", "count": 4, "evidence": ["src/core/contexts/win32windowcontext.cpp:92", "src/core/contexts/win32windowcontext.cpp:155", "src/core/contexts/win32windowcontext.cpp:2007", "src/core/contexts/win32windowcontext.cpp:2009"], "conditional": true},
+          {"name": "GetWindowRect", "purpose": "获取窗口在屏幕坐标系中的位置和大小", "count": 5, "evidence": ["src/core/contexts/win32windowcontext.cpp:151", "src/core/contexts/win32windowcontext.cpp:163", "src/core/contexts/win32windowcontext.cpp:366", "src/core/contexts/win32windowcontext.cpp:1020", "src/core/contexts/win32windowcontext.cpp:2004"], "conditional": true},
+          {"name": "GetClientRect", "purpose": "获取窗口客户区大小", "count": 2, "evidence": ["src/core/contexts/win32windowcontext.cpp:814", "src/core/contexts/win32windowcontext.cpp:1676"], "conditional": true},
+          {"name": "SendMessageTimeoutW", "purpose": "向其他窗口发送消息（用于窗口激活）", "count": 1, "evidence": ["src/core/contexts/win32windowcontext.cpp:218"], "conditional": true},
+          {"name": "PostMessageW", "purpose": "向消息队列投递 WM_SYSCOMMAND 等消息", "count": 3, "evidence": ["src/core/contexts/win32windowcontext.cpp:319", "src/core/contexts/win32windowcontext.cpp:1282", "src/core/contexts/win32windowcontext.cpp:1506"], "conditional": true},
+          {"name": "SendMessageW", "purpose": "同步发送窗口消息", "count": 1, "evidence": ["src/core/contexts/win32windowcontext.cpp:1280"], "conditional": true},
+          {"name": "GetModuleHandleW", "purpose": "获取 ntdll.dll 模块句柄用于获取 OS 版本", "count": 1, "evidence": ["src/core/qwindowkit_windows.cpp:12"], "conditional": true},
+          {"name": "GetProcAddress", "purpose": "动态获取 ntdll!RtlGetVersion 函数地址", "count": 1, "evidence": ["src/core/qwindowkit_windows.cpp:16"], "conditional": true},
+          {"name": "RegOpenKeyExW", "purpose": "打开 Windows 注册表键（主题/暗色模式检测）", "count": 1, "evidence": ["src/core/qwindowkit_windows.cpp:36"], "conditional": true},
+          {"name": "RegQueryValueExW", "purpose": "查询注册表值（DWM 颜色/主题/暗色模式）", "count": 3, "evidence": ["src/core/qwindowkit_windows.cpp:59", "src/core/qwindowkit_windows.cpp:69", "src/core/qwindowkit_windows.cpp:87"], "conditional": true},
+          {"name": "RegCloseKey", "purpose": "关闭注册表键", "count": 1, "evidence": ["src/core/qwindowkit_windows.cpp:48"], "conditional": true},
+          {"name": "SystemParametersInfoW", "purpose": "获取系统参数（高对比度模式检测）", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:387"], "conditional": true},
+          {"name": "MonitorFromWindow", "purpose": "获取窗口所在显示器句柄（DPI 查询）", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:452"], "conditional": true},
+          {"name": "GetDC", "purpose": "获取设备上下文（DPI 回退查询）", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:458"], "conditional": true},
+          {"name": "GetDeviceCaps", "purpose": "获取设备能力（DPI 回退查询）", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:459"], "conditional": true},
+          {"name": "ReleaseDC", "purpose": "释放设备上下文", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:461"], "conditional": true},
+          {"name": "GetSystemMetrics", "purpose": "获取系统度量值（边框/标题栏尺寸）", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:471"], "conditional": true}
+        ],
+        "evidence": ["src/core/contexts/win32windowcontext.cpp", "src/core/shared/qwkwindowsextra_p.h", "src/core/qwindowkit_windows.cpp"]
+      },
+      {
+        "type": "dwm",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {"name": "DwmSetWindowAttribute", "purpose": "设置 DWM 窗口属性（Mica/Acrylic/暗色模式/边框颜色等）", "count": 9, "evidence": ["src/core/contexts/win32windowcontext.cpp:1050", "src/core/contexts/win32windowcontext.cpp:1067", "src/core/contexts/win32windowcontext.cpp:1073", "src/core/contexts/win32windowcontext.cpp:1078", "src/core/contexts/win32windowcontext.cpp:1082", "src/core/contexts/win32windowcontext.cpp:1099", "src/core/contexts/win32windowcontext.cpp:1103", "src/core/contexts/win32windowcontext.cpp:1119", "src/core/contexts/win32windowcontext.cpp:1207"], "conditional": true},
+          {"name": "DwmExtendFrameIntoClientArea", "purpose": "将 DWM 窗口帧扩展到客户区（无边框效果基础）", "count": 3, "evidence": ["src/core/contexts/win32windowcontext.cpp:996", "src/core/contexts/win32windowcontext.cpp:1001", "src/core/contexts/win32windowcontext.cpp:1034"], "conditional": true},
+          {"name": "DwmGetWindowAttribute", "purpose": "读取 DWM 窗口属性（暗色帧/可见边框厚度）", "count": 2, "evidence": ["src/core/shared/qwkwindowsextra_p.h:420", "src/core/shared/qwkwindowsextra_p.h:486"], "conditional": true},
+          {"name": "DwmIsCompositionEnabled", "purpose": "检测 DWM 合成是否启用", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:369"], "conditional": true},
+          {"name": "DwmEnableBlurBehindWindow", "purpose": "启用 DWM 模糊效果（传统毛玻璃）", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:61"], "conditional": true},
+          {"name": "DwmFlush", "purpose": "刷新 DWM 合成", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:56"], "conditional": true},
+          {"name": "GetDpiForWindow", "purpose": "获取窗口 DPI 值", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:52"], "conditional": true},
+          {"name": "GetDpiForMonitor", "purpose": "获取显示器 DPI 值", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:55"], "conditional": true},
+          {"name": "GetSystemMetricsForDpi", "purpose": "获取 DPI 感知的系统度量值", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:53"], "conditional": true},
+          {"name": "AdjustWindowRectExForDpi", "purpose": "DPI 感知的窗口矩形计算", "count": 1, "evidence": ["src/core/shared/qwkwindowsextra_p.h:54"], "conditional": true}
+        ],
+        "evidence": ["src/core/contexts/win32windowcontext.cpp", "src/core/shared/qwkwindowsextra_p.h"]
+      },
+      {
+        "type": "cocoa_appkit",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {"name": "NSWindow", "purpose": "macOS 窗口对象：设置 styleMask、titleVisibility、系统按钮", "count": 25, "evidence": ["src/core/contexts/cocoawindowcontext.mm:181", "src/core/contexts/cocoawindowcontext.mm:370", "src/core/contexts/cocoawindowcontext.mm:485", "src/core/contexts/cocoawindowcontext.mm:561"], "conditional": true},
+          {"name": "NSButton", "purpose": "macOS 系统按钮：关闭/最小化/缩放按钮观察与事件拦截", "count": 10, "evidence": ["src/core/contexts/cocoawindowcontext.mm:292", "src/core/contexts/cocoawindowcontext.mm:293", "src/core/contexts/cocoawindowcontext.mm:294", "src/core/contexts/cocoawindowcontext.mm:894"], "conditional": true},
+          {"name": "NSView", "purpose": "macOS 视图：获取 contentView、superview 子视图遍历", "count": 5, "evidence": ["src/core/contexts/cocoawindowcontext.mm:328", "src/core/contexts/cocoawindowcontext.mm:573"], "conditional": true},
+          {"name": "NSNotificationCenter", "purpose": "监听 macOS 全屏/窗口大小变化通知", "count": 3, "evidence": ["src/core/contexts/cocoawindowcontext.mm:55", "src/core/contexts/cocoawindowcontext.mm:421"], "conditional": true},
+          {"name": "NSDistributedNotificationCenter", "purpose": "监听 macOS 主题切换通知", "count": 1, "evidence": ["src/core/style/styleagent_mac.mm:46"], "conditional": true},
+          {"name": "NSUserDefaults", "purpose": "读取 macOS 暗色模式偏好", "count": 1, "evidence": ["src/core/style/styleagent_mac.mm:13"], "conditional": true},
+          {"name": "objc_msgSend (method swizzle)", "purpose": "ObjC 运行时方法替换：swizzle NSWindow setStyleMask/setTitleVisibility 等方法", "count": 3, "evidence": ["src/core/contexts/cocoawindowcontext.mm:485", "src/core/contexts/cocoawindowcontext.mm:498"], "conditional": true}
+        ],
+        "evidence": ["src/core/contexts/cocoawindowcontext.mm", "src/core/style/styleagent_mac.mm"]
+      },
+      {
+        "type": "x11",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {"name": "XInternAtom", "purpose": "创建/查找 X11 Atom（_GTK_SHOW_WINDOW_MENU）", "count": 1, "evidence": ["src/core/contexts/linuxx11context.cpp:161"], "conditional": true},
+          {"name": "XSendEvent", "purpose": "发送 X11 ClientMessage 事件（系统菜单弹出）", "count": 1, "evidence": ["src/core/contexts/linuxx11context.cpp:185"], "conditional": true},
+          {"name": "XFlush", "purpose": "刷新 X11 输出缓冲区", "count": 1, "evidence": ["src/core/contexts/linuxx11context.cpp:187"], "conditional": true},
+          {"name": "XUngrabPointer", "purpose": "释放 X11 指针抓取", "count": 1, "evidence": ["src/core/contexts/linuxx11context.cpp:184"], "conditional": true}
+        ],
+        "evidence": ["src/core/contexts/linuxx11context.cpp", "src/core/qwindowkit_linux.cpp"]
+      },
+      {
+        "type": "wayland",
+        "category": "platform",
+        "platform": "linux",
+        "apis": [
+          {"name": "wl_proxy_marshal_flags", "purpose": "Wayland 协议代理：发送 xdg_toplevel show_window_menu 请求", "count": 1, "evidence": ["src/core/contexts/linuxwaylandcontext.cpp:20"], "conditional": true},
+          {"name": "wl_proxy_get_version", "purpose": "获取 Wayland 代理协议版本", "count": 1, "evidence": ["src/core/contexts/linuxwaylandcontext.cpp:22"], "conditional": true},
+          {"name": "wl_display_flush", "purpose": "刷新 Wayland 显示连接", "count": 1, "evidence": ["src/core/contexts/linuxwaylandcontext.cpp:59"], "conditional": true}
+        ],
+        "evidence": ["src/core/contexts/linuxwaylandcontext.cpp", "src/core/qwindowkit_linux.cpp"]
+      },
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {"name": "std::unique_ptr", "purpose": "智能指针管理窗口上下文和代理对象生命周期", "count": 5, "evidence": ["src/core/windowagentbase.h:45", "src/core/contexts/cocoawindowcontext.mm:38"], "conditional": false},
+          {"name": "std::exchange", "purpose": "原子交换值（注册表键关闭等）", "count": 1, "evidence": ["src/core/qwindowkit_windows.cpp:48"], "conditional": true}
+        ],
+        "evidence": ["src/core/windowagentbase.h"]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libX11.so.6",
+        "mechanism": "QLibrary::load",
+        "acquisition": "system",
+        "source": "系统预装的 X11 客户端库",
+        "description": "Linux X11 窗口系统客户端库，动态加载用于发送 XClientMessage 实现系统菜单",
+        "optional": true,
+        "evidence": ["src/core/qwindowkit_linux.cpp:61-79"]
+      },
+      {
+        "name": "libwayland-client.so.0",
+        "mechanism": "QLibrary::load",
+        "acquisition": "system",
+        "source": "系统预装的 Wayland 客户端库",
+        "description": "Linux Wayland 客户端库，动态加载用于发送 xdg_toplevel 协议请求实现系统菜单",
+        "optional": true,
+        "evidence": ["src/core/qwindowkit_linux.cpp:31-51"]
+      },
+      {
+        "name": "dwmapi.dll",
+        "mechanism": "QSystemLibrary (动态解析)",
+        "acquisition": "system",
+        "source": "Windows 系统自带的 DWM API 库",
+        "description": "Windows 桌面窗口管理器 API，用于 Mica/Acrylic 特效、窗口帧扩展等",
+        "optional": false,
+        "evidence": ["src/core/shared/qwkwindowsextra_p.h:239-245"]
+      },
+      {
+        "name": "uxtheme.dll",
+        "mechanism": "QSystemLibrary (动态解析，按序号导入)",
+        "acquisition": "system",
+        "source": "Windows 系统自带的 UX 主题库",
+        "description": "Windows UX 主题库，使用未文档化序号导入暗色模式相关 API",
+        "optional": false,
+        "evidence": ["src/core/shared/qwkwindowsextra_p.h:252-257"]
+      },
+      {
+        "name": "ntdll.dll",
+        "mechanism": "GetModuleHandleW + GetProcAddress",
+        "acquisition": "system",
+        "source": "Windows 系统核心库",
+        "description": "通过 ntdll!RtlGetVersion 获取真实 Windows 版本号（绕过兼容性 shim）",
+        "optional": false,
+        "evidence": ["src/core/qwindowkit_windows.cpp:12-20"]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "QWindowKit 运行时依赖宿主平台的窗口系统（Win32/DWM/Cocoa/X11/Wayland），通过 Qt QPA 层获取原生窗口句柄和平台接口；需读取 Windows 注册表检测系统主题/暗色模式/DWM 设置；Linux 上通过 QLibrary 动态加载共享库。无网络、设备或子进程依赖。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++17",
+    "runtime_version": "Qt >=5.12（推荐 Qt 5.15.2+ 或 Qt 6.6.2+）",
+    "build_system": "CMake (>=3.19, 推荐 >=3.20)",
+    "compiler_extensions": [
+      {"detail": "MSVC /utf-8 编译标志、/manifest:no 链接标志", "purpose": "Windows 平台构建适配", "evidence": ["CMakeLists.txt:53-56"]},
+      {"detail": "ObjC runtime method swizzle (class_replaceMethod/method_setImplementation)", "purpose": "macOS 平台运行时修改 NSWindow 方法", "evidence": ["src/core/contexts/cocoawindowcontext.mm"]}
+    ],
+    "platforms": [
+      {"os": "Windows", "arch": "x86_64", "evidence": ["README.md:17", "src/core/CMakeLists.txt:30-50"]},
+      {"os": "macOS", "arch": "aarch64, x86_64", "evidence": ["README.md:18", "src/core/CMakeLists.txt:51-60"]},
+      {"os": "Linux", "arch": "x86_64, aarch64", "evidence": ["README.md:19", "src/core/CMakeLists.txt:61-67"]}
+    ],
+    "entry_points": [],
+    "packaging": "库（CMake install 导出 CMake 配置文件 + QMake .pri 文件），无独立应用分发",
+    "notes": "qmsetup 作为 git submodule 提供构建辅助，若未克隆则自动就地编译安装。支持静态库和动态库两种构建模式。"
+  },
+  "capability_profile": {
+    "summary": "QWindowKit 触及 GUI 桌面窗口定制场景——深度操作 Win32/DWM/Cocoa/X11/Wayland 窗口系统实现无边框窗口、系统按钮集成、DWM 特效与主题检测。无 3D 渲染、媒体或硬件依赖。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": true,
+        "kind": ["qt6", "qt5", "win32", "cocoa", "x11", "wayland"],
+        "specific_hardware": false,
+        "via": ["Qt", "native_api.groups[type=win32]", "native_api.groups[type=dwm]", "native_api.groups[type=cocoa_appkit]", "native_api.groups[type=x11]", "native_api.groups[type=wayland]"],
+        "harmony_status": "partial",
+        "adaptation": "Qt 已有鸿蒙版，但该库大量使用平台专有窗口管理 API（Win32 WndProc hook / DWM / ObjC runtime swizzle / X11 Wayland），鸿蒙桌面窗口系统 API 差异巨大，需要为鸿蒙编写全新的窗口上下文实现",
+        "evidence": ["src/core/contexts/win32windowcontext.cpp", "src/core/contexts/cocoawindowcontext.mm", "src/core/contexts/linuxx11context.cpp", "src/core/contexts/linuxwaylandcontext.cpp"]
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (OHOS NDK native layer, ArkTS app layer)",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [15, 40]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:qt_ohos",
+        "capability": "Qt 鸿蒙版（QPA 后端）提供窗口句柄/平台原生接口",
+        "required": true,
+        "target_status": "available",
+        "impact": "Qt 已有鸿蒙版，QPA 层应提供原生窗口接口（类似 QNativeInterface），否则无法获取底层窗口句柄",
+        "source": "references/harmony-pc-capabilities.json gui.qt"
+      },
+      {
+        "id": "ta:ohos_wm",
+        "capability": "鸿蒙 PC 桌面窗口管理器（多窗口、标题栏、系统按钮、拖拽/缩放）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "若鸿蒙 PC 不提供传统桌面窗口管理能力（多窗口、标题栏隐藏/自定义），则本库核心功能无法实现",
+        "source": "references/harmony-pc-capabilities.json gui.wm"
+      },
+      {
+        "id": "ta:ohos_native_window_api",
+        "capability": "鸿蒙 NDK 原生窗口操作 API（类似 Win32 WndProc / X11 事件 / Wayland 协议）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "需要鸿蒙提供原生窗口事件拦截/自定义绘制标题栏的 API，否则无法实现无边框窗口",
+        "source": "references/harmony-pc-capabilities.json gui.wm"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "find_alternative",
+    "summary": "QWindowKit 是深度绑定三大桌面平台原生窗口 API 的框架，其核心功能（Win32 WndProc hook / DWM 特效 / ObjC runtime swizzle / X11-Wayland 协议）在鸿蒙 PC 上均无直接等价。但架构已将平台逻辑隔离在 Context 子类中（Win32WindowContext/CocoaWindowContext/LinuxX11Context/LinuxWaylandContext），可为鸿蒙新增 OhosWindowContext。关键前提是鸿蒙 PC 必须提供桌面窗口管理能力和原生窗口操作 API。Qt 已有鸿蒙版，提供了基础 QPA 层。",
+    "blockers": [
+      {
+        "id": "bk:win32_wndproc",
+        "issue": "Windows 平台核心机制——WndProc 钩子拦截 WM_NCCALCSIZE/WM_NCHITTEST 等消息——在鸿蒙完全不存在",
+        "severity": "blocker",
+        "adaptability": "adaptable",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "需为鸿蒙编写全新 OhosWindowContext，使用鸿蒙原生窗口 API 替代 WndProc 消息处理",
+        "caused_by": ["ta:ohos_native_window_api"],
+        "manifests_as": [],
+        "evidence": ["src/core/contexts/win32windowcontext.cpp:623-660"]
+      },
+      {
+        "id": "bk:dwm_effects",
+        "issue": "DWM 特效 API（Mica/Acrylic/暗色帧/边框颜色）为 Windows 专有，鸿蒙无等价",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "Mica/Acrylic 等视觉特效需放弃或用鸿蒙 ArkUI 窗口装饰替代；暗色模式检测可用鸿蒙系统 API 替代",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": ["src/core/contexts/win32windowcontext.cpp:996-1207"]
+      },
+      {
+        "id": "bk:cocoa_swizzle",
+        "issue": "macOS ObjC runtime method swizzle 在鸿蒙不适用",
+        "severity": "blocker",
+        "adaptability": "adaptable",
+        "category": "platform",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "需为鸿蒙编写全新窗口上下文替代 CocoaWindowContext",
+        "caused_by": ["ta:ohos_native_window_api"],
+        "manifests_as": [],
+        "evidence": ["src/core/contexts/cocoawindowcontext.mm:485-530"]
+      },
+      {
+        "id": "bk:ohos_wm_unknown",
+        "issue": "鸿蒙 PC 是否提供桌面级窗口管理能力未知——若仅有 ArkTS 沙箱窗口模型，则无法实现无边框窗口自定义",
+        "severity": "blocker",
+        "adaptability": "partial",
+        "category": "platform",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "需核实鸿蒙 PC 的窗口管理能力；若支持传统桌面窗口模型则可适配",
+        "caused_by": ["ta:ohos_wm"],
+        "manifests_as": [],
+        "evidence": ["references/harmony-pc-capabilities.json gui.wm"]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "核心抽象层（WindowAgentBase / AbstractWindowContext / QtWindowContext）可跨平台复用",
+        "note": "架构设计良好，平台代码隔离在 Context 子类中",
+        "evidence": ["src/core/windowagentbase.h", "src/core/contexts/abstractwindowcontext_p.h"]
+      },
+      {
+        "aspect": "Qt QPA 层已适配鸿蒙",
+        "note": "Qt 有鸿蒙版，QWK 的 Qt 层交互代码（事件过滤器、鼠标事件处理）可复用",
+        "evidence": ["src/core/contexts/qtwindowcontext.cpp"]
+      },
+      {
+        "aspect": "StyleAgent 抽象接口可复用",
+        "note": "暗色模式/强调色检测的抽象接口已定义，只需为鸿蒙实现平台特化",
+        "evidence": ["src/core/style/styleagent.h"]
+      }
+    ],
+    "key_tasks": [
+      "核实鸿蒙 PC 桌面窗口管理能力（多窗口/标题栏自定义/系统按钮）——决定可行性",
+      "为鸿蒙编写 OhosWindowContext（继承 AbstractWindowContext），使用鸿蒙原生窗口 API 实现无边框窗口",
+      "为鸿蒙编写 StyleAgent 平台实现（styleagent_ohos.cpp），对接鸿蒙系统主题 API",
+      "将 DWM 特效相关 windowAttribute（mica/acrylic/dark-mode）映射到鸿蒙等价或标记不可用",
+      "CMakeLists.txt 中添加 OHOS 平台条件编译分支",
+      "适配 Qt 鸿蒙版的 QPA 原生接口（QNativeInterface）"
+    ],
+    "notes": "置信度为 medium，主要因为鸿蒙 PC 的桌面窗口管理能力和原生窗口操作 API 状态为 unknown。若鸿蒙 PC 不提供桌面级多窗口环境和窗口自定义 API，则核心功能（无边框窗口、系统按钮集成）无法移植。库的架构设计（平台 Context 隔离）对适配有利，预计新增约 500-1000 行平台代码。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": ["code_metrics.platform_adaptation 总计为 0：脚本机械计数未捕获 CMake if(WIN32)/if(APPLE)/else() 编译条件分支（非 #ifdef 宏守卫），实际平台条件代码占比很高"],
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "code_metrics",
+        "field": "platform_adaptation",
+        "kind": "gap",
+        "value": "cmake_if_platform_guard",
+        "rationale": "CMakeLists.txt 用 if(WIN32)/elseif(APPLE)/else() 做平台条件编译选择源文件，而非 #ifdef 宏，导致 platform_adaptation 机械计数为 0，但实际平台条件代码占比极高"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "dwm",
+        "rationale": "DWM (Desktop Window Manager) API 是 Windows 独立的窗口合成 API 族，与通用 Win32 API 有本质区别，单独归类更准确"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "cocoa_appkit",
+        "rationale": "macOS Cocoa/AppKit API 族包含 NSWindow/NSButton/NSNotificationCenter/ObjC runtime 等，统一归类便于理解"
+      }
+    ]
+  }
+}

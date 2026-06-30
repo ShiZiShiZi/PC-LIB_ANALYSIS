@@ -1,0 +1,1299 @@
+{
+  "library": {
+    "name": "PyGObject",
+    "kind": "library",
+    "package_name": "PyGObject",
+    "aliases": [
+      "pygobject"
+    ],
+    "import_names": [
+      "gi"
+    ],
+    "source_url": "https://gitlab.gnome.org/GNOME/pygobject.git",
+    "analyzed_at": "2026-06-26T07:43:12.154Z",
+    "commit": "2a5810b282c1ce296a3fcb0a70b12ce6446180ca",
+    "one_liner": "为 GObject Introspection 库提供 Python 绑定的运行时桥接库，支持 GTK、GLib/GIO、GStreamer 等 GObject 库。",
+    "ecosystem": "python",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "PyGObject 是一个 Python 库，通过 GObject Introspection（GI）元数据把 GTK、GLib/GIO、GStreamer 等基于 GObject 的 C 库动态暴露为 Python 模块。核心是一个 C 扩展：它借助 Python C API 和 libffi 完成 Python 对象与 C 函数调用之间的双向编组，并在 Python 层提供 override 以改善 API 的 Pythonic 程度。",
+    "categories": [
+      {
+        "name": "GObject Introspection 桥接",
+        "description": "C 扩展读取 GIR/typelib 元数据，在运行时为每个 GI 命名空间生成 Python 代理模块，并通过 libffi 调用底层 C 函数。",
+        "evidence": [
+          "gi/pygi-invoke.c:698",
+          "gi/pygi-repository.c:155",
+          "gi/importer.py:127"
+        ]
+      },
+      {
+        "name": "GLib/GIO 主循环与异步集成",
+        "description": "提供 asyncio 事件循环适配（GLibEventLoop）和 signal 唤醒机制，使 Python 的信号处理器在 GLib 主循环空闲时仍可被触发。",
+        "evidence": [
+          "gi/events.py:21",
+          "gi/_ossighelper.py:54"
+        ]
+      },
+      {
+        "name": "GTK/GDK/Pango Python 覆盖层",
+        "description": "为 GTK 等 GUI 库提供更贴近 Python 习惯的 API 覆盖与模板支持。",
+        "evidence": [
+          "gi/overrides/Gtk.py",
+          "gi/overrides/Gdk.py",
+          "gi/overrides/Pango.py"
+        ]
+      },
+      {
+        "name": "Cairo 外部类型互操作",
+        "description": "通过 pycairo 在 Python cairo 对象与 GI 参数之间进行编组，使 Cairo 类型能作为 GObject signal/属性值传递。",
+        "evidence": [
+          "gi/pygi-foreign-cairo.c:41",
+          "gi/__init__.py:216"
+        ]
+      },
+      {
+        "name": "GObject 类型/信号/属性封装",
+        "description": "暴露 GType、GObject 生命周期、信号连接/断开、属性安装与绑定的 Python 接口。",
+        "evidence": [
+          "gi/pygobject-object.c",
+          "gi/pygobject-class.c",
+          "gi/overrides/GObject.py"
+        ]
+      }
+    ],
+    "domain": "GUI 绑定 / 语言桥接",
+    "target_users": "需要在 Python 中使用 GTK、GLib/GIO、GStreamer 等 GObject 库的开发者"
+  },
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "C",
+      "reStructuredText",
+      "SVG",
+      "C/C++ Header",
+      "YAML",
+      "Meson",
+      "Bourne Shell"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 110,
+        "code": 25216,
+        "pct": 48.22,
+        "production": {
+          "files": 32,
+          "code": 6518
+        },
+        "test": {
+          "files": 48,
+          "code": 17411
+        },
+        "example": {
+          "files": 30,
+          "code": 1287
+        }
+      },
+      {
+        "language": "C",
+        "files": 47,
+        "code": 18709,
+        "pct": 35.78,
+        "production": {
+          "files": 43,
+          "code": 17782
+        },
+        "test": {
+          "files": 4,
+          "code": 927
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 78,
+        "code": 3538,
+        "pct": 6.77,
+        "production": {
+          "files": 47,
+          "code": 2427
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 31,
+          "code": 1111
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 12,
+        "code": 2347,
+        "pct": 4.49,
+        "production": {
+          "files": 12,
+          "code": 2347
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 39,
+        "code": 1284,
+        "pct": 2.46,
+        "production": {
+          "files": 36,
+          "code": 1249
+        },
+        "test": {
+          "files": 3,
+          "code": 35
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 4,
+        "code": 455,
+        "pct": 0.87,
+        "production": {
+          "files": 4,
+          "code": 455
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Meson",
+        "files": 5,
+        "code": 352,
+        "pct": 0.67,
+        "production": {
+          "files": 4,
+          "code": 308
+        },
+        "test": {
+          "files": 1,
+          "code": 44
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 8,
+        "code": 138,
+        "pct": 0.26,
+        "production": {
+          "files": 5,
+          "code": 59
+        },
+        "test": {
+          "files": 3,
+          "code": 79
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 313,
+      "code": 52294,
+      "comment": 8194,
+      "blank": 13965,
+      "total_lines": 74453
+    },
+    "production": {
+      "files": 191,
+      "code": 31360,
+      "comment": 6069,
+      "blank": 7495,
+      "total_lines": 44924
+    },
+    "test": {
+      "files": 60,
+      "code": 18531,
+      "comment": 1545,
+      "blank": 5408,
+      "total_lines": 25484
+    },
+    "example": {
+      "files": 62,
+      "code": 2403,
+      "comment": 580,
+      "blank": 1062,
+      "total_lines": 4045
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "python": {
+          "files": 4,
+          "hits": 5
+        }
+      },
+      "by_platform": {
+        "windows": 3
+      },
+      "samples": [
+        {
+          "language": "python",
+          "file": "gi/overrides/GLib.py",
+          "line": 836,
+          "text": "elif isinstance(channel, socket.socket) and sys.platform == \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "gi/events.py",
+          "line": 463,
+          "text": "if sys.platform != \"win32\":"
+        },
+        {
+          "language": "python",
+          "file": "gi/events.py",
+          "line": 969,
+          "text": "if sys.platform != \"win32\" and hasattr("
+        },
+        {
+          "language": "python",
+          "file": "gi/_ossighelper.py",
+          "line": 99,
+          "text": "if os.name == \"nt\":"
+        },
+        {
+          "language": "python",
+          "file": "gi/__init__.py",
+          "line": 39,
+          "text": "if sys.platform.startswith(\"win\"):"
+        }
+      ],
+      "total": 5,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 60,
+    "test_cases": 1596,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 48,
+        "cases": 1596
+      },
+      "C": {
+        "files": 4,
+        "cases": 0
+      },
+      "Meson": {
+        "files": 1,
+        "cases": 0
+      },
+      "Bourne Shell": {
+        "files": 3,
+        "cases": 0
+      },
+      "XML": {
+        "files": 1,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 3,
+        "cases": 0
+      }
+    },
+    "note": "脚本基于 pytest 的 idiom 匹配；C/Shell 测试文件未计数具体 case。"
+  },
+  "license": {
+    "spdx": "LGPL-2.1-or-later",
+    "name": "GNU Lesser General Public License v2.1 or later",
+    "confidence": "high",
+    "is_dual_licensed": false,
+    "license_files": [
+      "COPYING"
+    ],
+    "evidence": "pyproject.toml 中 license={file='COPYING'} 且 classifier 声明 LGPLv2+；COPYING 文本与 LGPL-2.1 一致；源码文件头反复出现 LGPL-2.1+ 声明。",
+    "notes": "弱 copyleft，允许非 GPL 程序链接使用。"
+  },
+  "dependencies": {
+    "count": 19,
+    "manifests": [
+      "pyproject.toml",
+      "meson.build",
+      "subprojects/*.wrap"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "pycairo",
+        "meson-python",
+        "setuptools",
+        "pre-commit",
+        "pytest",
+        "pytest-cov",
+        "sphinx",
+        "pydata-sphinx-theme",
+        "sphinx-copybutton"
+      ],
+      "cpp": [
+        "glib-2.0",
+        "gobject-2.0",
+        "gio-2.0",
+        "girepository-2.0",
+        "libffi",
+        "cairo",
+        "cairo-gobject",
+        "pythoncapi-compat"
+      ],
+      "other": [
+        "ninja",
+        "gobject-introspection-tests"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "pycairo",
+        "ecosystem": "python",
+        "registry_name": "pycairo",
+        "source_repo": "https://github.com/pygobject/pycairo",
+        "import_names": [
+          "cairo"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": ">=1.16",
+        "purpose": "Python Cairo 绑定，用于在 Python cairo 对象与 GI 参数之间编组",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（PEP517 构建，meson 缺失时通过 subprojects/pycairo.wrap 回退拉取源码）",
+        "declared_in": [
+          "pyproject.toml:26",
+          "meson.build:96",
+          "subprojects/pycairo.wrap"
+        ],
+        "used_symbols": [
+          "PycairoContext_Type",
+          "PycairoContext_FromContext",
+          "PycairoContext_GET",
+          "PycairoSurface_FromSurface"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      },
+      {
+        "name": "glib-2.0",
+        "ecosystem": "cpp",
+        "registry_name": "glib-2.0",
+        "source_repo": "https://gitlab.gnome.org/GNOME/glib.git",
+        "import_names": [],
+        "aliases": [
+          "glib"
+        ],
+        "scope": "runtime",
+        "version": ">=2.80.0",
+        "purpose": "GLib 核心：数据结构、主循环、字符串/路径/错误处理",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 pkg-config（缺失时通过 subprojects/glib.wrap 拉取源码构建）",
+        "declared_in": [
+          "meson.build:37",
+          "subprojects/glib.wrap"
+        ],
+        "used_symbols": [
+          "g_malloc",
+          "g_free",
+          "g_strdup",
+          "g_list_append",
+          "g_slist_append",
+          "g_hash_table_*"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gobject-2.0",
+        "ecosystem": "cpp",
+        "registry_name": "gobject-2.0",
+        "source_repo": "https://gitlab.gnome.org/GNOME/glib.git",
+        "import_names": [],
+        "aliases": [
+          "gobject"
+        ],
+        "scope": "runtime",
+        "version": ">=2.80.0",
+        "purpose": "GObject 类型系统、信号、属性、引用计数",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 pkg-config（glib 子项目的一部分）",
+        "declared_in": [
+          "meson.build:39"
+        ],
+        "used_symbols": [
+          "g_object_new",
+          "g_signal_connect_closure",
+          "g_signal_emitv",
+          "g_signal_handlers_disconnect_matched",
+          "g_type_register_static"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gio-2.0",
+        "ecosystem": "cpp",
+        "registry_name": "gio-2.0",
+        "source_repo": "https://gitlab.gnome.org/GNOME/glib.git",
+        "import_names": [],
+        "aliases": [
+          "gio"
+        ],
+        "scope": "runtime",
+        "version": ">=2.80.0",
+        "purpose": "GLib I/O：GMainLoop、GIOChannel、GSettings、GDBus 等",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 pkg-config（glib 子项目的一部分）",
+        "declared_in": [
+          "meson.build:41"
+        ],
+        "used_symbols": [
+          "g_main_loop_new",
+          "g_main_loop_run",
+          "g_io_channel_unix_new",
+          "g_io_add_watch",
+          "g_settings_*"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "girepository-2.0",
+        "ecosystem": "cpp",
+        "registry_name": "girepository-2.0",
+        "source_repo": "https://gitlab.gnome.org/GNOME/gobject-introspection.git",
+        "import_names": [],
+        "aliases": [
+          "gobject-introspection"
+        ],
+        "scope": "runtime",
+        "version": ">=1.64.0",
+        "purpose": "GObject Introspection 运行时：加载 typelib、查询类型信息、调用 C 函数",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 pkg-config（缺失时通过 subprojects/gobject-introspection.wrap 拉取源码构建）",
+        "declared_in": [
+          "meson.build:35",
+          "subprojects/gobject-introspection.wrap"
+        ],
+        "used_symbols": [
+          "gi_repository_require",
+          "gi_repository_find_by_name",
+          "gi_repository_is_registered",
+          "gi_base_info_unref",
+          "gi_callable_info_invoke"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libffi",
+        "ecosystem": "cpp",
+        "registry_name": "libffi",
+        "source_repo": "https://gitlab.freedesktop.org/gstreamer/meson-ports/libffi.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": ">=3.0",
+        "purpose": "Foreign Function Interface，用于在 Python 回调与 C 函数调用之间转换",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 pkg-config（缺失时通过 subprojects/libffi.wrap 拉取源码构建）",
+        "declared_in": [
+          "meson.build:43",
+          "subprojects/libffi.wrap"
+        ],
+        "used_symbols": [
+          "ffi_call"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "cairo",
+        "ecosystem": "cpp",
+        "registry_name": "cairo",
+        "source_repo": "https://gitlab.freedesktop.org/cairo/cairo.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "optional",
+        "version": null,
+        "purpose": "2D 图形库，用于 cairo 外部类型的 GI 编组",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 pkg-config（可选；MSVC 下回退到 find_library）",
+        "declared_in": [
+          "meson.build:56"
+        ],
+        "used_symbols": [
+          "cairo_reference",
+          "cairo_create",
+          "cairo_surface_reference",
+          "cairo_destroy"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "cairo-gobject",
+        "ecosystem": "cpp",
+        "registry_name": "cairo-gobject",
+        "source_repo": "https://gitlab.freedesktop.org/cairo/cairo.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "optional",
+        "version": null,
+        "purpose": "Cairo 的 GObject 类型注册支持",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统 pkg-config（可选）",
+        "declared_in": [
+          "meson.build:57"
+        ],
+        "used_symbols": [
+          "cairo_gobject_surface_get_type"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pythoncapi-compat",
+        "ecosystem": "cpp",
+        "registry_name": "pythoncapi-compat",
+        "source_repo": "https://github.com/python/pythoncapi-compat.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": "22811c3f0e69908894d2bd724f572b32667f2141",
+        "purpose": "Python C API 兼容性头文件，用于兼容新旧 Python 版本",
+        "acquisition": "submodule",
+        "locality": "remote",
+        "source": "meson wrap-git 从上游仓库拉取头文件",
+        "declared_in": [
+          "meson.build:50",
+          "subprojects/pythoncapi-compat.wrap"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "meson-python",
+        "ecosystem": "python",
+        "registry_name": "meson-python",
+        "source_repo": "https://github.com/mesonbuild/meson-python",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": ">=0.12.1",
+        "purpose": "PEP517 构建后端，驱动 Meson 构建 Python wheel",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:124"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "ninja",
+        "ecosystem": "other",
+        "registry_name": "ninja",
+        "source_repo": "https://github.com/ninja-build/ninja",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": null,
+        "purpose": "Meson 的默认构建执行工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI 或系统包管理器",
+        "declared_in": [
+          "pyproject.toml:45"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "registry_name": "setuptools",
+        "source_repo": "https://github.com/pypa/setuptools",
+        "import_names": [],
+        "aliases": [],
+        "scope": "build",
+        "version": "<74",
+        "purpose": "兼容旧版 g-ir-scanner 对 msvccompiler 的依赖",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:43"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pre-commit",
+        "ecosystem": "python",
+        "registry_name": "pre-commit",
+        "source_repo": "https://github.com/pre-commit/pre-commit",
+        "import_names": [],
+        "aliases": [],
+        "scope": "dev",
+        "version": null,
+        "purpose": "Git 提交前代码检查工具链",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:37"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "registry_name": "pytest",
+        "source_repo": "https://github.com/pytest-dev/pytest",
+        "import_names": [],
+        "aliases": [],
+        "scope": "test",
+        "version": "!=9.0.0",
+        "purpose": "Python 测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:49"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest-cov",
+        "ecosystem": "python",
+        "registry_name": "pytest-cov",
+        "source_repo": "https://github.com/pytest-dev/pytest-cov",
+        "import_names": [],
+        "aliases": [],
+        "scope": "test",
+        "version": null,
+        "purpose": "pytest 覆盖率插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:50"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx",
+        "ecosystem": "python",
+        "registry_name": "sphinx",
+        "source_repo": "https://github.com/sphinx-doc/sphinx",
+        "import_names": [],
+        "aliases": [],
+        "scope": "dev",
+        "version": null,
+        "purpose": "文档构建工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:53"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pydata-sphinx-theme",
+        "ecosystem": "python",
+        "registry_name": "pydata-sphinx-theme",
+        "source_repo": "https://github.com/pydata/pydata-sphinx-theme",
+        "import_names": [],
+        "aliases": [],
+        "scope": "dev",
+        "version": null,
+        "purpose": "Sphinx 文档主题",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:54"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "sphinx-copybutton",
+        "ecosystem": "python",
+        "registry_name": "sphinx-copybutton",
+        "source_repo": "https://github.com/executablebooks/sphinx-copybutton",
+        "import_names": [],
+        "aliases": [],
+        "scope": "dev",
+        "version": ">=0.5.2",
+        "purpose": "Sphinx 代码块复制按钮插件",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml:55"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "gobject-introspection-tests",
+        "ecosystem": "other",
+        "registry_name": "gobject-introspection-tests",
+        "source_repo": "https://gitlab.gnome.org/GNOME/gobject-introspection-tests.git",
+        "import_names": [],
+        "aliases": [],
+        "scope": "test",
+        "version": "53e6bc978d5011f22d0a27cca49a94b19816ca7d",
+        "purpose": "GObject Introspection 测试用例，仅在启用 tests 时拉取",
+        "acquisition": "submodule",
+        "locality": "remote",
+        "source": "meson wrap-git 拉取测试仓库",
+        "declared_in": [
+          "meson.build:224",
+          "subprojects/gobject-introspection-tests.wrap"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "C/C++ 依赖在 OpenHarmony PC 镜像中按 pkg-config 名查询存在漏判：glib-2.0/gobject-2.0/gio-2.0/girepository-2.0 未单独命中，但 glib/cairo/libffi/gtk 已鸿蒙化，说明 GNOME 基础栈可构建。"
+  },
+  "native_api": {
+    "summary": "PyGObject 主要是 Python C API 与 libffi 的跨平台封装，平台相关代码极少：C 层仅在 Windows 文件名编码处使用 G_OS_WIN32 分支；Python 层有少量 sys.platform/os.name 分支区分 Windows/Unix 的 IOChannel 与信号处理。",
+    "groups": [
+      {
+        "type": "python_c_api",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "PyArg_ParseTupleAndKeywords",
+            "purpose": "解析 Python 位置/关键字参数",
+            "count": 81,
+            "evidence": [
+              "gi/pygi-repository.c:74",
+              "gi/gimodule.c:975"
+            ]
+          },
+          {
+            "name": "PyObject_New / PyObject_NewVar",
+            "purpose": "分配 PyGObject/PyGI 包装对象",
+            "count": 30,
+            "evidence": [
+              "gi/pygi-repository.c:54",
+              "gi/pygi-info.c:89"
+            ]
+          },
+          {
+            "name": "PyType_Ready",
+            "purpose": "初始化 C 扩展类型对象",
+            "count": 12,
+            "evidence": [
+              "gi/pygi-capi.c:60",
+              "gi/gimodule.c:1146"
+            ]
+          },
+          {
+            "name": "Py_INCREF / Py_DECREF / Py_XDECREF",
+            "purpose": "引用计数管理",
+            "count": 463,
+            "evidence": [
+              "gi/pygi-invoke.c:112",
+              "gi/pygi-closure.c:258"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "libffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ffi_call",
+            "purpose": "通过预计算的 CIF 调用 C 函数指针",
+            "count": 1,
+            "evidence": [
+              "gi/pygi-invoke.c:698"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "filename_from_py_win32",
+            "purpose": "Windows 下处理含代理项的文件名字符串",
+            "count": 3,
+            "evidence": [
+              "gi/pygi-basictype.c:313",
+              "gi/pygi-basictype.c:383"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GLib.IOChannel.win32_new_socket",
+            "purpose": "Windows 下把 socket 句柄包装为 GLib IOChannel",
+            "count": 2,
+            "evidence": [
+              "gi/overrides/GLib.py:836",
+              "gi/_ossighelper.py:100"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "os.add_dll_directory",
+            "purpose": "Windows 下扩展 DLL 搜索路径",
+            "count": 1,
+            "evidence": [
+              "gi/__init__.py:59"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "filename_from_py_unix",
+            "purpose": "非 Windows 平台下把 Python 路径转为 UTF-8 文件名",
+            "count": 1,
+            "evidence": [
+              "gi/pygi-basictype.c:275",
+              "gi/pygi-basictype.c:386"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GLib.IOChannel.unix_new",
+            "purpose": "Unix 下把文件描述符包装为 GLib IOChannel",
+            "count": 3,
+            "evidence": [
+              "gi/overrides/GLib.py:835",
+              "gi/_ossighelper.py:102"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "fcntl.fcntl (F_GETFD / F_SETFD FD_CLOEXEC)",
+            "purpose": "在 Unix 上设置 socket 的 close-on-exec 标志",
+            "count": 1,
+            "evidence": [
+              "gi/_ossighelper.py:44"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "signals",
+        "category": "system",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "signal.set_wakeup_fd",
+            "purpose": "让 OS 信号唤醒 GLib 主循环以便 Python 信号处理器执行",
+            "count": 2,
+            "evidence": [
+              "gi/_ossighelper.py:81",
+              "gi/_ossighelper.py:120"
+            ]
+          },
+          {
+            "name": "signal.signal (SIGINT)",
+            "purpose": "注册/恢复 SIGINT 处理器，管理嵌套事件循环中的回调",
+            "count": 3,
+            "evidence": [
+              "gi/_ossighelper.py:158",
+              "gi/_ossighelper.py:167"
+            ]
+          },
+          {
+            "name": "PyOS_getsig / PyOS_setsig",
+            "purpose": "在 C 层读写 C 信号处理器指针，检测 GLib 是否替换了 Python 信号处理",
+            "count": 2,
+            "evidence": [
+              "gi/gimodule.c:971",
+              "gi/gimodule.c:981"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "GObject Introspection typelibs (.typelib)",
+        "mechanism": "gi_repository_require / DynamicImporter",
+        "acquisition": "system",
+        "source": "系统 GObject Introspection 数据目录（如 /usr/lib/girepository-1.0）中的 typelib，对应 GTK/GDK/GLib 等系统共享库",
+        "description": "运行时按命名空间加载被绑定库的 introspection 元数据及其对应共享库",
+        "optional": false,
+        "evidence": [
+          "gi/pygi-repository.c:155",
+          "gi/importer.py:127",
+          "gi/__init__.py:79"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要通过环境变量定位 Windows DLL 和额外 override 目录；通过 GObject Introspection 加载系统 typelib 与对应共享库；无网络访问、无外部命令、无设备访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "GI typelib 搜索路径（如 /usr/lib/girepository-1.0）",
+        "purpose": "加载被绑定库的 introspection 元数据",
+        "evidence": [
+          "gi/pygi-repository.c:86",
+          "gi/pygi-repository.c:98",
+          "gi/importer.py:127"
+        ]
+      },
+      {
+        "detail": "Windows DLL 搜索目录（PYGI_DLL_PATH 与安装前缀 bin）",
+        "purpose": "在 Windows 上定位随包分发的 DLL",
+        "evidence": [
+          "gi/__init__.py:41"
+        ]
+      },
+      {
+        "detail": "额外 override 模块搜索目录（PYGI_OVERRIDES_PATH）",
+        "purpose": "加载用户/发行版提供的 Python override",
+        "evidence": [
+          "gi/__init__.py:102"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "PYGI_DLL_PATH",
+        "purpose": "Windows 下指定 PyGObject 相关 DLL 的搜索路径",
+        "evidence": [
+          "gi/__init__.py:41"
+        ]
+      },
+      {
+        "name": "PYGI_OVERRIDES_PATH",
+        "purpose": "指定额外的 gi.overrides 搜索路径",
+        "evidence": [
+          "gi/__init__.py:102"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99 / gnu99",
+    "runtime_version": "Python >= 3.10（运行时最低要求）",
+    "build_system": "Meson + meson-python（PEP517 后端）",
+    "compiler_extensions": [
+      {
+        "detail": "-fvisibility=hidden",
+        "purpose": "隐藏 C 符号，仅暴露模块初始化入口",
+        "evidence": [
+          "meson.build:160"
+        ]
+      },
+      {
+        "detail": "MSVC 推荐 pragma / GCC 警告集合",
+        "purpose": "按编译器分别启用/禁用警告与语义检查",
+        "evidence": [
+          "meson.build:111-168"
+        ]
+      },
+      {
+        "detail": "pythoncapi_compat 头文件",
+        "purpose": "兼容新旧 Python C API 的宏封装",
+        "evidence": [
+          "gi/pygobject-types.h:23",
+          "gi/pygi-closure.h:28"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml classifier Operating System :: POSIX",
+          "README.rst:15"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml classifier Operating System :: Microsoft :: Windows",
+          "gi/__init__.py:39"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "unknown",
+        "evidence": [
+          "README.rst:15"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "Python 源分发（sdist），通过 meson-python 构建为 wheel；运行时需要系统预装 GLib/GObject/GIO/GI/Cairo。",
+    "notes": "meson 为 MSVC/GCC 分别配置了不同的编译选项；C 层代码未使用 x86 SIMD 或内联汇编。"
+  },
+  "capability_profile": {
+    "summary": "PyGObject 是 GObject 库的 Python 绑定层，直接触及 GTK/GDK GUI 绑定，可间接加载 GStreamer 等媒体库，但自身不实现媒体、3D 或硬件功能。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": true,
+        "kind": [
+          "gtk"
+        ],
+        "specific_hardware": false,
+        "via": [
+          "gi.overrides/Gtk.py",
+          "gi.repository GTK typelib"
+        ],
+        "harmony_status": "available",
+        "adaptation": "GTK 已鸿蒙化；PyGObject 绑定层随 GLib/GI 重编后可为 GTK Python 应用服务",
+        "evidence": [
+          "gi/overrides/Gtk.py",
+          "gi/pygi-repository.c:155"
+        ]
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（库默认跑在已移植的 Python 3.12 运行时上；原生 C 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [
+        8,
+        20
+      ]
+    },
+    "confidence": "high",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python_runtime",
+        "capability": "Python 3.12 运行时已移植到鸿蒙 PC",
+        "required": true,
+        "target_status": "available",
+        "impact": "纯 Python 的 override/导入机制与构建脚本可直接运行",
+        "source": "harmony-pc-capabilities.json#runtimes.python"
+      },
+      {
+        "id": "ta:glib_gi_stack",
+        "capability": "GLib/GObject/GIO/GObject Introspection 可在 OHOS NDK 上编译运行",
+        "required": true,
+        "target_status": "partial",
+        "impact": "核心 C 依赖需交叉编译；已有 glib/cairo/libffi/gtk 预编译包可参考",
+        "source": "harmony-pc-capabilities.json#runtimes + cmd-pkgs 清单"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "run_on_ported_runtime + cross_compile_native_deps",
+    "summary": "PyGObject 是带 C 扩展的 Python 库，鸿蒙 Python 运行时已移植，因此纯 Python 部分无需改动；主要工作量在于把 GLib/GObject/GIO/gobject-introspection 及自身 C 扩展用 OHOS NDK 交叉编译。已鸿蒙化的 pycairo、libffi、cairo、gtk 可显著降低工作量。没有特定硬件或不可适配的平台 API。",
+    "blockers": [
+      {
+        "id": "bk:glib_gi_native_deps",
+        "issue": "GLib/GObject/GIO/GI 等 C 依赖尚未在 OpenHarmony PC 预编译包中按 pkg-config 名单独提供，需要交叉编译",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "使用 OHOS NDK（ohos.toolchain.cmake）交叉编译 GLib/GObject/GIO 与 gobject-introspection runtime 为 arm64/x86_64 .so；可优先复用 cmd-pkgs 中已有的 glib/cairo/libffi/gtk 产物，并验证符号完整性。",
+        "caused_by": [
+          "ta:glib_gi_stack"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "meson.build:35-44",
+          "subprojects/glib.wrap",
+          "subprojects/gobject-introspection.wrap"
+        ]
+      },
+      {
+        "id": "bk:cairo_gobject",
+        "issue": "可选依赖 cairo-gobject 未在 cmd-pkgs 中单独列出，启用 Cairo 互操作时需要 GObject 类型注册支持",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "编译 Cairo 时启用 --enable-gobject，或复用 GTK 预编译包通常包含的 cairo-gobject；也可在不需要 Cairo 绑定时禁用该可选模块。",
+        "caused_by": [
+          "ta:glib_gi_stack"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "meson.build:56-57",
+          "gi/pygi-foreign-cairo.c:24"
+        ]
+      },
+      {
+        "id": "bk:win32_branch",
+        "issue": "Windows 专用分支（DLL 路径、文件名编码、IOChannel win32）在鸿蒙上无对应实现",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "win32_api",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "在鸿蒙上走 POSIX/通用分支（filename_from_py_unix、IOChannel.unix_new），无需额外实现。",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": [
+          "gi/__init__.py:39-59",
+          "gi/pygi-basictype.c:383",
+          "gi/overrides/GLib.py:836"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 Python 的 override/导入与事件循环机制",
+        "note": "可直接运行在鸿蒙 Python 上，无需改动",
+        "evidence": [
+          "gi/__init__.py",
+          "gi/importer.py",
+          "gi/events.py"
+        ]
+      },
+      {
+        "aspect": "已鸿蒙化的 C 依赖（pycairo、libffi、cairo、gtk）",
+        "note": "可直接使用 OpenHarmony PC 预编译包/PyPI wheel，减少交叉编译工作量",
+        "evidence": [
+          "dependencies[].harmony_adapted"
+        ]
+      },
+      {
+        "aspect": "无外部命令、无 /proc/sys、无注册表、无网络访问",
+        "note": "运行期沙箱限制对核心功能影响很小",
+        "evidence": [
+          "runtime_surface.subprocess",
+          "runtime_surface.network"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "用 OHOS NDK 交叉编译 GLib/GObject/GIO/gobject-introspection 运行时（或确认 gtk 预编译包已包含所需 .so）",
+      "交叉编译 PyGObject C 扩展 _gi 与可选的 _gi_cairo",
+      "生成/安装 GTK/GDK/GLib 等 typelib 到鸿蒙系统的 girepository 搜索路径",
+      "在鸿蒙 Python 上运行 PyGObject 单元测试验证绑定功能"
+    ],
+    "notes": "评估按模型 A（库跑在已移植 Python 运行时）。PyGObject 自身不直接实现 GUI/媒体/硬件，只是绑定层；最终 GTK/GStreamer 等应用能否运行还取决于这些被绑定库本身。虽然 glib-2.0/gobject-2.0/gio-2.0/girepository-2.0 按 pkg-config 名查询未命中 cmd-pkgs，但 glib umbrella 与 gtk 已鸿蒙化，说明该栈可在 OHOS NDK 上构建；gobject-introspection 需单独交叉编译。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "high",
+    "warnings": [],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "harmony_adapted",
+        "kind": "ambiguity",
+        "value": "pkg-config 名与 OpenHarmony 包名映射不一致导致假阴性",
+        "rationale": "glib-2.0/gobject-2.0/gio-2.0/girepository-2.0 在 cmd-pkgs 中未按此名命中，但 glib/cairo/libffi/gtk 已鸿蒙化，说明 GNOME 基础栈实际可构建。"
+      },
+      {
+        "dimension": "capability_profile",
+        "field": "key",
+        "kind": "new_value",
+        "value": "gobject_introspection_bindings",
+        "rationale": "PyGObject 的本质是 GI 绑定层，不属于 gui/media/hardware，但在依赖树中常作为 GTK GUI 应用的前置库，可作为一个新的场景维度记录。"
+      }
+    ]
+  }
+}
