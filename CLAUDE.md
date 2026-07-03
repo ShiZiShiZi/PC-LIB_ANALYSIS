@@ -50,8 +50,9 @@ codegraph 追踪种子，顺分支追下游平台调用判鸿蒙等价性（无�
 | 6 | Dependencies | model — `dependency-analysis` skill |
 | 7 | System & platform API calls (portability classes 标准/平台特有/系统内核/硬件/FFI; per-API name+purpose+call-site) | model — `native-api-analysis` skill |
 | 8 | Runtime & build environment (external-interaction surface + toolchain/platform matrix) | model — `runtime-environment` skill |
-| 9 | HarmonyOS PC adaptation assessment (可行性/难度/路径/工作量) — **synthesis** of dims 1/6/7/8/10 | model — `harmony-adaptation` skill |
+| 9 | HarmonyOS PC adaptation assessment (可行性/难度/路径/工作量) — **synthesis** of dims 1/6/7/8/10/11 | model — `harmony-adaptation` skill |
 | 10 | Capability profile — GUI/3D 渲染/媒体/特定硬件 场景标志 + 鸿蒙支持状态 — **synthesis** of dims 1/6/7/8 | model — `capability-profile` skill |
+| 11 | Cloud service involvement — 是否涉及云端服务 + 云厂商推测 (auth/存储/数据库/函数/推送/分析/崩溃上报…) — **synthesis** of dims 1/6/8 | model — `cloud-service-analysis` skill |
 
 **能力画像（dim 10，`capability_profile`）**：聚焦镜头，复用已算出的 native_api/runtime_surface/
 dependencies/function_summary 把项目触及的**鸿蒙适配重点场景**结构化标出——`scenarios[]`，每个
@@ -65,6 +66,18 @@ present 场景 `harmony_status=unavailable` 或 `specific_hardware` → blocker/
 `normalizeHarmony` 给缺失的 permission `harmony_status` 补 unknown，`validateHarmony` 校验 unavailable
 权限须有对应 blocker。**存量报告需重新分析才有 capability_profile/required_permissions**；caps 新段与
 面板/xlsx（「能力画像」+「鸿蒙权限」sheet、汇总 GUI/3D/媒体/硬件 列）即时生效。
+
+**云服务画像（dim 11，`cloud_services`）**：又一聚焦镜头，复用已算出的 `dependencies` / `runtime_surface.network`
+（硬编码云端域名）/ `native_api.dynamic_libraries` / `function_summary`，回答"**是否涉及云端服务**"并**推测云厂商**——
+`{present, summary, services[]}`，每个 service `{vendor（google_firebase/aws/gcp/azure/阿里云/腾讯云/supabase/sentry…，
+开放可扩，推不准记 unknown+low）, categories[]（auth/cloud_storage/database/cloud_functions/push/analytics/
+crash_reporting/…，开放）, confidence（闭轴 high/medium/low）, via[], endpoints[], evidence[]}`。**范围＝广义**：任何
+绑定云厂商的能力都算（登录/存储/数据库/函数/推送/分析/崩溃上报/远程配置/地图/AI 云推理/广告，含 REST 直连云端域名），
+但只覆盖**生产代码**（排除 tests/examples/demo）。**与 dim-9 轻度联动**：`present` ⇒ dim-9 在 `required_permissions[]`
+登记 `ohos.permission.INTERNET`（`source_capability:"cloud_services"`）；某厂商原生 SDK 无鸿蒙移植 → 记
+`target_assumptions`/`blocker`（`caused_by` 引用，遵循单一登记源不重述）。`validateReport`（serve-time）用 `CLOUD_SIGNALS`
+启发式查漏判（deps/网络出现云厂商 SDK/域名但 `cloud_services` 未标、或 present 却无 INTERNET 权限）。**存量报告需重新
+分析才有 cloud_services**；面板「云服务」区块 + xlsx「云服务」sheet 即时生效（缺块降级为不渲染）。
 
 **单一登记源（防双计）**：同一事实只在其主清单登记一次——`capability_profile.scenarios` 是"涉及哪些场景 +
 鸿蒙状态"的登记源、`required_permissions` 是权限登记源、`unadaptable_apis` 是不可适配 API 的粒度源、
@@ -165,7 +178,11 @@ interpretive skill (dims 1, 5, 6, 7, 8, 9) follows this shape:
   `dependencies[].locality` (local/remote/system/runtime), `native_api.groups[].category`
   (standard/platform/system/hardware/ffi) and `.platform`. The UI relies on these.
   Plus dim 9's `harmony_adaptation.porting_class`/`feasibility`/`confidence`/`effort.level`(server-derived)/
-  `blockers[].severity`/`blockers[].adaptability`.
+  `blockers[].severity`/`blockers[].adaptability`. Plus dim 5's `license.category`
+  (commercial/strong_copyleft/weak_copyleft/permissive/undeclared) — **a STRICT closed axis**:
+  unlike the open词表 below, the model may **not** coin new values or log them to `meta.observations`;
+  it must map to exactly one of the five. Server `deriveLicenseCategory`/`normalizeLicense`
+  backfills it from `spdx`/`name` for 存量 reports (model value wins), like `derivePortingClass`.
 - **Open detail vocabulary (model may coin)**: `dependencies[].acquisition`,
   `native_api.groups[].type`, `harmony_adaptation.recommended_path`/`blockers[].category`/
   `blockers[].harmony_status`, etc. The UI degrades unknown values to the raw string.
@@ -356,6 +373,15 @@ and `opencode` with a configured model. Excel export additionally needs
   the server prunes `repos/<name>/.git` to save disk (setting `pruneGitAfterAnalyze`,
   default on). The working tree stays, so cloc / re-analyze still work — but a
   re-analyze can't read `library.commit` unless you re-clone; turn the setting off to keep `.git`.
+- **Monorepo 子目录分析**：粘贴 `…/tree/<分支>/<子目录>` 形式的 URL（或克隆弹窗填「子目录」字段）即可
+  只分析大仓的某个子目录（如 chromium 的 `components/cronet`）。`parseRepoUrl` 从 URL 解析出 `{gitUrl,ref,subpath}`；
+  有 subpath 时 `startClone` 用 **稀疏部分克隆**（`--depth 1 --filter=blob:none --sparse` + `sparse-checkout set --cone <subpath>`，
+  cone 模式自带仓根文件 DEPS/BUILD.gn，巨仓从 GB 降到数十 MB），handle=子目录叶名（`cronet`），
+  `.identity.json` 存 `subpath`/`ref` 且 `canonicalKey` 带 `#<subpath>` 判别符（同仓不同子目录 = 不同库，不互相覆盖/别名）。
+  **存储模型 = 每子目录一个独立库**（handle==目录==分析单元 不变式保持）。分析时 `createAnalyzeJob` 把
+  `{repoPath}` 指向子目录、新增 `{repoRoot}`=克隆根、codegraph 只索引子树，prompt `{monorepoNote}` 告知 agent：
+  metrics/native_api/依赖以子目录为范围、可读仓根 manifests、git commit 用仓根、写 `library.source_subpath`/`monorepo`。
+  metrics.py 无需改动（`--repo` 接受任意目录）。非 monorepo 路径逐字不变（无 subpath 时 `{repoPath}=={repoRoot}`）。
 - The `languages` / `code_metrics` / `tests` report blocks come verbatim from
   `metrics.py`; don't recompute them by hand. Everything else is model-reasoned.
 - To extend: test idioms → `code-metrics/scripts/tests.py`; classification rules

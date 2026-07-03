@@ -29,13 +29,20 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    Note the resolved commit: `git -C repos/<name> rev-parse HEAD`. If given a
    local path (e.g. `repos/<name>` already cloned by the runner), use it directly.
 
+   **Monorepo 子目录**：当 prompt 指出本次分析的是某 monorepo 的**子目录**（给出克隆根
+   `{repoRoot}` 与分析根 `{repoPath}`＝子目录，例如 `repos/<name>/components/cronet`）时：
+   把该**子目录**当作被分析的库——下面所有 `{repoPath}`/克隆路径一律指子目录；`git rev-parse HEAD`
+   用**克隆根 `{repoRoot}`**（子目录没有 `.git`）。你可以读取克隆根下的构建/清单文件（DEPS、
+   BUILD.gn、根 `package.json`/`go.mod` 等）来理解该子目录的依赖，但**结论只覆盖子目录**。
+
 2. **Deterministic metrics (dims 2–4).** Run the code-metrics script and capture
    its JSON — these numbers are the source of truth for language breakdown, LOC
    (production/test/example), and test counts. Do not recompute them by hand.
    Write the output to a path **inside the project** (the same run directory you
-   will write the report to), never `/tmp`:
+   will write the report to), never `/tmp`. Point `--repo` at the analysis root
+   `{repoPath}` (the given checkout dir — for a monorepo subunit this is the subdir):
    ```bash
-   python3 .claude/skills/code-metrics/scripts/metrics.py --repo repos/<name> --out <runDir>/metrics.json
+   python3 .claude/skills/code-metrics/scripts/metrics.py --repo {repoPath} --out <runDir>/metrics.json
    ```
 
 2b. **(Optional) Use the codegraph structural index.** When codegraph is enabled the
@@ -66,6 +73,21 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    - Dim 10 capability profile → `.claude/skills/capability-profile/SKILL.md`
      (fills `capability_profile`; a SYNTHESIS over dims 1/6/7/8 — do it AFTER those
      exist, BEFORE dim 9: flag GUI/3D/媒体/特定硬件 场景 + harmony_status)
+   - Dim 11 cloud services → `.claude/skills/cloud-service-analysis/SKILL.md`
+     (fills `cloud_services`; a SYNTHESIS over dims 1/6/8 — do it AFTER those exist,
+     BEFORE dim 9: 是否涉及云端服务 + 推测厂商 + 用途/置信, 复用 dependencies /
+     runtime_surface.network / native_api.dynamic_libraries)
+
+   **分块流式产出（重要，避免十分钟输出尾巴）：** 本流程**不**在末尾一次性写整份 report.json。
+   **每算完一个维度就立刻 `Write` 到 `<runDir>/blocks/<name>.json`**——文件名即报告顶层键、
+   内容即该块的 JSON 值（不是 `{name: value}`，而直接是 value）。映射：
+   dim1→`function_summary.json`、dim5→`license.json`、dim6→`dependencies.json`、dim7→`native_api.json`、
+   dim8→`runtime_surface.json` 与 `build_env.json`、dim10→`capability_profile.json`、
+   dim11→`cloud_services.json`、dim9→`harmony_adaptation.json`，外加库头 `library.json` 与 `meta.json`。
+   **不要**自己产出 `languages`/`code_metrics`/`tests`（这三块由 assemble 脚本从 `metrics.json` splice，
+   你写了也会被忽略）。`<runDir>/blocks/` 目录已由运行器创建（若不存在可 `mkdir -p`）。块之间**顺序不变**——
+   综合维度（9/10/11）仍在其输入（1/6/7/8）之后再算再写。这样输出摊到全程、日志实时可见、崩溃也保留已完成的块。
+
    Use `Glob`/`Grep`/`Read` to inspect README, manifests, public headers/API, and
    representative source files. Prefer breadth on large repos. Cross-check the
    script's test framework / language guesses against what you see; refine the
@@ -112,9 +134,13 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `harmony_adapted` flags from 3a — adapted deps are NOT blockers and lower
    difficulty/effort), `build_env`, and the dim-10 `capability_profile` (GUI/3D/媒体/硬件
    场景 + their harmony_status — a present scenario that is unavailable/specific_hardware
-   drives a blocker/unadaptable_api), and **reuse their `evidence`**. Also fill
-   `harmony_adaptation.required_permissions[]` (鸿蒙化后所需 ohos.permission.*, cross-ref
-   the capability_profile scenario via `source_capability`). Do it inline in
+   drives a blocker/unadaptable_api), and the dim-11 `cloud_services` (若 present：项目依赖
+   第三方云后端——需网络连通；厂商原生 SDK 未必在鸿蒙 PC 可用), and **reuse their `evidence`**.
+   Also fill `harmony_adaptation.required_permissions[]` (鸿蒙化后所需 ohos.permission.*, cross-ref
+   the capability_profile scenario OR cloud_services via `source_capability`). 若
+   `cloud_services.present` → 登记 `ohos.permission.INTERNET`（`source_capability:"cloud_services"`）；
+   某厂商原生 SDK 无鸿蒙移植 → 记 `target_assumptions`（unknown/unavailable）或 `blocker`（用
+   `caused_by` 引用，不重述——单一登记源）。Do it inline in
    this same session (never spawn a sub-agent). Because dims 6/7/8 are already
    production-scoped (see above), `blockers`/`unadaptable_apis` are too — a platform API
    seen only in tests/examples is NOT a porting blocker. For an示例/教程集合, converge:
@@ -136,26 +162,37 @@ the `.claude/skills/...` and `references/...` paths below resolve.
      出现 OpenGL/Vulkan/DirectX → `rendering_3d`；FFmpeg/GStreamer → `media`；CUDA/OpenCL/libusb → `hardware`。
    - `capability_profile` 里 present 且 `harmony_status` 为 partial/unavailable 的场景，dim-9 应有对应
      `blocker`/`unadaptable_apis`/`target_assumptions`（用 `caused_by`/`source_capability` 交叉引用，**不要重述**）。
-   - `required_permissions[].source_capability` 必须指向一个 present 场景。
+   - `dependencies` 出现厂商云 SDK（firebase/boto3/aws-sdk/google-cloud/@azure/@sentry/supabase…）或
+     `runtime_surface.network` 出现厂商云域名（amazonaws.com/firebaseio.com/sentry.io…）→ `cloud_services`
+     应 present 且推出对应 vendor；`cloud_services.present` 时 dim-9 应有 INTERNET 权限项。
+   - `required_permissions[].source_capability` 必须指向一个 present 场景，或字面量 `"cloud_services"`（当权限源自云服务时）。
    补齐发现的缺口；仍不确定的写入 `meta.observations` 或对应块的 `notes`。这一步与服务端的
    `validateReport` 启发式互补（一个是模型推理补全、一个是确定性兜底）。**inline 完成，禁子代理。**
 
-4. **Assemble `report.json`.** Merge the script fragment (`languages`,
-   `code_metrics`, `tests`) with your reasoned blocks (`function_summary`,
-   `license`, `dependencies`, `native_api`, `runtime_surface`, `build_env`,
-   `capability_profile`, `harmony_adaptation`) and the `library` / `meta` headers.
-   Conform exactly to `references/report_schema.json`: every top-level key
-   present, required sub-fields filled. Fill `meta` with `schema_version: "1.0"`,
-   `analyzer: "pc-lib-analyzer"`, `counter_tool` (from the fragment),
-   `confidence_overall`, and any `warnings` (carry over `_warnings` from the
-   fragment). Write it with `Write`.
+4. **组装 `report.json`（脚本，勿手写）。** 你在步骤 3/3a–3c 已把每个维度块 `Write` 到
+   `<runDir>/blocks/<name>.json`（含 `library.json`、`meta.json`；`meta` 里放模型字段
+   `confidence_overall`/`observations` 即可）。**不要**手写整份 report.json，也**不要**自己产出
+   `languages`/`code_metrics`/`tests`。各块写完后运行：
+   ```bash
+   python3 scripts/assemble_report.py --run-dir <runDir>
+   ```
+   它会从 `metrics.json` splice `languages`/`code_metrics`/`tests`、合并 `blocks/*.json`、确定性补全
+   `meta`（`schema_version:"1.0"`、`analyzer:"pc-lib-analyzer"`、`counter_tool`〈取自 fragment〉、并入
+   fragment 的 `_warnings`）与缺省的 `library.analyzed_at`、校验必填顶层键齐全，最后**原子写**
+   `<runDir>/report.json`。若脚本报"缺块/JSON 错/缺 metrics 键"，它**不会**产出 report.json——按提示补齐
+   对应 `blocks/<name>.json` 后**重跑**该脚本。最终报告须严格符合 `references/report_schema.json`。
 
-   Also write `library.ecosystem` using the value you determined in step 3
+   **以下是各块必须包含的字段**（写进对应 `blocks/<name>.json`）：
+   `library.ecosystem` using the value you determined in step 3
    (function summary). It must be one of: `python`, `java`, `nodejs`, `cpp`,
    `rust`, `go`, `dotnet`, `other`. If you are uncertain, use `other`. Write
    `library.package_name` (the distribution/package name from the manifest, which
    may differ from the repo dir name; `null` if none) — the panel uses it to link
-   this library into other libraries' dependency trees. When the package name ≠
+   this library into other libraries' dependency trees. **Monorepo 子目录**：当本次分析的是
+   某 monorepo 的子目录时，设 `library.source_subpath`（如 `"components/cronet"`）与
+   `library.monorepo=true`；`library.source_url` 仍为**仓库根** URL（非子目录 tree URL）。
+   子目录依赖的兄弟内部模块（如 chromium 的 `//base`、`//net`，经 BUILD.gn 引入、非外部包）记入
+   `dependencies[]` 并标 `locality:local`（内部 monorepo 模块），不当作外部依赖。When the package name ≠
    import name or the library has other known names, also set `library.aliases`
    (其它已知名/旧名/CMake find_package 名/Maven groupId:artifactId) and
    `library.import_names` (实际 import 名，如 Pillow→PIL) so other libraries' deps
@@ -215,7 +252,8 @@ the `.claude/skills/...` and `references/...` paths below resolve.
   re-counting.
 - If a dimension genuinely doesn't apply (e.g. a pure-Python lib with no native
   API), emit the empty/cross-platform shape the skill specifies — don't omit the key.
-- One library per run. Deterministic blocks must match the script output exactly.
+- One library/subunit per run (a whole repo, or one monorepo subdirectory).
+  Deterministic blocks must match the script output exactly.
 - **Do the whole analysis yourself in one session — never spawn sub-agents / use a
   `task` tool.** Sub-agent sessions don't stream to the run log (the panel goes dark)
   and lose cross-dimension context and the codegraph index. For large repos, get

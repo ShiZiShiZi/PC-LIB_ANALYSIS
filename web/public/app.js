@@ -77,6 +77,20 @@ const TGT_LABELS = { available: '已支持', partial: '部分支持', unavailabl
 const TGT_CLS = { available: 'done', partial: 'running', unavailable: 'error', unknown: 'gray', restricted: 'sev-major' };
 // capability_profile (dim 10) — scenario key labels
 const CAP_LABELS = { gui: 'GUI 界面', rendering_3d: '3D 渲染', rendering_2d: '2D 绘制', media: '媒体', hardware: '硬件/设备' };
+// license.category (dim 5) — 协议性质闭轴 label + color
+const LIC_CAT_LABELS = { commercial: '商业协议', strong_copyleft: '强传染协议', weak_copyleft: '弱传染协议', permissive: '友好协议', undeclared: '未声明协议' };
+const LIC_CAT_CLS = { commercial: 'sev-major', strong_copyleft: 'error', weak_copyleft: 'running', permissive: 'done', undeclared: 'gray' };
+// cloud_services (dim 11) — vendor + category labels
+const VENDOR_LABELS = {
+  google_firebase: 'Firebase (Google)', aws: 'AWS', gcp: 'Google Cloud', azure: 'Azure',
+  alibaba_cloud: '阿里云', tencent_cloud: '腾讯云', huawei_cloud: '华为云', supabase: 'Supabase',
+  sentry: 'Sentry', cloudflare: 'Cloudflare', unknown: '未知厂商',
+};
+const CLOUD_CAT_LABELS = {
+  auth: '登录鉴权', cloud_storage: '云存储', database: '云数据库', cloud_functions: '云函数',
+  push: '推送', messaging: '消息', analytics: '分析统计', crash_reporting: '崩溃上报',
+  remote_config: '远程配置', maps: '地图', ml_ai: 'AI 云推理', ads: '广告', hosting: '托管',
+};
 
 // dep-topology node status — label + color (HarmonyOS porting state, 5-way)
 const TOPO_STATUS = {
@@ -351,13 +365,14 @@ function renderList() {
         <td class="c-chk"><input type="checkbox" data-sel="${esc(lib.name)}" ${selected.has(lib.name) ? 'checked' : ''} ${lib.cloned ? '' : 'disabled'} /></td>
         <td><a class="lname" href="#/lib/${enc(lib.name)}">${esc(lib.name)}</a>
             ${(lib.tags || []).map((t) => `<span class="chip ${TAG_CLS[t] || ''}">${esc(TAG_LABELS[t] || t)}</span>`).join('')}
+            ${(lib.subpath || s.subpath) ? `<span class="chip" title="monorepo 子目录">▸ ${esc(lib.subpath || s.subpath)}</span>` : ''}
             <div class="lsub">${esc(s.oneLiner || (lib.cloned ? '尚未分析' : '尚未克隆'))}</div></td>
         <td class="c-st"><span class="badge ${st.cls}">${st.label}</span></td>
         <td>${s.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[s.ecosystem] || s.ecosystem)}</span>` : '—'}${bindingChips(s.bindings, s.ecosystem)}</td>
         <td>${s.primary ? `<span class="chip lang-chip">${esc(s.primary)}</span>` : '—'}</td>
         <td class="c-num">${s.prodCode != null ? num(s.prodCode) : '—'}</td>
         <td class="c-num">${s.testCases != null ? num(s.testCases) : '—'}</td>
-        <td>${esc(s.license || '—')}</td>
+        <td>${esc(s.license || '—')}${s.licenseCategory ? ` <span class="badge ${LIC_CAT_CLS[s.licenseCategory] || 'gray'}">${LIC_CAT_LABELS[s.licenseCategory] || esc(s.licenseCategory)}</span>` : ''}</td>
         <td class="c-st">${s.portingClass ? (() => { const m = topoStatusMeta(s.portingClass); return `<span class="badge" style="background:${m.color};color:#fff">${esc(m.label)}</span>`; })() : '—'}</td>
         <td class="c-st">${s.difficultyLevel ? `<span class="badge ${LVL_CLS[s.difficultyLevel] || 'gray'}"${s.personDays ? ` title="${esc(fmtDays(s.personDays))}"` : ''}>${esc(LVL_LABELS[s.difficultyLevel] || s.difficultyLevel)}</span>` : '—'}</td>
         <td class="c-act">
@@ -827,10 +842,14 @@ async function openCloneModal() {
   showModal(`<h2>克隆库</h2>
     <label>Git 仓库地址（每行一个，支持批量并发克隆）
       <textarea id="mUrls" rows="5" placeholder="https://github.com/owner/lib.git
-https://github.com/owner/lib2.git"></textarea></label>
+https://github.com/chromium/chromium/tree/main/components/cronet"></textarea></label>
+    <p class="hint">支持 monorepo 子目录：粘贴 <code>…/tree/&lt;分支&gt;/&lt;子目录&gt;</code> 形式的地址即可，每行自动解析出子目录并只稀疏克隆该子树。</p>
     <div class="row">
       <label class="grow">分支 / Tag（可选，应用于全部）<input id="mRef" type="text" placeholder="main / v1.2.0" /></label>
       <label class="grow">来源标签<select id="mTag"><option value="primary">主软件</option><option value="passive">被动依赖</option></select></label>
+    </div>
+    <div class="row">
+      <label class="grow">子目录（可选，仅单条 URL 时生效；分支名带斜杠时用它指定）<input id="mSubpath" type="text" placeholder="components/cronet" /></label>
     </div>
     <div class="row">
       <label class="grow">分组<select id="mGroup">${groups.map((g) => `<option value="${esc(g)}" ${g === activeGroup ? 'selected' : ''}>${esc(g)}</option>`).join('')}</select></label>
@@ -841,9 +860,11 @@ https://github.com/owner/lib2.git"></textarea></label>
   $('#mGo').onclick = async () => {
     const urls = $('#mUrls').value.split('\n').map((s) => s.trim()).filter(Boolean);
     if (!urls.length) return toast('请输入至少一个 Git URL', 'err');
+    const subpath = $('#mSubpath').value.trim();
+    if (subpath && urls.length > 1) return toast('「子目录」仅在单条 URL 时生效，请只填一个地址', 'err');
     const r = await api('/api/clone', { method: 'POST', headers: JSONH, body: JSON.stringify({
       urls, ref: $('#mRef').value.trim() || undefined, overwrite: $('#mOver').checked,
-      tag: $('#mTag').value, group: $('#mGroup').value }) });
+      subpath: subpath || undefined, tag: $('#mTag').value, group: $('#mGroup').value }) });
     // 克隆到非活动分组时切过去，便于查看
     if ($('#mGroup').value && $('#mGroup').value !== activeGroup) {
       activeGroup = $('#mGroup').value; localStorage.setItem('activeGroup', activeGroup);
@@ -1467,8 +1488,8 @@ function renderReport(r) {
     <b>一句话</b><span>${esc(lib.one_liner || fs.summary || '')}</span>
     <b>生态</b><span>${lib.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[lib.ecosystem] || lib.ecosystem)}</span>` : '—'}${bindingChips(lib.bindings, lib.ecosystem)}</span>
     <b>主语言</b><span>${esc((r.languages || {}).primary || '—')}</span>
-    <b>许可证</b><span>${esc(lic.spdx || '—')} <span class="muted">(${esc(lic.confidence || '')})</span></span>
-    <b>来源</b><span>${esc(lib.source_url || '')}</span></div>`));
+    <b>许可证</b><span>${esc(lic.spdx || '—')} <span class="muted">(${esc(lic.confidence || '')})</span>${lic.category ? ` <span class="badge ${LIC_CAT_CLS[lic.category] || 'gray'}">${LIC_CAT_LABELS[lic.category] || esc(lic.category)}</span>` : ''}</span>
+    <b>来源</b><span>${esc(lib.source_url || '')}${lib.source_subpath ? ` <span class="chip" title="monorepo 子目录">▸ ${esc(lib.source_subpath)}</span>` : ''}</span></div>`));
 
   if (fs.summary || (fs.categories || []).length) {
     const cats = (fs.categories || []).map((c) => `<div class="cat"><b>${esc(c.name)}</b> — <span>${esc(c.description)}</span></div>`).join('');
@@ -1667,6 +1688,29 @@ function renderReport(r) {
     parts.push(sec('能力画像（GUI / 3D / 媒体 / 硬件）',
       (cap.summary ? `<p>${esc(cap.summary)}</p>` : '') + (rows || '<p class="hint">未触及 GUI/3D/媒体/特定硬件场景。</p>') +
       `<p class="hint">这些场景的鸿蒙支持状态（徽标）对照目标能力参考；详见鸿蒙适配评估。</p>`));
+  }
+
+  // 云服务 (cloud_services, dim 11) — 是否涉及云端 + 厂商推测
+  const cs = r.cloud_services || {};
+  const csvc = (cs.services || []).filter((s) => s && s.vendor);
+  if (csvc.length || cs.summary || cs.present === false) {
+    const rows = csvc.map((s) => {
+      const conf = s.confidence || '';
+      const cats = (s.categories || []).map((c) => `<span class="mtok">${esc(CLOUD_CAT_LABELS[c] || c)}</span>`).join('');
+      const via = (s.via || []).length ? `<span class="muted">来源：${(s.via || []).map(esc).join('、')}</span>` : '';
+      const eps = (s.endpoints || []).length ? `<div class="codeloc"><span class="muted">云端域名：${(s.endpoints || []).slice(0, 4).map(esc).join('  ')}</span></div>` : '';
+      const ev = (s.evidence || []).length ? `<div class="codeloc"><span class="muted">${(s.evidence || []).slice(0, 3).map(esc).join('  ')}</span></div>` : '';
+      const confBadge = conf ? ` <span class="badge ${conf === 'high' ? 'done' : conf === 'medium' ? 'running' : 'gray'}">置信 ${CONF_LABELS[conf] || esc(conf)}</span>` : '';
+      return `<div class="platblock">
+        <div class="cap-row">
+          <span class="cap-name">${esc(VENDOR_LABELS[s.vendor] || s.vendor)}${confBadge}</span>
+          <span class="cap-kinds">${cats} ${via}</span>
+        </div>${eps}${ev}</div>`;
+    }).join('');
+    parts.push(sec('云服务（厂商 / 用途）',
+      (cs.summary ? `<p>${esc(cs.summary)}</p>` : '') +
+      (rows || '<p class="hint">未涉及第三方云端服务。</p>') +
+      (csvc.length ? '<p class="hint">涉及云端 ⇒ 鸿蒙化需网络权限（ohos.permission.INTERNET）；详见鸿蒙适配评估。</p>' : '')));
   }
 
   // 鸿蒙适配评估 (harmony_adaptation, dim 9)

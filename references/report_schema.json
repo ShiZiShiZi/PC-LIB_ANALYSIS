@@ -21,6 +21,10 @@
         "import_names": {"type": "array", "items": {"type": "string"},
           "description": "model: 实际 import/引入时用的名字（如 PyPI Pillow → import PIL；包名≠导入名时尤其有用）。无则省略或 []。"},
         "source_url": {"type": ["string", "null"]},
+        "monorepo": {"type": "boolean",
+          "description": "model: 被分析对象是 monorepo 的一个子目录时为 true。此时 source_url 仍为仓库根 URL，具体子目录见 source_subpath。缺省 false（整仓）。"},
+        "source_subpath": {"type": ["string", "null"],
+          "description": "model: monorepo 子目录分析时，被分析子目录相对仓库根的路径（如 \"components/cronet\"）。整仓分析为 null/省略。"},
         "analyzed_at": {"type": "string", "description": "ISO-8601 UTC"},
         "commit": {"type": ["string", "null"]},
         "one_liner": {"type": "string", "description": "model: <=120 char tagline"},
@@ -168,6 +172,9 @@
         "spdx": {"type": ["string", "null"], "description": "SPDX id, 'NOASSERTION', or null"},
         "name": {"type": ["string", "null"]},
         "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+        "category": {"type": "string",
+          "enum": ["commercial", "strong_copyleft", "weak_copyleft", "permissive", "undeclared"],
+          "description": "闭轴（严格，只能映射不能新增）：协议性质。commercial 商业协议（专有/商业 EULA/SSPL·BUSL·Elastic 等源码可见非自由）/ strong_copyleft 强传染（GPL·AGPL·EUPL·OSL 家族）/ weak_copyleft 弱传染（LGPL·MPL·EPL·CDDL·CPL）/ permissive 友好（MIT·BSD·Apache·ISC·Zlib·BSL·Unlicense）/ undeclared 未声明（无 LICENSE / null / NOASSERTION）。server 可据 spdx/name 回填。"},
         "is_dual_licensed": {"type": "boolean"},
         "license_files": {"type": "array", "items": {"type": "string"}},
         "evidence": {"type": "string", "description": "what the call is based on"},
@@ -342,6 +349,31 @@
             "adaptation": {"type": "string", "description": "开放/中文：修改量与路径（如 ArkUI 重写界面层、换 @ohos.multimedia、无解需放弃）"},
             "evidence": {"type": "array", "items": {"type": "string"}, "description": "复用来源维度的 file:line（代表性）"}}},
           "description": "场景清单。未触及的场景可省略或 present:false。空数组表示纯计算/无这些场景。"}
+      }
+    },
+
+    "cloud_services": {
+      "type": "object",
+      "description": "Dimension 11 — MODEL (skill: cloud-service-analysis). SYNTHESIS-lite：复用已算出的 dependencies / runtime_surface.network（硬编码 host/域名）/ native_api.dynamic_libraries / function_summary 证据，判断项目是否涉及云端服务（登录鉴权/云存储/云数据库/云函数/推送/消息/Analytics/崩溃上报/远程配置/地图/AI 云推理/广告等，含 REST 直连云端域名），若涉及则推测云服务厂商。轻度喂给 dim-9（涉及云端⇒需 ohos.permission.INTERNET；未移植的厂商原生 SDK 记假设/阻碍）。prose 简体中文。",
+      "properties": {
+        "present": {"type": "boolean", "description": "本项目生产代码是否涉及任何云端服务"},
+        "summary": {"type": "string", "description": "中文：涉及的云端服务与厂商概览；不涉及则说明并 present:false"},
+        "services": {"type": "array", "items": {
+          "type": "object",
+          "required": ["vendor"],
+          "properties": {
+            "vendor": {"type": "string",
+              "description": "开放小写词（推荐集，可扩并记 meta.observations）：google_firebase / aws / gcp / azure / alibaba_cloud / tencent_cloud / huawei_cloud / supabase / sentry / cloudflare …。推不准厂商但确有云端后端 → 记 vendor:\"unknown\" + confidence:low。"},
+            "categories": {"type": "array", "items": {"type": "string"},
+              "description": "开放小写词（推荐集，非穷举）：auth / cloud_storage / database / cloud_functions / push / messaging / analytics / crash_reporting / remote_config / maps / ml_ai / ads / hosting。"},
+            "confidence": {"type": "string", "enum": ["high", "medium", "low"],
+              "description": "闭轴：厂商/用途推测置信。厂商 SDK 明确=high；仅硬编码域名/间接线索=medium/low。"},
+            "via": {"type": "array", "items": {"type": "string"},
+              "description": "交叉引用来源：dependencies[].name / native_api.dynamic_libraries[].name（说明该云服务由谁引入）"},
+            "endpoints": {"type": "array", "items": {"type": "string"},
+              "description": "开放：硬编码云端主机/域名（来自 runtime_surface.network），如 firebaseio.com / amazonaws.com / sentry.io"},
+            "evidence": {"type": "array", "items": {"type": "string"}, "description": "复用来源维度的 file:line（代表性）"}}},
+          "description": "云服务清单。不涉及云端时 present:false 且 services 可为 []。"}
       }
     },
 

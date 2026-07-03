@@ -37,12 +37,20 @@ const DEFAULT_PROMPT =
   'Analyze the PC open-source software project (a third-party library OR an application) ' +
   'checked out at {repoPath}. First decide library.kind (library/application/...). Follow the ' +
   'method and JSON output contract in {agentFile} and the skills it references. ' +
+  '{monorepoNote}' +
   'The source is already cloned — do NOT clone again. Do NOT spawn sub-agents or use the ' +
   '`task` tool — do all evidence-gathering yourself in this single session (codegraph + ' +
   'Grep/Glob/Read) so every step streams to the live log. {codegraphHint}Run the deterministic ' +
-  'code-metrics script with `--out {metricsPath}`, reason through every dimension ' +
-  '(function summary, license, dependencies, native/platform API), and write the ' +
-  'final report to {reportPath}. Conform to references/report_schema.json. ' +
+  'code-metrics script with `--out {metricsPath}`, then reason through every dimension ' +
+  '(function summary, license, dependencies, native/platform API). ' +
+  'OUTPUT INCREMENTALLY: as you finish each dimension, immediately `Write` its block to ' +
+  '{runDir}/blocks/<name>.json (filename = top-level report key, content = that block\'s JSON ' +
+  'value) — do NOT accumulate everything for one giant final write, and do NOT emit ' +
+  'languages/code_metrics/tests (the script splices those from metrics.json). When every block ' +
+  'is written, assemble the report by running `python3 scripts/assemble_report.py --run-dir ' +
+  '{runDir}` — it splices the metrics fragment, validates required keys, and ATOMICALLY writes ' +
+  '{reportPath}. Do NOT hand-write {reportPath}; see {agentFile} for the block mapping. ' +
+  'Conform to references/report_schema.json. ' +
   '语言要求：function_summary 里所有自然语言字段（summary、每个 category 的 name 与 ' +
   'description、domain、target_users）以及 library.one_liner 必须用简体中文书写；' +
   'SPDX 许可证标识、编程语言名、依赖包名等专有名词保持原文。' +
@@ -92,6 +100,50 @@ const LEGACY_PROMPTS = [
   'the project (under the run directory) — never use /tmp or any path outside the ' +
   'project, because the headless runner auto-rejects external directories and the ' +
   'run will abort. Finish with a short digest.',
+  // pre-monorepo default (lacked the {monorepoNote} placeholder)
+  'Analyze the PC open-source software project (a third-party library OR an application) ' +
+  'checked out at {repoPath}. First decide library.kind (library/application/...). Follow the ' +
+  'method and JSON output contract in {agentFile} and the skills it references. ' +
+  'The source is already cloned — do NOT clone again. Do NOT spawn sub-agents or use the ' +
+  '`task` tool — do all evidence-gathering yourself in this single session (codegraph + ' +
+  'Grep/Glob/Read) so every step streams to the live log. {codegraphHint}Run the deterministic ' +
+  'code-metrics script with `--out {metricsPath}`, reason through every dimension ' +
+  '(function summary, license, dependencies, native/platform API), and write the ' +
+  'final report to {reportPath}. Conform to references/report_schema.json. ' +
+  '语言要求：function_summary 里所有自然语言字段（summary、每个 category 的 name 与 ' +
+  'description、domain、target_users）以及 library.one_liner 必须用简体中文书写；' +
+  'SPDX 许可证标识、编程语言名、依赖包名等专有名词保持原文。' +
+  'IMPORTANT: write the report, metrics, and ALL intermediate/scratch files inside ' +
+  'the project (under the run directory) — never use /tmp or any path outside the ' +
+  'project, because the headless runner auto-rejects external directories and the ' +
+  'run will abort. ' +
+  'When reading source files, always use relative paths from the project root ' +
+  '(e.g., {repoPath}/pyproject.toml) or paths already returned by a prior tool result — ' +
+  'do NOT construct absolute paths manually, as self-built absolutes are frequently wrong ' +
+  'and will be rejected. Finish with a short digest.',
+  // pre-block-streaming default (one giant final Write; predates the incremental
+  // blocks/ + assemble_report.py flow)
+  'Analyze the PC open-source software project (a third-party library OR an application) ' +
+  'checked out at {repoPath}. First decide library.kind (library/application/...). Follow the ' +
+  'method and JSON output contract in {agentFile} and the skills it references. ' +
+  '{monorepoNote}' +
+  'The source is already cloned — do NOT clone again. Do NOT spawn sub-agents or use the ' +
+  '`task` tool — do all evidence-gathering yourself in this single session (codegraph + ' +
+  'Grep/Glob/Read) so every step streams to the live log. {codegraphHint}Run the deterministic ' +
+  'code-metrics script with `--out {metricsPath}`, reason through every dimension ' +
+  '(function summary, license, dependencies, native/platform API), and write the ' +
+  'final report to {reportPath}. Conform to references/report_schema.json. ' +
+  '语言要求：function_summary 里所有自然语言字段（summary、每个 category 的 name 与 ' +
+  'description、domain、target_users）以及 library.one_liner 必须用简体中文书写；' +
+  'SPDX 许可证标识、编程语言名、依赖包名等专有名词保持原文。' +
+  'IMPORTANT: write the report, metrics, and ALL intermediate/scratch files inside ' +
+  'the project (under the run directory) — never use /tmp or any path outside the ' +
+  'project, because the headless runner auto-rejects external directories and the ' +
+  'run will abort. ' +
+  'When reading source files, always use relative paths from the project root ' +
+  '(e.g., {repoPath}/pyproject.toml) or paths already returned by a prior tool result — ' +
+  'do NOT construct absolute paths manually, as self-built absolutes are frequently wrong ' +
+  'and will be rejected. Finish with a short digest.',
 ];
 
 const DEFAULT_SETTINGS = {
@@ -319,7 +371,7 @@ function repoNameFromUrl(u) {
 // download sites, release artifacts, or a bare homepage with `.git` tacked on.
 const _REGISTRY_HOSTS = /^(?:www\.)?(?:pypi\.org|files\.pythonhosted\.org|registry\.npmjs\.org|npmjs\.com|crates\.io|static\.crates\.io|repo\d*\.maven\.org|repo\.maven\.apache\.org|search\.maven\.org|rubygems\.org|nuget\.org|pkg\.go\.dev|proxy\.golang\.org|anaconda\.org|conda\.anaconda\.org)$/i;
 const _ARTIFACT_RE = /\.(?:tar\.(?:gz|bz2|xz|zst)|tgz|tbz2?|txz|zip|whl|crate|gem|jar|7z|rar)$/i;
-function canonicalRepoKey(url) {
+function canonicalRepoKey(url, subpath) {
   let u = String(url || '').trim();
   if (!u) return null;
   u = u.replace(/^git\+/i, '');
@@ -340,7 +392,11 @@ function canonicalRepoKey(url) {
   else p = p.replace(/\/(?:tree|blob|commits?|releases?|tags?|raw|wikis?|issues?|merge_requests|pulls?|src|browse)\b.*$/i, '');
   p = p.replace(/\/+$/, '').replace(/^\/+/, '').replace(/\.git$/i, '');
   if (!p) return null;                                       // bare homepage (e.g. foo.sourceforge.net[.git])
-  return `${host}/${p.toLowerCase()}`;
+  const key = `${host}/${p.toLowerCase()}`;
+  // monorepo subunit: a subpath discriminator keeps two subdirs of one repo distinct
+  // (else e.g. .../tree/main/components/cronet and .../base collapse to the same key).
+  const sp = String(subpath || '').replace(/\/+$/, '').replace(/^\/+/, '').toLowerCase();
+  return sp ? `${key}#${sp}` : key;
 }
 // A set of `eco:variant` name keys for fuzzy same-name matching: handles lib-prefix
 // (libpng↔png), version suffix (zlib-1.3↔zlib), and artifact-ish names.
@@ -377,6 +433,28 @@ function normalizeCloneUrl(raw) {
   p = p.replace(/\/+$/, '').replace(/\.git$/i, '');
   if (!p || p === '') return u;
   return `https://${m.hostname.replace(/^www\./i, '')}${p}.git`;
+}
+// Parse a pasted web URL into { gitUrl, ref, subpath } — supports monorepo subdir
+// URLs like github.com/owner/repo/tree/<ref>/<sub/dir> (and /blob/), GitLab
+// /-/tree/<ref>/<path>. gitUrl reuses normalizeCloneUrl (repo root). ref/subpath are
+// undefined for a plain repo URL. NB: the first segment after tree/blob is taken as
+// the ref, so a branch containing '/' is ambiguous — the panel's explicit subpath
+// field is the fallback for that case.
+function parseRepoUrl(raw) {
+  const gitUrl = normalizeCloneUrl(raw);
+  let ref, subpath;
+  const u = String(raw || '').trim().split('#')[0].replace(/\?.*$/, '');
+  let m;
+  try { m = new URL(u); } catch { return { gitUrl, ref, subpath }; }
+  if (!KNOWN_GIT_HOSTS.test(m.hostname)) return { gitUrl, ref, subpath };
+  const dash = m.pathname.indexOf('/-/');                    // GitLab
+  const hay = dash >= 0 ? m.pathname.slice(dash + 3) : m.pathname;
+  const withPath = hay.match(/(?:^|\/)(?:tree|blob)\/([^/]+)\/(.+)$/i);
+  const refOnly = hay.match(/(?:^|\/)(?:tree|blob)\/([^/]+)\/?$/i);
+  if (withPath) { ref = decodeURIComponent(withPath[1]); subpath = withPath[2]; }
+  else if (refOnly) { ref = decodeURIComponent(refOnly[1]); }
+  if (subpath) subpath = decodeURIComponent(subpath).replace(/\/+$/, '').replace(/^\/+/, '') || undefined;
+  return { gitUrl, ref, subpath };
 }
 // Best-effort extraction of a clonable git URL from a dependency's free-text
 // `source` / `version` (e.g. "通过 FetchContent 从 https://github.com/x/y.git 获取"
@@ -454,6 +532,8 @@ function reportSummary(name, run, group) {
       prodCode: r.code_metrics && r.code_metrics.production && r.code_metrics.production.code,
       testCases: r.tests && r.tests.test_cases,
       license: r.license && r.license.spdx,
+      licenseCategory: deriveLicenseCategory(r),
+      subpath: (r.library && r.library.source_subpath) || null,
       analyzedAt: r.library && r.library.analyzed_at,
       portingClass, difficultyLevel, personDays,
     };
@@ -513,9 +593,11 @@ function listLibraries(group) {
     const analyzedAt = latest ? (Date.parse(latest.endedAt || latest.startedAt) || runIdToMs(latest.run)) : null;
     const addedAt = (repos.has(name) ? birthtimeMs(repoDir(g, name)) : null)
       || birthtimeMs(runLibDir(g, name));
+    // monorepo 子目录：即使尚未分析，也从 .identity.json 暴露 subpath 供 L1 chip 显示。
+    const ident = repos.has(name) ? readIdentity(g, name) : null;
     return {
       name, group: g, cloned: repos.has(name), runCount: runs.length,
-      latest, active: activeJobFor(name, g),
+      latest, active: activeJobFor(name, g), subpath: (ident && ident.subpath) || null,
       analyzedAt: analyzedAt || null, addedAt, tags: allTags[tagKey(g, name)] || [],
       summary: latest && latest.reportAvailable ? reportSummary(name, latest.run, g) : null,
     };
@@ -550,10 +632,11 @@ function readIdentity(group, handle) {
   try { return JSON.parse(fs.readFileSync(path.join(repoDir(group, handle), '.identity.json'), 'utf8')); }
   catch { return null; }
 }
-function writeIdentity(group, handle, url) {
+function writeIdentity(group, handle, url, subpath, ref) {
   try {
     fs.writeFileSync(path.join(repoDir(group, handle), '.identity.json'),
-      JSON.stringify({ handle, url: url || null, canonicalKey: canonicalRepoKey(url) }, null, 2));
+      JSON.stringify({ handle, url: url || null, canonicalKey: canonicalRepoKey(url, subpath),
+        subpath: subpath || null, ref: ref || null }, null, 2));
   } catch (_) {}
 }
 // Does an existing handle point to the SAME upstream repo as (url, ckey)? Uses the
@@ -596,9 +679,12 @@ function buildIdentityIndex(getRep, group) {
     if (!rep) continue;
     const L = rep.library || {};
     const eco = ecoNorm(L.ecosystem);
-    // URL keys: report source_url + the clone-time identity record (covers pre/odd cases)
+    // URL keys: report source_url + the clone-time identity record (covers pre/odd cases).
+    // Monorepo subunit: fold its subpath into the key so two subdirs of one repo stay
+    // distinct (and a plain repo-root dep URL doesn't false-match a subunit).
     const ident = readIdentity(group, lib.name);
-    for (const u of [L.source_url, ident && ident.url]) add(byUrl, canonicalRepoKey(u), lib.name);
+    const sub = L.source_subpath || (ident && ident.subpath) || null;
+    for (const u of [L.source_url, ident && ident.url]) add(byUrl, canonicalRepoKey(u, sub), lib.name);
     // Name keys: package_name, handle, source_url basename, declared aliases / import names
     const names = [L.package_name, lib.name];
     if (L.source_url) names.push(repoNameFromUrl(L.source_url));
@@ -651,6 +737,50 @@ function buildDepTree(rootName, maxDepth, group) {
     });
   };
   return expand(rootName, 1);
+}
+
+// ---- license category (5-way strict closed axis) --------------------------
+// Map an SPDX id / license name to one of 5 categories so 存量 reports gain
+// license.category without a re-run. The model's explicit value always wins;
+// this is only a fallback. Recognized-but-unmapped → null (leave to the model).
+// Order matters: strong before weak (both contain "gpl"-ish text), commercial
+// and copyleft before permissive.
+const LICENSE_CATEGORY_RULES = [
+  { cat: 'strong_copyleft', re: /\b(agpl|affero|\bgpl|gnu\s*general\s*public|gnu\s*gpl|eupl|osl-|open\s*software\s*license|sleepycat|cecill(?!-c|-b)|gpl-[123])/i },
+  { cat: 'weak_copyleft', re: /\b(lgpl|lesser\s*general\s*public|mpl|mozilla\s*public|epl-|eclipse\s*public|cddl|common\s*development|cpl-|common\s*public\s*license|ms-rl|cecill-c)/i },
+  { cat: 'commercial', re: /\b(sspl|busl|bsl-1\.1|business\s*source|elastic-2|\belv2\b|commons-clause|proprietary|commercial|all\s*rights\s*reserved|\beula\b)/i },
+  { cat: 'permissive', re: /\b(mit\b|mit-0|bsd|apache|isc\b|zlib|libpng|boost|bsl-1\.0|unlicense|0bsd|cc0|wtfpl|python-2|\bpsf\b|x11|ncsa|postgresql|artistic)/i },
+];
+function deriveLicenseCategory(report) {
+  const lic = (report && report.license) || null;
+  if (!lic || typeof lic !== 'object') return null;
+  if (lic.category) return lic.category;                     // explicit (model) wins
+  const spdx = String(lic.spdx == null ? '' : lic.spdx).trim();
+  const name = String(lic.name == null ? '' : lic.name).trim();
+  const hay = (spdx + ' ' + name).trim();
+  const noAssert = !spdx || /^(noassertion|unknown|none|null)$/i.test(spdx);
+  if (!hay) return 'undeclared';
+  for (const rule of LICENSE_CATEGORY_RULES) if (rule.re.test(hay)) return rule.cat;
+  if (noAssert) return 'undeclared';
+  return null;                                               // recognized but unmapped
+}
+// serve-time backfill — only when the model didn't supply category.
+function normalizeLicense(report) {
+  if (!report || !report.license || typeof report.license !== 'object') return report;
+  if (!report.license.category) {
+    const c = deriveLicenseCategory(report);
+    if (c) report.license.category = c;
+  }
+  return report;
+}
+// consistency check — model category vs the SPDX-derived one.
+function validateLicense(report) {
+  const lic = report && report.license;
+  if (!lic || typeof lic !== 'object' || !lic.category) return [];
+  const derived = deriveLicenseCategory({ license: { spdx: lic.spdx, name: lic.name } });
+  if (derived && derived !== lic.category)
+    return [`license.category(${lic.category}) 与依据 SPDX(${lic.spdx || '—'}) 派生的性质(${derived}) 不一致，请核对`];
+  return [];
 }
 
 // HarmonyOS porting class (5-way) for the dep-topology page. Prefers the agent's
@@ -781,6 +911,18 @@ const CAP_SIGNALS = [
   { key: 'media', re: /\b(ffmpeg|libav|gstreamer|portaudio|libasound|pulseaudio|x264|openh264|libvpx|v4l2|avfoundation)/i },
   { key: 'hardware', re: /\b(cuda|nvcc|opencl|libusb|termios|bluez|npu|fpga)/i },
 ];
+// cloud-vendor signals — from dep names, dynamic libs, and hard-coded network hosts.
+// If a vendor SDK/domain shows up but cloud_services didn't flag it → likely 漏判.
+const CLOUD_SIGNALS = [
+  { vendor: 'google_firebase', re: /\b(firebase|firebaseio\.com|firebaseapp\.com|firebasestorage)/i },
+  { vendor: 'aws', re: /\b(boto3|botocore|aws-sdk|aws-amplify|amazonaws\.com|awssdk)/i },
+  { vendor: 'gcp', re: /\b(google-cloud|googleapis\.com|@google-cloud)/i },
+  { vendor: 'azure', re: /\b(azure-|@azure\/|\.azure\.com|azurewebsites)/i },
+  { vendor: 'alibaba_cloud', re: /\b(aliyun|aliyuncs\.com|@alicloud)/i },
+  { vendor: 'tencent_cloud', re: /\b(tencentcloud|myqcloud\.com|tencentcloudapi)/i },
+  { vendor: 'supabase', re: /\b(supabase)/i },
+  { vendor: 'sentry', re: /\b(sentry-sdk|@sentry\/|sentry-native|sentry\.io)/i },
+];
 function validateReport(report) {
   if (!report || typeof report !== 'object') return [];
   const w = [];
@@ -806,7 +948,7 @@ function validateReport(report) {
   // dangling permission → scenario
   const ha = report.harmony_adaptation || {};
   for (const p of (ha.required_permissions || []))
-    if (p && p.source_capability && !presentKeys.has(p.source_capability))
+    if (p && p.source_capability && p.source_capability !== 'cloud_services' && !presentKeys.has(p.source_capability))
       w.push(`required_permission ${p.permission || ''} 的 source_capability=${p.source_capability} 不在已标记场景中`);
   // present+unsupported scenario not reflected in dim-9
   const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
@@ -815,6 +957,21 @@ function validateReport(report) {
   for (const s of scen) if (s && s.present && ['unavailable', 'partial'].includes(s.harmony_status)
       && !dimText.includes(String(s.key).toLowerCase()) && (blk.length + ta.length) === 0)
     w.push(`场景 ${s.key} 鸿蒙状态为 ${s.harmony_status} 但 dim-9 无对应阻碍/假设（可能漏登记）`);
+  // cloud service omission — vendor SDK/domain present in deps/network but cloud_services missed it
+  const cs = report.cloud_services || {};
+  const csvc = Array.isArray(cs.services) ? cs.services : [];
+  const csVendors = new Set(csvc.map((s) => s && s.vendor).filter(Boolean));
+  const netText = JSON.stringify(report.runtime_surface && report.runtime_surface.network || []);
+  const cloudHay = (hay + '  ' + netText).toLowerCase();
+  for (const sig of CLOUD_SIGNALS)
+    if (sig.re.test(cloudHay) && !csVendors.has(sig.vendor))
+      w.push(`依赖/网络出现 ${sig.vendor} 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）`);
+  // cloud present but dim-9 has no INTERNET permission
+  if (cs.present && csvc.length) {
+    const perms = JSON.stringify(ha.required_permissions || []).toLowerCase();
+    if (!perms.includes('internet'))
+      w.push(`cloud_services 涉及云端但 dim-9 未登记 ohos.permission.INTERNET（可能漏登记）`);
+  }
   return w;
 }
 
@@ -981,24 +1138,36 @@ function buildDepTopology(rootName, group, maxDepth = 6, maxNodes = 300) {
 }
 
 // ---------------------------------------------------------------- clone
-function startClone({ url: rawUrl, ref, overwrite, tag, group }) {
-  const gitUrl = normalizeCloneUrl(rawUrl);
+function startClone({ url: rawUrl, ref, overwrite, tag, group, subpath }) {
+  // Monorepo: parse an optional subdir + branch out of the URL (…/tree/<ref>/<sub>).
+  // An explicit `subpath` (panel field) wins over the URL-derived one; likewise ref.
+  const parsed = parseRepoUrl(rawUrl);
+  const gitUrl = parsed.gitUrl;
+  const sub = (subpath && String(subpath).trim()) || parsed.subpath || null;
+  const cloneRef = ref || parsed.ref || null;
   const g = ensureGroupDirs(group);
-  // Storage handle: the git basename, but disambiguated when it collides with a
-  // DIFFERENT upstream repo already in this group (owner-qualified). Same repo
-  // (by identity) keeps its handle and goes through the overwrite/re-clone path.
-  const ckey = canonicalRepoKey(gitUrl);
-  const name = pickCloneHandle(g, repoNameFromUrl(gitUrl), gitUrl, ckey);
+  // Storage handle: the git basename (or the subdir leaf for a monorepo subunit),
+  // disambiguated when it collides with a DIFFERENT upstream repo/subpath already in
+  // this group (owner-qualified). Same repo+subpath (by identity) keeps its handle.
+  const ckey = canonicalRepoKey(gitUrl, sub);
+  const baseHandle = sub
+    ? (sub.replace(/\/+$/, '').split('/').pop() || repoNameFromUrl(gitUrl)).replace(/[^A-Za-z0-9._-]/g, '_')
+    : repoNameFromUrl(gitUrl);
+  const name = pickCloneHandle(g, baseHandle, gitUrl, ckey);
   const dest = repoDir(g, name);
   if (fs.existsSync(dest)) {
     if (!overwrite) throw new Error(`repos/${g}/${name} already exists (enable overwrite to re-clone)`);
     fs.rmSync(dest, { recursive: true, force: true });
   }
   const args = ['clone', '--progress', '--depth', '1'];
-  if (ref) args.push('--branch', ref);
+  // Monorepo subdir: partial + sparse clone so a giant repo (chromium) only fetches
+  // the subtree (+ root files via cone mode) instead of the whole GB working tree.
+  // The `sparse-checkout set <subpath>` runs in the clone-end listener after checkout.
+  if (sub) args.push('--filter=blob:none', '--sparse');
+  if (cloneRef) args.push('--branch', cloneRef);
   args.push(gitUrl, dest);
   // 来源标签：默认主软件；递归/待分析依赖传 'passive'。end 回调里克隆成功才落库。
-  const job = new Job('clone', { name, group: g, argv: ['git', ...args], url: gitUrl, tag: TAG_VALUES.includes(tag) ? tag : 'primary' });
+  const job = new Job('clone', { name, group: g, argv: ['git', ...args], url: gitUrl, subpath: sub, ref: cloneRef, tag: TAG_VALUES.includes(tag) ? tag : 'primary' });
   job.emit('input', { argv: job.meta.argv });
   // stdin 'ignore' (EOF): opencode/tools block on an open stdin pipe.
   // GIT_TERMINAL_PROMPT=0: a private/auth-required URL fails fast instead of hanging
@@ -1021,25 +1190,54 @@ function createAnalyzeJob(opts) {
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
   const runDir = path.join(runLibDir(group, name), ts);
   fs.mkdirSync(runDir, { recursive: true });
+  // Block-streaming: the agent writes each dimension to <runDir>/blocks/<name>.json as
+  // it reasons, then assemble_report.py splices them + metrics into report.json. Pre-create
+  // the dir so the agent's Writes never race on a missing parent.
+  fs.mkdirSync(path.join(runDir, 'blocks'), { recursive: true });
   const reportPath = path.join(runDir, 'report.json');
-  const repoRel = path.relative(ROOT, repoPathAbs);   // repos/<group>/<name>
+  const repoRootRel = path.relative(ROOT, repoPathAbs);   // repos/<group>/<name> (clone root)
+  // Monorepo subunit: analyze the subdir, but keep the clone root for git commit /
+  // reading root manifests. Non-monorepo: analyzeDir == clone root (unchanged behavior).
+  const identity = readIdentity(group, name);
+  const sub = identity && identity.subpath ? String(identity.subpath) : null;
+  const analyzeDirAbs = sub ? path.join(repoPathAbs, sub) : repoPathAbs;
+  const repoRel = path.relative(ROOT, analyzeDirAbs);     // {repoPath} — analysis root
 
   const codegraphOn = codegraphAvailable && (opts.useCodegraph ?? settings.useCodegraph);
   // Index is pre-built by the server (at clone, and as a safety-net below) — tell the
-  // agent to USE it rather than re-build it.
-  if (codegraphOn) ensureCodegraphIndex(repoPathAbs);
+  // agent to USE it rather than re-build it. For a monorepo subunit, scope to the subdir.
+  if (codegraphOn) ensureCodegraphIndex(analyzeDirAbs);
   const codegraphHint = codegraphOn
     ? `codegraph is installed and the structural index for ${repoRel} is pre-built by ` +
       `\`codegraph init\`: prefer \`codegraph context/query/callers -p ${repoRel} -j\` for the ` +
       `function-summary and native/platform-API dimensions (fall back to grep/Read if any codegraph call fails). `
     : '';
+  const monorepoNote = sub
+    ? `本次分析的是 monorepo（克隆根在 ${repoRootRel}）的子目录 \`${sub}\`。把该子目录当作被分析的库：` +
+      `code-metrics、native_api、"实际用到的依赖" 都以子目录（${repoRel}）为范围；可读取克隆根 ${repoRootRel} 下的` +
+      `构建/清单文件（DEPS、BUILD.gn、根 package.json/go.mod 等）理解其依赖；git commit 用克隆根 ${repoRootRel}；` +
+      `在报告里设置 library.source_subpath="${sub}"、library.monorepo=true，library.source_url 仍为仓库根 URL。 `
+    : '';
   let prompt = (opts.promptTemplate || settings.promptTemplate || DEFAULT_PROMPT)
     .replaceAll('{codegraphHint}', codegraphHint)
+    .replaceAll('{monorepoNote}', monorepoNote)
     .replaceAll('{repoPath}', repoRel)
+    .replaceAll('{repoRoot}', repoRootRel)
     .replaceAll('{agentFile}', AGENT_FILE)
     .replaceAll('{reportPath}', path.relative(ROOT, reportPath))
     .replaceAll('{metricsPath}', path.relative(ROOT, path.join(runDir, 'metrics.json')))
+    .replaceAll('{runDir}', path.relative(ROOT, runDir))
     .replaceAll('{name}', name);
+  // Robust to stale saved templates that predate {monorepoNote}: append it if a
+  // subpath is set but the placeholder didn't land.
+  if (monorepoNote && !prompt.includes('source_subpath')) prompt = prompt + ' ' + monorepoNote;
+  // Robust to stale/custom templates that predate block-streaming: if the prompt doesn't
+  // mention the assemble step, append the incremental-blocks + assemble instruction so the
+  // run never falls back to one giant final Write.
+  if (!prompt.includes('assemble_report'))
+    prompt = prompt + ` 分块流式产出：每算完一个维度立即 Write 到 ${path.relative(ROOT, path.join(runDir, 'blocks'))}/<name>.json`
+      + `（文件名=报告顶层键；不要自己产出 languages/code_metrics/tests），全部写完后运行 `
+      + `\`python3 scripts/assemble_report.py --run-dir ${path.relative(ROOT, runDir)}\` 组装并原子写 report.json（勿手写 report.json）。`;
   // Robust to stale saved templates that predate the {codegraphHint} placeholder:
   // if codegraph is enabled but the hint didn't land, append it.
   if (codegraphHint && !prompt.includes('codegraph')) prompt = prompt + ' ' + codegraphHint;
@@ -1361,8 +1559,22 @@ jobEndListeners.add((job) => {
     const rp = repoDir(job.meta.group, job.meta.name);
     if (fs.existsSync(rp)) {
       addLibTag(job.meta.name, job.meta.group, job.meta.tag || 'primary');
-      writeIdentity(job.meta.group, job.meta.name, job.meta.url);   // 句柄↔上游仓身份
-      ensureCodegraphIndex(rp, (s) => { try { job.log('stdout', `[codegraph] ${s}`); } catch (_) {} });
+      const sub = job.meta.subpath || null;
+      // Monorepo: expand the sparse set to the target subtree (cone mode also keeps
+      // repo-root files, so dependency manifests like DEPS/BUILD.gn come along).
+      if (sub) {
+        try {
+          require('child_process').execFileSync('git', ['-C', rp, 'sparse-checkout', 'set', '--cone', sub],
+            { stdio: 'pipe', timeout: 300000 });
+          job.log('stdout', `[monorepo] sparse-checkout set ${sub}`);
+        } catch (e) {
+          job.log('stderr', `[monorepo] sparse-checkout failed（可能服务器不支持 partial clone）：${e.message}`);
+        }
+      }
+      writeIdentity(job.meta.group, job.meta.name, job.meta.url, sub, job.meta.ref);   // 句柄↔上游仓身份(含 subpath)
+      // Index only the analyzed subtree for a monorepo subunit (cheaper + scoped).
+      const idxPath = sub ? path.join(rp, sub) : rp;
+      ensureCodegraphIndex(idxPath, (s) => { try { job.log('stdout', `[codegraph] ${s}`); } catch (_) {} });
     }
   }
   for (const s of recursionSessions.values()) if (s.status === 'running') s.tick();
@@ -1547,9 +1759,12 @@ const server = http.createServer(async (req, res) => {
       const body = await readBody(req);
       const urls = body.urls || (body.url ? [body.url] : []);
       if (!urls.length) return send(res, 400, { error: 'url(s) required' });
+      // Explicit subpath (panel field) only applies to a single URL — ambiguous for a
+      // batch. Each URL's own …/tree/<ref>/<sub> is still parsed inside startClone.
+      const explicitSub = urls.length === 1 ? body.subpath : undefined;
       const out = urls.map((u) => {
-        try { const j = startClone({ url: u, ref: body.ref, overwrite: body.overwrite, tag: body.tag, group: body.group });
-          return { url: u, jobId: j.id, name: j.meta.name }; }
+        try { const j = startClone({ url: u, ref: body.ref, overwrite: body.overwrite, tag: body.tag, group: body.group, subpath: explicitSub });
+          return { url: u, jobId: j.id, name: j.meta.name, subpath: j.meta.subpath || undefined }; }
         catch (e) { return { url: u, error: String(e.message || e) }; }
       });
       return send(res, 200, { jobs: out });
@@ -1836,7 +2051,8 @@ const server = http.createServer(async (req, res) => {
       // serve-time: fill derived dim-9 fields (effort.level/person_days/ids/feasibility) and
       // attach consistency warnings, so 存量 reports gain structured data without a re-run.
       normalizeHarmony(rep);
-      const hw = [...validateHarmony(rep), ...validateReport(rep)];
+      normalizeLicense(rep);
+      const hw = [...validateHarmony(rep), ...validateReport(rep), ...validateLicense(rep)];
       if (hw.length) rep.meta = { ...(rep.meta || {}), harmony_warnings: hw };
       return send(res, 200, rep);
     }
@@ -1943,5 +2159,7 @@ if (require.main === module) {
   });
 } else {
   module.exports = { derivePortingClass, deriveDifficultyLevel, effortDays, normalizeHarmony,
-    validateHarmony, validateReport, rollupAdaptation, buildDepTopology };
+    validateHarmony, validateReport, rollupAdaptation, buildDepTopology,
+    deriveLicenseCategory, normalizeLicense, validateLicense,
+    parseRepoUrl, canonicalRepoKey, normalizeCloneUrl };
 }

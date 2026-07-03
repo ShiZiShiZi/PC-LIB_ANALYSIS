@@ -154,6 +154,7 @@ def rows_overview(name, r):
     return [[
         name,
         _g(r, "library", "source_url", default=""),
+        _g(r, "library", "source_subpath", default=""),
         _g(r, "library", "commit", default=""),
         _g(r, "library", "analyzed_at", default=""),
         _g(r, "languages", "primary", default=""),
@@ -176,6 +177,7 @@ def rows_overview(name, r):
         _g(r, "license", "spdx", default=""),
         _g(r, "license", "name", default=""),
         _g(r, "license", "confidence", default=""),
+        _LIC_CAT_LABELS.get(_g(r, "license", "category", default=""), _g(r, "license", "category", default="")),
         dep.get("count"),
         len(dep.get("dependencies", []) or []),
         na.get("summary", ""),
@@ -201,9 +203,9 @@ def rows_overview(name, r):
 
 
 HEAD_OVERVIEW = [
-    "库名", "源地址", "commit", "分析时间", "主语言", "语言列表", "生态", "绑定",
+    "库名", "源地址", "子目录", "commit", "分析时间", "主语言", "语言列表", "生态", "绑定",
     "功能摘要", "领域", "目标用户", "总代码", "生产代码", "测试代码", "样例代码",
-    "平台适配代码", "平台判断分支(处)", "GUI", "3D渲染", "媒体", "硬件", "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度",
+    "平台适配代码", "平台判断分支(处)", "GUI", "3D渲染", "媒体", "硬件", "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度", "License性质",
     "运行时依赖数", "依赖总数", "API摘要", "平台依赖", "动态库数", "构建系统",
     "语言标准", "运行时版本", "支持平台", "移植分级", "鸿蒙可行性", "鸿蒙难度",
     "工作量min(人天)", "工作量max(人天)", "鸿蒙置信度",
@@ -275,6 +277,10 @@ HEAD_PLATFORM_BRANCHES = ["库名", "语言", "文件", "行号", "代码片段"
 _CAP_LABELS = {"gui": "GUI 界面", "rendering_3d": "3D 渲染", "rendering_2d": "2D 绘制",
                "media": "媒体", "hardware": "硬件/设备"}
 
+_LIC_CAT_LABELS = {"commercial": "商业协议", "strong_copyleft": "强传染协议",
+                   "weak_copyleft": "弱传染协议", "permissive": "友好协议",
+                   "undeclared": "未声明协议"}
+
 
 def rows_capabilities(name, r):
     out = []
@@ -292,6 +298,38 @@ def rows_capabilities(name, r):
 
 
 HEAD_CAPABILITIES = ["库名", "场景", "具体技术", "特定硬件", "鸿蒙状态", "来源", "适配说明", "证据"]
+
+
+_VENDOR_LABELS = {
+    "google_firebase": "Firebase (Google)", "aws": "AWS", "gcp": "Google Cloud",
+    "azure": "Azure", "alibaba_cloud": "阿里云", "tencent_cloud": "腾讯云",
+    "huawei_cloud": "华为云", "supabase": "Supabase", "sentry": "Sentry",
+    "cloudflare": "Cloudflare", "unknown": "未知厂商",
+}
+_CLOUD_CAT_LABELS = {
+    "auth": "登录鉴权", "cloud_storage": "云存储", "database": "云数据库",
+    "cloud_functions": "云函数", "push": "推送", "messaging": "消息",
+    "analytics": "分析统计", "crash_reporting": "崩溃上报", "remote_config": "远程配置",
+    "maps": "地图", "ml_ai": "AI 云推理", "ads": "广告", "hosting": "托管",
+}
+
+
+def rows_cloud_services(name, r):
+    out = []
+    for s in _g(r, "cloud_services", "services", default=[]) or []:
+        if not s.get("vendor"):
+            continue
+        cats = "/".join(_CLOUD_CAT_LABELS.get(c, c) for c in (s.get("categories", []) or []))
+        out.append([
+            name, _VENDOR_LABELS.get(s.get("vendor"), s.get("vendor", "")),
+            cats, s.get("confidence", ""),
+            "/".join(s.get("via", []) or []), "/".join(s.get("endpoints", []) or []),
+            _join(s.get("evidence", []) or []),
+        ])
+    return out
+
+
+HEAD_CLOUD_SERVICES = ["库名", "厂商", "类别", "置信度", "来源", "云端域名", "证据"]
 
 
 def rows_permissions(name, r):
@@ -453,6 +491,7 @@ SHEETS = [
     ("平台适配代码量", HEAD_PLATFORM, rows_platform),
     ("平台判断分支", HEAD_PLATFORM_BRANCHES, rows_platform_branches),
     ("能力画像", HEAD_CAPABILITIES, rows_capabilities),
+    ("云服务", HEAD_CLOUD_SERVICES, rows_cloud_services),
     ("鸿蒙权限", HEAD_PERMISSIONS, rows_permissions),
     ("依赖", HEAD_DEPS, rows_deps),
     ("系统平台API", HEAD_APIS, rows_apis),
