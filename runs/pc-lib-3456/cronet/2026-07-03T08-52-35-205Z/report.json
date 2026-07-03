@@ -1,0 +1,1292 @@
+{
+  "library": {
+    "name": "cronet",
+    "kind": "library",
+    "package_name": null,
+    "aliases": [
+      "cronet",
+      "org.chromium.net",
+      "Chromium Cronet"
+    ],
+    "import_names": [
+      "org.chromium.net"
+    ],
+    "source_url": "https://github.com/chromium/chromium.git",
+    "monorepo": true,
+    "source_subpath": "components/cronet",
+    "analyzed_at": "2026-07-03T08:52:35.205Z",
+    "commit": "f2fa27f433eb615360e5dfbd5f1a159e17f5056a",
+    "one_liner": "Chromium 的高性能 HTTP/2/QUIC 网络栈，以 Android 库形式对外提供 Java API 与 JNI 原生桥接。",
+    "ecosystem": "java",
+    "bindings": []
+  },
+  "function_summary": {
+    "summary": "Cronet 是 Chromium 浏览器网络栈的 Android 库封装，向应用提供异步 URL 请求、HTTP/2、QUIC、缓存、Cookie、NetLog 等能力，同时保留 HttpURLConnection 同步兼容层。核心由 C++ 实现并通过 JNI 与 Java API 桥接，目标用户主要是 Android 应用开发者。",
+    "categories": [
+      {
+        "name": "异步 HTTP/HTTPS/QUIC 请求",
+        "description": "基于 Chromium //net 的高性能异步网络请求，支持 HTTP/2、QUIC、双向流、上传数据流与回调式 API",
+        "evidence": [
+          "android/api/src/org/chromium/net/UrlRequest.java",
+          "cronet_url_request.cc"
+        ]
+      },
+      {
+        "name": "CronetEngine 构建与配置",
+        "description": "通过 Builder 配置缓存、QUIC、DNS、代理、实验选项等，并序列化为 Protobuf 后传入 C++ 核心",
+        "evidence": [
+          "android/api/src/org/chromium/net/CronetEngine.java:105",
+          "url_request_context_config.cc"
+        ]
+      },
+      {
+        "name": "HttpURLConnection 同步兼容层",
+        "description": "提供 java.net.HttpURLConnection 适配实现，使现有基于标准 Java 网络 API 的代码可无缝切换到 Cronet",
+        "evidence": [
+          "android/java/src/org/chromium/net/urlconnection/CronetHttpURLConnection.java"
+        ]
+      },
+      {
+        "name": "C++ 核心与 JNI 桥接",
+        "description": "C++ CronetContext/CronetURLRequest 封装 Chromium 线程模型，通过自动生成/手写的 JNI 适配器与 Java 层交互",
+        "evidence": [
+          "android/cronet_context_adapter.cc",
+          "android/cronet_url_request_adapter.cc",
+          "cronet_context.cc"
+        ]
+      },
+      {
+        "name": "缓存与持久化",
+        "description": "将 Host cache、网络质量估计、Cookie 等状态持久化到磁盘，并支持 NetLog 文件/目录导出",
+        "evidence": [
+          "cronet_prefs_manager.cc:38",
+          "host_cache_persistence_manager.cc",
+          "cronet_context.cc:396"
+        ]
+      },
+      {
+        "name": "Provider 发现与平台适配",
+        "description": "通过 ServiceLocator/反射在 org.chromium.net.impl 中挑选最合适的 Provider（Native / HttpEngine / Java 回退），并适配 Android 系统代理、系统属性与 StatsLog",
+        "evidence": [
+          "android/api/src/org/chromium/net/CronetProvider.java",
+          "android/java/src/org/chromium/net/impl/NativeCronetProvider.java",
+          "android/java/src/org/chromium/net/impl/HttpEngineNativeProvider.java"
+        ]
+      }
+    ],
+    "domain": "networking",
+    "target_users": "Android 应用开发者及需要 Chromium 网络能力的嵌入方"
+  },
+  "languages": {
+    "primary": "Java",
+    "all": [
+      "Java",
+      "Python",
+      "C++",
+      "C/C++ Header",
+      "Markdown",
+      "Text",
+      "XML",
+      "JSON",
+      "Protocol Buffers",
+      "Bourne Shell",
+      "HTML"
+    ],
+    "breakdown": [
+      {
+        "language": "Java",
+        "files": 264,
+        "code": 50352,
+        "pct": 71.98,
+        "production": {
+          "files": 130,
+          "code": 16455
+        },
+        "test": {
+          "files": 124,
+          "code": 33313
+        },
+        "example": {
+          "files": 10,
+          "code": 584
+        }
+      },
+      {
+        "language": "Python",
+        "files": 45,
+        "code": 8173,
+        "pct": 11.68,
+        "production": {
+          "files": 42,
+          "code": 7888
+        },
+        "test": {
+          "files": 3,
+          "code": 285
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 40,
+        "code": 7501,
+        "pct": 10.72,
+        "production": {
+          "files": 29,
+          "code": 6339
+        },
+        "test": {
+          "files": 11,
+          "code": 1162
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 27,
+        "code": 1552,
+        "pct": 2.22,
+        "production": {
+          "files": 22,
+          "code": 1371
+        },
+        "test": {
+          "files": 5,
+          "code": 181
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 11,
+        "code": 972,
+        "pct": 1.39,
+        "production": {
+          "files": 10,
+          "code": 876
+        },
+        "test": {
+          "files": 1,
+          "code": 96
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Text",
+        "files": 10,
+        "code": 798,
+        "pct": 1.14,
+        "production": {
+          "files": 4,
+          "code": 784
+        },
+        "test": {
+          "files": 6,
+          "code": 14
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "XML",
+        "files": 19,
+        "code": 348,
+        "pct": 0.5,
+        "production": {
+          "files": 3,
+          "code": 24
+        },
+        "test": {
+          "files": 4,
+          "code": 87
+        },
+        "example": {
+          "files": 12,
+          "code": 237
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 116,
+        "pct": 0.17,
+        "production": {
+          "files": 1,
+          "code": 116
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Protocol Buffers",
+        "files": 3,
+        "code": 69,
+        "pct": 0.1,
+        "production": {
+          "files": 3,
+          "code": 69
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 1,
+        "code": 55,
+        "pct": 0.08,
+        "production": {
+          "files": 1,
+          "code": 55
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 4,
+        "code": 16,
+        "pct": 0.02,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 4,
+          "code": 16
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 425,
+      "code": 69952,
+      "comment": 14809,
+      "blank": 11548,
+      "total_lines": 96309
+    },
+    "production": {
+      "files": 245,
+      "code": 33977,
+      "comment": 10494,
+      "blank": 6318,
+      "total_lines": 50789
+    },
+    "test": {
+      "files": 158,
+      "code": 35154,
+      "comment": 4205,
+      "blank": 5096,
+      "total_lines": 44455
+    },
+    "example": {
+      "files": 22,
+      "code": 821,
+      "comment": 110,
+      "blank": 134,
+      "total_lines": 1065
+    },
+    "top_dirs": [
+      {
+        "dir": "android",
+        "code": 55776,
+        "category": "test",
+        "by_category": {
+          "production": 20054,
+          "test": 34901,
+          "example": 821
+        }
+      },
+      {
+        "dir": ".",
+        "code": 5966,
+        "category": "production",
+        "by_category": {
+          "production": 5870,
+          "test": 96
+        }
+      },
+      {
+        "dir": "gn2bp",
+        "code": 4566,
+        "category": "production",
+        "by_category": {
+          "production": 4424,
+          "test": 142
+        }
+      },
+      {
+        "dir": "tools",
+        "code": 3058,
+        "category": "production",
+        "by_category": {
+          "production": 3058
+        }
+      },
+      {
+        "dir": "license",
+        "code": 536,
+        "category": "production",
+        "by_category": {
+          "production": 536
+        }
+      },
+      {
+        "dir": "proto",
+        "code": 35,
+        "category": "production",
+        "by_category": {
+          "production": 35
+        }
+      },
+      {
+        "dir": "testing",
+        "code": 15,
+        "category": "test",
+        "by_category": {
+          "test": 15
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "android",
+        "testing"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "python": {
+          "files": 1,
+          "hits": 1
+        }
+      },
+      "by_platform": {
+        "windows": 1
+      },
+      "samples": [
+        {
+          "language": "python",
+          "file": "tools_unittest.py",
+          "line": 13,
+          "text": "if sys.platform == 'win32':"
+        }
+      ],
+      "total": 1,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 158,
+    "test_cases": 924,
+    "frameworks": [
+      "JUnit/TestNG",
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Java": {
+        "files": 124,
+        "cases": 911
+      },
+      "Python": {
+        "files": 3,
+        "cases": 13
+      },
+      "C++": {
+        "files": 11,
+        "cases": 0
+      },
+      "Markdown": {
+        "files": 1,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 5,
+        "cases": 0
+      },
+      "XML": {
+        "files": 4,
+        "cases": 0
+      },
+      "HTML": {
+        "files": 4,
+        "cases": 0
+      },
+      "Text": {
+        "files": 6,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "repos/pc-lib-3456/cronet/LICENSE"
+    ],
+    "evidence": "仓库根目录 LICENSE 为 BSD-3-Clause 完整文本；子目录源文件头（如 BUILD.gn、.cc、.java）均声明由 BSD-style license 管辖。",
+    "notes": "宽松许可；需保留版权声明。Chromium 子项目统一使用该协议。"
+  },
+  "dependencies": {
+    "count": 13,
+    "manifests": [
+      "components/cronet/BUILD.gn",
+      "components/cronet/android/BUILD.gn"
+    ],
+    "by_ecosystem": {
+      "cpp": [
+        "base",
+        "net",
+        "components/prefs",
+        "components/metrics",
+        "url",
+        "boringssl",
+        "zlib",
+        "protobuf"
+      ],
+      "java": [
+        "protobuf-lite-runtime-java",
+        "androidx-annotation",
+        "jsr305",
+        "jni_zero",
+        "android-sdk-framework"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "base",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Chromium 基础库（线程、任务调度、文件路径、日志、JNI 辅助）",
+        "acquisition": "monorepo_module",
+        "locality": "local",
+        "source": "Chromium monorepo //base",
+        "declared_in": [
+          "components/cronet/BUILD.gn",
+          "components/cronet/android/BUILD.gn"
+        ],
+        "used_symbols": [
+          "base::Bind",
+          "base::FilePath",
+          "base::SingleThreadTaskRunner",
+          "base::WaitableEvent",
+          "base::ThreadPool"
+        ]
+      },
+      {
+        "name": "net",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Chromium 网络栈（URL 请求、HTTP/2、QUIC、DNS、代理、NetLog）",
+        "acquisition": "monorepo_module",
+        "locality": "local",
+        "source": "Chromium monorepo //net",
+        "declared_in": [
+          "components/cronet/BUILD.gn",
+          "components/cronet/android/BUILD.gn"
+        ],
+        "used_symbols": [
+          "net::URLRequestContext",
+          "net::URLRequest",
+          "net::NetworkChangeNotifier",
+          "net::NetLog",
+          "net::HostCache",
+          "net::FileNetLogObserver"
+        ]
+      },
+      {
+        "name": "components/prefs",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "持久化偏好设置（用于 CronetPrefsManager）",
+        "acquisition": "monorepo_module",
+        "locality": "local",
+        "source": "Chromium monorepo //components/prefs",
+        "declared_in": [
+          "components/cronet/BUILD.gn"
+        ]
+      },
+      {
+        "name": "components/metrics",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Chromium metrics 支持（library_support）",
+        "acquisition": "monorepo_module",
+        "locality": "local",
+        "source": "Chromium monorepo //components/metrics:library_support",
+        "declared_in": [
+          "components/cronet/BUILD.gn"
+        ]
+      },
+      {
+        "name": "url",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "URL 解析与序列化",
+        "acquisition": "monorepo_module",
+        "locality": "local",
+        "source": "Chromium monorepo //url",
+        "declared_in": [
+          "components/cronet/android/BUILD.gn"
+        ]
+      },
+      {
+        "name": "boringssl",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "TLS/SSL 与加密原语",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "Chromium monorepo //third_party/boringssl",
+        "declared_in": [
+          "components/cronet/android/BUILD.gn",
+          "android/cronet_library_loader.cc"
+        ],
+        "used_symbols": [
+          "BN_*",
+          "EC_*",
+          "RSA_*",
+          "SHA_*",
+          "OPENSSL_*"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "zlib",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "压缩/解压",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "Chromium monorepo //third_party/zlib",
+        "declared_in": [
+          "components/cronet/android/BUILD.gn",
+          "android/cronet_library_loader.cc"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "protobuf",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "配置序列化（request_context_config_proto、base_feature_overrides_proto）",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "Chromium monorepo //third_party/protobuf",
+        "declared_in": [
+          "components/cronet/BUILD.gn",
+          "components/cronet/android/BUILD.gn"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "protobuf-lite-runtime-java",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Java Protobuf lite 运行时",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "Chromium monorepo //third_party/android_deps:protobuf_lite_runtime_java",
+        "declared_in": [
+          "components/cronet/android/BUILD.gn"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "androidx-annotation",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "AndroidX 注解（@NonNull、@Nullable、@VisibleForTesting 等）",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "Chromium monorepo //third_party/androidx:androidx_annotation_annotation_java",
+        "declared_in": [
+          "components/cronet/android/BUILD.gn"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jsr305",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "JSR-305 注解（javax.annotation）",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "Chromium monorepo //third_party/android_deps:com_google_code_findbugs_jsr305_java",
+        "declared_in": [
+          "components/cronet/android/BUILD.gn"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "jni_zero",
+        "ecosystem": "java",
+        "scope": "build",
+        "version": null,
+        "purpose": "JNI 绑定代码生成与 Java 辅助库",
+        "acquisition": "vendored",
+        "locality": "local",
+        "source": "Chromium monorepo //third_party/jni_zero",
+        "declared_in": [
+          "components/cronet/android/BUILD.gn"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "android-sdk-framework",
+        "ecosystem": "java",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Android SDK 系统框架类（Context、Build、StatsLog、SystemProperties 等）",
+        "acquisition": "android_sdk_system",
+        "locality": "system",
+        "source": "Android SDK / //third_party/android_sdk:public_framework_system_java",
+        "declared_in": [
+          "components/cronet/android/BUILD.gn"
+        ]
+      }
+    ],
+    "notes": "Python 工具脚本（tools/、gn2bp/）还依赖 build.android.gyp.util.build_utils、telemetry、devil.android、py_utils 等构建/测试基础设施，未作为运行时库依赖列出。生产代码中 Google Play Services Cronet / AOSP HttpEngine 等 Provider 通过反射在运行时发现，未在 BUILD.gn 中硬编码为依赖。"
+  },
+  "native_api": {
+    "summary": "C++ 核心通过 Chromium base/net 抽象保持跨平台，JNI 层与大量 Android 系统 API 深度耦合；生产代码中无直接 Win32/POSIX 调用，但依赖 Android NDK 的系统属性与跟踪接口。",
+    "groups": [
+      {
+        "type": "jni",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "JNIEnv",
+            "purpose": "Java Native Interface 环境指针，桥接 Java/C++",
+            "count": 74,
+            "evidence": [
+              "android/cronet_library_loader.cc:8",
+              "android/cronet_context_adapter.cc:95"
+            ]
+          },
+          {
+            "name": "AttachCurrentThread",
+            "purpose": "将当前 native 线程附加到 JVM 以回调 Java",
+            "count": 32,
+            "evidence": [
+              "android/cronet_library_loader.cc:326"
+            ]
+          },
+          {
+            "name": "JNI_OnLoad",
+            "purpose": "本地库加载时注册 JNI 方法",
+            "count": 1,
+            "evidence": [
+              "android/cronet_jni.cc:8"
+            ]
+          },
+          {
+            "name": "GetPrimitiveArrayCritical / ReleasePrimitiveArrayCritical",
+            "purpose": "零拷贝访问 Java byte[] 中的 Protobuf 配置数据",
+            "count": 2,
+            "evidence": [
+              "android/cronet_library_loader.cc:104"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "android_ndk_system",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "__system_property_find / __system_property_read",
+            "purpose": "读取 Android 系统属性（debug.cronet.init_trace_sleep）控制初始化跟踪延迟",
+            "count": 2,
+            "evidence": [
+              "android/cronet_library_loader.cc:149"
+            ]
+          },
+          {
+            "name": "ATrace_beginSection / ATrace_endSection",
+            "purpose": "Android systrace 跟踪初始化阶段",
+            "count": 4,
+            "evidence": [
+              "android/cronet_library_loader.cc:162"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "android_sdk_java",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "android.content.Context",
+            "purpose": "公共 API 入口，CronetEngine.Builder 需要 Android Context 获取应用信息",
+            "count": 30,
+            "evidence": [
+              "android/api/src/org/chromium/net/CronetEngine.java:154"
+            ]
+          },
+          {
+            "name": "android.os.SystemProperties",
+            "purpose": "读取 Android ro.* 等系统属性",
+            "count": 1,
+            "evidence": [
+              "android/java/src/org/chromium/net/impl/AndroidOsSystemProperties.java:19"
+            ]
+          },
+          {
+            "name": "android.util.StatsLog",
+            "purpose": "Android 私有遥测统计接口",
+            "count": 1,
+            "evidence": [
+              "android/java/src/org/chromium/net/telemetry/CronetStatsLog.java:14"
+            ]
+          },
+          {
+            "name": "android.net.http.HttpEngine",
+            "purpose": "Android U+ 平台 HttpEngine 包装为 Provider",
+            "count": 1,
+            "evidence": [
+              "android/java/src/org/chromium/net/impl/HttpEngineNativeProvider.java:8"
+            ]
+          },
+          {
+            "name": "android.os.Build.VERSION",
+            "purpose": "运行时 API 级别分支判断",
+            "count": 20,
+            "evidence": [
+              "android/java/src/org/chromium/net/impl/CronetUrlRequest.java:1146"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::string / std::string_view",
+            "purpose": "字符串处理",
+            "count": 70,
+            "evidence": [
+              "cronet_context.cc:396"
+            ]
+          },
+          {
+            "name": "std::unique_ptr / std::make_unique",
+            "purpose": "内存管理",
+            "count": 51,
+            "evidence": [
+              "cronet_context.cc:120"
+            ]
+          },
+          {
+            "name": "std::optional / std::nullopt",
+            "purpose": "可选值",
+            "count": 22,
+            "evidence": [
+              "android/cronet_library_loader.cc:149"
+            ]
+          },
+          {
+            "name": "std::array",
+            "purpose": "定长数组",
+            "count": 11,
+            "evidence": [
+              "android/cronet_library_loader.cc:152"
+            ]
+          },
+          {
+            "name": "std::ranges",
+            "purpose": "范围算法（C++20）",
+            "count": 2,
+            "evidence": [
+              "cronet_url_request.cc"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "java_standard",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "java.nio.ByteBuffer",
+            "purpose": "字节缓冲区，跨 JNI 数据传递",
+            "count": 50,
+            "evidence": [
+              "android/api/src/org/chromium/net/UrlRequest.java:9"
+            ]
+          },
+          {
+            "name": "java.net.URL / URLConnection / HttpURLConnection",
+            "purpose": "同步包装与标准 Java 网络接口",
+            "count": 20,
+            "evidence": [
+              "android/java/src/org/chromium/net/urlconnection/CronetHttpURLConnection.java:23"
+            ]
+          },
+          {
+            "name": "java.lang.reflect.Method",
+            "purpose": "反射发现 CronetProvider 实现",
+            "count": 1,
+            "evidence": [
+              "android/api/src/org/chromium/net/CronetEngine.java:24"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "chromium_base",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "base::Bind / base::OnceCallback",
+            "purpose": "Chromium 任务回调绑定",
+            "count": 30,
+            "evidence": [
+              "cronet_context.cc:107"
+            ]
+          },
+          {
+            "name": "base::SingleThreadTaskRunner",
+            "purpose": "网络线程任务调度",
+            "count": 15,
+            "evidence": [
+              "cronet_context.h:54"
+            ]
+          },
+          {
+            "name": "base::FilePath",
+            "purpose": "文件路径抽象",
+            "count": 20,
+            "evidence": [
+              "cronet_prefs_manager.cc:38"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libcronet.so / libhttpengine.so",
+        "mechanism": "System.loadLibrary (JNI)",
+        "acquisition": "self_build",
+        "source": "本仓 C++ 核心与 JNI 桥编译产物（BUILD.gn :cronet）",
+        "description": "Cronet 原生共享库，提供 C++ 网络栈与 JNI 实现",
+        "optional": false,
+        "evidence": [
+          "android/java/src/org/chromium/net/impl/CronetLibraryLoader.java:48",
+          "android/java/src/org/chromium/net/impl/CronetLibraryLoader.java:146"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行期主要进行 HTTP/HTTPS/QUIC 网络 I/O，并将缓存/网络状态/NetLog 写入用户指定的 storagePath；部分 Android 系统属性与遥测接口仅在 Android 环境可用。",
+    "network": [
+      {
+        "detail": "HTTP/HTTPS/HTTP2/QUIC 客户端 socket I/O",
+        "purpose": "通过 Chromium //net 发起网络请求",
+        "evidence": [
+          "cronet_context.cc:462",
+          "cronet_url_request.cc"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "用户指定的 storagePath 下的缓存与持久化文件",
+        "purpose": "持久化 cookie、host cache、网络质量估计、Prefs 状态",
+        "evidence": [
+          "cronet_context.cc:396",
+          "cronet_prefs_manager.cc:38",
+          "host_cache_persistence_manager.cc:52"
+        ]
+      },
+      {
+        "detail": "NetLog 文件/目录导出",
+        "purpose": "网络调试日志落盘",
+        "evidence": [
+          "cronet_context.cc:811",
+          "cronet_context.cc:845"
+        ]
+      },
+      {
+        "detail": "HTTP flags 文件（/data/.../http_flags）",
+        "purpose": "读取系统提供者下发的实验 flag",
+        "evidence": [
+          "android/java/src/org/chromium/net/httpflags/HttpFlagsLoader.java:195"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++17/20（生产代码使用 std::optional、std::ranges 等）",
+    "runtime_version": "Android API 21+ / Java 8+（公共 Java API 依赖 android.content.Context）",
+    "build_system": "GN（Chromium）+ Ninja + Android NDK；Java 部分使用 javac/dx/R8",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "android",
+        "arch": "arm/arm64/x86/x86_64",
+        "evidence": [
+          "components/cronet/android/BUILD.gn libs=['android','log']",
+          "components/cronet/android/api_version.txt"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "以 Android AAR/JAR + libcronet.so 形式发布；通过 Maven（org.chromium.net）或 Google Play Services 分发",
+    "notes": "被分析对象是 Chromium monorepo 中的子目录 components/cronet，必须依赖整仓的 GN 构建系统与 //base、//net 等内部模块才能编译。"
+  },
+  "capability_profile": {
+    "summary": "本项目为纯网络库，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙高成本场景。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "生产代码未出现 Firebase/AWS/GCP/Azure 等云厂商 SDK、硬编码云端域名或遥测后端；CronetStatsLog 仅写入 Android 本地 StatsLog，不涉及第三方云服务。",
+    "services": []
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（默认库口径：跑在已移植运行时上；但 Cronet 当前形态为 Android 库，需额外评估 Android API 不可用性）",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
+    "effort": {
+      "person_days": [
+        30,
+        70
+      ]
+    },
+    "confidence": "medium",
+    "recommended_path": "rewrap_cpp_core",
+    "summary": "Cronet 的 C++ 网络核心理论可经 OHOS NDK 重编，但其公共 Java API、JNI 注册、Android 系统属性/StatsLog/HttpEngine 包装均深度依赖 Android 运行时与 SDK，在鸿蒙 PC 上无法直接运行。可行路径是：将 C++ 核心从 Android JNI 层解耦，用 OHOS NDK 编译 Chromium //base //net 依赖后，重新以 Node-API 或标准 Java/JNI 包装供鸿蒙应用调用；现有 Android API 层需要大规模重写或废弃。",
+    "target_assumptions": [
+      {
+        "id": "ta:android_runtime",
+        "capability": "Android Runtime / android.content.Context 等 Android SDK API",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "Cronet 公共 API 以 android.content.Context 为入口；鸿蒙 PC 无 Android 运行时，当前 Java/Android 形态不可直接运行",
+        "source": "项目代码公共 API 与 BUILD.gn 均依赖 Android SDK；HarmonyOS PC 非 Android 系统"
+      },
+      {
+        "id": "ta:ohos_ndk_chromium",
+        "capability": "OHOS NDK 能编译 Chromium //base、//net 及 BoringSSL/Zlib",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "若无法编译，则连 C++ 核心也无法复用，项目将接近 infeasible",
+        "source": "references/harmony-pc-capabilities.json#runtimes 仅保证语言运行时，未覆盖 Chromium 庞大专有构建栈"
+      },
+      {
+        "id": "ta:ohos_posix_socket",
+        "capability": "HarmonyOS PC 提供 Chromium //net 所需的 POSIX socket/epoll/TLS 能力",
+        "required": true,
+        "target_status": "partial",
+        "impact": "//net 依赖 POSIX socket 与部分 Linux 特定实现；OHOS NDK POSIX 子集可能缺失或需补丁",
+        "source": "references/harmony-pc-capabilities.json#runtimes / POSIX 子集为 partial"
+      }
+    ],
+    "unadaptable_apis": [
+      {
+        "id": "ua:android_context",
+        "caused_by": [
+          "ta:android_runtime"
+        ],
+        "api": "android.content.Context",
+        "public_entry": "CronetEngine.Builder(Context)",
+        "reason": "鸿蒙 PC 无 Android 运行时，无法提供 android.content.Context；这是公共 API 的必经入口",
+        "blocking_native_api": "android.content.Context",
+        "category": "platform",
+        "evidence": [
+          "android/api/src/org/chromium/net/CronetEngine.java:154"
+        ]
+      },
+      {
+        "id": "ua:android_system_properties",
+        "caused_by": [
+          "ta:android_runtime"
+        ],
+        "api": "android.os.SystemProperties / __system_property_read",
+        "public_entry": "AndroidOsSystemProperties.get(String, String)",
+        "reason": "读取 Android ro.* 系统属性，鸿蒙无对应接口",
+        "blocking_native_api": "__system_property_read",
+        "category": "platform",
+        "evidence": [
+          "android/java/src/org/chromium/net/impl/AndroidOsSystemProperties.java:19",
+          "android/cronet_library_loader.cc:149"
+        ]
+      },
+      {
+        "id": "ua:android_statslog",
+        "caused_by": [
+          "ta:android_runtime"
+        ],
+        "api": "android.util.StatsLog",
+        "public_entry": "CronetStatsLog.write*",
+        "reason": "Android 私有遥测统计接口，鸿蒙无等价实现",
+        "blocking_native_api": "android.util.StatsLog",
+        "category": "platform",
+        "evidence": [
+          "android/java/src/org/chromium/net/telemetry/CronetStatsLog.java:14"
+        ]
+      },
+      {
+        "id": "ua:android_httpengine",
+        "caused_by": [
+          "ta:android_runtime"
+        ],
+        "api": "android.net.http.HttpEngine",
+        "public_entry": "HttpEngineNativeProvider",
+        "reason": "包装 Android U+ 平台 HttpEngine，鸿蒙无此系统 API",
+        "blocking_native_api": "android.net.http.HttpEngine",
+        "category": "platform",
+        "evidence": [
+          "android/java/src/org/chromium/net/impl/HttpEngineNativeProvider.java:8"
+        ]
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.INTERNET",
+        "reason": "网络库核心功能需要访问互联网",
+        "source_capability": "network",
+        "harmony_status": "unknown",
+        "evidence": [
+          "cronet_context.cc:462"
+        ]
+      }
+    ],
+    "blockers": [
+      {
+        "id": "bk:android_runtime",
+        "issue": "公共 Java API 与初始化流程深度依赖 Android Runtime/SDK（Context、SystemProperties、StatsLog、HttpEngine），鸿蒙 PC 无 Android 环境",
+        "severity": "blocker",
+        "adaptability": "unadaptable",
+        "category": "android_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unavailable",
+        "remediation": "无法保留现有 Android API 形态；需将 C++ 核心解耦后重新用 ArkTS/Node-API 或标准 Java/JNI 包装",
+        "caused_by": [
+          "ta:android_runtime"
+        ],
+        "manifests_as": [
+          "ua:android_context",
+          "ua:android_system_properties",
+          "ua:android_statslog",
+          "ua:android_httpengine"
+        ],
+        "evidence": [
+          "android/api/src/org/chromium/net/CronetEngine.java:154",
+          "android/java/src/org/chromium/net/impl/AndroidOsSystemProperties.java:19",
+          "android/java/src/org/chromium/net/telemetry/CronetStatsLog.java:14",
+          "android/java/src/org/chromium/net/impl/HttpEngineNativeProvider.java:8"
+        ]
+      },
+      {
+        "id": "bk:ohos_ndk_chromium",
+        "issue": "Chromium //base、//net 及构建系统在 OHOS NDK 上的可编译性未经验证",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "toolchain",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "先用 OHOS NDK 尝试交叉编译 //net 及其依赖（boringssl、zlib、protobuf），处理 musl/POSIX 子集差异",
+        "caused_by": [
+          "ta:ohos_ndk_chromium"
+        ],
+        "evidence": [
+          "components/cronet/BUILD.gn",
+          "components/cronet/android/BUILD.gn"
+        ]
+      },
+      {
+        "id": "bk:posix_socket_subset",
+        "issue": "Chromium //net 底层使用 POSIX socket、epoll/kqueue、部分 ioctl，OHOS POSIX 子集可能不完整",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "逐项核对 //net 使用的系统调用在 OHOS 的可用性，缺失处改用 @ohos.net.socket / @ohos.net.http 或回退实现",
+        "caused_by": [
+          "ta:ohos_posix_socket"
+        ],
+        "evidence": [
+          "cronet_context.cc:462",
+          "net::NetworkChangeNotifier"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "压缩库 zlib",
+        "note": "已在 OpenHarmony PC cmd-pkgs 提供预编译包，可直接复用",
+        "evidence": [
+          "dependencies.zlib.harmony_adapted_source"
+        ]
+      },
+      {
+        "aspect": "协议序列化 protobuf",
+        "note": "C++ Protobuf 已在 OpenHarmony PC cmd-pkgs 提供预编译包",
+        "evidence": [
+          "dependencies.protobuf.harmony_adapted_source"
+        ]
+      },
+      {
+        "aspect": "C++ 标准库与 STL 数据结构",
+        "note": "核心算法、字符串、容器均为标准 C++，OHOS NDK 可编译",
+        "evidence": [
+          "cronet_context.cc",
+          "cronet_url_request.cc"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "评估并验证 Chromium //base、//net 在 OHOS NDK 上的可编译性",
+      "将 C++ 核心从 Android JNI/android_ 系统属性/StatsLog 中解耦，替换为跨平台实现或条件编译",
+      "重写公共 API 层：用 ArkTS/Node-API 或标准 Java/JNI 替代 android.content.Context 入口",
+      "验证 socket/TLS/DNS/代理路径在鸿蒙 POSIX 子集下的行为，必要时接入 @ohos.net.*",
+      "移除或替换 Android 遥测（StatsLog、ATrace）为鸿蒙日志/性能跟踪方案"
+    ],
+    "notes": "本评估按库口径（模型 A）进行：若目标是把现有 Android AAR/JAR 直接跑在鸿蒙 PC 上，则因 Android 运行时不可用而几乎不可行（infeasible）；若允许提取 C++ 核心并重新包装，则属于 needs_adaptation_partial，工作量在 1–2 人月以上。结论依赖两个未核实目标事实：OHOS NDK 能否编译 Chromium //base//net、以及鸿蒙 PC 的 POSIX socket/TLS 覆盖度，因此 confidence 为 medium。"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall": "medium",
+    "warnings": [
+      "code-metrics 按目录名 token 将 android/ 整体标为 test，但该目录下 android/api/src 与 android/java/src 是 Cronet 主要生产代码；分析时已按子目录结构收敛。"
+    ],
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "kind",
+        "kind": "ambiguity",
+        "value": "android-specific_library",
+        "rationale": "Cronet 是 library，但公共 API 完全依赖 Android SDK；在鸿蒙评估中需要明确区分“作为 Android 库不可直接运行”与“C++ 核心可复用”两种口径。"
+      },
+      {
+        "dimension": "code_metrics",
+        "field": "top_dirs",
+        "kind": "gap",
+        "value": "android_dir_classified_as_test",
+        "rationale": "metrics.py 按目录名将 android/ 判为 test，导致 top_dirs 中 production/test 边界与真实源码结构不符；后续分析以实际文件路径为准。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "monorepo_module",
+        "rationale": "Chromium //base、//net、//components/prefs 等属于同一 monorepo 内部模块，现有 acquisition 推荐值（vendored/fetchcontent/...）不能准确描述。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "android_sdk_system",
+        "rationale": "android_library 依赖 Android SDK 系统 jar（//third_party/android_sdk:public_framework_system_java），既不是本地 vendored 也不是远程注册表包。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "rewrap_cpp_core",
+        "rationale": "Cronet 是 Android API + C++ 核心的库；鸿蒙化不能直接复用 Java API，需提取 C++ 核心并重新包装。"
+      }
+    ]
+  }
+}
