@@ -119,6 +119,15 @@ def _g(obj, *path, default=None):
     return cur
 
 
+def _dep_container(r):
+    """`dependencies` 正常是 schema dict {count, dependencies:[...]}，但部分模型运行
+    直接产出裸数组。统一返回 dict 视图。"""
+    d = r.get("dependencies")
+    if isinstance(d, list):
+        return {"dependencies": d}
+    return d if isinstance(d, dict) else {}
+
+
 def _join(items, key=None):
     if not items:
         return ""
@@ -149,7 +158,7 @@ def _cat_names(categories):
 
 def rows_overview(name, r):
     cm, t = r.get("code_metrics", {}), r.get("tests", {})
-    dep, na = r.get("dependencies", {}), r.get("native_api", {})
+    dep, na = _dep_container(r), r.get("native_api", {})
     ha, be = r.get("harmony_adaptation", {}), r.get("build_env", {})
     return [[
         name,
@@ -355,7 +364,7 @@ def _cap_flag(r, key):
 
 def rows_deps(name, r):
     out = []
-    for d in _g(r, "dependencies", "dependencies", default=[]) or []:
+    for d in (_dep_container(r).get("dependencies") or []):
         out.append([
             name, d.get("name", ""), d.get("ecosystem", ""), d.get("scope", ""),
             d.get("version", ""), d.get("locality", ""), d.get("acquisition", ""),
@@ -409,12 +418,21 @@ HEAD_DYNLIBS = ["库名", "名称", "加载机制", "获取方式", "来源", "�
 
 def rows_surface(name, r):
     rs = r.get("runtime_surface", {})
+    if not isinstance(rs, dict):
+        return []
     out = []
     for cat in ("network", "filesystem", "env_vars", "subprocess", "devices"):
-        for it in rs.get(cat, []) or []:
-            label = it.get("name") or it.get("detail") or ""
-            out.append([name, cat, label, it.get("purpose", ""),
-                        _join(it.get("evidence", []) or [])])
+        val = rs.get(cat)
+        # 形状漂移：某些报告把 category 产成 dict/bool 概述而非条目列表 —— 跳过。
+        if not isinstance(val, list):
+            continue
+        for it in val:
+            if isinstance(it, dict):
+                label = it.get("name") or it.get("detail") or ""
+                out.append([name, cat, label, it.get("purpose", ""),
+                            _join(it.get("evidence", []) or [])])
+            elif it is not None:  # 条目偶发为字符串而非 dict
+                out.append([name, cat, str(it), "", ""])
     return out
 
 
@@ -509,7 +527,20 @@ WRAP_COLS = {"功能摘要", "API摘要", "鸿蒙总结", "用途", "改造建�
              "理由", "关键任务", "代码片段"}
 
 
+def _cell(v):
+    """把模型形状漂移里混入的非标量值（dict/list）强制转成可写字符串，避免单个异常
+    字段（如 build_env.build_system 偶发产出对象而非字符串）拖垮整包导出。"""
+    if v is None or isinstance(v, (str, int, float, bool)):
+        return v
+    if isinstance(v, (list, tuple)):
+        return _join([_cell(x) for x in v])
+    if isinstance(v, dict):
+        return json.dumps(v, ensure_ascii=False, sort_keys=True)
+    return str(v)
+
+
 def _write_sheet(ws, header, data):
+    data = [[_cell(v) for v in row] for row in data]
     ws.append(header)
     for c in ws[1]:
         c.font = HEAD_FONT
@@ -543,7 +574,12 @@ def build(entries, out_path):
         ws = wb.create_sheet(title)
         data = []
         for name, rep in entries:
-            data.extend(builder(name, rep))
+            # 单个库某个 block 的形状漂移（off-schema）不应拖垮整包导出：
+            # 该库在此 sheet 降级为跳过 + 告警，其余数据照常导出。
+            try:
+                data.extend(builder(name, rep))
+            except Exception as e:  # noqa: BLE001 — degrade gracefully, keep exporting
+                print(f"warn: skipped {name} in sheet {title!r}: {e}", file=sys.stderr)
         _write_sheet(ws, header, data)
     wb.save(out_path)
 
