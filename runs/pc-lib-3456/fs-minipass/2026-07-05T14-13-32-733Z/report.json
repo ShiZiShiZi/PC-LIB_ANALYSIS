@@ -1,0 +1,628 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript",
+      "YAML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 5,
+        "code": 1194,
+        "pct": 48.83,
+        "production": {
+          "files": 3,
+          "code": 402
+        },
+        "test": {
+          "files": 2,
+          "code": 792
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 14,
+        "code": 981,
+        "pct": 40.12,
+        "production": {
+          "files": 14,
+          "code": 981
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 6,
+        "code": 145,
+        "pct": 5.93,
+        "production": {
+          "files": 6,
+          "code": 145
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 5,
+        "code": 125,
+        "pct": 5.11,
+        "production": {
+          "files": 5,
+          "code": 125
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 30,
+      "code": 2445,
+      "comment": 57,
+      "blank": 326,
+      "total_lines": 2828
+    },
+    "production": {
+      "files": 28,
+      "code": 1653,
+      "comment": 53,
+      "blank": 201,
+      "total_lines": 1907
+    },
+    "test": {
+      "files": 2,
+      "code": 792,
+      "comment": 4,
+      "blank": 125,
+      "total_lines": 921
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".github",
+        "code": 1013,
+        "category": "production",
+        "by_category": {
+          "production": 1013
+        }
+      },
+      {
+        "dir": "test",
+        "code": 792,
+        "category": "test",
+        "by_category": {
+          "test": 792
+        }
+      },
+      {
+        "dir": "lib",
+        "code": 379,
+        "category": "production",
+        "by_category": {
+          "production": 379
+        }
+      },
+      {
+        "dir": ".",
+        "code": 261,
+        "category": "production",
+        "by_category": {
+          "production": 261
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 2,
+    "test_cases": 81,
+    "frameworks": [
+      "jest/mocha"
+    ],
+    "by_language": {
+      "JavaScript": {
+        "files": 2,
+        "cases": 81
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "fs-minipass 是一个轻量级的 Node.js 库，提供基于 minipass 流引擎的文件系统读写流实现。它包含四个类：异步文件读流 (ReadStream)、同步文件读流 (ReadStreamSync)、异步文件写流 (WriteStream) 和同步文件写流 (WriteStreamSync)。同步版本的流在构造时即同步读取全部文件内容或同步写入每次写入操作，同时在 pipe 场景下仍能响应背压。异步版本与传统 Node.js fs.createReadStream / fs.createWriteStream 类似但减少了 Stream 机械开销。",
+    "categories": [
+      {
+        "name": "异步文件读流 (ReadStream)",
+        "description": "基于 Minipass 的异步文件读取流，使用 fs.open/fs.read 异步 API 按 16MB 分块读取文件内容，支持 autoClose、自定义读取大小、文件描述符传入及已知文件大小优化。",
+        "evidence": [
+          "lib/index.js:37 ReadStream 类",
+          "lib/index.js:82 [\"_open]",
+          "lib/index.js:100 [\"_read]",
+          "lib/index.js:108 fs.read 调用"
+        ]
+      },
+      {
+        "name": "同步文件读流 (ReadStreamSync)",
+        "description": "继承自 ReadStream 的同步文件读取流，使用 fs.openSync/fs.readSync 同步 API 在构造后立即读入全部数据。当 pipe 到写入流时，按写入方消费速度逐块同步读取以尊重背压；调用 stream.read() 时则一次性返回整个文件内容。",
+        "evidence": [
+          "lib/index.js:178 ReadStreamSync 类",
+          "lib/index.js:179 fs.openSync 调用",
+          "lib/index.js:200 fs.readSync 调用"
+        ]
+      },
+      {
+        "name": "异步文件写流 (WriteStream)",
+        "description": "基于 EventEmitter 的异步文件写入流，使用 fs.open/fs.write/fs.close/fs.writev 异步 API。支持队列写入（当文件尚未打开或正在写入时缓冲）、写入位置指定、文件模式设置、flags 自动降级（r+→w→ENOENT 容错）、以及 drain 事件驱动背压管理。",
+        "evidence": [
+          "lib/index.js:225 WriteStream 类",
+          "lib/index.js:278 fs.open 调用",
+          "lib/index.js:336 fs.write 调用",
+          "lib/index.js:374 writev 调用"
+        ]
+      },
+      {
+        "name": "同步文件写流 (WriteStreamSync)",
+        "description": "继承自 WriteStream 的同步文件写入流，使用 fs.openSync/fs.writeSync/fs.closeSync 同步 API。每次 write() 同步刷新到磁盘，写入失败时尝试关闭文件描述符并抛出原始错误。支持 flags 自动降级（r+→w→ENOENT）。",
+        "evidence": [
+          "lib/index.js:388 WriteStreamSync 类",
+          "lib/index.js:395 fs.openSync 调用",
+          "lib/index.js:424 fs.writeSync 调用",
+          "lib/index.js:415 fs.closeSync 调用"
+        ]
+      }
+    ],
+    "domain": "filesystem",
+    "target_users": "Node.js 应用开发者，需要在文件系统上进行流式读写操作的用户"
+  },
+  "license": {
+    "spdx": "BlueOak-1.0.0",
+    "name": "Blue Oak Model License 1.0.0",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.md"
+    ],
+    "evidence": "LICENSE.md 文件包含完整的 Blue Oak Model License v1.0.0 文本；package.json 中 license 字段声明为 BlueOak-1.0.0",
+    "notes": "Blue Oak Model License 是一种宽松许可协议，与 MIT 类似，允许任意使用、修改和分发，仅要求保留许可声明。"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "minipass",
+        "mutate-fs",
+        "tap"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "minipass",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^7.0.3",
+        "purpose": "流引擎核心，ReadStream 继承自 Minipass 实现数据流的读写与背压管理",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (npm install)",
+        "declared_in": [
+          "package.json"
+        ],
+        "used_symbols": [
+          "Minipass"
+        ]
+      },
+      {
+        "name": "mutate-fs",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^2.1.1",
+        "purpose": "测试辅助库，用于模拟文件系统操作失败场景",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (npm install)",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tap",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^16.3.2",
+        "purpose": "测试框架，用于运行单元测试",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (npm install)",
+        "declared_in": [
+          "package.json"
+        ]
+      }
+    ],
+    "notes": "仅有一个运行期依赖 minipass，其余为开发/测试依赖。所有文件系统操作均通过 Node.js 内置 fs 模块实现，无额外的系统级依赖。"
+  },
+  "native_api": {
+    "summary": "纯 JavaScript 库，仅使用 Node.js 内置模块（fs、events、Buffer）和标准 JavaScript 语言特性（Symbol、class），无任何平台特有 API 或原生绑定。所有文件操作均通过 fs 模块的异步与同步方法完成，跨平台兼容。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "fs.open",
+            "purpose": "异步打开文件获取文件描述符",
+            "count": 2,
+            "evidence": [
+              "lib/index.js:83",
+              "lib/index.js:278"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.openSync",
+            "purpose": "同步打开文件获取文件描述符",
+            "count": 4,
+            "evidence": [
+              "lib/index.js:182",
+              "lib/index.js:395",
+              "lib/index.js:405"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.read",
+            "purpose": "异步从文件描述符读取数据到缓冲区",
+            "count": 1,
+            "evidence": [
+              "lib/index.js:108"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.readSync",
+            "purpose": "同步从文件描述符读取数据到缓冲区",
+            "count": 1,
+            "evidence": [
+              "lib/index.js:200"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.write",
+            "purpose": "异步向文件描述符写入缓冲区数据",
+            "count": 1,
+            "evidence": [
+              "lib/index.js:336"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.writeSync",
+            "purpose": "同步向文件描述符写入缓冲区数据",
+            "count": 1,
+            "evidence": [
+              "lib/index.js:425"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.writev",
+            "purpose": "异步向量写入，将多个缓冲区一次性写入文件",
+            "count": 1,
+            "evidence": [
+              "lib/index.js:374"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.close",
+            "purpose": "异步关闭文件描述符",
+            "count": 2,
+            "evidence": [
+              "lib/index.js:126",
+              "lib/index.js:383"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.closeSync",
+            "purpose": "同步关闭文件描述符",
+            "count": 2,
+            "evidence": [
+              "lib/index.js:219",
+              "lib/index.js:415"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "EventEmitter",
+            "purpose": "事件发射器基类，WriteStream 继承其事件系统",
+            "count": 1,
+            "evidence": [
+              "lib/index.js:3",
+              "lib/index.js:225"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.nextTick",
+            "purpose": "将回调推迟到下一个事件循环迭代执行",
+            "count": 1,
+            "evidence": [
+              "lib/index.js:106"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Buffer.allocUnsafe",
+            "purpose": "分配未初始化的缓冲区用于文件读取操作",
+            "count": 1,
+            "evidence": [
+              "lib/index.js:97"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "symbol_private",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Symbol()",
+            "purpose": "使用 Symbol 创建私有属性键，模拟私有成员以避免属性名冲突",
+            "count": 33,
+            "evidence": [
+              "lib/index.js:8-35"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时仅与文件系统交互，接收用户传入的文件路径作为来源与目标，无网络访问、环境变量、子进程调用或设备访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "用户通过构造函数传入的文件路径，用于打开文件进行读取或写入。路径可为字符串，也支持通过 fd 选项传入已打开的文件描述符。",
+        "purpose": "读写操作的目标文件路径或文件描述符",
+        "evidence": [
+          "lib/index.js:38-63",
+          "lib/index.js:226-249"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "JavaScript ES2015+ (class、Symbol 等)",
+    "runtime_version": "Node.js ^14.17.0 || ^16.13.0 || >=18.0.0",
+    "build_system": "npm",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x64",
+        "evidence": [
+          ".github/workflows/ci.yml:54-55 ubuntu-latest"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x64",
+        "evidence": [
+          ".github/workflows/ci.yml:58-59 macos-latest"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x64",
+        "evidence": [
+          ".github/workflows/ci.yml:61-62 windows-latest"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm 包分发，用户通过 npm install fs-minipass 安装",
+    "notes": "纯 JavaScript 库，无需编译步骤，依赖 npm 生态系统。engines 字段声明支持 Node.js 14.17+/16.13+/18+。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，支持 Node.js 已移植运行时，OHOS NDK 原生层）",
+    "feasibility": "feasible",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ]
+    },
+    "confidence": "high",
+    "summary": "fs-minipass 是纯 JavaScript 库，仅使用 Node.js 内置模块（fs、events、Buffer）和一个纯 JS 运行期依赖 minipass。HarmonyOS NEXT PC 已移植 Node.js 运行时，该库可直接在现有运行时上运行，无需任何代码修改或重新编译。文件系统操作经 fs 模块映射到鸿蒙内核的文件系统接口，无平台差异。",
+    "recommended_path": "run_on_ported_runtime",
+    "compatible": [
+      {
+        "aspect": "语言运行时",
+        "note": "Node.js 运行时已在 HarmonyOS NEXT PC 上移植，纯 JavaScript 代码可直接运行",
+        "evidence": [
+          "references/harmony-pc-capabilities.json"
+        ]
+      },
+      {
+        "aspect": "文件系统 API",
+        "note": "Node.js fs 模块的所有同步与异步方法在鸿蒙 Node.js 运行时中均有对应实现",
+        "evidence": [
+          "lib/index.js:83",
+          "lib/index.js:108",
+          "lib/index.js:336",
+          "lib/index.js:374"
+        ]
+      },
+      {
+        "aspect": "事件系统",
+        "note": "EventEmitter 为 Node.js 核心模块，在移植的 Node.js 运行时中可用",
+        "evidence": [
+          "lib/index.js:3"
+        ]
+      },
+      {
+        "aspect": "Buffer 操作",
+        "note": "Buffer 为 Node.js 核心模块，在移植的 Node.js 运行时中可用",
+        "evidence": [
+          "lib/index.js:97"
+        ]
+      },
+      {
+        "aspect": "运行期依赖 (minipass)",
+        "note": "minipass 为纯 JavaScript 流引擎库，无原生依赖，可在鸿蒙 Node.js 运行时上直接安装运行",
+        "evidence": [
+          "package.json"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在 HarmonyOS NEXT PC 的 Node.js 运行时上通过 npm install 直接安装",
+      "通过鸿蒙 Node.js 运行测试套件验证兼容性"
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_runtime",
+        "capability": "Node.js 运行时在 HarmonyOS NEXT PC 上的完整移植",
+        "required": true,
+        "target_status": "available",
+        "impact": "若 Node.js 运行时不可用，本库无法运行",
+        "source": "references/harmony-pc-capabilities.json"
+      },
+      {
+        "id": "ta:fs_module",
+        "capability": "Node.js fs 核心模块在鸿蒙上的文件系统映射",
+        "required": true,
+        "target_status": "available",
+        "impact": "若 fs 模块功能不完整，文件流操作可能受限",
+        "source": "references/harmony-pc-capabilities.json"
+      }
+    ],
+    "blockers": [],
+    "unadaptable_apis": [],
+    "required_permissions": [],
+    "notes": "纯脚本库，运行于已移植的 Node.js 运行时上，无原生扩展、无平台特有 API、无硬件依赖。鸿蒙化完全无阻碍。"
+  },
+  "library": {
+    "name": "fs-minipass",
+    "kind": "library",
+    "package_name": "fs-minipass",
+    "source_url": "https://github.com/isaacs/fs-minipass.git",
+    "commit": "a69909cf0e5850686f9a740375d867a4333f0012",
+    "one_liner": "基于 minipass 的文件系统读写流，提供同步与异步两种模式的文件流操作",
+    "ecosystem": "nodejs",
+    "bindings": [],
+    "analyzed_at": "2026-07-05T14:19:05Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "本项目为纯文件 I/O 工具库，专注于文件读写流操作，不涉及 GUI 界面、3D 渲染、音视频处理或特定硬件。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available"
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available"
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available"
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available"
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本项目为纯文件 I/O 工具库，生产代码不涉及任何云端服务调用、网络连接或第三方云 SDK。",
+    "services": []
+  }
+}

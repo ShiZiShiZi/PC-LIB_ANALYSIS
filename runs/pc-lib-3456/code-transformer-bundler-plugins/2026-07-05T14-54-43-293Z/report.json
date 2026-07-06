@@ -1,0 +1,634 @@
+{
+  "languages": {
+    "primary": "TypeScript",
+    "all": [
+      "TypeScript",
+      "Markdown",
+      "JSON",
+      "YAML"
+    ],
+    "breakdown": [
+      {
+        "language": "TypeScript",
+        "files": 19,
+        "code": 2558,
+        "pct": 87.36,
+        "production": {
+          "files": 10,
+          "code": 609
+        },
+        "test": {
+          "files": 9,
+          "code": 1949
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 156,
+        "pct": 5.33,
+        "production": {
+          "files": 2,
+          "code": 156
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 5,
+        "code": 154,
+        "pct": 5.26,
+        "production": {
+          "files": 5,
+          "code": 154
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 2,
+        "code": 60,
+        "pct": 2.05,
+        "production": {
+          "files": 2,
+          "code": 60
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 28,
+      "code": 2928,
+      "comment": 120,
+      "blank": 496,
+      "total_lines": 3544
+    },
+    "production": {
+      "files": 19,
+      "code": 979,
+      "comment": 105,
+      "blank": 194,
+      "total_lines": 1278
+    },
+    "test": {
+      "files": 9,
+      "code": 1949,
+      "comment": 15,
+      "blank": 302,
+      "total_lines": 2266
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "test",
+        "code": 1949,
+        "category": "test",
+        "by_category": {
+          "test": 1949
+        }
+      },
+      {
+        "dir": "src",
+        "code": 541,
+        "category": "production",
+        "by_category": {
+          "production": 541
+        }
+      },
+      {
+        "dir": ".",
+        "code": 378,
+        "category": "production",
+        "by_category": {
+          "production": 378
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 60,
+        "category": "production",
+        "by_category": {
+          "production": 60
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 9,
+    "test_cases": 54,
+    "frameworks": [
+      "jest/mocha"
+    ],
+    "by_language": {
+      "TypeScript": {
+        "files": 9,
+        "cases": 54
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "一个 JavaScript/TypeScript 构建时 APM 插桩插件集合。它基于 @apm-js-collab/code-transformer 库，为多个主流构建工具（Rollup、Webpack、Vite、esbuild、Bun）提供统一的插件接口，在构建阶段自动对目标代码进行字节码级别的插桩注入，实现自动化的应用性能监控和分布式链路追踪。核心层（core.ts）负责模块检测、代码变换调度和诊断数据收集；各构建工具适配层分别实现对应插件协议（Rollup 的 Plugin、Webpack 的 Compiler Hooks + Loader、Vite 的 Plugin（复用 Rollup 接口）、esbuild 的 Plugin、Bun 的 Plugin）。支持在构建产物头部注入诊断代码片段、源映射传递、ESM/CJS 模块类型自动检测、以及 Vite MPA 场景下空白 facade chunk 跳过等功能。",
+    "categories": [
+      {
+        "name": "构建工具集成",
+        "description": "为 5 种 JavaScript 构建工具提供统一的代码变换插件：Rollup 插件（src/rollup.ts）使用 transform hook 逐文件变换 + renderChunk hook 注入诊断代码、支持 MagicString 和 Rolldown BindingMagicString；Webpack 插件（src/webpack.ts）以 Plugin 方式注入前置 loader 并通过 Compilation hooks 实现诊断代码注入；Webpack Loader（src/webpack-loader.ts）独立于 Plugin 以纯 Loader 形式提供相同功能、兼容 Next.js Turbopack；Vite 插件（src/vite.ts）通过 enforce:'pre' + 复用 Rollup 插件实现；esbuild 插件（src/esbuild.ts）使用 onStart/onLoad/onEnd 生命周期实现变换与产物注入、支持 write:false 和 metafile 模式；Bun 插件（src/bun.ts）使用 Bun 的 esbuild 风格 Plugin API 实现、按包名过滤 node_modules 以减少干扰。",
+        "evidence": [
+          "src/rollup.ts:11-100 (Rollup 插件实现)",
+          "src/webpack.ts:20-96 (Webpack 插件)",
+          "src/webpack-loader.ts:67-133 (Webpack Loader)",
+          "src/vite.ts:5-12 (Vite 插件，复用 Rollup)",
+          "src/esbuild.ts:15-88 (esbuild 插件)",
+          "src/bun.ts:32-71 (Bun 插件)"
+        ]
+      },
+      {
+        "name": "代码变换",
+        "description": "核心变换逻辑位于 src/core.ts，通过 createCodeTransformer 函数整合 @apm-js-collab/code-transformer 的 matcher 引擎。流程：解析文件路径提取模块详情（使用 module-details-from-path）、读取模块 package.json 获取版本号、使用 es-module-lexer 检测 ESM/CJS 模块类型、调用 matcher.getTransformer 获取匹配的变换器执行变换。支持 SourceMap 传递。变换结果含 code + map。",
+        "evidence": [
+          "src/core.ts:154-218 (createCodeTransformer 核心函数)"
+        ]
+      },
+      {
+        "name": "诊断注入",
+        "description": "可选地，在构建产物头部注入诊断代码片段。通过 injectDiagnostics 回调函数收集变换统计数据（成功/失败的模块名称列表），返回要注入的代码字符串。Rollup/esbuild/Webpack 均在各自产物的头部（use strict 声明之后）插入该代码。Webpack 使用 ConcatSource 实现、Rollup 使用 MagicString.appendLeft、esbuild 使用目录出文件前或写入后注入。",
+        "evidence": [
+          "src/core.ts:159-170 (getCodeToInject 收集诊断数据)",
+          "src/rollup.ts:41-59 (renderChunk 注入诊断代码)",
+          "src/webpack.ts:43-88 (processAssets 阶段注入)",
+          "src/esbuild.ts:49-84 (onEnd 注入)"
+        ]
+      },
+      {
+        "name": "模块类型与过滤",
+        "description": "自动检测文件模块类型（ESM/CJS）以传递给 code-transformer 引擎：基于文件扩展名（.mjs/.ts/.tsx → ESM、.cjs → CJS）或内容分析（import/export 语句）；Bun 插件按插桩目标包名构建正则过滤 node_modules 路径以减少误拦截；Vite MPA 模式下检测 HTML facade chunk 并跳过空注入；JS 文件扩展名过滤确保仅变换 JS 文件。",
+        "evidence": [
+          "src/core.ts:133-147 (detectModuleType 函数)",
+          "src/core.ts:36-39 (isJsFile 函数)",
+          "src/core.ts:52-70 (containsOnlyImports 函数)",
+          "src/bun.ts:21-30 (buildFilter 函数)"
+        ]
+      }
+    ],
+    "domain": "应用性能监控（APM）、分布式链路追踪、构建时插桩",
+    "target_users": "使用 Rollup/Webpack/Vite/esbuild/Bun 构建前端或 Node.js 应用且需要自动化 APM 插桩的开发团队"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "medium",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [],
+    "evidence": "package.json 中声明 \"license\": \"MIT\"（repos/pc-lib-3456/code-transformer-bundler-plugins/package.json:28）",
+    "notes": "仓库根目录无 LICENSE 文件，源文件头也无 SPDX 标签；仅有 package.json 中的声明。MIT 许可宽松，允许商业使用、修改和再分发，仅需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 4,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "@apm-js-collab/code-transformer",
+        "es-module-lexer",
+        "module-details-from-path",
+        "magic-string"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "@apm-js-collab/code-transformer",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^0.15.0",
+        "purpose": "核心代码变换引擎：提供 InstrumentationConfig 类型和 create() 工厂函数以生成匹配器(matcher)和变换器(transformer)，负责实际 JS 代码的 AST 分析与插桩注入",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (@apm-js-collab/code-transformer)",
+        "declared_in": [
+          "package.json:86"
+        ],
+        "used_symbols": [
+          "create",
+          "InstrumentationConfig",
+          "ModuleType"
+        ],
+        "source_repo": "https://github.com/apm-js-collab/orchestrion-js"
+      },
+      {
+        "name": "es-module-lexer",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^2.1.0",
+        "purpose": "ESM 模块类型检测：使用 initSync/parse 解析 JS 代码的 import/export 语句以判断文件为 ESM 或 CJS 模块",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (es-module-lexer)",
+        "declared_in": [
+          "package.json:87"
+        ],
+        "used_symbols": [
+          "initSync",
+          "parse"
+        ]
+      },
+      {
+        "name": "module-details-from-path",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^1.0.4",
+        "purpose": "从文件绝对路径解析其所属 npm 模块的详细信息（模块名、根目录、相对路径），用于确定目标文件是哪个已发布包的代码",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (module-details-from-path)",
+        "declared_in": [
+          "package.json:88"
+        ],
+        "used_symbols": [
+          "default(filepath: string) => ModuleDetails | null"
+        ]
+      },
+      {
+        "name": "magic-string",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^0.30.21",
+        "purpose": "源代码字符串操作库：在 Rollup 插件中用于在产物头部精确插入诊断代码片段并生成对应的 SourceMap",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (magic-string)",
+        "declared_in": [
+          "package.json:89"
+        ],
+        "used_symbols": [
+          "MagicString",
+          "SourceMap"
+        ]
+      }
+    ],
+    "notes": "仅列出运行时依赖（4 个 npm 包）。devDependencies（@types/node、@types/bun、esbuild、rollup、tslib、typescript、unplugin-dts、vite、vitest、webpack）共 10 个仅用于构建/测试，不纳入运行时依赖计数。@apm-js-collab/code-transformer 是 orchestrion-js 项目的一部分，提供实际的 JS 代码变换能力；此插件库仅为它的构建工具适配层。无 C/C++ 本地依赖、无系统级依赖。"
+  },
+  "native_api": {
+    "summary": "纯 TypeScript 项目，无平台相关代码。仅使用 Node.js 标准库模块（path、fs、url）和 Web 标准 API（TextDecoder/TextEncoder）。无 C/C++ 本地代码、无 FFI、无动态库加载、无硬件 API、无平台条件编译。所有系统交互均通过 Node.js 标准库的可移植接口完成。",
+    "groups": [
+      {
+        "type": "node_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "path.extname",
+            "purpose": "获取文件扩展名，用于模块类型检测（.mjs/.cjs/.ts/.js 等）",
+            "count": 3,
+            "evidence": [
+              "src/core.ts:6",
+              "src/core.ts:134",
+              "src/webpack-loader.ts:2"
+            ]
+          },
+          {
+            "name": "path.join",
+            "purpose": "拼接路径，用于构建 package.json 文件路径以读取模块版本",
+            "count": 2,
+            "evidence": [
+              "src/core.ts:6",
+              "src/webpack-loader.ts:2"
+            ]
+          },
+          {
+            "name": "path.dirname",
+            "purpose": "获取目录名，用于计算 webpack-loader 相对路径",
+            "count": 1,
+            "evidence": [
+              "src/webpack.ts:3",
+              "src/webpack.ts:8"
+            ]
+          },
+          {
+            "name": "path.resolve",
+            "purpose": "解析绝对路径，用于定位 webpack-loader 的 CJS 构建产物",
+            "count": 1,
+            "evidence": [
+              "src/webpack.ts:3",
+              "src/webpack.ts:12"
+            ]
+          },
+          {
+            "name": "fs.readFileSync",
+            "purpose": "同步读取文件内容，用于读取模块 package.json 获取版本号、读取源代码文件",
+            "count": 4,
+            "evidence": [
+              "src/core.ts:7",
+              "src/core.ts:123",
+              "src/esbuild.ts:2",
+              "src/webpack-loader.ts:3"
+            ]
+          },
+          {
+            "name": "fs.writeFileSync",
+            "purpose": "同步写入文件，用于 esbuild 诊断代码注入（写入到输出文件头部）",
+            "count": 1,
+            "evidence": [
+              "src/esbuild.ts:2",
+              "src/esbuild.ts:83"
+            ]
+          },
+          {
+            "name": "url.fileURLToPath",
+            "purpose": "将 file:// URL 转换为文件系统路径，用于获取当前模块目录以定位 webpack-loader",
+            "count": 1,
+            "evidence": [
+              "src/webpack.ts:2",
+              "src/webpack.ts:8"
+            ]
+          },
+          {
+            "name": "TextDecoder",
+            "purpose": "将字节缓冲区解码为字符串，用于 esbuild 输出文件的编码处理",
+            "count": 1,
+            "evidence": [
+              "src/esbuild.ts:18"
+            ]
+          },
+          {
+            "name": "TextEncoder",
+            "purpose": "将字符串编码为字节缓冲区，用于 esbuild 输出文件的编码处理",
+            "count": 1,
+            "evidence": [
+              "src/esbuild.ts:19"
+            ]
+          },
+          {
+            "name": "console.warn",
+            "purpose": "输出警告日志，用于报告变换失败或缺少版本信息",
+            "count": 2,
+            "evidence": [
+              "src/core.ts:182",
+              "src/core.ts:211"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "webassembly",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "es-module-lexer.initSync",
+            "purpose": "同步初始化 es-module-lexer 的 WebAssembly 模块，用于 ESM 语法解析",
+            "count": 1,
+            "evidence": [
+              "src/core.ts:139"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "构建时插件库，运行期无网络访问、无子进程、无设备交互、无环境变量读取。运行期文件系统交互仅限于通过 fs.readFileSync 读取目标模块的 package.json 和源代码文件（在构建流程中执行），以及通过 fs.writeFileSync 向 esbuild 输出文件注入诊断代码。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "通过 fs.readFileSync 读取 node_modules 中目标模块的 package.json 以获取版本号",
+        "purpose": "模块版本检测，确定是否为已发布包及其版本范围以匹配插桩配置",
+        "evidence": [
+          "src/core.ts:120-131 (getModuleVersion 函数)",
+          "src/webpack-loader.ts:12-24"
+        ]
+      },
+      {
+        "detail": "通过 fs.readFileSync 读取源代码文件内容（esbuild onLoad Bun onLoad）",
+        "purpose": "读取目标待变换的源码传递给 code-transformer 引擎",
+        "evidence": [
+          "src/esbuild.ts:31",
+          "src/bun.ts:51"
+        ]
+      },
+      {
+        "detail": "通过 fs.writeFileSync 向输出文件写入诊断代码（esbuild metafile 模式）",
+        "purpose": "在 esbuild 写入磁盘后的产物头部追加诊断代码片段",
+        "evidence": [
+          "src/esbuild.ts:83"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "TypeScript (target ES2020, strict mode)",
+    "runtime_version": "Node >= 18.0.0（package.json engines 字段）",
+    "build_system": "Vite (vite build) + vite.config.ts 配置库模式(lib mode)构建，输出 ESM(.mjs) 和 CJS(.cjs) 双格式",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/ci.yml:13 (runs-on: ubuntu-latest)"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm 包，发布到 npm registry（publishConfig.access=public）。构建产物为 dist/esm/*.mjs + dist/cjs/*.cjs，通过 package.json exports 按构建工具名分发（rollup/webpack/vite/esbuild/bun/webpack-loader 子路径导出）。",
+    "notes": "纯 TypeScript/JS 库，无原生编译步骤，理论上跨所有 Node.js 支持平台。CI 仅运行在 ubuntu-latest + Node 22，但语言本身无需平台特定工具链。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；Node.js 24.13.0 运行时已移植，纯 JS/TS 直接运行；arm64 主力 + x86_64 待核实）",
+    "porting_class": "no_adaptation",
+    "feasibility": "feasible",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ]
+    },
+    "confidence": "high",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "纯 TypeScript/JavaScript npm 库，无原生扩展、无 C/C++ 依赖、无平台特定 API、无 FFI/动态库、无云服务、无 GUI/硬件/媒体场景。鸿蒙 PC 已移植 Node.js 运行时，本库可直接运行无需修改。唯一建议：在鸿蒙 PC 的 Node.js 上跑通其单元测试验证。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_runtime",
+        "capability": "Node.js 运行时（24.13.0）在鸿蒙 PC 上的可用性",
+        "required": true,
+        "target_status": "available",
+        "impact": "纯 JS/TS 库唯一依赖——运行时可用则整体可行",
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+      }
+    ],
+    "required_permissions": [],
+    "compatible": [
+      {
+        "aspect": "全部源码为纯 TypeScript/JavaScript，无原生扩展或 FFI",
+        "note": "直接运行在鸿蒙 Node.js 上，无需修改",
+        "evidence": [
+          "src/core.ts:1-218",
+          "src/rollup.ts:1-102",
+          "src/webpack.ts:1-98",
+          "src/vite.ts:1-14",
+          "src/esbuild.ts:1-90",
+          "src/bun.ts:1-73",
+          "src/webpack-loader.ts:1-146"
+        ]
+      },
+      {
+        "aspect": "Node.js 标准库（fs、path、url）使用",
+        "note": "鸿蒙 Node.js 24 已提供完整的 fs/path/url 模块，无需替换",
+        "evidence": [
+          "src/core.ts:6-7",
+          "src/webpack.ts:2-3",
+          "src/esbuild.ts:2",
+          "src/bun.ts:1"
+        ]
+      },
+      {
+        "aspect": "es-module-lexer 的 WebAssembly 模块",
+        "note": "鸿蒙 Node.js 24 支持 WebAssembly，initSync 可直接工作",
+        "evidence": [
+          "src/core.ts:10",
+          "src/core.ts:139"
+        ]
+      },
+      {
+        "aspect": "mportant 全部运行时依赖均为纯 npm 包（无原生插件）",
+        "note": "@apm-js-collab/code-transformer、magic-string、module-details-from-path 均为纯 JS/TS，无需重编",
+        "evidence": [
+          "package.json:86-89"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 的 Node.js 24 上执行 npm install 安装依赖",
+      "在鸿蒙 PC 上运行已有单元测试（vitest）验证功能完整性",
+      "发布为 npm 包时无须特殊处理；若打包为鸿蒙 aplikasi 分发包则按 standard Node.js 流程操作"
+    ],
+    "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。若目标为 ArkTS 沙箱应用（模型 B），Node 核心模块不可用、需用 @ohos.* 替代——但本库是构建时插件，在 ArkTS 沙箱内无直接用途，不适用模型 B。"
+  },
+  "library": {
+    "kind": "library",
+    "ecosystem": "nodejs",
+    "package_name": "@apm-js-collab/code-transformer-bundler-plugins",
+    "one_liner": "一套面向 JavaScript 构建工具（Rollup、Webpack、Vite、esbuild、Bun）的统一插件，在构建时通过 @apm-js-collab/code-transformer 对代码进行自动插桩以实现应用性能监控（APM）与链路追踪",
+    "bindings": [],
+    "aliases": [],
+    "import_names": [
+      "@apm-js-collab/code-transformer-bundler-plugins/rollup",
+      "@apm-js-collab/code-transformer-bundler-plugins/webpack",
+      "@apm-js-collab/code-transformer-bundler-plugins/vite",
+      "@apm-js-collab/code-transformer-bundler-plugins/esbuild",
+      "@apm-js-collab/code-transformer-bundler-plugins/bun",
+      "@apm-js-collab/code-transformer-bundler-plugins/webpack-loader"
+    ],
+    "source_url": "https://github.com/apm-js-collab/code-transformer-bundler-plugins",
+    "analyzed_at": "2026-07-05T14:57:21Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "license",
+        "field": "license_files",
+        "kind": "missing",
+        "value": "no LICENSE file",
+        "rationale": "仓库无 LICENSE 文件，但 package.json 声明 MIT 许可。置信度降至 medium。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "used_symbols",
+        "kind": "distribution_mode",
+        "value": "es-module-lexer.initSync 为 WebAssembly 初始化",
+        "rationale": "es-module-lexer.initSync 实际初始化的是一个 WebAssembly 模块，非普通 JS 符号。纯 JS 库的一个边缘情况。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "纯构建时 JavaScript 代码变换插件库，不涉及 GUI、3D 渲染、媒体处理或特定硬件。运行于构建流程中，无桌面界面、无图形渲染管线、无音视频编解码、无硬件依赖。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "构建时插件库，不依赖任何云端服务。无云厂商 SDK 依赖、无硬编码云端域名、无遥测上报、无崩溃收集、无登录认证等云集成。所有工作均在本地构建流程中完成。",
+    "services": []
+  }
+}

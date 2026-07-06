@@ -1,0 +1,409 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript",
+      "Markdown",
+      "JSON",
+      "YAML"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 3,
+        "code": 478,
+        "pct": 55.58,
+        "production": {
+          "files": 3,
+          "code": 478
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 314,
+        "pct": 36.51,
+        "production": {
+          "files": 2,
+          "code": 314
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 2,
+        "code": 41,
+        "pct": 4.77,
+        "production": {
+          "files": 2,
+          "code": 41
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 27,
+        "pct": 3.14,
+        "production": {
+          "files": 1,
+          "code": 27
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 8,
+      "code": 860,
+      "comment": 10,
+      "blank": 162,
+      "total_lines": 1032
+    },
+    "production": {
+      "files": 8,
+      "code": 860,
+      "comment": 10,
+      "blank": 162,
+      "total_lines": 1032
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 860,
+        "category": "production",
+        "by_category": {
+          "production": 860
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "safer-buffer 是一个 Node.js 库，为旧版 Node.js（0.8 起）提供现代 Buffer API（Buffer.alloc()、Buffer.from()）的 polyfill。与同类库 safe-buffer 不同，它主动对已废弃的 Buffer()/new Buffer() 构造器调用抛出异常，从而迫使依赖方彻底迁移到安全 API，消除因未初始化内存泄漏导致的安全隐患——这是 safe-buffer 静默容错所掩盖的真实风险。",
+    "categories": [
+      {
+        "name": "Buffer API polyfill",
+        "description": "在旧版 Node.js 运行时上补齐 Buffer.alloc() 和 Buffer.from()，确保这些方法在 Node.js 0.8 及以上版本均可用",
+        "evidence": [
+          "safer.js:27-56"
+        ]
+      },
+      {
+        "name": "安全 API 强制执行",
+        "description": "将 Buffer 和 new Buffer() 替换为不可调用的对象，任何对废弃构造器的调用都会抛出 TypeError，从机制上杜绝不安全用法——这是与 safe-buffer 的关键区别",
+        "evidence": [
+          "safer.js:5-23",
+          "tests.js:34-46"
+        ]
+      },
+      {
+        "name": "可选的不安全 API 逃生门",
+        "description": "通过 require('safer-buffer/dangerous') 可显式获取包含 allocUnsafe/allocUnsafeSlow 的 Buffer 包装，使用者需主动声明意图，形成安全屏障",
+        "evidence": [
+          "dangerous.js:34-56"
+        ]
+      }
+    ],
+    "domain": "安全 / 运行时兼容",
+    "target_users": "需要同时支持新旧 Node.js 版本且关注 Buffer 安全用法的 Node.js 包维护者"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件包含完整的 MIT 许可证文本；package.json 中 \"license\": \"MIT\" 字段确认",
+    "notes": "宽松许可，无 copyleft 约束"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "standard",
+        "tape"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "standard",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^11.0.1",
+        "purpose": "JavaScript 代码风格检查器（linter），确保代码符合 StandardJS 规范",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json:24"
+        ]
+      },
+      {
+        "name": "tape",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^4.9.0",
+        "purpose": "轻量级测试框架（TAP 协议），用于运行 tests.js 中的单元测试",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json:25"
+        ]
+      }
+    ],
+    "notes": "该库没有运行时依赖（runtime dependencies 为空的纯 JS 包）。唯一的生产代码依赖是 Node.js 内置的 buffer 模块（非三方包，不计入）。devDependencies 仅包含 standard（linter）和 tape（测试框架），均为开发/测试环境使用。另有一个可选脚本依赖 browserify（仅 CI 矩阵中的 browserify-test 任务使用，非项目常态依赖）。"
+  },
+  "native_api": {
+    "summary": "纯 JavaScript 库，仅使用 Node.js 内置模块（buffer、process），无原生扩展、无 C/C++ 依赖、无动态加载。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "buffer.Buffer",
+            "purpose": "Node.js 内置 Buffer 构造器与静态方法（.alloc/.from/.isBuffer/.concat/.byteLength 等），作为 polyfill 的基础实现",
+            "count": 10,
+            "evidence": [
+              "safer.js:5-6",
+              "safer.js:19-22",
+              "safer.js:35",
+              "safer.js:47"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "buffer.SlowBuffer",
+            "purpose": "Node.js 内置 SlowBuffer 构造器，仅在 dangerous.js 的 allocUnsafeSlow polyfill 中使用",
+            "count": 1,
+            "evidence": [
+              "dangerous.js:54"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "buffer.kMaxLength",
+            "purpose": "Node.js buffer 模块导出的最大长度常量，暴露为 safer.constants.MAX_LENGTH",
+            "count": 1,
+            "evidence": [
+              "safer.js:70"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "safer.js:5-77",
+          "dangerous.js:5-57"
+        ]
+      },
+      {
+        "type": "node_core",
+        "category": "system",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "process.binding('buffer')",
+            "purpose": "Node.js 内部 C++ 绑定，获取 kStringMaxLength 常量——该 API 在部分环境（非 Node/electron 等）不可用",
+            "count": 1,
+            "evidence": [
+              "safer.js:61"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "safer.js:59-66"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "纯 Node.js 库，运行时无网络访问、无文件系统读写、无环境变量依赖、无子进程调用——仅通过 require('buffer') 使用 Node 内置模块。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "ES5 (use strict)",
+    "runtime_version": "Node.js >= 0.8（已测试覆盖 0.8 至 stable）",
+    "build_system": "npm (package.json scripts)",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".travis.yml:2-16（Travis CI Linux 矩阵）"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无——库（npm 包，通过 npm publish 分发）",
+    "notes": "CI 矩阵覆盖 Node.js 0.8 / 0.10 / 0.12 / 4 / 5 / 6 / 7 / 8 / 9 / stable 共 16 个版本；测试脚本 tape tests.js + standard 代码风格检查。该库本质上是纯 JS polyfill，不捆绑任何运行时。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（模型 A：跑在已移植的 Node.js 24 运行时上；纯 JS 库，无原生扩展）",
+    "porting_class": "no_adaptation",
+    "feasibility": "feasible",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ]
+    },
+    "confidence": "high",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "safer-buffer 是纯 JavaScript 库，仅依赖 Node.js 内置 buffer 和 process 模块，无原生扩展、无 C 依赖、无平台特有 API。鸿蒙 PC 已移植 Node.js 24 运行时，该库可直接运行，无需任何适配工作。唯一用到 Node 内部 API 的地方（process.binding('buffer')）已有 try/catch 兜底，在 process.binding 不可用时优雅降级，不影响核心功能。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs",
+        "capability": "Node.js 运行时",
+        "required": true,
+        "target_status": "available",
+        "impact": "该库依赖 Node.js 的 buffer 和 process 核心模块，已移植的 Node.js 24 提供全部必需 API",
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+      }
+    ],
+    "required_permissions": [],
+    "compatible": [
+      {
+        "aspect": "全部代码（纯 JavaScript 逻辑）",
+        "note": "仅使用 Node.js 内置 buffer/process 模块，不涉及任何平台特有调用、文件系统、网络或子进程",
+        "evidence": [
+          "safer.js",
+          "dangerous.js"
+        ]
+      },
+      {
+        "aspect": "process.binding('buffer') 降级处理",
+        "note": "该调用已被 try/catch 包裹，在 process.binding 不可用环境（如某些非标准 Node 嵌入）中优雅跳过，不影响核心 polyfill 功能",
+        "evidence": [
+          "safer.js:59-66"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 的 Node.js 24 运行时上运行 tape tests.js 验证功能完整",
+      "确认 npm publish 到鸿蒙 PC 的 PyPI/OHPM 等注册表（如需分发）"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库为 npm 生态广泛依赖的基础 polyfill（周下载量超千万），其对旧 Node.js 版本的安全兼容性价值在鸿蒙 Node.js 24 上线后递减——鸿蒙 Node 24 原生已具备 Buffer.alloc/from，故该库在新平台上主要是提供 API 一致性（仍有从旧代码库迁移来的代码可能依赖它）。无论哪种用途，无需任何改动即可运行。"
+  },
+  "library": {
+    "name": "safer-buffer",
+    "kind": "library",
+    "package_name": "safer-buffer",
+    "source_url": "https://github.com/ChALkeR/safer-buffer.git",
+    "commit": "ed7f4fbca47c851873bc39a5a465d0de6d380950",
+    "one_liner": "Modern Buffer API polyfill，在旧版 Node.js 上提供 Buffer.alloc()/Buffer.from()，并对已废弃的 Buffer 构造器用法抛出异常以消除安全陷阱",
+    "ecosystem": "nodejs",
+    "bindings": [],
+    "analyzed_at": "2026-07-05T13:09:45Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "tests",
+        "field": "test_files",
+        "kind": "gap",
+        "value": "tests.js 被 code-metrics 脚本分类为 production",
+        "rationale": "tests.js（406 行）明确使用 tape 测试框架且仅包含测试逻辑，但 metrics 脚本将其归入 production 而非 test。原因是该文件在仓库根目录且无常见的 __tests__/test/ 目录包裹，脚本按目录 token 分类时漏判。metrics.json 的 test_files/test_cases 均为 0，实际测试文件数应为 1。已按指令保留脚本的计数值（\"Keep the script's line/test numbers verbatim\"），在此记录供审视。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "纯 JavaScript polyfill 库，不涉及 GUI、3D 渲染、媒体或硬件场景——仅包装 Node.js 内置 Buffer API。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "该库为纯本地 polyfill，不涉及任何云端服务——无第三方 SDK、无硬编码云端域名、无网络通信。",
+    "services": []
+  }
+}

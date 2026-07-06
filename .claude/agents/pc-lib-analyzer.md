@@ -89,9 +89,18 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    综合维度（9/10/11）仍在其输入（1/6/7/8）之后再算再写。这样输出摊到全程、日志实时可见、崩溃也保留已完成的块。
 
    Use `Glob`/`Grep`/`Read` to inspect README, manifests, public headers/API, and
-   representative source files. Prefer breadth on large repos. Cross-check the
+   representative source files. Cross-check the
    script's test framework / language guesses against what you see; refine the
    `tests.notes` / `tests.frameworks` if the script was fooled by an odd layout.
+
+   **超大仓 / monorepo 的正确做法（别因"仓库太大"退回写脚本）：** 面对成千上万文件、
+   上百个 `meson.build`/`CMakeLists.txt`/`package.json` 的巨仓，**不要试图用脚本枚举全部声明**。
+   正确顺序：① 用 `codegraph context/query/callers` 取广度、定位关键符号与目录；② 依据
+   `metrics.json` 的 `code_metrics.top_dirs` 聚焦**生产**顶层目录，跳过 test/example；③ 对
+   代表性的构建/清单文件、公共头、核心源做定向 `Read`。dim 6 的预期产出本就是**主要依赖的
+   curated 列表**（覆盖 mandatory + 各大类 optional，长尾在 `dependencies.notes` 说明），
+   由你阅读推理得出——**不是**把 N 条声明全量正则抽取；`count` 取你实际列出的条数即可。
+   仓库大是「用 codegraph 取广度 + 采样精读」的理由，**不是**「写正则解析器」的理由。
 
    **生产范围（重要，贯穿 dims 1/6/7/8/9）—— 结论只覆盖生产代码，排除测试与示例/演示代码。**
    - 读 `metrics.json` 的 `code_metrics.top_dirs`（每个顶层目录的 {dir,code,category}）和
@@ -259,3 +268,13 @@ the `.claude/skills/...` and `references/...` paths below resolve.
   and lose cross-dimension context and the codegraph index. For large repos, get
   breadth with `codegraph context/query/callers` then targeted `Read`, not by
   fanning out into research agents.
+- **解释性维度只能由你推理产出，绝不自写脚本去提取/解析/序列化它们。** dim 1/5/6/7/8/9/10/11
+  的每个 `blocks/<name>.json` **必须由你用 `Write` 工具直接写出**，内容来自你自己的阅读与判断。
+  **本流程唯一被授权运行的脚本只有三个**：`.claude/skills/code-metrics/scripts/metrics.py`
+  （dim 2–4 计数）、`scripts/harmony_adapted.js`（dim 6 鸿蒙盖章）、`scripts/assemble_report.py`
+  （组装）。除此之外**禁止写任何 Python/shell 脚本**——不许写正则去扫 `meson.build`/`CMakeLists.txt`/
+  `package.json` 抽依赖，不许拿脚本当 JSON dump/打分/reshape 工具，尤其不要 `extract_*.py` /
+  `build_*.py` / `stamp_*.py` / `split_*.py` 这类自造中间件。想快速摸底只能用**只读**的
+  `Grep`/`Glob`/`codegraph`（context/query/callers）探查，**但结论与 JSON 一律由你判断产出**——
+  这些维度的准确性正来自模型判断，正则会把别名/接口名（如 `find_package(PNG)`）/条件编译/
+  示例目录判错。（唯一例外见 3a：`harmony_adapted.js` 是被授权的事实盖章脚本。）

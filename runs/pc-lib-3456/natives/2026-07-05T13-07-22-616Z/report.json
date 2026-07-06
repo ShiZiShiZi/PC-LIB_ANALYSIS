@@ -1,0 +1,437 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JSON",
+      "JavaScript",
+      "Markdown",
+      "YAML"
+    ],
+    "breakdown": [
+      {
+        "language": "JSON",
+        "files": 3,
+        "code": 2724,
+        "pct": 91.9,
+        "production": {
+          "files": 3,
+          "code": 2724
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JavaScript",
+        "files": 2,
+        "code": 183,
+        "pct": 6.17,
+        "production": {
+          "files": 1,
+          "code": 128
+        },
+        "test": {
+          "files": 1,
+          "code": 55
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 49,
+        "pct": 1.65,
+        "production": {
+          "files": 2,
+          "code": 49
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 8,
+        "pct": 0.27,
+        "production": {
+          "files": 1,
+          "code": 8
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 8,
+      "code": 2964,
+      "comment": 20,
+      "blank": 42,
+      "total_lines": 3026
+    },
+    "production": {
+      "files": 7,
+      "code": 2909,
+      "comment": 19,
+      "blank": 35,
+      "total_lines": 2963
+    },
+    "test": {
+      "files": 1,
+      "code": 55,
+      "comment": 1,
+      "blank": 7,
+      "total_lines": 63
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 2909,
+        "category": "production",
+        "by_category": {
+          "production": 2909
+        }
+      },
+      {
+        "dir": "test",
+        "code": 55,
+        "category": "test",
+        "by_category": {
+          "test": 55
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 5,
+    "frameworks": [
+      "jest/mocha"
+    ],
+    "by_language": {
+      "JavaScript": {
+        "files": 1,
+        "cases": 5
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "natives 是一个小型 Node.js 库，通过对 Node.js 内部的 `process.binding('natives')` API 的包装，让用户能够获取 Node.js 内置原生模块（如 fs、buffer、module 等）的 JavaScript 源码，并利用 `vm` 模块创建这些模块的独立求值副本。它本质上是对 Node.js 未公开内部接口的薄封装，允许在任何 Node.js 环境中访问和重新执行内置模块代码，生成与原始模块隔离的独立实例。作者明确警告该库依赖 Node.js 内部未支持 API，在不同 Node 版本间可能不兼容。",
+    "categories": [
+      {
+        "name": "Node.js 内部模块访问",
+        "description": "通过 `process.binding('natives')` 获取 Node.js 内置原生模块的 JavaScript 源码，这是访问 Node.js 内部未公开 API 的桥接层。",
+        "evidence": [
+          "repos/pc-lib-3456/natives/index.js:1",
+          "repos/pc-lib-3456/natives/index.js:160"
+        ]
+      },
+      {
+        "name": "模块隔离实例化",
+        "description": "利用 `vm.runInThisContext()` 和内部包装函数，将获取到的内置模块源码在隔离的上下文中求值执行，生成与原始 `require()` 缓存无关的独立模块实例。",
+        "evidence": [
+          "repos/pc-lib-3456/natives/index.js:40-57",
+          "repos/pc-lib-3456/natives/index.js:127-146"
+        ]
+      },
+      {
+        "name": "内置模块自举模拟",
+        "description": "为内部模块提供自举所需的 `internalBinding`、`NativeModule`、`require` 等模拟环境，使加载过程不会干扰 Node.js 的正常模块缓存。",
+        "evidence": [
+          "repos/pc-lib-3456/natives/index.js:88-117"
+        ]
+      }
+    ],
+    "domain": "Node.js 运行时内省与工具",
+    "target_users": "需要访问或操作 Node.js 内部模块的 Node.js 工具/测试/调试开发者"
+  },
+  "license": {
+    "spdx": "ISC",
+    "name": "ISC License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.md"
+    ],
+    "evidence": "LICENSE.md explicitly states 'ISC License (ISC) Copyright 2018 Isaac Z. Schlueter' with full ISC text; package.json license field also reads 'ISC'.",
+    "notes": "纯 ISC 许可，无双重许可，无 Copyleft 风险。ISC 属于宽松许可，与 MIT/BSD 类似。"
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": 1
+    },
+    "dependencies": [
+      {
+        "name": "tap",
+        "ecosystem": "nodejs",
+        "registry_name": "tap",
+        "scope": "dev",
+        "version": "^11.0.0",
+        "purpose": "测试框架，用于运行 test/basic.js 中的 5 个测试用例",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (package.json devDependencies)",
+        "declared_in": [
+          "package.json"
+        ],
+        "used_symbols": []
+      }
+    ],
+    "notes": "无运行时（runtime）依赖。唯一 devDependencies 为测试框架 tap。生产代码 index.js 仅使用 Node.js 内置模块（vm、v8、module）和 `process.binding()` 内部 API，不依赖任何外部 npm 包。"
+  },
+  "native_api": {
+    "summary": "该库纯 JavaScript 实现，仅使用 Node.js 核心运行时 API（vm、v8、module 模块）和 `process.binding()` 内部绑定机制来访问 Node.js 内置模块源码。所有 API 均为 Node.js 标准或内部接口，无外部原生库依赖，无平台特有系统调用。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "process.binding('natives')",
+            "purpose": "获取 Node.js 内部原生模块源码字典，是访问所有内置 JS 模块的入口",
+            "count": 2,
+            "evidence": [
+              "repos/pc-lib-3456/natives/index.js:1",
+              "repos/pc-lib-3456/natives/index.js:109"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.binding('contextify')",
+            "purpose": "获取 V8 Contextify 绑定（ContextifyScript），用于在旧版 Node.js 中将脚本编译为可执行上下文对象",
+            "count": 1,
+            "evidence": [
+              "repos/pc-lib-3456/natives/index.js:12"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.binding('evals')",
+            "purpose": "获取 Node.js 内部 Script 绑定（NodeScript），作为 contextify 不可用时的备用脚本执行路径",
+            "count": 1,
+            "evidence": [
+              "repos/pc-lib-3456/natives/index.js:23"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.binding('util')",
+            "purpose": "获取 Node.js 内部 types 绑定，用于 internalBinding 的自举模拟",
+            "count": 1,
+            "evidence": [
+              "repos/pc-lib-3456/natives/index.js:90"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "vm.runInThisContext",
+            "purpose": "在当前 V8 上下文中执行一段 JavaScript 代码，是加载和求值模块源码的核心机制",
+            "count": 2,
+            "evidence": [
+              "repos/pc-lib-3456/natives/index.js:135",
+              "repos/pc-lib-3456/natives/index.js:141"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "require('v8').setFlagsFromString",
+            "purpose": "动态开关 V8 的 --allow_natives_syntax 标志，使内部模块中可能存在的 % 前缀 V8 原生语法正常工作",
+            "count": 2,
+            "evidence": [
+              "repos/pc-lib-3456/natives/index.js:129",
+              "repos/pc-lib-3456/natives/index.js:152"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "require('module')",
+            "purpose": "引用 Node.js module 系统，用于访问标准 require 函数（保存为 normalRequire 备用）",
+            "count": 1,
+            "evidence": [
+              "repos/pc-lib-3456/natives/index.js:2"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "repos/pc-lib-3456/natives/index.js"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "该库运行时完全依赖 Node.js 运行时环境。生产代码无需网络、文件系统、环境变量、子进程或设备访问——所有操作均在 Node.js 进程内完成（读取内部绑定、通过 vm 模块执行代码）。测试代码使用子进程和临时文件，但不影响生产范围结论。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Node.js >= 4（CI 测试覆盖 4/6/8/9/10）",
+    "runtime_version": "Node.js 4 及以上版本。依赖的核心 API（vm、v8、module）在所有受支持版本中可用；`process.binding()` 是 Node.js 内部 API，不同大版本的行为可能有差异。",
+    "build_system": "无（纯 JavaScript，无需编译构建）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "所有支持 Node.js 的平台",
+        "arch": "x86_64 / arm64 / ia32 等",
+        "evidence": [
+          "repos/pc-lib-3456/natives/.travis.yml（Linux CI）",
+          "repos/pc-lib-3456/natives/package.json（无 os/arch 限制）"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无——纯库，通过 npm 分发（`npm install natives`），入口文件 index.js，无打包/安装需求，不捆绑运行时。",
+    "notes": "无 C/C++ 原生代码，无编译步骤。该库仅有一个 128 行的 index.js 文件，通过 `npm pack` 发布到 npm registry。`process.binding()` 接口在各 Node 版本中签名和行为可能不同，因此该库对 Node 版本敏感——README 明确警告不同版本可能产生不同结果。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13.0 运行时上; 纯 JavaScript 库，无原生扩展; arm64/x86_64)",
+    "porting_class": "no_adaptation",
+    "feasibility": "feasible",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ]
+    },
+    "confidence": "high",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "natives 是纯 JavaScript 的 Node.js 库，仅 128 行源码，无原生 C/C++ 扩展、无外部运行时依赖、无平台特有系统调用、无网络/文件系统/子进程操作。鸿蒙 PC 已移植 Node.js 24.13.0，该库可直接在其上运行，无需任何代码修改或重编译。唯一关注点是该库依赖 Node.js 内部未公开的 `process.binding()` API——若鸿蒙 Node.js 端口保留了该 API（或通过 `--expose-internals` 标志可用），则完全兼容；这在主社区 Node.js 中是标准行为，鸿蒙端口基于主社区 24.13.0 应同样支持。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_runtime",
+        "capability": "Node.js 运行时（含标准核心模块 vm、v8、module）",
+        "required": true,
+        "target_status": "available",
+        "impact": "运行时不存在则库完全无法运行",
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+      },
+      {
+        "id": "ta:process_binding",
+        "capability": "Node.js 内部 process.binding() API（可通过 --expose-internals 标志暴露）",
+        "required": true,
+        "target_status": "available",
+        "impact": "该 API 是库访问 Node.js 内置模块源码的唯一入口，不可用则库完全失效",
+        "source": "鸿蒙 Node.js 基于主社区 24.13.0，process.binding() 在 --expose-internals 下可用（主社区标准行为）"
+      }
+    ],
+    "required_permissions": [],
+    "compatible": [
+      {
+        "aspect": "纯 JavaScript 逻辑（vm 模块执行、模块缓存管理、白名单机制）",
+        "note": "所有代码均为 Node.js 标准 API 调用，无平台绑定，鸿蒙 Node.js 上直接运行无需改动",
+        "evidence": [
+          "repos/pc-lib-3456/natives/index.js"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC Node.js 24.13.0 上以 --expose-internals 标志运行该库，验证 process.binding('natives') 可用",
+      "运行测试套件（tap test/*.js）确认功能完整"
+    ],
+    "notes": "该库的 README 明确警告其依赖 Node.js 内部未支持 API，不同 Node 版本可能行为不同。该限制是 Node.js 版本兼容性问题而非鸿蒙特有问题——鸿蒙 Node.js 24.13.0 基于主社区构建，process.binding() 在 --expose-internals 下可用（主社区标准）。此库本身仅 128 行，无任何编译/平台依赖，适配鸿蒙 PC 的工作量近乎零。评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。"
+  },
+  "library": {
+    "name": "natives",
+    "kind": "library",
+    "package_name": "natives",
+    "source_url": "https://github.com/addaleax/natives",
+    "analyzed_at": "2026-07-05T13:07:22.616Z",
+    "commit": "77743479b77ffbfbbd052fc54ffd37f39701aed5",
+    "one_liner": "访问 Node.js 内部原生 JavaScript 模块源码并创建独立求值副本的 Node.js 库",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "scope",
+        "kind": "gap",
+        "value": "此库无运行时依赖，仅 dev 依赖 tap，属「零外部依赖」纯 Node.js 内置库——该模式在 small-utility 型 npm 包中常见",
+        "rationale": "依赖清单几乎为空，purpose 字段对 dev 测试依赖信息量较低"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "ambiguity",
+        "value": "process.binding() 调用同时涉及 vm/v8/module 等标准 Node.js API 和内部绑定机制，界限模糊。内部绑定本质上仍是 Node.js 运行时内部的 C++ 绑定层，但对该库的使用者来说，它们通过纯 JS 调用，不涉及编译或平台差异",
+        "rationale": "这些 API 是 Node.js 核心的一部分，归类为 node_core 标准 API，但 `process.binding()` 是未公开内部接口"
+      }
+    ],
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "本项目（natives）是纯 Node.js 运行时内省库，仅使用 Node.js 核心 API（vm、v8、module 模块和 `process.binding()` 内部绑定），不涉及 GUI 界面、3D 渲染、音视频媒体处理或任何特定硬件设备。所有操作均在 Node.js 进程内完成。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本项目（natives）未涉及任何云端服务。它仅访问 Node.js 进程内部的 API（process.binding、vm、v8），不发起任何网络请求，不依赖任何第三方云平台 SDK、数据库或存储服务。",
+    "services": []
+  }
+}
