@@ -1400,16 +1400,28 @@ function formatEvent(ev) {
 // ---- report ---------------------------------------------------------------
 async function loadRun(name, run) {
   curRun = run;
+  let obj;
   try {
     const txt = await fetch(`/api/report?name=${enc(name)}&run=${enc(run)}&${gq()}`).then((x) => x.text());
-    const obj = JSON.parse(txt);
-    curReport = { name, run, obj };
-    renderReport(obj);
-    $('#rawJson').textContent = JSON.stringify(obj, null, 2);
-    $('#rawBtn').disabled = $('#htmlBtn').disabled = $('#dlBtn').disabled = false;
+    obj = JSON.parse(txt);
   } catch (_) {
     $('#report').innerHTML = '<p class="muted">本次运行没有报告（可能未完成或失败）。</p>';
     $('#rawBtn').disabled = $('#htmlBtn').disabled = $('#dlBtn').disabled = true;
+    obj = null;
+  }
+  if (obj) {
+    curReport = { name, run, obj };
+    $('#rawJson').textContent = JSON.stringify(obj, null, 2);
+    $('#rawBtn').disabled = $('#htmlBtn').disabled = $('#dlBtn').disabled = false;
+    // Render failures (e.g. a weak model's off-contract field shape) must not
+    // masquerade as "no report" — fall back to the raw JSON view instead.
+    try {
+      renderReport(obj);
+    } catch (e) {
+      $('#report').innerHTML =
+        `<p class="hint err">报告渲染异常，已降级为原始 JSON 视图。（${esc(e && e.message || e)}）</p>`
+        + `<pre class="raw">${esc(JSON.stringify(obj, null, 2))}</pre>`;
+    }
   }
   // also replay this run's persisted log if not currently streaming live
   if (!es) {
@@ -1476,7 +1488,40 @@ ${report.outerHTML}
   }
 }
 
+// Defensive shape normalisation for reports produced by weaker models that drift
+// off the contract (a lone string where the UI expects string[], an object where
+// it expects an array). New runs are already normalised at assembly time
+// (scripts/assemble_report.py); this covers pre-existing on-disk reports and any
+// future drift so a single off-shape field never blanks the whole render.
+function coerceReportShapes(r) {
+  if (!r || typeof r !== 'object') return r;
+  const flatten = (v) => {
+    if (Array.isArray(v)) return v;
+    if (v && typeof v === 'object') {
+      const groups = Object.values(v).filter((x) => Array.isArray(x) && x.some((e) => e && typeof e === 'object'));
+      if (groups.length) return groups.flat();
+      return [v];
+    }
+    return v == null || v === '' ? [] : [v];
+  };
+  // any property literally named "evidence" must be a string[]
+  const fixEvidence = (o) => {
+    if (Array.isArray(o)) { o.forEach(fixEvidence); return; }
+    if (o && typeof o === 'object') {
+      for (const k of Object.keys(o)) {
+        if (k === 'evidence' && o[k] != null && !Array.isArray(o[k])) o[k] = [o[k]];
+        else fixEvidence(o[k]);
+      }
+    }
+  };
+  fixEvidence(r);
+  if (r.build_env && !Array.isArray(r.build_env.entry_points) && r.build_env.entry_points)
+    r.build_env.entry_points = flatten(r.build_env.entry_points);
+  return r;
+}
+
 function renderReport(r) {
+  coerceReportShapes(r);
   const el = $('#report'); el.classList.remove('hidden'); $('#rawJson').classList.add('hidden');
   const sec = (title, inner) => `<div class="rsec"><h3>${title}</h3>${inner}</div>`;
   const parts = [];
@@ -1656,7 +1701,8 @@ function renderReport(r) {
       `<span class="chip" title="${esc((p.evidence || []).join(', '))}">${esc(p.os || '')}${p.arch ? ' / ' + esc(p.arch) : ''}</span>`).join('');
     const exts = (be.compiler_extensions || []).map((e) => surfItem(e.detail, e.purpose, e.evidence)).join('');
     const eps = (be.entry_points || []).map((e) =>
-      surfItem(e.name + (e.type ? ` (${e.type})` : ''), e.command, e.evidence)).join('');
+      surfItem((e.name || e.kind || e.file || e.type || '—') + (e.type && e.name ? ` (${e.type})` : ''),
+        e.command || e.file, e.evidence)).join('');
     parts.push(sec('构建与平台', `<div class="kv">
       <b>语言标准</b><span>${esc(be.language_standard || '—')}</span>
       <b>运行时版本</b><span>${esc(be.runtime_version || '—')}</span>

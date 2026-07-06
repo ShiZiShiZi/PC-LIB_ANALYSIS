@@ -2046,7 +2046,9 @@
         "purpose_library_purpose": "运行时动态加载 PC/SC 智能卡通信库，支持安全令牌密钥文件操作",
         "acquisition": "system",
         "source": "系统预装（Windows winscard.dll；Unix libpcsclite.so 通过 pkg-config 定位；macOS PCSC.framework）",
-        "evidence": "src/Common/SCardLoader.cpp:4-6"
+        "evidence": [
+          "src/Common/SCardLoader.cpp:4-6"
+        ]
       },
       {
         "name": "SetupAPI.dll (Windows)",
@@ -2054,7 +2056,9 @@
         "purpose_library_purpose": "Windows 设备安装/枚举 API，用于识别磁盘设备和存储控制器",
         "acquisition": "system",
         "source": "Windows SDK 系统 DLL",
-        "evidence": "src/Common/Dlgcode.c:20"
+        "evidence": [
+          "src/Common/Dlgcode.c:20"
+        ]
       },
       {
         "name": "Netapi32.dll (Windows)",
@@ -2062,7 +2066,9 @@
         "purpose_library_purpose": "Windows 网络管理 API，用于检测网络连接状态",
         "acquisition": "system",
         "source": "Windows 系统 DLL",
-        "evidence": "src/Common/Dlgcode.c:22"
+        "evidence": [
+          "src/Common/Dlgcode.c:22"
+        ]
       }
     ],
     "notes": "VeraCrypt 是重度平台的原生应用：Windows 端使用 NT 内核驱动（ntddk.h/ntddstor.h）直接操控磁盘设备和文件系统过滤栈，并通过 DeviceIoControl 与用户态通信；Unix/Linux 端使用 POSIX I/O + FUSE 用户空间文件系统 + loop 设备组合；macOS 额外使用 CoreFoundation/IOKit/Authorization Services 原生框架。密码学核心由内嵌的 AES/Serpent/Twofish/Camellia/Kuznyechik 及 BLAKE2s/SHA-2/Streebog/Whirlpool 代码实现，部分路径通过 AES-NI/SSE2/SSSE3/SSE4.1/ARMv8 Crypto 等 SIMD 硬件加速。dynamic_libraries 仅列出运行时动态加载的库（SCardLoader 通过 dlopen/LoadLibrary 加载 PC/SC）。"
@@ -2074,7 +2080,9 @@
         "purpose": "校验在线帮助文档链接（veracrypt.jp/veracrypt.io）；可选地通过 wxWidgets MIME 类型打开网页",
         "protocol": "HTTPS",
         "endpoint": "veracrypt.jp, veracrypt.io",
-        "evidence": "src/Main/GraphicUserInterface.cpp (wxMimeTypesManager 打开 URL)；README.md 引用在线文档链接；离线操作为主",
+        "evidence": [
+          "src/Main/GraphicUserInterface.cpp (wxMimeTypesManager 打开 URL)；README.md 引用在线文档链接；离线操作为主"
+        ],
         "frequency": "极低 — 仅用户手动触发帮助/网站链接时",
         "optional": true
       }
@@ -2086,7 +2094,9 @@
         "write": true,
         "purpose": "创建、修改、挂载加密文件容器（.hc 文件）",
         "mount": true,
-        "evidence": "src/Core/Unix/Linux/CoreLinux.cpp, src/Volumes/Volume.cpp",
+        "evidence": [
+          "src/Core/Unix/Linux/CoreLinux.cpp, src/Volumes/Volume.cpp"
+        ],
         "notes": "核心功能 — 需写入大量加密数据"
       },
       {
@@ -2095,7 +2105,9 @@
         "write": true,
         "purpose": "对磁盘分区或整个磁盘设备进行加密/解密；直接读写 /dev/sda、/dev/disk* 等设备节点",
         "mount": false,
-        "evidence": "src/Core/Unix/Linux/CoreLinux.cpp (ioctl BLKGETSIZE64)，src/Driver/Ntdriver.c (ZwCreateFile 打开 \\Device\\HarddiskVolume*)",
+        "evidence": [
+          "src/Core/Unix/Linux/CoreLinux.cpp (ioctl BLKGETSIZE64)，src/Driver/Ntdriver.c (ZwCreateFile 打开 \\Device\\HarddiskVolume*)"
+        ],
         "notes": "需要 root/管理员权限；Windows 上通过内核驱动实现"
       },
       {
@@ -2103,7 +2115,9 @@
         "read": true,
         "write": false,
         "purpose": "读取 PKCS#11 库路径配置和安全令牌设置",
-        "evidence": "src/Common/SecurityToken.cpp"
+        "evidence": [
+          "src/Common/SecurityToken.cpp"
+        ]
       },
       {
         "type": "配置与偏好文件",
@@ -2111,7 +2125,9 @@
         "write": true,
         "purpose": "保存用户偏好设置、加密卷历史记录、收藏卷列表",
         "path_pattern": "~/.VeraCrypt/ (Linux), ~/Library/Application Support/VeraCrypt/ (macOS), %APPDATA%/VeraCrypt/ (Windows)",
-        "evidence": "src/Main/UserPreferences.cpp, src/Main/VolumeHistory.cpp"
+        "evidence": [
+          "src/Main/UserPreferences.cpp, src/Main/VolumeHistory.cpp"
+        ]
       },
       {
         "type": "语言翻译文件",
@@ -2119,7 +2135,9 @@
         "write": false,
         "purpose": "加载多语言界面翻译 XML",
         "path_pattern": "Language.xml 及各语言 .xml 文件",
-        "evidence": "src/Common/Language.c, src/Common/Language.xml"
+        "evidence": [
+          "src/Common/Language.c, src/Common/Language.xml"
+        ]
       }
     ],
     "env_vars": [
@@ -2127,37 +2145,49 @@
         "name": "WSDK81",
         "purpose": "Windows SDK 路径（Windows 构建时使用）",
         "required": false,
-        "evidence": "README.md (Windows signing instructions)"
+        "evidence": [
+          "README.md (Windows signing instructions)"
+        ]
       },
       {
         "name": "VC_OSX_SDK",
         "purpose": "macOS 构建时指定 SDK 版本",
         "required": false,
-        "evidence": "src/Makefile:308 (Darwin section)"
+        "evidence": [
+          "src/Makefile:308 (Darwin section)"
+        ]
       },
       {
         "name": "SOURCE_DATE_EPOCH",
         "purpose": "可复现构建的时间戳",
         "required": false,
-        "evidence": "src/Makefile:606-627"
+        "evidence": [
+          "src/Makefile:606-627"
+        ]
       },
       {
         "name": "WX_ROOT",
         "purpose": "wxWidgets 源码路径（构建时使用）",
         "required": false,
-        "evidence": "src/Makefile:65"
+        "evidence": [
+          "src/Makefile:65"
+        ]
       },
       {
         "name": "PKG_CONFIG_PATH",
         "purpose": "pkg-config 搜索路径",
         "required": false,
-        "evidence": "src/Makefile:56"
+        "evidence": [
+          "src/Makefile:56"
+        ]
       },
       {
         "name": "LD_LIBRARY_PATH",
         "purpose": "wolfSSL 动态库搜索路径",
         "required": false,
-        "evidence": "src/Makefile:200"
+        "evidence": [
+          "src/Makefile:200"
+        ]
       }
     ],
     "subprocess": [
@@ -2165,43 +2195,57 @@
         "command": "losetup",
         "purpose": "创建/管理 Linux loop 设备（将文件容器映射为块设备）",
         "platform": "linux",
-        "evidence": "src/Core/Unix/Linux/CoreLinux.cpp:57"
+        "evidence": [
+          "src/Core/Unix/Linux/CoreLinux.cpp:57"
+        ]
       },
       {
         "command": "mount",
         "purpose": "挂载文件系统（挂载加密卷解密后的文件系统）",
         "platform": "posix",
-        "evidence": "src/Core/Unix/CoreUnix.cpp"
+        "evidence": [
+          "src/Core/Unix/CoreUnix.cpp"
+        ]
       },
       {
         "command": "umount",
         "purpose": "卸载文件系统",
         "platform": "posix",
-        "evidence": "src/Core/Unix/CoreUnix.cpp"
+        "evidence": [
+          "src/Core/Unix/CoreUnix.cpp"
+        ]
       },
       {
         "command": "sudo/doas",
         "purpose": "以 root 权限执行挂载/卸载等磁盘操作（管理员提权）",
         "platform": "posix",
-        "evidence": "src/Core/Unix/CoreService.cpp:40-55"
+        "evidence": [
+          "src/Core/Unix/CoreService.cpp:40-55"
+        ]
       },
       {
         "command": "diskutil",
         "purpose": "macOS 磁盘工具（挂载/卸载磁盘映像）",
         "platform": "macos",
-        "evidence": "src/Core/Unix/MacOSX/CoreMacOSX.cpp"
+        "evidence": [
+          "src/Core/Unix/MacOSX/CoreMacOSX.cpp"
+        ]
       },
       {
         "command": "hdiutil",
         "purpose": "macOS 磁盘映像工具",
         "platform": "macos",
-        "evidence": "src/Core/Unix/MacOSX/CoreMacOSX.cpp"
+        "evidence": [
+          "src/Core/Unix/MacOSX/CoreMacOSX.cpp"
+        ]
       },
       {
         "command": "chmod/chown",
         "purpose": "设置挂载点文件权限和所有者的系统命令",
         "platform": "posix",
-        "evidence": "src/Core/Unix/CoreUnix.cpp"
+        "evidence": [
+          "src/Core/Unix/CoreUnix.cpp"
+        ]
       }
     ],
     "devices": [
@@ -2210,13 +2254,17 @@
         "purpose": "直接访问磁盘分区和整个磁盘设备（加密/解密目标）",
         "example_path": "/dev/sda, /dev/disk*, /dev/loop*, \\\\.\\PhysicalDrive0",
         "required": true,
-        "evidence": "src/Core/Unix/Linux/CoreLinux.cpp, src/Driver/Ntdriver.c"
+        "evidence": [
+          "src/Core/Unix/Linux/CoreLinux.cpp, src/Driver/Ntdriver.c"
+        ]
       },
       {
         "type": "智能卡/PCSC 读卡器",
         "purpose": "通过 PC/SC 协议与 PKCS#11 安全令牌/智能卡交互",
         "required": false,
-        "evidence": "src/Common/SCardLoader.cpp, src/Common/SecurityToken.cpp"
+        "evidence": [
+          "src/Common/SCardLoader.cpp, src/Common/SecurityToken.cpp"
+        ]
       }
     ],
     "services": [
@@ -2224,81 +2272,33 @@
         "name": "FUSE 用户空间文件系统",
         "purpose": "在 Unix 上作为用户态文件系统守护进程运行，拦截并加密/解密所有对挂载点的 I/O 操作",
         "mechanism": "运行时由 VeraCrypt 主进程启动 FUSE 会话并进入事件循环，收到 SIGTERM 时卸载",
-        "evidence": "src/Driver/Fuse/FuseService.cpp"
+        "evidence": [
+          "src/Driver/Fuse/FuseService.cpp"
+        ]
       },
       {
         "name": "Windows 内核驱动 (veracrypt.sys)",
         "purpose": "Windows 内核模式文件系统过滤驱动，拦截底层磁盘 I/O 并实时加解密",
         "mechanism": "通过 Windows 服务控制管理器(SCM)注册和启动，使用 DeviceIoControl 与用户态 GUI 通信",
-        "evidence": "src/Driver/Ntdriver.c, src/Driver/DriveFilter.c"
+        "evidence": [
+          "src/Driver/Ntdriver.c, src/Driver/DriveFilter.c"
+        ]
       },
       {
         "name": "Core Service (Unix 权限分离服务)",
         "purpose": "以 root 权限运行的辅助进程，通过 Unix 域 socket 接受用户态 GUI 的挂载/卸载等特权操作请求",
         "mechanism": "通过 sudo/doas 启动，父子进程间通过 socketpair 通信（序列化请求/响应协议）",
-        "evidence": "src/Core/Unix/CoreService.cpp, src/Core/Unix/CoreServiceRequest.h"
+        "evidence": [
+          "src/Core/Unix/CoreService.cpp, src/Core/Unix/CoreServiceRequest.h"
+        ]
       }
     ],
     "notes": "VeraCrypt 作为磁盘加密应用，运行时对系统的侵入性很高：需要直接读写块设备(/dev/*)、加载内核驱动(Windows)或启动 FUSE 守护进程(Unix)、以 root/管理员权限执行挂载操作。网络访问非常有限（仅用户主动点击帮助链接时）。配置和卷历史存储在本地文件系统中。"
   },
   "build_env": {
-    "language_standard": [
-      {
-        "language": "C",
-        "standard": "C99/GNU99 及以上",
-        "evidence": "src/Makefile:50 (CXXFLAGS -std=c++11); C 代码使用 GNU 扩展（非标准 #include 路径等）"
-      },
-      {
-        "language": "C++",
-        "standard": "C++11（Linux GCC 4.8+ 使用 -std=c++11；GCC 11+ 使用 -std=gnu++14；macOS 使用 -std=c++11）",
-        "evidence": "src/Makefile:218-228 (GCC >=4.8 下 -std=c++11；GCC >=11 下 -std=gnu++14)"
-      }
-    ],
-    "runtime_version": {
-      "platforms": [
-        "Windows",
-        "Linux",
-        "macOS (Mac OS X)",
-        "FreeBSD",
-        "OpenBSD"
-      ],
-      "min_os_versions": {
-        "windows": "Windows Vista 及以上 (64-bit)",
-        "linux": "内核 2.6.x 及以上（需 FUSE 支持）",
-        "macos": "macOS 10.9 及以上（需 macFUSE/FUSE-T）",
-        "freebsd": "FreeBSD 14+",
-        "openbsd": "OpenBSD 7.8+"
-      },
-      "evidence": "README.md:29-211, src/Makefile 各平台配置段"
-    },
-    "build_system": [
-      {
-        "name": "GNU Make",
-        "files": [
-          "src/Makefile",
-          "src/Driver/Makefile",
-          "src/Common/Makefile",
-          "src/Crypto/Makefile",
-          "src/Boot/Windows/Makefile",
-          "src/Build/Packaging/arch/Makefile"
-        ],
-        "purpose": "Unix 平台（Linux/macOS/FreeBSD/OpenBSD）主构建系统",
-        "evidence": "src/Makefile"
-      },
-      {
-        "name": "Visual Studio Solution",
-        "files": "*.sln (Visual Studio .sln 文件，Windows 构建)",
-        "purpose": "Windows 平台构建 — 编译内核驱动(.sys)和用户模式 GUI(.exe)",
-        "evidence": "README.md:29-76 (Windows 构建说明)"
-      },
-      {
-        "name": "WiX Toolset",
-        "files": "src/Setup/*.wxs",
-        "purpose": "Windows MSI 安装包构建",
-        "version_constraint": "WiX Toolset v3.11",
-        "evidence": "README.md:70"
-      }
-    ],
+    "language_standard": "language: C；standard: C99/GNU99 及以上；evidence: src/Makefile:50 (CXXFLAGS -std=c++11); C 代码使用 GNU 扩展（非标准 #include 路径等）；language: C++；standard: C++11（Linux GCC 4.8+ 使用 -std=c++11；GCC 11+ 使用 -std=gnu++14；macOS 使用 -std=c++11）；evidence: src/Makefile:218-228 (GCC >=4.8 下 -std=c++11；GCC >=11 下 -std=gnu++14)",
+    "runtime_version": "platforms: Windows；Linux；macOS (Mac OS X)；FreeBSD；OpenBSD；min_os_versions: windows: Windows Vista 及以上 (64-bit)；linux: 内核 2.6.x 及以上（需 FUSE 支持）；macos: macOS 10.9 及以上（需 macFUSE/FUSE-T）；freebsd: FreeBSD 14+；openbsd: OpenBSD 7.8+；evidence: README.md:29-211, src/Makefile 各平台配置段",
+    "build_system": "name: GNU Make；files: src/Makefile；src/Driver/Makefile；src/Common/Makefile；src/Crypto/Makefile；src/Boot/Windows/Makefile；src/Build/Packaging/arch/Makefile；purpose: Unix 平台（Linux/macOS/FreeBSD/OpenBSD）主构建系统；evidence: src/Makefile；name: Visual Studio Solution；files: *.sln (Visual Studio .sln 文件，Windows 构建)；purpose: Windows 平台构建 — 编译内核驱动(.sys)和用户模式 GUI(.exe)；evidence: README.md:29-76 (Windows 构建说明)；name: WiX Toolset；files: src/Setup/*.wxs；purpose: Windows MSI 安装包构建；version_constraint: WiX Toolset v3.11；evidence: README.md:70",
     "compiler_extensions": [
       {
         "name": "GCC 内建函数",
@@ -2306,110 +2306,62 @@
           "__builtin_expect",
           "__builtin_bswap32/64"
         ],
-        "evidence": "src/Common/Endian.c, src/Crypto/misc.h"
+        "evidence": [
+          "src/Common/Endian.c, src/Crypto/misc.h"
+        ]
       },
       {
         "name": "MSVC 内建函数",
         "features": [
           "_rotl/_rotr/_rotl64/_rotr64"
         ],
-        "evidence": "src/Common/Tcdefs.h:41-48"
+        "evidence": [
+          "src/Common/Tcdefs.h:41-48"
+        ]
       }
     ],
-    "entry_points": {
-      "primary_entry_points": [
-        {
-          "type": "Unix 主入口",
-          "file": "src/Main/Unix/Main.cpp",
-          "kind": "C++ main() — GUI 与 CLI 统一入口（通过 --text 切换）"
-        },
-        {
-          "type": "Windows GUI 主入口",
-          "file": "src/Main/Forms/MainFrame.cpp",
-          "kind": "wxWidgets 窗口应用程序"
-        },
-        {
-          "type": "Windows 内核驱动入口",
-          "file": "src/Driver/Ntdriver.c",
-          "kind": "DriverEntry — Windows 内核驱动（veracrypt.sys）"
-        }
-      ],
-      "startup_type": "用户手动启动桌面应用或命令行工具"
-    },
-    "packaging": [
+    "entry_points": [
       {
-        "format": "DEB/RPM 包",
-        "platform": "linux",
-        "tool": "dpkg-buildpackage / rpmbuild",
-        "evidence": "README.md:130"
+        "type": "Unix 主入口",
+        "file": "src/Main/Unix/Main.cpp",
+        "kind": "C++ main() — GUI 与 CLI 统一入口（通过 --text 切换）"
       },
       {
-        "format": "PKGBUILD (Arch Linux)",
-        "platform": "linux",
-        "tool": "makepkg",
-        "evidence": "src/Build/Packaging/arch/"
+        "type": "Windows GUI 主入口",
+        "file": "src/Main/Forms/MainFrame.cpp",
+        "kind": "wxWidgets 窗口应用程序"
       },
       {
-        "format": "macOS .pkg 安装包",
-        "platform": "macos",
-        "tool": "Packages (packages.app)",
-        "evidence": "src/Build/build_veracrypt_macosx.sh"
-      },
-      {
-        "format": "Windows 安装程序 (.exe) + MSI",
-        "platform": "windows",
-        "tool": "WiX Toolset v3.11 + 代码签名 (GlobalSign)",
-        "evidence": "src/Setup/, Signing/sign.bat"
-      },
-      {
-        "format": "AppImage",
-        "platform": "linux",
-        "tool": "linuxdeploy",
-        "evidence": "src/Makefile:718 (appimage 目标)"
+        "type": "Windows 内核驱动入口",
+        "file": "src/Driver/Ntdriver.c",
+        "kind": "DriverEntry — Windows 内核驱动（veracrypt.sys）"
       }
     ],
+    "packaging": "format: DEB/RPM 包；platform: linux；tool: dpkg-buildpackage / rpmbuild；evidence: README.md:130；format: PKGBUILD (Arch Linux)；platform: linux；tool: makepkg；evidence: src/Build/Packaging/arch/；format: macOS .pkg 安装包；platform: macos；tool: Packages (packages.app)；evidence: src/Build/build_veracrypt_macosx.sh；format: Windows 安装程序 (.exe) + MSI；platform: windows；tool: WiX Toolset v3.11 + 代码签名 (GlobalSign)；evidence: src/Setup/, Signing/sign.bat；format: AppImage；platform: linux；tool: linuxdeploy；evidence: src/Makefile:718 (appimage 目标)",
     "platforms": [
       {
         "os": "Windows",
-        "arch": [
-          "x86",
-          "x64",
-          "ARM64 (experimental)"
-        ],
+        "arch": "x86；x64；ARM64 (experimental)",
         "supported": true
       },
       {
         "os": "Linux",
-        "arch": [
-          "x86",
-          "x64",
-          "armv7",
-          "arm64 (aarch64)"
-        ],
+        "arch": "x86；x64；armv7；arm64 (aarch64)",
         "supported": true
       },
       {
         "os": "macOS",
-        "arch": [
-          "x64",
-          "arm64 (Apple Silicon)"
-        ],
+        "arch": "x64；arm64 (Apple Silicon)",
         "supported": true
       },
       {
         "os": "FreeBSD",
-        "arch": [
-          "x86",
-          "x64"
-        ],
+        "arch": "x86；x64",
         "supported": true
       },
       {
         "os": "OpenBSD",
-        "arch": [
-          "x86",
-          "x64"
-        ],
+        "arch": "x86；x64",
         "supported": true
       }
     ],
@@ -2596,7 +2548,9 @@
         "caused_by": [
           "ta:fuse"
         ],
-        "evidence": "src/Driver/Fuse/FuseService.cpp:36"
+        "evidence": [
+          "src/Driver/Fuse/FuseService.cpp:36"
+        ]
       },
       {
         "api": "mount(2) / umount(2)",
@@ -2607,7 +2561,9 @@
         "caused_by": [
           "ta:loop_device"
         ],
-        "evidence": "src/Core/Unix/Linux/CoreLinux.cpp:19 (sys/mount.h)"
+        "evidence": [
+          "src/Core/Unix/Linux/CoreLinux.cpp:19 (sys/mount.h)"
+        ]
       },
       {
         "api": "IoCreateDevice / IoGetDeviceObjectPointer (NTDDK)",
@@ -2618,7 +2574,9 @@
         "caused_by": [
           "ta:nt_driver"
         ],
-        "evidence": "src/Driver/Ntdriver.c:15 (#include <ntddk.h>)"
+        "evidence": [
+          "src/Driver/Ntdriver.c:15 (#include <ntddk.h>)"
+        ]
       },
       {
         "api": "DeviceIoControl (Win32)",
@@ -2629,7 +2587,9 @@
         "caused_by": [
           "ta:nt_driver"
         ],
-        "evidence": "src/Mount/Mount.c:10"
+        "evidence": [
+          "src/Mount/Mount.c:10"
+        ]
       },
       {
         "api": "losetup (外部命令)",
@@ -2640,7 +2600,9 @@
         "caused_by": [
           "ta:loop_device"
         ],
-        "evidence": "src/Core/Unix/Linux/CoreLinux.cpp:57"
+        "evidence": [
+          "src/Core/Unix/Linux/CoreLinux.cpp:57"
+        ]
       },
       {
         "api": "CoreFoundation / IOKit (macOS)",
@@ -2649,7 +2611,9 @@
         "blocking_native_api": "CoreFoundation / IOIteratorNext / CFDictionaryRef",
         "category": "platform",
         "caused_by": [],
-        "evidence": "src/Core/Unix/MacOSX/CoreMacOSX.cpp:19"
+        "evidence": [
+          "src/Core/Unix/MacOSX/CoreMacOSX.cpp:19"
+        ]
       }
     ],
     "required_permissions": [
@@ -2658,28 +2622,36 @@
         "reason": "VeraCrypt 需要读写原始磁盘设备和分区以进行加密/解密操作",
         "source_capability": "storage_driver",
         "harmony_status": "unknown",
-        "evidence": "src/Core/Unix/Linux/CoreLinux.cpp (open /dev/sd* 块设备)"
+        "evidence": [
+          "src/Core/Unix/Linux/CoreLinux.cpp (open /dev/sd* 块设备)"
+        ]
       },
       {
         "permission": "ohos.permission.MOUNT_FORMAT_MANAGER",
         "reason": "加密卷需要挂载为文件系统供应用访问",
         "source_capability": "storage_driver",
         "harmony_status": "unknown",
-        "evidence": "src/Core/Unix/CoreUnix.cpp (mount/umount)"
+        "evidence": [
+          "src/Core/Unix/CoreUnix.cpp (mount/umount)"
+        ]
       },
       {
         "permission": "ohos.permission.INTERNET",
         "reason": "极少量网络访问——用户点击帮助链接时打开 veracrypt.jp 在线文档",
         "source_capability": "cloud_services",
         "harmony_status": "available",
-        "evidence": "runtime_surface.network (HTTPS to veracrypt.jp)"
+        "evidence": [
+          "runtime_surface.network (HTTPS to veracrypt.jp)"
+        ]
       },
       {
         "permission": "ohos.permission.KEEP_BACKGROUND_RUNNING",
         "reason": "加密/解密操作可能需要长时间运行，FUSE 守护进程需后台持续运行",
         "source_capability": "storage_driver",
         "harmony_status": "unknown",
-        "evidence": "src/Driver/Fuse/FuseService.cpp (fuse_loop 阻塞式事件循环)"
+        "evidence": [
+          "src/Driver/Fuse/FuseService.cpp (fuse_loop 阻塞式事件循环)"
+        ]
       }
     ],
     "notes": "VeraCrypt 被判定为 infeasible 主要原因：其核心加密卷挂载功能深度依赖操作系统内核级的 I/O 拦截——Windows 上通过 NT 内核过滤驱动(driver stack)实现，Unix 上通过 FUSE 用户空间文件系统 + loop 设备 + mount 系统调用实现。这两个模型都绑定特定内核架构（Windows NT 和 Linux），无法跨内核移植。鸿蒙 PC 采用自研内核（非 Linux ABI），缺少 FUSE 协议、loop 设备和 Linux mount 机制。即使 GUI 层可以用 ArkTS/ArkUI 重写，缺少内核级磁盘 I/O 透明拦截能力意味着加密卷无法实时挂载为可读写的文件系统——而这正是 VeraCrypt 存在的原因。若仅做文件级加密容器（不涉及设备挂载），功能严重缩水，不再是 VeraCrypt 的同功能替代。confidence=medium 因 target_assumptions 中有多项 unknown（鸿蒙 PC 的块设备访问模型、桌面应用分发形态、权限模型），这些若证实可用可能略微降低难度，但 FUSE + loop + mount 的缺失已构成不可逾越的阻碍。"
@@ -2699,7 +2671,7 @@
     "one_liner": "跨平台磁盘加密软件，支持实时加密卷、系统盘全盘加密与隐藏卷",
     "ecosystem": "cpp",
     "bindings": [],
-    "analyzed_at": "2026-07-05T16:18:54Z"
+    "analyzed_at": "2026-07-06T07:40:14Z"
   },
   "meta": {
     "confidence_overall": "medium",
@@ -2735,7 +2707,58 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "warnings": [
+      "shape coerced: native_api.dynamic_libraries[0].evidence string→array",
+      "shape coerced: native_api.dynamic_libraries[1].evidence string→array",
+      "shape coerced: native_api.dynamic_libraries[2].evidence string→array",
+      "shape coerced: runtime_surface.network[0].evidence string→array",
+      "shape coerced: runtime_surface.filesystem[0].evidence string→array",
+      "shape coerced: runtime_surface.filesystem[1].evidence string→array",
+      "shape coerced: runtime_surface.filesystem[2].evidence string→array",
+      "shape coerced: runtime_surface.filesystem[3].evidence string→array",
+      "shape coerced: runtime_surface.filesystem[4].evidence string→array",
+      "shape coerced: runtime_surface.env_vars[0].evidence string→array",
+      "shape coerced: runtime_surface.env_vars[1].evidence string→array",
+      "shape coerced: runtime_surface.env_vars[2].evidence string→array",
+      "shape coerced: runtime_surface.env_vars[3].evidence string→array",
+      "shape coerced: runtime_surface.env_vars[4].evidence string→array",
+      "shape coerced: runtime_surface.env_vars[5].evidence string→array",
+      "shape coerced: runtime_surface.subprocess[0].evidence string→array",
+      "shape coerced: runtime_surface.subprocess[1].evidence string→array",
+      "shape coerced: runtime_surface.subprocess[2].evidence string→array",
+      "shape coerced: runtime_surface.subprocess[3].evidence string→array",
+      "shape coerced: runtime_surface.subprocess[4].evidence string→array",
+      "shape coerced: runtime_surface.subprocess[5].evidence string→array",
+      "shape coerced: runtime_surface.subprocess[6].evidence string→array",
+      "shape coerced: runtime_surface.devices[0].evidence string→array",
+      "shape coerced: runtime_surface.devices[1].evidence string→array",
+      "shape coerced: runtime_surface.services[0].evidence string→array",
+      "shape coerced: runtime_surface.services[1].evidence string→array",
+      "shape coerced: runtime_surface.services[2].evidence string→array",
+      "shape coerced: build_env.language_standard array→string",
+      "shape coerced: build_env.runtime_version object→string",
+      "shape coerced: build_env.build_system array→string",
+      "shape coerced: build_env.compiler_extensions[0].evidence string→array",
+      "shape coerced: build_env.compiler_extensions[1].evidence string→array",
+      "shape coerced: build_env.platforms[0].arch array→string",
+      "shape coerced: build_env.platforms[1].arch array→string",
+      "shape coerced: build_env.platforms[2].arch array→string",
+      "shape coerced: build_env.platforms[3].arch array→string",
+      "shape coerced: build_env.platforms[4].arch array→string",
+      "shape coerced: build_env.entry_points object→array",
+      "shape coerced: build_env.packaging array→string",
+      "shape coerced: harmony_adaptation.unadaptable_apis[0].evidence string→array",
+      "shape coerced: harmony_adaptation.unadaptable_apis[1].evidence string→array",
+      "shape coerced: harmony_adaptation.unadaptable_apis[2].evidence string→array",
+      "shape coerced: harmony_adaptation.unadaptable_apis[3].evidence string→array",
+      "shape coerced: harmony_adaptation.unadaptable_apis[4].evidence string→array",
+      "shape coerced: harmony_adaptation.unadaptable_apis[5].evidence string→array",
+      "shape coerced: harmony_adaptation.required_permissions[0].evidence string→array",
+      "shape coerced: harmony_adaptation.required_permissions[1].evidence string→array",
+      "shape coerced: harmony_adaptation.required_permissions[2].evidence string→array",
+      "shape coerced: harmony_adaptation.required_permissions[3].evidence string→array"
+    ]
   },
   "capability_profile": {
     "summary": "VeraCrypt 作为桌面磁盘加密应用，涉及 GUI 界面（wxWidgets）和硬件级磁盘访问（块设备直接 I/O、内核驱动/FUSE 文件系统），不涉及 3D 渲染、音视频媒体或云端服务。",
