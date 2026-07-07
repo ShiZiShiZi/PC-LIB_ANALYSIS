@@ -1,0 +1,726 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 19,
+        "code": 691,
+        "pct": 75.68,
+        "production": {
+          "files": 19,
+          "code": 691
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 171,
+        "pct": 18.73,
+        "production": {
+          "files": 2,
+          "code": 171
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 44,
+        "pct": 4.82,
+        "production": {
+          "files": 1,
+          "code": 44
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 0.77,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 23,
+      "code": 913,
+      "comment": 19,
+      "blank": 148,
+      "total_lines": 1080
+    },
+    "production": {
+      "files": 23,
+      "code": 913,
+      "comment": 19,
+      "blank": 148,
+      "total_lines": 1080
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 691,
+        "category": "production",
+        "by_category": {
+          "production": 691
+        }
+      },
+      {
+        "dir": ".",
+        "code": 222,
+        "category": "production",
+        "by_category": {
+          "production": 222
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "OpenEXR_jll 是一个由 BinaryBuilder.jl 自动生成的 Julia JLL 包装库，负责下载并提供 OpenEXR C++ 库的预编译二进制共享库（libIex、libIlmThread、libOpenEXR、libOpenEXRCore、libOpenEXRUtil）。OpenEXR 是由 Industrial Light & Magic 开发的高动态范围（HDR）图像文件格式及读写库，广泛用于影视后期制作与计算机图形学领域。该 JLL 包本身不含 OpenEXR 的源代码或逻辑，仅作为 Julia 生态中分发原生二进制的薄封装层。",
+    "categories": [
+      {
+        "name": "预编译二进制分发",
+        "description": "通过 Julia 的 Artifact 机制自动下载并安装 OpenEXR 的预编译共享库，覆盖 Linux/macOS/Windows/FreeBSD 等多平台多架构",
+        "evidence": [
+          "src/wrappers/",
+          "README.md:27-46"
+        ]
+      },
+      {
+        "name": "共享库导出",
+        "description": "导出 libIex、libIlmThread、libOpenEXR、libOpenEXRCore、libOpenEXRUtil 五个 LibraryProduct，供其他 Julia 包通过 ccall 调用 OpenEXR 的 C/C++ API",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:2-11",
+          "README.md:59-63"
+        ]
+      },
+      {
+        "name": "平台适配加载",
+        "description": "为 18 种平台组合（含 aarch64/armv6l/armv7l/i686/powerpc64le/riscv64/x86_64 × Linux/macOS/Windows/FreeBSD）各生成独立的加载器脚本，通过 dlopen/RTLD_LAZY|RTLD_DEEPBIND 在运行时动态加载对应平台的共享库",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:12-45",
+          "src/wrappers/x86_64-apple-darwin.jl:12-45",
+          "src/wrappers/i686-w64-mingw32-cxx11.jl:12-45"
+        ]
+      }
+    ],
+    "domain": "graphics",
+    "target_users": "需要在 Julia 中读写 OpenEXR 高动态范围图像的开发者，以及构建于 OpenEXR 之上的其他 Julia 库"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件明确声明 Julia 包装代码（src/ 下所有文件）以 MIT 许可证发布，版权归属 JuliaBinaryWrappers。但明确指出该许可不适用于被包装的 OpenEXR 二进制包本身——OpenEXR 二进制的许可随二进制一起分发，位于安装前缀的 share/licenses/OpenEXR 目录。",
+    "notes": "该 JLL 包装代码本身为 MIT 许可，但被包装的 OpenEXR 上游库采用 BSD-3-Clause 许可证。实际使用时需同时遵守两个许可：包装代码的 MIT + OpenEXR 二进制的 BSD-3-Clause。"
+  },
+  "dependencies": {
+    "count": 4,
+    "manifests": [
+      "Project.toml"
+    ],
+    "by_ecosystem": {
+      "julia": 3,
+      "cpp": 1
+    },
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "other",
+        "registry_name": "JLLWrappers",
+        "source_repo": "https://github.com/JuliaPackaging/JLLWrappers.jl",
+        "import_names": [
+          "JLLWrappers"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "1.7.0",
+        "purpose": "Julia JLL 包装器的基础设施库，提供 @generate_main_file_header / @generate_main_file / @declare_library_product / @init_library_product 等宏，用于自动生成 JLL 包的加载逻辑",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General 注册表（Pkg）",
+        "declared_in": [
+          "Project.toml"
+        ],
+        "used_symbols": [
+          "@generate_main_file_header",
+          "@generate_main_file",
+          "@generate_wrapper_header",
+          "@declare_library_product",
+          "@init_library_product",
+          "@generate_init_header",
+          "@generate_init_footer"
+        ]
+      },
+      {
+        "name": "Imath_jll",
+        "ecosystem": "cpp",
+        "registry_name": "Imath_jll",
+        "source_repo": "https://github.com/AcademySoftwareFoundation/Imath",
+        "import_names": [
+          "Imath_jll"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "~3.2.2",
+        "purpose": "OpenEXR 所依赖的 Imath 数学库（3D 向量/矩阵/颜色等）的 JLL 预编译包装，OpenEXR 链接此库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General 注册表（Pkg），内含 Imath C++ 库的预编译二进制",
+        "declared_in": [
+          "Project.toml"
+        ],
+        "used_symbols": []
+      },
+      {
+        "name": "Zlib_jll",
+        "ecosystem": "cpp",
+        "registry_name": "Zlib_jll",
+        "source_repo": "https://github.com/madler/zlib",
+        "import_names": [
+          "Zlib_jll"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Zlib 压缩库的 JLL 预编译包装，OpenEXR 使用 zlib 进行 EXR 文件的数据压缩",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General 注册表（Pkg），内含 zlib 的预编译二进制",
+        "declared_in": [
+          "Project.toml"
+        ],
+        "used_symbols": []
+      },
+      {
+        "name": "Libdl",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "import_names": [
+          "Libdl"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Julia 标准库，提供 dlopen/dlsym 等动态链接库加载功能，JLLWrappers 使用它在运行时加载 OpenEXR 的共享库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Julia 标准库（随 Julia 发行版自带）",
+        "declared_in": [
+          "Project.toml"
+        ],
+        "used_symbols": [
+          "RTLD_LAZY",
+          "RTLD_DEEPBIND"
+        ]
+      }
+    ],
+    "notes": "Artifacts 标准库也在 Project.toml 的 [deps] 中声明，用于定位预编译二进制包的安装路径，但它是 Julia 标准库的一部分且不涉及外部依赖，不单独计入。OpenEXR 上游的 C++ 依赖（Imath、zlib）通过各自的 JLL 包间接引入预编译二进制。"
+  },
+  "native_api": {
+    "summary": "该 JLL 包装库本身仅使用 Julia 标准库的动态链接加载机制（Libdl.dlopen + RTLD_* 标志）在运行时加载预编译的 OpenEXR C++ 共享库。不直接调用任何操作系统平台 API 或硬件接口，所有平台差异由各平台独立的 wrapper 脚本通过不同的库文件路径和扩展名（.so/.dylib/.dll）处理。",
+    "groups": [
+      {
+        "type": "julia_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Libdl.dlopen",
+            "purpose": "运行时动态加载共享库文件",
+            "count": 5,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:14-42"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "RTLD_LAZY",
+            "purpose": "延迟绑定符号的 dlopen 标志",
+            "count": 5,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:17"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "RTLD_DEEPBIND",
+            "purpose": "优先使用本地符号而非已加载全局符号的 dlopen 标志，避免符号冲突",
+            "count": 5,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:17"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "src/wrappers/"
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libIex-3_4",
+        "mechanism": "Julia Libdl.dlopen（通过 JLLWrappers @init_library_product 宏间接调用）",
+        "acquisition": "prebuilt_binary",
+        "source": "BinaryBuilder.jl/Yggdrasil 构建系统预编译的 OpenEXR C++ 库，通过 Julia Artifact 自动下载",
+        "description": "OpenEXR 的基础异常与数学工具库（Iex = IL EXception）",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:7",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:14-18"
+        ]
+      },
+      {
+        "name": "libIlmThread-3_4",
+        "mechanism": "Julia Libdl.dlopen（通过 JLLWrappers @init_library_product 宏间接调用）",
+        "acquisition": "prebuilt_binary",
+        "source": "BinaryBuilder.jl/Yggdrasil 构建系统预编译的 OpenEXR C++ 库，通过 Julia Artifact 自动下载",
+        "description": "OpenEXR 的线程/并发支持库",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:8",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:20-24"
+        ]
+      },
+      {
+        "name": "libOpenEXR-3_4",
+        "mechanism": "Julia Libdl.dlopen（通过 JLLWrappers @init_library_product 宏间接调用）",
+        "acquisition": "prebuilt_binary",
+        "source": "BinaryBuilder.jl/Yggdrasil 构建系统预编译的 OpenEXR C++ 库，通过 Julia Artifact 自动下载",
+        "description": "OpenEXR 核心库，提供 EXR 高动态范围图像格式的读写功能",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:9",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:26-30"
+        ]
+      },
+      {
+        "name": "libOpenEXRCore-3_4",
+        "mechanism": "Julia Libdl.dlopen（通过 JLLWrappers @init_library_product 宏间接调用）",
+        "acquisition": "prebuilt_binary",
+        "source": "BinaryBuilder.jl/Yggdrasil 构建系统预编译的 OpenEXR C++ 库，通过 Julia Artifact 自动下载",
+        "description": "OpenEXR Core 库，提供底层的 EXR 文件 I/O 与解析功能（C API）",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:10",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:32-36"
+        ]
+      },
+      {
+        "name": "libOpenEXRUtil-3_4",
+        "mechanism": "Julia Libdl.dlopen（通过 JLLWrappers @init_library_product 宏间接调用）",
+        "acquisition": "prebuilt_binary",
+        "source": "BinaryBuilder.jl/Yggdrasil 构建系统预编译的 OpenEXR C++ 库，通过 Julia Artifact 自动下载",
+        "description": "OpenEXR 工具库，提供图像处理与颜色空间转换等辅助功能",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:11",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:38-42"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "该 JLL 包装库的运行时对外部宿主环境的依赖极小：仅需要 Julia 运行时和文件系统来定位预编译二进制 Artifact 的安装路径，不涉及网络通信、设备访问或外部服务。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "Julia Artifacts 系统在包安装时自动下载预编译二进制到标准 artifact 存储目录（~/.julia/artifacts/），运行时通过 Artifact 标准库定位该目录",
+        "purpose": "定位并加载 OpenEXR 预编译共享库文件",
+        "evidence": [
+          "Project.toml:10"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Julia >= 1.6",
+    "runtime_version": "Julia 1.6 或更高版本",
+    "build_system": "无（该 JLL 包由 BinaryBuilder.jl/Yggdrasil 在外部自动生成，仓库本身不含构建脚本）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          "src/wrappers/aarch64-linux-gnu-cxx11.jl",
+          "src/wrappers/aarch64-linux-musl-cxx11.jl"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv6l",
+        "evidence": [
+          "src/wrappers/armv6l-linux-gnueabihf-cxx11.jl",
+          "src/wrappers/armv6l-linux-musleabihf-cxx11.jl"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv7l",
+        "evidence": [
+          "src/wrappers/armv7l-linux-gnueabihf-cxx11.jl",
+          "src/wrappers/armv7l-linux-musleabihf-cxx11.jl"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "i686",
+        "evidence": [
+          "src/wrappers/i686-linux-gnu-cxx11.jl",
+          "src/wrappers/i686-linux-musl-cxx11.jl"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "powerpc64le",
+        "evidence": [
+          "src/wrappers/powerpc64le-linux-gnu-cxx11.jl"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [
+          "src/wrappers/riscv64-linux-gnu-cxx11.jl"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl",
+          "src/wrappers/x86_64-linux-musl-cxx11.jl"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "aarch64",
+        "evidence": [
+          "src/wrappers/aarch64-apple-darwin.jl"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "src/wrappers/x86_64-apple-darwin.jl"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "i686",
+        "evidence": [
+          "src/wrappers/i686-w64-mingw32-cxx11.jl"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "src/wrappers/x86_64-w64-mingw32-cxx11.jl"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "aarch64",
+        "evidence": [
+          "src/wrappers/aarch64-unknown-freebsd.jl"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86_64",
+        "evidence": [
+          "src/wrappers/x86_64-unknown-freebsd.jl"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无（库）：通过 Julia Pkg 包管理器分发，预编译二进制由 Julia Artifacts 机制自动下载",
+    "notes": "该 JLL 包的构建由 Yggdrasil（JuliaPackaging 的社区构建树）在外部完成，仓库本身仅为自动生成的包装代码。预编译二进制在构建时已针对 18 种平台交叉编译完成，运行时无需本地编译。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层 + ArkTS 应用层）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [
+        5,
+        15
+      ]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:julia_runtime",
+        "capability": "Julia 运行时（1.10.6 已移植到 HarmonyOS PC）",
+        "required": true,
+        "target_status": "available",
+        "impact": "Julia 运行时已可用，本 JLL 包装的 Julia 代码可直接运行",
+        "source": "references/harmony-pc-capabilities.json runtimes.julia"
+      },
+      {
+        "id": "ta:openexr_native_build",
+        "capability": "OpenEXR C++ 库在 HarmonyOS PC 上的原生编译/交叉编译",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "OpenEXR C++ 库（含 Imath/zlib 依赖）需用 OHOS NDK 重新编译为 aarch64 架构的共享库；若无预编译包则需自行构建，这是核心工作量所在",
+        "source": "references/harmony-pc-capabilities.json"
+      },
+      {
+        "id": "ta:libdl_dlopen",
+        "capability": "动态链接库加载（dlopen/dlsym）",
+        "required": true,
+        "target_status": "available",
+        "impact": "OHOS NDK 原生层支持 musl libc 的 dlopen/dlsym，Julia Libdl 可正常工作",
+        "source": "references/harmony-pc-capabilities.json（OHOS NDK 提供 musl + POSIX 子集）"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "cross_compile",
+    "summary": "本 JLL 包装库的 Julia 代码本身可运行在已移植的 Julia 运行时上，无需修改。核心适配工作在于：需使用 OHOS NDK 交叉编译 OpenEXR C++ 库（含 Imath、zlib 依赖）为 aarch64-ohos 共享库，并生成对应的 Julia wrapper 脚本（aarch64-ohos 平台变体），然后通过 Julia Artifacts 机制分发该预编译二进制。没有平台特有 API 阻碍，OpenEXR 本身是跨平台 C++ 库，主要依赖 POSIX 标准接口和 zlib/Imath，均可在 OHOS NDK 环境中编译。",
+    "blockers": [
+      {
+        "id": "bk:openexr_cross_compile",
+        "issue": "OpenEXR C++ 库及其依赖（Imath、zlib）尚无 HarmonyOS PC 的预编译二进制，需使用 OHOS NDK 交叉编译",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "needs_adaptation",
+        "remediation": "使用 OHOS NDK (aarch64-ohos target) 交叉编译 OpenEXR 源码，可参照 Yggdrasil 的 build_tarballs.jl 脚本调整工具链配置；zlib 和 Imath 需先行编译",
+        "caused_by": [
+          "ta:openexr_native_build"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "README.md:19-22",
+          "Project.toml:7-8"
+        ]
+      },
+      {
+        "id": "bk:jll_artifact_platform",
+        "issue": "当前 JLL 包不含 aarch64-ohos 平台的 wrapper 脚本和 Artifact 二进制，需新增该平台变体",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "harmony_status": "needs_adaptation",
+        "remediation": "在 Yggdrasil 的 build_tarballs.jl 中新增 aarch64-ohos 平台目标，重新生成 JLL 包（含新的 wrapper 脚本和 Artifact）",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": [
+          "src/wrappers/"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "Julia JLL 包装代码",
+        "note": "纯 Julia 代码（JLLWrappers 宏 + Libdl），不依赖平台特有 API，在已移植的 Julia 运行时上可直接运行",
+        "evidence": [
+          "src/OpenEXR_jll.jl"
+        ]
+      },
+      {
+        "aspect": "动态库加载机制",
+        "note": "使用标准 Libdl.dlopen + RTLD_LAZY|RTLD_DEEPBIND，OHOS NDK 的 musl libc 支持这些接口",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:14-42"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK 交叉编译 zlib → Imath → OpenEXR，产出 aarch64-ohos 共享库",
+      "在 Yggdrasil build_tarballs.jl 中新增 aarch64-ohos 平台目标并重新构建 Artifact",
+      "生成对应的 aarch64-ohos wrapper 脚本（参照 Linux musl 变体）",
+      "测试 Julia 中通过 ccall 调用 OpenEXR 库的基本功能"
+    ],
+    "notes": "Julia 运行时已移植到 HarmonyOS PC（1.10.6），因此该 JLL 包装的 Julia 层代码无需修改。OpenEXR 的 target_status 为 unknown——虽然 OpenEXR 是标准 C++ 跨平台库，主要依赖 POSIX + zlib，理论上可编译，但尚未有已验证的 OHOS 构建实例，因此 confidence 为 medium。若 OpenEXR 及其依赖可成功交叉编译（高概率），实际工作量主要在构建配置调试而非代码修改。"
+  },
+  "library": {
+    "name": "OpenEXR_jll",
+    "kind": "library",
+    "package_name": "OpenEXR_jll",
+    "aliases": [],
+    "import_names": [
+      "OpenEXR_jll"
+    ],
+    "source_url": "https://github.com/JuliaBinaryWrappers/OpenEXR_jll.jl.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-06T15:26:27Z",
+    "commit": null,
+    "one_liner": "Julia JLL 包装库，自动下载并提供 OpenEXR 高动态范围图像格式的预编译共享库",
+    "ecosystem": "other",
+    "bindings": [
+      "cpp"
+    ]
+  },
+  "meta": {
+    "schema_version": "1",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "ecosystem",
+        "kind": "new_value",
+        "value": "other",
+        "rationale": "Julia JLL 包装库的生态系统不属于 python/java/nodejs/cpp/rust/go/dotnet 中的任何一种，使用 other 表示 Julia 生态"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "julia_stdlib",
+        "rationale": "Julia 标准库（Libdl）不属于现有推荐类型（win32/posix/cpp_stl/python_stdlib/java_std/node_core/syscall/ctypes_ffi/jni/opengl/directx/arch_simd），需新增以准确描述"
+      }
+    ]
+  },
+  "capability_profile": {
+    "summary": "OpenEXR 是高动态范围图像格式库，本身不涉及 GUI/3D 渲染/媒体播放/特定硬件等鸿蒙适配重点场景。它是纯计算/文件 I/O 库，读写 EXR 图像文件格式，不直接使用 GPU 加速或硬件设备。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及 GUI",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及 3D 渲染 API",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "OpenEXR 是图像文件格式库（读写 EXR 文件），不涉及音视频编解码/播放/采集等媒体场景",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不依赖特定硬件",
+        "evidence": []
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "OpenEXR_jll 是纯本地的图像文件格式库的 Julia JLL 包装，不涉及任何云端服务——无登录鉴权、云存储、云数据库、推送、分析、崩溃上报等云端集成。代码中无硬编码云端域名、无云厂商 SDK 依赖。",
+    "services": []
+  }
+}

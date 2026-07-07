@@ -24,8 +24,40 @@ NA = "未分析"
 WORKDAYS_PER_MONTH = 22.0
 AI_DISCOUNT = 0.4
 
+# 代码量驱动的工作量估算速率（用户给定，行/天）
+RATE_XCOMPILE_CPP = 3000    # 交叉编译 C/C++
+RATE_ADAPT_CPP = 500        # 适配 C/C++
+RATE_ADAPT_OTHER = 1100     # 适配 Java/JS/Python/Rust 等
+
+LANG_CLOC = {   # 主语言类别 -> 对应 cloc 语言名集合（求生产代码行用）
+    "cpp": {"C", "C++", "C/C++ Header", "Objective-C", "Objective-C++", "CUDA"},
+    "java": {"Java"},
+    "python": {"Python"},
+    "js": {"JavaScript", "TypeScript", "Vuejs Component", "JSX", "TSX"},
+    "rust": {"Rust"},
+    "go": {"Go"},
+    "csharp": {"C#"},
+    "shell": {"Bourne Shell", "Bourne Again Shell", "Shell", "POSIX"},
+}
+
+# runs 目录名 -> 主语言类别（Goby 仅文档无生产代码，故不列入 -> 三列留空）
+LANG_CATEGORY = {
+    "brasero": "cpp", "keepass": "cpp", "KeePass2.x": "csharp", "keepassxc": "cpp",
+    "zotero": "js", "VeraCrypt": "cpp", "diffuse": "python", "GrADS": "cpp", "Ditto": "cpp",
+    "pulseview": "cpp", "libsigrok": "cpp", "Arduino": "java", "MilkyTracker": "cpp",
+    "Cura": "python", "processing": "java", "moby": "go", "notebook": "js", "gambas": "cpp",
+    "deluge": "python", "sonarqube": "java", "geany": "cpp", "shadowsocks-rust": "rust",
+    "BlueJ-Greenfoot": "java", "pip": "python", "kazam": "python", "maven": "java",
+    "redis": "cpp", "FreeCAD": "cpp", "ComfyUI": "python", "FFmpeg": "cpp", "mpc-hc": "cpp",
+    "mplayer": "cpp", "mysql-workbench": "cpp", "sqlitestudio": "cpp", "server": "cpp",
+    "robomongo": "cpp", "hive": "java", "jpegview": "cpp", "seafile": "cpp", "klavaro": "cpp",
+    "nvm": "shell", "QGIS": "cpp", "YesPlayMusic": "js", "rhythmbox": "cpp",
+}
+
 HEADER = [
-    "大类别", "品类", "应用名称", "原始工作量(人月)", "源码仓地址", "一句话功能描述",
+    "大类别", "品类", "应用名称", "原始工作量(人月)",
+    "交叉编译C/C++(人月)", "适配C/C++(人月)", "适配其他语言(人月)",
+    "源码仓地址", "一句话功能描述",
     "代码量", "主要技术栈", "软件类型", "分析说明", "依赖框架阻塞", "重写UI/新增功能",
     "AI为主转换", "预估工作量(人月)",
 ]
@@ -46,6 +78,13 @@ ROWS = [
      "KeePass 密码管理器的导入插件——本 SourceForge 仓库仅托管 KeePass 插件（分析样本为 OublietteImport），将旧版 Oubliette 加密库数据迁移进 KeePass。",
      "C++ + MFC/ATL/Win32", "GUI 插件(Windows DLL)",
      "注意：该 SF SVN 仓库仅含 KeePass 插件、非 KeePass 2.x 主程序。插件深绑 Windows——MFC/ATL GUI、Win32 注册表、MSVC 专有扩展，且须由尚未移植鸿蒙的 KeePass 宿主加载，鸿蒙无等价，判定不可行。",
+     "是", "是", "否"),
+
+    ("KeePass 2.x", "https://github.com/dlech/KeePass2.x.git", "KeePass2.x",
+     "安全工具", "密码管理器",
+     "KeePass 2.x 主程序——开源桌面密码管理器，基于 .NET/WinForms，提供 KDBX 加密数据库、密码生成、自动键入(Auto-Type)、多实例 IPC、插件体系与 70+ 格式导入导出；Windows 原生 .NET，Linux/macOS 走 Mono。",
+     "C# + .NET/WinForms（P/Invoke Win32）", "GUI 应用（.NET）",
+     "此为 KeePass 2.x 真正主程序（区别于上一行的 SF SVN 插件样本）。依赖 .NET 运行时与 WinForms/Win32，鸿蒙无等价运行时/GUI 栈，且大量 P/Invoke Windows API 与 Mono 专有路径，需整体重写，判定不可行。",
      "是", "是", "否"),
 
     ("Zotero", "https://github.com/zotero/zotero.git", "zotero",
@@ -327,6 +366,20 @@ ROWS = [
      "C + GTK3 + GStreamer", "GUI 应用",
      "C/GTK3 + GStreamer 音乐播放器，核心可重编；FM 广播(V4L2)/iPod 等硬件插件鸿蒙无对应（可裁剪），另需替换 GNOME 桌面集成，可行。",
      "否", "否", "是"),
+
+    ("KeePassXC", "https://github.com/keepassxreboot/keepassxc.git", "keepassxc",
+     "安全工具", "密码管理器",
+     "KeePassXC——跨平台桌面密码管理应用，创建管理 KDBX 加密离线数据库，提供自动键入、浏览器集成、TOTP、SSH Agent、Secret Service、YubiKey 挑战-响应与命令行工具 keepassxc-cli。",
+     "C++ + Qt6", "GUI 应用",
+     "C++/Qt6 桌面应用，Qt6 可交叉编译到鸿蒙；需创建 OHOS 平台后端替换 X11/AppKit/Win32 OSUtils，以 @ohos 能力替代 freedesktop Secret Service/自动键入，YubiKey 等硬件与浏览器集成需适配，部分可适配、工作量较大，可行。",
+     "否", "否", "是"),
+
+    ("libsigrok", "https://github.com/sigrokproject/libsigrok.git", "libsigrok",
+     "电子/工程工具", "硬件信号采集库",
+     "sigrok 套件核心 C 共享库，统一抽象 USB/串口/HID/蓝牙/GPIB/TCP-SCPI 等接口，与逻辑分析仪、示波器、万用表等 90 余种测量设备通信并做二十余种数据输入输出格式转换（PulseView 的后端）。",
+     "C（glib + libusb/libserialport）", "库",
+     "sigrok 后端 C 库，交叉编译到鸿蒙即可；需为 libusb/串口等提供鸿蒙设备访问后端并核实 USB 设备访问权限，其余重编，全部可适配，工作量小，可行。",
+     "否", "否", "是"),
 ]
 
 
@@ -362,11 +415,24 @@ def _code_total(rep):
     return (((rep or {}).get("code_metrics") or {}).get("total") or {}).get("code")
 
 
+def _main_lang_prod_code(rep, names):
+    """主语言（指定 cloc 语言名集合）的生产代码行数之和。"""
+    bd = ((rep or {}).get("languages") or {}).get("breakdown") or []
+    return sum((x.get("production") or {}).get("code", 0)
+               for x in bd if x.get("language") in names)
+
+
+def _pm(lines, rate):
+    """行数 -> 人月（行/天 ÷ 每月工作日），保留 1 位小数。"""
+    return round(lines / rate / WORKDAYS_PER_MONTH, 1)
+
+
 def build_rows():
     out = []
     for (name, url, dir_name, big, cat, desc, stack, sw_type, note,
          block, rewrite, ai) in ROWS:
         code = orig = est = ""
+        xc = adapt_c = adapt_o = ""   # 代码量驱动的三列工作量
         if dir_name is not None:
             rep = _latest_report(dir_name)
             if rep is None:
@@ -376,9 +442,18 @@ def build_rows():
             if mid is not None:
                 orig = round(mid / WORKDAYS_PER_MONTH, 1)
                 est = round(orig * AI_DISCOUNT, 1)
+            lang_cat = LANG_CATEGORY.get(dir_name)
+            if lang_cat is not None:
+                lines = _main_lang_prod_code(rep, LANG_CLOC[lang_cat])
+                if lines > 0:
+                    if lang_cat == "cpp":
+                        xc = _pm(lines, RATE_XCOMPILE_CPP)
+                        adapt_c = _pm(lines, RATE_ADAPT_CPP)
+                    else:
+                        adapt_o = _pm(lines, RATE_ADAPT_OTHER)
         out.append([
-            big, cat, name, orig, url, desc, code, stack, sw_type, note,
-            block, rewrite, ai, est,
+            big, cat, name, orig, xc, adapt_c, adapt_o, url, desc, code,
+            stack, sw_type, note, block, rewrite, ai, est,
         ])
     return out
 

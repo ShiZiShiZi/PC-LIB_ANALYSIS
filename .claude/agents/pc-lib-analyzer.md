@@ -61,6 +61,16 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    If you ever do need to (re)build it yourself: `codegraph init -i <repoPath>` (first
    time) or `codegraph sync <repoPath>` (refresh).
 
+2c. **(Optional) 鸿蒙文档技能（opencode 全局，外部）.** 运行环境可能装有
+   `harmonyos-sdk-api-lookup`（官方 API 参考：@ohos 模块/权限 ohos.permission.\* 精确名/SysCap）与
+   `harmonyos-docs-lookup`（开发指南/FAQ）两个全局技能——run prompt 会提示可用性。**dims 9/10 做目标侧
+   判断（鸿蒙有无等价 API、权限名、适配路径）时优先用它们核实**，方法/预算（每库 ≤10 次检索）/口径护栏
+   （**文档存在 ≠ PC 可用，`references/harmony-pc-capabilities.json` 仍是 PC 形态权威**）见
+   harmony-adaptation SKILL.md「目标侧 API 事实核查」。降级链：opencode `skill` 工具按名加载 →
+   不可用则直接 Glob/Grep `~/.config/opencode/skills/<name>/` → 都不可用则仅用 caps JSON 并在
+   `meta.warnings` 记一条。这些是**只读检索**，不违反下方「禁自写脚本」规则；但技能自带的
+   `scripts/*.py` **不要运行**（三脚本白名单不变），用 Glob/Grep 达到同样检索效果。
+
 3. **Reasoned dimensions (1, 5, 6, 7, 8).** For each, read the corresponding skill
    file for the full method, then read the actual source to fill in the block:
    - Dim 1 function summary → `.claude/skills/function-summary/SKILL.md`
@@ -77,13 +87,19 @@ the `.claude/skills/...` and `references/...` paths below resolve.
      (fills `cloud_services`; a SYNTHESIS over dims 1/6/8 — do it AFTER those exist,
      BEFORE dim 9: 是否涉及云端服务 + 推测厂商 + 用途/置信, 复用 dependencies /
      runtime_surface.network / native_api.dynamic_libraries)
+   - Dim 12 code partition → `.claude/skills/code-partition/SKILL.md`
+     (fills `code_partition`; a SYNTHESIS over dims 3/7/10/6 — do it AFTER those exist,
+     BEFORE dim 9: 把生产代码按鸿蒙迁移复用性分 4 桶——直接复用/重编译复用/需适配/无法适配——
+     模块粒度 + LOC，**LOC 引用 `metrics.json` 的 `code_metrics.dir_loc` 机械数字**，桶和 ≈
+     production.code；dim 9 据此定 person_days/breakdown)
 
    **分块流式产出（重要，避免十分钟输出尾巴）：** 本流程**不**在末尾一次性写整份 report.json。
    **每算完一个维度就立刻 `Write` 到 `<runDir>/blocks/<name>.json`**——文件名即报告顶层键、
    内容即该块的 JSON 值（不是 `{name: value}`，而直接是 value）。映射：
    dim1→`function_summary.json`、dim5→`license.json`、dim6→`dependencies.json`、dim7→`native_api.json`、
-   dim8→`runtime_surface.json` 与 `build_env.json`、dim10→`capability_profile.json`、
-   dim11→`cloud_services.json`、dim9→`harmony_adaptation.json`，外加库头 `library.json` 与 `meta.json`。
+   dim8→**两个独立文件** `runtime_surface.json`（内容只是 runtime_surface 的值：network/filesystem/env_vars/…）
+   与 `build_env.json`（内容只是 build_env 的值：language_standard/build_system/platforms/…）——**勿合并、勿再套一层同名键**（双重嵌套会被组装脚本硬拒）、dim10→`capability_profile.json`、
+   dim11→`cloud_services.json`、dim12→`code_partition.json`、dim9→`harmony_adaptation.json`，外加库头 `library.json` 与 `meta.json`。
    **不要**自己产出 `languages`/`code_metrics`/`tests`（这三块由 assemble 脚本从 `metrics.json` splice，
    你写了也会被忽略）。`<runDir>/blocks/` 目录已由运行器创建（若不存在可 `mkdir -p`）。块之间**顺序不变**——
    综合维度（9/10/11）仍在其输入（1/6/7/8）之后再算再写。这样输出摊到全程、日志实时可见、崩溃也保留已完成的块。
@@ -144,7 +160,12 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    difficulty/effort), `build_env`, and the dim-10 `capability_profile` (GUI/3D/媒体/硬件
    场景 + their harmony_status — a present scenario that is unavailable/specific_hardware
    drives a blocker/unadaptable_api), and the dim-11 `cloud_services` (若 present：项目依赖
-   第三方云后端——需网络连通；厂商原生 SDK 未必在鸿蒙 PC 可用), and **reuse their `evidence`**.
+   第三方云后端——需网络连通；厂商原生 SDK 未必在鸿蒙 PC 可用), and the dim-12
+   `code_partition`（**person_days 的首要量化依据**：needs_adaptation/unadaptable 桶的 LOC
+   定改造量级；据此填 `effort.breakdown[]` 分项——分项之和 ≈ person_days 总区间）,
+   and **reuse their `evidence`**. Also fill `harmony_adaptation.critical_dependencies[]`
+   （迁移关键路径依赖，有序：未鸿蒙化 + 阻塞核心推进的才列，`name` 与 `dependencies[].name`
+   逐字一致，`refs` 引用 bk:/ua:/ta: id 不重述）.
    Also fill `harmony_adaptation.required_permissions[]` (鸿蒙化后所需 ohos.permission.*, cross-ref
    the capability_profile scenario OR cloud_services via `source_capability`). 若
    `cloud_services.present` → 登记 `ohos.permission.INTERNET`（`source_capability:"cloud_services"`）；
@@ -161,7 +182,9 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `required` capability whose `target_status` is `unknown`, record the assumption,
    **lower `meta.confidence_overall`**, and note it — do NOT assume feasible from
    unknown. `available`→no blocker; `partial`→partial blocker; `unavailable`→blocker/
-   `unadaptable_apis`.
+   `unadaptable_apis`. 判「鸿蒙有无等价 API」、写 `remediation` 的 @ohos 模块名、填
+   `required_permissions` 的权限精确名时，**优先经 2c 的鸿蒙文档技能核实**（evidence/source
+   引文档文件名；文档存在 ≠ PC 可用，caps JSON 仍权威）。
 
 3c. **Self-check (completeness + cross-dimension consistency).** Before assembling,
    re-examine the repo signals (README, manifests, `code_metrics.top_dirs`, codegraph)
@@ -175,6 +198,13 @@ the `.claude/skills/...` and `references/...` paths below resolve.
      `runtime_surface.network` 出现厂商云域名（amazonaws.com/firebaseio.com/sentry.io…）→ `cloud_services`
      应 present 且推出对应 vendor；`cloud_services.present` 时 dim-9 应有 INTERNET 权限项。
    - `required_permissions[].source_capability` 必须指向一个 present 场景，或字面量 `"cloud_services"`（当权限源自云服务时）。
+   - `code_partition` 对账：各桶 loc 之和 ≈ `code_metrics.production.code`（coverage.pct ≥90%）；
+     `unadaptable` 桶非空 ⇔ dim-9 `unadaptable_apis` 非空 ⇔ `porting_class ∈ {needs_adaptation_partial,
+     infeasible}`，桶内模块 reason 引用的 `ua:*` id 必须真实存在；**`needs_adaptation` 桶非空 ⇒
+     `porting_class ∈ {needs_adaptation_full, needs_adaptation_partial, infeasible}`，绝不能
+     `recompile_only`/`no_adaptation`**（后者=零源码改动=分区只有 reuse_direct/recompile_reuse；换后端/
+     加平台分支即使只切构建开关也算需适配——server 会强制校正此矛盾）；`effort.breakdown` 分项之和落在
+     `person_days` 区间附近；`critical_dependencies[].name` 都能在 `dependencies[]` 里找到。
    补齐发现的缺口；仍不确定的写入 `meta.observations` 或对应块的 `notes`。这一步与服务端的
    `validateReport` 启发式互补（一个是模型推理补全、一个是确定性兜底）。**inline 完成，禁子代理。**
 

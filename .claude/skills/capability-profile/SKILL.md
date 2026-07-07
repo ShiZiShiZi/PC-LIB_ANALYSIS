@@ -61,6 +61,9 @@ then turns these flags into 修改量/能否移植 (porting_class/blockers/perso
 5. 每个 present 场景对照 `references/harmony-pc-capabilities.json`（3D/媒体/硬件/GUI 段）判 `harmony_status`：
    目标事实 available→不阻碍；partial→部分；unavailable→阻碍；**查不到对应事实→`unknown`**（诚实，别臆断），
    dim-9 会据 unknown 下调 confidence。`adaptation` 一句话点出修改量/路径。
+   可用鸿蒙文档技能（opencode 全局 `harmonyos-sdk-api-lookup`，run prompt 会提示可用性）核实对应
+   Kit/@ohos API 的**存在性**，方法与口径护栏见 harmony-adaptation SKILL.md「目标侧 API 事实核查」——
+   **文档存在 ≠ PC 可用，caps JSON 优先**；caps 查不到且文档也检索无果 → 倾向 unavailable/unknown 如实标注。
 
 ## 常见情形（recall aids，非穷举）
 

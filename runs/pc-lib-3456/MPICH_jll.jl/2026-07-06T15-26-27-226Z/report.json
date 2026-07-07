@@ -1,0 +1,718 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 19,
+        "code": 629,
+        "pct": 73.48,
+        "production": {
+          "files": 19,
+          "code": 629
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 179,
+        "pct": 20.91,
+        "production": {
+          "files": 2,
+          "code": 179
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 41,
+        "pct": 4.79,
+        "production": {
+          "files": 1,
+          "code": 41
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 0.82,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 23,
+      "code": 856,
+      "comment": 44,
+      "blank": 143,
+      "total_lines": 1043
+    },
+    "production": {
+      "files": 23,
+      "code": 856,
+      "comment": 44,
+      "blank": 143,
+      "total_lines": 1043
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 505,
+        "category": "production",
+        "by_category": {
+          "production": 505
+        }
+      },
+      {
+        "dir": ".",
+        "code": 227,
+        "category": "production",
+        "by_category": {
+          "production": 227
+        }
+      },
+      {
+        "dir": ".pkg",
+        "code": 124,
+        "category": "production",
+        "by_category": {
+          "production": 124
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "MPICH_jll.jl 是 MPICH（一种高性能 MPI 标准实现）的 Julia JLL（Julia Library Link）二进制包装包。它由 BinaryBuilder.jl 自动生成，将预编译的 MPICH 原生二进制文件（libmpi、libmpicxx、libmpifort 动态库及 mpiexec 可执行文件）以平台感知的方式打包分发，供 Julia 生态中的 MPI.jl 等上层包直接调用。该包本身不包含 MPICH 的源代码或编译逻辑，仅负责按目标平台选择并加载对应的预构建产物。",
+    "categories": [
+      {
+        "name": "MPI 运行时库包装",
+        "description": "通过 JLLWrappers 宏声明并导出 MPICH 的三个核心动态库（libmpi C 接口、libmpicxx C++ 接口、libmpifort Fortran 接口），在 Julia 的 __init__ 阶段以 dlopen 方式加载，使上层 Julia 代码可通过 ccall 调用 MPI 函数。",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:2-10",
+          "src/MPICH_jll.jl:2-11"
+        ]
+      },
+      {
+        "name": "平台感知的二进制产物选择",
+        "description": "根据 Julia 运行时检测的目标平台（架构/OS/libc/libgfortran 版本/MPI ABI 标签），从 Artifacts.toml 中选择匹配的预构建 tarball 并自动下载解压，实现跨平台（Linux/macOS/FreeBSD，x86_64/aarch64/armv7l/riscv64/powerpc64le 等 16 种组合）无缝分发。",
+        "evidence": [
+          "Artifacts.toml:1-176",
+          ".pkg/select_artifacts.jl:124-134",
+          ".pkg/platform_augmentation.jl:16-40"
+        ]
+      },
+      {
+        "name": "MPI 可执行文件分发",
+        "description": "导出 mpiexec 可执行文件产品，允许 Julia 程序直接调用 MPICH 自带的 MPI 进程启动器来启动并行任务。",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:10",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:31-34"
+        ]
+      },
+      {
+        "name": "MPI ABI 偏好集成",
+        "description": "与 MPIPreferences.jl 协作，在平台增强阶段根据用户配置的 MPI 二进制偏好（binary 字段）自动注入 mpi 平台标签，确保选择与用户所选 MPI ABI 匹配的预构建产物。",
+        "evidence": [
+          ".pkg/platform_augmentation.jl:6-42"
+        ]
+      }
+    ],
+    "domain": "高性能计算/并行计算",
+    "target_users": "使用 Julia 进行分布式/并行计算的开发者，尤其是需要 MPI 通信能力的科学计算与工程仿真用户"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件明确声明 Julia 源代码（src/ 下所有文件）以 MIT \"Expat\" License 发布，Copyright (c) 2019 JuliaBinaryWrappers。注意该许可证仅覆盖本 JLL 包装器代码，不覆盖被包装的 MPICH 二进制——MPICH 二进制的许可证随二进制分发（位于 share/licenses/MPICH 目录下），MPICH 上游源码采用 MIT/BSD-3-Clause 双许可。",
+    "notes": "JLL 包装器代码为 MIT 许可。被包装的 MPICH 预编译二进制有独立许可（MPICH 上游为 MIT/BSD-3-Clause），与本包装器许可不同但均属宽松型。"
+  },
+  "dependencies": {
+    "count": 6,
+    "manifests": [
+      "Project.toml"
+    ],
+    "by_ecosystem": {
+      "other": 6
+    },
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "other",
+        "registry_name": "JLLWrappers",
+        "source_repo": "https://github.com/JuliaPackaging/JLLWrappers.jl",
+        "import_names": [
+          "JLLWrappers"
+        ],
+        "scope": "runtime",
+        "version": "1.7.0",
+        "purpose": "Julia JLL 包装器基础设施库，提供 @generate_main_file_header/@generate_wrapper_header/@declare_library_product/@init_library_product 等宏，自动生成 JLL 包的模块入口与平台特定加载逻辑",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General Registry（Julia 包管理器自动安装）",
+        "declared_in": [
+          "Project.toml:7"
+        ],
+        "used_symbols": [
+          "@generate_main_file_header",
+          "@generate_main_file",
+          "@generate_wrapper_header",
+          "@declare_library_product",
+          "@declare_executable_product",
+          "@init_library_product",
+          "@init_executable_product",
+          "@generate_init_header",
+          "@generate_init_footer"
+        ]
+      },
+      {
+        "name": "MPIPreferences",
+        "ecosystem": "other",
+        "registry_name": "MPIPreferences",
+        "source_repo": "https://github.com/JuliaParallel/MPIPreferences.jl",
+        "import_names": [
+          "MPIPreferences"
+        ],
+        "scope": "runtime",
+        "version": "0.1",
+        "purpose": "MPI 实现偏好配置库，在平台增强阶段读取用户配置的 binary/abi 偏好，决定选择哪个 MPI JLL 二进制包及对应的 MPI ABI 标签",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General Registry",
+        "declared_in": [
+          "Project.toml:6"
+        ],
+        "used_symbols": []
+      },
+      {
+        "name": "CompilerSupportLibraries_jll",
+        "ecosystem": "other",
+        "registry_name": "CompilerSupportLibraries_jll",
+        "source_repo": "https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl",
+        "import_names": [
+          "CompilerSupportLibraries_jll"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供编译器支持运行时库（如 libgfortran、libquadmath 等），MPICH 的 Fortran 接口 (libmpifort) 依赖这些运行时",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General Registry（预编译二进制包装器）",
+        "declared_in": [
+          "Project.toml:8",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:4"
+        ],
+        "used_symbols": []
+      },
+      {
+        "name": "Hwloc_jll",
+        "ecosystem": "other",
+        "registry_name": "Hwloc_jll",
+        "source_repo": "https://github.com/JuliaBinaryWrappers/Hwloc_jll.jl",
+        "import_names": [
+          "Hwloc_jll"
+        ],
+        "scope": "runtime",
+        "version": "2.12.2",
+        "purpose": "hwloc 硬件拓扑库的 JLL 包装器，MPICH 使用 hwloc 进行进程绑核与拓扑感知调度",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General Registry（预编译二进制包装器）",
+        "declared_in": [
+          "Project.toml:9",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:5"
+        ],
+        "used_symbols": []
+      },
+      {
+        "name": "Libdl",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "import_names": [
+          "Libdl"
+        ],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Julia 标准库的动态链接接口，提供 dlopen/dlsym 等函数，JLLWrappers 在初始化阶段使用它加载 MPICH 动态库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Julia 标准库（随 Julia 发行版内置）",
+        "declared_in": [
+          "Project.toml:10"
+        ],
+        "used_symbols": [
+          "RTLD_LAZY",
+          "RTLD_DEEPBIND"
+        ]
+      },
+      {
+        "name": "MPICH (binary artifact)",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": "https://github.com/pmodels/mpich",
+        "import_names": [],
+        "scope": "runtime",
+        "version": "5.0.1",
+        "purpose": "被包装的 MPICH 预编译二进制本身，提供 libmpi.so / libmpicxx.so / libmpifort.so 动态库和 mpiexec 可执行文件，是本 JLL 包的核心运行时产物",
+        "acquisition": "prebuilt_binary",
+        "locality": "remote",
+        "source": "从 GitHub Releases 下载的预构建 tarball（由 JuliaBinaryWrappers/MPICH_jll.jl 发布），上游源码为 mpich-5.0.1.tar.gz",
+        "declared_in": [
+          "Artifacts.toml:1-176"
+        ],
+        "used_symbols": [
+          "libmpi",
+          "libmpicxx",
+          "libmpifort",
+          "mpiexec"
+        ]
+      }
+    ],
+    "notes": "所有依赖均声明在 Project.toml [deps] 段，Artifacts.toml 声明 MPICH 预编译二进制的下载源与平台映射。本包是 Julia JLL 模式的典型产物——Julia 生态依赖不按传统语言生态（python/cpp/nodejs）分类，统一归入 other。TOML 和 Artifacts 是 Julia 标准库模块，随 Julia 运行时内置，不计为外部依赖。"
+  },
+  "native_api": {
+    "summary": "MPICH_jll.jl 本身是纯 Julia JLL 包装器代码，不直接调用任何操作系统或平台原生 API。其运行时行为由 JLLWrappers 宏展开生成，核心操作是通过 Julia 的 Libdl 标准库（dlopen 等价物）动态加载 MPICH 预编译共享库。所有平台差异封装在平台特定的 wrapper 文件选择逻辑中，而非通过条件编译或平台 API 分支实现。",
+    "groups": [
+      {
+        "type": "julia_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Libdl.dlopen",
+            "purpose": "动态加载共享库（由 JLLWrappers 宏间接调用，在 __init__ 阶段加载 libmpi/libmpicxx/libmpifort）",
+            "count": 3,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:13-29"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Base.BinaryPlatforms",
+            "purpose": "平台检测与 artifact 选择，解析目标三元组确定架构/OS/libc 等属性",
+            "count": 5,
+            "evidence": [
+              ".pkg/select_artifacts.jl:3",
+              ".pkg/platform_augmentation.jl:1"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Artifacts.select_downloadable_artifacts",
+            "purpose": "根据当前平台从 Artifacts.toml 中选择匹配的预构建二进制产物",
+            "count": 1,
+            "evidence": [
+              ".pkg/select_artifacts.jl:131"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "src/MPICH_jll.jl:2-11",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:11-37"
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libmpi.so.12",
+        "mechanism": "Julia Libdl.dlopen（通过 JLLWrappers.@init_library_product 宏展开）",
+        "acquisition": "prebuilt_binary",
+        "source": "MPICH 预编译二进制产物（从 JuliaBinaryWrappers GitHub Releases 下载的 tarball 解压得到）",
+        "description": "MPICH 的 C 语言 MPI 接口共享库，提供 MPI 标准定义的全部 C 绑定函数",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:7",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:13-17"
+        ]
+      },
+      {
+        "name": "libmpicxx.so.12",
+        "mechanism": "Julia Libdl.dlopen（通过 JLLWrappers.@init_library_product 宏展开）",
+        "acquisition": "prebuilt_binary",
+        "source": "MPICH 预编译二进制产物",
+        "description": "MPICH 的 C++ MPI 接口共享库，提供 MPI 标准的 C++ 绑定",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:8",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:19-23"
+        ]
+      },
+      {
+        "name": "libmpifort.so.12",
+        "mechanism": "Julia Libdl.dlopen（通过 JLLWrappers.@init_library_product 宏展开）",
+        "acquisition": "prebuilt_binary",
+        "source": "MPICH 预编译二进制产物",
+        "description": "MPICH 的 Fortran MPI 接口共享库，提供 MPI 标准的 Fortran 绑定",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:9",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5-mpi+mpich.jl:25-29"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "MPICH_jll.jl 在运行时依赖 Julia 包管理器下载的预编译 MPICH 二进制产物，并通过 Libdl 动态加载共享库。它不直接访问网络、文件系统（除 Julia 标准的 artifact 缓存路径外）、设备或外部服务，也不派生子进程（mpiexec 可执行文件导出为产品但由调用方使用而非本包自行启动）。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Julia >= 1.10",
+    "runtime_version": "Julia 1.10 及以上",
+    "build_system": "Julia Pkg（无独立构建步骤，本 JLL 包仅分发预编译二进制）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:146-155"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:11-21"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml:92-101"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv7l",
+        "evidence": [
+          "Artifacts.toml:68-78"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv6l",
+        "evidence": [
+          "Artifacts.toml:44-54"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "powerpc64le",
+        "evidence": [
+          "Artifacts.toml:114-123"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [
+          "Artifacts.toml:125-134"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:136-144"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:1-10"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:168-176"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:33-42"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无独立打包——Julia JLL 包通过 Julia 包管理器（Pkg）分发，预编译二进制以 tarball 形式从 GitHub Releases 下载并缓存于 Julia artifact 目录",
+    "notes": "本包是纯 Julia JLL 二进制包装器，不含 C/C++ 编译步骤。预编译 MPICH 二进制由 Yggdrasil（JuliaPackaging 的社区构建树）使用 BinaryBuilder.jl 在各目标平台上交叉编译产生。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [
+        5,
+        15
+      ]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:julia_runtime",
+        "capability": "Julia 运行时（1.10.6 已移植到鸿蒙 PC）",
+        "required": true,
+        "target_status": "available",
+        "impact": "Julia 运行时已可用，本 JLL 包装器的 Julia 代码可在鸿蒙 PC 的 Julia 上运行",
+        "source": "references/harmony-pc-capabilities.json runtimes/julia"
+      },
+      {
+        "id": "ta:mpich_native_build",
+        "capability": "MPICH 原生库在鸿蒙 PC 的编译与运行（需 OHOS NDK 交叉编译或鸿蒙本地编译）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "MPICH 是 C/Fortran 原生库，需要为鸿蒙 PC（OHOS NDK/musl）编译。MPICH 使用 POSIX API（进程管理/共享内存/网络套接字），鸿蒙 NDK 的 POSIX 子集是否足够尚不确定——若缺少所需 POSIX 接口则需改造",
+        "source": "MPICH 上游依赖 POSIX 进程间通信与网络栈"
+      },
+      {
+        "id": "ta:hwloc_harmony",
+        "capability": "hwloc 硬件拓扑库在鸿蒙 PC 的可用性",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "MPICH 依赖 hwloc 进行进程绑核与拓扑感知；若 hwloc 不可用，MPICH 的绑核功能受限但不影响核心 MPI 通信",
+        "source": "Project.toml 依赖 Hwloc_jll"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "cross_compile",
+    "summary": "MPICH_jll.jl 的 Julia 包装器代码本身可在已移植的 Julia 运行时上运行，无适配问题。核心挑战在于被包装的 MPICH 预编译二进制——需要使用 OHOS NDK 为鸿蒙 PC 重新编译 MPICH（含 hwloc 依赖），生成对应的 aarch64-ohos 二进制产物，并在 Artifacts.toml 中添加鸿蒙平台条目。MPICH 依赖 POSIX 进程管理、共享内存和网络套接字进行 MPI 通信，需验证 OHOS NDK 的 POSIX 子集是否满足需求。",
+    "blockers": [
+      {
+        "id": "bk:mpich_native",
+        "issue": "MPICH 预编译二进制当前仅覆盖 Linux/macOS/FreeBSD 平台，无鸿蒙 PC (OHOS NDK/musl/aarch64) 的预构建产物",
+        "severity": "blocker",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "使用 OHOS NDK 交叉编译 MPICH 源码（mpich-5.0.1.tar.gz），生成 aarch64-ohos 版本的 libmpi/libmpicxx/libmpifort；同步编译 hwloc；将产物打包为 JLL artifact 并在 Artifacts.toml 中添加对应平台条目",
+        "caused_by": [
+          "ta:mpich_native_build"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "Artifacts.toml:1-176",
+          "README.md:19-21"
+        ]
+      },
+      {
+        "id": "bk:posix_subset",
+        "issue": "MPICH 依赖 POSIX API（fork/exec、共享内存 shm_open/mmap、套接字、信号等）进行进程管理与进程间通信，OHOS NDK 的 musl/POSIX 子集覆盖程度待核实",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "posix_api",
+        "source_dimension": "native_api",
+        "harmony_status": "partial",
+        "remediation": "梳理 MPICH 所需 POSIX 接口清单，逐项核对 OHOS NDK 支持情况；缺失接口需找鸿蒙等价 API 替换或补全",
+        "caused_by": [
+          "ta:mpich_native_build"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "README.md:19-21"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "Julia JLL 包装器代码",
+        "note": "纯 Julia 代码，仅使用 Julia 标准库（Libdl、Artifacts、TOML），可在鸿蒙 PC 的 Julia 1.10.6 运行时上直接执行",
+        "evidence": [
+          "src/MPICH_jll.jl:1-11"
+        ]
+      },
+      {
+        "aspect": "平台检测与 artifact 选择机制",
+        "note": "基于 BinaryPlatforms 的平台三元组匹配，只需添加鸿蒙平台条目即可自动选择对应产物",
+        "evidence": [
+          ".pkg/select_artifacts.jl:124-134",
+          ".pkg/platform_augmentation.jl:1-42"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK 交叉编译 MPICH 5.0.1 源码，生成 aarch64-ohos 的 libmpi/libmpicxx/libmpifort 及 mpiexec",
+      "编译 hwloc 的鸿蒙版本作为 MPICH 依赖",
+      "核对 MPICH 所需 POSIX 接口（fork/exec、shm_open/mmap、socket/pipe、pthread 等）在 OHOS NDK 的可用性",
+      "将编译产物打包为 JLL artifact 格式并在 Artifacts.toml 添加鸿蒙平台条目",
+      "在 Yggdrasil 构建树中添加鸿蒙平台构建配方（build_tarballs.jl 修改）"
+    ],
+    "notes": "本 JLL 包的核心适配工作量不在 Julia 包装器代码本身，而在被包装的 MPICH C/Fortran 原生库的鸿蒙编译。MPICH 是成熟的跨平台 MPI 实现，已支持多种 Unix 变体，OHOS NDK 基于 musl libc 且提供 POSIX 子集，成功编译的可能性较高。关键不确定项：(1) OHOS NDK 的 POSIX 覆盖是否满足 MPICH 进程管理与共享内存需求；(2) hwloc 在鸿蒙上的硬件拓扑检测能力。confidence 为 medium 因为 mpich_native_build 的 target_status 为 unknown。"
+  },
+  "library": {
+    "name": "MPICH_jll.jl",
+    "kind": "library",
+    "package_name": "MPICH_jll",
+    "aliases": [
+      "MPICH_jll.jl"
+    ],
+    "import_names": [
+      "MPICH_jll"
+    ],
+    "source_url": "https://github.com/JuliaBinaryWrappers/MPICH_jll.jl",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-06T15:26:27Z",
+    "commit": null,
+    "one_liner": "MPICH 高性能 MPI 实现的 Julia JLL 二进制包装器，提供 libmpi/libmpicxx/libmpifort 动态库与 mpiexec 可执行文件",
+    "ecosystem": "other",
+    "bindings": []
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "library",
+        "field": "ecosystem",
+        "kind": "new_value",
+        "value": "other",
+        "rationale": "Julia JLL 包不属于 python/java/nodejs/cpp/rust/go/dotnet 中的任何一个，归入 other"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "prebuilt_binary",
+        "rationale": "MPICH 二进制产物从 GitHub Releases 下载预编译 tarball，非源码编译，与 package_manager（Julia Pkg 管理的是 Julia 包本身）不同"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "julia_stdlib",
+        "rationale": "Julia 标准库模块（Libdl/Artifacts/TOML/BinaryPlatforms）作为 API 组，不属于已有分类（win32/posix/cpp_stl/python_stdlib 等），新增 julia_stdlib 以覆盖 Julia 标准库调用"
+      }
+    ],
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "MPICH_jll.jl 是一个 Julia JLL 二进制包装器，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其核心功能仅为动态加载预编译的 MPICH 共享库，属于纯计算/通信库包装层。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "MPICH_jll.jl 不涉及任何云端服务。本包仅在本地动态加载预编译的 MPICH 二进制库，无网络通信、云服务 SDK 或云端域名引用。",
+    "services": []
+  }
+}

@@ -1,0 +1,681 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 19,
+        "code": 2869,
+        "pct": 92.49,
+        "production": {
+          "files": 19,
+          "code": 2869
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 158,
+        "pct": 5.09,
+        "production": {
+          "files": 2,
+          "code": 158
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 68,
+        "pct": 2.19,
+        "production": {
+          "files": 1,
+          "code": 68
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 0.23,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 23,
+      "code": 3102,
+      "comment": 19,
+      "blank": 598,
+      "total_lines": 3719
+    },
+    "production": {
+      "files": 23,
+      "code": 3102,
+      "comment": 19,
+      "blank": 598,
+      "total_lines": 3719
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 2869,
+        "category": "production",
+        "by_category": {
+          "production": 2869
+        }
+      },
+      {
+        "dir": ".",
+        "code": 233,
+        "category": "production",
+        "by_category": {
+          "production": 233
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "Ghostscript_jll.jl 是 Julia 生态中由 BinaryBuilder 自动生成的 JLL（Julia Library Link）包装包，封装了 Ghostscript 9.55.1 的预编译二进制分发。它通过 JLLWrappers 宏在 Julia 中暴露 Ghostscript 的核心动态库 libgs（C API）、可执行文件 gs/gsc/gsx 以及大量 PostScript/PDF 互转脚本工具（ps2pdf、pdf2ps、eps2eps 等），使 Julia 程序可直接调用 Ghostscript 的页面描述语言解释与格式转换能力。该包本身不含 Ghostscript 源码，仅提供平台适配的加载绑定与路径解析。",
+    "categories": [
+      {
+        "name": "PostScript/PDF 渲染与转换",
+        "description": "封装 Ghostscript 引擎，提供 PS/PDF 解释渲染及格式互转能力（ps2pdf、pdf2ps、eps2eps、ps2ps 等）",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu.jl:9-10 (@declare_executable_product(gs), @declare_library_product(libgs))",
+          "src/wrappers/x86_64-linux-gnu.jl:30-36 (@declare_file_product(ps2pdf/ps2ps/...))",
+          "README.md:60-87 (Products list: gs, gsc, gsx, libgs, ps2pdf, pdf2ps, etc.)"
+        ]
+      },
+      {
+        "name": "C 动态库绑定",
+        "description": "通过 JLLWrappers 的 @declare_library_product/@init_library_product 宏加载 libgs 共享库（.so/.dylib/.dll），供 Julia FFI 调用 Ghostscript C API（iapi.h、gserrors.h）",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu.jl:20 (@declare_library_product(libgs, \"libgs.so.9\"))",
+          "src/wrappers/x86_64-apple-darwin.jl:20 (@declare_library_product(libgs, \"@rpath/libgs.dylib.9.55\"))",
+          "src/wrappers/x86_64-w64-mingw32.jl:20 (@declare_library_product(libgs, \"libgs-9.dll\"))"
+        ]
+      },
+      {
+        "name": "多平台二进制分发",
+        "description": "通过 Artifacts.toml 声明 18 个平台（Linux/macOS/Windows/FreeBSD，含 aarch64/x86_64/armv7l/i686/powerpc64le/riscv64）的预编译 tarball 下载地址，自动适配当前平台",
+        "evidence": [
+          "Artifacts.toml:1-160 (18 platform entries with download URLs)",
+          "README.md:28-45 (Platforms section listing all supported triples)"
+        ]
+      }
+    ],
+    "domain": "文档处理/页面描述语言",
+    "target_users": "需要在 Julia 中调用 Ghostscript 进行 PostScript/PDF 渲染或格式转换的开发者"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": true,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件明确声明 Julia 源码（src/ 目录）采用 MIT 许可证；同时指出包装的二进制（Ghostscript 本体）有独立许可证（AGPL，随二进制分发在 share/licenses/Ghostscript 目录下）。因此本 JLL 包装包的 Julia 代码为 MIT，但使用时需同时遵守 Ghostscript 二进制的许可条款。",
+    "notes": "双许可：Julia 包装代码 = MIT（permissive）；所包装的 Ghostscript 二进制 = AGPL-3.0（strong_copyleft）。实际使用该 JLL 包时需遵守 Ghostscript 的 AGPL 许可。本报告的 license.category 依据包装代码本身（MIT/permissive），但下游用户应注意 Ghostscript 的传染性条款。"
+  },
+  "dependencies": {
+    "count": 4,
+    "manifests": [
+      "Project.toml"
+    ],
+    "by_ecosystem": {
+      "other": 2,
+      "cpp": 2
+    },
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "other",
+        "registry_name": "JLLWrappers",
+        "source_repo": "https://github.com/JuliaPackaging/JLLWrappers.jl",
+        "import_names": [
+          "JLLWrappers"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "1.7.0",
+        "purpose": "JLL 包的通用包装基础设施，提供 @generate_main_file_header/@declare_library_product 等宏，自动生成平台适配的二进制加载与路径解析代码",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General Registry（Julia 包管理器自动拉取）",
+        "declared_in": [
+          "Project.toml:6"
+        ],
+        "used_symbols": [
+          "@generate_main_file_header",
+          "@generate_main_file",
+          "@generate_wrapper_header",
+          "@declare_file_product",
+          "@declare_executable_product",
+          "@declare_library_product",
+          "@init_file_product",
+          "@init_executable_product",
+          "@init_library_product",
+          "@generate_init_header",
+          "@generate_init_footer"
+        ]
+      },
+      {
+        "name": "JpegTurbo_jll",
+        "ecosystem": "cpp",
+        "registry_name": "JpegTurbo_jll",
+        "source_repo": "https://github.com/JuliaBinaryWrappers/JpegTurbo_jll.jl",
+        "import_names": [
+          "JpegTurbo_jll"
+        ],
+        "aliases": [
+          "libjpeg-turbo"
+        ],
+        "scope": "runtime",
+        "version": "3.0.4",
+        "purpose": "libjpeg-turbo 的 JLL 包装，Ghostscript 链接 libjpeg-turbo 进行 JPEG 编解码",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General Registry（JLL 包管理器自动拉取预编译二进制）",
+        "declared_in": [
+          "Project.toml:7",
+          "src/wrappers/x86_64-linux-gnu.jl:4"
+        ],
+        "used_symbols": []
+      },
+      {
+        "name": "Zlib_jll",
+        "ecosystem": "cpp",
+        "registry_name": "Zlib_jll",
+        "source_repo": "https://github.com/JuliaBinaryWrappers/Zlib_jll.jl",
+        "import_names": [
+          "Zlib_jll"
+        ],
+        "aliases": [
+          "zlib"
+        ],
+        "scope": "runtime",
+        "version": "1.2.12",
+        "purpose": "zlib 的 JLL 包装，Ghostscript 链接 zlib 进行压缩/解压缩（PDF 流等）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia General Registry（JLL 包管理器自动拉取预编译二进制）",
+        "declared_in": [
+          "Project.toml:8",
+          "src/wrappers/x86_64-linux-gnu.jl:5"
+        ],
+        "used_symbols": []
+      },
+      {
+        "name": "Libdl",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "import_names": [
+          "Libdl"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "< 0.0.1, 1",
+        "purpose": "Julia 标准库模块，提供 dlopen/dlsym 等动态库加载原语，JLLWrappers 内部使用它加载 libgs 共享库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Julia 标准库（随 Julia 运行时附带）",
+        "declared_in": [
+          "Project.toml:9"
+        ],
+        "used_symbols": []
+      }
+    ],
+    "notes": "本包是 Julia BinaryBuilder/Yggdrasil 自动生成的 JLL 包，所有非标准库依赖均为 JLL 包装的预编译 C/C++ 库。Artifacts.toml 列出的 Julia Artifacts 属于本包自身封装的 Ghostscript 预编译二进制，不算作外部依赖。Ghostscript 本体的 C 源码依赖（如 libpng、freetype 等）已静态链接进预编译 tarball 中，不在此包的依赖列表中出现。"
+  },
+  "native_api": {
+    "summary": "本项目是纯 Julia JLL 包装包，不直接调用任何系统/平台 API。它通过 JLLWrappers 宏间接使用 Julia 的 Libdl 标准库（dlopen/dlsym 等原语）来加载预编译的 Ghostscript 共享库（libgs）。所有平台差异已封装在 per-platform wrapper 文件中。",
+    "groups": [
+      {
+        "type": "julia_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Libdl.dlopen",
+            "purpose": "动态加载共享库（libgs.so / libgs.dylib / libgs-9.dll）",
+            "count": 1,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:104-108 (via @init_library_product)"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Libdl.RTLD_LAZY",
+            "purpose": "延迟绑定标志，传递给 dlopen",
+            "count": 18,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:107"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Libdl.RTLD_DEEPBIND",
+            "purpose": "优先使用自身符号解析，避免与进程其它库符号冲突",
+            "count": 18,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:107"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "Project.toml:9 (Libdl dependency)",
+          "src/wrappers/x86_64-linux-gnu.jl:104-108"
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libgs.so.9",
+        "mechanism": "JLLWrappers @init_library_product (内部调用 Libdl.dlopen)",
+        "acquisition": "prebuilt_binary",
+        "source": "Ghostscript 预编译二进制（由 Yggdrasil/BinaryBuilder 构建，通过 Artifacts.toml 自动下载），包含 Ghostscript 的完整 C API（iapi.h）",
+        "description": "Ghostscript 核心共享库，提供 PostScript/PDF 解释器与渲染引擎的 C 语言接口",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu.jl:20",
+          "src/wrappers/x86_64-linux-gnu.jl:104-108",
+          "Artifacts.toml:127-135 (x86_64-linux-gnu tarball)"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "本 JLL 包运行时几乎不直接访问宿主环境，唯一的交互是通过 Julia Artifacts 机制自动下载并缓存 Ghostscript 预编译 tarball（网络下载，仅安装时一次），之后所有路径由 JLLWrappers 从缓存目录解析。不监听端口、不读写特殊路径配置、不启动子进程、不访问设备。",
+    "network": [
+      {
+        "detail": "Artifacts.toml 中声明的 GitHub Releases 下载 URL（https://github.com/JuliaBinaryWrappers/Ghostscript_jll.jl/releases/...）",
+        "purpose": "首次安装时 Julia 包管理器自动下载对应平台的 Ghostscript 预编译 tarball",
+        "evidence": [
+          "Artifacts.toml:8",
+          "Artifacts.toml:17",
+          "Artifacts.toml:26"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "JLLWrappers 解析的 artifact 安装前缀目录（由 Julia Artifacts 系统管理）",
+        "purpose": "定位 libgs.so/dylib/dll、gs 可执行文件及 ps2pdf 等脚本工具的路径",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu.jl:49-52 (bin/gs)",
+          "src/wrappers/x86_64-linux-gnu.jl:104-107 (lib/libgs.so)"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Julia >= 1.6",
+    "runtime_version": "Julia 1.6 及以上（Project.toml [compat] julia = \"1.6\"）",
+    "build_system": "无（BinaryBuilder 自动生成，不包含传统构建系统；Julia 包管理器直接使用 Project.toml）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "macOS",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:2-8"
+        ]
+      },
+      {
+        "os": "macOS",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:120-126"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:9-17"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:127-135"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "armv6l",
+        "evidence": [
+          "Artifacts.toml:36-44"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "armv7l",
+        "evidence": [
+          "Artifacts.toml:56-64"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml:76-83"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "powerpc64le",
+        "evidence": [
+          "Artifacts.toml:101-109"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "riscv64",
+        "evidence": [
+          "Artifacts.toml:110-118"
+        ]
+      },
+      {
+        "os": "Windows",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml:93-100"
+        ]
+      },
+      {
+        "os": "Windows",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:153-160"
+        ]
+      },
+      {
+        "os": "FreeBSD",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:28-34"
+        ]
+      },
+      {
+        "os": "FreeBSD",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:145-152"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无（库）：作为 Julia 注册包通过 Pkg.add 安装，二进制由 Artifacts 机制自动下载缓存",
+    "notes": "本包本身是纯 Julia 包装代码，不包含编译步骤。所有原生二进制由 Yggdrasil/BinaryBuilder 在 CI 中预编译并发布到 GitHub Releases，运行时由 Julia Artifacts + JLLWrappers 自动解析路径并加载。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层，Node-API 桥接）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [
+        5,
+        15
+      ]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:julia_runtime",
+        "capability": "Julia 运行时在 HarmonyOS PC 上的可用性",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "Julia 运行时尚未移植到 HarmonyOS NEXT，则本 JLL 包无法运行",
+        "source": "references/harmony-pc-capabilities.md — Julia 运行时无记录"
+      },
+      {
+        "id": "ta:ohos_ndk_gcc",
+        "capability": "OHOS NDK 对 C/C++ 库的交叉编译支持（含 libgs 所需的依赖）",
+        "required": true,
+        "target_status": "partial",
+        "impact": "Ghostscript 及其依赖（libjpeg-turbo、zlib 等）需要用 OHOS NDK 重新编译；NDK 工具链支持度决定编译可行性",
+        "source": "references/harmony-pc-capabilities.md — OHOS NDK 支持交叉编译"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "cross_compile",
+    "summary": "本 JLL 包是 Julia 对 Ghostscript 预编译二进制的包装，核心挑战在于：(1) Julia 运行时是否已移植到鸿蒙 PC（目前 unknown），(2) Ghostscript 的 libgs 共享库需用 OHOS NDK 重新编译。本包自身的 Julia 代码无平台依赖，关键是底层 Ghostscript C 库的鸿蒙适配。若 Julia 运行时可用且 Ghostscript 可用 NDK 重编，则本包可正常工作。",
+    "blockers": [
+      {
+        "id": "bk:julia_runtime",
+        "issue": "Julia 运行时尚未确认在 HarmonyOS NEXT PC 上可用",
+        "severity": "blocker",
+        "adaptability": "partial",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unknown",
+        "remediation": "等待 Julia 社区或华为完成 Julia 运行时的鸿蒙移植，或自行移植 Julia 运行时",
+        "caused_by": [
+          "ta:julia_runtime"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "Project.toml:14 (julia = \"1.6\")"
+        ]
+      },
+      {
+        "id": "bk:ghostscript_rebuild",
+        "issue": "Ghostscript libgs 共享库需要用 OHOS NDK 重新编译，且其依赖（JpegTurbo、Zlib）也需对应鸿蒙版本",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "needs_rebuild",
+        "remediation": "使用 OHOS NDK 交叉编译 Ghostscript 及其依赖（zlib 已有鸿蒙版本，libjpeg-turbo 需评估），生成 aarch64-ohos 的 libgs 共享库，并通过 JLL 机制打包",
+        "caused_by": [
+          "ta:ohos_ndk_gcc"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/x86_64-linux-gnu.jl:20 (libgs.so.9)"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "Julia 包装代码本身",
+        "note": "本包的 Julia 代码（JLLWrappers 宏调用、per-platform wrapper）无平台特定逻辑，仅需为 aarch64-ohos 添加一个新 wrapper 文件",
+        "evidence": [
+          "src/wrappers/ 目录中的平台文件均为同构模板"
+        ]
+      },
+      {
+        "aspect": "zlib 依赖",
+        "note": "zlib 已在 OpenHarmony PC 镜像中提供预编译版本",
+        "evidence": []
+      }
+    ],
+    "key_tasks": [
+      "确认 Julia 运行时在 HarmonyOS NEXT PC 上的可用性（移植状态）",
+      "使用 OHOS NDK 交叉编译 Ghostscript 9.55.1（含 libjpeg-turbo 等依赖）",
+      "为 aarch64-ohos 平台添加 wrapper 文件（src/wrappers/aarch64-ohos.jl）",
+      "在 Artifacts.toml 中添加 aarch64-ohos 平台的 tarball 条目",
+      "通过 Yggdrasil CI 构建并发布鸿蒙平台的预编译二进制"
+    ],
+    "notes": "置信度为 medium，主要因为 Julia 运行时在鸿蒙上的可用性未知（target_assumptions ta:julia_runtime 为 unknown）。若 Julia 运行时不可用，则整体评估将降为 hard/infeasible。本包自身的适配工作量不大（新增一个 wrapper 文件 + Artifacts 条目），关键瓶颈在 Julia 运行时和 Ghostscript C 库的鸿蒙编译。"
+  },
+  "library": {
+    "name": "Ghostscript_jll.jl",
+    "kind": "library",
+    "package_name": "Ghostscript_jll",
+    "aliases": [],
+    "import_names": [
+      "Ghostscript_jll"
+    ],
+    "source_url": "https://github.com/JuliaBinaryWrappers/Ghostscript_jll.jl",
+    "monorepo": false,
+    "source_subpath": null,
+    "commit": "451660213194dadb7b8fe7c5eeb75d8ff3595ae8",
+    "one_liner": "Julia JLL 包，封装 Ghostscript 预编译二进制，提供 libgs 动态库与 PS/PDF 转换工具的 Julia 绑定",
+    "ecosystem": "other",
+    "bindings": [],
+    "analyzed_at": "2026-07-06T16:54:32Z"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "library",
+        "field": "ecosystem",
+        "kind": "new_value",
+        "value": "other",
+        "rationale": "Julia 生态不在 schema 的闭轴枚举（python/java/nodejs/cpp/rust/go/dotnet/other）中，映射到 other"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "julia_stdlib",
+        "rationale": "Julia 标准库（Libdl）不在推荐 API 家族列表中，但其角色等同于 Python stdlib / java_std，归类为 standard category"
+      }
+    ],
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "本 JLL 包封装 Ghostscript——一个 PostScript/PDF 解释渲染引擎。核心场景为文档格式转换与渲染输出，不涉及桌面 GUI、3D 渲染、音视频媒体或特定硬件设备。Ghostscript 可驱动打印机/光栅化输出，但该能力通过 libgs C API 暴露而非直接访问硬件。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及 GUI",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及 3D 渲染",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及音视频媒体（Ghostscript 处理页面描述语言，非音视频编解码）",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不依赖特定硬件设备",
+        "evidence": []
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本 JLL 包不涉及任何云端服务。它仅封装 Ghostscript 预编译二进制的本地加载与路径解析，不连接云端 API、不使用云存储/数据库/认证/分析/推送等云服务。唯一的网络交互是 Julia Artifacts 机制在安装时从 GitHub Releases 下载 tarball（属于包管理器的标准行为，非应用层云服务）。",
+    "services": []
+  }
+}

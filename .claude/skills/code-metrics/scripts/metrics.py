@@ -96,6 +96,23 @@ def _top_dirs(cloc: ClocResult, cap: int = 40) -> tuple[list[dict], dict]:
     return rows[:cap], te
 
 
+def _dir_loc(cloc: ClocResult, depth: int = 2, cap: int = 80) -> list[dict]:
+    """Production LOC aggregated per directory (path truncated at `depth` components).
+    The mechanical baseline the dim-12 code_partition buckets must reconcile against:
+    a bucket's module LOC should quote these numbers, and the bucket sum ≈ production
+    total. Root-level files aggregate under '.'."""
+    dirs: dict[str, dict] = {}
+    for f in cloc.by_category("production"):
+        parts = f.path.replace("\\", "/").split("/")
+        d = "/".join(parts[:-1][:depth]) or "."
+        row = dirs.setdefault(d, {"files": 0, "code": 0})
+        row["files"] += 1
+        row["code"] += f.code
+    rows = [{"dir": d, **v} for d, v in dirs.items()]
+    rows.sort(key=lambda r: r["code"], reverse=True)
+    return rows[:cap]
+
+
 def _code_metrics(cloc: ClocResult) -> dict:
     cats = {c: cloc.by_category(c) for c in ("production", "test", "example")}
     top_dirs, test_example_dirs = _top_dirs(cloc)
@@ -107,6 +124,7 @@ def _code_metrics(cloc: ClocResult) -> dict:
         "example": _agg(cats["example"]),
         "top_dirs": top_dirs,
         "test_example_dirs": test_example_dirs,
+        "dir_loc": _dir_loc(cloc),
     }
 
 
@@ -351,11 +369,145 @@ def platform_branches(repo: str, cloc: ClocResult) -> dict:
     }
 
 
+# ── Architecture-specific code (assembly / SIMD intrinsics / inline asm) ──
+# x86-only asm or intrinsics with no arm fallback is hard porting work (or a
+# blocker) on HarmonyOS PC arm64 — a third mechanical adaptation signal for
+# dim-9/dim-12 alongside platform_adaptation and platform_branches.
+_ASM_EXTS = (".s", ".asm")
+_ARCH_PATH_TOKENS = {
+    "x86":   {"x86", "x64", "i386", "i486", "i586", "i686", "amd64", "intel",
+              "mmx", "sse", "sse2", "sse3", "ssse3", "sse41", "sse42", "avx",
+              "avx2", "avx512"},
+    "arm":   {"arm", "arm64", "armv6", "armv7", "armv8", "armv9", "aarch64",
+              "neon", "sve", "thumb"},
+    "riscv": {"riscv", "riscv32", "riscv64", "rv32", "rv64"},
+}
+_ARCH_TOKEN_PREFIXES = (("x86", ("sse", "avx")), ("arm", ("armv", "neon")))
+_INTRIN_HEADER_ARCH = {
+    "x86": ("mmintrin", "xmmintrin", "emmintrin", "pmmintrin", "tmmintrin",
+            "smmintrin", "nmmintrin", "wmmintrin", "ammintrin", "immintrin",
+            "avxintrin", "avx2intrin", "avx512", "x86intrin", "x86gprintrin",
+            "cpuid"),
+    "arm": ("arm_neon", "arm_acle", "arm_sve", "arm_fp16", "arm_bf16",
+            "arm64intr", "arm64_neon", "armintr"),
+    "riscv": ("riscv_vector", "riscv_crypto", "riscv_bitmanip"),
+}
+_INLINE_ASM_RE = re.compile(r"__asm__|\b__asm\b|\b_asm\b|\basm\s*(?:volatile|goto)?\s*[({]")
+_RUST_ASM_RE = re.compile(r"\b(?:core::arch::)?(?:global_)?asm!\s*[({[]")
+_INCLUDE_RE = re.compile(r'#\s*include\s*[<"]([^>"]+)[>"]')
+# x86/arm register & mnemonic hints for attributing an inline-asm LINE to an arch.
+_ARCH_LINE_HINTS = {
+    "x86": re.compile(r"\b(?:[re]?[abcd]x|[re]?(?:si|di|sp|bp)|xmm\d|ymm\d|zmm\d|cpuid|rdtsc)\b", re.I),
+    "arm": re.compile(r"\b(?:aarch64|neon|vld\d|vst\d|dmb|dsb|isb|w(?:zr|sp)|mrs|msr)\b", re.I),
+}
+
+
+def _arch_of_path(path: str) -> str | None:
+    toks = set(re.split(r"[^a-z0-9]+", path.lower()))
+    for arch, vocab in _ARCH_PATH_TOKENS.items():
+        if toks & vocab:
+            return arch
+    for arch, prefixes in _ARCH_TOKEN_PREFIXES:
+        if any(t.startswith(prefixes) for t in toks):
+            return arch
+    return None
+
+
+def _arch_of_header(header: str) -> str | None:
+    base = os.path.basename(header).lower().rsplit(".", 1)[0]
+    for arch, prefixes in _INTRIN_HEADER_ARCH.items():
+        if base.startswith(prefixes):
+            return arch
+    return None
+
+
+def arch_specific(repo: str, cloc: ClocResult) -> dict:
+    """Count production architecture-specific code: standalone assembly files (LOC,
+    arch from path tokens), SIMD-intrinsics includes, and inline-asm sites in
+    C/C++/Rust (comment/string hits masked out). Heuristic but reproducible."""
+    by = {a: {"files": set(), "hits": 0, "loc": 0} for a in ("x86", "arm", "riscv", "generic")}
+    asm_files, headers, samples = [], set(), []
+    inline_hits = 0
+
+    def sample(kind, file, line, text, arch):
+        if len(samples) < _BRANCH_SAMPLE_CAP:
+            samples.append({"kind": kind, "file": file, "line": line,
+                            "text": (text or "").strip()[:160], "arch": arch})
+
+    for f in cloc.by_category("production"):
+        low = f.path.lower()
+        # 1) standalone assembly files
+        if f.language == "Assembly" or low.endswith(_ASM_EXTS):
+            arch = _arch_of_path(f.path) or "generic"
+            by[arch]["files"].add(f.path)
+            by[arch]["loc"] += f.code
+            if len(asm_files) < 40:
+                asm_files.append({"file": f.path, "code": f.code, "arch": arch})
+            sample("asm_file", f.path, 1, None, arch)
+            continue
+        is_cxx = low.endswith(_CXX_EXT)
+        is_rust = low.endswith(".rs")
+        if not (is_cxx or is_rust):
+            continue
+        try:
+            with open(os.path.join(repo, f.path), encoding="utf-8", errors="replace") as fh:
+                lines = fh.readlines()
+        except OSError:
+            continue
+        file_arch = _arch_of_path(f.path)
+        cfg = _MASK_CFG["rust" if is_rust else "cpp"]
+        asm_re = _RUST_ASM_RE if is_rust else _INLINE_ASM_RE
+        for i, masked in _masked_lines(lines, cfg):
+            s = masked.strip()
+            if not s:
+                continue
+            # 2) SIMD-intrinsics includes (C/C++; system headers use <...>)
+            if is_cxx and s.startswith("#") and "include" in s:
+                m = _INCLUDE_RE.search(lines[i - 1])
+                arch = _arch_of_header(m.group(1)) if m else None
+                if arch:
+                    headers.add(os.path.basename(m.group(1)))
+                    by[arch]["files"].add(f.path)
+                    by[arch]["hits"] += 1
+                    sample("intrinsics", f.path, i, lines[i - 1], arch)
+                continue
+            # 3) inline asm (masked line, so comments/strings don't count)
+            if asm_re.search(s):
+                raw = lines[i - 1]
+                arch = file_arch
+                if not arch:
+                    for a, hint in _ARCH_LINE_HINTS.items():
+                        if hint.search(raw):
+                            arch = a
+                            break
+                arch = arch or "generic"
+                inline_hits += 1
+                by[arch]["files"].add(f.path)
+                by[arch]["hits"] += 1
+                sample("inline_asm", f.path, i, raw, arch)
+    out = {a: {"files": len(v["files"]), "hits": v["hits"], "loc": v["loc"]}
+           for a, v in by.items() if v["files"] or v["hits"] or v["loc"]}
+    return {
+        "by_arch": out,
+        "asm_files": asm_files,
+        "inline_asm_hits": inline_hits,
+        "intrinsics_headers": sorted(headers),
+        "samples": samples,
+        "total": sum(v["loc"] for v in out.values()),
+        "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径"
+                 "关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/"
+                 "arm_neon.h…>)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中"
+                 "已剔除；total=汇编文件 LOC 之和。仅 x86 有而无 arm 回退的部分是 arm64 鸿蒙 PC"
+                 "上的适配点，供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。",
+    }
+
+
 def compute(repo: str) -> dict:
     cloc = run_cloc(repo)
     cm = _code_metrics(cloc)
     cm["platform_adaptation"] = platform_adaptation(repo, cloc)
     cm["platform_branches"] = platform_branches(repo, cloc)
+    cm["arch_specific"] = arch_specific(repo, cloc)
     fragment = {
         "languages": _languages(cloc),
         "code_metrics": cm,

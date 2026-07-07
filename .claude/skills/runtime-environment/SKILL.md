@@ -50,6 +50,15 @@ vendored/third-party subtrees and test fixtures — report the library's OWN nee
   AppImage / 容器镜像 / 应用商店包 / 无（库）；是否**捆绑运行时**(JRE/Node)。
 
 ## Output (fills report `runtime_surface` + `build_env`)
+
+**⚠️ 这是两个独立的 block 文件，不是一个合并对象。** 下面示例用一个 JSON 同时展示两块只为对照——
+落盘时必须拆成两个文件：`blocks/runtime_surface.json` 的内容**只**是 `runtime_surface` 的值
+（顶层键就是 `summary`/`network`/`filesystem`/`env_vars`/`subprocess`/`devices`/`services`），
+`blocks/build_env.json` 的内容**只**是 `build_env` 的值（顶层键就是 `language_standard`/
+`runtime_version`/`build_system`/`compiler_extensions`/`platforms`/`entry_points`/`packaging`/`notes`）。
+**切勿**把两块合并写进同一个文件，**切勿**在文件里再套一层 `"runtime_surface"`/`"build_env"` 键——
+双重嵌套会让整个维度在报告里失踪（组装脚本会硬失败并要求你重填）。
+
 ```json
 {
   "runtime_surface": {

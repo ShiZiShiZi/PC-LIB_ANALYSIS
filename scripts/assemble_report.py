@@ -34,7 +34,7 @@ METRICS_KEYS = ["languages", "code_metrics", "tests"]
 # Model-reasoned blocks written to blocks/<name>.json (filename == top-level key).
 REASONED_REQUIRED = ["function_summary", "license", "dependencies", "native_api",
                      "runtime_surface", "build_env", "harmony_adaptation", "library", "meta"]
-REASONED_OPTIONAL = ["capability_profile", "cloud_services"]
+REASONED_OPTIONAL = ["capability_profile", "cloud_services", "code_partition"]
 # Full required top-level set per references/report_schema.json.
 REQUIRED_TOPLEVEL = ["library", "function_summary", "languages", "code_metrics", "tests",
                      "license", "dependencies", "native_api", "runtime_surface",
@@ -224,6 +224,107 @@ def coerce_report(report):
     return fixes
 
 
+# ---------------------------------------------------------------------------
+# Structural completeness gate (harness HARD-check).
+#
+# Shape coercion above only repairs *type* drift (scalar↔array). A weaker model
+# can instead emit an object whose KEYS are entirely wrong yet whose TYPE is
+# right — it still passes `type:object`, and `_recurse_object` only touches keys
+# shared with the schema, so the wrong keys are never examined. The canonical
+# failure: the model writes the *combined* dim-8 object
+# `{runtime_surface:{…}, build_env:{…}}` into BOTH blocks/runtime_surface.json
+# and blocks/build_env.json, double-nesting each block one level too deep — so
+# report.runtime_surface.network / report.build_env.language_standard vanish and
+# the whole dimension renders empty downstream.
+#
+# Two passes, run AFTER coercion, BEFORE the required-top-level check:
+#   (a) unwrap_conflated_dim8  — deterministic, safe, NON-fatal (record a warning)
+#   (b) check_block_shapes     — FATAL for genuinely-malformed required blocks,
+#       so assemble() writes no report and the agent (still in-session) re-fills
+#       the named block and re-runs.
+# ---------------------------------------------------------------------------
+
+# Declared property keys of each dim-8 block (from report_schema.json). A block
+# object sharing NONE of its own block's keys but carrying the OTHER key is the
+# double-nesting signature we can safely unwrap.
+_DIM8_KEYS = {
+    "runtime_surface": {"summary", "network", "filesystem", "env_vars",
+                        "subprocess", "devices", "services"},
+    "build_env": {"language_standard", "runtime_version", "build_system",
+                  "compiler_extensions", "platforms", "entry_points",
+                  "packaging", "notes"},
+}
+
+
+def unwrap_conflated_dim8(report):
+    """Repair the double-nested dim-8 blocks in place. Returns a list of the
+    block names unwrapped (for a meta.warnings note). Safe/deterministic: only
+    acts when the block is an object that shares NONE of its own declared keys
+    yet contains a nested sub-object under its own name."""
+    unwrapped = []
+    for key, own_keys in _DIM8_KEYS.items():
+        val = report.get(key)
+        if not isinstance(val, dict):
+            continue
+        if own_keys & set(val.keys()):
+            continue  # already correctly-keyed → leave alone
+        inner = val.get(key)
+        if isinstance(inner, dict) and (own_keys & set(inner.keys())):
+            report[key] = inner
+            unwrapped.append(key)
+    return unwrapped
+
+
+def _schema_props_for(schema, key):
+    node = (schema.get("properties") or {}).get(key)
+    if isinstance(node, dict):
+        return node
+    return None
+
+
+def check_block_shapes(report, schema):
+    """Return a list of FATAL error strings for structurally-malformed required
+    blocks. Only structural malformation is caught (never 'content looks thin'):
+      - a required block that is not an object where the schema says object;
+      - a block missing a schema-declared `required` sub-field;
+      - a NON-EMPTY object whose keys share NOTHING with the schema's declared
+        properties (an alien-keyed / mis-nested block).
+    An empty {} correctly-typed block is allowed (a legitimately-empty dimension,
+    e.g. runtime_surface with everything []). Runs AFTER unwrap_conflated_dim8."""
+    errors = []
+    for name in REASONED_REQUIRED:
+        if name == "meta":
+            continue
+        node = _schema_props_for(schema, name)
+        if node is None:
+            continue
+        types = _schema_types(node)
+        if not types or "object" not in types:
+            continue
+        val = report.get(name)
+        if not isinstance(val, dict):
+            errors.append(
+                f"block '{name}' 结构畸形：期望对象，实为 {_typename(val)}；"
+                f"按对应 skill 重填 blocks/{name}.json")
+            continue
+        req = node.get("required")
+        if isinstance(req, list):
+            missing = [k for k in req if k not in val]
+            if missing:
+                errors.append(
+                    f"block '{name}' 缺必填子字段 {'/'.join(missing)}；"
+                    f"按对应 skill 重填 blocks/{name}.json")
+                continue
+        declared = set((node.get("properties") or {}).keys())
+        if val and declared and not (declared & set(val.keys())):
+            expect = "/".join(list(declared)[:5])
+            got = "/".join(list(val.keys())[:5])
+            errors.append(
+                f"block '{name}' 结构畸形：期望键之一 {expect}…，实为 {got}；"
+                f"疑似维度块被错误嵌套/张冠李戴，按对应 skill 重填 blocks/{name}.json")
+    return errors
+
+
 def assemble(blocks_dir, metrics_path, out_path):
     """Return (report_dict, errors). Writes out_path atomically only when errors is []."""
     errors = []
@@ -292,23 +393,43 @@ def assemble(blocks_dir, metrics_path, out_path):
     if isinstance(lib, dict) and not lib.get("analyzed_at"):
         lib["analyzed_at"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    # 5) schema-driven shape coercion (NON-fatal): repair recoverable model-shape
-    #    drift (scalar↔array, object entry_points…) so the persisted report is
-    #    contract-conformant. Record each fix in meta.warnings; never abort here.
-    fixes = coerce_report(report)
-    if fixes:
+    def _add_warnings(msgs):
         meta = report.get("meta")
         if not isinstance(meta, dict):
             meta = {}
             report["meta"] = meta
         warnings = list(meta.get("warnings") or [])
-        for f in fixes:
-            msg = f"shape coerced: {f['path']} {f['from']}→{f['to']}"
-            if msg not in warnings:
-                warnings.append(msg)
+        for m in msgs:
+            if m not in warnings:
+                warnings.append(m)
         meta["warnings"] = warnings
 
-    # 6) validate required top-level keys present
+    # 5) structural repair — deterministically UNWRAP the known double-nested
+    #    dim-8 conflation FIRST, so the real inner content is exposed before
+    #    coercion normalises its field types. Safe/deterministic → warn, not fatal.
+    unwrapped = unwrap_conflated_dim8(report)
+    if unwrapped:
+        _add_warnings([f"unwrapped conflated dim-8 block: {name}" for name in unwrapped])
+
+    # 6) schema-driven shape coercion (NON-fatal): repair recoverable model-shape
+    #    drift (scalar↔array, object entry_points…) so the persisted report is
+    #    contract-conformant. Runs AFTER unwrap so it sees the real dim-8 fields.
+    fixes = coerce_report(report)
+    if fixes:
+        _add_warnings([f"shape coerced: {f['path']} {f['from']}→{f['to']}" for f in fixes])
+
+    # 6b) HARD structural gate — alien-keyed / missing-required required blocks are
+    #     fatal (no report written → the in-session agent re-fills the named block
+    #     and re-runs). Schema unreadable → skip. Runs after unwrap so a recoverable
+    #     nesting doesn't trip the gate.
+    try:
+        _schema = _load(SCHEMA_PATH)
+    except Exception:
+        _schema = None
+    if isinstance(_schema, dict):
+        errors.extend(check_block_shapes(report, _schema))
+
+    # 7) validate required top-level keys present
     for k in REQUIRED_TOPLEVEL:
         if k not in report:
             errors.append(f"assembled report missing required top-level key '{k}'")
@@ -316,7 +437,7 @@ def assemble(blocks_dir, metrics_path, out_path):
     if errors:
         return None, errors
 
-    # 7) atomic write (tmp + os.replace) so a reader never sees a half-written report
+    # 8) atomic write (tmp + os.replace) so a reader never sees a half-written report
     text = json.dumps(report, indent=2, ensure_ascii=False)
     tmp = out_path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:

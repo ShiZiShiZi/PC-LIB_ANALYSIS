@@ -14,7 +14,8 @@ This is a **synthesis** step: you do NOT re-scan the source. You reason over the
 already-filled blocks — `library.ecosystem`/`bindings`, `native_api` (groups +
 `category`/`platform`, **以及 `native_api.dynamic_libraries`** —— 运行时经
 ctypes/dlopen/LoadLibrary/JNA 动态加载的库), `runtime_surface`
-(subprocess/filesystem/network/env/devices), `dependencies`, `build_env` —— and
+(subprocess/filesystem/network/env/devices), `dependencies`, `build_env`, **以及
+dim-12 的 `code_partition`（生产代码按复用性分桶的 LOC 统计——工作量估算的量化底座）** —— and
 **reuse their `evidence`** (the same `file:line`).
 
 ## 主旨与原则
@@ -39,6 +40,35 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
 
 **准确性 = match(源所需能力, 目标能力)。结论必须建立在参考里的目标事实上，未核实(unknown)的不要臆测**
 （见下「目标匹配」步）。
+
+### 目标侧 API 事实核查（鸿蒙文档技能，可选但优先使用）
+
+运行环境（opencode）可能装有两个全局文档技能（run prompt 会提示可用性）：
+**`harmonyos-sdk-api-lookup`**（4000+ 篇官方 API 参考：@ohos 模块/API 签名/**ohos.permission.\* 精确名与授权类型**/
+SysCap/起始版本，文件名自带 Kit+模块名）与 **`harmonyos-docs-lookup`**（2860 篇开发指南/FAQ/错误码）。
+`arkts-rules` 技能是写 ArkTS 代码的语言规则，评估**默认不用**（仅 `recommended_path: arkts_rewrite`
+需要佐证重写量时可参考）。
+
+**何时查**（只查驱动结论的项，每库 **≤10 次检索**）：
+- 判 platform/hardware 类 blocker 的 `harmony_status`、写 `remediation` 的 `replace_with_ohos` 具体 API 之前；
+- 填 `required_permissions[]` 时——**权限名以文档为准**（抄 `ohos.permission.*` 全名 + user_grant/system_grant），
+  不要凭记忆拼权限名；PC 形态**可授予性**仍对照 caps JSON 权限模型段；
+- 把某 API 判 `unadaptable` 之前——先按「文件名过滤 → 内容搜索」查一轮，**检索无果**才有底气记
+  `unadaptable_apis`（rationale 注明「检索无对应 @ohos 能力」）；查到等价 → 降级为 adaptable blocker + remediation；
+- 细化 `target_assumptions` 里 unknown 项的 `impact`/`source`。
+
+**怎么查（降级链）**：① 用 opencode 内置 `skill` 工具按名加载（返回文档目录路径与方法说明），
+在其目录内按**文件名过滤 → 内容 Grep → 精读**三步检索（文件名信息量大，先 Glob `*关键词*.md`）；
+② `skill` 工具不可用 → 直接 Glob/Grep `~/.config/opencode/skills/<name>/`；③ 都不可用 → 按现状仅用
+caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技能自带的 `scripts/*.py` **不要运行**
+（保持三脚本白名单），用 Glob/Grep 达到同样效果。
+
+**口径护栏（防误用，必须遵守）**：
+- `references/harmony-pc-capabilities.json` **仍是 PC 形态可用性的唯一权威**——SDK 文档是通用
+  HarmonyOS（多为手机口径），**API 在文档中存在 ≠ 鸿蒙 PC 可用**；两者冲突时 caps JSON 优先。
+- caps JSON 为 unknown 的 required 能力：文档查到 API 存在**不翻转 unknown**、confidence 下调规则
+  不变——只把 assumption 写得更具体（如「@ohos.multimedia.audio 在鸿蒙存在（见文档 X.md），PC 形态待核实」）。
+- 引用过的文档以**文件名**写入 `evidence`/`source`（如 `系统-网络-Connectivity Kit…-@ohos.wifiManager (WLAN).md`）。
 
 **两种部署模型（评估口径）：**
 - **模型 A（默认，命令行 / 桌面库）**：库跑在上表的已移植运行时上。运行时**不是阻碍**；
@@ -82,7 +112,9 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
    把对应目标能力写进 `target_assumptions`，与场景 `key` 交叉引用（`blocker.caused_by`/`unadaptable_apis.caused_by`）。
 0c. **产 `required_permissions[]`（鸿蒙化后运行所需权限）**：媒体/硬件/定位/网络等场景常需申请鸿蒙权限
    （`ohos.permission.CAMERA/MICROPHONE/LOCATION/INTERNET/读写存储/USE_BLUETOOTH…`）。逐项填 `{permission, reason,
-   source_capability(=capability_profile 的场景 key), harmony_status, evidence}`；`harmony_status` 对照
+   source_capability(=capability_profile 的场景 key), harmony_status, evidence}`；**权限名优先经「目标侧 API
+   事实核查」（见上）查 `harmonyos-sdk-api-lookup` 文档核实**（抄全名与授权类型，evidence 引文档文件名），
+   不要凭记忆拼；`harmony_status` 对照
    `harmony-pc-capabilities.json` 的**权限模型段**——`restricted/unavailable`→酌情产 blocker；`unknown` 且该权限为运行必需
    →下调 `confidence` 并 notes 注明。无需权限则 `[]`。
 0. **先按 `library.kind` 选模型**：`application` → **模型 C（整包桌面应用）**，据
@@ -141,7 +173,9 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
      是否覆盖 arm64/x86_64 → 阻碍或注意点。
 3. **判每条阻碍的 `harmony_status` 与 `remediation`**：能用 `@ohos.*` 平替的写
    `replace_with_ohos` + 具体 API；需权限的 `needs_permission`;部分支持 `partial`;
-   彻底没有 `unavailable`。
+   彻底没有 `unavailable`。**具体 @ohos API 名与「彻底没有」的判定优先经「目标侧 API 事实核查」
+   查文档确认**（查到等价 → remediation 写准确模块名；两步检索无果 → 才写 `unavailable`/进
+   `unadaptable_apis`），evidence 附文档文件名。
 4. **汇总：估 `effort.person_days` 区间 + 判 `feasibility`**（难度 `effort.level` 由 server 派生，**你无需自填**）。
    你只输出两个**可观测**的量：`porting_class`（见第 5 步，权威机器轴）与 `effort.person_days:[min,max]`
    人-天区间（区间宽度表达不确定性）。`feasibility` 与 porting_class 确定性对应（no_adaptation→feasible；
@@ -158,7 +192,15 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
 
    **不要因为是 Python/Java/JS 就判 `infeasible`——运行时已移植。** 对 FFI/ctypes 型库，
    **动态加载的平台库是否有鸿蒙等价才是定 person_days/feasibility 的主因**（运行时已移植不再是主阻碍）。
-   **两个平台适配机械信号（都在 `code_metrics` 里，作复杂度依据）**：
+   **person_days 的首要量化依据是 dim-12 的 `code_partition`**：`needs_adaptation` 桶的 LOC 与模块
+   （平台抽象层/GUI 层/asm 补路径各自的量）决定改造量级，`unadaptable` 桶界定放弃范围，
+   `recompile_reuse`/`reuse_direct` 桶只贡献重编/打包的小头。**同时填 `effort.breakdown[]`**（分项
+   可审计）：每项 `{component, person_days:[lo,hi], basis}`，component 推荐集
+   `recompile / api_adaptation / gui / deps_porting / build_system / testing_verification / packaging`
+   （开放词，可扩并记 observations），`basis` 引用 code_partition 桶/LOC 或 blockers（如「needs_adaptation
+   桶 3.2k 行，主要为 src/platform 三套后端加 OHOS 后端」）——**分项之和应 ≈ `effort.person_days` 总区间**
+   （server 会校验告警）。无 code_partition 时（存量/降级）按信号估并在 notes 说明。
+   **三个平台/架构适配机械信号（都在 `code_metrics` 里，作复杂度依据）**：
    - `code_metrics.platform_adaptation`（**编译型**：C/C++ 各平台编译宏 `#ifdef _WIN32/__APPLE__/__linux__…` 包裹的代码量）——
      守卫代码越多 → 鸿蒙需新增/适配的平台分支越多 → `person_days` 上调、更可能产 toolchain/posix_subset_gap 类
      `blocker`（C/C++ 库尤甚）；为空或很小 → 平台耦合轻。
@@ -167,23 +209,55 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
      `samples` 当**追踪种子**，对每个平台分支用 codegraph（`codegraph_trace`/`callees`）顺着追到它**守卫的下游平台特有调用**，
      再对照 `references/harmony-pc-capabilities.json` 判鸿蒙有无等价——有等价 → 仅 `person_days` 略增；**无等价**（如仅
      Windows 的注册表/COM、`/proc`、`fork`/信号路径）→ 记 `blocker`/`unadaptable_apis`、`porting_class` 升 `needs_adaptation_*`，
-     并把该能力登记到 `target_assumptions`。分支越多 → `person_days` 越高。两数都为空 → 平台耦合轻。
-5. **定 `porting_class`（闭轴，依赖拓扑图用）** —— 把本库归入 5 类之一，与上面自洽：
-   - `no_adaptation`：纯脚本（Python/Java/JS…）跑在已移植运行时上，无原生扩展、无平台耦合
-     （≈ `feasible`/`run_on_ported_runtime`/无 blocker）。
-   - `recompile_only`：C/C++ 等只需经 OHOS NDK **重新编译**即可，不依赖平台/底层 API、无平台差异
-     （≈ `recompile_napi`/`cross_compile`，阻碍仅 native_dependency/posix 子集/toolchain 等 ≤major）。
-   - `needs_adaptation_full`（**全部可适配**）：需改造，但**用到的功能全部能在鸿蒙适配/有替代**，
-     无因平台/硬件 API 而彻底无法适配的功能（≈ 有平台类 `blocker`/`major` 但都给得出 `remediation`；
-     `unadaptable_apis` 为空）。
-   - `needs_adaptation_partial`（**部分可适配**）：**部分功能因平台/硬件 API 无对应实现而无法适配**
-     （这些必须逐个列入 `unadaptable_apis`），但核心仍可用（≈ `feasible_with_effort`/`hard`，
-     `unadaptable_apis` 非空）。
-   - `infeasible`：核心不可适配 / 依赖特定硬件 / 无解（≈ `feasibility: infeasible`）。
+     并把该能力登记到 `target_assumptions`。分支越多 → `person_days` 越高。
+   - `code_metrics.arch_specific`（**架构**：独立汇编文件 LOC 按 x86/arm/riscv 归类 + SIMD intrinsics 头 +
+     C/C++/Rust 内联汇编命中 + `samples`）——鸿蒙 PC 是 arm64/x86_64：**只有 x86 实现而无 arm/NEON/标量回退**的
+     汇编或 intrinsics 路径是硬适配点（补 NEON 或退标量 → `person_days` 上调、产 `blocker` category 如
+     `arch_specific_asm`），若该路径可关（构建开关/运行时探测降级）记 `partial`；已有 arm 对应实现（by_arch 里
+     arm 与 x86 并存）→ 只算重编验证量。`samples` 同样当 codegraph 追踪种子。三个信号都为空 → 平台/架构耦合轻。
+5. **定 `porting_class`（闭轴，依赖拓扑图用）** —— 把本库归入 5 类之一。**按这棵判定树顺序回答，命中即止**：
+
+   > **Q0｜有没有"用到的功能"在鸿蒙上确实无法实现且无替代/回退？**（判据见下方"需适配 vs 无法适配"）
+   >   · 核心功能就是它 → **`infeasible`**
+   >   · 只有部分/可选功能是它（且已逐个列入 `unadaptable_apis`）→ **`needs_adaptation_partial`**
+   >   · **没有** → 继续 Q1
+   > **Q1｜要不要改动源码**（新增鸿蒙分支/换 @ohos API/重写某层）？
+   >   · 要 → **`needs_adaptation_full`**（"全部可适配"：改归改，但每个用到的 API 都有鸿蒙落地路径）
+   >   · 不要 → 继续 Q2
+   > **Q2｜是不是 C/C++/原生代码、需要手动用 OHOS NDK 重编（只是重编、零源码改动、无平台 API）？**
+   >   · 是 → **`recompile_only`**
+   >   · 不是（已移植运行时语言，工具链自动重定向即可跑）→ **`no_adaptation`**
+
+   **`无需适配` vs `仅需重编` vs `全部可适配` 三者边界（最易混，务必分清）**：
+   - **`no_adaptation`（无需适配）**：跑在已移植运行时（Python/Node/Java/**Go/Rust**/Julia）上、**无原生扩展、无平台特有 API**，
+     源码零改动即可运行。**⚠️ Go/Rust 交叉编译（`GOOS=ohos`/`--target`）属工具链自动重定向，不算"适配"、不算"重编移植"——纯 Go/纯 Rust 库就是 `no_adaptation`**，
+     即使它有个别 `sys.platform`/`x/sys/unix` 分支，只要那些系统调用鸿蒙也提供，仍是 `no_adaptation`。
+   - **`recompile_only`（仅需重编）**：**专指 C/C++ 等原生代码**，只需 OHOS NDK **重新编译**、**零源码改动**、不碰平台/底层特有 API。
+     ❌ 不要给纯 Go/Rust/脚本库套 `recompile_only`（它们不需要你手动 NDK 重编）。
+     **⚠️ 与 dim-12 `code_partition` 必须一致**：`recompile_only`/`no_adaptation` 都断言"零源码改动"，等价于代码分区里**只有** `reuse_direct`+`recompile_reuse` 两桶。**只要 dim-12 有非空 `needs_adaptation` 桶（含换后端、加平台分支、禁用某后端——即使只靠构建开关切换），本类别至少是 `needs_adaptation_full`，绝不能是 `recompile_only`/`no_adaptation`。**
+   - **`needs_adaptation_full`（全部可适配）**：**需要真正改动源码**（加鸿蒙平台分支、把某平台 API 换成 @ohos 等价、GUI 层用 ArkUI 重写…），
+     但**用到的每一个功能都能在鸿蒙落地**——`unadaptable_apis` **必须为空**。它 ≠ "有平台调用就归这里"的兜底桶。
+
+   **`需适配(adaptable)` vs `无法适配(unadaptable)` 判别（决定 `unadaptable_apis`/`blockers[].adaptability`）**——只问一句：
+   > **能否用鸿蒙可用的 API 或自行实现，把这个功能重建出来？**
+   - **能 → `adaptable`（进 needs_adaptation，不进 unadaptable_apis）**：功能能在鸿蒙实现，只是**要换成鸿蒙的 API/方案**。
+     典型：epoll/kqueue/io_uring → 鸿蒙 I/O 多路复用/poll 回退；Win32/POSIX 差异 → 换 @ohos 或 POSIX 子集；DirectX/Metal → 鸿蒙图形栈；
+     termios/控制台 → 鸿蒙终端 API；注册表 → 鸿蒙配置存储。**"没有 drop-in 等价"不等于"无法适配"——能重建就是 adaptable。**
+   - **不能 → `unadaptable`（进 `unadaptable_apis`）**：卡在**机制/硬件/闭源**层、鸿蒙无任何等价且无法自行实现。
+     典型：**CUDA/专有 GPU 计算**、**闭源二进制库/无源码的预编译 agent**、**鸿蒙无法操作的专有内核特性/驱动**、绑定特定硬件设备且无替代。
+
    - **应用（模型 C）下重新诠释**：`no_adaptation`=纯运行时应用且 GUI 工具包鸿蒙已具备、直接跑；
      `recompile_only`=仅原生启动器/JNI agent 需重编；`needs_adaptation_full`=GUI/窗口/桌面集成需改
      但都能适配；`needs_adaptation_partial`=部分功能（如依赖无 OHOS 版的预编译 agent、特定桌面能力）
      无法适配并列入 `unadaptable_apis`；`infeasible`=核心依赖鸿蒙缺失的桌面环境/硬件且无替代。
+
+   **⚠️ 常见误判（本清单据实测报告归纳，务必自查）**：
+   - ❌ **纯 Go/Rust/脚本库标成 `needs_adaptation_full`/`recompile_only`** → 应是 `no_adaptation`。有 adaptable 阻碍点不代表要改源码；
+     除非你确实要为鸿蒙改代码，否则别升档。
+   - ❌ **"该功能可选/量小"就把含不可适配 API 的库标 `needs_adaptation_full`** → 只要 `unadaptable_apis` 非空，**类别就是 `_partial`**（或 infeasible）。
+     "可选/量小/不影响核心"用**低 `person_days` + `notes` 说明**表达，**绝不因此升 `_full`**。（**服务端会强制校正此矛盾**：full/recompile/no + 非空 unadaptable_apis → 自动改判 `_partial` 并在面板提示，等于你白填了错的类别。）
+   - ❌ **把"没有现成鸿蒙 API"当成 `unadaptable`** → 能重建就是 `adaptable`。`unadaptable` 只留给硬件/闭源/内核机制（CUDA、闭源库、专有内核）。
+   - ❌ **dim-12 有 `needs_adaptation` 桶却把 porting_class 标成 `recompile_only`/`no_adaptation`** → 矛盾。"换后端/禁用后端/加平台分支只是改构建开关不算改源码"是常见误区：只要有模块需要为鸿蒙做**任何**适配动作，就不是"零源码改动"，应升 `needs_adaptation_full`。（**服务端会强制校正此矛盾**：recompile_only/no_adaptation + 非空 needs_adaptation 桶 → 自动改判 `needs_adaptation_full` 并在面板提示，等于你白填了错的类别。）
 5b. **填 `unadaptable_apis`（API 粒度，父库综合用）** —— 仅当本库存在**确实无法在鸿蒙适配**的底层
    API 时列出；这是自底向上综合的关键：服务端会把**父库的 `dependencies[].used_symbols` 与子库此清单的
    `public_entry` 求交**，命中才把该子计为父的阻碍——所以 `public_entry` 要尽量填准，父库不调用到就不阻塞父的迁移。
@@ -196,6 +270,15 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
    - **自底向上填写顺序（先粒度、后引用，避免同一事实写三遍）**：① 先填 `unadaptable_apis`（最细粒度）；
      ② 再写 `blockers`，把对应项的 `manifests_as` 指向 `ua:*`、`caused_by` 指向根因 `ta:*`；③ `target_assumptions` 作根因层。
      一个事实只在其主清单写完整内容，其余清单只用 id 引用。
+5c. **填 `critical_dependencies[]`（迁移关键路径依赖，有序）** —— 从 `dependencies` 里挑出
+   **不先移植它们整个迁移就无法推进**的依赖，按建议移植顺序排 `order`（1 起，越先做越关键）：
+   - 入选口径：runtime/必需 scope + **未鸿蒙化**（`harmony_adapted:true` 的**不进清单**——官方源已有
+     移植产物，直接用）+ 被本库核心功能实际使用（`used_symbols` 非空或明显核心）+ 自身需要移植工作
+     （原生库/含平台 API）。纯脚本依赖、optional/dev/test 依赖、系统标准库不列。
+   - 排序依据：被阻塞面越大越靠前（核心路径 > 可选特性）；被 `blockers` 引用的靠前。
+   - 每项 `{name(=dependencies[].name 原文), order, why(中文，一句话说明为何关键), refs:[bk:/ua:/ta: id],
+     person_days_share:[lo,hi]?}`——`why` 细节**引用 refs 不重述**（单一登记源）；`person_days_share`
+     是该依赖占本库 `effort.person_days` 的份额（含在总数内，不另计）。无关键依赖 → `[]`。
 6. **`compatible` 与 `key_tasks`**：列可顺利移植的部分(纯算法/数据结构/标准库逻辑)、
    落地推荐路径的关键工作项。
 
@@ -206,8 +289,17 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   "target": "HarmonyOS PC (跑在已移植的 Python 3.12 运行时上; 原生扩展经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
   "porting_class": "recompile_only",
   "feasibility": "feasible_with_effort",
-  "effort": {"person_days": [3, 6]},
+  "effort": {"person_days": [3, 6],
+    "breakdown": [
+      {"component": "deps_porting", "person_days": [2, 4],
+       "basis": "OHOS NDK 交叉编译 libfoo 并重建 cffi 绑定（code_partition recompile_reuse 桶约 1.8k 行 C）"},
+      {"component": "testing_verification", "person_days": [1, 2],
+       "basis": "在鸿蒙 Python 上跑通单元测试（tests 计数 210 例）"}]},
   "confidence": "high",
+  "critical_dependencies": [
+    {"name": "libfoo", "order": 1, "why": "唯一原生依赖，不重编则 cffi 绑定整体不可用", "refs": ["bk:libfoo"],
+     "person_days_share": [2, 4]}
+  ],
   "recommended_path": "run_on_ported_runtime",
   "summary": "该库为 Python 库，鸿蒙 PC 已移植 Python 3.12 运行时，纯 Python 部分可直接运行；唯一工作量在其依赖的 C 库（经 cffi 绑定），需用 OHOS NDK 交叉编译该 C 库并重新生成绑定。无外部命令调用与平台特有系统接口，整体可行。",
   "blockers": [
@@ -264,10 +356,21 @@ PC 第三方**库**的自然部署方式是「跑在已移植的运行时上」�
   **`effort.level` 由 server 派生，你不必填**；你填 `porting_class` + `effort.person_days` + `feasibility`。
   `porting_class` 必须与 `feasibility`/路径自洽（见 How-to 第 4/5 步映射），并与 `unadaptable_apis`
   自洽：`unadaptable_apis` 非空 ⇒ `porting_class: needs_adaptation_partial`（或 `infeasible`）；
-  为空且仍需改造 ⇒ `needs_adaptation_full`。
-- 引用完整性 + 去重：每个 `caused_by`/`manifests_as` 引用的 id 必须在对应清单存在；同一事实只在主清单
-  写完整内容、其余引用，避免重复计入难度。任一 `blocker.adaptability: unadaptable` 应同时在 `unadaptable_apis`
-  有对应项（除非不是具体 API）。**单一登记源**：场景"是否涉及 + 鸿蒙状态"登记在 `capability_profile`、
+  为空且仍需改造 ⇒ `needs_adaptation_full`；**完全零源码改动**（分区只有 reuse_direct/recompile_reuse）
+  ⇒ `recompile_only`（原生）/`no_adaptation`（脚本）。
+- 引用完整性 + 去重：每个 `caused_by`/`manifests_as`/`critical_dependencies[].refs` 引用的 id 必须在
+  对应清单存在；同一事实只在主清单写完整内容、其余引用，避免重复计入难度。任一
+  `blocker.adaptability: unadaptable` 应同时在 `unadaptable_apis` 有对应项（除非不是具体 API）。
+- **与 dim-12 `code_partition` 三方自洽**：分区 `unadaptable` 桶非空 ⇔ `unadaptable_apis` 非空 ⇔
+  `porting_class ∈ {needs_adaptation_partial, infeasible}`（桶内模块 reason 引用的 `ua:*` 要真实存在）；
+  分区 **`needs_adaptation` 桶非空 ⇒ `porting_class` 至少 `needs_adaptation_full`**（不得 `recompile_only`/
+  `no_adaptation`——那俩=零源码改动=分区只有 reuse_direct/recompile_reuse；server 会强制校正并告警。
+  例外：`no_adaptation` 的已移植运行时库若只有个别纯跨平台交叉编译文件被 dim-12 误列 needs_adaptation，
+  server 按 5% 规模阈值容忍不升档——但正解是 dim-12 本就不该把这类文件列入 needs_adaptation）；
+  `needs_adaptation` 桶很大而 `person_days` 很小（或反之）需要在 notes 给出理由。`effort.breakdown`
+  分项之和应落在 `effort.person_days` 区间附近（server 校验告警）。
+- `critical_dependencies` 只列**未鸿蒙化**且真正阻塞推进的依赖（`harmony_adapted:true` 不列）；
+  `name` 必须与 `dependencies[].name` 逐字一致（面板据此关联）。**单一登记源**：场景"是否涉及 + 鸿蒙状态"登记在 `capability_profile`、
   权限登记在 `required_permissions`、不可适配 API 登记在 `unadaptable_apis`、目标能力假设登记在
   `target_assumptions`、结果阻碍登记在 `blockers`——dim-9 引用（`source_capability`/`caused_by`/`manifests_as`）
   而非把同一 GUI/3D/媒体/硬件/权限事实在多处重述，否则会被 rollup 双计 person_days。

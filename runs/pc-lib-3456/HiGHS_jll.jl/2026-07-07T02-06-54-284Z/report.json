@@ -1,0 +1,647 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 17,
+        "code": 327,
+        "pct": 62.29,
+        "production": {
+          "files": 17,
+          "code": 327
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 153,
+        "pct": 29.14,
+        "production": {
+          "files": 2,
+          "code": 153
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 38,
+        "pct": 7.24,
+        "production": {
+          "files": 1,
+          "code": 38
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 1.33,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 21,
+      "code": 525,
+      "comment": 17,
+      "blank": 86,
+      "total_lines": 628
+    },
+    "production": {
+      "files": 21,
+      "code": 525,
+      "comment": 17,
+      "blank": 86,
+      "total_lines": 628
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 327,
+        "category": "production",
+        "by_category": {
+          "production": 327
+        }
+      },
+      {
+        "dir": ".",
+        "code": 198,
+        "category": "production",
+        "by_category": {
+          "production": 198
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "HiGHS_jll.jl 是一个由 BinaryBuilder.jl 自动生成的 Julia JLL（Jolly）包装器包，负责下载、暴露 HiGHS 线性优化求解器的预编译二进制产物（动态库 libhighs 与可执行文件 highs）。它本身不含求解逻辑，仅作为 Julia 生态中 HiGHS 原生库的自动分发与运行时加载层，供上层优化建模框架（如 JuMP）通过 ccall 调用 HiGHS 的 C API。该包支持 16 个平台（Linux/macOS/Windows/FreeBSD，多架构多 libc 变体）。",
+    "categories": [
+      {
+        "name": "预编译二进制分发",
+        "description": "通过 Artifacts.toml 声明各平台预编译 tarball 的下载地址与校验和，Julia 包管理器在安装时自动下载对应平台的 HiGHS 二进制包",
+        "evidence": [
+          "Artifacts.toml:1-154",
+          "README.md:19-20"
+        ]
+      },
+      {
+        "name": "运行时动态库加载",
+        "description": "使用 JLLWrappers 宏在运行时 dlopen 加载 libhighs 动态库并导出 highs 可执行文件路径，供 Julia 代码通过 ccall 调用 HiGHS 的 C 接口",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:4-23",
+          "src/HiGHS_jll.jl:2-9"
+        ]
+      },
+      {
+        "name": "跨平台二进制适配",
+        "description": "为 16 个平台-架构组合（aarch64/x86_64/armv6l/armv7l/i686 × macOS/Linux/Windows/FreeBSD × glibc/musl）各生成一份平台专用的 wrapper 脚本，处理路径、库名后缀等差异",
+        "evidence": [
+          "src/wrappers/",
+          "README.md:27-42"
+        ]
+      }
+    ],
+    "domain": "数学优化/线性规划",
+    "target_users": "Julia 优化建模框架开发者（如 JuMP 用户），需在 Julia 中调用 HiGHS 求解器的科研与工程人员"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件明确声明本仓库 Julia 源码以 MIT 许可发布；但该许可不适用于包装的 HiGHS 二进制产物，二进制的许可随二进制分发并在 share/licenses/HiGHS 目录中",
+    "notes": "本 JLL 包的 Julia 包装器代码（src/ 下）采用 MIT 许可；被包装的 HiGHS 二进制产物（源自 https://github.com/ERGO-Code/HiGHS）有独立许可（HiGHS 本身是 MIT-0 即 MIT 无条件版），随二进制一起分发。这是一个双层许可：包装器 MIT，二进制按上游许可。"
+  },
+  "dependencies": {
+    "count": 5,
+    "manifests": [
+      "Project.toml",
+      "Artifacts.toml"
+    ],
+    "by_ecosystem": {
+      "other": [
+        "JLLWrappers",
+        "CompilerSupportLibraries_jll",
+        "libblastrampoline_jll",
+        "Zlib_jll",
+        "HiGHS"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "other",
+        "registry_name": "JLLWrappers",
+        "source_repo": "https://github.com/JuliaPackaging/JLLWrappers.jl",
+        "scope": "runtime",
+        "version": "1.7.0",
+        "purpose": "Julia JLL 包的基础设施库，提供 @generate_main_file / @declare_library_product / @init_library_product 等宏，用于自动生成二进制包装器的加载与导出代码",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia 通用注册表（General Registry）",
+        "declared_in": [
+          "Project.toml:6"
+        ],
+        "used_symbols": [
+          "@generate_main_file_header",
+          "@generate_main_file",
+          "@generate_wrapper_header",
+          "@declare_library_product",
+          "@declare_executable_product",
+          "@generate_init_header",
+          "@init_library_product",
+          "@init_executable_product",
+          "@generate_init_footer"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "CompilerSupportLibraries_jll",
+        "ecosystem": "other",
+        "registry_name": "CompilerSupportLibraries_jll",
+        "source_repo": "https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供 C++ 运行时支持库（如 libstdc++/libc++），HiGHS 是 C++ 编译的库，运行时需链接 C++ 标准库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia JLL 二进制包（自动下载预编译产物）",
+        "declared_in": [
+          "Project.toml:8",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:4"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libblastrampoline_jll",
+        "ecosystem": "other",
+        "registry_name": "libblastrampoline_jll",
+        "source_repo": "https://github.com/JuliaLinearAlgebra/libblastrampoline",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "BLAS 线性代数子程序跳板库，HiGHS 求解器依赖 BLAS 进行矩阵运算",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia JLL 二进制包（自动下载预编译产物）",
+        "declared_in": [
+          "Project.toml:7",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:6"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Zlib_jll",
+        "ecosystem": "other",
+        "registry_name": "Zlib_jll",
+        "source_repo": "https://github.com/madler/zlib",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "zlib 压缩库的 Julia JLL 包装，HiGHS 使用 zlib 进行数据压缩（如 MPS/LP 文件读写）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia JLL 二进制包（自动下载预编译产物）",
+        "declared_in": [
+          "Project.toml:9",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:5"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "HiGHS",
+        "ecosystem": "cpp",
+        "source_repo": "https://github.com/ERGO-Code/HiGHS",
+        "scope": "runtime",
+        "version": "1.15.0",
+        "purpose": "HiGHS 线性优化求解器的预编译 C++ 二进制（libhighs 动态库 + highs 可执行文件），本 JLL 包的核心被包装对象",
+        "acquisition": "prebuilt_binary",
+        "locality": "remote",
+        "source": "GitHub Releases（JuliaBinaryWrappers/HiGHS_jll.jl 发布的各平台 tarball，由 Artifacts.toml 声明下载地址）",
+        "declared_in": [
+          "Artifacts.toml:1-154",
+          "README.md:19-20"
+        ],
+        "used_symbols": [
+          "libhighs"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      }
+    ],
+    "notes": "本包是 Julia JLL 包装器，不直接编译任何 C/C++ 代码——HiGHS 的预编译二进制由 BinaryBuilder.jl 构建并通过 GitHub Releases 分发。Project.toml 中的 Libdl 和 Artifacts 是 Julia 标准库模块（非第三方依赖），前者用于 dlopen 加载动态库，后者用于管理二进制产物路径。JLLWrappers 的版本约束为 1.7.0+。Julia 运行时版本要求 1.10+。"
+  },
+  "native_api": {
+    "summary": "本包是纯 Julia 包装器，不直接调用系统/平台 API。所有动态库加载由 JLLWrappers 宏通过 Julia 的 Libdl 模块（dlopen 封装）完成，加载预下载的 HiGHS 二进制产物（libhighs 动态库）。",
+    "groups": [
+      {
+        "type": "julia_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Base.UUID",
+            "purpose": "Julia 标准库 UUID 类型，用于标识 JLL 包身份",
+            "count": 1,
+            "evidence": [
+              "src/HiGHS_jll.jl:4"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Libdl.dlopen",
+            "purpose": "Julia 标准库动态库加载，JLLWrappers 内部使用它 dlopen 加载 libhighs",
+            "count": 16,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:12-16"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libhighs",
+        "mechanism": "Libdl.dlopen (via JLLWrappers @init_library_product)",
+        "acquisition": "prebuilt_binary",
+        "source": "预编译 HiGHS 二进制包（Artifacts.toml 声明的 GitHub Releases tarball），Julia 包管理器自动下载",
+        "description": "HiGHS 线性优化求解器的核心 C++ 动态库，提供线性规划/混合整数规划求解功能",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:8",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:12-16"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "本 JLL 包运行时仅需 Julia 包管理器下载的二进制产物路径，通过 dlopen 加载 libhighs；无网络访问、无环境变量依赖、无子进程调用、无设备访问。所有文件路径由 JLLWrappers 根据平台自动解析。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "Artifacts.toml 声明的预编译二进制 tarball 解压后的路径（lib/libhighs.*、bin/highs*）",
+        "purpose": "JLLWrappers 在 __init__ 时定位 HiGHS 动态库与可执行文件的路径",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:12-20"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Julia 1.10+",
+    "runtime_version": "Julia >= 1.10",
+    "build_system": "Julia Pkg（无独立构建系统，JLL 包是自动生成的包装器）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:119-127",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:9-18",
+          "src/wrappers/aarch64-linux-gnu-cxx11.jl"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv6l",
+        "evidence": [
+          "Artifacts.toml:38-47"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv7l",
+        "evidence": [
+          "Artifacts.toml:60-69"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml:82-99"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:111-117",
+          "src/wrappers/x86_64-apple-darwin.jl"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:1-8",
+          "src/wrappers/aarch64-apple-darwin.jl"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:147-154",
+          "src/wrappers/x86_64-w64-mingw32-cxx11.jl"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml:101-109"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:139-145"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:30-36"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无（库），Julia Pkg 自动管理二进制产物下载与版本",
+    "notes": "本 JLL 包本身无需编译——它只包含自动生成的 Julia 包装器代码。真正被编译的是 HiGHS C++ 源码，由 Yggdrasil（JuliaPackaging/BinaryBuilder.jl）在 CI 中为 16 个平台预编译并发布到 GitHub Releases。Julia 运行时版本约束 1.10+ 记录在 Project.toml [compat] 段。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Julia 1.10 运行时上; HiGHS 已有鸿蒙预编译版; arm64; 自研内核, 无 Linux ABI)",
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "feasible_with_effort",
+    "effort": {
+      "person_days": [
+        3,
+        8
+      ]
+    },
+    "confidence": "medium",
+    "recommended_path": "run_on_ported_runtime",
+    "summary": "本 JLL 包是纯 Julia 包装器，鸿蒙 PC 已移植 Julia 1.10 运行时，包装器代码可直接运行。HiGHS C++ 库和 zlib 已在 OpenHarmony PC cmd-pkgs 生态中有预编译版本（harmony_adapted: true），大幅降低适配难度。主要工作在于：将 Julia JLL 生态的 BinaryBuilder 构建流程适配鸿蒙 target，生成 OHOS 版本的 HiGHS artifact；验证 libblastrampoline 和 CompilerSupportLibraries 在鸿蒙 Julia 下的可用性；新增 OHOS 平台的 wrapper 脚本。HiGHS 是纯 CPU 数学计算库，无平台特有系统调用，整体可行性高。",
+    "blockers": [
+      {
+        "id": "bk:highs_artifact",
+        "issue": "当前 HiGHS_jll 的 Artifacts.toml 未包含 OHOS 平台的 tarball，需在 Julia JLL 生态中新增 OHOS 构建产物",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "HiGHS 已有鸿蒙 cmd-pkgs 预编译版；在 Yggdrasil/BinaryBuilder 中新增 OHOS target，将 cmd-pkgs 的 HiGHS 二进制打包为 Julia artifact 格式并发布到 GitHub Releases，更新 Artifacts.toml",
+        "caused_by": [
+          "ta:highs_artifact"
+        ],
+        "evidence": [
+          "Artifacts.toml:1-154",
+          "README.md:19-20",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:8"
+        ]
+      },
+      {
+        "id": "bk:blastrampoline",
+        "issue": "libblastrampoline_jll（BLAS 跳板库）在鸿蒙上的可用性未核实",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "libblastrampoline 需在 OHOS NDK 下重编；或验证鸿蒙 Julia 1.10 发行版是否已附带 libblastrampoline 的 OHOS 版本",
+        "caused_by": [],
+        "evidence": [
+          "Project.toml:7",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:6"
+        ]
+      },
+      {
+        "id": "bk:compiler_support",
+        "issue": "CompilerSupportLibraries_jll（C++ 运行时支持库 libstdc++/libc++）需在 OHOS NDK 下对应",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "OHOS NDK 使用 clang + libc++（musl），需确认鸿蒙 Julia 的 CompilerSupportLibraries_jll 是否已适配为提供 libc++.so",
+        "caused_by": [],
+        "evidence": [
+          "Project.toml:8",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:4"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:highs_artifact",
+        "capability": "HiGHS C++ 原生库在鸿蒙 Julia JLL 生态中以 artifact 形式可用",
+        "required": true,
+        "target_status": "partial",
+        "impact": "HiGHS 已有 OHOS 预编译版（cmd-pkgs），但尚未打包为 Julia artifact 格式；需完成打包流程后 JLL 包装器才能自动下载使用",
+        "source": "HiGHS 在 cmd-pkgs 已有预编译版（harmony_adapted: true），但 Julia JLL 生态尚未产出 OHOS artifact"
+      }
+    ],
+    "required_permissions": [],
+    "compatible": [
+      {
+        "aspect": "Julia 包装器代码（src/ 下所有 .jl 文件）",
+        "note": "鸿蒙 Julia 1.10 运行时已移植，纯 Julia 代码无需任何改动",
+        "evidence": [
+          "src/HiGHS_jll.jl:1-9"
+        ]
+      },
+      {
+        "aspect": "JLLWrappers 宏基础设施",
+        "note": "JLLWrappers 是纯 Julia 包，跑在已移植运行时上即可，无需重编",
+        "evidence": [
+          "Project.toml:6"
+        ]
+      },
+      {
+        "aspect": "HiGHS C++ 库本体",
+        "note": "HiGHS 已在 OpenHarmony PC cmd-pkgs 中有预编译版本，无需从源码重编",
+        "evidence": [
+          "harmony_adapted 脚本查询结果: HiGHS adapted=true"
+        ]
+      },
+      {
+        "aspect": "zlib 依赖",
+        "note": "zlib 在鸿蒙 cmd-pkgs 生态中已有预编译版本（harmony_adapted: true），可直接使用",
+        "evidence": [
+          "Project.toml:9"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "将 HiGHS 的 OHOS 预编译二进制打包为 Julia artifact 格式，发布到 GitHub Releases 并在 Artifacts.toml 中新增 OHOS 条目",
+      "新增 src/wrappers/aarch64-ohos-*.jl wrapper 脚本",
+      "验证并确保 libblastrampoline_jll 在鸿蒙 Julia 1.10 环境下可用（或重编该依赖）",
+      "确认 CompilerSupportLibraries_jll 在鸿蒙 Julia 下提供 libc++ 而非 libstdc++",
+      "在鸿蒙 Julia 上跑通 HiGHS 的 C API 调用（经 ccall）验证功能完整"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Julia 运行时上），Julia 1.10.6 已确认 available。本 JLL 包自身是纯 Julia 代码（无原生扩展），直接可运行。HiGHS 和 zlib 均已在 OpenHarmony PC cmd-pkgs 生态中有预编译版（harmony_adapted: true），大幅降低适配难度——无需从源码重编 C++ 库，主要工作是 Julia JLL 生态的打包适配。confidence 为 medium 是因为 libblastrampoline 在鸿蒙上的确切可用性未核实（Julia JLL 生态的 OHOS 覆盖度尚待验证）。若目标是 ArkTS 沙箱应用（模型 B），Julia 运行时不可用，需整体换原生实现，结论收紧为 infeasible。"
+  },
+  "library": {
+    "name": "HiGHS_jll.jl",
+    "kind": "library",
+    "package_name": "HiGHS_jll",
+    "aliases": [
+      "HiGHS_jll.jl"
+    ],
+    "import_names": [
+      "HiGHS_jll"
+    ],
+    "source_url": "https://github.com/JuliaBinaryWrappers/HiGHS_jll.jl.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "commit": "948587ad3690aad465dcdcc87ecf9c547a2ba2ae",
+    "one_liner": "Julia JLL 包装器，自动下载并提供 HiGHS 线性优化求解器的预编译二进制文件",
+    "ecosystem": "other",
+    "bindings": [],
+    "analyzed_at": "2026-07-07T02:14:47Z"
+  },
+  "meta": {
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "ecosystem",
+        "kind": "new_value",
+        "value": "other",
+        "rationale": "Julia 不在现有 ecosystem 闭轴（python/java/nodejs/cpp/rust/go/dotnet）中，归入 other。Julia 是科学计算生态，其 JLL 包体系是独有的二进制分发机制，与上述任一语言生态均不同。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "prebuilt_binary",
+        "rationale": "HiGHS 的预编译 C++ 二进制通过 Julia Artifacts 机制自动下载（GitHub Releases tarball），不同于 system/vendored/fetchcontent/download_build/submodule/package_manager，是 Julia JLL 生态独有的分发方式。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "run_on_ported_runtime",
+        "rationale": "Julia 运行时已在鸿蒙 PC 移植，JLL 包装器代码可直接跑在已移植运行时上，但被包装的 C++ 原生库仍需重编——这不同于纯脚本库的 no_adaptation，也不同于 C/C++ 库的 recompile_napi（Julia 不走 Node-API 桥接）。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "本项目是纯本地 Julia 二进制包装器，不涉及 GUI、3D 渲染、媒体或特定硬件等鸿蒙适配重点场景。其功能限于下载并加载预编译的 HiGHS 线性优化库（纯 CPU 计算）。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本项目不涉及任何云端服务。它是纯粹的本地二进制包装器，仅下载预编译二进制文件并在本地加载运行，无网络通信、无云 SDK、无云端域名。",
+    "services": []
+  }
+}

@@ -1,0 +1,611 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 17,
+        "code": 199,
+        "pct": 52.93,
+        "production": {
+          "files": 17,
+          "code": 199
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 138,
+        "pct": 36.7,
+        "production": {
+          "files": 2,
+          "code": 138
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 32,
+        "pct": 8.51,
+        "production": {
+          "files": 1,
+          "code": 32
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 1.86,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 21,
+      "code": 376,
+      "comment": 17,
+      "blank": 67,
+      "total_lines": 460
+    },
+    "production": {
+      "files": 21,
+      "code": 376,
+      "comment": 17,
+      "blank": 67,
+      "total_lines": 460
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 199,
+        "category": "production",
+        "by_category": {
+          "production": 199
+        }
+      },
+      {
+        "dir": ".",
+        "code": 177,
+        "category": "production",
+        "by_category": {
+          "production": 177
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "Cuba_jll.jl 是一个由 BinaryBuilder.jl 自动生成的 Julia JLL（预编译二进制包装）包，为 Cuba 多维数值积分 C 库提供跨平台动态加载封装。Cuba 库实现了 Vegas、Suave、Divonne 和 Cuhre 四种确定性/随机性多维积分算法。本包不包含 Cuba 算法实现本身，仅负责在 Julia 运行时按平台加载对应的预编译 libcuba 共享库（.so/.dylib/.dll）并导出库路径句柄。",
+    "categories": [
+      {
+        "name": "二进制库加载与路径导出",
+        "description": "按目标平台（Linux/macOS/Windows/FreeBSD，含多种架构与 libc 变体）自动加载预编译的 libcuba 共享库，并导出 libcuba 路径句柄供上层 Julia 包（如 Cuba.jl）调用。",
+        "evidence": [
+          "src/Cuba_jll.jl:7-8",
+          "src/wrappers/x86_64-linux-gnu.jl:2-11"
+        ]
+      },
+      {
+        "name": "跨平台产物分发",
+        "description": "通过 Artifacts.toml 声明 16 种平台（aarch64/x86_64/armv6l/armv7l/i686/powerpc64le × Linux-glibc/Linux-musl/macOS/Windows/FreeBSD）的预编译二进制下载地址与校验，由 Julia 包管理器自动获取。",
+        "evidence": [
+          "Artifacts.toml:1-143",
+          "README.md:25-42"
+        ]
+      }
+    ],
+    "domain": "scientific_computing",
+    "target_users": "Julia 科学计算开发者（通过上层 Cuba.jl 间接使用）",
+    "ecosystem": "other"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件包含完整 MIT 许可文本，Copyright (c) 2020 JuliaBinaryWrappers；LICENSE 明确说明此 MIT 仅覆盖 src/ 下的 Julia 源码，预编译二进制（libcuba）的许可随二进制分发（位于 share/licenses/Cuba 目录）。",
+    "notes": "Julia 包装器源码为 MIT 许可；底层 Cuba C 库的许可不同（随预编译二进制附送），需注意二进制使用时须遵守 Cuba 自身许可条款。"
+  },
+  "dependencies": {
+    "count": 4,
+    "manifests": [
+      "Project.toml"
+    ],
+    "by_ecosystem": {
+      "other": [
+        "JLLWrappers",
+        "Pkg",
+        "Libdl",
+        "Artifacts"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": "1.2.0",
+        "purpose": "Julia JLL 包的通用包装器基础设施，提供 @generate_main_file_header 等宏与库产品声明/初始化工具",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia 通用注册表",
+        "declared_in": [
+          "Project.toml:6"
+        ],
+        "used_symbols": [
+          "@generate_main_file_header",
+          "@generate_main_file",
+          "@generate_wrapper_header",
+          "@declare_library_product",
+          "@generate_init_header",
+          "@init_library_product",
+          "@generate_init_footer"
+        ],
+        "source_repo": "https://github.com/JuliaPackaging/JLLWrappers.jl",
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Pkg",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Julia 标准库包管理器，JLLWrappers 用于定位 artifact 路径",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Julia 标准库（随 Julia 发行版附带）",
+        "declared_in": [
+          "Project.toml:7"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Libdl",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Julia 标准库动态链接接口，提供 dlopen 等函数用于运行时加载共享库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Julia 标准库（随 Julia 发行版附带）",
+        "declared_in": [
+          "Project.toml:8"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "Artifacts",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Julia 标准库 artifact 机制，用于查找预编译二进制包的安装路径",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Julia 标准库（随 Julia 发行版附带）",
+        "declared_in": [
+          "Project.toml:9"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "本包为 Julia JLL 二进制包装器，核心依赖是 JLLWrappers（提供宏和加载逻辑）与 Julia 标准库模块（Pkg/Libdl/Artifacts）。底层 Cuba C 库（libcuba）不在此依赖列表——它作为预编译 artifact 通过 Artifacts.toml 下载分发，运行时由 Libdl 动态加载。Cuba C 库源码仓库为 https://github.com/giordano/cuba.git。"
+  },
+  "native_api": {
+    "summary": "本包为纯 Julia JLL 二进制包装器，仅通过 Julia 标准库 Libdl 动态加载预编译的 libcuba 共享库，不直接调用任何操作系统原生 API（Win32/POSIX）。平台差异由 Julia 运行时和 Libdl 抽象屏蔽。",
+    "groups": [
+      {
+        "type": "julia_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Libdl.dlopen",
+            "purpose": "Julia 标准库：运行时动态加载共享库",
+            "count": 16,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:8-12",
+              "src/wrappers/x86_64-apple-darwin.jl:8-12"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "RTLD_LAZY",
+            "purpose": "动态加载标志：延迟绑定符号解析",
+            "count": 16,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:11"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "RTLD_DEEPBIND",
+            "purpose": "动态加载标志：优先使用本库自身符号而非全局符号（Linux 特有，macOS/Windows 上被忽略）",
+            "count": 16,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:11"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libcuba",
+        "mechanism": "Libdl.dlopen",
+        "acquisition": "prebuilt_binary",
+        "source": "通过 Artifacts.toml 从 GitHub Releases 下载的预编译 Cuba C 库二进制（由 BinaryBuilder.jl 构建）",
+        "description": "Cuba 多维数值积分 C 库，提供 Vegas/Suave/Divonne/Cuhre 算法实现，运行时动态加载",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu.jl:5",
+          "src/wrappers/x86_64-apple-darwin.jl:5",
+          "src/wrappers/x86_64-w64-mingw32.jl:5"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时仅依赖 Julia 运行时与标准库（Libdl/Artifacts/Pkg），通过 Julia artifact 机制从 GitHub Releases 下载预编译二进制，然后动态加载 libcuba 共享库。无网络监听、无文件系统写操作、无子进程调用、无设备访问。",
+    "network": [
+      {
+        "detail": "GitHub Releases（juliahub.com / github.com/JuliaBinaryWrappers）",
+        "purpose": "Julia 包管理器安装时从 GitHub Releases 下载预编译二进制 artifact（.tar.gz）",
+        "evidence": [
+          "Artifacts.toml:8",
+          "Artifacts.toml:17"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "artifact 安装目录（由 Julia 包管理器管理）",
+        "purpose": "存放解压后的预编译 libcuba 共享库（lib/libcuba.so / lib/libcuba.dylib / bin/libcuba.dll），运行时通过 Libdl.dlopen 加载",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu.jl:10",
+          "src/wrappers/x86_64-apple-darwin.jl:10",
+          "src/wrappers/x86_64-w64-mingw32.jl:10"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Julia 1.6+",
+    "runtime_version": "Julia >= 1.6（Project.toml compat 声明）",
+    "build_system": "BinaryBuilder.jl（在 Yggdrasil 仓库中构建预编译二进制；本 Julia 包本身无需构建步骤）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "macOS",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:3-8",
+          "src/wrappers/aarch64-apple-darwin.jl"
+        ]
+      },
+      {
+        "os": "macOS",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:103-109",
+          "src/wrappers/x86_64-apple-darwin.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml:10-17",
+          "src/wrappers/aarch64-linux-gnu.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:110-119",
+          "src/wrappers/x86_64-linux-gnu.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml:68-75",
+          "src/wrappers/i686-linux-gnu.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "armv6l",
+        "evidence": [
+          "Artifacts.toml:27-36"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "armv7l",
+        "evidence": [
+          "Artifacts.toml:47-56"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "powerpc64le",
+        "evidence": [
+          "Artifacts.toml:93-101"
+        ]
+      },
+      {
+        "os": "Windows",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml:85-92",
+          "src/wrappers/i686-w64-mingw32.jl"
+        ]
+      },
+      {
+        "os": "Windows",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:137-143",
+          "src/wrappers/x86_64-w64-mingw32.jl"
+        ]
+      },
+      {
+        "os": "FreeBSD",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml:129-135",
+          "src/wrappers/x86_64-unknown-freebsd.jl"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "Julia 注册表包（Pkg.add(\"Cuba_jll\")），无独立打包/分发——由 Julia 包管理器自动下载 artifact 并安装",
+    "notes": "本包为纯 Julia JLL 包装器，本身无需编译。预编译二进制由 Yggdrasil（JuliaPackaging/BinaryBuilder.jl）在 CI 中为各平台构建，上传至 GitHub Releases。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [
+        3,
+        7
+      ]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:julia_runtime",
+        "capability": "Julia 运行时（1.10.6）",
+        "required": true,
+        "target_status": "available",
+        "impact": "Julia 运行时已移植至鸿蒙 PC，本 Julia JLL 包可运行——但需底层 Cuba C 库（libcuba）也有鸿蒙版本或能重编",
+        "source": "references/harmony-pc-capabilities.json → runtimes → julia"
+      },
+      {
+        "id": "ta:libcuba_porting",
+        "capability": "Cuba C 库（libcuba）在鸿蒙 PC 的可用性",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "libcuba 是本包动态加载的核心预编译二进制——若无鸿蒙版 libcuba.so，本包无法运行；需用 OHOS NDK 重编 Cuba C 源码",
+        "source": "Cuba C 库源码 https://github.com/giordano/cuba.git ；鸿蒙适配状态未核实"
+      },
+      {
+        "id": "ta:jll_artifact_mechanism",
+        "capability": "Julia Artifacts/Pkg 机制在鸿蒙 PC 的可用性",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "本包依赖 Julia Artifacts 机制下载预编译二进制——若鸿蒙 Julia 不支持 artifact 下载或无对应 aarch64-linux-ohos artifact，需手动放置 libcuba",
+        "source": "Julia 标准库 Artifacts/Pkg 在鸿蒙 Julia 移植中的支持程度未核实"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "recompile_napi",
+    "summary": "Julia 运行时已移植到鸿蒙 PC（1.10.6），本 Julia JLL 包装器代码本身跨平台可运行。核心阻碍是底层 Cuba C 库（libcuba）需要用 OHOS NDK 重新编译为鸿蒙版共享库，并需构建对应的 aarch64-linux-ohos artifact。Cuba 是纯数学计算 C 库，无平台 API 依赖，重编难度低。",
+    "blockers": [
+      {
+        "id": "bk:libcuba_binary",
+        "issue": "预编译的 libcuba 二进制不包含鸿蒙 aarch64-linux-ohos 平台版本",
+        "severity": "blocker",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "用 OHOS NDK 从 Cuba C 源码（https://github.com/giordano/cuba.git）交叉编译 libcuba.so，然后在 Yggdrasil/BinaryBuilder 中添加鸿蒙平台目标，生成对应 artifact",
+        "caused_by": [
+          "ta:libcuba_porting"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "Artifacts.toml:1-143（16 个平台均无 ohos 变体）"
+        ]
+      },
+      {
+        "id": "bk:artifact_delivery",
+        "issue": "Julia Artifacts 机制需能识别并下载鸿蒙平台 artifact",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "toolchain",
+        "source_dimension": "runtime_surface",
+        "harmony_status": "unknown",
+        "remediation": "在 Yggdrasil 的 build_tarballs.jl 中添加 aarch64-linux-ohos 目标并发布 artifact；或手动将重编的 libcuba.so 放入 Julia artifact 目录",
+        "caused_by": [
+          "ta:jll_artifact_mechanism"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "Artifacts.toml（仅涵盖 linux-gnu/linux-musl/apple-darwin/w64-mingw32/unknown-freebsd）"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "Julia JLL 包装器源码",
+        "note": "纯 Julia 代码，跨平台，只要 Julia 运行时和 libcuba 二进制可用即可正常工作",
+        "evidence": [
+          "src/Cuba_jll.jl:1-9"
+        ]
+      },
+      {
+        "aspect": "Cuba C 库算法代码",
+        "note": "纯数学计算 C 库，无操作系统 API 依赖，可在 OHOS NDK 下重编",
+        "evidence": [
+          "README.md:19-21（源码仓库 giordano/cuba）"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "用 OHOS NDK 从 Cuba C 源码交叉编译 libcuba.so（aarch64-linux-ohos）",
+      "在 Yggdrasil/BinaryBuilder.jl 构建流程中添加鸿蒙平台目标",
+      "生成并发布鸿蒙版 artifact 到 GitHub Releases",
+      "更新 Artifacts.toml 添加鸿蒙平台条目",
+      "测试 Julia JLL 包在鸿蒙 PC Julia 环境中能正常加载 libcuba"
+    ],
+    "notes": "关键不确定性：libcuba 在鸿蒙 PC 的可用性（ta:libcuba_porting）和 Julia Artifacts 机制在鸿蒙 Julia 的支持程度（ta:jll_artifact_mechanism）均为 unknown。Cuba 是纯计算 C 库，重编难度极低——只需 OHOS NDK + musl 环境即可；真正的阻碍在于 Yggdrasil/BinaryBuilder 构建管线是否已支持鸿蒙目标。若鸿蒙 Julia 不支持 artifact 自动下载，可手动放置二进制作为临时方案。"
+  },
+  "library": {
+    "name": "Cuba_jll.jl",
+    "kind": "library",
+    "package_name": "Cuba_jll",
+    "aliases": [
+      "Cuba_jll.jl"
+    ],
+    "import_names": [
+      "Cuba_jll"
+    ],
+    "source_url": "https://github.com/JuliaBinaryWrappers/Cuba_jll.jl.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "one_liner": "Julia JLL 包：为预编译的 Cuba 多维数值积分 C 库（libcuba）提供跨平台动态加载封装",
+    "ecosystem": "other",
+    "bindings": [],
+    "analyzed_at": "2026-07-07T02:12:32Z"
+  },
+  "meta": {
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "ecosystem",
+        "kind": "gap",
+        "value": "other",
+        "rationale": "Julia 生态不在 schema 允许的 ecosystem 枚举（python/java/nodejs/cpp/rust/go/dotnet/other）中，归入 other。Julia 有独立包管理器和注册表生态，但当前 schema 未单独列出。"
+      },
+      {
+        "dimension": "function_summary",
+        "field": "domain",
+        "kind": "new_value",
+        "value": "scientific_computing",
+        "rationale": "Cuba 库用于多维数值积分，属科学计算领域，推荐取值列表无 science/scientific_computing 条目，按实际命名。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "本包为纯 Julia 数值计算库的 JLL 二进制包装器，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本包不涉及任何云端服务。它仅从 GitHub Releases 下载预编译二进制 artifact（包管理器行为），运行时不连接任何云后端。",
+    "services": []
+  }
+}

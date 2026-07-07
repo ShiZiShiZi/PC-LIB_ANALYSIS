@@ -148,6 +148,48 @@
             "total": {"type": "integer", "description": "命中总数"},
             "notes": {"type": "string"}
           }
+        },
+        "dir_loc": {
+          "type": "array",
+          "description": "SCRIPT：生产代码按目录（路径截断 depth≤2）聚合的 LOC 表，按 code 降序 cap 80，仓根文件归 '.'。dim-12 code_partition 各桶模块 LOC 的对账底数——桶内模块 loc 应引用此处数字，桶和 ≈ production.code。",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dir": {"type": "string"},
+              "files": {"type": "integer"},
+              "code": {"type": "integer"}
+            }
+          }
+        },
+        "arch_specific": {
+          "type": "object",
+          "description": "SCRIPT：生产代码中架构相关代码的机械计数（第三个适配信号）——独立汇编文件(.s/.asm，LOC 按路径关键字归架构)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、C/C++/Rust 内联汇编命中（注释/字符串内已剔除）。仅 x86 有而无 arm 回退的部分是 arm64 鸿蒙 PC 的适配点/blocker，dim-9/dim-12 判读（samples 作 codegraph 追踪种子）。",
+          "properties": {
+            "by_arch": {
+              "type": "object",
+              "description": "{x86|arm|riscv|generic: {files, hits, loc}}——files=涉及文件数；hits=intrinsics include + 内联汇编命中；loc=汇编文件代码行",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "files": {"type": "integer"},
+                  "hits": {"type": "integer"},
+                  "loc": {"type": "integer"}
+                }
+              }
+            },
+            "asm_files": {"type": "array", "items": {
+              "type": "object",
+              "properties": {"file": {"type": "string"}, "code": {"type": "integer"}, "arch": {"type": "string"}}}},
+            "inline_asm_hits": {"type": "integer"},
+            "intrinsics_headers": {"type": "array", "items": {"type": "string"}},
+            "samples": {"type": "array", "items": {
+              "type": "object",
+              "properties": {"kind": {"type": "string", "description": "asm_file / intrinsics / inline_asm"},
+                "file": {"type": "string"}, "line": {"type": "integer"},
+                "text": {"type": "string"}, "arch": {"type": "string"}}}},
+            "total": {"type": "integer", "description": "汇编文件 LOC 之和"},
+            "notes": {"type": "string"}
+          }
         }
       }
     },
@@ -377,6 +419,46 @@
       }
     },
 
+    "code_partition": {
+      "type": "object",
+      "description": "Dimension 12 — MODEL (skill: code-partition). SYNTHESIS-lite：把生产代码按鸿蒙迁移复用性分桶（模块/目录粒度 + LOC），回答\"哪些代码直接复用、哪些重编译即可、哪些要适配、哪些无法适配\"。LOC 必须引用 code_metrics.dir_loc 的机械数字（对账：桶和 ≈ production.code）；综合 code_metrics(dir_loc/platform_adaptation/platform_branches/arch_specific) + native_api 调用点 + capability_profile + dependencies，不重扫源码。dim-9 据此定 effort.person_days/breakdown。生产范围口径（测试/示例不进分区）。prose 简体中文。",
+      "properties": {
+        "summary": {"type": "string", "description": "中文：分区结论概览（多少直接复用/重编译/需适配/无法适配）"},
+        "coverage": {
+          "type": "object",
+          "description": "对账：production_code=code_metrics.production.code；partitioned_code=各桶 loc 之和；pct=覆盖率（应 ≥90%，长尾并入主桶并在 notes 说明）",
+          "properties": {
+            "production_code": {"type": "integer"},
+            "partitioned_code": {"type": "integer"},
+            "pct": {"type": "number"}
+          }
+        },
+        "buckets": {
+          "type": "array",
+          "description": "4 桶分区（class 闭轴）。桶缺省表示该类为 0 行（可省略或 loc:0）。",
+          "items": {
+            "type": "object",
+            "required": ["class", "loc"],
+            "properties": {
+              "class": {"type": "string",
+                "enum": ["reuse_direct", "recompile_reuse", "needs_adaptation", "unadaptable"],
+                "description": "闭轴：reuse_direct=直接复用（纯脚本/纯逻辑/标准库，跑已移植运行时零改动）；recompile_reuse=重编译复用（C/C++ 无平台 API，OHOS NDK 重编即可）；needs_adaptation=需适配（能用鸿蒙 API/自行实现重建、只是换方案：平台 API 调用点/平台分支/GUI 层重写/事件循环后端/x86-only asm 换 NEON 等）；unadaptable=无法适配（机制/硬件/闭源层无任何鸿蒙等价与回退：CUDA/专有 GPU、闭源二进制库、专有内核特性，模块须与 dim-9 unadaptable_apis 交叉引用）。判据：能否用鸿蒙可用 API 或自行实现重建功能？能→needs_adaptation，不能→unadaptable"},
+              "loc": {"type": "integer", "description": "该桶生产代码行数（引用 dir_loc 机械数字之和）。字段名必须为 loc，不是 total_loc（面板/xlsx 只认 loc）"},
+              "pct": {"type": "number", "description": "占 production.code 百分比"},
+              "modules": {"type": "array", "items": {
+                "type": "object",
+                "required": ["path"],
+                "properties": {
+                  "path": {"type": "string", "description": "目录/模块路径（尽量与 dir_loc 的 dir 对齐；子目录拆分时在 reason 说明估算依据）。字段名必须为 path，不是 dir/module/name"},
+                  "loc": {"type": "integer"},
+                  "reason": {"type": "string", "description": "中文：为何归入此桶（GUI 层重写/含 Win32 调用点/纯算法…）；unadaptable 模块引用 ua:* id 而不重述。字段名必须为 reason，不是 note"},
+                  "evidence": {"type": "array", "items": {"type": "string"},
+                    "description": "复用来源维度的 file:line（native_api 调用点/platform_branches samples 等，代表性）"}}}},
+              "basis": {"type": "string", "description": "中文：本桶归类依据（引用了哪些机械信号/维度证据）"}}}},
+        "notes": {"type": "string", "description": "中文：未覆盖长尾、估算口径、局限"}
+      }
+    },
+
     "harmony_adaptation": {
       "type": "object",
       "description": "Dimension 9 — MODEL (skill: harmony-adaptation). SYNTHESIS dimension: feasibility / difficulty / path of porting the library to HarmonyOS NEXT PC (self-kernel, ArkTS app layer, OHOS NDK native layer, Node-API bridge — NO Linux ABI). Derived by reasoning over the already-filled native_api / runtime_surface / dependencies / build_env / library blocks, reusing their evidence. Prose in 简体中文.",
@@ -385,14 +467,24 @@
         "feasibility": {"type": "string", "enum": ["feasible", "feasible_with_effort", "hard", "infeasible"],
           "description": "闭轴：整体可行性。须与 porting_class 确定性自洽（no_adaptation→feasible；recompile_only/needs_adaptation_full→feasible_with_effort；needs_adaptation_partial→hard；infeasible→infeasible）。server 会据 porting_class 校验/补全。"},
         "porting_class": {"type": "string", "enum": ["no_adaptation", "recompile_only", "needs_adaptation_full", "needs_adaptation_partial", "infeasible"],
-          "description": "★唯一权威机器轴（依赖拓扑图 + 难度派生用）。no_adaptation=纯脚本跑在已移植运行时/无原生工作；recompile_only=C/C++ 仅需 OHOS NDK 重编、无平台 API/平台差异；needs_adaptation_full=需改造但用到的功能全部能适配/有替代(unadaptable_apis 为空)；needs_adaptation_partial=部分功能因平台/硬件 API 无法适配(见 unadaptable_apis)但核心仍可用；infeasible=核心不可适配/依赖特定硬件无解。须与 feasibility/recommended_path 自洽。"},
+          "description": "★唯一权威机器轴（依赖拓扑图 + 难度派生用）。no_adaptation=纯脚本/纯 Go/纯 Rust 跑在已移植运行时、无原生扩展无平台 API（交叉编译属工具链自动重定向，≠recompile_only、≠适配）；recompile_only=专指 C/C++ 原生、仅需 OHOS NDK 重编、零源码改动、无平台 API/平台差异；needs_adaptation_full=需真正改源码但用到的功能全部能适配/有替代(unadaptable_apis 必须为空)；needs_adaptation_partial=部分功能因平台/硬件 API 无法适配(见 unadaptable_apis)但核心仍可用；infeasible=核心不可适配/依赖特定硬件无解。须与 feasibility/recommended_path 自洽。★硬约束：unadaptable_apis 非空或任一 blocker adaptability=unadaptable ⇒ 只能 needs_adaptation_partial/infeasible，绝不 _full/_recompile/_no（server 会强制校正此矛盾）。"},
         "effort": {"type": "object",
           "description": "工作量与难度。模型只估 person_days（区间）；level 由 server 按固定 rubric 从 (porting_class 下限 × person_days 上界分桶) 取高确定性派生——模型无需自填、填了也以派生为准。这样难度与 porting_class 自洽且 person_days 可跨依赖树数值聚合。",
           "properties": {
             "person_days": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2,
               "description": "★模型估的工作量人-天区间 [min,max]，区间宽度表达不确定性。锚点：极低0–2 / 低2–5 / 中5–15 / 高15–40 / 极高40+。可跨依赖树累加（rollup）。"},
             "level": {"type": "string", "enum": ["very_low", "low", "medium", "high", "very_high"],
-              "description": "闭轴：难度等级（server 派生）。展示：very_low=极低 low=低 medium=中 high=高 very_high=极高。"}}},
+              "description": "闭轴：难度等级（server 派生）。展示：very_low=极低 low=低 medium=中 high=高 very_high=极高。"},
+            "breakdown": {"type": "array",
+              "description": "工作量分项分解（可审计）：每项 person_days 区间，分项之和应 ≈ effort.person_days（server 校验告警）。basis 引用 code_partition 桶/LOC 与机械信号，让估算可追溯。无分项可省略。",
+              "items": {
+                "type": "object",
+                "required": ["component", "person_days"],
+                "properties": {
+                  "component": {"type": "string",
+                    "description": "开放词（推荐集，可扩并记 meta.observations）：recompile（NDK 重编/交叉编译）/ api_adaptation（平台 API 换 @ohos/POSIX 子集适配）/ gui（GUI 层改造/重写）/ deps_porting（依赖移植）/ build_system（构建系统迁移）/ testing_verification（跑通测试验证）/ packaging（打包分发）"},
+                  "person_days": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+                  "basis": {"type": "string", "description": "中文：估算依据，引用 code_partition 桶（如「needs_adaptation 桶 3.2k LOC，主要为 src/win32」）或 arch_specific/blockers"}}}}}},
         "confidence": {"type": "string", "enum": ["high", "medium", "low"],
           "description": "★闭轴：本评估的置信度。存在 required 且 target_status=unknown 的 target_assumptions 时至多 medium；沿依赖树取 min 传播（rollupConfidence）。"},
         "unadaptable_apis": {"type": "array", "items": {
@@ -431,6 +523,18 @@
               "description": "闭轴：该权限在鸿蒙 PC 形态的可授予性，对照 harmony-pc-capabilities.json 权限模型段。restricted/unavailable/unknown 应影响 confidence/blocker。"},
             "evidence": {"type": "array", "items": {"type": "string"}, "description": "调用点 file:line"}}},
           "description": "鸿蒙化后运行所需申请的额外权限（多见于媒体/硬件/定位/网络场景）。与 capability_profile 交叉引用；unknown/unavailable 的 required 权限应下调 confidence 并酌情记 blocker。"},
+        "critical_dependencies": {"type": "array", "items": {
+          "type": "object",
+          "required": ["name", "why"],
+          "properties": {
+            "name": {"type": "string", "description": "依赖名，必须与 dependencies[].name 一致（面板据此关联）"},
+            "order": {"type": "integer", "description": "建议移植顺序（1 起，越小越先做/越关键；缺省按数组序 server 补）"},
+            "why": {"type": "string", "description": "中文：为何在关键路径上（核心功能依赖它/它阻塞重编/无鸿蒙版且不可绕过…）；细节引用 refs 不重述"},
+            "refs": {"type": "array", "items": {"type": "string"},
+              "description": "引用 blockers/unadaptable_apis/target_assumptions 的稳定 id（bk:/ua:/ta:），单一登记源——完整内容在主清单"},
+            "person_days_share": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2,
+              "description": "该依赖占本库移植工作量的人-天份额 [lo,hi]（可选，含在 effort.person_days 内不另计）"}}},
+          "description": "迁移关键路径依赖（有序）：不先移植它们整个迁移就无法推进的依赖。只列未鸿蒙化的（harmony_adapted:true 的不进清单——已有官方移植产物）；纯脚本/无阻塞依赖不列。serve-time 另有依赖拓扑 rollup 派生的阻塞链（已分析子树），两者互补。"},
         "recommended_path": {"type": "string",
           "description": "开放词：推荐适配路径，如 recompile_napi / cross_compile / arkts_rewrite / wrap_ffi / find_alternative / abandon"},
         "summary": {"type": "string", "description": "中文：总体判断与为何选这条路径"},

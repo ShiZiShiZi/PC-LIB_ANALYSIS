@@ -53,6 +53,7 @@ codegraph 追踪种子，顺分支追下游平台调用判鸿蒙等价性（无�
 | 9 | HarmonyOS PC adaptation assessment (可行性/难度/路径/工作量) — **synthesis** of dims 1/6/7/8/10/11 | model — `harmony-adaptation` skill |
 | 10 | Capability profile — GUI/3D 渲染/媒体/特定硬件 场景标志 + 鸿蒙支持状态 — **synthesis** of dims 1/6/7/8 | model — `capability-profile` skill |
 | 11 | Cloud service involvement — 是否涉及云端服务 + 云厂商推测 (auth/存储/数据库/函数/推送/分析/崩溃上报…) — **synthesis** of dims 1/6/8 | model — `cloud-service-analysis` skill |
+| 12 | Code partition — 生产代码按鸿蒙迁移复用性分桶（直接复用/重编译复用/需适配/无法适配 + LOC）— **synthesis** of dims 3/7/10/6 | model — `code-partition` skill |
 
 **能力画像（dim 10，`capability_profile`）**：聚焦镜头，复用已算出的 native_api/runtime_surface/
 dependencies/function_summary 把项目触及的**鸿蒙适配重点场景**结构化标出——`scenarios[]`，每个
@@ -78,6 +79,23 @@ crash_reporting/…，开放）, confidence（闭轴 high/medium/low）, via[], 
 `target_assumptions`/`blocker`（`caused_by` 引用，遵循单一登记源不重述）。`validateReport`（serve-time）用 `CLOUD_SIGNALS`
 启发式查漏判（deps/网络出现云厂商 SDK/域名但 `cloud_services` 未标、或 present 却无 INTERNET 权限）。**存量报告需重新
 分析才有 cloud_services**；面板「云服务」区块 + xlsx「云服务」sheet 即时生效（缺块降级为不渲染）。
+
+**代码分区（dim 12，`code_partition`）**：鸿蒙迁移**工作量评估的量化底座**——把生产代码按迁移复用性分 **4 桶**
+（闭轴 `buckets[].class`：`reuse_direct` 直接复用 / `recompile_reuse` 重编译复用 / `needs_adaptation` 需适配 /
+`unadaptable` 无法适配），模块/目录粒度 + LOC。**LOC 必须引用 `code_metrics.dir_loc`**（metrics.py 新增的
+目录级生产 LOC 底数，depth≤2 cap 80）做对账：桶和 ≈ `production.code`（`coverage.pct` ≥90%，serve-time
+`validateReport` 校验偏差 >15% 告警）。综合 dir_loc / platform_adaptation / platform_branches /
+**`arch_specific`**（第三个机械信号：汇编文件 LOC 按 x86/arm/riscv 归类 + SIMD intrinsics 头 + C/C++/Rust
+内联汇编命中，注释/字符串已剔除——仅 x86 无 arm 回退 ⇒ arm64 适配硬点）/ native_api 调用点 / capability_profile，
+**不重扫源码**。**单一登记源**：`unadaptable` 桶只登记模块+LOC，API 粒度引用 dim-9 `ua:*` 不重述。dim-9 据此定
+`effort.person_days` 并拆 **`effort.breakdown[]`** 分项（component 推荐集 recompile/api_adaptation/gui/
+deps_porting/build_system/testing_verification/packaging；分项和 ≈ 总区间，server 校验、缺总数时求和回填）；
+另产 **`harmony_adaptation.critical_dependencies[]`**（迁移关键路径依赖，有序：未鸿蒙化 + 阻塞核心推进才列，
+`name` 与 `dependencies[].name` 逐字一致，`refs` 引用 bk:/ua:/ta: id）。**serve-time 派生互补**：拓扑 rollup
+（`rollupAdaptation`）额外算每节点 `criticalPath[]`（沿贡献人天最大的已分析子依赖下钻的链）+ `blockingChildren`
+按人天排序——**存量报告不重跑即有**；`code_partition`/`critical_dependencies`/`breakdown` 是模型产出，
+**存量报告需重新分析才有**。面板「代码分区」堆叠条 + 鸿蒙段「工作量分项/关键路径依赖」表 + 拓扑关键路径高亮；
+xlsx 汇总加 汇编代码行+4 桶 LOC 列，新增「代码分区/关键路径依赖/工作量分项」sheet。
 
 **单一登记源（防双计）**：同一事实只在其主清单登记一次——`capability_profile.scenarios` 是"涉及哪些场景 +
 鸿蒙状态"的登记源、`required_permissions` 是权限登记源、`unadaptable_apis` 是不可适配 API 的粒度源、
@@ -155,6 +173,14 @@ are sealed leaves; an unanalyzed child sets `rollup_uncertain`. This is serve-ti
 JDK 内部模块开放性、应用交付形态多为决定性且常 unknown）。面板鸿蒙段展示假设表 + 「N 项未核实」
 提示；xlsx 有「鸿蒙目标假设」sheet。参考文件是**人工维护的事实源**——把核实到的事实填回去，下次
 分析即受益（验证：把某项 unknown 改成 available 重分析，对应假设翻转、阻碍降级、置信回升）。
+**目标侧事实源分两层**：PC 形态可用性 = `harmony-pc-capabilities.json`（权威）；API 级存在性/权限精确名
+（ohos.permission.\*）/SysCap = **opencode 全局鸿蒙文档 skill**（辅助）——`~/.config/opencode/skills/` 下的
+`harmonyos-sdk-api-lookup`（4000+ 篇 API 参考）与 `harmonyos-docs-lookup`（2860 篇指南/FAQ）。server 启动时探测
+（`HARMONY_DOC_SKILLS`）、analyze prompt 经 `{harmonySkillsHint}` 告知 agent（设置 `enableHarmonyDocSkills` 可关；
+headless 下 opencode 内置 `skill` 工具默认放行、skill 目录外部读可用——已探针验证，无需 OPENCODE_PERMISSION）。
+dim-9/10 按 harmony-adaptation SKILL.md「目标侧 API 事实核查」使用：判等价 API/写 remediation/填权限名前查文档
+（每库 ≤10 次、文件名过滤优先、evidence 引文档文件名），**文档存在 ≠ PC 可用、冲突时 caps JSON 优先、
+unknown 不因文档翻转**；降级链 skill 工具 → 直接 Grep 目录 → 仅 caps JSON+warning。`arkts-rules` 评估默认不用。
 
 ## Skill authoring convention (principle-first, open-vocabulary, self-capturing)
 

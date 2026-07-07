@@ -40,7 +40,8 @@ const DEFAULT_PROMPT =
   '{monorepoNote}' +
   'The source is already cloned — do NOT clone again. Do NOT spawn sub-agents or use the ' +
   '`task` tool — do all evidence-gathering yourself in this single session (codegraph + ' +
-  'Grep/Glob/Read) so every step streams to the live log. {codegraphHint}Run the deterministic ' +
+  'Grep/Glob/Read) so every step streams to the live log. {codegraphHint}{harmonySkillsHint}' +
+  'Run the deterministic ' +
   'code-metrics script with `--out {metricsPath}`, then reason through every dimension ' +
   '(function summary, license, dependencies, native/platform API). ' +
   'OUTPUT INCREMENTALLY: as you finish each dimension, immediately `Write` its block to ' +
@@ -144,6 +145,35 @@ const LEGACY_PROMPTS = [
   '(e.g., {repoPath}/pyproject.toml) or paths already returned by a prior tool result — ' +
   'do NOT construct absolute paths manually, as self-built absolutes are frequently wrong ' +
   'and will be rejected. Finish with a short digest.',
+  // pre-{harmonySkillsHint} default (lacked the HarmonyOS doc-skills placeholder)
+  'Analyze the PC open-source software project (a third-party library OR an application) ' +
+  'checked out at {repoPath}. First decide library.kind (library/application/...). Follow the ' +
+  'method and JSON output contract in {agentFile} and the skills it references. ' +
+  '{monorepoNote}' +
+  'The source is already cloned — do NOT clone again. Do NOT spawn sub-agents or use the ' +
+  '`task` tool — do all evidence-gathering yourself in this single session (codegraph + ' +
+  'Grep/Glob/Read) so every step streams to the live log. {codegraphHint}Run the deterministic ' +
+  'code-metrics script with `--out {metricsPath}`, then reason through every dimension ' +
+  '(function summary, license, dependencies, native/platform API). ' +
+  'OUTPUT INCREMENTALLY: as you finish each dimension, immediately `Write` its block to ' +
+  '{runDir}/blocks/<name>.json (filename = top-level report key, content = that block\'s JSON ' +
+  'value) — do NOT accumulate everything for one giant final write, and do NOT emit ' +
+  'languages/code_metrics/tests (the script splices those from metrics.json). When every block ' +
+  'is written, assemble the report by running `python3 scripts/assemble_report.py --run-dir ' +
+  '{runDir}` — it splices the metrics fragment, validates required keys, and ATOMICALLY writes ' +
+  '{reportPath}. Do NOT hand-write {reportPath}; see {agentFile} for the block mapping. ' +
+  'Conform to references/report_schema.json. ' +
+  '语言要求：function_summary 里所有自然语言字段（summary、每个 category 的 name 与 ' +
+  'description、domain、target_users）以及 library.one_liner 必须用简体中文书写；' +
+  'SPDX 许可证标识、编程语言名、依赖包名等专有名词保持原文。' +
+  'IMPORTANT: write the report, metrics, and ALL intermediate/scratch files inside ' +
+  'the project (under the run directory) — never use /tmp or any path outside the ' +
+  'project, because the headless runner auto-rejects external directories and the ' +
+  'run will abort. ' +
+  'When reading source files, always use relative paths from the project root ' +
+  '(e.g., {repoPath}/pyproject.toml) or paths already returned by a prior tool result — ' +
+  'do NOT construct absolute paths manually, as self-built absolutes are frequently wrong ' +
+  'and will be rejected. Finish with a short digest.',
 ];
 
 const DEFAULT_SETTINGS = {
@@ -158,6 +188,7 @@ const DEFAULT_SETTINGS = {
   enableNetworkResolve: true,
   enableHarmonyMirror: true,
   enableAgentResolve: true,
+  enableHarmonyDocSkills: true,   // 分析时提示使用 opencode 全局鸿蒙文档 skill（存在才生效）
   recursiveAfterAnalyze: false,   // auto-start recursive dep analysis after a manual analyze
 };
 
@@ -169,6 +200,17 @@ execFile('codegraph', ['--version'], { shell: isWindows, timeout: 5000 }, (err) 
   codegraphAvailable = !err;
   console.log(`  codegraph: ${codegraphAvailable ? 'available' : 'not found (analyses fall back to grep)'}`);
 });
+
+// HarmonyOS doc skills（可选）：opencode 全局 skills，让分析 agent 把目标侧事实
+// （@ohos API 是否存在 / ohos.permission.* 精确名 / SysCap）查官方文档而非凭模型记忆。
+// 启动时探测一次；prompt 仅在「目录存在 且 settings.enableHarmonyDocSkills」时提及
+//（探针已验证：headless 下 opencode 内置 skill 工具默认放行、skill 目录外部读可用）。
+const HARMONY_DOC_SKILLS = ['harmonyos-sdk-api-lookup', 'harmonyos-docs-lookup'].filter((n) => {
+  try { return fs.existsSync(path.join(os.homedir(), '.config', 'opencode', 'skills', n, 'SKILL.md')); }
+  catch (_) { return false; }
+});
+if (HARMONY_DOC_SKILLS.length)
+  console.log(`  harmony doc skills: ${HARMONY_DOC_SKILLS.join(', ')}`);
 
 // Build (or refresh) the codegraph structural index for a checkout so analysis can
 // query it. Runs `init -i` the first time (creates .codegraph/), `sync` afterwards.
@@ -213,8 +255,14 @@ function ensureGroupDirs(group) {
 // One-time migration: pre-grouping layout had repos/<name> & runs/<name> at top level.
 // Move them under default/ and re-key the tags file. Idempotent (skips once default/ exists).
 function migrateToGroups() {
+  // Only a TRUE pre-grouping layout migrates: if EITHER base already has default/,
+  // the tree is group-keyed — its top-level dirs are GROUPS, and moving them under
+  // default/ would swallow whole workspaces (e.g. after someone deletes an empty
+  // repos/default/). One-time and global, not per-base.
+  const migrated = [REPOS, RUNS].some((b) => fs.existsSync(path.join(b, 'default')));
   for (const base of [REPOS, RUNS]) {
     const def = path.join(base, 'default');
+    if (migrated) { fs.mkdirSync(def, { recursive: true }); continue; }
     if (fs.existsSync(def)) continue;                 // already migrated for this base
     let entries = [];
     try { entries = fs.readdirSync(base, { withFileTypes: true }); } catch (_) { continue; }
@@ -765,6 +813,29 @@ function deriveLicenseCategory(report) {
   return null;                                               // recognized but unmapped
 }
 // serve-time backfill — only when the model didn't supply category.
+// serve-time repair for the double-nested dim-8 conflation: a weaker model can
+// write the combined {runtime_surface:{…}, build_env:{…}} object into BOTH
+// blocks, so report.runtime_surface / report.build_env end up nested one level
+// too deep and render empty. Deterministically unwrap so 存量 reports display
+// correctly without a re-run (mirrors assemble_report.py's unwrap_conflated_dim8).
+const DIM8_KEYS = {
+  runtime_surface: ['summary', 'network', 'filesystem', 'env_vars', 'subprocess', 'devices', 'services'],
+  build_env: ['language_standard', 'runtime_version', 'build_system', 'compiler_extensions',
+              'platforms', 'entry_points', 'packaging', 'notes'],
+};
+function normalizeDim8(report) {
+  if (!report || typeof report !== 'object') return report;
+  for (const [key, ownKeys] of Object.entries(DIM8_KEYS)) {
+    const val = report[key];
+    if (!val || typeof val !== 'object' || Array.isArray(val)) continue;
+    if (ownKeys.some((k) => k in val)) continue;          // already correctly-keyed
+    const inner = val[key];
+    if (inner && typeof inner === 'object' && !Array.isArray(inner) && ownKeys.some((k) => k in inner))
+      report[key] = inner;
+  }
+  return report;
+}
+
 function normalizeLicense(report) {
   if (!report || !report.license || typeof report.license !== 'object') return report;
   if (!report.license.category) {
@@ -783,30 +854,117 @@ function validateLicense(report) {
   return [];
 }
 
+// Serve-time shape tolerance for dim-12 code_partition. The agent occasionally emits synonym
+// keys (bucket total_loc / module dir|module|name / note) instead of the schema's loc/path/reason,
+// which rendered as blank module names + 0 LOC and broke the LOC-reconciliation warning. Coerce to
+// canonical in place (never overwriting an existing canonical value) so 存量 reports render/tally
+// correctly without a re-run — same pattern as normalizeHarmony/normalizeLicense.
+function normalizeCodePartition(report) {
+  const cp = report && report.code_partition;
+  if (!cp || typeof cp !== 'object' || !Array.isArray(cp.buckets)) return report;
+  for (const b of cp.buckets) {
+    if (!b || typeof b !== 'object') continue;
+    const mods = Array.isArray(b.modules) ? b.modules : [];
+    for (const m of mods) {
+      if (!m || typeof m !== 'object') continue;
+      if (m.path == null) m.path = m.dir != null ? m.dir : (m.module != null ? m.module : m.name);
+      if (m.reason == null && m.note != null) m.reason = m.note;
+    }
+    if (b.loc == null) {
+      if (b.total_loc != null) b.loc = b.total_loc;
+      else {                                              // backfill bucket loc from module locs
+        const s = mods.reduce((a, m) => a + (Number(m && m.loc) || 0), 0);
+        if (s > 0) b.loc = s;
+      }
+    }
+  }
+  return report;
+}
+
 // HarmonyOS porting class (5-way) for the dep-topology page. Prefers the agent's
 // explicit harmony_adaptation.porting_class; else derives from the existing dim-9 fields
 // so 存量 reports are classified without a re-run.
 const PLATFORM_BLOCKER_RE = /win32|x11|xcb|cocoa|coregraphics|iokit|registry|wmi|sysfs|procfs|gpu|cuda|opencl|vulkan|device|driver|kernel|syscall|ioctl|permission|hardware|_api\b|api_unavailable|platform/i;
+// A granular un-adaptability signal = the single source of truth for "some USED functionality
+// has no HarmonyOS equivalent": dim-9 unadaptable_apis, or a blocker explicitly marked
+// adaptability:'unadaptable'. (code_partition's unadaptable bucket is NOT used here — it's the
+// less-authoritative, more error-prone dim; its ↔ dim-9 mismatch is left to validateReport.)
+function hasUnadaptableSignal(ha) {
+  if (!ha || typeof ha !== 'object') return false;
+  if (Array.isArray(ha.unadaptable_apis) && ha.unadaptable_apis.length) return true;
+  if (Array.isArray(ha.blockers) && ha.blockers.some((b) => b && b.adaptability === 'unadaptable')) return true;
+  return false;
+}
+// Total LOC in the dim-12 code_partition needs_adaptation bucket(s). normalizeCodePartition runs
+// before normalizeHarmony so bucket.class/.loc are already canonicalized here.
+function needsAdaptationLoc(report) {
+  const cp = report && report.code_partition;
+  if (!cp || !Array.isArray(cp.buckets)) return 0;
+  return cp.buckets.reduce((a, b) => a + (b && b.class === 'needs_adaptation' ? (Number(b.loc) || 0) : 0), 0);
+}
+// Should a dim-12 needs_adaptation bucket override cls UP to needs_adaptation_full? recompile_only
+// (C/C++) definitionally means "zero source change", so ANY needs_adaptation module contradicts it →
+// always override. no_adaptation (ported-runtime langs like Go/Rust/Python) legitimately tolerates
+// trivial cross-compile platform branches (GOOS/cfg files that recompile unchanged), so require the
+// bucket to be MATERIAL (≥5% of production code) before overriding — otherwise dim-12 over-bucketing
+// of a few scattered platform lines wrongly upgrades a genuinely no-adaptation library. Returns the
+// target class or null (leave cls as-is).
+const NEEDS_ADAPTATION_MATERIAL_PCT = 0.05;
+function needsAdaptationOverride(report, cls) {
+  if (cls !== 'no_adaptation' && cls !== 'recompile_only') return null;
+  const need = needsAdaptationLoc(report);
+  if (need <= 0) return null;
+  if (cls === 'recompile_only') return 'needs_adaptation_full';
+  const prod = Number(report && report.code_metrics && report.code_metrics.production
+    && report.code_metrics.production.code) || 0;
+  return prod > 0 && need >= NEEDS_ADAPTATION_MATERIAL_PCT * prod ? 'needs_adaptation_full' : null;
+}
+// Hard invariant: a non-empty un-adaptability signal means the class is AT LEAST
+// needs_adaptation_partial — no_adaptation/recompile_only/needs_adaptation_full all assert
+// "every used API is portable" and thus contradict it. Clamp UP (never down; 'infeasible' is
+// the stricter value and is kept). Applied to BOTH the agent's explicit porting_class and the
+// fallback derivation, so a self-contradictory report (e.g. full + unadaptable CUDA) can't reach
+// the panel/topology. Mirrors how effort.level is server-derived to prevent drift.
+const CLAMPABLE_PORTING_CLASSES = new Set(['no_adaptation', 'recompile_only', 'needs_adaptation_full']);
+function reconcilePortingClass(report, ha, cls) {
+  if (!cls) return cls;
+  // unadaptable signal → at least _partial (strongest; judged first).
+  if (CLAMPABLE_PORTING_CLASSES.has(cls) && hasUnadaptableSignal(ha)) return 'needs_adaptation_partial';
+  // dim-12 needs_adaptation bucket → at least needs_adaptation_full (recompile_only/no_adaptation
+  // assert "zero source change"). Materiality-gated for no_adaptation to tolerate cross-compile noise.
+  const na = needsAdaptationOverride(report, cls);
+  if (na) return na;
+  return cls;
+}
 function derivePortingClass(report) {
   const ha = (report && report.harmony_adaptation) || null;
   if (!ha) return null;
-  if (ha.porting_class) return ha.porting_class;          // explicit (agent) — incl. new 5-way values
-  if (ha.feasibility === 'infeasible') return 'infeasible';
-  const unadaptable = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
-  const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
-  // Prefer the structured closed signal blockers[].adaptability over open-vocab category regex.
-  const hasStructured = blk.some((b) => b.adaptability);
-  if (unadaptable.length || blk.some((b) => b.adaptability === 'unadaptable')) return 'needs_adaptation_partial';
-  if (blk.some((b) => b.severity === 'blocker' || b.adaptability === 'partial')) return 'needs_adaptation_full';
-  const cats = blk.map((b) => String(b.category || '').toLowerCase());
-  const native = cats.some((c) => /native_dependency|ffi|toolchain|posix/.test(c));
-  // Legacy fallback: open-vocab category regex, only when no structured adaptability is present.
-  if (!hasStructured && cats.some((c) => PLATFORM_BLOCKER_RE.test(c))) return 'needs_adaptation_full';
-  const path = String(ha.recommended_path || '').toLowerCase();
-  if (/run_on_ported_runtime/.test(path) && !native) return 'no_adaptation';
-  if (native) return 'recompile_only';
-  // pure script, no native work, no blockers → nothing to adapt
-  return 'no_adaptation';
+  let cls;
+  if (ha.porting_class) {
+    cls = ha.porting_class;                               // explicit (agent) — incl. new 5-way values
+  } else if (ha.feasibility === 'infeasible') {
+    cls = 'infeasible';
+  } else {
+    const unadaptable = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
+    const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
+    // Prefer the structured closed signal blockers[].adaptability over open-vocab category regex.
+    const hasStructured = blk.some((b) => b.adaptability);
+    if (unadaptable.length || blk.some((b) => b.adaptability === 'unadaptable')) cls = 'needs_adaptation_partial';
+    else if (blk.some((b) => b.severity === 'blocker' || b.adaptability === 'partial')) cls = 'needs_adaptation_full';
+    else {
+      const cats = blk.map((b) => String(b.category || '').toLowerCase());
+      const native = cats.some((c) => /native_dependency|ffi|toolchain|posix/.test(c));
+      // Legacy fallback: open-vocab category regex, only when no structured adaptability is present.
+      if (!hasStructured && cats.some((c) => PLATFORM_BLOCKER_RE.test(c))) cls = 'needs_adaptation_full';
+      else {
+        const path = String(ha.recommended_path || '').toLowerCase();
+        if (/run_on_ported_runtime/.test(path) && !native) cls = 'no_adaptation';
+        else if (native) cls = 'recompile_only';
+        else cls = 'no_adaptation';                       // pure script, no native work, no blockers
+      }
+    }
+  }
+  return reconcilePortingClass(report, ha, cls);
 }
 
 // ---- difficulty level (5-tier) + effort person-days -----------------------
@@ -854,9 +1012,15 @@ const FEAS_FOR_CLASS = { no_adaptation: 'feasible', recompile_only: 'feasible_wi
 function normalizeHarmony(report) {
   const ha = report && report.harmony_adaptation;
   if (!ha || typeof ha !== 'object') return report;
-  const cls = derivePortingClass(report);
-  if (cls && !ha.porting_class) ha.porting_class = cls;
-  if (cls && !ha.feasibility) ha.feasibility = FEAS_FOR_CLASS[cls] || null;
+  const modelCls = ha.porting_class || null;              // what the agent claimed, before reconcile
+  const cls = derivePortingClass(report);                 // reconciled — may clamp the agent value up
+  if (cls) {
+    // Record a clamp so validateHarmony can surface it, then write the reconciled value back so the
+    // panel/topology/xlsx all read a self-consistent class + feasibility (derived, can't lag a clamp).
+    if (modelCls && modelCls !== cls) ha.porting_class_adjusted = { from: modelCls, to: cls };
+    ha.porting_class = cls;
+    ha.feasibility = FEAS_FOR_CLASS[cls] || ha.feasibility || null;
+  }
   const days = effortDays(ha);
   ha.effort = ha.effort && typeof ha.effort === 'object' ? ha.effort : {};
   if (days && !(Array.isArray(ha.effort.person_days) && ha.effort.person_days.length === 2))
@@ -868,6 +1032,19 @@ function normalizeHarmony(report) {
   // and confidence logic treat an unstated permission conservatively.
   if (Array.isArray(ha.required_permissions))
     for (const p of ha.required_permissions) if (p && typeof p === 'object' && !p.harmony_status) p.harmony_status = 'unknown';
+  // effort.breakdown present but no total → sum the components into person_days.
+  if (Array.isArray(ha.effort.breakdown) && ha.effort.breakdown.length
+      && !(Array.isArray(ha.effort.person_days) && ha.effort.person_days.length === 2)) {
+    let lo = 0, hi = 0, any = false;
+    for (const b of ha.effort.breakdown) {
+      const pd = b && Array.isArray(b.person_days) && b.person_days.length === 2 ? b.person_days : null;
+      if (pd && Number.isFinite(Number(pd[0])) && Number.isFinite(Number(pd[1]))) { lo += Number(pd[0]); hi += Number(pd[1]); any = true; }
+    }
+    if (any) { ha.effort.person_days = [lo, hi]; ha.effort.level = deriveDifficultyLevel(cls, hi); }
+  }
+  // critical_dependencies: default a missing order to the array position (1-based).
+  if (Array.isArray(ha.critical_dependencies))
+    ha.critical_dependencies.forEach((c, i) => { if (c && typeof c === 'object' && !(Number(c.order) >= 1)) c.order = i + 1; });
   return report;
 }
 
@@ -879,6 +1056,26 @@ function validateHarmony(report) {
   const cls = ha.porting_class || derivePortingClass(report);
   if (cls && ha.feasibility && FEAS_FOR_CLASS[cls] && ha.feasibility !== FEAS_FOR_CLASS[cls])
     w.push(`feasibility(${ha.feasibility}) 与 porting_class(${cls}) 不自洽，应为 ${FEAS_FOR_CLASS[cls]}`);
+  // transparency: normalizeHarmony clamped a self-contradictory model porting_class UP — either
+  // (full/recompile/no + unadaptable signal) → _partial, or (recompile/no + needs_adaptation bucket)
+  // → _full. The reason line matches whichever axis was violated.
+  if (ha.porting_class_adjusted && ha.porting_class_adjusted.from !== ha.porting_class_adjusted.to) {
+    const reason = ha.porting_class_adjusted.to === 'needs_adaptation_full'
+      ? '但代码分区(dim-12)存在需适配模块（非零源码改动）'
+      : '但存在无法适配的 API/阻碍点';
+    w.push(`porting_class 模型原判 ${ha.porting_class_adjusted.from}，${reason}，已按"不矛盾"校正为 ${ha.porting_class_adjusted.to}`);
+  }
+  // soft hint (human-review only, not auto-clamped): recompile_only is definitionally the C/C++
+  // NDK-rebuild class; a managed/ported-runtime lib (Go/Java/Python/JS/TS) with NO native surface
+  // marked recompile_only is almost certainly a mis-file for no_adaptation.
+  const eco = String((report.library && report.library.ecosystem) || '').toLowerCase();
+  const managedEco = ['go', 'python', 'java', 'javascript', 'nodejs', 'node', 'typescript'].includes(eco);
+  const na = report.native_api || {};
+  const nativeSurface = (Array.isArray(na.dynamic_libraries) && na.dynamic_libraries.length)
+    || (Array.isArray(na.groups) && na.groups.some((g) => g && ['ffi', 'platform', 'system', 'hardware'].includes(g.category)))
+    || (Array.isArray(report.library && report.library.bindings) && report.library.bindings.length);
+  if (cls === 'recompile_only' && managedEco && !nativeSurface)
+    w.push(`porting_class=recompile_only 但主生态为 ${eco}（已移植运行时）且无原生调用面，疑似应为 no_adaptation`);
   const ua = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
   const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
   const ta = Array.isArray(ha.target_assumptions) ? ha.target_assumptions : [];
@@ -972,6 +1169,60 @@ function validateReport(report) {
     if (!perms.includes('internet'))
       w.push(`cloud_services 涉及云端但 dim-9 未登记 ohos.permission.INTERNET（可能漏登记）`);
   }
+  // dim-12 code_partition ↔ code_metrics ↔ dim-9 consistency
+  const cp = report.code_partition || null;
+  const cls = ha.porting_class || derivePortingClass(report);
+  const uaList = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
+  if (cp && Array.isArray(cp.buckets) && cp.buckets.length) {
+    const prodCode = Number(report.code_metrics && report.code_metrics.production
+      && report.code_metrics.production.code) || 0;
+    const sum = cp.buckets.reduce((a, b) => a + (Number(b && b.loc) || 0), 0);
+    if (prodCode > 0 && Math.abs(sum - prodCode) / prodCode > 0.15)
+      w.push(`代码分区桶 LOC 之和(${sum})与生产代码(${prodCode})偏差超过 15%（覆盖不足或重复计入）`);
+    const unLoc = cp.buckets.filter((b) => b && b.class === 'unadaptable')
+      .reduce((a, b) => a + (Number(b.loc) || 0), 0);
+    if (unLoc > 0 && !['needs_adaptation_partial', 'infeasible'].includes(cls))
+      w.push(`代码分区含 unadaptable 桶(${unLoc} 行)但 porting_class=${cls}（应为 needs_adaptation_partial/infeasible）`);
+    // Same materiality gate as the reconcile clamp — only flag a genuine contradiction (a Go/Rust
+    // no_adaptation lib with a few scattered cross-compile platform lines is NOT flagged).
+    if (needsAdaptationOverride(report, cls))
+      w.push(`代码分区含 needs_adaptation 桶(${needsAdaptationLoc(report)} 行)但 porting_class=${cls}（应为 needs_adaptation_full；零源码改动才是 recompile_only）`);
+    if (unLoc > 0 && !uaList.length)
+      w.push('代码分区含 unadaptable 桶但 dim-9 unadaptable_apis 为空（漏登记或分桶过严）');
+    if (unLoc === 0 && uaList.length)
+      w.push('dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）');
+  }
+  // effort.breakdown 分项之和应落在 person_days 区间附近
+  const eb = ha.effort && Array.isArray(ha.effort.breakdown) ? ha.effort.breakdown : [];
+  const days = effortDays(ha);
+  if (eb.length && days) {
+    let lo = 0, hi = 0;
+    for (const b of eb) {
+      const pd = b && Array.isArray(b.person_days) && b.person_days.length === 2 ? b.person_days : [0, 0];
+      lo += Number(pd[0]) || 0; hi += Number(pd[1]) || 0;
+    }
+    if (hi < days[0] * 0.7 || lo > days[1] * 1.3)
+      w.push(`effort.breakdown 分项之和([${lo}, ${hi}])与 person_days([${days[0]}, ${days[1]}])明显不符`);
+  }
+  // critical_dependencies referential integrity
+  const cds = Array.isArray(ha.critical_dependencies) ? ha.critical_dependencies : [];
+  if (cds.length) {
+    const deps = (report.dependencies && report.dependencies.dependencies) || [];
+    const depByName = new Map(deps.filter((d) => d && d.name)
+      .map((d) => [String(d.name).toLowerCase(), d]));
+    const idSet = new Set([...(ha.blockers || []), ...uaList, ...(ha.target_assumptions || [])]
+      .map((x) => x && x.id).filter(Boolean));
+    for (const c of cds) {
+      if (!c || !c.name) continue;
+      const dep = depByName.get(String(c.name).toLowerCase());
+      if (!dep)
+        w.push(`critical_dependencies 的 ${c.name} 在 dependencies 列表中找不到（名称须与 dependencies[].name 一致）`);
+      else if (dep.harmony_adapted === true)
+        w.push(`critical_dependencies 列出了已鸿蒙化依赖 ${c.name}（官方源已有移植产物，不应列入关键路径）`);
+      for (const r of (c.refs || [])) if (!idSet.has(r))
+        w.push(`critical_dependencies ${c.name} 的引用 ${r} 不存在（悬空引用）`);
+    }
+  }
   return w;
 }
 
@@ -1046,7 +1297,8 @@ function rollupAdaptation(topo) {
       if (contrib > rankOf(self)) blockingChildren.push({
         child: child.label, libName: child.libName || null,
         childClass: classOfRank(ce.rank), contribClass: classOfRank(contrib),
-        viaSymbols: hit, basis: hit.length ? 'used_api' : (used.length ? 'used_other' : 'scope') });
+        viaSymbols: hit, basis: hit.length ? 'used_api' : (used.length ? 'used_other' : 'scope'),
+        days: ce.days || null });
       if (contrib > worst) worst = contrib;
       // accumulate the child's subtree effort + confidence when it contributes porting work
       if (contrib > 0) { days = addDays(days, ce.days); confRank = Math.min(confRank, ce.confRank == null ? 1 : ce.confRank); }
@@ -1062,10 +1314,39 @@ function rollupAdaptation(topo) {
     if (!n.analyzed && !n.harmonyAdapted) { n.rollupClass = null; n.rollupUncertain = false; n.rollupEffort = null; n.rollupConfidence = null; n.rollupLevel = null; continue; }
     n.rollupClass = r.rank == null ? null : classOfRank(r.rank);
     n.rollupUncertain = !!r.uncertain;
-    n.blockingChildren = r.blockingChildren || [];
+    n.blockingChildren = (r.blockingChildren || []).slice()
+      .sort((a, b) => ((b.days ? b.days[1] : 0) - (a.days ? a.days[1] : 0)));
     n.rollupEffort = r.days || null;
     n.rollupConfidence = r.confRank == null ? null : RANK_CONF[r.confRank];
     n.rollupLevel = deriveDifficultyLevel(n.rollupClass, r.days ? r.days[1] : 0);
+  }
+  // Serve-time critical path: from each analyzed node, follow the child that
+  // contributes the most rollup person-days (needs actual porting work) — the
+  // dependency chain porting must clear first. Derived from the memoized rollup,
+  // so 存量 reports get it without a re-run; complements the model-emitted
+  // harmony_adaptation.critical_dependencies (which also covers unanalyzed deps).
+  const nextOnPath = (id) => {
+    let best = null, bestHi = -1;
+    for (const e of (out.get(id) || [])) {
+      const m = memo.get(e.target);
+      if (!m || m.rank == null || m.rank <= 0) continue;   // no porting work → not critical
+      const hi = m.days ? m.days[1] : 0;
+      if (hi > bestHi) { best = e.target; bestHi = hi; }
+    }
+    return best;
+  };
+  for (const n of topo.nodes) {
+    if (!n.analyzed) { n.criticalPath = []; continue; }
+    const path = [], seen = new Set([n.id]);
+    let cur = nextOnPath(n.id);
+    while (cur && !seen.has(cur) && path.length < 20) {
+      seen.add(cur);
+      const c = byId.get(cur), m = memo.get(cur) || {};
+      path.push({ id: cur, label: c ? c.label : cur, libName: (c && c.libName) || null,
+        class: m.rank == null ? null : classOfRank(m.rank), days: m.days || null });
+      cur = nextOnPath(cur);
+    }
+    n.criticalPath = path;
   }
   return topo;
 }
@@ -1218,8 +1499,19 @@ function createAnalyzeJob(opts) {
       `构建/清单文件（DEPS、BUILD.gn、根 package.json/go.mod 等）理解其依赖；git commit 用克隆根 ${repoRootRel}；` +
       `在报告里设置 library.source_subpath="${sub}"、library.monorepo=true，library.source_url 仍为仓库根 URL。 `
     : '';
+  const harmonySkillsOn = HARMONY_DOC_SKILLS.length
+    && (opts.enableHarmonyDocSkills ?? settings.enableHarmonyDocSkills);
+  const harmonySkillsHint = harmonySkillsOn
+    ? `鸿蒙文档技能可用：opencode 全局 skill ${HARMONY_DOC_SKILLS.join(' 与 ')} 已安装` +
+      '（前者为 API 签名/ohos.permission.* 权限/SysCap 的官方 API 参考，后者为官方开发指南/FAQ）。' +
+      '在 dim-9/dim-10 判断鸿蒙等价 API、权限精确名与适配路径时，按 harmony-adaptation SKILL.md 的' +
+      '「目标侧 API 事实核查」步骤使用：先用 skill 工具按名加载，再在其返回的文档目录内 Glob/Grep 检索' +
+      '（文件名过滤优先，每库 ≤10 次），引用的文档以文件名入 evidence/source。' +
+      '注意：文档证明 API 在鸿蒙存在 ≠ PC 形态可用——PC 可用性仍以 references/harmony-pc-capabilities.json 为权威。 '
+    : '';
   let prompt = (opts.promptTemplate || settings.promptTemplate || DEFAULT_PROMPT)
     .replaceAll('{codegraphHint}', codegraphHint)
+    .replaceAll('{harmonySkillsHint}', harmonySkillsHint)
     .replaceAll('{monorepoNote}', monorepoNote)
     .replaceAll('{repoPath}', repoRel)
     .replaceAll('{repoRoot}', repoRootRel)
@@ -1241,6 +1533,9 @@ function createAnalyzeJob(opts) {
   // Robust to stale saved templates that predate the {codegraphHint} placeholder:
   // if codegraph is enabled but the hint didn't land, append it.
   if (codegraphHint && !prompt.includes('codegraph')) prompt = prompt + ' ' + codegraphHint;
+  // Robust to stale saved templates that predate the {harmonySkillsHint} placeholder.
+  if (harmonySkillsHint && !prompt.includes('harmonyos-sdk-api-lookup'))
+    prompt = prompt + ' ' + harmonySkillsHint;
   // Always forbid sub-agents (even for stale saved templates): opencode does not stream
   // sub-agent (task tool) sessions, so they black-hole the live log. Keep work inline.
   if (!/sub-agent|`task` tool/.test(prompt))
@@ -1794,6 +2089,25 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true });
     }
 
+    // 删除单次运行记录（只删该 <ts> 目录，不动库本身、其它运行、标签）。
+    if (req.method === 'POST' && pathname === '/api/run/delete') {
+      const body = await readBody(req);
+      const name = body.name;
+      const run = body.run;
+      const g = safeGroup(body.group);
+      if (!name || !run) return send(res, 400, { error: 'name and run required' });
+      if (/[\\/]|\.\./.test(name) || /[\\/]|\.\./.test(run)) return send(res, 400, { error: 'invalid name/run' });   // 防目录穿越
+      const runDir = path.join(runLibDir(g, name), run);
+      if (!runDir.startsWith(RUNS) || !fs.existsSync(runDir)) return send(res, 404, { error: 'run not found' });
+      for (const j of jobs.values())                    // 拦「正在产出的那次运行」（精确到 run 目录）
+        if ((j.status === 'running' || j.status === 'queued') && j.meta.runDir &&
+            path.resolve(j.meta.runDir) === path.resolve(runDir))
+          return send(res, 409, { error: '该运行正在进行中，请先停止/等待完成再删除' });
+      try { fs.rmSync(runDir, { recursive: true, force: true }); }
+      catch (e) { return send(res, 500, { error: '删除失败: ' + e.message }); }
+      return send(res, 200, { ok: true });
+    }
+
     // 将库（代码 + 分析记录 + 标签）迁移到另一个分组。
     if (req.method === 'POST' && pathname === '/api/library/migrate') {
       const body = await readBody(req);
@@ -2050,6 +2364,8 @@ const server = http.createServer(async (req, res) => {
       catch (_) { return send(res, 200, fs.readFileSync(file, 'utf8')); }   // malformed → raw passthrough
       // serve-time: fill derived dim-9 fields (effort.level/person_days/ids/feasibility) and
       // attach consistency warnings, so 存量 reports gain structured data without a re-run.
+      normalizeDim8(rep);
+      normalizeCodePartition(rep);   // before normalizeHarmony: canonical loc/path feeds LOC对账 + class校正
       normalizeHarmony(rep);
       normalizeLicense(rep);
       const hw = [...validateHarmony(rep), ...validateReport(rep), ...validateLicense(rep)];
@@ -2159,7 +2475,8 @@ if (require.main === module) {
   });
 } else {
   module.exports = { derivePortingClass, deriveDifficultyLevel, effortDays, normalizeHarmony,
+    reconcilePortingClass, hasUnadaptableSignal, normalizeCodePartition,
     validateHarmony, validateReport, rollupAdaptation, buildDepTopology,
-    deriveLicenseCategory, normalizeLicense, validateLicense,
+    deriveLicenseCategory, normalizeLicense, validateLicense, normalizeDim8,
     parseRepoUrl, canonicalRepoKey, normalizeCloneUrl };
 }

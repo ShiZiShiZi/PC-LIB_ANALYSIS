@@ -1,0 +1,893 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 47,
+        "code": 7045,
+        "pct": 93.62,
+        "production": {
+          "files": 47,
+          "code": 7045
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 427,
+        "pct": 5.67,
+        "production": {
+          "files": 2,
+          "code": 427
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 46,
+        "pct": 0.61,
+        "production": {
+          "files": 1,
+          "code": 46
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 0.09,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 51,
+      "code": 7525,
+      "comment": 47,
+      "blank": 1218,
+      "total_lines": 8790
+    },
+    "production": {
+      "files": 51,
+      "code": 7525,
+      "comment": 47,
+      "blank": 1218,
+      "total_lines": 8790
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 7045,
+        "category": "production",
+        "by_category": {
+          "production": 7045
+        }
+      },
+      {
+        "dir": ".",
+        "code": 480,
+        "category": "production",
+        "by_category": {
+          "production": 480
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "Sundials_jll.jl 是 Julia 生态中 SUNDIALS（SUite of Nonlinear and DIfferential/ALgebraic equation Solvers）的 JLL（Julia Library Linking）自动生成包装包。它不包含 SUNDIALS 的源代码，而是通过 Julia 的包管理器自动下载并加载预编译的 SUNDIALS 原生共享库（.so/.dylib/.dll），为 Julia 上层科学计算库（如 Sundials.jl、DifferentialEquations.jl）提供底层 C/Fortran 数值求解器的运行时链接入口。涵盖 ARKode、CVODE、CVODES、IDA、IDAS、KINSOL 等求解器及配套的线性/非线性求解模块。",
+    "categories": [
+      {
+        "name": "ODE/DAE 求解器库加载",
+        "description": "通过 JLLWrappers 宏自动定位并加载 SUNDIALS 预编译共享库（libsundials_arkode/cvode/cvodes/ida/idas/kinsol 等），为 Julia 运行时提供常微分方程与微分代数方程求解的原生库入口",
+        "evidence": [
+          "src/Sundials_jll.jl:7-8",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:8-31"
+        ]
+      },
+      {
+        "name": "SUNDIALS 线性求解模块加载",
+        "description": "加载 SUNDIALS 的 SUN线性求解器（band/dense/klu/lapackband/lapackdense/pcg/spbcgs/spfgmr/spgmr/sptfqmr）与 SUN矩阵（band/dense/sparse）及 SUN非线性求解器（fixedpoint/newton）模块的共享库",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:17-31"
+        ]
+      },
+      {
+        "name": "多平台二进制分发",
+        "description": "为 Linux（glibc/musl、x86_64/i686/aarch64/armv6l/armv7l/powerpc64le/riscv64）、macOS（x86_64/aarch64）、Windows（i686/x86_64）、FreeBSD 等多平台多 libgfortran 版本提供预编译二进制 tarball 的下载与自动解压",
+        "evidence": [
+          "Artifacts.toml",
+          "README.md:24"
+        ]
+      }
+    ],
+    "domain": "科学计算/数值求解",
+    "target_users": "Julia 科学计算与微分方程求解库的开发者（间接用户，最终用户通过 Sundials.jl/DifferentialEquations.jl 使用）"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件明确声明本仓库 Julia 源码采用 MIT 许可；包装的 SUNDIALS 二进制有独立许可（随二进制分发的 share/licenses/Sundials 目录）",
+    "notes": "本仓库 Julia 包装代码为 MIT 许可；被包装的 SUNDIALS 原生库二进制适用其自身许可（BSD-3-Clause，见 LLNL/sundials 上游）。JLL 包的 Julia 源码与二进制许可是分离的。"
+  },
+  "dependencies": {
+    "count": 5,
+    "manifests": [
+      "Project.toml"
+    ],
+    "by_ecosystem": {
+      "other": [
+        "JLLWrappers",
+        "CompilerSupportLibraries_jll",
+        "OpenBLAS32_jll",
+        "SuiteSparse32_jll"
+      ],
+      "cpp": [
+        "Libdl"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": "1.7.0",
+        "purpose": "Julia JLL 包的自动生成框架，提供 @generate_main_file_header/@declare_library_product/@init_library_product 等宏，用于包装原生共享库的定位与加载",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia 通用注册表（General registry）",
+        "declared_in": [
+          "Project.toml:6"
+        ],
+        "used_symbols": [
+          "JLLWrappers.@generate_main_file_header",
+          "JLLWrappers.@generate_main_file",
+          "JLLWrappers.@generate_wrapper_header",
+          "JLLWrappers.@declare_library_product",
+          "JLLWrappers.@init_library_product",
+          "JLLWrappers.@generate_init_header",
+          "JLLWrappers.@generate_init_footer"
+        ],
+        "source_repo": "https://github.com/JuliaPackaging/JLLWrappers.jl"
+      },
+      {
+        "name": "CompilerSupportLibraries_jll",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供编译器运行时支持库（如 libgfortran、libquadmath），SUNDIALS 原生二进制依赖这些 Fortran 运行时库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia 通用注册表（General registry）",
+        "declared_in": [
+          "Project.toml:7",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:4"
+        ],
+        "used_symbols": [],
+        "source_repo": "https://github.com/JuliaBinaryWrappers/CompilerSupportLibraries_jll.jl"
+      },
+      {
+        "name": "OpenBLAS32_jll",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供 OpenBLAS 线性代数库（32 位整数接口），SUNDIALS 的 LAPACK 线性求解器模块依赖此 BLAS 实现",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia 通用注册表（General registry）",
+        "declared_in": [
+          "Project.toml:9",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:5"
+        ],
+        "used_symbols": [],
+        "source_repo": "https://github.com/JuliaBinaryWrappers/OpenBLAS32_jll.jl",
+        "aliases": [
+          "OpenBLAS"
+        ]
+      },
+      {
+        "name": "SuiteSparse32_jll",
+        "ecosystem": "other",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "提供 SuiteSparse 稀疏矩阵库（32 位整数接口），SUNDIALS 的 KLU 线性求解器模块依赖此稀疏直接求解库",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia 通用注册表（General registry）",
+        "declared_in": [
+          "Project.toml:11",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:6"
+        ],
+        "used_symbols": [],
+        "source_repo": "https://github.com/JuliaBinaryWrappers/SuiteSparse32_jll.jl",
+        "aliases": [
+          "SuiteSparse"
+        ]
+      },
+      {
+        "name": "Libdl",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Julia 标准库，提供 dlopen/dlsym 等动态库加载功能，JLLWrappers 内部使用它加载 SUNDIALS 共享库",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Julia 标准库（随 Julia 运行时自带）",
+        "declared_in": [
+          "Project.toml:8"
+        ],
+        "used_symbols": [
+          "Libdl.RTLD_LAZY",
+          "Libdl.RTLD_DEEPBIND"
+        ],
+        "source_repo": null
+      }
+    ],
+    "notes": "本包是 Julia JLL（Julia Library Linking）自动生成包装包，不直接编译 SUNDIALS 源码。SUNDIALS 原生二进制由 Yggdrasil 构建树（BinaryBuilder.jl）预编译后上传至 GitHub Releases，Julia 包管理器按平台自动下载。Artifacts.toml 列出了 46 个平台变体的下载地址。SUNDIALS 上游源码来自 https://github.com/LLNL/sundials.git。"
+  },
+  "native_api": {
+    "summary": "本包为纯 Julia JLL 包装，通过 JLLWrappers 宏与 Julia 标准库 Libdl 动态加载 SUNDIALS 预编译共享库；无直接 Win32/POSIX 系统调用、无 FFI/ctypes/JNI 桥接、无硬件加速 API 调用。所有平台相关逻辑封装在 JLLWrappers 与 Julia 运行时内部。",
+    "groups": [
+      {
+        "type": "julia_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Libdl.RTLD_LAZY",
+            "purpose": "动态库加载标志：延迟绑定",
+            "count": 23,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:37"
+            ]
+          },
+          {
+            "name": "Libdl.RTLD_DEEPBIND",
+            "purpose": "动态库加载标志：优先使用自身符号而非全局符号",
+            "count": 23,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:38"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libsundials_arkode",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS ARKode 求解器共享库",
+        "description": "SUNDIALS ARKode 加法 Runge-Kutta 求解器库",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:8",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:34-38"
+        ]
+      },
+      {
+        "name": "libsundials_core",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS 核心基础库",
+        "description": "SUNDIALS 核心公共基础设施库",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:9",
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:40-44"
+        ]
+      },
+      {
+        "name": "libsundials_cvode",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS CVODE 求解器共享库",
+        "description": "SUNDIALS CVode 常微分方程求解器库（非刚性）",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:10"
+        ]
+      },
+      {
+        "name": "libsundials_cvodes",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS CVODES 求解器共享库",
+        "description": "SUNDIALS CVODES 灵敏度增强常微分方程求解器库",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:11"
+        ]
+      },
+      {
+        "name": "libsundials_ida",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS IDA 求解器共享库",
+        "description": "SUNDIALS IDA 微分代数方程求解器库",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:12"
+        ]
+      },
+      {
+        "name": "libsundials_idas",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS IDAS 求解器共享库",
+        "description": "SUNDIALS IDAS 灵敏度增强微分代数方程求解器库",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:13"
+        ]
+      },
+      {
+        "name": "libsundials_kinsol",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS KINSOL 求解器共享库",
+        "description": "SUNDIALS KINSOL 非线性代数方程求解器库",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:14"
+        ]
+      },
+      {
+        "name": "libsundials_nvecserial",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS NVECTOR 串行向量库",
+        "description": "SUNDIALS 串行 N_Vector 实现",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:16"
+        ]
+      },
+      {
+        "name": "libsundials_nvecmanyvector",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS NVECTOR 多向量库",
+        "description": "SUNDIALS 多 N_Vector 聚合实现",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:15"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsolband",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol 带状线性求解器库",
+        "description": "SUNDIALS 带状线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:17"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsoldense",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol 稠密线性求解器库",
+        "description": "SUNDIALS 稠密线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:18"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsolklu",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol KLU 稀疏线性求解器库",
+        "description": "SUNDIALS KLU 稀疏直接线性求解器（依赖 SuiteSparse）",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:19"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsollapackband",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol LAPACK 带状线性求解器库",
+        "description": "SUNDIALS LAPACK 带状线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:20"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsollapackdense",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol LAPACK 稠密线性求解器库",
+        "description": "SUNDIALS LAPACK 稠密线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:21"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsolpcg",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol PCG 迭代线性求解器库",
+        "description": "SUNDIALS 预条件共轭梯度迭代线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:22"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsolspbcgs",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol SPBCGS 迭代线性求解器库",
+        "description": "SUNDIALS 稳定双共轭梯度平方迭代线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:23"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsolspfgmr",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol SPFGMR 迭代线性求解器库",
+        "description": "SUNDIALS 灵活广义最小残差迭代线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:24"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsolspgmr",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol SPGMR 迭代线性求解器库",
+        "description": "SUNDIALS 广义最小残差迭代线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:25"
+        ]
+      },
+      {
+        "name": "libsundials_sunlinsolsptfqmr",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNLinSol SPTFQMR 迭代线性求解器库",
+        "description": "SUNDIALS 转置自由准最小残差迭代线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:26"
+        ]
+      },
+      {
+        "name": "libsundials_sunmatrixband",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNMatrix 带状矩阵库",
+        "description": "SUNDIALS 带状矩阵实现",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:27"
+        ]
+      },
+      {
+        "name": "libsundials_sunmatrixdense",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNMatrix 稠密矩阵库",
+        "description": "SUNDIALS 稠密矩阵实现",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:28"
+        ]
+      },
+      {
+        "name": "libsundials_sunmatrixsparse",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNMatrix 稀疏矩阵库",
+        "description": "SUNDIALS 稀疏矩阵实现",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:29"
+        ]
+      },
+      {
+        "name": "libsundials_sunnonlinsolfixedpoint",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNNonLinSol 不动点非线性求解器库",
+        "description": "SUNDIALS 不动点迭代非线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:30"
+        ]
+      },
+      {
+        "name": "libsundials_sunnonlinsolnewton",
+        "mechanism": "Julia Libdl（JLLWrappers.@init_library_product 封装）",
+        "acquisition": "prebuilt_binary",
+        "source": "Yggdrasil 构建树预编译的 SUNDIALS SUNNonLinSol Newton 非线性求解器库",
+        "description": "SUNDIALS Newton 迭代非线性求解器",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:31"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "本包在运行期需从 Julia artifact 缓存加载预编译 SUNDIALS 二进制共享库（.so/.dylib/.dll）；无网络访问、无环境变量依赖、无子进程调用、无设备访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "Julia artifact 缓存目录（由包管理器自动下载解压的 SUNDIALS 二进制 tarball）",
+        "purpose": "定位并加载 SUNDIALS 预编译共享库文件（lib/libsundials_*.so 等）",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:36"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Julia >= 1.6",
+    "runtime_version": "Julia >= 1.6",
+    "build_system": "Julia Pkg（自动生成，无需手动构建）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml: x86_64-linux-gnu-*"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml: i686-linux-gnu-*"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml: aarch64-linux-gnu-*"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv6l",
+        "evidence": [
+          "Artifacts.toml: armv6l-linux-gnueabihf-*"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "armv7l",
+        "evidence": [
+          "Artifacts.toml: armv7l-linux-gnueabihf-*"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "powerpc64le",
+        "evidence": [
+          "Artifacts.toml: powerpc64le-linux-gnu-*"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [
+          "Artifacts.toml: riscv64-linux-gnu-*"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml: x86_64-apple-darwin-*"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml: aarch64-apple-darwin-*"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml: x86_64-w64-mingw32-*"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml: i686-w64-mingw32-*"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml: x86_64-unknown-freebsd-*"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml: aarch64-unknown-freebsd-*"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "Julia JLL 包装包，由 Julia 包管理器按平台自动下载预编译二进制 artifact；无独立构建/打包流程",
+    "notes": "本包不涉及编译，所有原生库二进制由 Yggdrasil（BinaryBuilder.jl）在 CI 中交叉编译后上传至 GitHub Releases。每个平台+libgfortran 版本组合对应一个独立 artifact tarball。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Julia 1.10 运行时上; SUNDIALS 原生共享库需经 OHOS NDK 重编或提供鸿蒙预编译版; arm64/x86_64; 自研内核, 无 Linux ABI)",
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "feasible_with_effort",
+    "effort": {
+      "person_days": [
+        10,
+        25
+      ]
+    },
+    "confidence": "medium",
+    "recommended_path": "recompile_napi",
+    "summary": "Sundials_jll.jl 是 Julia 生态的 JLL 包装包，鸿蒙 PC 已移植 Julia 1.10 运行时，Julia 包装代码可直接运行。核心工作量在于 SUNDIALS 原生 C 库（24 个 .so）及其传递依赖（OpenBLAS、SuiteSparse、libgfortran）需要在鸿蒙上重新编译并提供 OHOS 版本的预编译二进制 artifact。SUNDIALS 本身是纯数值计算库（无 GUI/硬件/平台特有 API），用标准 C/Fortran 编写，理论上经 OHOS NDK 重编即可。但需为 Yggdrasil 构建树新增鸿蒙平台目标，产出对应的 artifact tarball。",
+    "blockers": [
+      {
+        "id": "bk:sundials_native",
+        "issue": "SUNDIALS 原生 C/Fortran 库（24 个共享库）需在鸿蒙上重新编译，当前无 OHOS 预编译版",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "在 Yggdrasil 构建树中为 SUNDIALS 新增 HarmonyOS 目标平台，用 OHOS NDK（clang + musl + ohos.toolchain.cmake）交叉编译 SUNDIALS 及其依赖，产出 libsundials_*.so 的 OHOS 版本，并发布为 JLL artifact",
+        "caused_by": [],
+        "manifests_as": [],
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-libgfortran5.jl:8-31"
+        ]
+      },
+      {
+        "id": "bk:openblas",
+        "issue": "OpenBLAS32_jll 依赖的 OpenBLAS 原生库需在鸿蒙上重新编译",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "OpenBLAS 是纯 C/Fortran BLAS 实现，无平台特有依赖，经 OHOS NDK 交叉编译即可产出鸿蒙版",
+        "evidence": [
+          "Project.toml:9"
+        ]
+      },
+      {
+        "id": "bk:suitesparse",
+        "issue": "SuiteSparse32_jll 依赖的 SuiteSparse 稀疏矩阵库需在鸿蒙上重新编译",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "SuiteSparse 为纯 C 稀疏线性代数库，经 OHOS NDK 交叉编译即可",
+        "evidence": [
+          "Project.toml:11"
+        ]
+      },
+      {
+        "id": "bk:compilersupport",
+        "issue": "CompilerSupportLibraries_jll 依赖的 libgfortran/libquadmath 等编译器运行时库需鸿蒙版",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "partial",
+        "remediation": "这些是 GCC 运行时库，需用鸿蒙 OHOS 工具链中的 Fortran 编译器产出对应运行时库",
+        "evidence": [
+          "Project.toml:7"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:julia_runtime",
+        "capability": "Julia 运行时（1.10+）",
+        "required": true,
+        "target_status": "available",
+        "impact": "Julia 已移植到鸿蒙 PC（1.10.6），包装代码可直接运行",
+        "source": "references/harmony-pc-capabilities.json#runtimes.julia"
+      },
+      {
+        "id": "ta:ohos_ndk_fortran",
+        "capability": "OHOS NDK 对 Fortran 编译的支持（libgfortran 运行时）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "SUNDIALS 依赖 Fortran 运行时库（libgfortran），若 OHOS NDK 不含 Fortran 前端则需额外解决",
+        "source": "references/harmony-pc-capabilities.json — 未明确记录 Fortran 支持"
+      }
+    ],
+    "required_permissions": [],
+    "compatible": [
+      {
+        "aspect": "Julia JLL 包装代码（Sundials_jll.jl 模块、wrappers/）",
+        "note": "鸿蒙 Julia 1.10 可直接运行，无需改动",
+        "evidence": []
+      },
+      {
+        "aspect": "SUNDIALS 纯数值算法核心",
+        "note": "纯 C/Fortran 数值计算，无平台特有系统调用，经 OHOS NDK 重编即可",
+        "evidence": []
+      }
+    ],
+    "key_tasks": [
+      "确认 OHOS NDK 对 Fortran 编译的支持情况（libgfortran 运行时），若不支持需寻找替代方案（如 gfortran 交叉编译）",
+      "为 OpenBLAS 在 Yggdrasil 构建树新增 OHOS 目标，产出鸿蒙版 OpenBLAS32_jll artifact",
+      "为 SuiteSparse 在 Yggdrasil 构建树新增 OHOS 目标，产出鸿蒙版 SuiteSparse32_jll artifact",
+      "为 SUNDIALS 在 Yggdrasil 构建树新增 OHOS 目标，用 OHOS NDK 交叉编译全部 24 个共享库，产出鸿蒙版 Sundials_jll artifact",
+      "更新 Artifacts.toml 添加鸿蒙平台条目（aarch64-ohos / x86_64-ohos）",
+      "在鸿蒙 Julia 上运行 Sundials.jl 测试套件验证功能完整"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Julia 运行时上）。Julia 运行时已移植（1.10.6），包装代码可直接运行。核心阻碍是 SUNDIALS 及其传递原生依赖（OpenBLAS/SuiteSparse/libgfortran）需在鸿蒙上提供预编译版本。这些均为纯数值计算库，无 GUI/硬件/平台特有 API，理论上经 OHOS NDK 交叉编译即可。confidence 为 medium 是因为 OHOS NDK 对 Fortran 编译的支持状态未知（ta:ohos_ndk_fortran），若 Fortran 不可用则工作量会上升。platform_adaptation 和 platform_branches 均为 0（本包无 C/C++ 代码、无运行时平台分支），平台耦合极轻。"
+  },
+  "library": {
+    "name": "Sundials_jll.jl",
+    "kind": "library",
+    "package_name": "Sundials_jll",
+    "aliases": [
+      "Sundials_jll.jl"
+    ],
+    "import_names": [
+      "Sundials_jll"
+    ],
+    "source_url": "https://github.com/JuliaBinaryWrappers/Sundials_jll.jl.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "commit": "0368dd14cdff00ecc201f6089f0d56e1fc2855f8",
+    "one_liner": "Julia JLL 包装包，为 LLNL SUNDIALS 常微分/微分代数方程求解器提供预编译二进制库的自动加载与平台分发",
+    "ecosystem": "other",
+    "bindings": [
+      "cpp"
+    ],
+    "analyzed_at": "2026-07-06T17:05:09Z"
+  },
+  "meta": {
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "ecosystem",
+        "kind": "new_value",
+        "value": "other",
+        "rationale": "Julia JLL 包装包的生态归属：Julia 不在 python/java/nodejs/cpp/rust/go/dotnet 之列，归为 other。Julia 已有移植运行时但生态类型未单独列枚举。"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "ambiguity",
+        "value": "recompile_napi",
+        "rationale": "Julia JLL 包的鸿蒙适配路径不完全是 recompile_napi（那是 C/C++ 库经 NDK 重编 + Node-API 暴露给 ArkTS 的路径），此处实际是「原生库经 OHOS NDK 重编 + JLL artifact 发布」，更精确的描述应为 julia_jll_artifact_build，但沿用了最近似推荐值。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "本项目为纯 Julia JLL 二进制包装包，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其功能仅限于定位和加载预编译的 SUNDIALS 数值求解器共享库。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本项目为 Julia JLL 二进制包装包，仅负责下载和加载本地预编译 SUNDIALS 共享库，不涉及任何云端服务。",
+    "services": []
+  }
+}

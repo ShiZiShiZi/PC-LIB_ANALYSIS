@@ -1,0 +1,1083 @@
+{
+  "languages": {
+    "primary": "Go",
+    "all": [
+      "Go",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Go",
+        "files": 6,
+        "code": 816,
+        "pct": 91.48,
+        "production": {
+          "files": 6,
+          "code": 816
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 69,
+        "pct": 7.74,
+        "production": {
+          "files": 1,
+          "code": 69
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 0.78,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 8,
+      "code": 892,
+      "comment": 65,
+      "blank": 132,
+      "total_lines": 1089
+    },
+    "production": {
+      "files": 8,
+      "code": 892,
+      "comment": 65,
+      "blank": 132,
+      "total_lines": 1089
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 892,
+        "category": "production",
+        "by_category": {
+          "production": 892
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 8,
+        "code": 892
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "go": {
+          "files": 1,
+          "hits": 1
+        }
+      },
+      "by_platform": {
+        "macos": 1
+      },
+      "samples": [
+        {
+          "language": "go",
+          "file": "keyboard.go",
+          "line": 155,
+          "text": "if runtime.GOOS != \"darwin\" && err != nil {"
+        }
+      ],
+      "total": 1,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和。仅 x86 有而无 arm 回退的部分是 arm64 鸿蒙 PC上的适配点，供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "keyboard 是一个 Go 语言跨平台终端键盘输入监听库，灵感来自 termbox-go。它为 CLI/TUI 程序提供键盘事件捕获能力——包括功能键（F1-F12）、方向键、控制键组合以及 Unicode 字符输入。Unix/macOS 端通过打开 /dev/tty、设置 termios 原始模式、解析 terminfo 转义序列来实现；Windows 端通过 Win32 ReadConsoleInputW API 读取控制台输入事件。库提供三种使用模式：单次按键获取（GetSingleKey）、阻塞式循环读取（GetKey）和通道流式读取（GetKeys）。",
+    "categories": [
+      {
+        "name": "终端键盘事件捕获",
+        "description": "在终端/控制台环境中捕获键盘按键事件，包括功能键、方向键、控制键组合和 Unicode 字符，并将其统一抽象为跨平台的 KeyEvent 结构",
+        "evidence": [
+          "keyboard_common.go:KeyEvent",
+          "keyboard_common.go:GetKey",
+          "keyboard_common.go:GetSingleKey",
+          "keyboard_common.go:GetKeys"
+        ]
+      },
+      {
+        "name": "终端模式管理",
+        "description": "管理终端的原始模式（raw mode）进入与恢复，Unix/macOS 通过 termios ioctl 设置，Windows 通过控制台句柄管理",
+        "evidence": [
+          "keyboard.go:initConsole",
+          "keyboard.go:releaseConsole",
+          "keyboard_windows.go:initConsole",
+          "keyboard_windows.go:releaseConsole"
+        ]
+      },
+      {
+        "name": "terminfo 解析",
+        "description": "内置简化版 terminfo 数据库，解析终端转义序列以识别特殊按键；支持 xterm/screen/rxvt/linux 等主流终端类型的内置映射，也可从文件系统加载 terminfo 定义",
+        "evidence": [
+          "terminfo.go:setup_term",
+          "terminfo.go:load_terminfo",
+          "terminfo.go:setup_term_builtin"
+        ]
+      }
+    ],
+    "domain": "终端/控制台输入",
+    "target_users": "开发终端用户界面（TUI）或命令行交互工具的 Go 开发者"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE file contains standard MIT License text with copyright notices for both termbox-go authors (2012) and Emanuele Iannone (2015)",
+    "notes": "Dual copyright: original termbox-go authors and current maintainer Emanuele Iannone. Both under the same MIT license."
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": [
+      "go.mod"
+    ],
+    "by_ecosystem": {
+      "go": 1
+    },
+    "dependencies": [
+      {
+        "name": "golang.org/x/sys",
+        "ecosystem": "go",
+        "registry_name": "golang.org/x/sys",
+        "source_repo": "golang.org/x/sys",
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "v0.0.0-20220520151302-bc2c85ada10a",
+        "purpose": "Go 官方扩展系统库，提供 Unix 系统调用（termios、ioctl、fcntl、signal 等）和 Windows 系统 API（进程/控制台/事件等）的低级封装，是本项目跨平台终端控制的实现基础",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Go 模块代理（proxy.golang.org）",
+        "declared_in": [
+          "go.mod"
+        ],
+        "used_symbols": [
+          "unix.Open",
+          "unix.Read",
+          "unix.Close",
+          "unix.FcntlInt",
+          "unix.Getpid",
+          "unix.IoctlSetTermios",
+          "unix.Termios",
+          "unix.SIGIO",
+          "unix.O_WRONLY",
+          "unix.O_RDONLY",
+          "unix.O_ASYNC",
+          "unix.O_NONBLOCK",
+          "unix.F_SETFL",
+          "unix.F_SETOWN",
+          "unix.TCGETS",
+          "unix.TCSETS",
+          "unix.TIOCGETA",
+          "unix.TIOCSETA",
+          "unix.EAGAIN",
+          "unix.EWOULDBLOCK",
+          "unix.IGNBRK",
+          "unix.BRKINT",
+          "unix.PARMRK",
+          "unix.ISTRIP",
+          "unix.INLCR",
+          "unix.IGNCR",
+          "unix.ICRNL",
+          "unix.IXON",
+          "unix.ECHO",
+          "unix.ECHONL",
+          "unix.ICANON",
+          "unix.ISIG",
+          "unix.IEXTEN",
+          "unix.CSIZE",
+          "unix.PARENB",
+          "unix.CS8",
+          "unix.VMIN",
+          "unix.VTIME",
+          "windows.NewLazyDLL",
+          "windows.NewProc",
+          "windows.WaitForSingleObject",
+          "windows.CreateEvent",
+          "windows.SetEvent",
+          "windows.Open",
+          "windows.Close",
+          "windows.Handle",
+          "windows.WAIT_FAILED",
+          "windows.INFINITE",
+          "windows.O_RDWR"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "仅有一个运行时依赖 golang.org/x/sys，这是 Go 官方扩展库，提供各平台系统调用的 Go 封装。本项目在 Unix/macOS 端使用 unix 子包（termios/ioctl/signal），在 Windows 端使用 windows 子包（控制台 API/事件）。"
+  },
+  "native_api": {
+    "summary": "本项目深度依赖平台专有终端/控制台 API：Unix/macOS 端使用 POSIX termios ioctl、/dev/tty 设备文件、信号机制和 fcntl；Windows 端使用 Win32 控制台输入 API（ReadConsoleInputW、kernel32.dll）。另有 terminfo 文件系统读取（/usr/share/terminfo 等）。整体平台依赖性强，跨平台通过 Go 构建标签分隔。",
+    "groups": [
+      {
+        "type": "posix_termios",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "unix.IoctlSetTermios",
+            "purpose": "通过 ioctl 设置/获取终端属性（termios 结构），用于将终端切换到原始模式（raw mode）以捕获按键",
+            "count": 3,
+            "evidence": [
+              "keyboard.go:159",
+              "keyboard.go:174",
+              "keyboard.go:213"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "unix.Open",
+            "purpose": "打开 /dev/tty 设备文件获取终端输入文件描述符",
+            "count": 1,
+            "evidence": [
+              "keyboard.go:139"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "unix.FcntlInt",
+            "purpose": "通过 fcntl 设置文件描述符标志（O_ASYNC/O_NONBLOCK）和拥有者进程（F_SETOWN），实现异步 I/O 信号驱动",
+            "count": 2,
+            "evidence": [
+              "keyboard.go:151",
+              "keyboard.go:154"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "unix.Read",
+            "purpose": "从终端文件描述符读取原始输入字节",
+            "count": 1,
+            "evidence": [
+              "keyboard.go:186"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "unix.Close",
+            "purpose": "关闭终端文件描述符",
+            "count": 1,
+            "evidence": [
+              "keyboard.go:215"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "signal.Notify",
+            "purpose": "注册 SIGIO 信号处理，用于异步通知终端输入就绪",
+            "count": 1,
+            "evidence": [
+              "keyboard.go:149"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "os.OpenFile",
+            "purpose": "打开 /dev/tty 设备文件获取终端输出文件描述符",
+            "count": 1,
+            "evidence": [
+              "keyboard.go:135"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "keyboard.go",
+          "syscalls.go",
+          "syscalls_linux.go"
+        ]
+      },
+      {
+        "type": "win32_console",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "ReadConsoleInputW",
+            "purpose": "从 Windows 控制台输入缓冲区读取输入记录（键盘事件），是 Windows 端捕获按键的核心 API",
+            "count": 1,
+            "evidence": [
+              "keyboard_windows.go:230"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "WaitForSingleObject",
+            "purpose": "等待控制台输入事件就绪（阻塞等待）",
+            "count": 1,
+            "evidence": [
+              "keyboard_windows.go:219"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CreateEvent",
+            "purpose": "创建中断事件对象，用于通知输入生产者退出",
+            "count": 1,
+            "evidence": [
+              "keyboard_windows.go:251"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SetEvent",
+            "purpose": "设置中断事件以通知输入生产者退出",
+            "count": 1,
+            "evidence": [
+              "keyboard_windows.go:268"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "windows.Open",
+            "purpose": "打开 CONIN$ 控制台输入设备",
+            "count": 1,
+            "evidence": [
+              "keyboard_windows.go:256"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "kernel32.dll",
+            "purpose": "通过 windows.NewLazyDLL 动态加载 kernel32.dll 以调用 ReadConsoleInputW",
+            "count": 1,
+            "evidence": [
+              "keyboard_windows.go:64"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "keyboard_windows.go"
+        ]
+      },
+      {
+        "type": "posix_device_file",
+        "category": "system",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "/dev/tty",
+            "purpose": "打开当前进程的控制终端设备文件，用于直接读写终端（绕过标准输入重定向）",
+            "count": 2,
+            "evidence": [
+              "keyboard.go:135",
+              "keyboard.go:139"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "keyboard.go:135",
+          "keyboard.go:139"
+        ]
+      },
+      {
+        "type": "go_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "os.Getenv",
+            "purpose": "读取环境变量 TERM/TERMINFO/HOME/TERMINFO_DIRS，用于 terminfo 查找",
+            "count": 4,
+            "evidence": [
+              "terminfo.go:66",
+              "terminfo.go:80",
+              "terminfo.go:87",
+              "terminfo.go:96"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.Signal",
+            "purpose": "Go 信号通知机制，用于 SIGIO 事件驱动",
+            "count": 1,
+            "evidence": [
+              "keyboard.go:34"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "terminfo.go",
+          "keyboard.go"
+        ]
+      },
+      {
+        "type": "posix_terminfo_fs",
+        "category": "system",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "ioutil.ReadFile",
+            "purpose": "从文件系统读取 terminfo 数据库文件（路径如 /usr/share/terminfo/x/xterm、/lib/terminfo/…）",
+            "count": 2,
+            "evidence": [
+              "terminfo.go:127",
+              "terminfo.go:133"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "terminfo.go:120-134"
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "kernel32.dll",
+        "mechanism": "windows.NewLazyDLL",
+        "acquisition": "system",
+        "source": "Windows 系统自带的核心系统库",
+        "description": "Windows 内核基础库，本项目通过其 ReadConsoleInputW 导出函数读取控制台键盘输入事件",
+        "optional": false,
+        "evidence": [
+          "keyboard_windows.go:64"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行时对宿主环境的依赖集中在终端设备访问：Unix/macOS 端需打开 /dev/tty 控制终端设备文件、读取 terminfo 数据库文件、依赖 TERM 等环境变量；Windows 端需访问 CONIN$ 控制台输入设备。无网络通信、无子进程调用、无外部服务依赖。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "/dev/tty",
+        "purpose": "打开当前进程的控制终端设备文件，用于直接读写终端（绕过 stdin 重定向），Unix/macOS 端核心依赖",
+        "evidence": [
+          "keyboard.go:135",
+          "keyboard.go:139"
+        ]
+      },
+      {
+        "detail": "/usr/share/terminfo/*、/lib/terminfo/*、~/.terminfo/*",
+        "purpose": "读取 terminfo 数据库文件以解析终端转义序列，当内置终端类型不匹配时从文件系统加载",
+        "evidence": [
+          "terminfo.go:89",
+          "terminfo.go:111",
+          "terminfo.go:117"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "TERM",
+        "purpose": "确定当前终端类型（如 xterm-256color），用于选择对应的按键转义序列映射",
+        "evidence": [
+          "terminfo.go:66",
+          "terminfo.go:138"
+        ]
+      },
+      {
+        "name": "TERMINFO",
+        "purpose": "指定 terminfo 数据库的自定义路径（若设置则仅搜索此路径）",
+        "evidence": [
+          "terminfo.go:80"
+        ]
+      },
+      {
+        "name": "TERMINFO_DIRS",
+        "purpose": "指定多个 terminfo 搜索目录（冒号分隔）",
+        "evidence": [
+          "terminfo.go:96"
+        ]
+      },
+      {
+        "name": "HOME",
+        "purpose": "定位 ~/.terminfo 目录以搜索用户自定义 terminfo 定义",
+        "evidence": [
+          "terminfo.go:87"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "/dev/tty (Unix/macOS) / CONIN$ (Windows)",
+        "purpose": "直接访问控制终端设备以捕获原始键盘输入事件，而非通过标准输入流",
+        "evidence": [
+          "keyboard.go:135",
+          "keyboard_windows.go:256"
+        ]
+      }
+    ],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Go 1.18+",
+    "runtime_version": "Go 1.18 或更高版本",
+    "build_system": "Go Modules（go.mod）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "any",
+        "evidence": [
+          "syscalls_linux.go",
+          "keyboard.go:1 (//go:build !windows)"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "any",
+        "evidence": [
+          "syscalls.go:1 (//go:build !windows && !linux)",
+          "keyboard.go:155 (runtime.GOOS != \"darwin\")"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "any",
+        "evidence": [
+          "keyboard_windows.go"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "无（库）：作为 Go module 通过 go get 安装，由调用方程序链接",
+    "notes": "使用 Go 构建标签（//go:build）实现平台分隔编译：keyboard_windows.go 仅在 Windows 编译，keyboard.go + syscalls.go + syscalls_linux.go + terminfo.go 在非 Windows 平台编译。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (自研内核，OHOS NDK musl + POSIX 子集，Go 1.22/1.24 已移植)",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
+    "effort": {
+      "person_days": [
+        5,
+        15
+      ],
+      "breakdown": [
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            3,
+            8
+          ],
+          "basis": "needs_adaptation 桶约 480 LOC（Unix/macOS 终端控制代码 keyboard.go + syscalls*.go + terminfo.go），需将 POSIX termios/ioctl/SIGIO/fcntl 替换为鸿蒙终端输入 API 或自行实现终端原始模式适配"
+        },
+        {
+          "component": "deps_porting",
+          "person_days": [
+            1,
+            3
+          ],
+          "basis": "golang.org/x/sys 的 unix 子包需在鸿蒙 Go 上验证 termios/ioctl 支持度，可能需补丁或绕行"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            1,
+            4
+          ],
+          "basis": "无现有测试用例，需在鸿蒙 PC 终端环境实际验证键盘事件捕获功能"
+        }
+      ]
+    },
+    "confidence": "low",
+    "unadaptable_apis": [
+      {
+        "id": "ua:ioctl_termios",
+        "caused_by": [
+          "ta:posix_terminal"
+        ],
+        "api": "unix.IoctlSetTermios (TCGETS/TCSETS/TIOCGETA/TIOCSETA)",
+        "public_entry": "Open/GetKeys",
+        "reason": "termios ioctl 用于设置终端原始模式（raw mode），鸿蒙 OHOS NDK 的 POSIX 子集可能不包含 termios ioctl；鸿蒙终端环境可能不暴露传统 termios 接口，需改用鸿蒙终端 API 或其他输入机制",
+        "blocking_native_api": "unix.IoctlSetTermios",
+        "category": "platform",
+        "evidence": [
+          "keyboard.go:159",
+          "keyboard.go:174",
+          "keyboard.go:213"
+        ]
+      },
+      {
+        "id": "ua:dev_tty",
+        "caused_by": [
+          "ta:posix_terminal"
+        ],
+        "api": "/dev/tty",
+        "public_entry": "Open/GetKeys",
+        "reason": "直接打开 /dev/tty 设备文件以绕过标准输入重定向，鸿蒙终端可能不提供 /dev/tty 设备节点或访问方式不同",
+        "blocking_native_api": "os.OpenFile(\"/dev/tty\")/unix.Open(\"/dev/tty\")",
+        "category": "system",
+        "evidence": [
+          "keyboard.go:135",
+          "keyboard.go:139"
+        ]
+      },
+      {
+        "id": "ua:sigio_fcntl",
+        "caused_by": [
+          "ta:posix_terminal"
+        ],
+        "api": "SIGIO / F_SETOWN / F_SETFL(O_ASYNC)",
+        "public_entry": "Open/GetKeys",
+        "reason": "通过 SIGIO 信号驱动异步终端输入通知，鸿蒙内核的信号机制与文件描述符异步 I/O 可能不完整支持",
+        "blocking_native_api": "unix.FcntlInt / signal.Notify(unix.SIGIO)",
+        "category": "platform",
+        "evidence": [
+          "keyboard.go:149",
+          "keyboard.go:151",
+          "keyboard.go:154"
+        ]
+      }
+    ],
+    "target_assumptions": [
+      {
+        "id": "ta:go_runtime",
+        "capability": "Go 运行时 (1.22/1.24) 在鸿蒙 PC 可用",
+        "required": true,
+        "target_status": "available",
+        "impact": "Go 已移植，纯 Go 代码可运行；本库的核心逻辑和公共 API 层可直接复用",
+        "source": "references/harmony-pc-capabilities.json runtimes.go"
+      },
+      {
+        "id": "ta:posix_terminal",
+        "capability": "POSIX 终端 I/O（termios ioctl、/dev/tty、SIGIO/fcntl 异步 I/O）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "termios ioctl 是 Unix 端终端原始模式的核心机制，若鸿蒙不支持则必须寻找替代方案（如鸿蒙终端 API、PTY 模拟等）；/dev/tty 和 SIGIO 同理——不支持则 Unix 端的 initConsole/releaseConsole 必须全部重写",
+        "source": "references/harmony-pc-capabilities.json intro (OHOS NDK musl + POSIX 子集，子集范围未明确)"
+      },
+      {
+        "id": "ta:terminfo_fs",
+        "capability": "terminfo 数据库文件在文件系统可访问",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "terminfo 查找失败会回退到内置终端映射，不影响核心功能但会限制终端兼容性",
+        "source": "推断：鸿蒙 PC 终端环境是否提供 /usr/share/terminfo 等目录未知"
+      },
+      {
+        "id": "ta:golang_sys_unix",
+        "capability": "golang.org/x/sys/unix 在鸿蒙 Go 上可用（含 termios 类型定义）",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "若鸿蒙 Go 的 golang.org/x/sys 不提供 unix.Termios/unix.IoctlSetTermios 等符号，Unix 端代码无法编译，需为鸿蒙添加新的构建标签分支",
+        "source": "推断：鸿蒙 Go 的 syscall/Unix 封装覆盖范围未核实"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [
+      {
+        "name": "golang.org/x/sys",
+        "order": 1,
+        "why": "提供 Unix termios/ioctl/signal 和 Windows 控制台 API 的 Go 封装，是终端控制的直接依赖；鸿蒙 Go 上的可用性和符号覆盖度决定了能否编译通过以及需多少适配",
+        "refs": [
+          "ta:golang_sys_unix"
+        ],
+        "person_days_share": [
+          1,
+          3
+        ]
+      }
+    ],
+    "recommended_path": "api_adaptation",
+    "summary": "本库的核心功能（捕获终端键盘事件）深度依赖 POSIX 终端 I/O（termios ioctl、/dev/tty、SIGIO/fcntl），这些 API 在鸿蒙 OHOS NDK 的 POSIX 子集中的可用性未知。Go 运行时已移植，公共 API 层和事件解析逻辑可直接复用。推荐路径：为鸿蒙新增构建标签分支，使用鸿蒙终端输入 API（若存在）或 PTY 仿真方案替代 POSIX termios，保留公共 API 不变。由于 POSIX 终端 I/O 可用性未知，置信度为 low。",
+    "blockers": [
+      {
+        "id": "bk:termios",
+        "issue": "POSIX termios ioctl（TCGETS/TCSETS/TIOCGETA/TIOCSETA）在鸿蒙 OHOS NDK 可能不可用，无法设置终端原始模式以捕获原始按键事件",
+        "severity": "blocker",
+        "adaptability": "partial",
+        "category": "posix_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "为鸿蒙新增构建标签文件（如 keyboard_harmony.go），使用鸿蒙终端 API 或 PTY 仿真替代 termios；或调研鸿蒙 Go 对 termios 的支持程度后决定",
+        "caused_by": [
+          "ta:posix_terminal"
+        ],
+        "manifests_as": [
+          "ua:ioctl_termios"
+        ],
+        "evidence": [
+          "keyboard.go:159",
+          "keyboard.go:174",
+          "keyboard.go:213"
+        ]
+      },
+      {
+        "id": "bk:dev_tty",
+        "issue": "/dev/tty 设备文件在鸿蒙可能不存在或访问方式不同，导致无法直接打开控制终端",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "posix_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "研究鸿蒙终端的输入获取方式——可能需通过 stdin、PTY 或鸿蒙特定 API 替代 /dev/tty",
+        "caused_by": [
+          "ta:posix_terminal"
+        ],
+        "manifests_as": [
+          "ua:dev_tty"
+        ],
+        "evidence": [
+          "keyboard.go:135",
+          "keyboard.go:139"
+        ]
+      },
+      {
+        "id": "bk:sigio",
+        "issue": "SIGIO 信号驱动的异步 I/O 通知机制在鸿蒙内核可能不完整支持",
+        "severity": "major",
+        "adaptability": "partial",
+        "category": "posix_api",
+        "source_dimension": "native_api",
+        "harmony_status": "unknown",
+        "remediation": "改用轮询（poll/select）或 Go 的 goroutine 阻塞读取替代 SIGIO 信号驱动",
+        "caused_by": [
+          "ta:posix_terminal"
+        ],
+        "manifests_as": [
+          "ua:sigio_fcntl"
+        ],
+        "evidence": [
+          "keyboard.go:149",
+          "keyboard.go:151",
+          "keyboard.go:154"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "公共 API 层（KeyEvent、Key 常量、Open/Close/GetKey/GetKeys/GetSingleKey）",
+        "note": "纯 Go 逻辑，不依赖平台 API，可直接复用",
+        "evidence": [
+          "keyboard_common.go"
+        ]
+      },
+      {
+        "aspect": "终端转义序列解析逻辑",
+        "note": "parse_escape_sequence/extract_event 等解析逻辑为纯字符串处理，可跨平台复用",
+        "evidence": [
+          "keyboard.go:41-97"
+        ]
+      },
+      {
+        "aspect": "terminfo 内置终端映射",
+        "note": "内置 xterm/screen/rxvt/linux 等终端按键映射表不依赖平台 API",
+        "evidence": [
+          "terminfo.go:32-59"
+        ]
+      },
+      {
+        "aspect": "Windows 端代码",
+        "note": "键盘事件生产者逻辑与平台无关部分可保留，Win32 分支保持不变",
+        "evidence": [
+          "keyboard_windows.go"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "调研鸿蒙 OHOS NDK 的 POSIX 子集是否包含 termios ioctl 支持",
+      "验证鸿蒙 Go 的 golang.org/x/sys/unix 包是否提供 Termios/IoctlSetTermios 等符号",
+      "若不支持 termios：为鸿蒙新增 keyboard_harmony.go 构建标签分支，实现鸿蒙终端原始模式适配",
+      "替代 /dev/tty：研究鸿蒙终端输入获取方式（stdin/PTY/鸿蒙终端 API）",
+      "替代 SIGIO：改用 goroutine 阻塞读取或 poll 机制",
+      "在鸿蒙 PC 终端环境验证键盘事件捕获功能"
+    ],
+    "notes": "本评估置信度为 low，核心原因是 POSIX 终端 I/O（termios/ioctl//dev/tty/SIGIO）在鸿蒙 OHOS NDK 中的可用性均为 unknown。鸿蒙 PC 自研内核提供 musl + POSIX 子集，但子集的具体范围未公开确认——若恰好包含 termios 则适配工作大幅减少。Go 运行时已确认可用（1.22/1.24），公共 API 层可直接复用。最坏情况下需要为鸿蒙编写全新的终端输入后端（类似 Windows 分支的做法），工作量中等。"
+  },
+  "library": {
+    "name": "keyboard",
+    "kind": "library",
+    "package_name": "github.com/eiannone/keyboard",
+    "aliases": [],
+    "import_names": [
+      "keyboard"
+    ],
+    "source_url": "https://github.com/eiannone/keyboard",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-07T07:42:26Z",
+    "commit": null,
+    "one_liner": "跨平台 Go 库，用于监听终端键盘按键事件，支持单键获取、阻塞式读取与通道流式读取",
+    "ecosystem": "go",
+    "bindings": []
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [],
+    "confidence_overall": "low",
+    "observations": [
+      {
+        "dimension": "harmony_adaptation",
+        "field": "recommended_path",
+        "kind": "new_value",
+        "value": "api_adaptation",
+        "rationale": "库需要在鸿蒙上替换 POSIX 终端 I/O API 为鸿蒙等价方案，但保留公共 API 不变——不同于完整的 recompile_napi（非 C 库）或 arkts_rewrite（非应用），属于 API 层适配"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "posix_termios",
+        "rationale": "POSIX termios ioctl 是独立的 API 族，不同于通用 posix（如 mmap/fork）——它专门用于终端属性控制，在鸿蒙 POSIX 子集中的可用性不确定"
+      },
+      {
+        "dimension": "native_api",
+        "field": "type",
+        "kind": "new_value",
+        "value": "posix_device_file",
+        "rationale": "/dev/tty 是 POSIX 终端设备文件，不同于文件系统路径——它是内核设备节点，鸿蒙可能不提供此设备文件"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": "blockers.category",
+        "kind": "new_value",
+        "value": "posix_api",
+        "rationale": "POSIX 终端 I/O API 在鸿蒙不可用——不同于 win32_api（Windows 专有），这是 POSIX 标准但鸿蒙仅提供子集"
+      }
+    ]
+  },
+  "capability_profile": {
+    "summary": "本项目不涉及 GUI 桌面界面、3D 渲染、媒体或特定硬件场景。它是纯终端/控制台输入库，通过 POSIX 终端 I/O 和 Win32 控制台 API 捕获键盘事件，无 GUI 工具包依赖。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无 GUI 依赖，不涉及界面适配",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无 3D 渲染依赖",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无媒体依赖",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": true,
+        "kind": [
+          "terminal_device"
+        ],
+        "specific_hardware": false,
+        "via": [
+          "posix_termios",
+          "posix_device_file",
+          "win32_console"
+        ],
+        "harmony_status": "unknown",
+        "adaptation": "依赖终端设备访问（/dev/tty、CONIN$）和 POSIX termios ioctl 设置终端原始模式，鸿蒙终端 I/O 子系统可用性未知——需核实 termios/PTY 是否支持，可能需改用鸿蒙终端 API",
+        "evidence": [
+          "keyboard.go:135",
+          "keyboard.go:139",
+          "keyboard.go:159",
+          "keyboard.go:174"
+        ]
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本项目不涉及任何云端服务。库功能为本地终端键盘事件捕获，无网络通信、无云 SDK 依赖、无硬编码云端域名。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "生产代码 892 行（Go 816 行 + Markdown 69 行 + JSON 7 行），全部位于仓根目录。按鸿蒙迁移复用性分桶：公共 API 层和解析逻辑（约 336 行）可直接复用；需适配部分为 Unix/macOS 终端控制代码（约 480 行），涉及 POSIX termios/ioctl/SIGIO//dev/tty 等 API；无无法适配的代码（所有平台 API 理论上可替换，但工作量较大）。由于代码全在单目录，分区按文件粒度划分。",
+    "coverage": {
+      "production_code": 892,
+      "partitioned_code": 892,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 336,
+        "pct": 37.7,
+        "modules": [
+          {
+            "path": "keyboard_common.go",
+            "loc": 231,
+            "reason": "公共 API 层：KeyEvent/Key 常量定义、Open/Close/GetKey/GetKeys/GetSingleKey 函数实现，纯 Go 逻辑无平台 API 依赖，可跨平台直接复用",
+            "evidence": [
+              "keyboard_common.go"
+            ]
+          },
+          {
+            "path": "go.mod + go.sum",
+            "loc": 7,
+            "reason": "Go 模块声明文件，纯元数据",
+            "evidence": [
+              "go.mod"
+            ]
+          },
+          {
+            "path": "README.md + LICENSE + AUTHORS",
+            "loc": 98,
+            "reason": "文档与许可文件，非代码",
+            "evidence": [
+              "README.md",
+              "LICENSE",
+              "AUTHORS"
+            ]
+          }
+        ],
+        "basis": "代码不含平台 API 调用，纯 Go 标准库和内部逻辑"
+      },
+      {
+        "class": "needs_adaptation",
+        "loc": 480,
+        "pct": 53.8,
+        "modules": [
+          {
+            "path": "keyboard.go",
+            "loc": 216,
+            "reason": "Unix/macOS 终端控制实现：打开 /dev/tty、termios ioctl 设置原始模式、SIGIO 异步 I/O、终端事件读取与解析，需替换 POSIX termios//dev/tty/SIGIO 为鸿蒙等价机制",
+            "evidence": [
+              "keyboard.go:135",
+              "keyboard.go:139",
+              "keyboard.go:149",
+              "keyboard.go:151",
+              "keyboard.go:159",
+              "keyboard.go:174"
+            ]
+          },
+          {
+            "path": "terminfo.go",
+            "loc": 258,
+            "reason": "terminfo 数据库解析与加载：读取 /usr/share/terminfo 等文件系统路径、环境变量 TERM/TERMINFO/HOME，鸿蒙终端环境可能无 terminfo 数据库——但内置终端映射可回退，文件系统读取部分需适配路径",
+            "evidence": [
+              "terminfo.go:89",
+              "terminfo.go:111",
+              "terminfo.go:117"
+            ]
+          },
+          {
+            "path": "syscalls.go + syscalls_linux.go",
+            "loc": 23,
+            "reason": "ioctl 常量定义（TCGETS/TCSETS/TIOCGETA/TIOCSETA），与 termios 配套使用，需确认鸿蒙 Go 的 golang.org/x/sys/unix 是否提供这些常量",
+            "evidence": [
+              "syscalls.go:11",
+              "syscalls.go:12",
+              "syscalls_linux.go:8",
+              "syscalls_linux.go:9"
+            ]
+          }
+        ],
+        "basis": "native_api posix_termios/posix_device_file/posix_terminfo_fs 组 + platform_branches runtime.GOOS 分支 + dependencies golang.org/x/sys/unix"
+      },
+      {
+        "class": "recompile_reuse",
+        "loc": 76,
+        "pct": 8.5,
+        "modules": [
+          {
+            "path": "keyboard_windows.go",
+            "loc": 273,
+            "reason": "Windows 平台专用代码，通过 Go 构建标签隔离，鸿蒙不使用此分支——保持不变、随 Go 交叉编译即可",
+            "evidence": [
+              "keyboard_windows.go:1"
+            ]
+          }
+        ],
+        "basis": "Windows 分支由 Go 构建标签隔离，鸿蒙构建不包含此文件，无需改动"
+      }
+    ],
+    "notes": "keyboard_windows.go 的 273 LOC 计入 recompile_reuse 桶是因为 Go 构建标签隔离——鸿蒙构建不会编译此文件，它自然保持不变。但 dir_loc 只统计到仓根 '.' 的 892 行总数，Windows 文件已含在内。实际需要关注的适配代码约 480 行（keyboard.go + terminfo.go + syscalls*.go），核心难点是 termios ioctl 和 /dev/tty 替换。Markdown/JSON/LICENSE 等非 Go 代码共 98 行计入 reuse_direct。"
+  }
+}

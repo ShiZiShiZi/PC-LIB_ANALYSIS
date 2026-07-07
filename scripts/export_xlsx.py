@@ -28,6 +28,23 @@ _LEVEL_ZH = {"very_low": "极低", "low": "低", "medium": "中", "high": "高",
 _RANK_LEVEL = ["very_low", "low", "medium", "high", "very_high"]
 _CLASS_FLOOR = {"no_adaptation": 0, "recompile_only": 1, "needs_adaptation_full": 2,
                 "needs_adaptation_partial": 3, "infeasible": 4}
+_FEAS_FOR_CLASS = {"no_adaptation": "feasible", "recompile_only": "feasible_with_effort",
+                   "needs_adaptation_full": "feasible_with_effort",
+                   "needs_adaptation_partial": "hard", "infeasible": "infeasible"}
+_CLAMPABLE_CLASSES = {"no_adaptation", "recompile_only", "needs_adaptation_full"}
+
+
+def _reconcile_porting_class(ha: dict):
+    """Mirror web/server.js reconcilePortingClass so the standalone xlsx matches the panel's
+    clamped value: a granular un-adaptability signal (unadaptable_apis, or a blocker with
+    adaptability=='unadaptable') forces the class up to at least needs_adaptation_partial."""
+    ha = ha or {}
+    cls = ha.get("porting_class")
+    has_un = bool(ha.get("unadaptable_apis")) or any(
+        (b or {}).get("adaptability") == "unadaptable" for b in (ha.get("blockers") or []))
+    if cls in _CLAMPABLE_CLASSES and has_un:
+        return "needs_adaptation_partial"
+    return cls
 
 
 def _effort_days(ha: dict):
@@ -58,12 +75,12 @@ def _days_bucket(hi) -> int:
 
 
 def _difficulty_level(ha: dict):
-    cls = (ha or {}).get("porting_class")
-    days = _effort_days(ha)
-    if (ha or {}).get("effort", {}).get("level"):
-        return _LEVEL_ZH.get(ha["effort"]["level"], ha["effort"]["level"])
+    # mirror server deriveDifficultyLevel: always derive from the (reconciled) porting_class
+    # floor × person_days bucket — do NOT trust a baked effort.level (the server never does).
+    cls = _reconcile_porting_class(ha)
     if not cls:
         return ""
+    days = _effort_days(ha)
     floor = _CLASS_FLOOR.get(cls, 0)
     rank = max(floor, _days_bucket(days[1] if days else 0))
     return _LEVEL_ZH[_RANK_LEVEL[rank]]
@@ -179,6 +196,9 @@ def rows_overview(name, r):
         _g(cm, "example", "code"),
         _g(cm, "platform_adaptation", "total", default=""),
         _g(cm, "platform_branches", "total", default=""),
+        _g(cm, "arch_specific", "total", default=""),
+        _part_loc(r, "reuse_direct"), _part_loc(r, "recompile_reuse"),
+        _part_loc(r, "needs_adaptation"), _part_loc(r, "unadaptable"),
         _cap_flag(r, "gui"), _cap_flag(r, "rendering_3d"), _cap_flag(r, "media"), _cap_flag(r, "hardware"),
         _g(cm, "total", "total_lines"),
         t.get("test_files"),
@@ -196,8 +216,8 @@ def rows_overview(name, r):
         be.get("language_standard", ""),
         be.get("runtime_version", ""),
         _join(be.get("platforms", []) or []),
-        ha.get("porting_class", ""),
-        ha.get("feasibility", ""),
+        _reconcile_porting_class(ha) or "",
+        _FEAS_FOR_CLASS.get(_reconcile_porting_class(ha), ha.get("feasibility", "")),
         _difficulty_level(ha),
         (_effort_days(ha) or ["", ""])[0],
         (_effort_days(ha) or ["", ""])[1],
@@ -214,7 +234,9 @@ def rows_overview(name, r):
 HEAD_OVERVIEW = [
     "库名", "源地址", "子目录", "commit", "分析时间", "主语言", "语言列表", "生态", "绑定",
     "功能摘要", "领域", "目标用户", "总代码", "生产代码", "测试代码", "样例代码",
-    "平台适配代码", "平台判断分支(处)", "GUI", "3D渲染", "媒体", "硬件", "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度", "License性质",
+    "平台适配代码", "平台判断分支(处)", "汇编代码行",
+    "直接复用LOC", "重编译复用LOC", "需适配LOC", "无法适配LOC",
+    "GUI", "3D渲染", "媒体", "硬件", "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度", "License性质",
     "运行时依赖数", "依赖总数", "API摘要", "平台依赖", "动态库数", "构建系统",
     "语言标准", "运行时版本", "支持平台", "移植分级", "鸿蒙可行性", "鸿蒙难度",
     "工作量min(人天)", "工作量max(人天)", "鸿蒙置信度",
@@ -502,10 +524,89 @@ def rows_observations(name, r):
 HEAD_OBSERVATIONS = ["库名", "维度", "字段", "类型", "取值", "理由"]
 
 
+# ── code_partition (dim 12) + dim-9 critical deps / effort breakdown ─────────
+_PART_LABELS = {"reuse_direct": "直接复用", "recompile_reuse": "重编译复用",
+                "needs_adaptation": "需适配", "unadaptable": "无法适配"}
+_EFFORT_COMP_LABELS = {"recompile": "重编/交叉编译", "api_adaptation": "平台API适配",
+                       "gui": "GUI改造", "deps_porting": "依赖移植", "build_system": "构建系统",
+                       "testing_verification": "测试验证", "packaging": "打包分发"}
+
+
+# field-name tolerance (the agent occasionally emits total_loc/dir/note instead of loc/path/reason;
+# the panel normalizes these serve-time, but this script reads report.json directly, so it must too)
+def _bucket_loc(b):
+    v = (b or {}).get("loc")
+    if v is None:
+        v = (b or {}).get("total_loc")
+    if v is None:
+        v = sum(int((m or {}).get("loc") or 0) for m in ((b or {}).get("modules") or []))
+    return int(v or 0)
+
+
+def _mod_path(m):
+    m = m or {}
+    return m.get("path") or m.get("dir") or m.get("module") or m.get("name") or ""
+
+
+def _part_loc(r, cls):
+    """Total LOC of one partition bucket class ('' when the block/bucket is absent)."""
+    buckets = _g(r, "code_partition", "buckets", default=[]) or []
+    hit = [_bucket_loc(b) for b in buckets if (b or {}).get("class") == cls]
+    return sum(hit) if hit else ""
+
+
+def rows_partition(name, r):
+    out = []
+    for b in _g(r, "code_partition", "buckets", default=[]) or []:
+        cls = _PART_LABELS.get(b.get("class"), b.get("class", ""))
+        mods = b.get("modules") or []
+        for m in mods or [{}]:
+            out.append([
+                name, cls, _bucket_loc(b) or "", b.get("pct"),
+                _mod_path(m), m.get("loc"), m.get("reason") or m.get("note") or "",
+                _join(m.get("evidence", []) or []), b.get("basis", ""),
+            ])
+    return out
+
+
+HEAD_PARTITION = ["库名", "分区", "桶LOC", "桶占比%", "模块", "模块LOC", "归类理由", "证据", "归类依据"]
+
+
+def rows_critical_deps(name, r):
+    out = []
+    for c in _g(r, "harmony_adaptation", "critical_dependencies", default=[]) or []:
+        pd = c.get("person_days_share") or []
+        out.append([
+            name, c.get("order"), c.get("name", ""), c.get("why", ""),
+            _join(c.get("refs", []) or []),
+            pd[0] if len(pd) == 2 else "", pd[1] if len(pd) == 2 else "",
+        ])
+    out.sort(key=lambda row: row[1] if isinstance(row[1], (int, float)) else 999)
+    return out
+
+
+HEAD_CRITICAL_DEPS = ["库名", "顺序", "依赖", "为何关键", "引用", "份额min(人天)", "份额max(人天)"]
+
+
+def rows_effort_breakdown(name, r):
+    out = []
+    for b in _g(r, "harmony_adaptation", "effort", "breakdown", default=[]) or []:
+        pd = b.get("person_days") or []
+        out.append([
+            name, _EFFORT_COMP_LABELS.get(b.get("component"), b.get("component", "")),
+            pd[0] if len(pd) == 2 else "", pd[1] if len(pd) == 2 else "", b.get("basis", ""),
+        ])
+    return out
+
+
+HEAD_EFFORT_BREAKDOWN = ["库名", "分项", "min(人天)", "max(人天)", "估算依据"]
+
+
 SHEETS = [
     ("汇总", HEAD_OVERVIEW, rows_overview),
     ("功能分类", HEAD_CATEGORIES, rows_categories),
     ("语言分布", HEAD_LANGUAGES, rows_languages),
+    ("代码分区", HEAD_PARTITION, rows_partition),
     ("平台适配代码量", HEAD_PLATFORM, rows_platform),
     ("平台判断分支", HEAD_PLATFORM_BRANCHES, rows_platform_branches),
     ("能力画像", HEAD_CAPABILITIES, rows_capabilities),
@@ -517,6 +618,8 @@ SHEETS = [
     ("运行时交互面", HEAD_SURFACE, rows_surface),
     ("鸿蒙阻碍点", HEAD_BLOCKERS, rows_blockers),
     ("不支持API清单", HEAD_UNADAPTABLE, rows_unadaptable),
+    ("关键路径依赖", HEAD_CRITICAL_DEPS, rows_critical_deps),
+    ("工作量分项", HEAD_EFFORT_BREAKDOWN, rows_effort_breakdown),
     ("鸿蒙目标假设", HEAD_TARGET_ASSUMPTIONS, rows_target_assumptions),
     ("模型观察", HEAD_OBSERVATIONS, rows_observations),
 ]
@@ -524,7 +627,7 @@ SHEETS = [
 HEAD_FILL = PatternFill("solid", fgColor="DDE6F0")
 HEAD_FONT = Font(bold=True)
 WRAP_COLS = {"功能摘要", "API摘要", "鸿蒙总结", "用途", "改造建议", "证据", "调用位置",
-             "理由", "关键任务", "代码片段"}
+             "理由", "关键任务", "代码片段", "归类理由", "归类依据", "为何关键", "估算依据"}
 
 
 def _cell(v):

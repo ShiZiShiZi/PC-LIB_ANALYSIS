@@ -30,12 +30,12 @@
 | 能力 | 状态 | 来源 | 核对时间 | 说明 |
 |------|------|------|----------|------|
 | Headful AWT (java.awt) | ⬜ 未核实 |  |  | 鸿蒙 PC JDK 是否带 headful 桌面后端 —— 待核实 |
-| Swing (javax.swing) | ⬜ 未核实 |  |  | 依赖 headful AWT —— 待核实 |
+| Swing (javax.swing) | ✅ 已支持 |  | 2026-07-07 | swing已有鸿蒙版本 |
 | JavaFX | ⬜ 未核实 |  |  | 待核实（是否随附/可装） |
 | SWT | ⬜ 未核实 |  |  | 待核实 |
-| Qt (C/C++ GUI) | ✅ 已支持 | https://gitcode.com/OpenHarmonyPCDeveloper (人工核实) | 2026-06-23 | 社区已提供 Qt 鸿蒙版 |
+| Qt (C/C++ GUI) | ✅ 已支持 | https://gitcode.com/OpenHarmonyPCDeveloper (人工核实) | 2026-07-07 | 社区已提供 Qt 鸿蒙版，只提供了Qt5，如果使用Qt6需要降级 |
 | GTK (C GUI) | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) — gtk | 2026-06-23 | — |
-| Electron / CEF (Chromium) | ⬜ 未核实 |  |  | 待核实 |
+| Electron / CEF (Chromium) | ✅ 已支持 |  | 2026-07-07 | Electron已有鸿蒙版本 |
 | 桌面窗口管理器 / 显示服务（是否存在桌面级多窗口环境） | ⬜ 未核实 |  |  | 鸿蒙 PC 是否提供传统桌面窗口环境 —— 待核实 |
 
 ## 桌面集成子能力

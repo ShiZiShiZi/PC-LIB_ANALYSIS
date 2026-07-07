@@ -1,0 +1,634 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 19,
+        "code": 223,
+        "pct": 51.62,
+        "production": {
+          "files": 19,
+          "code": 223
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 168,
+        "pct": 38.89,
+        "production": {
+          "files": 2,
+          "code": 168
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 34,
+        "pct": 7.87,
+        "production": {
+          "files": 1,
+          "code": 34
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 1.62,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 23,
+      "code": 432,
+      "comment": 19,
+      "blank": 73,
+      "total_lines": 524
+    },
+    "production": {
+      "files": 23,
+      "code": 432,
+      "comment": 19,
+      "blank": 73,
+      "total_lines": 524
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 223,
+        "category": "production",
+        "by_category": {
+          "production": 223
+        }
+      },
+      {
+        "dir": ".",
+        "code": 209,
+        "category": "production",
+        "by_category": {
+          "production": 209
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "NLopt_jll.jl 是 NLopt 非线性优化库的 Julia 预编译二进制包装器（JLL 包），由 BinaryBuilder.jl 自动生成。它为 18 个平台（Linux/macOS/Windows/FreeBSD，多种架构）提供平台匹配的 libnlopt 共享库加载逻辑，使 Julia 生态中的优化库（如 NLopt.jl、Optim.jl 等）无需本地编译即可调用 NLopt 的 C/C++ 原生实现。该包本身不包含优化算法实现，仅负责动态库路径解析与 dlopen 加载。",
+    "categories": [
+      {
+        "name": "预编译二进制包装与动态库加载",
+        "description": "通过 JLLWrappers 宏自动生成平台检测与 libnlopt 共享库（.so/.dylib/.dll）的动态加载逻辑，导出 libnlopt 句柄供上层 Julia 包直接调用 C API。",
+        "evidence": [
+          "src/NLopt_jll.jl:7-8",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:5-12"
+        ]
+      },
+      {
+        "name": "多平台二进制分发",
+        "description": "为 18 个目标平台（aarch64/x86_64/i686/armv6l/armv7l/powerpc64le/riscv64 × Linux/macOS/Windows/FreeBSD）分发预编译的 NLopt 原生库，通过 Artifacts.toml 声明各平台 tarball 的下载地址与 SHA256 校验。",
+        "evidence": [
+          "Artifacts.toml:1-174",
+          "README.md:27-44"
+        ]
+      }
+    ],
+    "domain": "numerical optimization / package management",
+    "target_users": "Julia 生态中使用 NLopt 非线性优化功能的开发者与科研人员"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件明确声明 Julia 源码（src/ 下）采用 MIT 许可证，版权人为 JuliaBinaryWrappers。同时注明该许可不适用于包所包装的 NLopt 二进制文件（其许可随二进制分发）。",
+    "notes": "包装器代码本身为 MIT；被包装的 NLopt 原生库使用 LGPL-2.1-or-later（见 stevengj/nlopt 上游），二进制许可随包分发于 share/licenses/NLopt 目录中。两者许可不同但无冲突。"
+  },
+  "dependencies": {
+    "count": 3,
+    "manifests": [
+      "Project.toml"
+    ],
+    "by_ecosystem": {
+      "other": 3
+    },
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "other",
+        "registry_name": "JLLWrappers",
+        "source_repo": "https://github.com/JuliaPackaging/JLLWrappers.jl",
+        "version": "1.7.0",
+        "scope": "runtime",
+        "locality": "remote",
+        "acquisition": "package_manager",
+        "source": "Julia General Registry",
+        "declared_in": [
+          "Project.toml:6"
+        ],
+        "used_symbols": [
+          "@generate_main_file_header",
+          "@generate_main_file",
+          "@generate_wrapper_header",
+          "@declare_library_product",
+          "@generate_init_header",
+          "@init_library_product",
+          "@generate_init_footer"
+        ],
+        "harmony_adapted": false,
+        "purpose": "Julia JLL 包的宏与工具框架，自动生成动态库加载、路径解析、产品声明等样板代码"
+      },
+      {
+        "name": "Libdl",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "version": "1",
+        "scope": "runtime",
+        "locality": "system",
+        "acquisition": "stdlib",
+        "source": "Julia 标准库",
+        "declared_in": [
+          "Project.toml:7"
+        ],
+        "used_symbols": [
+          "RTLD_LAZY",
+          "RTLD_DEEPBIND"
+        ],
+        "harmony_adapted": false,
+        "purpose": "Julia 标准库，提供 dlopen/dlsym 等动态链接接口，用于加载 libnlopt 共享库"
+      },
+      {
+        "name": "Artifacts",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "version": "1",
+        "scope": "runtime",
+        "locality": "system",
+        "acquisition": "stdlib",
+        "source": "Julia 标准库",
+        "declared_in": [
+          "Project.toml:8"
+        ],
+        "used_symbols": [],
+        "harmony_adapted": false,
+        "purpose": "Julia 标准库，提供预编译 artifact 路径解析，根据当前平台定位对应的 NLopt 二进制包"
+      }
+    ],
+    "notes": "所有依赖均为 Julia 生态依赖（ecosystem 标为 other，因 schema 不含 julia 枚举值）。JLLWrappers 是远程包；Libdl 和 Artifacts 是 Julia 标准库模块（随 Julia 发行，无需单独安装）。本包的核心运行时依赖实际上是 NLopt 原生 C/C++ 库（libnlopt），以预编译 artifact 形式分发而非 Julia 包依赖，见 native_api.dynamic_libraries。"
+  },
+  "native_api": {
+    "groups": [
+      {
+        "category": "standard",
+        "platform": "portable",
+        "type": "julia_stdlib",
+        "description": "Julia 标准库调用，用于动态库加载与 artifact 路径解析",
+        "apis": [
+          {
+            "name": "Libdl.RTLD_LAZY",
+            "purpose": "dlopen 延迟绑定标志，指示在调用时而非加载时解析符号",
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:11"
+            ],
+            "count": 18,
+            "conditional": false
+          },
+          {
+            "name": "Libdl.RTLD_DEEPBIND",
+            "purpose": "dlopen 深绑定标志，优先使用本库自身的符号而非已加载的全局符号",
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:11"
+            ],
+            "count": 18,
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "category": "ffi",
+        "platform": "portable",
+        "type": "dynamic_library_load",
+        "description": "通过 JLLWrappers 框架动态加载 NLopt 原生共享库",
+        "apis": [
+          {
+            "name": "JLLWrappers.@init_library_product",
+            "purpose": "自动生成 dlopen 调用以加载 libnlopt 共享库并返回句柄",
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:8-12"
+            ],
+            "count": 18,
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libnlopt",
+        "resolved_names": {
+          "linux": "libnlopt.so.1",
+          "macos": "libnlopt.1.dylib",
+          "windows": "libnlopt.dll"
+        },
+        "load_mechanism": "JLLWrappers.@init_library_product (内部调用 Libdl.dlopen)",
+        "purpose": "NLopt 非线性优化库的 C/C++ 原生实现，提供全局/局部优化算法（如 MMA、COBYLA、BFGS 等）",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:5-12",
+          "src/wrappers/x86_64-apple-darwin.jl:5-12",
+          "src/wrappers/i686-w64-mingw32-cxx11.jl:5-12"
+        ],
+        "acquisition": "prebuilt_binary",
+        "source": "BinaryBuilder.jl / Yggdrasil 构建的预编译 artifact，从 GitHub Releases 下载"
+      }
+    ],
+    "notes": "本包为 JLL 包装器，不直接调用操作系统平台 API。所有平台差异由各平台 wrapper 脚本中的库路径（.so/.dylib/.dll）和 JLLWrappers 框架自动处理。libnlopt 的内部平台 API 调用不在本包范围内（本包仅做加载，不包含 NLopt 源码）。"
+  },
+  "runtime_surface": {
+    "network": [
+      {
+        "url_pattern": "https://github.com/JuliaBinaryWrappers/NLopt_jll.jl/releases/download/*",
+        "purpose": "下载各平台 NLopt 预编译二进制 tarball",
+        "evidence": [
+          "Artifacts.toml:8,18,28,..."
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "path": "artifact 路径下的 lib/ 或 bin/ 目录",
+        "purpose": "定位 libnlopt 共享库文件",
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:10"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocesses": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Julia 1.6+",
+    "runtime_version": "Julia >= 1.6",
+    "build_system": "BinaryBuilder.jl (上游 Yggdrasil)",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "Linux",
+        "arch": "aarch64",
+        "libc": "glibc"
+      },
+      {
+        "os": "Linux",
+        "arch": "aarch64",
+        "libc": "musl"
+      },
+      {
+        "os": "macOS",
+        "arch": "aarch64"
+      },
+      {
+        "os": "macOS",
+        "arch": "x86_64"
+      },
+      {
+        "os": "Linux",
+        "arch": "x86_64",
+        "libc": "glibc"
+      },
+      {
+        "os": "Linux",
+        "arch": "x86_64",
+        "libc": "musl"
+      },
+      {
+        "os": "Windows",
+        "arch": "x86_64"
+      },
+      {
+        "os": "Windows",
+        "arch": "i686"
+      },
+      {
+        "os": "Linux",
+        "arch": "armv6l",
+        "libc": "glibc"
+      },
+      {
+        "os": "Linux",
+        "arch": "armv6l",
+        "libc": "musl"
+      },
+      {
+        "os": "Linux",
+        "arch": "armv7l",
+        "libc": "glibc"
+      },
+      {
+        "os": "Linux",
+        "arch": "armv7l",
+        "libc": "musl"
+      },
+      {
+        "os": "Linux",
+        "arch": "powerpc64le",
+        "libc": "glibc"
+      },
+      {
+        "os": "Linux",
+        "arch": "riscv64",
+        "libc": "glibc"
+      },
+      {
+        "os": "FreeBSD",
+        "arch": "aarch64"
+      },
+      {
+        "os": "FreeBSD",
+        "arch": "x86_64"
+      },
+      {
+        "os": "Linux",
+        "arch": "i686",
+        "libc": "glibc"
+      },
+      {
+        "os": "Linux",
+        "arch": "i686",
+        "libc": "musl"
+      }
+    ],
+    "entry_points": [],
+    "packaging": "type: Julia JLL package；description: BinaryBuilder.jl 自动生成的 Julia 注册包，通过 Artifacts.toml 管理预编译二进制，Julia 包管理器自动处理下载与缓存；evidence: README.md:5-6；Project.toml:1-13",
+    "notes": "本包本身无编译步骤，所有原生二进制由 Yggdrasil CI 预构建并发布到 GitHub Releases。Julia 包管理器在安装时自动下载匹配当前平台的 artifact。"
+  },
+  "harmony_adaptation": {
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "feasible_partial",
+    "confidence": "medium",
+    "recommended_path": "run_on_ported_runtime",
+    "effort": {
+      "person_days": [
+        3,
+        10
+      ],
+      "level": null
+    },
+    "blockers": [
+      {
+        "id": "blk:libnlopt_binary",
+        "category": "native_binary",
+        "severity": "major",
+        "adaptability": "partial",
+        "description": "libnlopt 预编译二进制（.so/.dylib/.dll）由 Yggdrasil 构建，目前无鸿蒙 OHOS NDK (aarch64-linux-ohos) 目标构建产物。需在 OHOS NDK 环境下重新编译 NLopt C/C++ 源码，产出鸿蒙兼容的 libnlopt.so。",
+        "source_dimension": "native_api",
+        "caused_by": [
+          "ta:libnlopt_native"
+        ],
+        "harmony_status": "unavailable",
+        "evidence": [
+          "Artifacts.toml:1-174",
+          "src/wrappers/x86_64-linux-gnu-cxx11.jl:5-12"
+        ],
+        "adaptation": "在 OHOS NDK 环境下编译 NLopt 上游源码（stevengj/nlopt），生成 libnlopt.so，并添加对应 aarch64-linux-ohos wrapper 脚本与 Artifacts.toml 条目。NLopt 为标准 C/C++ 库，依赖简单（可选 LGPL 模式纯 C 实现），OHOS NDK (musl + POSIX 子集) 编译预期可行。"
+      },
+      {
+        "id": "blk:jll_platform_detection",
+        "category": "platform_detection",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "description": "JLLWrappers 的平台检测宏需识别鸿蒙平台三元组（如 aarch64-linux-ohos），当前 18 个 wrapper 脚本不包含鸿蒙目标，需新增对应 wrapper 文件。",
+        "source_dimension": "build_env",
+        "caused_by": [
+          "ta:platform_detection"
+        ],
+        "harmony_status": "partial",
+        "evidence": [
+          "src/wrapters/ (18 个平台文件)",
+          "src/NLopt_jll.jl:7-8"
+        ],
+        "adaptation": "新增 src/wrappers/aarch64-linux-ohos.jl（或等效三元组），参照 Linux musl wrapper 模板，调整库路径为 libnlopt.so。JLLWrappers 框架本身支持扩展平台。"
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:julia_runtime",
+        "capability": "Julia 运行时",
+        "required": true,
+        "target_status": "available",
+        "impact": "Julia 1.10.6 已移植至鸿蒙 PC，包装器 Julia 代码可直接运行",
+        "source": "references/harmony-pc-capabilities.json#julia"
+      },
+      {
+        "id": "ta:libnlopt_native",
+        "capability": "libnlopt 原生 C/C++ 库（鸿蒙 NDK 编译产物）",
+        "required": true,
+        "target_status": "unavailable",
+        "impact": "当前无预编译的鸿蒙版 libnlopt 二进制，需自行在 OHOS NDK 下编译 NLopt 源码",
+        "source": "Artifacts.toml（无 ohos 目标条目）"
+      },
+      {
+        "id": "ta:platform_detection",
+        "capability": "JLLWrappers 平台检测对鸿蒙的支持",
+        "required": true,
+        "target_status": "partial",
+        "impact": "需新增鸿蒙平台 wrapper 文件与 Artifacts.toml 条目；JLLWrappers 框架可扩展",
+        "source": "src/wrappers/ 目录（仅含 18 个非鸿蒙平台）"
+      }
+    ],
+    "required_permissions": [],
+    "notes": "本包是 Julia JLL 包装器，Julia 运行时已移植鸿蒙 PC（available），包装器代码本身为纯 Julia，可直接运行。核心阻碍在于 libnlopt 原生二进制当前无鸿蒙构建——但 NLopt 上游为标准 C 库（可选纯 C 实现避开 C++ 依赖），依赖简单，在 OHOS NDK 下编译预期可行。总体评估：部分可适配，主要工作为 (1) 在 OHOS NDK 下编译 NLopt 源码产出 libnlopt.so，(2) 新增鸿蒙平台 wrapper 与 artifact 条目。不涉及 GUI/硬件/云服务，无不可适配 API。"
+  },
+  "library": {
+    "name": "NLopt_jll.jl",
+    "kind": "plugin",
+    "package_name": "NLopt_jll",
+    "aliases": [
+      "NLopt_jll.jl"
+    ],
+    "import_names": [
+      "NLopt_jll"
+    ],
+    "source_url": "https://github.com/JuliaBinaryWrappers/NLopt_jll.jl.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "commit": "01894ba41d5d2930b94251936ccda746d2793038",
+    "one_liner": "NLopt 非线性优化库的 Julia JLL 预编译二进制包装器，自动加载平台对应的 libnlopt 共享库",
+    "ecosystem": "other",
+    "bindings": [
+      "cpp"
+    ],
+    "analyzed_at": "2026-07-06T16:59:07Z"
+  },
+  "meta": {
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "1",
+        "field": "library.ecosystem",
+        "kind": "gap",
+        "value": "other",
+        "rationale": "Julia 生态不在 schema 枚举（python/java/nodejs/cpp/rust/go/dotnet/other）中，被迫归入 other。Julia 有独立包管理器和注册表，未来可考虑新增 julia 枚举值。"
+      },
+      {
+        "dimension": "1",
+        "field": "library.kind",
+        "kind": "novel_value",
+        "value": "plugin",
+        "rationale": "JLL 包装器既非传统 library（不含算法实现），也非 application/plugin/cli/framework/tool/service；它是 Julia 生态的专用二进制包装层，选用 plugin 最接近其'依附于宿主运行时加载外部原生库'的本质。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [
+      "shape coerced: runtime_surface.network object→array",
+      "shape coerced: runtime_surface.filesystem object→array",
+      "shape coerced: build_env.platforms object→array",
+      "shape coerced: build_env.packaging object→string",
+      "shape coerced: harmony_adaptation.blockers[0].caused_by string→array",
+      "shape coerced: harmony_adaptation.blockers[1].caused_by string→array",
+      "shape coerced: meta.observations[0].dimension integer→string",
+      "shape coerced: meta.observations[1].dimension integer→string"
+    ]
+  },
+  "capability_profile": {
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": null,
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": null,
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": null,
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": null,
+        "evidence": []
+      }
+    ],
+    "notes": "本包为纯 Julia 动态库加载包装器，不涉及 GUI、3D 渲染、媒体或硬件设备场景。所有场景均为 not present。"
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本包不依赖任何第三方云服务。安装阶段从 GitHub Releases 下载预编译二进制 artifact 属于包分发基础设施，不属于运行时云服务依赖。",
+    "services": [],
+    "notes": "Artifacts.toml 中的 GitHub Releases URL 仅用于包安装时的 artifact 下载，不涉及认证、数据库、云函数等云服务。"
+  }
+}

@@ -87,10 +87,68 @@ def test_adaptation_skips_comment_blank():
     check("adaptation total == 2", pa.get("total") == 2)
 
 
+def test_dir_loc_depth2():
+    files = [
+        ("setup.py", "Python", "production", "x = 1\n"),
+        ("src/core/a.py", "Python", "production", "a = 1\nb = 2\n"),
+        ("src/core/deep/nested/b.py", "Python", "production", "c = 3\n"),
+        ("src/util.py", "Python", "production", "d = 4\n"),
+        ("tests/test_a.py", "Python", "test", "assert True\n"),
+    ]
+    _, cloc = _cloc(files)
+    rows = {r["dir"]: r for r in metrics._dir_loc(cloc)}
+    check("dir_loc root files under '.'", rows.get(".", {}).get("files") == 1)
+    check("dir_loc depth capped at 2 (src/core aggregates nested)",
+          rows.get("src/core", {}).get("files") == 2)
+    check("dir_loc src holds direct child file", rows.get("src", {}).get("files") == 1)
+    check("dir_loc excludes test files", "tests" not in rows)
+
+
+def test_arch_specific():
+    c_simd = (
+        "#include <immintrin.h>\n"          # x86 intrinsics header → hit
+        "#include <stdio.h>\n"               # not an intrinsics header
+        "void f() {\n"
+        "  __asm__ volatile(\"cpuid\");\n"   # inline asm → hit (x86 via line hint)
+        "  // __asm__ in a comment\n"        # comment → NOT counted
+        "  const char *s = \"__asm__\";\n"   # string → NOT counted
+        "}\n"
+    )
+    rs = (
+        "pub fn g() {\n"
+        "  unsafe { asm!(\"nop\"); }\n"      # rust inline asm → hit
+        "  // asm!(\"commented\")\n"          # comment → NOT counted
+        "}\n"
+    )
+    files = [
+        ("src/simd.c", "C", "production", c_simd),
+        ("src/lib.rs", "Rust", "production", rs),
+        ("arch/x86/memcpy.S", "Assembly", "production", "mov rax, rbx\nret\n"),
+        ("arch/neon/blit.s", "Assembly", "production", "ret\n"),
+        ("tests/opt.s", "Assembly", "test", "nop\n"),   # test → excluded
+    ]
+    d, cloc = _cloc(files)
+    a = metrics.arch_specific(d, cloc)
+    x86 = a["by_arch"].get("x86", {})
+    arm = a["by_arch"].get("arm", {})
+    x86_asm_loc = next(f["code"] for f in a["asm_files"] if f["file"] == "arch/x86/memcpy.S")
+    arm_asm_loc = next(f["code"] for f in a["asm_files"] if f["file"] == "arch/neon/blit.s")
+    check("x86 asm file LOC attributed", x86.get("loc") == x86_asm_loc)
+    check("arm asm file attributed via 'neon' path token", arm.get("loc") == arm_asm_loc)
+    check("x86 hits = intrinsics include + inline asm", x86.get("hits") == 2)
+    check("inline_asm_hits == 2 (C + Rust; comments/strings excluded)",
+          a["inline_asm_hits"] == 2)
+    check("intrinsics header recorded", a["intrinsics_headers"] == ["immintrin.h"])
+    check("test asm file excluded", all(f["file"] != "tests/opt.s" for f in a["asm_files"]))
+    check("total == asm-file LOC sum", a["total"] == x86_asm_loc + arm_asm_loc)
+
+
 if __name__ == "__main__":
     test_branches_skip_comments_and_strings()
     test_branches_js_block_comment()
     test_adaptation_skips_comment_blank()
+    test_dir_loc_depth2()
+    test_arch_specific()
     if check.failed:
         print(f"\n{check.failed} check(s) FAILED")
         sys.exit(1)

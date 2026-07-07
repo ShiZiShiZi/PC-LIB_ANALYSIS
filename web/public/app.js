@@ -91,6 +91,19 @@ const CLOUD_CAT_LABELS = {
   push: '推送', messaging: '消息', analytics: '分析统计', crash_reporting: '崩溃上报',
   remote_config: '远程配置', maps: '地图', ml_ai: 'AI 云推理', ads: '广告', hosting: '托管',
 };
+// code_partition (dim 12) — 分区桶闭轴 label + color（与拓扑配色系一致）
+const PART_META = {
+  reuse_direct:    { label: '直接复用', color: '#1f9d55' },
+  recompile_reuse: { label: '重编译复用', color: '#0ea5a5' },
+  needs_adaptation:{ label: '需适配', color: '#dd7a33' },
+  unadaptable:     { label: '无法适配', color: '#d65745' },
+};
+const PART_ORDER = ['reuse_direct', 'recompile_reuse', 'needs_adaptation', 'unadaptable'];
+// effort.breakdown[].component — 推荐集 label（开放词，未知值原样展示）
+const EFFORT_COMP_LABELS = {
+  recompile: '重编/交叉编译', api_adaptation: '平台 API 适配', gui: 'GUI 改造',
+  deps_porting: '依赖移植', build_system: '构建系统', testing_verification: '测试验证', packaging: '打包分发',
+};
 
 // dep-topology node status — label + color (HarmonyOS porting state, 5-way)
 const TOPO_STATUS = {
@@ -1100,12 +1113,28 @@ function renderRuns(name, runs, active) {
   box.innerHTML = runs.map((r) => `<div class="runrow ${r.run === curRun ? 'sel' : ''}" data-run="${esc(r.run)}">
       <span class="badge ${r.status}">${statusZh(r.status)}</span>
       <span class="ts">${fmtTime(r.startedAt)}</span>
-      ${r.reportAvailable ? '<span title="有报告">📄</span>' : ''}</div>`).join('');
+      ${r.reportAvailable ? '<span title="有报告">📄</span>' : ''}
+      <button class="btn sm danger ghost runrow-del" data-run="${esc(r.run)}" title="删除该运行记录">🗑</button></div>`).join('');
   $$('.runrow', box).forEach((row) => row.onclick = () => {
     curRun = row.dataset.run;
     $$('.runrow', box).forEach((x) => x.classList.toggle('sel', x === row));
     loadRun(name, row.dataset.run);
   });
+  $$('.runrow-del', box).forEach((b) => b.onclick = (e) => {
+    e.stopPropagation();                                // 别触发整行的选中
+    deleteRun(name, b.dataset.run);
+  });
+}
+
+async function deleteRun(name, run) {
+  if (!confirm(`确认删除该运行记录（${fmtTime(run)}）？\n将删除该次分析的报告与日志，不可恢复。`)) return;
+  let r;
+  try { r = await api('/api/run/delete', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ name, run })) }); }
+  catch { return toast('删除失败', 'err'); }
+  if (r && r.error) return toast(r.error, 'err');
+  toast('已删除', 'ok');
+  if (curRun === run) curRun = null;                    // 删的是当前查看那条 → 让 loadDetail 重选最新
+  loadDetail(name);
 }
 
 async function reAnalyze(name) {
@@ -1620,6 +1649,69 @@ function renderReport(r) {
       `<p class="hint">机械计数（启发式）：脚本/JVM/Go/Rust/C# 等运行时平台分支——这类分支同样需逐一确认鸿蒙等价，是 dim-9 适配评估信号之一。C/C++ 编译宏见上一卡片。</p>`));
   }
 
+  // 架构相关代码（汇编/SIMD，机械信号 3）
+  const as = cm.arch_specific || {};
+  const asBy = as.by_arch || {};
+  if (Object.keys(asBy).length) {
+    const ARCH_LABELS = { x86: 'x86/x64', arm: 'ARM/NEON', riscv: 'RISC-V', generic: '未归类' };
+    const ent = Object.entries(asBy).sort((a, b) => ((b[1].loc || 0) + (b[1].hits || 0)) - ((a[1].loc || 0) + (a[1].hits || 0)));
+    const rows = ent.map(([k, v]) => `<div class="platblock"><div class="platrow">
+        <span class="pl-name">${esc(ARCH_LABELS[k] || k)}</span>
+        <span class="pl-count">${v.loc ? `汇编 ${num(v.loc)} 行 · ` : ''}${v.hits ? `intrinsics/内联 ${num(v.hits)} 处 · ` : ''}${num(v.files)} 文件</span>
+      </div></div>`).join('');
+    const hdrs = (as.intrinsics_headers || []).map((h) => `<span class="mtok">${esc(h)}</span>`).join('');
+    const samp = (as.samples || []).slice(0, 6)
+      .map((s) => `<div class="codeloc"><span class="muted">${esc(s.file)}${s.line ? ':' + s.line : ''}</span> ${esc(s.text || s.kind)}</div>`).join('');
+    const x86Only = asBy.x86 && !asBy.arm;
+    parts.push(sec('架构相关代码（汇编 / SIMD）',
+      `<div class="pl-head" title="${esc(as.notes || '')}"><span class="muted">独立汇编文件、SIMD intrinsics、内联汇编（生产代码）</span><b>汇编共 ${num(as.total || 0)} 行</b></div>` +
+      rows + (hdrs ? `<div class="pl-macros" style="margin-left:0">${hdrs}</div>` : '') +
+      (samp ? `<div class="codeloc-list">${samp}</div>` : '') +
+      `<p class="hint">${x86Only ? '⚠ 仅见 x86 架构实现、未见 ARM 对应——arm64 鸿蒙 PC 上需补 NEON/标量回退，是适配硬点。' : '机械计数：x86 与 ARM 并存时多为已有双路径，重编验证即可。'}</p>`));
+  }
+
+  // 代码分区 (code_partition, dim 12) — 迁移复用性 LOC 分桶
+  const cp = r.code_partition || {};
+  const buckets = (cp.buckets || []).filter((b) => b && b.class);
+  if (buckets.length || cp.summary) {
+    // read-side tolerance for field-name drift (server also normalizes; belt-and-suspenders)
+    const bLoc = (b) => Number(b.loc != null ? b.loc : b.total_loc) || 0;
+    const mPath = (md) => md.path || md.dir || md.module || md.name || '';
+    const mReason = (md) => md.reason || md.note || '';
+    const totalLoc = buckets.reduce((a, b) => a + bLoc(b), 0) || 1;
+    const ordered = PART_ORDER.map((k) => buckets.find((b) => b.class === k)).filter(Boolean)
+      .concat(buckets.filter((b) => !PART_ORDER.includes(b.class)));
+    const bar = ordered.map((b) => {
+      const m = PART_META[b.class] || { label: b.class, color: '#9aa4b2' };
+      const w = Math.max(1.5, 100 * bLoc(b) / totalLoc);
+      return `<span class="part-seg" style="width:${w}%;background:${m.color}" title="${m.label} ${num(bLoc(b))} 行"></span>`;
+    }).join('');
+    const legend = ordered.map((b) => {
+      const m = PART_META[b.class] || { label: b.class, color: '#9aa4b2' };
+      const pct = b.pct != null ? b.pct : Math.round(1000 * bLoc(b) / totalLoc) / 10;
+      return `<span class="part-leg"><span class="dot" style="background:${m.color}"></span>${m.label} <b>${num(bLoc(b))}</b> 行 (${pct}%)</span>`;
+    }).join('');
+    const modTables = ordered.filter((b) => (b.modules || []).length).map((b) => {
+      const m = PART_META[b.class] || { label: b.class, color: '#9aa4b2' };
+      const rows = (b.modules || []).map((md) => {
+        const ev = (md.evidence || []).slice(0, 2).map(esc).join('、');
+        return `<tr><td class="api-n"><code>${esc(mPath(md))}</code></td><td>${md.loc != null ? num(md.loc) + ' 行' : '—'}</td>
+          <td>${esc(mReason(md))}${ev ? `<div class="muted">${ev}</div>` : ''}</td></tr>`;
+      }).join('');
+      return `<div class="subtitle"><span class="dot" style="background:${m.color}"></span> ${m.label}${b.basis ? ` <span class="muted">· ${esc(b.basis)}</span>` : ''}</div>
+        <table class="apitable"><thead><tr><th>模块</th><th>代码量</th><th>归类理由 / 证据</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }).join('');
+    const cov = cp.coverage || {};
+    const covTxt = cov.production_code
+      ? `<p class="hint">对账：已分区 ${num(cov.partitioned_code)} / 生产代码 ${num(cov.production_code)} 行（覆盖 ${cov.pct != null ? cov.pct : Math.round(1000 * totalLoc / cov.production_code) / 10}%）；LOC 引用 code_metrics.dir_loc 机械数字。</p>`
+      : '';
+    parts.push(sec('代码分区（鸿蒙迁移复用性）',
+      (cp.summary ? `<p>${esc(cp.summary)}</p>` : '') +
+      (buckets.length ? `<div class="part-bar">${bar}</div><div class="part-legend">${legend}</div>` : '') +
+      modTables + covTxt +
+      (cp.notes ? `<p class="hint">${esc(cp.notes)}</p>` : '')));
+  }
+
   parts.push(sec('测试', `<div class="kv">
     <b>测试文件</b><span>${num(t.test_files)}</span>
     <b>测试用例</b><span>${num(t.test_cases)}</span>
@@ -1833,6 +1925,27 @@ function renderReport(r) {
     const permissions = permRows
       ? `<div class="subtitle">所需鸿蒙权限</div><table class="apitable"><thead><tr><th>权限</th><th>原因 / 来源场景</th><th>鸿蒙可授予</th></tr></thead><tbody>${permRows}</tbody></table>`
       : '';
+    // 迁移关键路径依赖（critical_dependencies，有序）
+    const cdRows = (ha.critical_dependencies || []).slice()
+      .sort((a, b) => (a.order || 99) - (b.order || 99))
+      .map((c) => {
+        const refs = (c.refs || []).map((x) => `<code>${esc(x)}</code>`).join(' ');
+        const share = fmtDays(c.person_days_share);
+        return `<tr><td class="api-n"><b>${c.order || ''}</b></td>
+          <td><span class="chip" data-hname="${esc(c.name)}">${esc(c.name)}</span>${share ? ` <span class="muted">${share}</span>` : ''}</td>
+          <td>${esc(c.why || '')}${refs ? `<div class="muted">${refs}</div>` : ''}</td></tr>`;
+      }).join('');
+    const critDeps = cdRows
+      ? `<div class="subtitle">迁移关键路径依赖（按建议移植顺序）</div><table class="apitable"><thead><tr><th>顺序</th><th>依赖</th><th>为何关键</th></tr></thead><tbody>${cdRows}</tbody></table>`
+      : '';
+    // 工作量分项（effort.breakdown）
+    const ebRows = ((ha.effort && ha.effort.breakdown) || []).map((b) =>
+      `<tr><td class="api-n">${esc(EFFORT_COMP_LABELS[b.component] || b.component || '')}</td>
+        <td><b>${fmtDays(b.person_days) || '—'}</b></td>
+        <td class="muted">${esc(b.basis || '')}</td></tr>`).join('');
+    const breakdown = ebRows
+      ? `<div class="subtitle">工作量分项</div><table class="apitable"><thead><tr><th>分项</th><th>人天</th><th>估算依据</th></tr></thead><tbody>${ebRows}</tbody></table>`
+      : '';
     parts.push(sec('鸿蒙适配评估', `<div class="kv">
       <b>移植分级</b><span>${pcBadge}</span>
       <b>可行性</b><span>${feasBadge}</span>
@@ -1844,6 +1957,8 @@ function renderReport(r) {
       (((r.meta || {}).harmony_warnings || []).length
         ? `<div class="hint err" style="margin:6px 0">⚠ 数据一致性提示：<ul style="margin:4px 0 0">${r.meta.harmony_warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>` : '') +
       (ha.summary ? `<p>${esc(ha.summary)}</p>` : '') +
+      breakdown +
+      critDeps +
       assumptions +
       permissions +
       unadaptable +
@@ -2062,7 +2177,8 @@ function drawTopology(data) {
     ecosystem: n.ecosystem, analyzed: n.analyzed, libName: n.libName, feasibility: n.feasibility || '',
     summary: n.summary || '', isRoot: !!n.isRoot, level: n.level || '', rollupLevel: n.rollupLevel || '',
     rollupEffort: n.rollupEffort || null, rollupConfidence: n.rollupConfidence || '',
-    rollupUncertain: !!n.rollupUncertain, blockingChildren: n.blockingChildren || [] } });
+    rollupUncertain: !!n.rollupUncertain, blockingChildren: n.blockingChildren || [],
+    criticalPath: n.criticalPath || [] } });
   for (const e of data.edges) elements.push({ data: { source: e.source, target: e.target } });
   cyInstance = window.cytoscape({
     container: box, elements, wheelSensitivity: 0.2,
@@ -2076,11 +2192,24 @@ function drawTopology(data) {
         width: 1, 'line-color': '#c2cad6', 'target-arrow-color': '#c2cad6',
         'target-arrow-shape': 'triangle', 'curve-style': 'bezier', 'arrow-scale': 0.8 } },
       { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#3b6cf6' } },
+      { selector: 'edge.critpath', style: {
+        width: 2.5, 'line-color': '#d65745', 'target-arrow-color': '#d65745', 'z-index': 9 } },
     ],
     layout: { name: 'breadthfirst', directed: true, roots: ['lib:' + data.root], spacingFactor: 1.15, padding: 20 },
   });
   cyInstance.on('tap', 'node', (ev) => showTopoDetail(ev.target.data()));
   cyInstance.nodes().forEach((n) => n.style('display', topoHidden.has(n.data('status')) ? 'none' : 'element'));
+  // 高亮根节点的关键路径链（serve-time rollup 派生：贡献人天最多的依赖链）
+  const rootNode = data.nodes.find((n) => n.isRoot);
+  const cpChain = (rootNode && rootNode.criticalPath) || [];
+  let prev = rootNode ? rootNode.id : null;
+  for (const step of cpChain) {
+    const from = prev, to = step.id;
+    cyInstance.edges().forEach((e) => {
+      if (e.data('source') === from && e.data('target') === to) e.addClass('critpath');
+    });
+    prev = to;
+  }
 }
 
 function showTopoDetail(d) {
@@ -2093,8 +2222,15 @@ function showTopoDetail(d) {
     const via = (b.viaSymbols || []).length ? `经 <code>${b.viaSymbols.map(esc).join('</code> <code>')}</code>`
       : b.basis === 'scope' ? '（按依赖范围保守计入）' : '';
     const link = b.libName ? `<a href="#/lib/${enc(b.libName)}">${esc(b.child)}</a>` : esc(b.child);
-    return `<li>${link} → ${esc(topoStatusMeta(b.childClass).label)} ${via}</li>`;
+    const days = fmtDays(b.days) ? ` <span class="muted">${fmtDays(b.days)}</span>` : '';
+    return `<li>${link} → ${esc(topoStatusMeta(b.childClass).label)}${days} ${via}</li>`;
   }).join('')}</ul></div>` : '';
+  const cpath = Array.isArray(d.criticalPath) ? d.criticalPath : [];
+  const cpathHtml = cpath.length ? `<div class="topo-block"><b>关键路径（按子树人天）：</b><ol class="topo-cpath">${cpath.map((p) => {
+    const link = p.libName ? `<a href="#/lib/${enc(p.libName)}">${esc(p.label)}</a>` : esc(p.label);
+    const m = topoStatusMeta(p.class);
+    return `<li>${link} <span class="dot" style="background:${m.color}"></span>${esc(m.label)}${fmtDays(p.days) ? ` <span class="muted">${fmtDays(p.days)}</span>` : ''}</li>`;
+  }).join('')}</ol><p class="hint" style="margin:2px 0 0">先移植链尾（最深）依赖，逐级向上解锁。</p></div>` : '';
   el.innerHTML = `<div class="topo-d-name"><b>${esc(d.label)}</b> ${d.ecosystem ? `<span class="chip eco-chip">${esc(ECO_LABELS[d.ecosystem] || d.ecosystem)}</span>` : ''}</div>
     <div class="kv">
       <b>本体分级</b><span>${dot(selfM)}</span>
@@ -2105,6 +2241,7 @@ function showTopoDetail(d) {
       ${d.feasibility ? `<b>可行性</b><span>${esc(FEAS_LABELS[d.feasibility] || d.feasibility)}</span>` : ''}
     </div>
     ${differs ? '<p class="hint">综合分级高于本体，因为它（用到的）依赖的适配等级更高，见下。</p>' : ''}
+    ${cpathHtml}
     ${blockHtml}
     ${d.summary ? `<p class="muted">${esc(d.summary)}</p>` : ''}
     ${d.analyzed && d.libName ? `<a class="btn sm primary" href="#/lib/${enc(d.libName)}">查看报告 →</a>` : '<p class="hint">该依赖尚未分析，去「待分析依赖」分析它以解锁其子依赖与分级。</p>'}`;

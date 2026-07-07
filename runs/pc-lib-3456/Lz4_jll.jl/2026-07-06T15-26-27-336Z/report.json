@@ -1,0 +1,632 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 19,
+        "code": 583,
+        "pct": 74.55,
+        "production": {
+          "files": 19,
+          "code": 583
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 154,
+        "pct": 19.69,
+        "production": {
+          "files": 2,
+          "code": 154
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 38,
+        "pct": 4.86,
+        "production": {
+          "files": 1,
+          "code": 38
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 0.9,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 23,
+      "code": 782,
+      "comment": 19,
+      "blank": 145,
+      "total_lines": 946
+    },
+    "production": {
+      "files": 23,
+      "code": 782,
+      "comment": 19,
+      "blank": 145,
+      "total_lines": 946
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 583,
+        "category": "production",
+        "by_category": {
+          "production": 583
+        }
+      },
+      {
+        "dir": ".",
+        "code": 199,
+        "category": "production",
+        "by_category": {
+          "production": 199
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "Lz4_jll.jl 是 LZ4 高速压缩算法的 Julia JLL（BinaryBuilder）包装包。它不包含 LZ4 的源代码实现，而是为 Julia 生态提供预编译的原生二进制产物——包括 liblz4 共享库和 lz4/lz4c/lz4cat/unlz4 命令行可执行文件，覆盖 18 个平台（Linux/macOS/Windows/FreeBSD，多种 CPU 架构）。其他 Julia 包通过 `using Lz4_jll` 获取 liblz4 的路径并调用其 C API 实现数据压缩与解压。",
+    "categories": [
+      {
+        "name": "LZ4 压缩/解压库封装",
+        "description": "将 LZ4 C 共享库（liblz4）和命令行工具包装为 Julia 可用的 JLL 产物，使 Julia 包管理器自动下载并加载对应平台的原生二进制文件",
+        "evidence": [
+          "src/Lz4_jll.jl",
+          "src/wrappers/x86_64-linux-gnu.jl",
+          "Project.toml"
+        ]
+      },
+      {
+        "name": "跨平台原生二进制分发",
+        "description": "通过 Artifacts.toml 为 18 个目标平台（aarch64/armv6l/armv7l/i686/powerpc64le/riscv64/x86_64 × Linux/macOS/Windows/FreeBSD）提供预编译的 LZ4 二进制文件，Julia 运行时自动选择匹配当前平台的产物",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/"
+        ]
+      }
+    ],
+    "domain": "数据压缩",
+    "target_users": "需要在 Julia 中使用 LZ4 压缩/解压功能的开发者和库作者"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件明确声明本仓库中 Julia 源代码（src/ 下所有文件）采用 MIT 许可证；但注明此许可不适用于所包装的二进制包，二进制包的许可证随二进制一起发布在 share/licenses/Lz4 目录中。LZ4 上游（lz4/lz4）采用 BSD-2-Clause 许可证，但本 JLL 包的 Julia 包装代码本身为 MIT。",
+    "notes": "本 JLL 包的 Julia 包装代码（src/ 下的 .jl 文件）采用 MIT 许可证；被包装的 LZ4 原生二进制产物采用上游 BSD-2-Clause 许可证（随二进制分发）。两者独立——使用本包需同时遵守 MIT 和 BSD-2-Clause。"
+  },
+  "dependencies": {
+    "count": 3,
+    "manifests": [
+      "Project.toml"
+    ],
+    "by_ecosystem": {
+      "other": 3
+    },
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "other",
+        "registry_name": "JLLWrappers",
+        "source_repo": "https://github.com/JuliaPackaging/JLLWrappers.jl",
+        "import_names": [
+          "JLLWrappers"
+        ],
+        "aliases": [],
+        "scope": "runtime",
+        "version": "1.7.0",
+        "purpose": "Julia JLL 包的通用包装宏和辅助函数，用于自动生成 JLL 包的模块入口和平台特定包装代码",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "Julia 通用注册表（General Registry）",
+        "declared_in": [
+          "Project.toml"
+        ],
+        "used_symbols": [
+          "@generate_main_file_header",
+          "@generate_main_file",
+          "@generate_wrapper_header",
+          "@declare_library_product",
+          "@declare_executable_product",
+          "@generate_init_header",
+          "@init_library_product",
+          "@init_executable_product",
+          "@generate_init_footer"
+        ]
+      },
+      {
+        "name": "Libdl",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Julia 标准库模块，提供动态链接库加载（dlopen/dlsym）功能，JLLWrappers 用它加载原生共享库",
+        "acquisition": "runtime",
+        "locality": "runtime",
+        "source": "Julia 运行时内置标准库",
+        "declared_in": [
+          "Project.toml"
+        ],
+        "used_symbols": [
+          "RTLD_LAZY",
+          "RTLD_DEEPBIND"
+        ]
+      },
+      {
+        "name": "Artifacts",
+        "ecosystem": "other",
+        "registry_name": null,
+        "source_repo": null,
+        "import_names": [],
+        "aliases": [],
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Julia 标准库模块，用于定位和访问包管理器下载的预编译二进制产物（Artifacts.toml 中声明的平台特定 tarball）",
+        "acquisition": "runtime",
+        "locality": "runtime",
+        "source": "Julia 运行时内置标准库",
+        "declared_in": [
+          "Project.toml"
+        ],
+        "used_symbols": []
+      }
+    ],
+    "notes": "本 JLL 包的核心'依赖'实际上是 Artifacts.toml 声明的 LZ4 预编译原生二进制（liblz4.so/dylib/dll + 可执行文件），由 Julia 包管理器在安装时自动下载。这不算传统意义上的依赖而是在运行时通过 Libdl 加载的原生库（见 native_api.dynamic_libraries）。Project.toml 中的三个 Julia 依赖均为标准库/工具库。"
+  },
+  "native_api": {
+    "summary": "本 JLL 包通过 Julia 的 Libdl 模块（dlopen）动态加载 LZ4 原生共享库（liblz4），并导出可执行文件路径供子进程调用。代码本身不直接调用平台专有 API，所有平台差异由 per-platform wrapper 文件中的库路径名体现。",
+    "groups": [
+      {
+        "type": "julia_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "dlopen",
+            "purpose": "动态加载原生共享库（liblz4），由 JLLWrappers 宏展开调用",
+            "count": 18,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:14",
+              "src/wrappers/x86_64-apple-darwin.jl:14",
+              "src/wrappers/i686-w64-mingw32.jl:14"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "RTLD_LAZY",
+            "purpose": "dlopen 的绑定标志，延迟解析符号",
+            "count": 18,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:14"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "RTLD_DEEPBIND",
+            "purpose": "dlopen 的绑定标志，优先使用自身符号而非全局符号（Linux/glibc 特有，macOS/Windows wrapper 中同样写出但可能被忽略）",
+            "count": 18,
+            "evidence": [
+              "src/wrappers/x86_64-linux-gnu.jl:14"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "src/wrappers/"
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "liblz4",
+        "mechanism": "dlopen (via JLLWrappers @init_library_product → Libdl)",
+        "acquisition": "prebuilt_binary",
+        "source": "由 JuliaBinaryWrappers 通过 BinaryBuilder.jl 从 lz4/lz4 上游源码交叉编译生成，随 Artifacts.toml 下载的平台特定 tarball 中分发",
+        "description": "LZ4 压缩/解压的 C 共享库，提供 LZ4_compress_default/LZ4_decompress_safe 等高速压缩 API",
+        "optional": false,
+        "evidence": [
+          "src/wrappers/x86_64-linux-gnu.jl:6",
+          "src/wrappers/x86_64-apple-darwin.jl:6",
+          "src/wrappers/i686-w64-mingw32.jl:6"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时依赖极轻：仅通过 Libdl 动态加载 liblz4 共享库，不访问网络、不读写特殊文件、不启动子进程、不访问设备。可执行文件（lz4/lz4c/lz4cat/unlz4）路径仅导出供外部调用，本包不自行调用。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Julia >= 1.6",
+    "runtime_version": "Julia 1.6+",
+    "build_system": "BinaryBuilder.jl（上游 Yggdrasil 构建树生成预编译二进制；本包本身无需构建步骤）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "Linux",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/aarch64-linux-gnu.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "aarch64 (musl)",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/aarch64-linux-musl.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "armv6l",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/armv6l-linux-gnueabihf.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "armv7l",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/armv7l-linux-gnueabihf.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/i686-linux-gnu.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "powerpc64le",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/powerpc64le-linux-gnu.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "riscv64",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/riscv64-linux-gnu.jl"
+        ]
+      },
+      {
+        "os": "Linux",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/x86_64-linux-gnu.jl"
+        ]
+      },
+      {
+        "os": "macOS",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/aarch64-apple-darwin.jl"
+        ]
+      },
+      {
+        "os": "macOS",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/x86_64-apple-darwin.jl"
+        ]
+      },
+      {
+        "os": "Windows",
+        "arch": "i686",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/i686-w64-mingw32.jl"
+        ]
+      },
+      {
+        "os": "Windows",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/x86_64-w64-mingw32.jl"
+        ]
+      },
+      {
+        "os": "FreeBSD",
+        "arch": "aarch64",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/aarch64-unknown-freebsd.jl"
+        ]
+      },
+      {
+        "os": "FreeBSD",
+        "arch": "x86_64",
+        "evidence": [
+          "Artifacts.toml",
+          "src/wrappers/x86_64-unknown-freebsd.jl"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "Julia 包注册表分发——`Pkg.add(\"Lz4_jll\")` 自动下载平台匹配的预编译 Artifact tarball 并安装。本包为纯 Julia 包装代码，不捆绑运行时。",
+    "notes": "本包不含构建系统——预编译二进制由上游 Yggdrasil（JuliaPackaging/BinaryBuilder）项目统一构建，本包仅声明依赖和导出产物路径。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层）",
+    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_full",
+    "effort": {
+      "person_days": [
+        3,
+        7
+      ]
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:julia_runtime",
+        "capability": "Julia 运行时（1.10.6）",
+        "required": true,
+        "target_status": "available",
+        "impact": "Julia 运行时已在鸿蒙 PC 上移植（1.10.6），本 JLL 包的 Julia 包装代码可直接运行",
+        "source": "references/harmony-pc-capabilities.json → runtimes → julia"
+      },
+      {
+        "id": "ta:liblz4_native",
+        "capability": "liblz4 原生共享库的 OHOS NDK 构建",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "本 JLL 包的核心功能依赖 liblz4.so/dylib/dll 预编译二进制；鸿蒙 PC 使用 musl + POSIX 子集的 OHOS NDK，需为 aarch64-linux-musl 目标重新编译 liblz4",
+        "source": "Artifacts.toml 声明的预编译产物目前不包含 ohos 目标"
+      }
+    ],
+    "required_permissions": [],
+    "recommended_path": "cross_compile",
+    "summary": "本包是 LZ4 原生库的 Julia JLL 包装。Julia 运行时已在鸿蒙 PC 上移植（1.10.6），包装代码本身（Julia）无需修改。核心工作是为鸿蒙 PC（aarch64 + musl/OHOS NDK）交叉编译 liblz4 共享库和可执行文件，然后将其作为新的 Artifact 加入本包或创建独立的 Lz4_jll 鸿蒙分支。LZ4 上游是纯 C 代码、无平台专有依赖、BSD 许可，交叉编译难度低。",
+    "blockers": [
+      {
+        "id": "bk:native_artifact",
+        "issue": "Artifacts.toml 中无鸿蒙 PC（aarch64 + musl/OHOS）平台的预编译 liblz4 产物，Julia 包管理器无法自动获取匹配的原生库",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "harmony_status": "unavailable",
+        "remediation": "使用 OHOS NDK 为 aarch64-linux-musl 目标编译 liblz4（上游为纯 C、CMake/Makefile 构建，无平台专有代码），将产物作为新的 Artifact 条目加入 Artifacts.toml",
+        "caused_by": [
+          "ta:liblz4_native"
+        ],
+        "manifests_as": [],
+        "evidence": [
+          "Artifacts.toml"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "Julia 包装代码（src/）完全兼容",
+        "note": "所有 .jl 代码仅使用 Julia 标准库（Libdl/Artifacts）和 JLLWrappers，无平台专有逻辑；Julia 运行时已在鸿蒙 PC 可用",
+        "evidence": [
+          "src/Lz4_jll.jl",
+          "src/wrappers/"
+        ]
+      },
+      {
+        "aspect": "LZ4 上游纯 C 代码可交叉编译",
+        "note": "LZ4 上游（lz4/lz4）为纯 C 实现，使用标准 C 库函数，无 Win32/POSIX 专有 API 依赖，使用 OHOS NDK 编译难度极低",
+        "evidence": [
+          "README.md → Sources: https://github.com/lz4/lz4.git"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK 交叉编译 liblz4 共享库（aarch64-linux-musl 目标）",
+      "交叉编译 lz4/lz4c/lz4cat/unlz4 命令行可执行文件",
+      "在 Artifacts.toml 中添加鸿蒙 PC 平台的 Artifact 条目（git-tree-sha1 + download URL）",
+      "在 src/wrappers/ 中添加 aarch64-linux-ohos.jl 平台包装文件（或在现有 musl wrapper 中扩展平台匹配）",
+      "测试 Julia 中 `using Lz4_jll` 能正确加载 liblz4 并调用压缩/解压函数"
+    ],
+    "notes": "Julia 运行时已移植到鸿蒙 PC（1.10.6），本 JLL 包的 Julia 层代码直接可用。唯一阻碍是缺少鸿蒙 PC 平台的 liblz4 预编译二进制——LZ4 上游为纯 C、无平台专有依赖、BSD 许可，交叉编译工作量极小。但 JLL 包的 Artifact 分发机制依赖 JuliaBinaryWrappers 的上游 Yggdrasil 构建树，需要社区或手动为鸿蒙平台添加构建配方。confidence=medium 因 liblz4 鸿蒙构建尚未验证（target_status=unknown）。"
+  },
+  "library": {
+    "name": "Lz4_jll.jl",
+    "kind": "library",
+    "package_name": "Lz4_jll",
+    "aliases": [
+      "Lz4_jll"
+    ],
+    "import_names": [
+      "Lz4_jll"
+    ],
+    "source_url": "https://github.com/JuliaBinaryWrappers/Lz4_jll.jl",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-06T15:26:27Z",
+    "commit": null,
+    "one_liner": "LZ4 压缩库的 Julia JLL 包装包，提供预编译的原生二进制文件（liblz4 共享库及 lz4 命令行工具）",
+    "ecosystem": "other",
+    "bindings": []
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "library",
+        "field": "ecosystem",
+        "kind": "new_value",
+        "value": "other",
+        "rationale": "Julia 生态不在枚举 [python, java, nodejs, cpp, rust, go, dotnet, other] 中，归入 other。Julia 是独立语言生态，未来可考虑加入枚举。"
+      },
+      {
+        "dimension": "dependencies",
+        "field": "acquisition",
+        "kind": "new_value",
+        "value": "runtime",
+        "rationale": "Julia 标准库模块（Libdl、Artifacts）随 Julia 运行时分发，不属于 system/local/remote/package_manager/vendored 任何一类，用 runtime 表达'随运行时内置提供'。"
+      }
+    ],
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc"
+  },
+  "capability_profile": {
+    "summary": "本项目为 LZ4 压缩库的 Julia JLL 包装，不涉及 GUI、3D 渲染、媒体或特定硬件——仅动态加载 liblz4 共享库进行数据压缩/解压。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及",
+        "evidence": []
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及",
+        "evidence": []
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": false,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不涉及",
+        "evidence": []
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本 JLL 包不涉及任何云端服务。它仅在本地动态加载 liblz4 共享库进行数据压缩/解压，无网络请求、无云端 API 调用、无第三方云 SDK 依赖。",
+    "services": []
+  }
+}

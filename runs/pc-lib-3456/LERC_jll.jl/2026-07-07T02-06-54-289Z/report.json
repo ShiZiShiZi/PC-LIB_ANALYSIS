@@ -1,0 +1,787 @@
+{
+  "languages": {
+    "primary": "Julia",
+    "all": [
+      "Julia",
+      "TOML",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Julia",
+        "files": 19,
+        "code": 223,
+        "pct": 51.62,
+        "production": {
+          "files": 19,
+          "code": 223
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TOML",
+        "files": 2,
+        "code": 168,
+        "pct": 38.89,
+        "production": {
+          "files": 2,
+          "code": 168
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 34,
+        "pct": 7.87,
+        "production": {
+          "files": 1,
+          "code": 34
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 1.62,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 23,
+      "code": 432,
+      "comment": 19,
+      "blank": 73,
+      "total_lines": 524
+    },
+    "production": {
+      "files": 23,
+      "code": 432,
+      "comment": 19,
+      "blank": 73,
+      "total_lines": 524
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 223,
+        "category": "production",
+        "by_category": {
+          "production": 223
+        }
+      },
+      {
+        "dir": ".",
+        "code": 209,
+        "category": "production",
+        "by_category": {
+          "production": 209
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "LERC_jll.jl 是由 BinaryBuilder.jl 自动生成的 Julia JLL（Julia Library Library）封装包，为 Esri 的 LERC（Limited Error Raster Compression）C++ 库提供预编译二进制文件。LERC 是一种开源的栅格数据压缩编解码器，支持有损/无损压缩，广泛用于地理信息系统（GIS）和遥感影像的压缩存储。本包本身不包含 LERC 的源代码或实现，仅通过 Julia 的 JLLWrappers 机制加载平台对应的预编译 libLerc 动态库（.so/.dylib/.dll），并导出 libLerc 句柄供上游 Julia 包（如 ImageIO.jl 生态）通过 ccall 调用 LERC 的 C API。",
+    "domain": "地理信息系统 / 栅格数据压缩",
+    "target_users": "使用 Julia 语言处理 GIS 栅格数据的开发者和科研人员",
+    "categories": [
+      {
+        "name": "二进制库封装与动态加载",
+        "description": "通过 Julia JLL 机制自动下载并加载与当前平台匹配的 LERC 预编译动态库，导出 libLerc 句柄供上游包调用",
+        "evidence": [
+          "Project.toml 声明 JLLWrappers/Libdl/Artifacts 依赖",
+          "src/LERC_jll.jl 使用 JLLWrappers.@generate_main_file 宏生成加载逻辑",
+          "src/wrappers/ 下 18 个平台文件各自声明 libLerc 路径并通过 dlopen 加载"
+        ]
+      },
+      {
+        "name": "栅格数据压缩编解码",
+        "description": "封装 Esri LERC 库的能力——一种支持限误差的有损/无损栅格压缩算法，常用于 GeoTIFF 和遥感影像存储",
+        "evidence": [
+          "README.md 引用上游源码 https://github.com/Esri/lerc",
+          "LibraryProduct 名为 libLerc，即 LERC C++ 库的共享库"
+        ]
+      }
+    ],
+    "meta": {
+      "observations": []
+    }
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "category": "permissive",
+    "evidence": "file: LICENSE；detail: Julia 封装代码（src/ 下文件）以 MIT \"Expat\" License 发布；预编译二进制（LERC 本体）的许可随二进制一同分发，位于 share/licenses/LERC 目录",
+    "notes": "本仓库的 Julia 封装代码为 MIT 许可；所封装的 LERC C++ 库（来自 https://github.com/Esri/lerc）使用 Apache-2.0 许可，其许可文件随预编译二进制分发而非在本仓库中",
+    "meta": {
+      "observations": []
+    }
+  },
+  "dependencies": {
+    "dependencies": [
+      {
+        "name": "JLLWrappers",
+        "ecosystem": "Julia",
+        "version": "1.7.0",
+        "scope": "runtime",
+        "locality": "remote",
+        "acquisition": "package_manager",
+        "source": "Julia General Registry",
+        "declared_in": [
+          "Project.toml [deps]"
+        ],
+        "purpose": "提供 JLL 包的宏和工具函数，自动生成动态库加载、路径查找等样板代码",
+        "used_symbols": [
+          "@generate_main_file_header",
+          "@generate_main_file",
+          "@generate_wrapper_header",
+          "@declare_library_product",
+          "@generate_init_header",
+          "@init_library_product",
+          "@generate_init_footer"
+        ]
+      },
+      {
+        "name": "Libdl",
+        "ecosystem": "Julia",
+        "version": "< 0.0.1, 1",
+        "scope": "runtime",
+        "locality": "system",
+        "acquisition": "package_manager",
+        "source": "Julia Stdlib",
+        "declared_in": [
+          "Project.toml [deps]"
+        ],
+        "purpose": "Julia 标准库，提供 dlopen/dlsym 等动态链接库加载接口，用于运行时加载 libLerc 共享库",
+        "used_symbols": [
+          "RTLD_LAZY",
+          "RTLD_DEEPBIND"
+        ]
+      },
+      {
+        "name": "Artifacts",
+        "ecosystem": "Julia",
+        "version": "< 0.0.1, 1",
+        "scope": "runtime",
+        "locality": "system",
+        "acquisition": "package_manager",
+        "source": "Julia Stdlib",
+        "declared_in": [
+          "Project.toml [deps]"
+        ],
+        "purpose": "Julia 标准库，用于在安装时自动下载并管理预编译二进制 artifact（LERC 共享库 tarball）",
+        "used_symbols": []
+      },
+      {
+        "name": "LERC",
+        "ecosystem": "C++",
+        "version": "4.1.0",
+        "scope": "runtime",
+        "locality": "remote",
+        "acquisition": "prebuilt_binary",
+        "source": "https://github.com/Esri/lerc",
+        "source_repo": "https://github.com/Esri/lerc",
+        "declared_in": [
+          "Artifacts.toml"
+        ],
+        "purpose": "Esri LERC（Limited Error Raster Compression）C++ 库的预编译二进制，提供栅格数据有损/无损压缩编解码能力；本 Julia 包即为其封装",
+        "used_symbols": [],
+        "is_wrapped_native_lib": true
+      }
+    ],
+    "meta": {
+      "observations": [
+        {
+          "dimension": 6,
+          "field": "dependencies[].acquisition",
+          "kind": "new_value",
+          "value": "prebuilt_binary",
+          "rationale": "JLL 包的核心依赖是预编译的平台二进制 artifact（通过 Artifacts.toml 下载），不属于 source build/vendored/package_manager 等常规分类"
+        }
+      ]
+    }
+  },
+  "native_api": {
+    "groups": [
+      {
+        "category": "ffi",
+        "platform": "cross",
+        "type": "dynamic_library_loading",
+        "description": "通过 Julia Libdl（dlopen/dlsym 等价物）动态加载预编译的 libLerc 共享库",
+        "apis": [
+          {
+            "name": "dlopen (via Libdl)",
+            "purpose": "运行时动态加载 libLerc 共享库（.so/.dylib/.dll）",
+            "count": 18,
+            "call_sites": [
+              "src/wrappers/aarch64-apple-darwin.jl:8-12",
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:8-12",
+              "src/wrappers/x86_64-apple-darwin.jl:8-12",
+              "src/wrappers/i686-w64-mingw32-cxx11.jl:8-12"
+            ]
+          },
+          {
+            "name": "RTLD_LAZY | RTLD_DEEPBIND",
+            "purpose": "dlopen 加载标志：延迟绑定 + 深绑定，确保 libLerc 优先使用自身符号",
+            "count": 18,
+            "call_sites": [
+              "src/wrappers/x86_64-linux-gnu-cxx11.jl:11",
+              "src/wrappers/x86_64-apple-darwin.jl:11"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libLerc",
+        "platforms": {
+          "linux": "libLerc.so.4",
+          "macos": "libLerc.4.dylib",
+          "windows": "libLerc.dll"
+        },
+        "acquisition": "prebuilt_binary",
+        "source": "https://github.com/Esri/lerc",
+        "purpose": "Esri LERC 栅格压缩编解码 C++ 库，通过 Julia Artifacts 机制自动下载预编译二进制",
+        "loaded_via": "Libdl.dlopen"
+      }
+    ],
+    "meta": {
+      "observations": []
+    }
+  },
+  "runtime_surface": {
+    "runtime_surface": {
+      "network": {
+        "requires": true,
+        "purposes": [
+          "download_artifacts"
+        ],
+        "detail": "Julia 包管理器在安装时通过 Artifacts 机制从 GitHub Releases 下载 LERC 预编译二进制 tarball；运行时无网络需求",
+        "endpoints": [
+          "https://github.com/JuliaBinaryWrappers/LERC_jll.jl/releases/download/LERC-v4.1.0+0/"
+        ]
+      },
+      "filesystem": {
+        "requires": true,
+        "purposes": [
+          "load_shared_library",
+          "artifact_storage"
+        ],
+        "detail": "运行时需要读取 Artifacts 下载的 libLerc 共享库文件；安装时需要写入 artifact 缓存目录"
+      },
+      "env_vars": {
+        "requires": false,
+        "vars": []
+      },
+      "subprocesses": {
+        "requires": false,
+        "commands": []
+      },
+      "devices": {
+        "requires": false,
+        "devices": []
+      }
+    },
+    "build_env": {
+      "languages": [
+        {
+          "name": "Julia",
+          "version": "1.6+",
+          "purpose": "本包的封装代码语言"
+        },
+        {
+          "name": "C++",
+          "version": "11+",
+          "purpose": "上游 LERC 库的实现语言（预编译二进制，本仓库不含源码）"
+        }
+      ],
+      "toolchain": [],
+      "platforms": {
+        "supported": [
+          "Linux (x86_64/aarch64/armv6l/armv7l/i686/powerpc64le/riscv64, glibc/musl)",
+          "macOS (x86_64/aarch64)",
+          "Windows (x86_64/i686)",
+          "FreeBSD (x86_64/aarch64)"
+        ],
+        "build_matrix": [
+          {
+            "os": "linux",
+            "arch": "aarch64",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "aarch64",
+            "libc": "musl"
+          },
+          {
+            "os": "macos",
+            "arch": "aarch64"
+          },
+          {
+            "os": "linux",
+            "arch": "armv6l",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "armv6l",
+            "libc": "musl"
+          },
+          {
+            "os": "linux",
+            "arch": "armv7l",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "armv7l",
+            "libc": "musl"
+          },
+          {
+            "os": "linux",
+            "arch": "i686",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "i686",
+            "libc": "musl"
+          },
+          {
+            "os": "windows",
+            "arch": "i686"
+          },
+          {
+            "os": "linux",
+            "arch": "powerpc64le",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "riscv64",
+            "libc": "glibc"
+          },
+          {
+            "os": "macos",
+            "arch": "x86_64"
+          },
+          {
+            "os": "linux",
+            "arch": "x86_64",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "x86_64",
+            "libc": "musl"
+          },
+          {
+            "os": "freebsd",
+            "arch": "x86_64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "aarch64"
+          },
+          {
+            "os": "windows",
+            "arch": "x86_64"
+          }
+        ]
+      },
+      "entry_points": [],
+      "notes": "本包为 JLL 二进制封装包，不含构建系统；构建由上游 Yggdrasil（BinaryBuilder.jl）完成，本仓库仅包含运行时加载逻辑"
+    }
+  },
+  "build_env": {
+    "runtime_surface": {
+      "network": {
+        "requires": true,
+        "purposes": [
+          "download_artifacts"
+        ],
+        "detail": "Julia 包管理器在安装时通过 Artifacts 机制从 GitHub Releases 下载 LERC 预编译二进制 tarball；运行时无网络需求",
+        "endpoints": [
+          "https://github.com/JuliaBinaryWrappers/LERC_jll.jl/releases/download/LERC-v4.1.0+0/"
+        ]
+      },
+      "filesystem": {
+        "requires": true,
+        "purposes": [
+          "load_shared_library",
+          "artifact_storage"
+        ],
+        "detail": "运行时需要读取 Artifacts 下载的 libLerc 共享库文件；安装时需要写入 artifact 缓存目录"
+      },
+      "env_vars": {
+        "requires": false,
+        "vars": []
+      },
+      "subprocesses": {
+        "requires": false,
+        "commands": []
+      },
+      "devices": {
+        "requires": false,
+        "devices": []
+      }
+    },
+    "build_env": {
+      "languages": [
+        {
+          "name": "Julia",
+          "version": "1.6+",
+          "purpose": "本包的封装代码语言"
+        },
+        {
+          "name": "C++",
+          "version": "11+",
+          "purpose": "上游 LERC 库的实现语言（预编译二进制，本仓库不含源码）"
+        }
+      ],
+      "toolchain": [],
+      "platforms": {
+        "supported": [
+          "Linux (x86_64/aarch64/armv6l/armv7l/i686/powerpc64le/riscv64, glibc/musl)",
+          "macOS (x86_64/aarch64)",
+          "Windows (x86_64/i686)",
+          "FreeBSD (x86_64/aarch64)"
+        ],
+        "build_matrix": [
+          {
+            "os": "linux",
+            "arch": "aarch64",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "aarch64",
+            "libc": "musl"
+          },
+          {
+            "os": "macos",
+            "arch": "aarch64"
+          },
+          {
+            "os": "linux",
+            "arch": "armv6l",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "armv6l",
+            "libc": "musl"
+          },
+          {
+            "os": "linux",
+            "arch": "armv7l",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "armv7l",
+            "libc": "musl"
+          },
+          {
+            "os": "linux",
+            "arch": "i686",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "i686",
+            "libc": "musl"
+          },
+          {
+            "os": "windows",
+            "arch": "i686"
+          },
+          {
+            "os": "linux",
+            "arch": "powerpc64le",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "riscv64",
+            "libc": "glibc"
+          },
+          {
+            "os": "macos",
+            "arch": "x86_64"
+          },
+          {
+            "os": "linux",
+            "arch": "x86_64",
+            "libc": "glibc"
+          },
+          {
+            "os": "linux",
+            "arch": "x86_64",
+            "libc": "musl"
+          },
+          {
+            "os": "freebsd",
+            "arch": "x86_64"
+          },
+          {
+            "os": "freebsd",
+            "arch": "aarch64"
+          },
+          {
+            "os": "windows",
+            "arch": "x86_64"
+          }
+        ]
+      },
+      "entry_points": [],
+      "notes": "本包为 JLL 二进制封装包，不含构建系统；构建由上游 Yggdrasil（BinaryBuilder.jl）完成，本仓库仅包含运行时加载逻辑"
+    }
+  },
+  "harmony_adaptation": {
+    "porting_class": "needs_adaptation_full",
+    "feasibility": "feasible",
+    "difficulty": "medium",
+    "confidence": "medium",
+    "recommended_path": "为 HarmonyOS 平台（aarch64）交叉编译 libLerc 共享库，并构建对应的 LERC_jll.jl wrapper 文件",
+    "target_assumptions": [
+      {
+        "capability": "Julia 运行时",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "Julia 是否已移植到 HarmonyOS PC 是本包能否运行的前提",
+        "source": "library.ecosystem=Julia"
+      },
+      {
+        "capability": "dlopen 动态库加载",
+        "required": true,
+        "target_status": "available",
+        "impact": "鸿蒙 NDK 支持 dlopen，无阻碍",
+        "source": "native_api.groups[ffi]"
+      },
+      {
+        "capability": "LERC C++ 库编译（C++11 标准）",
+        "required": true,
+        "target_status": "partial",
+        "impact": "LERC 是纯 C++ 库，无特殊平台依赖，使用 OHOS NDK 的 clang 交叉编译器应可完成构建",
+        "source": "dependencies[LERC]"
+      },
+      {
+        "capability": "Julia Artifacts 下载机制",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "需要鸿蒙平台的 LERC 预编译二进制能通过 Julia Artifacts 机制分发",
+        "source": "dependencies[Artifacts]"
+      }
+    ],
+    "blockers": [
+      {
+        "id": "blk-1",
+        "category": "runtime_availability",
+        "severity": "high",
+        "adaptability": "adaptable",
+        "description": "Julia 运行时尚未确认移植到 HarmonyOS PC 平台",
+        "caused_by": [],
+        "harmony_status": "unknown"
+      },
+      {
+        "id": "blk-2",
+        "category": "native_dependency",
+        "severity": "medium",
+        "adaptability": "adaptable",
+        "description": "需要为 HarmonyOS aarch64 交叉编译 LERC C++ 库（libLerc.so），并添加到 Artifacts.toml 及 wrappers 目录",
+        "caused_by": [],
+        "harmony_status": "partial"
+      }
+    ],
+    "unadaptable_apis": [],
+    "effort": {
+      "person_days": [
+        3,
+        10
+      ],
+      "level": "medium"
+    },
+    "required_permissions": [],
+    "notes": "本包是 Julia JLL 二进制封装，核心适配工作集中在：1) 确认 Julia 运行时在鸿蒙上的可用性；2) 使用 OHOS NDK 交叉编译 LERC C++ 库为 aarch64-linux-ohos 共享库；3) 在 Artifacts.toml 中添加鸿蒙平台条目；4) 在 src/wrappers/ 下添加对应的 aarch64-linux-ohos.jl 封装文件。LERC 本身是纯 C++ 算法库（无平台 API 依赖），交叉编译难度不高。主要不确定性来自 Julia 运行时本身在鸿蒙上的可用性。",
+    "meta": {
+      "observations": []
+    }
+  },
+  "library": {
+    "name": "LERC_jll",
+    "one_liner": "LERC（Limited Error Raster Compression）C++ 库的 Julia JLL 二进制封装包，为 Julia 生态提供预编译的 libLerc 动态库",
+    "kind": "library",
+    "ecosystem": "Julia",
+    "source_url": "https://github.com/JuliaBinaryWrappers/LERC_jll.jl.git",
+    "version": "4.1.0+0",
+    "bindings": [],
+    "import_names": [
+      "LERC_jll"
+    ],
+    "registry_name": "LERC_jll",
+    "aliases": [
+      "LERC_jll.jl"
+    ],
+    "analyzed_at": "2026-07-07T02:11:10Z"
+  },
+  "meta": {
+    "analyzed_at": "2026-07-07T02:06:54Z",
+    "analyzer_version": "1.0",
+    "model": "glm5.1",
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "6",
+        "field": "dependencies[].acquisition",
+        "kind": "new_value",
+        "value": "prebuilt_binary",
+        "rationale": "JLL 包的核心依赖是预编译的平台二进制 artifact（通过 Artifacts.toml 下载），不属于 source build/vendored/package_manager 等常规分类"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "warnings": [
+      "shape coerced: license.evidence array→string",
+      "shape coerced: dependencies.dependencies[0].declared_in string→array",
+      "shape coerced: dependencies.dependencies[1].declared_in string→array",
+      "shape coerced: dependencies.dependencies[2].declared_in string→array",
+      "shape coerced: dependencies.dependencies[3].declared_in string→array",
+      "shape coerced: meta.observations[0].dimension integer→string"
+    ]
+  },
+  "capability_profile": {
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": null,
+        "adaptation": "not_applicable",
+        "evidence": [
+          "本包为纯命令行/库封装，无 GUI 代码"
+        ]
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": null,
+        "adaptation": "not_applicable",
+        "evidence": [
+          "无 3D 渲染相关代码或依赖"
+        ]
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": null,
+        "adaptation": "not_applicable",
+        "evidence": [
+          "LERC 是栅格数据压缩编解码器，不属于音视频媒体处理"
+        ]
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": null,
+        "adaptation": "not_applicable",
+        "evidence": [
+          "无硬件设备访问代码，仅加载共享库进行数据编解码"
+        ]
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本包不涉及任何第三方云端服务",
+    "services": []
+  }
+}
