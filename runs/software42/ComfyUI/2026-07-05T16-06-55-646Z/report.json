@@ -1929,7 +1929,8 @@
       "person_days": [
         12,
         28
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime",
@@ -2102,7 +2103,8 @@
       "在鸿蒙环境中跑通 test-infinity 核心回归测试，验证图像生成管线完整",
       "处理 nvidia-smi 调用路径——鸿蒙下跳过（CUDA 不可用时该路径不执行，加条件守卫即可）"
     ],
-    "notes": "评估按模型 C（整包桌面/服务器应用，跑在已移植的 Python 运行时上）。ComfyUI 为 Web 应用（非原生 GUI），前端由浏览器渲染，因此 GUI 工具包/窗口栈/桌面集成的鸿蒙状态不构成阻碍。关键不确定性：(1) transformers/torchvision/torchaudio/torchsde 的 OHOS 交叉编译工作量——这些是核心推理管线依赖，纯 Python 部分可直接安装，但 C 扩展需 OHOS NDK 重编（tokenizers 已有 ohos 版，其余需验证）；(2) GPU 加速在鸿蒙的可行性——CUDA 不可用后 CPU 推理极慢，实际可用性取决于鸿蒙 PC 的 GPU 驱动（NPU/ROCm）成熟度与 PyTorch 后端适配；(3) 鸿蒙 PC 的网络监听权限模型（ohos.permission.INTERNET 授予方式）——Web 服务需监听端口，若受限则需调整部署模式。因多项目标能力 unknown，confidence 下调至 medium。"
+    "notes": "评估按模型 C（整包桌面/服务器应用，跑在已移植的 Python 运行时上）。ComfyUI 为 Web 应用（非原生 GUI），前端由浏览器渲染，因此 GUI 工具包/窗口栈/桌面集成的鸿蒙状态不构成阻碍。关键不确定性：(1) transformers/torchvision/torchaudio/torchsde 的 OHOS 交叉编译工作量——这些是核心推理管线依赖，纯 Python 部分可直接安装，但 C 扩展需 OHOS NDK 重编（tokenizers 已有 ohos 版，其余需验证）；(2) GPU 加速在鸿蒙的可行性——CUDA 不可用后 CPU 推理极慢，实际可用性取决于鸿蒙 PC 的 GPU 驱动（NPU/ROCm）成熟度与 PyTorch 后端适配；(3) 鸿蒙 PC 的网络监听权限模型（ohos.permission.INTERNET 授予方式）——Web 服务需监听端口，若受限则需调整部署模式。因多项目标能力 unknown，confidence 下调至 medium。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "ComfyUI",
@@ -2167,7 +2169,15 @@
         "rationale": "ComfyUI 核心明确禁止互联网请求（AGENTS.md: 'Do not add code to core ComfyUI that makes requests to the internet'），无遥测/分析/崩溃上报/云同步。但 README 提到 'API nodes provide access to the best closed source models'——这些 API 节点属于 comfy_api_nodes 目录，通过 requests/aiohttp 调用外部云 API（如 Nano Banana/Hunyuan3D 等）。按生产范围口径，comfy_api_nodes 下仅有少量 Python 代码（metrics 显示 32 行在 custom_nodes），且核心引擎本身不硬编码任何云端端点。标记 present:false 是恰当的。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目触及 3D 渲染、媒体与 GPU 计算三大鸿蒙适配重点场景——GLSL 着色器节点通过 ANGLE/EGL 使用 OpenGL ES 3.0 渲染、视频模型通过 PyAV/FFmpeg 编解码、音频模型通过 torchaudio 处理、核心推理在 GPU 上加速（多后端）。不涉及原生桌面 GUI（纯 Web 前端）。",

@@ -829,13 +829,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC — 模型 A（库跑在已移植的 Node.js 24.13.0 运行时上；原生 DTrace 扩展仅在 DTrace 平台可用，非 DTrace 平台自动降级为空操作桩）",
-    "porting_class": "no_adaptation",
-    "feasibility": "feasible",
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "hard",
     "effort": {
       "person_days": [
         0,
         1
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "high",
     "recommended_path": "run_on_ported_runtime",
@@ -907,7 +908,12 @@
       "编写一个简单的 require('dtrace-provider') 测试，确认 createDTraceProvider 和 addProbe 返回 stub 对象（空操作，不抛异常）",
       "将验证结果记录为鸿蒙兼容性证据"
     ],
-    "notes": "评估走模型 A（库在已移植 Node.js 运行时上）。该库的设计在非 DTrace 平台自动使用 stub，这一行为鸿蒙同样适用——库在鸿蒙与在 Linux 上的体验完全一致。DTrace 原生功能（USDT 探针创建与触发）在鸿蒙 PC 上不可用，但这与库在其他非 DTrace 平台的表现一致，属于设计预期。如果目标是 ArkTS 沙箱应用（模型 B），则 Node.js 核心模块不可用、需完全重写。"
+    "notes": "评估走模型 A（库在已移植 Node.js 运行时上）。该库的设计在非 DTrace 平台自动使用 stub，这一行为鸿蒙同样适用——库在鸿蒙与在 Linux 上的体验完全一致。DTrace 原生功能（USDT 探针创建与触发）在鸿蒙 PC 上不可用，但这与库在其他非 DTrace 平台的表现一致，属于设计预期。如果目标是 ArkTS 沙箱应用（模型 B），则 Node.js 核心模块不可用、需完全重写。",
+    "porting_class_model": "no_adaptation",
+    "porting_class_adjusted": {
+      "from": "no_adaptation",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "node-dtrace-provider",
@@ -932,7 +938,15 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 no_adaptation，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为 Node.js DTrace 探针原生扩展，属于可观测性/动态追踪领域，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",

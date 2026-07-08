@@ -940,140 +940,136 @@
     "platform_dependence": "cross-platform"
   },
   "runtime_surface": {
-    "runtime_surface": {
-      "summary": "库运行期仅通过标准 C 文件 API 与用户传入的文件路径/FILE* 流交互，无网络、无子进程、无特殊设备；仅通过环境变量控制调试输出格式。",
-      "network": [],
-      "filesystem": [
-        {
-          "detail": "用户指定的 plist 文件路径",
-          "purpose": "读取或写入 plist 数据（二进制/XML/JSON/OpenStep）",
-          "evidence": [
-            "include/plist/plist.h:1121-1178",
-            "src/plist.c:306-345",
-            "tools/plistutil.c:322-472"
-          ]
-        }
-      ],
-      "env_vars": [
-        {
-          "name": "PLIST_XML_DEBUG",
-          "purpose": "开启 XML 解析器/写入器调试输出",
-          "evidence": [
-            "src/xplist.c:94"
-          ]
-        },
-        {
-          "name": "PLIST_BIN_DEBUG",
-          "purpose": "开启二进制 plist 解析器/写入器调试输出",
-          "evidence": [
-            "src/bplist.c:257"
-          ]
-        },
-        {
-          "name": "PLIST_JSON_DEBUG",
-          "purpose": "开启 JSON 解析器/写入器调试输出",
-          "evidence": [
-            "src/jplist.c:59"
-          ]
-        },
-        {
-          "name": "PLIST_OSTEP_DEBUG",
-          "purpose": "开启 OpenStep 解析器/写入器调试输出",
-          "evidence": [
-            "src/oplist.c:57"
-          ]
-        },
-        {
-          "name": "PLIST_OUTPUT_FORMAT",
-          "purpose": "在 --print 模式下选择 plutil/limd 输出风格",
-          "evidence": [
-            "tools/plistutil.c:184-191"
-          ]
-        }
-      ],
-      "subprocess": [],
-      "devices": [],
-      "services": []
-    }
+    "summary": "库运行期仅通过标准 C 文件 API 与用户传入的文件路径/FILE* 流交互，无网络、无子进程、无特殊设备；仅通过环境变量控制调试输出格式。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "用户指定的 plist 文件路径",
+        "purpose": "读取或写入 plist 数据（二进制/XML/JSON/OpenStep）",
+        "evidence": [
+          "include/plist/plist.h:1121-1178",
+          "src/plist.c:306-345",
+          "tools/plistutil.c:322-472"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "PLIST_XML_DEBUG",
+        "purpose": "开启 XML 解析器/写入器调试输出",
+        "evidence": [
+          "src/xplist.c:94"
+        ]
+      },
+      {
+        "name": "PLIST_BIN_DEBUG",
+        "purpose": "开启二进制 plist 解析器/写入器调试输出",
+        "evidence": [
+          "src/bplist.c:257"
+        ]
+      },
+      {
+        "name": "PLIST_JSON_DEBUG",
+        "purpose": "开启 JSON 解析器/写入器调试输出",
+        "evidence": [
+          "src/jplist.c:59"
+        ]
+      },
+      {
+        "name": "PLIST_OSTEP_DEBUG",
+        "purpose": "开启 OpenStep 解析器/写入器调试输出",
+        "evidence": [
+          "src/oplist.c:57"
+        ]
+      },
+      {
+        "name": "PLIST_OUTPUT_FORMAT",
+        "purpose": "在 --print 模式下选择 plutil/limd 输出风格",
+        "evidence": [
+          "tools/plistutil.c:184-191"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
   },
   "build_env": {
-    "build_env": {
-      "language_standard": "C99（使用 stdint.h、inttypes.h、stdbool 风格）；C++ 包装层未指定标准，由编译器默认处理",
-      "runtime_version": "无特定解释器/VM 版本要求；可选 Python >=3.0 用于 Cython 绑定",
-      "build_system": "GNU Autotools（autoconf + automake + libtool）",
-      "compiler_extensions": [
-        {
-          "detail": "__attribute__((visibility(\"default\"))) / __attribute__((visibility(\"hidden\")))",
-          "purpose": "控制公共符号可见性",
-          "evidence": [
-            "src/plist.h:45-46",
-            "configure.ac:179-190"
-          ]
-        },
-        {
-          "detail": "__declspec(dllexport/dllimport)",
-          "purpose": "Windows MSVC/MinGW 下的 DLL 符号导出/导入",
-          "evidence": [
-            "include/plist/plist.h:81-82",
-            "src/plist.h:42-43"
-          ]
-        },
-        {
-          "detail": "__attribute__((constructor)) / MSVC .CRT$XCU 段",
-          "purpose": "实现库初始化函数自动执行",
-          "evidence": [
-            "src/plist.c:112-158"
-          ]
-        },
-        {
-          "detail": "__attribute__((deprecated)) / __declspec(deprecated)",
-          "purpose": "废弃 API 编译期警告",
-          "evidence": [
-            "include/plist/plist.h:47-75"
-          ]
-        }
-      ],
-      "platforms": [
-        {
-          "os": "linux",
-          "arch": "x86_64",
-          "evidence": [
-            ".github/workflows/build.yml",
-            "configure.ac:64-75"
-          ]
-        },
-        {
-          "os": "macos",
-          "arch": "x86_64/arm64",
-          "evidence": [
-            "README.md:66-99",
-            "configure.ac:69"
-          ]
-        },
-        {
-          "os": "windows",
-          "arch": "x86_64",
-          "evidence": [
-            "README.md:101-124",
-            "configure.ac:65",
-            "src/plist.h:32-43"
-          ]
-        }
-      ],
-      "entry_points": [
-        {
-          "type": "tool",
-          "name": "plistutil",
-          "command": "命令行转换工具：plistutil -i input.plist -o output.plist",
-          "evidence": [
-            "tools/plistutil.c",
-            "tools/Makefile.am:9-12"
-          ]
-        }
-      ],
-      "packaging": "通过 autotools 生成 .tar.bz2 发行包；源码编译后执行 make install 将共享库、头文件、pkg-config 文件与 plistutil 安装到系统目录；无捆绑运行时。",
-      "notes": "构建过程可选启用 Cython Python 绑定（默认启用，可用 --without-cython 关闭）以及 fuzzer/sanitizer（默认关闭）。"
-    }
+    "language_standard": "C99（使用 stdint.h、inttypes.h、stdbool 风格）；C++ 包装层未指定标准，由编译器默认处理",
+    "runtime_version": "无特定解释器/VM 版本要求；可选 Python >=3.0 用于 Cython 绑定",
+    "build_system": "GNU Autotools（autoconf + automake + libtool）",
+    "compiler_extensions": [
+      {
+        "detail": "__attribute__((visibility(\"default\"))) / __attribute__((visibility(\"hidden\")))",
+        "purpose": "控制公共符号可见性",
+        "evidence": [
+          "src/plist.h:45-46",
+          "configure.ac:179-190"
+        ]
+      },
+      {
+        "detail": "__declspec(dllexport/dllimport)",
+        "purpose": "Windows MSVC/MinGW 下的 DLL 符号导出/导入",
+        "evidence": [
+          "include/plist/plist.h:81-82",
+          "src/plist.h:42-43"
+        ]
+      },
+      {
+        "detail": "__attribute__((constructor)) / MSVC .CRT$XCU 段",
+        "purpose": "实现库初始化函数自动执行",
+        "evidence": [
+          "src/plist.c:112-158"
+        ]
+      },
+      {
+        "detail": "__attribute__((deprecated)) / __declspec(deprecated)",
+        "purpose": "废弃 API 编译期警告",
+        "evidence": [
+          "include/plist/plist.h:47-75"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/build.yml",
+          "configure.ac:64-75"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64/arm64",
+        "evidence": [
+          "README.md:66-99",
+          "configure.ac:69"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md:101-124",
+          "configure.ac:65",
+          "src/plist.h:32-43"
+        ]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "tool",
+        "name": "plistutil",
+        "command": "命令行转换工具：plistutil -i input.plist -o output.plist",
+        "evidence": [
+          "tools/plistutil.c",
+          "tools/Makefile.am:9-12"
+        ]
+      }
+    ],
+    "packaging": "通过 autotools 生成 .tar.bz2 发行包；源码编译后执行 make install 将共享库、头文件、pkg-config 文件与 plistutil 安装到系统目录；无捆绑运行时。",
+    "notes": "构建过程可选启用 Cython Python 绑定（默认启用，可用 --without-cython 关闭）以及 fuzzer/sanitizer（默认关闭）。"
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核 + OHOS NDK 原生层，已移植语言运行时）",
@@ -1083,7 +1079,8 @@
       "person_days": [
         3,
         7
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -1146,7 +1143,8 @@
       "在鸿蒙 PC 或模拟器上运行测试套件，验证 XML/二进制/JSON/OpenStep  round-trip",
       "如有需要，生成鸿蒙 PC 的 pkg-config 与共享库安装包"
     ],
-    "notes": "未使用 GUI、网络、媒体、硬件相关 API，无 ohos.permission 需求。 effort 主要消耗在构建系统交叉编译适配与测试验证，而非代码重写。"
+    "notes": "未使用 GUI、网络、媒体、硬件相关 API，无 ohos.permission 需求。 effort 主要消耗在构建系统交叉编译适配与测试验证，而非代码重写。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "libplist",
@@ -1190,7 +1188,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libplist 是纯数据序列化/反序列化库，不涉及 GUI、3D 渲染、媒体编解码、硬件设备访问等鸿蒙适配高敏感场景。",

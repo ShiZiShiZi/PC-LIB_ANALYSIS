@@ -1328,7 +1328,8 @@
       "person_days": [
         60,
         120
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "high",
     "recommended_path": "abandon",
@@ -1654,7 +1655,8 @@
       "用 OHOS NDK (clang + musl) 编译验证 C 标准库部分（bitmask、解析逻辑）的可移植性",
       "移除 glibc 专有扩展——symver 符号版本控制、改用 musl 兼容的初始化路径"
     ],
-    "notes": "numactl（libnuma）是 Linux NUMA 子系统的用户态接口——它不是『用到一些 Linux API』的通用库，而是『它就是 Linux NUMA API』。其全部功能由 Linux 内核系统调用提供，换一个内核即失去所有功能基础。移植到鸿蒙 PC 需要鸿蒙内核首先提供等价 NUMA 能力，然后从零开发新的用户态库——本代码库中仅 bitmask 操作和命令行解析可复用，其余代码（约 80% 生产代码量）需完全重写。若目标是在鸿蒙 PC 上获得 NUMA 感知能力，建议等待鸿蒙内核 NUMA API 成熟后从零开发——本库的分析与评估可作为设计参考。"
+    "notes": "numactl（libnuma）是 Linux NUMA 子系统的用户态接口——它不是『用到一些 Linux API』的通用库，而是『它就是 Linux NUMA API』。其全部功能由 Linux 内核系统调用提供，换一个内核即失去所有功能基础。移植到鸿蒙 PC 需要鸿蒙内核首先提供等价 NUMA 能力，然后从零开发新的用户态库——本代码库中仅 bitmask 操作和命令行解析可复用，其余代码（约 80% 生产代码量）需完全重写。若目标是在鸿蒙 PC 上获得 NUMA 感知能力，建议等待鸿蒙内核 NUMA API 成熟后从零开发——本库的分析与评估可作为设计参考。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "name": "numactl",
@@ -1707,7 +1709,15 @@
         "rationale": "numactl 不同于'使用一些 Linux API 的库'——它是 Linux NUMA 子系统的用户态接口定义本身。这类库在非 Linux 内核上的移植不是'改造'而是'不存在可改造的代码'——整个库就是对 Linux syscall 的薄封装。这构成一类特殊的不可移植情形。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(weak_copyleft) 与依据 SPDX(LGPL-2.1-only AND GPL-2.0-only) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "numactl 是纯系统级库，不涉及 GUI、3D 渲染、媒体或特定硬件。其全部功能围绕 Linux 内核 NUMA 子系统，通过 Linux 系统调用和 /proc、/sys 伪文件系统实现。无鸿蒙适配重点场景。",

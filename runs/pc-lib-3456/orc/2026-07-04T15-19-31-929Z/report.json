@@ -979,7 +979,8 @@
       "person_days": [
         5,
         12
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -1114,7 +1115,8 @@
       "在 OHOS 环境上运行 testsuite 验证仿真回退路径与 ORC 功能完整性",
       "评估各 SIMD 后端（SSE/AVX/NEON）在 OHOS 上的 JIT 表现——JIT 内存分配可用则全部后端可用，否则仅仿真"
     ],
-    "notes": "评估按模型 A（库被鸿蒙原生 C/C++ 应用链接调用，非 ArkTS 沙箱）。置信度 medium：两条 target_assumptions 均为 unknown——mmap PROT_EXEC 是否在 OHOS 内核可用、CPU 检测接口是否存在均未核实，建议实测后更新 harmony-pc-capabilities.json 并重分析。即使这俩都不满足，ORC 的仿真回退和 C 源码生成能力仍保证代码可运行，只是丢掉了 JIT 编译优化的性能增益。平台适配代码总计 ~591 行（#ifdef 平台守卫），为 C/C++ 库中平台耦合较轻的一档。不含 Qt/GTK/GUI 组件、不依赖 GPU 硬件 API（SIMD 指令由库自身生成），无不被 OHOS NDK 涵盖的系统库。"
+    "notes": "评估按模型 A（库被鸿蒙原生 C/C++ 应用链接调用，非 ArkTS 沙箱）。置信度 medium：两条 target_assumptions 均为 unknown——mmap PROT_EXEC 是否在 OHOS 内核可用、CPU 检测接口是否存在均未核实，建议实测后更新 harmony-pc-capabilities.json 并重分析。即使这俩都不满足，ORC 的仿真回退和 C 源码生成能力仍保证代码可运行，只是丢掉了 JIT 编译优化的性能增益。平台适配代码总计 ~591 行（#ifdef 平台守卫），为 C/C++ 库中平台耦合较轻的一档。不含 Qt/GTK/GUI 组件、不依赖 GPU 硬件 API（SIMD 指令由库自身生成），无不被 OHOS NDK 涵盖的系统库。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "orc",
@@ -1133,7 +1135,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": []
+    "observations": [],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "ORC 是一个 JIT 编译器库，其核心是自生成的 SIMD 机器码和跨 CPU 架构的指令编码。它不涉及桌面 GUI、3D 渲染 API、音频/视频编解码或特定硬件设备。库内的 SIMD 后端（SSE/AVX/NEON 等）是 ORC 自身的产物（生成并写入机器码字节），不依赖外部 GPU/硬件加速库。唯一的硬件相关调用是 CPUID/xgetbv 用于 CPU 特性运行时检测，但这是编译器基础设施的常规操作，非特定硬件依赖。",

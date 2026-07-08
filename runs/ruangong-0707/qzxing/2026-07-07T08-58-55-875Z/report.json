@@ -1182,25 +1182,25 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        10,
-        25
+        15.1,
+        21.1
       ],
       "breakdown": [
         {
           "component": "recompile",
           "person_days": [
-            3,
-            6
+            9,
+            9
           ],
-          "basis": "vendored zxing + bigint 与 QZXing 封装层约 27k LOC 为纯 C++/Qt 代码，使用 Qt 鸿蒙版在 OHOS NDK 下重编，预计 3-6 人天。"
+          "basis": "重编译复用 27086 行 ÷ 3000 行/天"
         },
         {
           "component": "api_adaptation",
           "person_days": [
-            3,
-            8
+            1.1,
+            1.1
           ],
-          "basis": "code_partition 中 needs_adaptation 桶约 526 LOC（QZXingFilter/QZXingFilterVideoSink），若 Qt Multimedia 摄像头后端在鸿蒙 PC 不可用，需改用 @ohos.multimedia.camera 或关闭该功能。"
+          "basis": "需适配 526 行 ÷ 500 行/天"
         },
         {
           "component": "build_system",
@@ -1226,7 +1226,8 @@
           ],
           "basis": "将库打包为可被鸿蒙 Qt 应用链接的静态/动态库或源码集成。"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -1289,7 +1290,8 @@
       "若需实时摄像头，验证 Qt Multimedia 摄像头后端；不可用则基于 @ohos.multimedia.camera 重写 QZXingFilter/QZXingFilterVideoSink。",
       "运行测试用例，验证各条码格式与 QR 编码输出。"
     ],
-    "notes": "本评估假设使用 Qt5 鸿蒙版；Qt6 虽被源码支持，但当前社区主要提供 Qt5 移植。关闭 QZXING_MULTIMEDIA 时，移植难度接近 recompile_only；Windows 专用 win_iconv 在目标平台不编译，不构成阻碍。"
+    "notes": "本评估假设使用 Qt5 鸿蒙版；Qt6 虽被源码支持，但当前社区主要提供 Qt5 移植。关闭 QZXING_MULTIMEDIA 时，移植难度接近 recompile_only；Windows 专用 win_iconv 在目标平台不编译，不构成阻碍。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "qzxing",
@@ -1318,7 +1320,8 @@
       "为快速了解 examples/tests 目录结构，曾使用一次 task 工具；所有维度分析、JSON 产出与验证均在本会话内完成。"
     ],
     "observations": [],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "QZXing 是一个 Qt 图形/图像库，核心依赖 Qt 的 QImage 与 GUI 抽象；可选的实时扫码功能通过 Qt Multimedia 访问摄像头视频帧。项目不涉及 3D 渲染、云端服务或专有硬件（GPU 计算、NPU 等）。",

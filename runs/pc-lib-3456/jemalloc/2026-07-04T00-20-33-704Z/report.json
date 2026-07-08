@@ -1258,7 +1258,8 @@
       "person_days": [
         12,
         28
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -1404,7 +1405,8 @@
       "选择可用的 profiling 回溯方案（libunwind/libgcc/frame pointer/gcc intrinsics），不可用时默认关闭 profiling",
       "在 arm64 鸿蒙 PC 上跑通单元测试与压力测试，视情况补充 x86_64 验证"
     ],
-    "notes": "评估基于 HarmonyOS PC 默认库模型 A。jemalloc 公共 API（malloc/free/mallctl 等）本身不绑定平台，无 unadaptable_apis；阻碍主要在内核级可选优化与平台分支适配。confidence 为 medium，因为 OHOS 对 x86_64、process_madvise、部分 madvise 提示及 /proc 格式的实际支持尚未在公开文档中完全核实。若目标是 ArkTS 应用（模型 B），则需额外通过 Node-API 封装 mallctl 等接口，工作量与 person_days 会进一步上升。"
+    "notes": "评估基于 HarmonyOS PC 默认库模型 A。jemalloc 公共 API（malloc/free/mallctl 等）本身不绑定平台，无 unadaptable_apis；阻碍主要在内核级可选优化与平台分支适配。confidence 为 medium，因为 OHOS 对 x86_64、process_madvise、部分 madvise 提示及 /proc 格式的实际支持尚未在公开文档中完全核实。若目标是 ArkTS 应用（模型 B），则需额外通过 Node-API 封装 mallctl 等接口，工作量与 person_days 会进一步上升。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "jemalloc",
@@ -1451,7 +1453,8 @@
         "value": "linux_specific_syscall",
         "rationale": "jemalloc 使用 process_madvise、prctl VMA 命名、MADV_COLLAPSE 等 Linux 专有接口，这些既不是通用 POSIX 缺口也不是硬件依赖，故新增 'linux_specific_syscall' 类别。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "jemalloc 为纯系统/内存管理库，生产代码不涉及 GUI、3D 渲染、音视频媒体或专用硬件访问。其鸿蒙适配难点集中在 POSIX 子集、内存管理相关系统调用与平台后端上。",

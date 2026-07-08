@@ -1040,13 +1040,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK native 层，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
         5,
         15
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -1223,7 +1224,12 @@
       "可选：编写鸿蒙 HiLog 桥接 Appender 作为本地系统日志替代",
       "可选：编写鸿蒙 OH_Log 桥接 Appender 利用鸿蒙原生日志系统"
     ],
-    "notes": "关键不确定性：.NET 运行时在鸿蒙 PC 上的可用性。若 .NET 8+ 可交叉编译到 aarch64-linux-musl（鸿蒙 NDK 使用 musl libc），则 log4net 可直接运行。harmony-pc-capabilities.json 当前无 .NET 运行时条目，target_status=unknown，confidence 降为 medium。Windows 专有 Appender 已被编译守卫隔离，不影响核心功能。"
+    "notes": "关键不确定性：.NET 运行时在鸿蒙 PC 上的可用性。若 .NET 8+ 可交叉编译到 aarch64-linux-musl（鸿蒙 NDK 使用 musl libc），则 log4net 可直接运行。harmony-pc-capabilities.json 当前无 .NET 运行时条目，target_status=unknown，confidence 降为 medium。Windows 专有 Appender 已被编译守卫隔离，不影响核心功能。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "Apache log4net",
@@ -1273,7 +1279,15 @@
         "value": "dotnet_stdlib",
         "rationale": "C# 项目通过 .NET BCL/System 命名空间调用标准库 API，与传统 C/C++ 标准库调用模式不同，需要单独的 API family 分类"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI 桌面界面、3D 渲染、媒体编解码或特定硬件设备——它是纯日志框架库。",

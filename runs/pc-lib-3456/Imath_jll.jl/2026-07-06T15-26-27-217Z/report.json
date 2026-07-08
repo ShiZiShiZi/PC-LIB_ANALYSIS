@@ -448,13 +448,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层）",
-    "feasibility": "feasible",
+    "feasibility": "feasible_with_effort",
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
         3,
         10
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -537,7 +538,8 @@
       "创建 src/wrappers/aarch64-linux-ohos.jl wrapper 脚本（参照现有 Linux wrapper，调整库名与路径）",
       "确保 Imath C++ 库无 Linux 特有 API 依赖（Imath 是纯数学库，预期无平台 API 依赖）"
     ],
-    "notes": "Imath 是纯数学计算库（向量/矩阵/半精度浮点），无 GUI/网络/设备依赖，交叉编译风险极低。主要工作量在于首次搭建 OHOS NDK 交叉编译环境和制作 Julia Artifacts tarball。本评估假设 Imath C++ 库本身不依赖 Linux 特有 API（如 epoll/inotify 等），该假设基于 Imath 是纯计算库的性质，若实际编译发现问题则需调整。"
+    "notes": "Imath 是纯数学计算库（向量/矩阵/半精度浮点），无 GUI/网络/设备依赖，交叉编译风险极低。主要工作量在于首次搭建 OHOS NDK 交叉编译环境和制作 Julia Artifacts tarball。本评估假设 Imath C++ 库本身不依赖 Linux 特有 API（如 epoll/inotify 等），该假设基于 Imath 是纯计算库的性质，若实际编译发现问题则需调整。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "Imath_jll.jl",
@@ -595,7 +597,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本包是 Imath C++ 数学库的 Julia 二进制包装器，不涉及 GUI、3D 渲染、媒体或特定硬件场景。它仅通过动态库加载机制访问纯计算数学库。",

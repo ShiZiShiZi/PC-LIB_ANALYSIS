@@ -517,7 +517,8 @@
       "LICENSE"
     ],
     "evidence": "LICENSE 文件明确声明 BSD 2-Clause License；setup.py 的 classifiers 也标注 License :: OSI Approved :: BSD License。",
-    "notes": "宽松许可；预训练模型与数据集可能带有各自的使用条款（README 已声明）。"
+    "notes": "宽松许可；预训练模型与数据集可能带有各自的使用条款（README 已声明）。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 5,
@@ -1003,7 +1004,8 @@
       "person_days": [
         15,
         30
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime_with_native_rebuild",
@@ -1167,7 +1169,8 @@
       "在鸿蒙 Python 上跑通单元测试，重点验证音频 I/O、transforms、models 三大模块",
       "评估 sentencepiece、deep-phonemizer 等可选依赖的鸿蒙可用性，必要时标记为受限功能"
     ],
-    "notes": "评估按模型 A（库跑在已移植 Python/PyTorch 上）。torchcodec 未鸿蒙化是核心风险；若无法移植/替换，则 load/save 不可用，porting_class 将趋向 infeasible。C++ 扩展平台耦合极轻（无 Win32/POSIX 系统调用），重编工作量可控。目标平台 arch 与 NDK 对 PyTorch 扩展的支持状态为未核实项，已下调 confidence 至 medium。"
+    "notes": "评估按模型 A（库跑在已移植 Python/PyTorch 上）。torchcodec 未鸿蒙化是核心风险；若无法移植/替换，则 load/save 不可用，porting_class 将趋向 infeasible。C++ 扩展平台耦合极轻（无 Win32/POSIX 系统调用），重编工作量可控。目标平台 arch 与 NDK 对 PyTorch 扩展的支持状态为未核实项，已下调 confidence 至 medium。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "meta": {
     "schema_version": "1.0",
@@ -1197,6 +1200,14 @@
         "value": "run_on_ported_runtime_with_native_rebuild",
         "rationale": "对于含 C++ 扩展的 PyTorch 生态库，默认 run_on_ported_runtime 不足以表达「需用 OHOS NDK 重编扩展」的工作，建议增加该路径描述。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "cloud_miss:aws",
+        "class": "actionable",
+        "message": "依赖/网络出现 aws 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   }
 }

@@ -2393,7 +2393,8 @@
       "person_days": [
         30,
         60
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile_native_deps",
@@ -2555,7 +2556,8 @@
       "为含网络功能的子包声明 ohos.permission.INTERNET 并验证权限模型",
       "若需保留 Bonsai，额外评估 Blender 在鸿蒙 PC 的可用性（本评估未将其作为核心阻塞）"
     ],
-    "notes": "本评估按库模型 A（跑在已移植 Python 上）进行，核心关注 ifcopenshell 库本体。Bonsai 作为 Blender 插件依赖 Blender GUI/3D 视口与桌面集成，若必须一起交付则属于模型 C 应用问题，需额外核实 Blender 与鸿蒙桌面环境支持。OpenCASCADE 是否能在 OHOS NDK 上编译成功是最大不确定性，因此 confidence 为 medium。"
+    "notes": "本评估按库模型 A（跑在已移植 Python 上）进行，核心关注 ifcopenshell 库本体。Bonsai 作为 Blender 插件依赖 Blender GUI/3D 视口与桌面集成，若必须一起交付则属于模型 C 应用问题，需额外核实 Blender 与鸿蒙桌面环境支持。OpenCASCADE 是否能在 OHOS NDK 上编译成功是最大不确定性，因此 confidence 为 medium。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "IfcOpenShell",
@@ -2621,7 +2623,15 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:读写存储",
+        "class": "actionable",
+        "message": "required_permission 读写存储 的 source_capability=filesystem 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "核心库为无 GUI 的数据/几何处理库，但仓库包含 Bonsai（Blender 插件，重度依赖 Blender GUI 与 3D 视口）以及可选的 QtViewer。若仅使用 ifcopenshell 库本体，GUI/3D 场景不构成阻碍；若要把 Bonsai 一起带上，则 Blender 在鸿蒙 PC 的可用性成为关键未知项。",

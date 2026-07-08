@@ -949,14 +949,14 @@
   },
   "harmony_adaptation": {
     "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible",
+    "feasibility": "feasible_with_effort",
     "confidence": "medium",
     "effort": {
       "person_days": [
         60,
         120
       ],
-      "level": null
+      "level": "very_high"
     },
     "recommended_path": "1) 将 Cairo/Pango/libpng/FreeType/pixman 等系统 C 库交叉编译至 OHOS NDK（musl）目标，提供 .so 或静态库；2) 修改 binding.gyp 支持 OHOS 交叉编译工具链（替换 pkg-config 查找路径为 OHOS sysroot）；3) 新增 src/register_font.cc 中 __OHOS__ 平台分支，使用 OHOS 字体管理 API（或通过 fontconfig OHOS 移植版）；4) 使用 prebuild-install 发布 OHOS aarch64 预编译 .node 二进制；5) 条件编译支持 - 可选依赖（libjpeg/giflib/librsvg）按 OHOS 可用性逐步启用",
     "target_assumptions": [
@@ -1065,7 +1065,8 @@
     ],
     "unadaptable_apis": [],
     "required_permissions": [],
-    "notes": "默认口径（HarmonyOS PC + 已移植的 Node.js 运行时）下，node-canvas 的整体移植可行。核心挑战是 Cairo/Pango/libpng/FreeType 四库的 OHOS NDK 交叉编译——它们都是成熟、广泛移植的 C/C++ 库，纯软件无硬件依赖，理论上可行但需实际验证。构建系统需从 node-gyp 迁移至 OHOS 交叉编译工具链。预编译二进制分发（prebuild-install）是可行的分发策略。三平台的约 94 行平台守卫代码（platform_adaptation）是主要需适配的 C++ 部分。如果 Cairo/Pango 最终无法编译（概率低），则整个项目不可移植。"
+    "notes": "默认口径（HarmonyOS PC + 已移植的 Node.js 运行时）下，node-canvas 的整体移植可行。核心挑战是 Cairo/Pango/libpng/FreeType 四库的 OHOS NDK 交叉编译——它们都是成熟、广泛移植的 C/C++ 库，纯软件无硬件依赖，理论上可行但需实际验证。构建系统需从 node-gyp 迁移至 OHOS 交叉编译工具链。预编译二进制分发（prebuild-install）是可行的分发策略。三平台的约 94 行平台守卫代码（platform_adaptation）是主要需适配的 C++ 部分。如果 Cairo/Pango 最终无法编译（概率低），则整个项目不可移植。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "canvas",
@@ -1104,7 +1105,8 @@
     "confidence_overall": "medium",
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [

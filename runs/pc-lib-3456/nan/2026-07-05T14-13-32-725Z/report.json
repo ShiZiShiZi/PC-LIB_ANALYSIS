@@ -1036,7 +1036,8 @@
       "person_days": [
         0,
         0
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "abandon",
@@ -1167,7 +1168,8 @@
       "对现有使用 nan 的项目：迁移到 Node-API（napi.h），Node-API 是跨 Node.js 版本的稳定 ABI",
       "如需 V8 兼容层：可考虑 napi.h 替代，其提供 Node-API 的 C++ 包装（类似 nan 但基于 Node-API）"
     ],
-    "notes": "置信度中等（medium）：鸿蒙 PC Node.js 确认可用、内部引擎更换为 ArkCompiler 已知，但 Nan 部分 C++ 抽象（如线程池/进度回调设计）理论上部分可复用，前提是底层 V8 调用层改为 Node-API。生态层面，实际上 Node-API 已是 Node.js 社区标准化方案，nan 的 v2.28.0 是最后一个主要版本。"
+    "notes": "置信度中等（medium）：鸿蒙 PC Node.js 确认可用、内部引擎更换为 ArkCompiler 已知，但 Nan 部分 C++ 抽象（如线程池/进度回调设计）理论上部分可复用，前提是底层 V8 调用层改为 Node-API。生态层面，实际上 Node-API 已是 Node.js 社区标准化方案，nan 的 v2.28.0 是最后一个主要版本。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "name": "nan",
@@ -1201,7 +1203,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:v8_cpp_headers",
+        "class": "actionable",
+        "message": "target_assumption ta:v8_cpp_headers 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Nan 是纯头文件 C++ 抽象库，不涉及 GUI、3D 渲染、媒体处理或特定硬件——无任何鸿蒙适配重点场景。",

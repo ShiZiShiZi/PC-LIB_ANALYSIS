@@ -880,17 +880,17 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        15,
-        40
+        9.7,
+        22.7
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            8,
-            20
+            2.6,
+            2.6
           ],
-          "basis": "*nix 后端（api.go + termbox.go + syscalls_*.go + async_*.go，约 1800 LOC 生产代码）需重写 POSIX termios/ioctl 调用链为鸿蒙终端 API 或 PTY 子集适配"
+          "basis": "需适配 1300 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -915,8 +915,17 @@
             9
           ],
           "basis": "需在鸿蒙终端模拟器中验证键盘/鼠标事件解析、颜色渲染、窗口大小变更等核心功能"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            0.1,
+            0.1
+          ],
+          "basis": "重编译复用 350 行 ÷ 3000 行/天"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -1046,7 +1055,8 @@
       "验证 256 色/RGB 颜色渲染在鸿蒙终端模拟器中的兼容性",
       "确保 Go Modules 交叉编译到 OHOS aarch64 目标"
     ],
-    "notes": "置信度为 medium：核心依赖 ta:termios_pty 和 ta:x_sys_unix 均为 unknown，需实测确认。Go 运行时已 available 是积极信号。Windows 后端约 1300 LOC 不影响鸿蒙移植。_demos 目录含 12 个示例程序（约 1800 LOC），可作为移植验证的测试用例。"
+    "notes": "置信度为 medium：核心依赖 ta:termios_pty 和 ta:x_sys_unix 均为 unknown，需实测确认。Go 运行时已 available 是积极信号。Windows 后端约 1300 LOC 不影响鸿蒙移植。_demos 目录含 12 个示例程序（约 1800 LOC），可作为移植验证的测试用例。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "termbox-go",
@@ -1102,7 +1112,25 @@
         "value": "api_adaptation",
         "rationale": "对于库（非应用），核心适配工作是替换平台 API 调用而非重写界面或重编译，api_adaptation 比 find_alternative 更准确描述此场景"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "cp_loc_coverage",
+        "class": "info",
+        "message": "代码分区桶 LOC 之和(3280)与生产代码(4629)偏差超过 15%（覆盖不足或重复计入）"
+      },
+      {
+        "code": "cp_unadapt_pclass",
+        "class": "info",
+        "message": "代码分区含 unadaptable 桶(1340 行)但 porting_class=needs_adaptation_full（应为 needs_adaptation_partial/infeasible）"
+      },
+      {
+        "code": "cp_unadapt_no_ua",
+        "class": "actionable",
+        "message": "代码分区含 unadaptable 桶但 dim-9 unadaptable_apis 为空（漏登记或分桶过严）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "termbox-go 的核心功能是终端文本界面渲染与输入处理，不涉及桌面 GUI、3D 渲染、媒体或特定硬件场景。其终端操作通过 POSIX termios/ioctl 和 Win32 Console API 实现，属于终端层抽象而非图形界面层。",

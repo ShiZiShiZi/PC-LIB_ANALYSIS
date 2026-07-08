@@ -1056,7 +1056,8 @@
       "person_days": [
         5,
         12
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1159,7 +1160,8 @@
       "验证临时文件创建（mkstemp/unlink）与目录遍历（opendir）在鸿蒙 musl 下的行为",
       "可选：通过 Node-API 将 libxmp 封装为 ArkTS 可调用的原生模块（若目标为 ArkTS 应用）"
     ],
-    "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编后被其他代码链接/调用）。核心库无不可适配 API；唯一不确定点是外部进程 spawn 能力与 x86_64 支持，二者均记为 target_assumptions 并将 confidence 降至 medium。若目标为 ArkTS 应用，则需额外加一层 Node-API 封装，工作量小幅上升。"
+    "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编后被其他代码链接/调用）。核心库无不可适配 API；唯一不确定点是外部进程 spawn 能力与 x86_64 支持，二者均记为 target_assumptions 并将 confidence 降至 medium。若目标为 ArkTS 应用，则需额外加一层 Node-API 封装，工作量小幅上升。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "libxmp",
@@ -1204,7 +1206,8 @@
         "value": "subprocess_unavailable",
         "rationale": "库自身调用 fork/execvp/popen 运行外部命令（非应用层 shell-out），作为可选格式支持的一部分；在鸿蒙 PC 上属于“外部进程调用不可用/受限”类阻碍，现有推荐分类未直接覆盖。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libxmp 本身是一个纯音频计算库：将模块文件合成为 PCM 缓冲区，不涉及 GUI、3D 渲染、硬件设备或云端服务。音频最终输出由调用方（如示例中的 SDL/OpenAL）负责，因此核心能力在鸿蒙 PC 上可迁移。",

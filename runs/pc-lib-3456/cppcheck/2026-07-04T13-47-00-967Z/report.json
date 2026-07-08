@@ -1829,7 +1829,8 @@
       "person_days": [
         10,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -1969,7 +1970,8 @@
       "可选：使用社区鸿蒙 Qt 重编 cppcheck-gui，验证窗口、文件对话框、在线帮助。",
       "根据鸿蒙 PC 应用交付要求，将 cppcheck CLI 打包为可执行程序或 hap 形态。"
     ],
-    "notes": "置信度为 medium，因为 app_delivery.desktop_app 与 gui.wm 等目标事实仍为 unknown；若仅以 CLI 为目标且确认传统桌面应用可运行，置信度可提升至 high。默认 Linux 构建中的 fork/prctl/sigaction/backtrace 均非核心功能，可通过编译选项关闭，因此不列为不可适配 API。"
+    "notes": "置信度为 medium，因为 app_delivery.desktop_app 与 gui.wm 等目标事实仍为 unknown；若仅以 CLI 为目标且确认传统桌面应用可运行，置信度可提升至 high。默认 Linux 构建中的 fork/prctl/sigaction/backtrace 均非核心功能，可通过编译选项关闭，因此不列为不可适配 API。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "cppcheck",
@@ -2024,7 +2026,15 @@
         "value": "custom_register_test",
         "rationale": "metrics.py 通过正则启发式检测到 Boost.Test/Catch2/googletest/pytest 等习语，但仓库实际使用自定义 REGISTER_TEST 宏驱动测试；无外部 gtest/catch2 依赖。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:读写存储（文件访问）",
+        "class": "actionable",
+        "message": "required_permission 读写存储（文件访问） 的 source_capability=file_access 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Cppcheck 的核心是命令行静态分析工具，主要触及 GUI（可选 Qt6）这一鸿蒙适配重点场景；不涉及 3D 渲染、媒体编解码、硬件设备访问等能力。",

@@ -683,7 +683,7 @@
   },
   "harmony_adaptation": {
     "porting_class": "needs_adaptation_partial",
-    "feasibility": "partial",
+    "feasibility": "hard",
     "confidence": "medium",
     "recommended_path": "1) 确认鸿蒙 PC Go 运行时是否支持 os/exec 子进程启动；2) 确认 nmap 二进制是否可在鸿蒙 PC 上编译/安装（需 musl/NDK 编译或通过 cmd-pkgs 获取）；3) 若两者均可行，库代码本身无需修改，仅需重新编译即可运行；4) 若 nmap 不可用但子进程机制可行，可考虑用其他网络扫描工具替代 nmap 后端。",
     "blockers": [
@@ -747,18 +747,19 @@
     ],
     "effort": {
       "person_days": [
-        3,
-        15
+        2.7,
+        14.2
       ],
-      "level": null,
+      "level": "high",
       "breakdown": [
         {
           "component": "recompile",
           "description": "Go 库代码在鸿蒙 PC 上重新编译",
           "person_days": [
-            0.5,
-            1
-          ]
+            0.2,
+            0.2
+          ],
+          "basis": "重编译复用 639 行 ÷ 3000 行/天"
         },
         {
           "component": "deps_porting",
@@ -783,7 +784,8 @@
         "name": "github.com/mattn/go-isatty",
         "harmony_adapted": false,
         "refs": [],
-        "notes": "轻量 TTY 检测库，纯 Go + 平台 syscall，在 Go 运行时可用时预期可正常工作"
+        "notes": "轻量 TTY 检测库，纯 Go + 平台 syscall，在 Go 运行时可用时预期可正常工作",
+        "order": 1
       }
     ],
     "required_permissions": [
@@ -797,7 +799,8 @@
         ]
       }
     ],
-    "notes": "该库的鸿蒙适配主要障碍不在于库代码本身（纯 Go、跨平台），而在于其外部依赖 nmap 二进制的可用性和鸿蒙 PC 的子进程启动能力。Go 运行时已确认在鸿蒙 PC 可用，库代码仅需重新编译。nmap 是 C 语言编写的网络扫描工具，使用原始套接字和底层网络 API（libpcap/libdnet），其移植到鸿蒙 PC 需要适配 OHOS NDK/musl 环境，且 nmap 的某些扫描模式（如 SYN 扫描）需要 root/特权权限，在鸿蒙 PC 的安全模型下可能受限。建议优先使用 Connect Scan (-sT) 等非特权扫描模式。"
+    "notes": "该库的鸿蒙适配主要障碍不在于库代码本身（纯 Go、跨平台），而在于其外部依赖 nmap 二进制的可用性和鸿蒙 PC 的子进程启动能力。Go 运行时已确认在鸿蒙 PC 可用，库代码仅需重新编译。nmap 是 C 语言编写的网络扫描工具，使用原始套接字和底层网络 API（libpcap/libdnet），其移植到鸿蒙 PC 需要适配 OHOS NDK/musl 环境，且 nmap 的某些扫描模式（如 SYN 扫描）需要 root/特权权限，在鸿蒙 PC 的安全模型下可能受限。建议优先使用 Connect Scan (-sT) 等非特权扫描模式。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "nmap",
@@ -856,7 +859,8 @@
       "shape coerced: build_env.packaging object→string",
       "shape coerced: meta.observations[0].dimension integer→string",
       "shape coerced: meta.observations[1].dimension integer→string"
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [

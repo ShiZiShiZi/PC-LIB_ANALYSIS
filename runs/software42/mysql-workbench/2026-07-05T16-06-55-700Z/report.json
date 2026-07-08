@@ -2546,7 +2546,8 @@
       "person_days": [
         40,
         80
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_native_ui",
@@ -2835,7 +2836,8 @@
       "用鸿蒙系统密码 API 替换 GNOME Keyring（已有 WB_NO_GNOME_KEYRING fallback）；确认 SSH 隧道（libssh 鸿蒙版）可用",
       "在鸿蒙 arm64 设备上跑通核心功能自测（连接 MySQL、SQL 查询、建模、迁移）"
     ],
-    "notes": "评估按模型 C（整包桌面应用）口径。置信 medium：大量桌面集成与交付形态的目标能力为 unknown（wm/docking/desktop_delivery/subprocess/font_ime 等），结论依赖这些未核实事实；且 100 万行代码的 C++ 巨型应用鸿蒙化有大量工程不确定性。GTK 能力虽标记 available，但其在鸿蒙桌面环境的真实功能覆盖（事件循环、窗口层级、主题、输入法、HiDPI）仍需验证。若桌面窗口环境不支持传统多窗口/docking，Workbench 的 dockable 面板 UI（TabViewDockingPoint + mforms）可能需降级为单窗口平铺布局。若子进程受限，服务器管理功能（启停 mysqld/mysqldump/SSH 隧道）需整体替换为库调用（如 ssh 用 libssh 库内直连）。person_days 估算为 [40,80]（高到极高），大部分工作量在依赖重新编译、平台分支剔除与桌面集成适配/验证。"
+    "notes": "评估按模型 C（整包桌面应用）口径。置信 medium：大量桌面集成与交付形态的目标能力为 unknown（wm/docking/desktop_delivery/subprocess/font_ime 等），结论依赖这些未核实事实；且 100 万行代码的 C++ 巨型应用鸿蒙化有大量工程不确定性。GTK 能力虽标记 available，但其在鸿蒙桌面环境的真实功能覆盖（事件循环、窗口层级、主题、输入法、HiDPI）仍需验证。若桌面窗口环境不支持传统多窗口/docking，Workbench 的 dockable 面板 UI（TabViewDockingPoint + mforms）可能需降级为单窗口平铺布局。若子进程受限，服务器管理功能（启停 mysqld/mysqldump/SSH 隧道）需整体替换为库调用（如 ssh 用 libssh 库内直连）。person_days 估算为 [40,80]（高到极高），大部分工作量在依赖重新编译、平台分支剔除与桌面集成适配/验证。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "mysql-workbench",
@@ -2885,7 +2887,30 @@
         "rationale": "macOS Cocoa/AppKit API 在推荐清单中作为平台特有 API 出现，与 Win32 API 并列，均归 platform 类"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "blocker_ref:bk:desktop_wm_unknown:ta:gtk_desktop",
+        "class": "actionable",
+        "message": "blocker bk:desktop_wm_unknown 的引用 ta:gtk_desktop 不存在（悬空引用）"
+      },
+      {
+        "code": "ua_ref:ua:win32_import:ta:win32_abi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_import 的 caused_by ta:win32_abi 不存在"
+      },
+      {
+        "code": "ua_ref:ua:cocoa_appkit:ta:cocoa_abi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cocoa_appkit 的 caused_by ta:cocoa_abi 不存在"
+      },
+      {
+        "code": "cap_miss:rendering_3d",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "MySQL Workbench 是典型的跨平台桌面 GUI 应用，核心场景为 GUI（GTK+/GTKmm/Cocoa/WinForms 三平台 UI）与 2D 图形渲染（Cairo/OpenGL 硬件加速 E-R 图绘制），不涉及音视频媒体或特定硬件（GPU 计算/外设）。鸿蒙 PC 的 GTK 已标记为 available，Cairo/OpenGL 为 partial/available，但 macOS Cocoa 与 Windows WinForms+DllImport 两个平台前端无法直接移植。",

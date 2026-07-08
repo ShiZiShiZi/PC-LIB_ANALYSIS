@@ -748,13 +748,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK + ArkTS 应用层 + Node-API 桥接)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
         5,
         15
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -892,7 +893,12 @@
       "适配 NetworkInterface/NetworkChange API 为鸿蒙原生网络 API",
       "移除 Tmds.LibC 依赖，替换为鸿蒙 NDK 的等价调用"
     ],
-    "notes": "核心不确定性来自 .NET 运行时和 UDP 组播在鸿蒙 PC 上的支持状态——均为 unknown，因此整体置信度为 medium。若 .NET 运行时已移植且 UDP 组播可用，适配工作量较小（5-10 人天）；若需要用 C/C++ 重写核心组播逻辑，工作量会显著增加（10-15 人天以上）。MIT 许可证对移植无限制。"
+    "notes": "核心不确定性来自 .NET 运行时和 UDP 组播在鸿蒙 PC 上的支持状态——均为 unknown，因此整体置信度为 medium。若 .NET 运行时已移植且 UDP 组播可用，适配工作量较小（5-10 人天）；若需要用 C/C++ 重写核心组播逻辑，工作量会显著增加（10-15 人天以上）。MIT 许可证对移植无限制。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "net-mdns",
@@ -935,7 +941,15 @@
         "value": "find_alternative",
         "rationale": ".NET 库在鸿蒙 PC 上的适配路径取决于运行时是否可用——若不可用则需要完全重写，这与 recompile_napi 或 wrap_ffi 路径不同"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "net-mdns 是纯网络协议库，不涉及 GUI、3D 渲染、媒体处理或特定硬件设备访问。唯一相关场景是网络设备（网络接口枚举与组播通信），但该场景属于标准网络能力而非特定硬件依赖。",

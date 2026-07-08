@@ -947,21 +947,21 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
-        30,
-        60
+        54.3,
+        69.3
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            15,
-            30
+            33.8,
+            33.8
           ],
-          "basis": "needs_adaptation 桶 ~16.9k LOC，主要是 DeveloperComponents（10.5k，含 Win32 条件分支的样式代理和导航组件）和 private（6.4k，窗口管理 Win32 nativeEvent），需将 #ifdef Q_OS_WIN 守卫内的 Win32/DWM 调用替换为鸿蒙等价或 Qt 原生路径"
+          "basis": "需适配 16908 行 ÷ 500 行/天"
         },
         {
           "component": "gui",
@@ -994,8 +994,17 @@
             10
           ],
           "basis": "40+ 组件的功能验证和视觉回归测试（项目本身无自动化测试，需手动验证）"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            5.5,
+            5.5
+          ],
+          "basis": "重编译复用 16534 行 ÷ 3000 行/天"
         }
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -1168,7 +1177,12 @@
       "将 Qt6 专属 API 降级为 Qt5 兼容写法（已有 #if QT_VERSION 条件分支基础）",
       "在鸿蒙 PC 上验证 40+ 组件的功能和视觉表现"
     ],
-    "notes": "鸿蒙 PC 桌面窗口管理能力（wm）状态为 unknown，若不支持传统多窗口环境则 ElaWindow/ElaAppBar 的核心设计模式需根本性改变，此时 porting_class 可能升级为 needs_adaptation_partial。@ohos.screenshot API 仅提供单次截图（pick/capture），不支持 DXGI Desktop Duplication 那样的持续帧流——若使用者需要实时屏幕采集，需另行评估鸿蒙屏幕录制 API。confidence 为 medium 是因为 ta:window_management 和 ta:hidpi 的 target_status 为 unknown。"
+    "notes": "鸿蒙 PC 桌面窗口管理能力（wm）状态为 unknown，若不支持传统多窗口环境则 ElaWindow/ElaAppBar 的核心设计模式需根本性改变，此时 porting_class 可能升级为 needs_adaptation_partial。@ohos.screenshot API 仅提供单次截图（pick/capture），不支持 DXGI Desktop Duplication 那样的持续帧流——若使用者需要实时屏幕采集，需另行评估鸿蒙屏幕录制 API。confidence 为 medium 是因为 ta:window_management 和 ta:hidpi 的 target_status 为 unknown。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "ElaWidgetTools",
@@ -1222,7 +1236,15 @@
         "rationale": "D3D11 和 DXGI 为 Windows 系统库，通过 CMake target_link_libraries 直接链接，属系统预装"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目核心场景为桌面 GUI（Qt Widget 组件库），并涉及 Windows 专有的 3D 图形栈（D3D11/DXGI 用于屏幕截图）和桌面窗口管理（DWM 特效）。无媒体编解码/播放场景，无特定硬件依赖（DXGI 屏幕截图依赖 GPU 但非特定型号）。",

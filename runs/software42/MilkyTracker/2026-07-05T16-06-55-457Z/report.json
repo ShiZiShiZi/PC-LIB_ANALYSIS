@@ -1724,12 +1724,13 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 C: 整包桌面应用; OHOS NDK 交叉编译 C++ 核心; 需新增鸿蒙 GUI 后端与音频/MIDI 后端; arm64/x86_64; 自研内核, 非 Linux ABI)",
     "porting_class": "needs_adaptation_full",
-    "feasibility": "hard",
+    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         25,
         50
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1967,7 +1968,8 @@
       "在鸿蒙 PC 上运行 MilkyTracker 自测（播放/编辑/保存模块文件、采样编辑器、效果器等）验证功能完整"
     ],
     "notes": "评估按模型 C（整包桌面应用）口径。核心挑战：GUI 后端（SDL2/OpenGL 在鸿蒙的可用性未核实）和音频 I/O 后端（需写新的 @ohos.multimedia.audio 后端）。MIDI 能力未知（可选功能，可放弃）。核心混音/编辑器代码为纯 C++ 可移植。zlib/lhasa/zziplib 等依赖库通过子模块内嵌编译，无运行时外部 C 库依赖。Qt 鸿蒙版已 available 作为备选 GUI 方案。因 SDL2 鸿蒙可用性、桌面窗口管理器能力、MIDI 支持 3 项关键假设为 unknown，confidence 下调至 medium。conflict of interest: MilkyPlay 播放引擎为 BSD 授权可自由移植，MilkyTracker 主体为 GPL-3.0-or-later 需注意授权合规。",
-    "required_permissions": []
+    "required_permissions": [],
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "MilkyTracker",
@@ -2005,7 +2007,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:rendering_3d",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "MilkyTracker 是桌面音乐制作应用，涉及 GUI（SDL2/OpenGL + 原生平台后端）与音频 I/O（ALSA/JACK/CoreAudio/WinMM + MIDI 输入）两大鸿蒙适配重点场景，不涉及 3D 渲染、视频或特定硬件。",

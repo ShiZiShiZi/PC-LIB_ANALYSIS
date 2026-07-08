@@ -189,6 +189,8 @@ const DEFAULT_SETTINGS = {
   enableHarmonyMirror: true,
   enableAgentResolve: true,
   enableHarmonyDocSkills: true,   // 分析时提示使用 opencode 全局鸿蒙文档 skill（存在才生效）
+  recompileLocPerDay: 3000,       // 工作量分项 recompile = recompile_reuse 桶 LOC ÷ 此速率（行/天）
+  adaptationLocPerDay: 500,       // 工作量分项 api_adaptation = needs_adaptation 桶 LOC ÷ 此速率（行/天）
   recursiveAfterAnalyze: false,   // auto-start recursive dep analysis after a manual analyze
 };
 
@@ -307,6 +309,8 @@ function loadSettings() {
 function saveSettings(patch) {
   settings = { ...settings, ...patch };
   if (!(settings.maxConcurrent >= 1)) settings.maxConcurrent = 1;
+  if (!(Number(settings.recompileLocPerDay) > 0)) settings.recompileLocPerDay = DEFAULT_SETTINGS.recompileLocPerDay;
+  if (!(Number(settings.adaptationLocPerDay) > 0)) settings.adaptationLocPerDay = DEFAULT_SETTINGS.adaptationLocPerDay;
   try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2)); } catch (_) {}
   pumpAnalyze();
   return settings;
@@ -850,7 +854,8 @@ function validateLicense(report) {
   if (!lic || typeof lic !== 'object' || !lic.category) return [];
   const derived = deriveLicenseCategory({ license: { spdx: lic.spdx, name: lic.name } });
   if (derived && derived !== lic.category)
-    return [`license.category(${lic.category}) 与依据 SPDX(${lic.spdx || '—'}) 派生的性质(${derived}) 不一致，请核对`];
+    return [['license_category_mismatch', W_ACT,
+      `license.category(${lic.category}) 与依据 SPDX(${lic.spdx || '—'}) 派生的性质(${derived}) 不一致，请核对`]];
   return [];
 }
 
@@ -1006,8 +1011,54 @@ const FEAS_FOR_CLASS = { no_adaptation: 'feasible', recompile_only: 'feasible_wi
   needs_adaptation_full: 'feasible_with_effort',
   needs_adaptation_partial: 'hard', infeasible: 'infeasible' };
 
+// Report normalization is now single-sourced in scripts/report_normalize.py and persisted at
+// assemble time (report.json is born normalized + stamped with meta.normalized_version). The JS
+// functions below are the byte-identical MIRROR (a full-corpus parity test asserts they agree),
+// kept only to upgrade legacy/older-stamp reports at serve time without a re-run. Bump BOTH this
+// constant and report_normalize.NORMALIZED_VERSION together when the derivation logic changes.
+// v2: consistency warnings carry a stable {code, class}; the model's self-review may dismiss an
+// `actionable` one (meta.harmony_warnings_dismissed → meta.harmony_warnings_reviewed).
+// v3: effort.breakdown recompile/api_adaptation derived from code_partition LOC at configurable
+// rates, and effort.person_days total = Σ breakdown when itemized.
+const NORMALIZED_VERSION = 3;
+const W_ACT = 'actionable';   // model self-review may FIX (with evidence) or DISMISS as false positive
+const W_INFO = 'info';        // deterministic audit note — never dismissible
+
+// Effort-breakdown derivation (mirror of report_normalize.py). recompile / api_adaptation are
+// derived from code_partition LOC ÷ configurable rate (settings.recompileLocPerDay /
+// adaptationLocPerDay, defaults in DEFAULT_SETTINGS which MUST match the Python defaults).
+const DERIVED_COMPONENTS = ['recompile', 'api_adaptation'];
+function bucketLoc(report, cls) {
+  const cp = report && report.code_partition;
+  if (!cp || !Array.isArray(cp.buckets)) return 0;
+  return cp.buckets.reduce((a, b) => a + ((b && b.class === cls) ? (Number(b.loc) || 0) : 0), 0);
+}
+function round1(x) {   // round half-up to 1 decimal; JS numbers drop a trailing .0 (3 not 3.0)
+  const n = Number(x);
+  return Number.isFinite(n) ? Math.round(Math.max(n, 0) * 10) / 10 : 0;
+}
+function sumBreakdown(bd) {
+  let lo = 0, hi = 0, any = false;
+  for (const b of bd) {
+    const pd = b && Array.isArray(b.person_days) && b.person_days.length === 2 ? b.person_days : null;
+    if (pd && Number.isFinite(Number(pd[0])) && Number.isFinite(Number(pd[1]))) { lo += Number(pd[0]); hi += Number(pd[1]); any = true; }
+  }
+  return any ? [lo, hi] : null;
+}
+function applyDerivedComponent(bd, comp, loc, rate, zhLabel) {
+  loc = Number(loc) || 0;
+  if (loc <= 0 || rate <= 0) return;
+  let d = round1(loc / rate);
+  if (!(d > 0)) d = 0.1;
+  const pd = [d, d];
+  const basis = `${zhLabel} ${Math.trunc(loc)} 行 ÷ ${Math.trunc(rate)} 行/天`;
+  const existing = bd.find((b) => b && b.component === comp);
+  if (existing) { existing.person_days = pd; existing.basis = basis; return; }
+  bd.push({ component: comp, person_days: pd, basis });
+}
+
 // Serve-time normalize (mutates report.harmony_adaptation): fill the derived effort.level,
-// person_days (from legacy if missing), feasibility consistency, and stable ids — so 存量
+// person_days (from breakdown / legacy), feasibility consistency, and stable ids — so 存量
 // reports gain the new structured fields without a re-run.
 function normalizeHarmony(report) {
   const ha = report && report.harmony_adaptation;
@@ -1021,27 +1072,35 @@ function normalizeHarmony(report) {
     ha.porting_class = cls;
     ha.feasibility = FEAS_FOR_CLASS[cls] || ha.feasibility || null;
   }
-  const days = effortDays(ha);
   ha.effort = ha.effort && typeof ha.effort === 'object' ? ha.effort : {};
-  if (days && !(Array.isArray(ha.effort.person_days) && ha.effort.person_days.length === 2))
-    ha.effort.person_days = days;
-  ha.effort.level = deriveDifficultyLevel(cls, days ? days[1] : 0);   // always server-derived
   const tag = (arr, p) => Array.isArray(arr) && arr.forEach((it, i) => { if (it && typeof it === 'object' && !it.id) it.id = `${p}:${i + 1}`; });
   tag(ha.target_assumptions, 'ta'); tag(ha.unadaptable_apis, 'ua'); tag(ha.blockers, 'bk');
   // required_permissions: default missing harmony_status to unknown so the panel/xlsx
   // and confidence logic treat an unstated permission conservatively.
   if (Array.isArray(ha.required_permissions))
     for (const p of ha.required_permissions) if (p && typeof p === 'object' && !p.harmony_status) p.harmony_status = 'unknown';
-  // effort.breakdown present but no total → sum the components into person_days.
-  if (Array.isArray(ha.effort.breakdown) && ha.effort.breakdown.length
-      && !(Array.isArray(ha.effort.person_days) && ha.effort.person_days.length === 2)) {
-    let lo = 0, hi = 0, any = false;
-    for (const b of ha.effort.breakdown) {
-      const pd = b && Array.isArray(b.person_days) && b.person_days.length === 2 ? b.person_days : null;
-      if (pd && Number.isFinite(Number(pd[0])) && Number.isFinite(Number(pd[1]))) { lo += Number(pd[0]); hi += Number(pd[1]); any = true; }
-    }
-    if (any) { ha.effort.person_days = [lo, hi]; ha.effort.level = deriveDifficultyLevel(cls, hi); }
+  // Effort breakdown + total (mirror report_normalize.normalize_harmony). recompile /
+  // api_adaptation are derived from code_partition LOC; only touch a model-provided breakdown
+  // (never synthesise one) so re-normalization is idempotent and no-breakdown reports keep the
+  // model's holistic person_days. total = Σ breakdown when itemized (decision Q1).
+  const eff = ha.effort;
+  const bd = Array.isArray(eff.breakdown) ? eff.breakdown : null;
+  const hadBreakdown = Array.isArray(bd) && bd.length > 0;
+  const modelDays = effortDays(ha);
+  let total;
+  if (hadBreakdown) {
+    const rec = Number(settings.recompileLocPerDay) > 0 ? Number(settings.recompileLocPerDay) : 3000;
+    const adp = Number(settings.adaptationLocPerDay) > 0 ? Number(settings.adaptationLocPerDay) : 500;
+    applyDerivedComponent(bd, 'recompile', bucketLoc(report, 'recompile_reuse'), rec, '重编译复用');
+    applyDerivedComponent(bd, 'api_adaptation', bucketLoc(report, 'needs_adaptation'), adp, '需适配');
+    const s = sumBreakdown(bd);
+    total = s !== null ? s : modelDays;
+  } else {
+    total = modelDays;
   }
+  if (total) eff.person_days = [round1(total[0]), round1(total[1])];
+  const pd = eff.person_days;
+  eff.level = deriveDifficultyLevel(cls, Array.isArray(pd) && pd.length === 2 ? pd[1] : 0);
   // critical_dependencies: default a missing order to the array position (1-based).
   if (Array.isArray(ha.critical_dependencies))
     ha.critical_dependencies.forEach((c, i) => { if (c && typeof c === 'object' && !(Number(c.order) >= 1)) c.order = i + 1; });
@@ -1055,7 +1114,8 @@ function validateHarmony(report) {
   const w = [];
   const cls = ha.porting_class || derivePortingClass(report);
   if (cls && ha.feasibility && FEAS_FOR_CLASS[cls] && ha.feasibility !== FEAS_FOR_CLASS[cls])
-    w.push(`feasibility(${ha.feasibility}) 与 porting_class(${cls}) 不自洽，应为 ${FEAS_FOR_CLASS[cls]}`);
+    w.push(['feas_pclass_inconsistent', W_INFO,
+      `feasibility(${ha.feasibility}) 与 porting_class(${cls}) 不自洽，应为 ${FEAS_FOR_CLASS[cls]}`]);
   // transparency: normalizeHarmony clamped a self-contradictory model porting_class UP — either
   // (full/recompile/no + unadaptable signal) → _partial, or (recompile/no + needs_adaptation bucket)
   // → _full. The reason line matches whichever axis was violated.
@@ -1063,7 +1123,8 @@ function validateHarmony(report) {
     const reason = ha.porting_class_adjusted.to === 'needs_adaptation_full'
       ? '但代码分区(dim-12)存在需适配模块（非零源码改动）'
       : '但存在无法适配的 API/阻碍点';
-    w.push(`porting_class 模型原判 ${ha.porting_class_adjusted.from}，${reason}，已按"不矛盾"校正为 ${ha.porting_class_adjusted.to}`);
+    w.push(['pclass_adjusted', W_INFO,
+      `porting_class 模型原判 ${ha.porting_class_adjusted.from}，${reason}，已按"不矛盾"校正为 ${ha.porting_class_adjusted.to}`]);
   }
   // soft hint (human-review only, not auto-clamped): recompile_only is definitionally the C/C++
   // NDK-rebuild class; a managed/ported-runtime lib (Go/Java/Python/JS/TS) with NO native surface
@@ -1075,25 +1136,27 @@ function validateHarmony(report) {
     || (Array.isArray(na.groups) && na.groups.some((g) => g && ['ffi', 'platform', 'system', 'hardware'].includes(g.category)))
     || (Array.isArray(report.library && report.library.bindings) && report.library.bindings.length);
   if (cls === 'recompile_only' && managedEco && !nativeSurface)
-    w.push(`porting_class=recompile_only 但主生态为 ${eco}（已移植运行时）且无原生调用面，疑似应为 no_adaptation`);
+    w.push(['recompile_no_native', W_INFO,
+      `porting_class=recompile_only 但主生态为 ${eco}（已移植运行时）且无原生调用面，疑似应为 no_adaptation`]);
   const ua = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
   const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
   const ta = Array.isArray(ha.target_assumptions) ? ha.target_assumptions : [];
   if (ua.length && !['needs_adaptation_partial', 'infeasible'].includes(cls))
-    w.push(`unadaptable_apis 非空但 porting_class=${cls}（应为 needs_adaptation_partial 或 infeasible）`);
+    w.push(['ua_pclass', W_INFO, `unadaptable_apis 非空但 porting_class=${cls}（应为 needs_adaptation_partial 或 infeasible）`]);
   const ids = new Set([...ta, ...ua, ...blk].map((x) => x && x.id).filter(Boolean));
-  for (const b of blk) for (const r of [...(b.caused_by || []), ...(b.manifests_as || [])])
-    if (!ids.has(r)) w.push(`blocker ${b.id || b.issue || ''} 的引用 ${r} 不存在（悬空引用）`);
-  for (const u of ua) for (const r of (u.caused_by || [])) if (!ids.has(r)) w.push(`unadaptable_api ${u.id || u.api || ''} 的 caused_by ${r} 不存在`);
+  const arr = (v) => (Array.isArray(v) ? v : []);   // a malformed string ref must not spread to chars
+  for (const b of blk) for (const r of [...arr(b.caused_by), ...arr(b.manifests_as)])
+    if (!ids.has(r)) w.push([`blocker_ref:${b.id || b.issue || ''}:${r}`, W_ACT, `blocker ${b.id || b.issue || ''} 的引用 ${r} 不存在（悬空引用）`]);
+  for (const u of ua) for (const r of arr(u.caused_by)) if (!ids.has(r)) w.push([`ua_ref:${u.id || u.api || ''}:${r}`, W_ACT, `unadaptable_api ${u.id || u.api || ''} 的 caused_by ${r} 不存在`]);
   for (const a of ta) if (a && a.required && a.target_status === 'unavailable') {
     const refed = [...blk, ...ua].some((x) => (x.caused_by || []).includes(a.id));
-    if (!refed) w.push(`target_assumption ${a.id || a.capability || ''} 为 required+unavailable 但无对应 blocker/unadaptable_api`);
+    if (!refed) w.push([`ta_unref:${a.id || a.capability || ''}`, W_ACT, `target_assumption ${a.id || a.capability || ''} 为 required+unavailable 但无对应 blocker/unadaptable_api`]);
   }
   if (ta.some((a) => a && a.required && a.target_status === 'unknown') && ha.confidence === 'high')
-    w.push('存在 required 且 unknown 的目标假设，confidence 不应为 high');
+    w.push(['conf_high_unknown', W_ACT, '存在 required 且 unknown 的目标假设，confidence 不应为 high']);
   const perms = Array.isArray(ha.required_permissions) ? ha.required_permissions : [];
   for (const p of perms) if (p && p.harmony_status === 'unavailable' && !blk.length)
-    w.push(`required_permission ${p.permission || ''} 为 unavailable 但无对应 blocker`);
+    w.push([`perm_unavail_noblocker:${p.permission || ''}`, W_ACT, `required_permission ${p.permission || ''} 为 unavailable 但无对应 blocker`]);
   return w;
 }
 
@@ -1137,23 +1200,23 @@ function validateReport(report) {
   const hay = names.flatMap((n) => [n, String(n).replace(/^lib/i, '')]).join('  ');
   for (const sig of CAP_SIGNALS) {
     if (sig.re.test(hay) && !presentKeys.has(sig.key))
-      w.push(`依赖/native_api 出现 ${sig.key} 强信号，但 capability_profile 未标记该场景（可能漏判）`);
+      w.push([`cap_miss:${sig.key}`, W_ACT, `依赖/native_api 出现 ${sig.key} 强信号，但 capability_profile 未标记该场景（可能漏判）`]);
   }
   // present scenario without evidence
   for (const s of scen) if (s && s.present && !((s.evidence || []).length))
-    w.push(`能力画像场景 ${s.key} present 但缺 evidence`);
+    w.push([`scenario_no_evidence:${s.key}`, W_ACT, `能力画像场景 ${s.key} present 但缺 evidence`]);
   // dangling permission → scenario
   const ha = report.harmony_adaptation || {};
   for (const p of (ha.required_permissions || []))
     if (p && p.source_capability && p.source_capability !== 'cloud_services' && !presentKeys.has(p.source_capability))
-      w.push(`required_permission ${p.permission || ''} 的 source_capability=${p.source_capability} 不在已标记场景中`);
+      w.push([`perm_dangling_cap:${p.permission || ''}`, W_ACT, `required_permission ${p.permission || ''} 的 source_capability=${p.source_capability} 不在已标记场景中`]);
   // present+unsupported scenario not reflected in dim-9
   const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
   const ta = Array.isArray(ha.target_assumptions) ? ha.target_assumptions : [];
   const dimText = JSON.stringify([blk, ta, ha.unadaptable_apis || []]).toLowerCase();
   for (const s of scen) if (s && s.present && ['unavailable', 'partial'].includes(s.harmony_status)
       && !dimText.includes(String(s.key).toLowerCase()) && (blk.length + ta.length) === 0)
-    w.push(`场景 ${s.key} 鸿蒙状态为 ${s.harmony_status} 但 dim-9 无对应阻碍/假设（可能漏登记）`);
+    w.push([`scenario_no_dim9:${s.key}`, W_ACT, `场景 ${s.key} 鸿蒙状态为 ${s.harmony_status} 但 dim-9 无对应阻碍/假设（可能漏登记）`]);
   // cloud service omission — vendor SDK/domain present in deps/network but cloud_services missed it
   const cs = report.cloud_services || {};
   const csvc = Array.isArray(cs.services) ? cs.services : [];
@@ -1162,12 +1225,12 @@ function validateReport(report) {
   const cloudHay = (hay + '  ' + netText).toLowerCase();
   for (const sig of CLOUD_SIGNALS)
     if (sig.re.test(cloudHay) && !csVendors.has(sig.vendor))
-      w.push(`依赖/网络出现 ${sig.vendor} 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）`);
+      w.push([`cloud_miss:${sig.vendor}`, W_ACT, `依赖/网络出现 ${sig.vendor} 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）`]);
   // cloud present but dim-9 has no INTERNET permission
   if (cs.present && csvc.length) {
     const perms = JSON.stringify(ha.required_permissions || []).toLowerCase();
     if (!perms.includes('internet'))
-      w.push(`cloud_services 涉及云端但 dim-9 未登记 ohos.permission.INTERNET（可能漏登记）`);
+      w.push(['cloud_no_internet', W_ACT, `cloud_services 涉及云端但 dim-9 未登记 ohos.permission.INTERNET（可能漏登记）`]);
   }
   // dim-12 code_partition ↔ code_metrics ↔ dim-9 consistency
   const cp = report.code_partition || null;
@@ -1178,19 +1241,19 @@ function validateReport(report) {
       && report.code_metrics.production.code) || 0;
     const sum = cp.buckets.reduce((a, b) => a + (Number(b && b.loc) || 0), 0);
     if (prodCode > 0 && Math.abs(sum - prodCode) / prodCode > 0.15)
-      w.push(`代码分区桶 LOC 之和(${sum})与生产代码(${prodCode})偏差超过 15%（覆盖不足或重复计入）`);
+      w.push(['cp_loc_coverage', W_INFO, `代码分区桶 LOC 之和(${sum})与生产代码(${prodCode})偏差超过 15%（覆盖不足或重复计入）`]);
     const unLoc = cp.buckets.filter((b) => b && b.class === 'unadaptable')
       .reduce((a, b) => a + (Number(b.loc) || 0), 0);
     if (unLoc > 0 && !['needs_adaptation_partial', 'infeasible'].includes(cls))
-      w.push(`代码分区含 unadaptable 桶(${unLoc} 行)但 porting_class=${cls}（应为 needs_adaptation_partial/infeasible）`);
+      w.push(['cp_unadapt_pclass', W_INFO, `代码分区含 unadaptable 桶(${unLoc} 行)但 porting_class=${cls}（应为 needs_adaptation_partial/infeasible）`]);
     // Same materiality gate as the reconcile clamp — only flag a genuine contradiction (a Go/Rust
     // no_adaptation lib with a few scattered cross-compile platform lines is NOT flagged).
     if (needsAdaptationOverride(report, cls))
-      w.push(`代码分区含 needs_adaptation 桶(${needsAdaptationLoc(report)} 行)但 porting_class=${cls}（应为 needs_adaptation_full；零源码改动才是 recompile_only）`);
+      w.push(['cp_needs_full', W_INFO, `代码分区含 needs_adaptation 桶(${needsAdaptationLoc(report)} 行)但 porting_class=${cls}（应为 needs_adaptation_full；零源码改动才是 recompile_only）`]);
     if (unLoc > 0 && !uaList.length)
-      w.push('代码分区含 unadaptable 桶但 dim-9 unadaptable_apis 为空（漏登记或分桶过严）');
+      w.push(['cp_unadapt_no_ua', W_ACT, '代码分区含 unadaptable 桶但 dim-9 unadaptable_apis 为空（漏登记或分桶过严）']);
     if (unLoc === 0 && uaList.length)
-      w.push('dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）');
+      w.push(['ua_no_cp_bucket', W_ACT, 'dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）']);
   }
   // effort.breakdown 分项之和应落在 person_days 区间附近
   const eb = ha.effort && Array.isArray(ha.effort.breakdown) ? ha.effort.breakdown : [];
@@ -1202,7 +1265,7 @@ function validateReport(report) {
       lo += Number(pd[0]) || 0; hi += Number(pd[1]) || 0;
     }
     if (hi < days[0] * 0.7 || lo > days[1] * 1.3)
-      w.push(`effort.breakdown 分项之和([${lo}, ${hi}])与 person_days([${days[0]}, ${days[1]}])明显不符`);
+      w.push(['effort_breakdown', W_INFO, `effort.breakdown 分项之和([${lo}, ${hi}])与 person_days([${days[0]}, ${days[1]}])明显不符`]);
   }
   // critical_dependencies referential integrity
   const cds = Array.isArray(ha.critical_dependencies) ? ha.critical_dependencies : [];
@@ -1216,14 +1279,34 @@ function validateReport(report) {
       if (!c || !c.name) continue;
       const dep = depByName.get(String(c.name).toLowerCase());
       if (!dep)
-        w.push(`critical_dependencies 的 ${c.name} 在 dependencies 列表中找不到（名称须与 dependencies[].name 一致）`);
+        w.push([`critical_dep_notfound:${c.name}`, W_ACT, `critical_dependencies 的 ${c.name} 在 dependencies 列表中找不到（名称须与 dependencies[].name 一致）`]);
       else if (dep.harmony_adapted === true)
-        w.push(`critical_dependencies 列出了已鸿蒙化依赖 ${c.name}（官方源已有移植产物，不应列入关键路径）`);
-      for (const r of (c.refs || [])) if (!idSet.has(r))
-        w.push(`critical_dependencies ${c.name} 的引用 ${r} 不存在（悬空引用）`);
+        w.push([`critical_dep_adapted:${c.name}`, W_ACT, `critical_dependencies 列出了已鸿蒙化依赖 ${c.name}（官方源已有移植产物，不应列入关键路径）`]);
+      for (const r of (Array.isArray(c.refs) ? c.refs : [])) if (!idSet.has(r))
+        w.push([`critical_dep_ref:${c.name}:${r}`, W_ACT, `critical_dependencies ${c.name} 的引用 ${r} 不存在（悬空引用）`]);
     }
   }
   return w;
+}
+
+// Mirror of report_normalize.normalize_report's warning block. Runs the three validators
+// (which now yield [code, class, message] triples), then applies the model self-review's
+// dismissals: an `actionable` warning whose code is listed in meta.harmony_warnings_dismissed
+// moves to `reviewed` (with rationale); everything else (incl. all `info` audit notes) stays
+// active. Returns {active:[{code,class,message}], reviewed:[{code,message,rationale}]}.
+function computeWarnings(report) {
+  const raw = [...validateHarmony(report), ...validateReport(report), ...validateLicense(report)];
+  const meta = (report && report.meta) || {};
+  const dismissed = new Map();
+  for (const d of (Array.isArray(meta.harmony_warnings_dismissed) ? meta.harmony_warnings_dismissed : []))
+    if (d && d.code) dismissed.set(d.code, d.rationale || '');
+  const active = [];
+  const reviewed = [];
+  for (const [code, cls, message] of raw) {
+    if (cls === W_ACT && dismissed.has(code)) reviewed.push({ code, message, rationale: dismissed.get(code) });
+    else active.push({ code, class: cls, message });
+  }
+  return { active, reviewed };
 }
 
 // ---- bottom-up adaptation rollup (serve-time, API-granular) ----------------
@@ -2362,14 +2445,20 @@ const server = http.createServer(async (req, res) => {
       let rep;
       try { rep = JSON.parse(fs.readFileSync(file, 'utf8')); }
       catch (_) { return send(res, 200, fs.readFileSync(file, 'utf8')); }   // malformed → raw passthrough
-      // serve-time: fill derived dim-9 fields (effort.level/person_days/ids/feasibility) and
-      // attach consistency warnings, so 存量 reports gain structured data without a re-run.
-      normalizeDim8(rep);
-      normalizeCodePartition(rep);   // before normalizeHarmony: canonical loc/path feeds LOC对账 + class校正
-      normalizeHarmony(rep);
-      normalizeLicense(rep);
-      const hw = [...validateHarmony(rep), ...validateReport(rep), ...validateLicense(rep)];
-      if (hw.length) rep.meta = { ...(rep.meta || {}), harmony_warnings: hw };
+      // A report born/migrated through scripts/report_normalize.py carries the current version
+      // stamp and is already self-consistent (single source of truth: derived porting_class /
+      // feasibility / effort.level + persisted meta.harmony_warnings) — serve as-is. Only
+      // legacy/older-stamp reports get the JS mirror at serve time, so 存量 upgrade without a re-run.
+      if (!(rep && rep.meta && Number(rep.meta.normalized_version) >= NORMALIZED_VERSION)) {
+        normalizeDim8(rep);
+        normalizeCodePartition(rep);   // before normalizeHarmony: canonical loc/path feeds LOC对账 + class校正
+        normalizeHarmony(rep);
+        normalizeLicense(rep);
+        const { active, reviewed } = computeWarnings(rep);
+        rep.meta = rep.meta && typeof rep.meta === 'object' ? rep.meta : {};
+        if (active.length) rep.meta.harmony_warnings = active; else delete rep.meta.harmony_warnings;
+        if (reviewed.length) rep.meta.harmony_warnings_reviewed = reviewed; else delete rep.meta.harmony_warnings_reviewed;
+      }
       return send(res, 200, rep);
     }
 
@@ -2386,7 +2475,27 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && pathname === '/api/harmony-caps') {
-      try { return send(res, 200, harmonyCaps.load()); }
+      try {
+        const caps = harmonyCaps.load();
+        // 反哺研究优先级：跨所有已分析报告聚合每个目标能力行「被 N 个分析需要」
+        // （经 harmony_adaptation.target_assumptions[].capability_key）。遍历范式同 /api/observations。
+        const demand = {};   // rowId -> {count, unknown, libs:[]}
+        for (const grp of listGroups()) for (const lib of listLibraries(grp)) {
+          if (!lib.latest || !lib.latest.reportAvailable) continue;
+          const rep = latestReport(lib.name, grp);
+          const tas = (rep && rep.harmony_adaptation && rep.harmony_adaptation.target_assumptions) || [];
+          const seen = new Set();   // 同一报告对同一行只计一次
+          for (const ta of tas) {
+            const key = ta && ta.capability_key;
+            if (!key || seen.has(key)) continue;
+            seen.add(key);
+            let d = demand[key]; if (!d) d = demand[key] = { count: 0, unknown: 0, libs: [] };
+            d.count++; d.libs.push(lib.name);
+            if (ta.target_status === 'unknown') d.unknown++;
+          }
+        }
+        return send(res, 200, { ...caps, demand });
+      }
       catch (e) { return send(res, 500, { error: String(e.message || e) }); }
     }
     if (req.method === 'POST' && pathname === '/api/harmony-caps/sync') {
@@ -2476,7 +2585,7 @@ if (require.main === module) {
 } else {
   module.exports = { derivePortingClass, deriveDifficultyLevel, effortDays, normalizeHarmony,
     reconcilePortingClass, hasUnadaptableSignal, normalizeCodePartition,
-    validateHarmony, validateReport, rollupAdaptation, buildDepTopology,
+    validateHarmony, validateReport, computeWarnings, rollupAdaptation, buildDepTopology,
     deriveLicenseCategory, normalizeLicense, validateLicense, normalizeDim8,
     parseRepoUrl, canonicalRepoKey, normalizeCloneUrl };
 }

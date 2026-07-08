@@ -830,7 +830,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "run_on_ported_runtime",
@@ -892,7 +893,8 @@
       "在鸿蒙 Node.js 上验证本库的基本编译通过（使用一个简单的测试 addon 引用 napi.h 并用 OHOS NDK 编译）",
       "对接 node-gyp 上游 / node-addon-api 社区，推动 OHOS 目标成为正式的 CI 支持平台"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。本库为零依赖 header-only 库，无 GUI/3D/媒体/硬件场景，无云端服务，无平台专有系统调用。唯一工作是构建系统适配——node-gyp 的 OS 条件分支需新增 OHOS 条目（OHOS 使用 clang，基本走现有 Clang/GCC 路径，改动量极小）。若目标是 ArkTS 沙箱应用（模型 B）且需将原生 addon 暴露给 ArkTS，则额外需要 Node-API 桥接配置——但该工作属于使用本库的 addon 项目而非本库本身。platform_adaptation 仅 3 行（均为 MSVC 版本检测，OHOS clang 不命中），平台耦合极轻。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。本库为零依赖 header-only 库，无 GUI/3D/媒体/硬件场景，无云端服务，无平台专有系统调用。唯一工作是构建系统适配——node-gyp 的 OS 条件分支需新增 OHOS 条目（OHOS 使用 clang，基本走现有 Clang/GCC 路径，改动量极小）。若目标是 ArkTS 沙箱应用（模型 B）且需将原生 addon 暴露给 ArkTS，则额外需要 Node-API 桥接配置——但该工作属于使用本库的 addon 项目而非本库本身。platform_adaptation 仅 3 行（均为 MSVC 版本检测，OHOS clang 不命中），平台耦合极轻。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "node-addon-api",
@@ -916,7 +918,8 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本库是 header-only C++ 包装层，不涉及 GUI、3D 渲染、音视频媒体或特定硬件场景。所有功能均为 Node-API 桥接层的数据类型包装和异步任务管理，属于纯计算/桥接类库。",

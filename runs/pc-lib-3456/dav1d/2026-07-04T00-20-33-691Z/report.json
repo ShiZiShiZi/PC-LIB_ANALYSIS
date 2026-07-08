@@ -1054,7 +1054,8 @@
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile_ohos_ndk",
@@ -1131,7 +1132,8 @@
       "确认 ARM64 汇编源码被正确纳入编译，验证 dav1d 在鸿蒙 arm64 设备上的解码正确性与性能",
       "如需以 ArkTS 应用形态暴露，增加 Node-API 封装层（不在核心库改造范围内）"
     ],
-    "notes": "按模型 A（库经 OHOS NDK 重编为 .so，供其它鸿蒙应用/框架链接）评估。SDL2/libplacebo/Vulkan 等 GUI/GPU 依赖仅在可选示例 dav1dplay 中使用，核心库不依赖它们；如要完整移植示例播放器，可复用已在 cmd-pkgs 中已鸿蒙化的 SDL2/libplacebo，Vulkan 状态未知。x86_64 目标未核实，评估以 arm64 为准。"
+    "notes": "按模型 A（库经 OHOS NDK 重编为 .so，供其它鸿蒙应用/框架链接）评估。SDL2/libplacebo/Vulkan 等 GUI/GPU 依赖仅在可选示例 dav1dplay 中使用，核心库不依赖它们；如要完整移植示例播放器，可复用已在 cmd-pkgs 中已鸿蒙化的 SDL2/libplacebo，Vulkan 状态未知。x86_64 目标未核实，评估以 arm64 为准。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "dav1d",
@@ -1156,7 +1158,15 @@
     "notes": "整体置信度因鸿蒙 PC 通用视频编解码 C 库生态与 x86_64 架构覆盖情况尚未完全核实而设为 medium；arm64 主目标与核心库的平台可移植性判断较充分。",
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:rendering_3d",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "dav1d 是媒体/视频解码核心库，不涉及 GUI、3D 渲染或专用硬件；其鸿蒙适配主要挑战在视频编解码这条能力线。",

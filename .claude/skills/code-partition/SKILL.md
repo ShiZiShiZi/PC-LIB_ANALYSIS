@@ -9,7 +9,8 @@ A focused lens that answers **"这个项目的生产代码里，有多少行能�
 多少行需要适配改造、多少行无法适配"** —— 按模块/目录分桶并给出 LOC 统计。这是鸿蒙化**工作量
 评估的量化底座**：dim-9 的 `effort.person_days`/`effort.breakdown` 要以本分区（尤其
 `needs_adaptation`/`unadaptable` 桶的 LOC）为主要依据。**职责分工**：本维度只做"代码 → 桶 + LOC"
-的归属与对账，**不**下移植结论/不估人天（那是 dim-9）。
+的归属与对账，**不**下移植结论/不估人天（那是 dim-9）。**综合层，见 `pc-lib-analyzer.md`「两层契约」——
+只消费特征层、不重扫源码、结论不与 dim-9 矛盾（`porting_class` 由归一据本 4 桶 + dim-9 `unadaptable_apis` 派生）。**
 
 ## 主旨与原则
 
@@ -64,11 +65,12 @@ A focused lens that answers **"这个项目的生产代码里，有多少行能�
 ```
 
 - `class` 闭轴 4 值：`reuse_direct` / `recompile_reuse` / `needs_adaptation` / `unadaptable`。
-  **本 4 桶与 dim-9 `porting_class` 严格对应**（dim-9 据本分区定档，server 会强制两者不矛盾）：
-  `recompile_reuse` = 该模块 **OHOS NDK 重编、零源码改动** → 对应 `recompile_only`；
-  `needs_adaptation` = 需要为鸿蒙**改动源码/加 OHOS 分支/换后端**（哪怕只靠构建开关切换后端）→ 对应 `needs_adaptation_full`；
-  `unadaptable` → 对应 `needs_adaptation_partial`/`infeasible`。**因此：C/C++ 等原生模块只要需要任何鸿蒙适配动作就归
-  `needs_adaptation`，别塞进 `recompile_reuse`——否则 dim-9 会被误导标成 `recompile_only` 而与本分区自相矛盾。**
+  **归一（`report_normalize.py`）据本 4 桶确定性派生 dim-9 `porting_class`**——本分区就是 porting_class 的事实源之一，
+  分桶准则 porting_class 准：
+  `recompile_reuse` = 该模块 **OHOS NDK 重编、零源码改动** → `recompile_only`；
+  `needs_adaptation` = 需要为鸿蒙**改动源码/加 OHOS 分支/换后端**（哪怕只靠构建开关切换后端）→ 至少 `needs_adaptation_full`；
+  `unadaptable` → `needs_adaptation_partial`/`infeasible`。**因此：C/C++ 等原生模块只要需要任何鸿蒙适配动作就归
+  `needs_adaptation`，别塞进 `recompile_reuse`——否则归一会把 porting_class 误派生成 `recompile_only`。**
   ⚠️ **例外——已移植运行时语言（Go/Rust/Python/Java…）的纯跨平台文件不算 needs_adaptation**：靠 `GOOS`/`cfg!(target_os)`/
   运行时自动选择、鸿蒙上**交叉编译即过、零改动**的平台分支文件（如 `app_unix.go`/`app_windows.go` 只做信号处理），
   归 `reuse_direct`/`recompile_reuse`，**不要**单列 `needs_adaptation` 桶（否则会把本应 `no_adaptation` 的纯 Go/Rust 库
@@ -90,15 +92,14 @@ A focused lens that answers **"这个项目的生产代码里，有多少行能�
    - 脚本语言（python/nodejs/java 字节码…）无原生耦合的模块 → `reuse_direct`（跑已移植运行时零改动）；
    - C/C++/Rust/Go 无平台调用点的模块 → `recompile_reuse`（OHOS NDK/交叉编译即可）；
    - 多语言库（如 C++ 核心 + Python 绑定）按目录的实际语言分别归桶。
-4. **`needs_adaptation` vs `unadaptable` 判别（分桶最易错，一句话判据）**——对每个"脏"模块只问：
-   **能否用鸿蒙可用 API 或自行实现把该功能重建出来？**
-   - **能 → `needs_adaptation`（需适配）**：功能能在鸿蒙实现，只是**要换成鸿蒙的 API/方案**。典型：平台抽象层（多后端，
-     加 OHOS 后端；epoll/kqueue/io_uring→鸿蒙 I/O 多路复用/poll 回退）、GUI 层（对应 capability_profile gui 场景，ArkUI 重写也归此桶、
-     reason 注明是重写）、Win32/POSIX 差异换 @ohos、DirectX/Metal→鸿蒙图形栈、运行时平台分支密集模块、x86-only asm/intrinsics（补 NEON/标量回退）。
-     **"没有 drop-in 等价"≠ 无法适配——能重建就归这里。**
-   - **不能 → `unadaptable`（无法适配）**：卡在**机制/硬件/闭源**层、鸿蒙无任何等价且无法自行实现。**从严**，只留给：
-     **CUDA/专有 GPU 计算**、**闭源二进制库/无源码预编译 agent**、**鸿蒙无法操作的专有内核特性/驱动**、绑定特定硬件设备无替代
-     （与 capability_profile 的 `unavailable`/`specific_hardware` 场景、dim-9 `unadaptable_apis` 对应）。
+4. **`needs_adaptation` vs `unadaptable` 判别（分桶最易错）**——判据**同 dim-9 SKILL「需适配 vs 无法适配」**（单一登记源，
+   含"某功能因依赖未鸿蒙化而被关掉 ≠ 自动降级、要看那依赖能不能移植"那条判点）：一句话——**能否用鸿蒙可用 API 或自行
+   实现把该功能重建出来？**
+   - **能 → `needs_adaptation`**：典型平台抽象层（多后端加 OHOS 后端；epoll/kqueue/io_uring→鸿蒙 I/O 多路复用/poll 回退）、
+     GUI 层（对应 capability_profile gui 场景，ArkUI 重写也归此桶、reason 注明重写）、Win32/POSIX 差异换 @ohos、DirectX/Metal→
+     鸿蒙图形栈、运行时平台分支密集模块、x86-only asm/intrinsics（补 NEON/标量回退）。**"没有 drop-in 等价"≠ 无法适配。**
+   - **不能 → `unadaptable`（从严）**：CUDA/专有 GPU、闭源二进制/无源码预编译 agent、专有内核特性/驱动、绑定特定硬件无替代
+     （与 capability_profile 的 `unavailable`/`specific_hardware`、dim-9 `unadaptable_apis` 对应）。
    - **条件编译的守卫行数 ≠ 桶 LOC**——桶按模块整体归属，编译宏行数只是"该模块脏"的信号。
 5. **对账收尾**：桶和 vs production.code，覆盖率 <90% 时把长尾并入默认桶；`summary` 一句话给出
    各桶占比结论。
@@ -113,6 +114,13 @@ A focused lens that answers **"这个项目的生产代码里，有多少行能�
   业务逻辑层按语言归 `reuse_direct`/`recompile_reuse`；依赖无 OHOS 版预编译 agent 的功能模块归
   `unadaptable`。
 - **示例/教程集合**（生产代码≈0）：`buckets` 近空、coverage 如实，`notes` 注明"本仓为示例集合"。
+
+## 自我复核（一致性告警）
+组装后若 `meta.harmony_warnings` 含 `cp_unadapt_no_ua`（有 unadaptable 桶但 dim-9 无 unadaptable_apis）
+或 `ua_no_cp_bucket`（dim-9 有 unadaptable_apis 但无 unadaptable 桶），说明本维度分桶与 dim-9 API 登记
+对不齐——按 agent 步骤 4b 复核：要么补齐缺的一侧（带证据），要么判为分桶从严/口径差异并在
+`blocks/meta.json` 的 `harmony_warnings_dismissed` 记 `{code, rationale}`。`cp_loc_coverage`（覆盖率偏差）
+是 `info` 留痕，通过并入长尾默认桶解决即可，不走 dismiss。
 
 ## 自我发现（反哺）
 

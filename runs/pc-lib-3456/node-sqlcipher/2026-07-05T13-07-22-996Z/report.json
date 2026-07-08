@@ -1247,7 +1247,8 @@
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "summary": "本库为 Node.js N-API 原生扩展。Node.js 运行时已在鸿蒙 PC 移植（available），JS/TS 层无需改动可直接运行。唯一的移植工作是将 C/C++ 原生插件通过 OHOS NDK 重新编译：① C++ 包装代码（1766 行）仅使用 N-API + C++ STL + libuv，完全可移植；② 捆绑的 SQLCipher C 合并源码（197K 行）依赖标准 POSIX 接口且无平台特有系统调用，可通过 OHOS NDK 编译；③ 加密后端可选用已鸿蒙化的 OpenSSL（cmd-pkgs 含 openssl）替代当前的 macOS CommonCrypto / Linux libcrypto。整体无需 API 级改造，仅需新增工具链配置与加密后端适配。",
@@ -1308,7 +1309,8 @@
       "验证 SQLCipher 可在 OHOS NDK 下编译通过并运行数据库加密/解密测试",
       "锁定 OpenSSL 在鸿蒙 cmd-pkgs 中的版本，确保头文件与二进制兼容"
     ],
-    "notes": "该库的前身 node-sqlite3 已在社区有大量跨平台编译经验，SQLCipher 分化仅替换加密引擎。当前代码通过 SQLCIPHER_CRYPTO_CC（macOS CommonCrypto）/ SQLCIPHER_CRYPTO_OPENSSL（Linux）条件编译控制加密后端——新增 OHOS 条件仅需设置合适的加密宏 + 链接路径。platform_adaptation 中显示的 2559 行平台守卫代码主要来自 SQLCipher 本身的跨平台兼容层（内存映射、文件锁、随机数等），这些是标准 POSIX 抽象，不是某平台专有 API，在 OHOS NDK 的 musl 环境下可复用 Linux/POSIX 路径。"
+    "notes": "该库的前身 node-sqlite3 已在社区有大量跨平台编译经验，SQLCipher 分化仅替换加密引擎。当前代码通过 SQLCIPHER_CRYPTO_CC（macOS CommonCrypto）/ SQLCIPHER_CRYPTO_OPENSSL（Linux）条件编译控制加密后端——新增 OHOS 条件仅需设置合适的加密宏 + 链接路径。platform_adaptation 中显示的 2559 行平台守卫代码主要来自 SQLCipher 本身的跨平台兼容层（内存映射、文件锁、随机数等），这些是标准 POSIX 抽象，不是某平台专有 API，在 OHOS NDK 的 musl 环境下可复用 Linux/POSIX 路径。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "@journeyapps/sqlcipher",
@@ -1333,7 +1335,8 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本库为加密数据库访问的 Node.js 原生扩展，不涉及 GUI、3D 渲染、音视频媒体或特定硬件（GPU/传感器等）。加密操作通过软件密码学库（OpenSSL/CommonCrypto）实现，无硬件加速依赖。",

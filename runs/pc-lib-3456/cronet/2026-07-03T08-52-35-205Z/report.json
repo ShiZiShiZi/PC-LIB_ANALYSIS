@@ -1048,7 +1048,8 @@
       "person_days": [
         30,
         70
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "rewrap_cpp_core",
@@ -1241,7 +1242,8 @@
       "验证 socket/TLS/DNS/代理路径在鸿蒙 POSIX 子集下的行为，必要时接入 @ohos.net.*",
       "移除或替换 Android 遥测（StatsLog、ATrace）为鸿蒙日志/性能跟踪方案"
     ],
-    "notes": "本评估按库口径（模型 A）进行：若目标是把现有 Android AAR/JAR 直接跑在鸿蒙 PC 上，则因 Android 运行时不可用而几乎不可行（infeasible）；若允许提取 C++ 核心并重新包装，则属于 needs_adaptation_partial，工作量在 1–2 人月以上。结论依赖两个未核实目标事实：OHOS NDK 能否编译 Chromium //base//net、以及鸿蒙 PC 的 POSIX socket/TLS 覆盖度，因此 confidence 为 medium。"
+    "notes": "本评估按库口径（模型 A）进行：若目标是把现有 Android AAR/JAR 直接跑在鸿蒙 PC 上，则因 Android 运行时不可用而几乎不可行（infeasible）；若允许提取 C++ 核心并重新包装，则属于 needs_adaptation_partial，工作量在 1–2 人月以上。结论依赖两个未核实目标事实：OHOS NDK 能否编译 Chromium //base//net、以及鸿蒙 PC 的 POSIX socket/TLS 覆盖度，因此 confidence 为 medium。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "meta": {
     "schema_version": "1.0",
@@ -1287,6 +1289,14 @@
         "value": "rewrap_cpp_core",
         "rationale": "Cronet 是 Android API + C++ 核心的库；鸿蒙化不能直接复用 Java API，需提取 C++ 核心并重新包装。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   }
 }

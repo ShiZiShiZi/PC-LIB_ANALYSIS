@@ -841,10 +841,10 @@
   },
   "harmony_adaptation": {
     "porting_class": "recompile_only",
-    "feasibility": "feasible",
+    "feasibility": "feasible_with_effort",
     "confidence": "high",
     "effort": {
-      "level": "very_low",
+      "level": "low",
       "person_days": {
         "lo": 0.5,
         "hi": 1.0
@@ -856,28 +856,32 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 纯脚本路径可直接运行，无适配需求",
-        "source": "HarmonyOS PC 已移植 Node.js 运行时的官方声明"
+        "source": "HarmonyOS PC 已移植 Node.js 运行时的官方声明",
+        "id": "ta:1"
       },
       {
         "capability": "N-API (Node.js 原生插件 API)",
         "required": true,
         "target_status": "available",
         "impact": "C 原生插件通过 N-API 宏构建，N-API 在 HarmonyOS Node.js 上可用",
-        "source": "HarmonyOS 的 Node.js 移植包含完整 N-API 支持"
+        "source": "HarmonyOS 的 Node.js 移植包含完整 N-API 支持",
+        "id": "ta:2"
       },
       {
         "capability": "C99 标准编译器和数学库",
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 提供完整 C99 支持，且代码仅使用纯算术运算",
-        "source": "OHOS NDK 支持的 C/C++ 标准"
+        "source": "OHOS NDK 支持的 C/C++ 标准",
+        "id": "ta:3"
       },
       {
         "capability": "@stdlib 内部 C 依赖的可用性",
         "required": true,
         "target_status": "unknown",
         "impact": "C 代码依赖于 stdlib 内部的复数/绝对值/常量头文件，这些 npm 包需确认在 HarmonyOS 上的构建状态",
-        "source": "位于 npm registry 的 @stdlib/complex-float64-ctor 等包"
+        "source": "位于 npm registry 的 @stdlib/complex-float64-ctor 等包",
+        "id": "ta:4"
       }
     ],
     "recommended_path": "HarmonyOS PC 已移植 Node.js 运行时的官方声明。JS 纯脚本实现可直接运行（基于已移植的 Node.js）。C 原生插件仅需通过 OHOS NDK 重新编译：确认 @stdlib 内部 C 依赖（complex-float64-ctor/reim/math-base-special-abs/constants-float64-*）的头文件在 OHOS 构建环境中可用；调整 node-gyp 构建配置使用 OHOS NDK 工具链；重新编译 addon.node。验证层确保 C 和 JS 实现结果一致。",
@@ -894,7 +898,8 @@
       }
     ],
     "unadaptable_apis": [],
-    "required_permissions": []
+    "required_permissions": [],
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "kind": "library",
@@ -948,7 +953,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [

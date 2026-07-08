@@ -2101,7 +2101,8 @@
       "person_days": [
         14,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -2338,7 +2339,8 @@
       "交叉编译pybind11扩展模块，在鸿蒙Python 3.12上验证import OpenImageIO正常",
       "在鸿蒙PC上跑通OIIO测试套件（至少核心imageio/imagebufalgo测试）验证功能完整"
     ],
-    "notes": "评估按模型A（C++库经OHOS NDK交叉编译为.so，Python绑定跑在鸿蒙Python运行时上）。置信度medium因为(1)OpenEXR等约15个依赖需自行交叉编译，虽每个单独可编译但总体工作量有不确定性；(2)x86_64架构在鸿蒙PC的覆盖状态unknown。iv查看器（Qt+OpenGL）建议首版disable（USE_QT=OFF），仅交付库和命令行工具，后续再评估Qt鸿蒙版的iv可行性。平台守卫代码量中等（932行，主要Win32/POSIX/BSD分支），OHOS大概率复用POSIX/Linux路径改动量小。R3DSDK（RED专有SDK）默认关闭且无鸿蒙版，无需处理。DICOM/OpenVDB/Ptex等长尾可选格式格式可首轮skip。person_days[14,25]对应中工作量，上限考虑全部可选依赖交叉编译+完整测试的时间。"
+    "notes": "评估按模型A（C++库经OHOS NDK交叉编译为.so，Python绑定跑在鸿蒙Python运行时上）。置信度medium因为(1)OpenEXR等约15个依赖需自行交叉编译，虽每个单独可编译但总体工作量有不确定性；(2)x86_64架构在鸿蒙PC的覆盖状态unknown。iv查看器（Qt+OpenGL）建议首版disable（USE_QT=OFF），仅交付库和命令行工具，后续再评估Qt鸿蒙版的iv可行性。平台守卫代码量中等（932行，主要Win32/POSIX/BSD分支），OHOS大概率复用POSIX/Linux路径改动量小。R3DSDK（RED专有SDK）默认关闭且无鸿蒙版，无需处理。DICOM/OpenVDB/Ptex等长尾可选格式格式可首轮skip。person_days[14,25]对应中工作量，上限考虑全部可选依赖交叉编译+完整测试的时间。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "OpenImageIO",
@@ -2392,7 +2394,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目核心为图像I/O库，自身不涉及GUI（iv查看器是可选的Qt/OpenGL构件），涉及3D渲染（iv用OpenGL显示图像）、媒体（FFmpeg格式插件读取视频帧）、以及CPU SIMD硬件加速。无特定硬件依赖。",

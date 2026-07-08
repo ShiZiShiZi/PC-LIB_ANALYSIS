@@ -1735,7 +1735,8 @@
       "person_days": [
         15,
         30
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1961,7 +1962,8 @@
         ]
       }
     ],
-    "notes": "评估按模型 A（库经 OHOS NDK 重编为 .so）。elfutils 是 GNU/Linux 生态的核心组件，其设计紧密耦合于 Linux 内核 API（/proc/ptrace/perf_event）。核心 ELF/DWARF 解析库（libelf/libdw）的可移植性良好，但进程级调试功能和内核级模块信息获取高度依赖 Linux 特有接口——这些在自研内核的鸿蒙上需要全新实现或禁用。confidence 设为 medium 因为 multiple required target_assumptions 为 unknown（/proc 等价接口、ptrace 等价接口、GNU 扩展可用性）。若鸿蒙提供等效调试/进程检视框架，porting_class 不变（全可适配），person_days 下行可收窄；若完全无等效接口，进程级功能不可移植但离线 ELF/DWARF 仍可用（needs_adaptation_partial→仅离线模式）。debuginfod 的可选依赖（libcurl/sqlite3/libarchive/openssl/json-c/libmicrohttpd）多数为跨平台 C 库且部分已在鸿蒙 cmd-pkgs 清单中（可查 harmony-mirror），并非阻碍。platform_adaptation 计数 444 行 Linux-only 守卫代码，为 C/C++ 库中偏低水平（多数是 #ifdef __linux__ 包裹的进程级功能代码而非分散的平台分支）。"
+    "notes": "评估按模型 A（库经 OHOS NDK 重编为 .so）。elfutils 是 GNU/Linux 生态的核心组件，其设计紧密耦合于 Linux 内核 API（/proc/ptrace/perf_event）。核心 ELF/DWARF 解析库（libelf/libdw）的可移植性良好，但进程级调试功能和内核级模块信息获取高度依赖 Linux 特有接口——这些在自研内核的鸿蒙上需要全新实现或禁用。confidence 设为 medium 因为 multiple required target_assumptions 为 unknown（/proc 等价接口、ptrace 等价接口、GNU 扩展可用性）。若鸿蒙提供等效调试/进程检视框架，porting_class 不变（全可适配），person_days 下行可收窄；若完全无等效接口，进程级功能不可移植但离线 ELF/DWARF 仍可用（needs_adaptation_partial→仅离线模式）。debuginfod 的可选依赖（libcurl/sqlite3/libarchive/openssl/json-c/libmicrohttpd）多数为跨平台 C 库且部分已在鸿蒙 cmd-pkgs 清单中（可查 harmony-mirror），并非阻碍。platform_adaptation 计数 444 行 Linux-only 守卫代码，为 C/C++ 库中偏低水平（多数是 #ifdef __linux__ 包裹的进程级功能代码而非分散的平台分支）。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "elfutils",
@@ -1982,7 +1984,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": []
+    "observations": [],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为系统工具库/工具集（ELF/DWARF），不涉及 GUI、3D 渲染、多媒体或特定硬件依赖。核心为 C 语言实现的 ELF 文件解析/生成和 DWARF 调试信息读取逻辑，属于纯计算+文件 I/O 类系统工具。",

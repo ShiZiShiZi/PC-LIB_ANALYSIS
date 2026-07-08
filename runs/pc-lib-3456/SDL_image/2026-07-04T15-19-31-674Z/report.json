@@ -1780,7 +1780,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -1921,7 +1922,8 @@
       "将 built-in 内置解码器与 vendored nanosvg/stb_image 在 OHOS NDK 下编译，确认无 musl POSIX 子集缺口",
       "在鸿蒙 PC（arm64）上运行测试程序验证各格式（至少 BMP/PNG/JPEG/GIF/WebP）加载保存正确"
     ],
-    "notes": "评估按「库链接进鸿蒙原生应用」（模型 A）口径。平台适配代码量 875 行集中在可选平台后端（WIC/ImageIO/Emscripten），均为条件编译守卫，鸿蒙编译时不触发。所有运行时图像库依赖均已在 OpenHarmony PC 预编译清单中（cmd-pkgs: SDL3/libjpeg/libpng/zlib/libtiff/libwebp/libavif/libjxl/dav1d/aom = 全部 adapted），无需额外移植依赖。整体工时估算 2–5 人-天，主要是交叉编译配置、禁用平台后端、回归测试。"
+    "notes": "评估按「库链接进鸿蒙原生应用」（模型 A）口径。平台适配代码量 875 行集中在可选平台后端（WIC/ImageIO/Emscripten），均为条件编译守卫，鸿蒙编译时不触发。所有运行时图像库依赖均已在 OpenHarmony PC 预编译清单中（cmd-pkgs: SDL3/libjpeg/libpng/zlib/libtiff/libwebp/libavif/libjxl/dav1d/aom = 全部 adapted），无需额外移植依赖。整体工时估算 2–5 人-天，主要是交叉编译配置、禁用平台后端、回归测试。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "SDL_image",
@@ -1948,7 +1950,15 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:media",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 media 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "SDL_image 是纯图像文件解码/编码库，不涉及 GUI 界面渲染、3D 图形管线、音视频媒体或特定硬件访问。所有图像解码为 CPU 像素缓冲（SDL_Surface），GPU 纹理创建委托给 SDL3 运行时完成。",

@@ -676,8 +676,9 @@
     "effort": {
       "person_days": [
         0.5,
-        2.0
-      ]
+        2
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -767,7 +768,8 @@
       "使用 OHOS NDK 重编原生插件并集成验证",
       "运行原始 test suite 验证功能正确性"
     ],
-    "notes": "N-API 兼容性是唯一已知 minor 不确定因素，但不影响整体评估置信度。该库本身及全部依赖均为纯 C99/纯 JS，无任何平台专有 API，移植风险极低。"
+    "notes": "N-API 兼容性是唯一已知 minor 不确定因素，但不影响整体评估置信度。该库本身及全部依赖均为纯 C99/纯 JS，无任何平台专有 API，移植风险极低。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "complex-float32-imag",
@@ -810,7 +812,20 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "recompile_no_native",
+        "class": "info",
+        "message": "porting_class=recompile_only 但主生态为 nodejs（已移植运行时）且无原生调用面，疑似应为 no_adaptation"
+      },
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及任何 GUI、3D 渲染、媒体处理或硬件访问场景。全部功能为提取单精度复数虚部的数学运算。",

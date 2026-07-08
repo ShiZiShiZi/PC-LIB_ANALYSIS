@@ -779,7 +779,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -836,7 +837,8 @@
       "在鸿蒙目标设备上跑通基本数学运算正确性验证"
     ],
     "required_permissions": [],
-    "notes": "Imath 为纯标准 C++ 数学库，零外部依赖、零平台系统调用，移植工作仅限于交叉编译。platform_adaptation 统计的 45 行 Windows 代码全部为编译器 pragma/DLL 导出宏，不涉及任何平台系统 API。可选 Python 绑定（Boost.Python / pybind11）不在默认构建范围内；若启用则 Python 运行时在鸿蒙 PC 已移植（Python 3.12），纯 Python 层无需适配，C 扩展（PyImath.so）需同步用 OHOS NDK 重编。"
+    "notes": "Imath 为纯标准 C++ 数学库，零外部依赖、零平台系统调用，移植工作仅限于交叉编译。platform_adaptation 统计的 45 行 Windows 代码全部为编译器 pragma/DLL 导出宏，不涉及任何平台系统 API。可选 Python 绑定（Boost.Python / pybind11）不在默认构建范围内；若启用则 Python 运行时在鸿蒙 PC 已移植（Python 3.12），纯 Python 层无需适配，C 扩展（PyImath.so）需同步用 OHOS NDK 重编。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "kind": "library",
@@ -860,7 +862,15 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:rendering_3d",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Imath 为纯数学计算库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

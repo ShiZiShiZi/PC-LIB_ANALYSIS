@@ -1897,7 +1897,8 @@
       "person_days": [
         5,
         12
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime",
@@ -2040,7 +2041,8 @@
       "确认鸿蒙 Node.js 的 child_process 可用性与沙箱限制，据此调整 mongodb-runner 的子进程启动行为或降级为远程 MongoDB 连接模式",
       "在鸿蒙 Node.js 24 上跑通各包单元测试（mocha + chai + sinon，共 816 用例），验证纯 TS 包的兼容性"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。ta:child-process 的 target_status=unknown 是本评估最大不确定性——若鸿蒙 Node.js 支持 child_process 则整体难度再降，若沙箱禁止则需调整 mongodb-runner 的测试策略但核心连接/解析包不受影响。native-machine-id 的 C++ addon 是唯一需 OHOS NDK 重编的组件（仅 194 行 C++），工作量可控；回退方案为不做移植直接返回 undefined（上层 device-id 包已有 fallback 到 crypto.randomBytes，功能无损）。dl-center 和 sbom-tools 为 MongoDB 内部工具，对外部鸿蒙适配影响较小；全网 npm 纯 JS 依赖（lodash/debug/semver/yargs 等）均已在鸿蒙 Node.js 上可用。若目标为 ArkTS 沙箱应用（模型 B），则需将全部 30 个包改为 @ohos.* 接口重写，难度大幅上升（porting_class 升为 needs_adaptation_partial，person_days 跃升至 80+），不推荐此路径。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。ta:child-process 的 target_status=unknown 是本评估最大不确定性——若鸿蒙 Node.js 支持 child_process 则整体难度再降，若沙箱禁止则需调整 mongodb-runner 的测试策略但核心连接/解析包不受影响。native-machine-id 的 C++ addon 是唯一需 OHOS NDK 重编的组件（仅 194 行 C++），工作量可控；回退方案为不做移植直接返回 undefined（上层 device-id 包已有 fallback 到 crypto.randomBytes，功能无损）。dl-center 和 sbom-tools 为 MongoDB 内部工具，对外部鸿蒙适配影响较小；全网 npm 纯 JS 依赖（lodash/debug/semver/yargs 等）均已在鸿蒙 Node.js 上可用。若目标为 ArkTS 沙箱应用（模型 B），则需将全部 30 个包改为 @ohos.* 接口重写，难度大幅上升（porting_class 升为 needs_adaptation_partial，person_days 跃升至 80+），不推荐此路径。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "devtools-shared",
@@ -2099,7 +2101,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯基础库 Monorepo，不涉及 GUI 桌面界面、3D 图形渲染、音视频媒体处理或特定硬件设备依赖。各包功能集中在数据库连接、查询解析、服务器运维、机器标识采集、代理隧道等开发者工具领域，均为服务端/CLI 场景。",

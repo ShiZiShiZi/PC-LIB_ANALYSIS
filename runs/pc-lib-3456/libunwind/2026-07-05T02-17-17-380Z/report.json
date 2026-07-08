@@ -1281,7 +1281,8 @@
       "person_days": [
         25,
         50
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1482,7 +1483,8 @@
       "在 OHOS 上链接已鸿蒙化的 liblzma 与 zlib",
       "在 OHOS 上运行 regression test suite 验证本地 unwind 功能完整"
     ],
-    "notes": "评估按模型 A（库经 OHOS NDK 重编为 .so）。三个关键目标能力（ptrace 调试接口、/proc 内核接口、信号返回系统调用 ABI）的状态均为 unknown，因此 confidence 下调为 medium。若 OHOS 内核不提供 ptrace 或 /proc 等价物，远程 unwind 功能将被降级或移除，但本地 unwind（同进​程调用栈回溯）核心可适配。liblzma 与 zlib 已确认在 OpenHarmony PC cmd-pkgs 预编译包中有鸿蒙版（harmony_adapted=true，lzma→xz、z→zlib），可直接复用。person_days 估算 [25,50]：核心改造包括新增 OHOS OS 后端、适配架构特定汇编、逐文件核对 POSIX 子集覆盖、验证本地 unwind 功能完整性。"
+    "notes": "评估按模型 A（库经 OHOS NDK 重编为 .so）。三个关键目标能力（ptrace 调试接口、/proc 内核接口、信号返回系统调用 ABI）的状态均为 unknown，因此 confidence 下调为 medium。若 OHOS 内核不提供 ptrace 或 /proc 等价物，远程 unwind 功能将被降级或移除，但本地 unwind（同进​程调用栈回溯）核心可适配。liblzma 与 zlib 已确认在 OpenHarmony PC cmd-pkgs 预编译包中有鸿蒙版（harmony_adapted=true，lzma→xz、z→zlib），可直接复用。person_days 估算 [25,50]：核心改造包括新增 OHOS OS 后端、适配架构特定汇编、逐文件核对 POSIX 子集覆盖、验证本地 unwind 功能完整性。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "libunwind",
@@ -1507,7 +1509,8 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libunwind 是一个纯系统级 C 库，不涉及 GUI、3D 渲染、音视频媒体等鸿蒙适配重点场景。其核心能力（调用栈回溯、寄存器操作、ELF/DWARF 解析）为纯算法与标准 POSIX 内存/文件 I/O，无可视化界面。唯一值得关注的是「硬件」维度下的架构特定内联汇编——但这是编译期代码生成问题，非运行时硬件依赖。",

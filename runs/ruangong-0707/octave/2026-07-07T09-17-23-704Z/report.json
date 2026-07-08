@@ -2962,8 +2962,8 @@
     "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
-        60,
-        120
+        690.8,
+        735.8
       ],
       "breakdown": [
         {
@@ -2977,10 +2977,10 @@
         {
           "component": "api_adaptation",
           "person_days": [
-            15,
-            30
+            550.8,
+            550.8
           ],
-          "basis": "needs_adaptation 桶中 liboctave/wrappers(3,863)、system(4,574)、src(3,726) 及 liboctave/util 部分代码含 POSIX/Win32 子进程、终端、信号、动态加载等调用点，需换鸿蒙等价或 POSIX 子集"
+          "basis": "需适配 275413 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -2993,10 +2993,10 @@
         {
           "component": "recompile",
           "person_days": [
-            5,
-            10
+            95,
+            95
           ],
-          "basis": "recompile_reuse 桶中约 28.5 万行 C++ 与 Fortran 核心代码需用 OHOS NDK 交叉编译"
+          "basis": "重编译复用 285003 行 ÷ 3000 行/天"
         },
         {
           "component": "build_system",
@@ -3022,7 +3022,8 @@
           ],
           "basis": "将 Octave 打包为鸿蒙 PC 可安装/分发的桌面应用形态"
         }
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "target_assumptions": [
@@ -3315,7 +3316,8 @@
       "跑通核心数值测试与 CLI 交互测试，再验证 GUI 与绘图功能",
       "适配构建系统为 CMake + ohos.toolchain.cmake，产出鸿蒙 PC 可分发应用包"
     ],
-    "notes": "评估按模型 C（整包桌面应用）口径。confidence=medium 是因为多个目标能力（桌面应用交付、窗口管理、子进程、音频后端）在鸿蒙 PC 的状态尚未在 caps JSON 中核实。若这些目标能力不可用，GUI 或部分功能可能受限，但 CLI 数值计算核心仍可作为命令行工具运行。未使用 cloud_services，故无额外云端依赖。"
+    "notes": "评估按模型 C（整包桌面应用）口径。confidence=medium 是因为多个目标能力（桌面应用交付、窗口管理、子进程、音频后端）在鸿蒙 PC 的状态尚未在 caps JSON 中核实。若这些目标能力不可用，GUI 或部分功能可能受限，但 CLI 数值计算核心仍可作为命令行工具运行。未使用 cloud_services，故无额外云端依赖。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "GNU Octave",
@@ -3363,7 +3365,8 @@
         "value": "gui",
         "rationale": "模型 C 应用评估中，GUI 重写是一个独立大类，与 platform/posix_subset_gap 不同，故单独列出。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "GNU Octave 作为桌面数值计算环境，触及三个鸿蒙适配重点场景：GUI（Qt 主窗口/终端/编辑器）、3D/2D 图形渲染（OpenGL 固定管线 + gl2ps 打印）、以及音频媒体 I/O（PortAudio + libsndfile）。未使用 CUDA 等特定硬件加速。",

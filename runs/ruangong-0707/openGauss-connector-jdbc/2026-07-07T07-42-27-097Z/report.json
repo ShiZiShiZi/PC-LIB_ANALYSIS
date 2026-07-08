@@ -1026,21 +1026,21 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层 + OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
-        3,
-        8
+        6.6,
+        8.6
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            2,
-            5
+            5.6,
+            5.6
           ],
-          "basis": "needs_adaptation 桶约 2.8k LOC，主要为 SSL 证书路径适配（Windows APPDATA→鸿蒙路径）、GSS/Kerberos 认证验证、BGMProvider/BouncyCastle/ShardingSphere 兼容性验证"
+          "basis": "需适配 2792 行 ÷ 500 行/天"
         },
         {
           "component": "testing_verification",
@@ -1050,7 +1050,8 @@
           ],
           "basis": "需验证核心 JDBC 功能（连接/查询/事务/连接池/SSL）在鸿蒙 JDK 上跑通，约 1318 个测试用例"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -1182,7 +1183,12 @@
       "验证 GSS/Kerberos 认证在鸿蒙 JDK 上的实现完整性",
       "将 gauss_cl_jni 原生库用 OHOS NDK 编译为鸿蒙版本，或将 ClientLogic 功能标记为不可用"
     ],
-    "notes": "本驱动核心为纯 Java 代码，基于已移植的鸿蒙 JDK（JDK 17.0.x / JDK 8）可直接运行，是移植难度较低的库。confidence 降为 medium 是因为：ohos.permission.INTERNET 权限在鸿蒙 PC 的授予方式未核实（ta:internet_permission target_status=unknown）、GSS-API 实现完整性未知（ta:jdk_gss target_status=unknown）。ClientLogic 功能为可选特性，即使不可用也不影响驱动核心功能。"
+    "notes": "本驱动核心为纯 Java 代码，基于已移植的鸿蒙 JDK（JDK 17.0.x / JDK 8）可直接运行，是移植难度较低的库。confidence 降为 medium 是因为：ohos.permission.INTERNET 权限在鸿蒙 PC 的授予方式未核实（ta:internet_permission target_status=unknown）、GSS-API 实现完整性未知（ta:jdk_gss target_status=unknown）。ClientLogic 功能为可选特性，即使不可用也不影响驱动核心功能。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "openGauss-connector-jdbc",
@@ -1210,7 +1216,15 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": []
+    "observations": [],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI/3D 渲染/媒体/特定硬件场景，是一个纯数据库连接库，核心功能为网络通信与加密认证。",

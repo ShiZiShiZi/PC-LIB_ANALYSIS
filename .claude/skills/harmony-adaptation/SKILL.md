@@ -10,11 +10,14 @@ is and what it touches*; this one answers **"how hard is it to port to 鸿蒙 PC
 which path do we take"** and produces a concrete adaptation plan with difficulty,
 path, blockers, and effort.
 
-This is a **synthesis** step: you do NOT re-scan the source. You reason over the
-already-filled blocks — `library.ecosystem`/`bindings`, `native_api` (groups +
+This is a **synthesis** step (综合层，见 `pc-lib-analyzer.md`「两层契约」): you do NOT re-scan the
+source, and you **do NOT re-judge facts a feature dimension already established** —— 尤其
+GUI/3D/媒体/硬件的鸿蒙支持状态由 `capability_profile`(dim-10) 权威判定，本维度**直接消费**其
+`harmony_status`/`specific_hardware`（经 `source_capability`/`caused_by` 回指场景 key），不重查 caps、不重扫。
+You reason over the already-filled blocks — `library.ecosystem`/`bindings`, `native_api` (groups +
 `category`/`platform`, **以及 `native_api.dynamic_libraries`** —— 运行时经
 ctypes/dlopen/LoadLibrary/JNA 动态加载的库), `runtime_surface`
-(subprocess/filesystem/network/env/devices), `dependencies`, `build_env`, **以及
+(subprocess/filesystem/network/env/devices), `dependencies`, `build_env`, `capability_profile`, **以及
 dim-12 的 `code_partition`（生产代码按复用性分桶的 LOC 统计——工作量估算的量化底座）** —— and
 **reuse their `evidence`** (the same `file:line`).
 
@@ -104,12 +107,15 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
   `http`/`process` —— 跑在鸿蒙 Node.js 上时（模型 A）这些基本可用，无需改写。
 
 ## How to assess
-00. **先看 `capability_profile`（dim-10 场景画像）作为阻碍线索的入口**：它已把本项目是否涉及
-   **GUI / 3D 渲染 / 媒体 / 特定硬件** 标好（`scenarios[].key/present/kind/via/harmony_status/specific_hardware`）。
-   对每个 `present:true` 的场景：`harmony_status=unavailable`（或 `specific_hardware:true` 无替代）→**必产** `blocker`
-   （多数还进 `unadaptable_apis`，category 取 hardware/platform），`porting_class` 升 `needs_adaptation_partial`/`infeasible`、
-   `person_days` 上调；`partial`→产 partial `blocker`、`person_days` 上调；`unknown`→记 `target_assumptions` 并下调 `confidence`。
-   把对应目标能力写进 `target_assumptions`，与场景 `key` 交叉引用（`blocker.caused_by`/`unadaptable_apis.caused_by`）。
+00. **先看 `capability_profile`（dim-10 场景画像）——它是 GUI / 3D 渲染 / 媒体 / 特定硬件 四类的鸿蒙支持
+   权威源，你在这四类上「消费不重判」。** 它已把本项目是否涉及这四类标好，并**已判定**每个场景的
+   `harmony_status`/`specific_hardware`（查过 `harmony-pc-capabilities.json`）。**直接采用这些状态，不要对这四类
+   场景重查 caps、也不要从 `native_api`/`dependencies` 重扫 GUI/图形/媒体/硬件面**（那已由 dim-10 归纳）。你的活是把
+   dim-10 的状态**翻译成移植计划**：对每个 `present:true` 的场景——`harmony_status=unavailable`（或
+   `specific_hardware:true` 无替代）→**必产** `blocker`（多数还进 `unadaptable_apis`，category 取 hardware/platform），
+   `porting_class` 升 `needs_adaptation_partial`/`infeasible`、`person_days` 上调；`partial`→产 partial `blocker`、
+   `person_days` 上调；`unknown`→记 `target_assumptions` 并下调 `confidence`。**每条 blocker/unadaptable_api 用
+   `caused_by`/`source_capability` 回指场景 `key`**（单一登记源：dim-10 判"鸿蒙有没有"，dim-9 判"于是要做什么"）。
 0c. **产 `required_permissions[]`（鸿蒙化后运行所需权限）**：媒体/硬件/定位/网络等场景常需申请鸿蒙权限
    （`ohos.permission.CAMERA/MICROPHONE/LOCATION/INTERNET/读写存储/USE_BLUETOOTH…`）。逐项填 `{permission, reason,
    source_capability(=capability_profile 的场景 key), harmony_status, evidence}`；**权限名优先经「目标侧 API
@@ -122,12 +128,19 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
    模型 A（默认）/ 仅当目标是 ArkTS 应用才 B。下面的「由 ecosystem 定基调」对两类都适用
    （决定运行时是否已移植），但**应用的阻碍重心在 GUI/打包/服务，而非「被链接进别的代码」**。
 0b. **目标匹配（关键，决定准确性）—— 读 `references/harmony-pc-capabilities.json`，把本项目「所需的
-   目标能力」逐项对照目标状态**，并把每一项写进 `target_assumptions[]`（`{capability, required,
-   target_status, impact, source}`）：
-   - 需列出的「所需能力」：（应用尤其）所用 **GUI 工具包**(Swing/AWT/JavaFX/Qt…) 与窗口/桌面集成项、
-     所需 **JDK 内部模块**(jdk.attach/jvmstat/JVMTI…)、**进程/attach 模型**、**应用交付形态**；
-     （库）通常只有「该语言运行时已移植」一条。
-   - 给每条假设一个稳定 `id`（如 `ta:swing`），供下游 `blockers`/`unadaptable_apis` 的 `caused_by` 回指。
+   目标能力」逐项对照目标状态**，并把每一项写进 `target_assumptions[]`（`{capability, capability_key,
+   required, target_status, impact, source}`）：
+   - **只登记 capability_profile 覆盖不到的目标能力**（GUI/3D/媒体/特定硬件的鸿蒙支持状态已由 dim-10 判定，
+     见 step 00，**不在这里重列/重查**——它们的 blocker 用 `source_capability`=场景 key 回指即可）：所需
+     **JDK 内部模块**(jdk.attach/jvmstat/JVMTI…)、**进程/attach 模型**、**应用交付形态**、**桌面集成**(系统托盘/
+     文件关联/自启)、**运行时是否已移植**；（库）通常只有「该语言运行时已移植」一条。
+   - 给每条假设一个稳定 `id`（如 `ta:jdk_attach`），供下游 `blockers`/`unadaptable_apis` 的 `caused_by` 回指。
+   - **`capability_key`（反哺研究优先级，关键）**：命中 `references/harmony-pc-capabilities.json` 某行时填其**叶 id**
+     （如 `swing`/`jdk_attach`/`cross_attach`/`dotnet`/`x86_64`，见该文件各 section 的 `rows[].id`），供面板
+     `#/harmony-caps` 跨报告聚合「该目标能力**被 N 个分析需要**」的研究优先级。**对不上任何 caps 行**（参考里尚无此能力）
+     则 `capability_key: null`，并**追加一条** `meta.observations`：`{dimension:"harmony_caps", field:"<段 id 如
+     gui/runtimes/graphics_3d>", kind:"caps_gap", value:"<目标能力名>", rationale:"<为何需要 + 建议补进哪一段>"}`，
+     提案把这项缺失的目标能力补进 caps 参考（下次分析即可对号入座）。**只对 `required` 的目标能力提案，避免噪声。**
    - 据 `target_status` **显式驱动**下游（同一事实只登记一次、其余引用，不重复计入难度）：
      `available`→不计阻碍；`partial`→**必产**一条 `blocker`（`adaptability: partial`）`caused_by` 指回该假设 id；
      `unavailable`→**必产**一条 `blocker`（`adaptability: unadaptable`），若为具体 API 再进 `unadaptable_apis`
@@ -149,17 +162,19 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
      由 POSIX 子集缺口 + `native_api` 里的 `platform`/`system`/`hardware` 组数量决定。
    - **运行时已移植 ⇒ 别再据「无运行时」判 `infeasible`/`abandon`**；`infeasible` 仅留给
      运行时未移植 **且** 重度平台耦合且无替代的真正无解情形。
-2. **逐组消费前序维度,生成 `blockers`**（每条带来源维度的 `evidence`）：
-   - `native_api`：每个 `category` 为 `platform`/`system`/`hardware` 的组 → 候选阻碍；
-     `standard`/`portable`（STL、musl 支持的 POSIX、ArkTS 有对应的）通常不算或 `minor`。
+2. **逐组消费前序特征,生成 `blockers`——但 GUI/3D/媒体/硬件面已由 capability_profile 归纳（step 00），
+   本步只处理 dim-10 覆盖不到的面**（平台 I/O、syscall、subprocess、fs/注册表/设备伪文件、arch/SIMD、
+   构建工具链、及应用的 JDK 内部/attach/交付形态），**不要对这四类再从 native_api 重扫**（每条带来源维度 `evidence`）：
+   - `native_api`：每个 `category` 为 `platform`/`system` 的组（epoll/kqueue/win32/posix 差异、ioctl、syscall…）
+     → 候选阻碍；`hardware` 组（GPU/CUDA/OpenCL/SIMD）**已归 capability_profile 的 rendering_3d/hardware 场景**，
+     经 step 00 处理、此处不重判；`standard`/`portable`（STL、musl 支持的 POSIX、ArkTS 有对应的）通常不算或 `minor`。
    - `native_api.dynamic_libraries`（ctypes/dlopen/LoadLibrary/JNA 运行时加载的库）→
      **逐个**判其**自身**在鸿蒙 PC 上是否存在/可移植（看 `acquisition`/`source`：`system`
-     平台库 vs `self_build` 包装器）：
-     · 平台专有 GUI/图形/系统库（X11/XCB、Win32 `user32`/`gdi32`、macOS CoreGraphics 等）→
-       鸿蒙无等价 → `blocker`，`harmony_status: replace_with_ohos`（改用 @ohos 图形/显示能力）
-       或 `unavailable`（须重写该功能）；
-     · 跨平台且已移植到 OHOS 的通用库 → `minor`/`partial`，重编/重定位即可。
-     每条复用该库的加载点 `evidence`(file:line)，`source_dimension: native_api`。
+     平台库 vs `self_build` 包装器）。**属 GUI/图形/媒体/硬件能力的动态库（X11/XCB、libGL、libcudart、ffmpeg…）
+     已由 capability_profile 对应场景覆盖，走 step 00**；本处只判**非能力类**运行时库（crypto/压缩/网络等，如
+     libssl/libz）。平台专有系统库（Win32 `user32`/`gdi32` 等）鸿蒙无等价 → `blocker`，`harmony_status:
+     replace_with_ohos`（改用 @ohos 能力）或 `unavailable`；跨平台且已移植到 OHOS 的通用库 → `minor`/`partial`，
+     重编/重定位即可。每条复用该库的加载点 `evidence`(file:line)，`source_dimension: native_api`。
    - `runtime_surface.subprocess` → 调用具体平台命令(dmidecode/wmic/ioreg…)通常 `blocker`；
      仅为通用 shell-out 且鸿蒙有等价工具的 `minor`/`partial`（模型 B 沙箱下统一更严，多 `blocker`）。
    - `runtime_surface.filesystem/devices` 里的 `/proc`·`/sys`·`/dev`、注册表路径 → 阻碍。
@@ -194,12 +209,17 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
    **动态加载的平台库是否有鸿蒙等价才是定 person_days/feasibility 的主因**（运行时已移植不再是主阻碍）。
    **person_days 的首要量化依据是 dim-12 的 `code_partition`**：`needs_adaptation` 桶的 LOC 与模块
    （平台抽象层/GUI 层/asm 补路径各自的量）决定改造量级，`unadaptable` 桶界定放弃范围，
-   `recompile_reuse`/`reuse_direct` 桶只贡献重编/打包的小头。**同时填 `effort.breakdown[]`**（分项
+   `recompile_reuse`/`reuse_direct` 桶只贡献重编/打包的小头。**填 `effort.breakdown[]`**（分项
    可审计）：每项 `{component, person_days:[lo,hi], basis}`，component 推荐集
    `recompile / api_adaptation / gui / deps_porting / build_system / testing_verification / packaging`
-   （开放词，可扩并记 observations），`basis` 引用 code_partition 桶/LOC 或 blockers（如「needs_adaptation
-   桶 3.2k 行，主要为 src/platform 三套后端加 OHOS 后端」）——**分项之和应 ≈ `effort.person_days` 总区间**
-   （server 会校验告警）。无 code_partition 时（存量/降级）按信号估并在 notes 说明。
+   （开放词，可扩并记 observations）。
+   **⚠️ `recompile` 与 `api_adaptation` 两项由归一确定性派生、你不必填**（同 `effort.level`）：归一按
+   `recompile = recompile_reuse 桶 LOC ÷ 速率`、`api_adaptation = needs_adaptation 桶 LOC ÷ 速率`
+   （速率取 `.panel-settings.json`，默认 3000 / 500 行/天）算出并**覆盖**你填的值；你只需**itemize其余分项**
+   （gui/deps_porting/build_system/testing_verification/packaging），`basis` 引用 code_partition 桶/LOC 或 blockers。
+   **只要你产出了 breakdown，归一就把 `effort.person_days` 总量重算为「各分项之和」**（含派生的 recompile/adaptation
+   + 你的其余分项），`effort.level` 随之派生——所以**分项要itemize齐全**（漏项会低估总量）。无 code_partition 时
+   （存量/降级）按信号估 `effort.person_days` 并在 notes 说明。
    **三个平台/架构适配机械信号（都在 `code_metrics` 里，作复杂度依据）**：
    - `code_metrics.platform_adaptation`（**编译型**：C/C++ 各平台编译宏 `#ifdef _WIN32/__APPLE__/__linux__…` 包裹的代码量）——
      守卫代码越多 → 鸿蒙需新增/适配的平台分支越多 → `person_days` 上调、更可能产 toolchain/posix_subset_gap 类
@@ -215,7 +235,13 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
      汇编或 intrinsics 路径是硬适配点（补 NEON 或退标量 → `person_days` 上调、产 `blocker` category 如
      `arch_specific_asm`），若该路径可关（构建开关/运行时探测降级）记 `partial`；已有 arm 对应实现（by_arch 里
      arm 与 x86 并存）→ 只算重编验证量。`samples` 同样当 codegraph 追踪种子。三个信号都为空 → 平台/架构耦合轻。
-5. **定 `porting_class`（闭轴，依赖拓扑图用）** —— 把本库归入 5 类之一。**按这棵判定树顺序回答，命中即止**：
+5. **`porting_class`（闭轴，依赖拓扑图用）现由归一确定性派生 + 落盘——你只给"下限"判断。**
+   `scripts/report_normalize.py` 组装时据 dim-12 `code_partition` 桶 + `unadaptable_apis` 把它**只升不降**并写回
+   `report.json`（`effort.level`/`feasibility` 同为派生；web/server.js 是等价镜像，全量语料 parity 校验；面板/Excel/
+   report.json 同源同值，你的原判留存于 `porting_class_model`）。**含义：你按下面判定树给出最佳判断即可，不必纠结
+   recompile 还是 full——dim-12 有 `needs_adaptation` 桶 → 归一自动升到至少 `needs_adaptation_full`；`unadaptable_apis`
+   非空 → 自动升到至少 `needs_adaptation_partial`；构造上不可能落盘自相矛盾的值。你真正要判准的是「分桶(dim-12)」与
+   「`unadaptable_apis`」——把功夫花在那两处，porting_class 会自然正确。** 判定树（best-guess 下限，命中即止）：
 
    > **Q0｜有没有"用到的功能"在鸿蒙上确实无法实现且无替代/回退？**（判据见下方"需适配 vs 无法适配"）
    >   · 核心功能就是它 → **`infeasible`**
@@ -245,6 +271,11 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
      termios/控制台 → 鸿蒙终端 API；注册表 → 鸿蒙配置存储。**"没有 drop-in 等价"不等于"无法适配"——能重建就是 adaptable。**
    - **不能 → `unadaptable`（进 `unadaptable_apis`）**：卡在**机制/硬件/闭源**层、鸿蒙无任何等价且无法自行实现。
      典型：**CUDA/专有 GPU 计算**、**闭源二进制库/无源码的预编译 agent**、**鸿蒙无法操作的专有内核特性/驱动**、绑定特定硬件设备且无替代。
+   - **判点：某功能因依赖未鸿蒙化而"被关掉"（如构建时关 `WITH_X`）≠ 自动 `unadaptable`/降级。** 先看那个依赖**能不能移植**：
+     开源、可交叉编译/可自行实现的原生库（如 uSockets 的 QUIC 依赖 lsquic）→ **`adaptable`**（honest 路径是把它一起移植、功能不丢，
+     移植量计入 `effort.breakdown` 与 `critical_dependencies`），**不进** `unadaptable_apis`、不因此降 `_partial`；只有当该功能
+     **无任何鸿蒙落地路径**（CUDA/闭源/特定硬件）才 `unadaptable`（→ `_partial`/`infeasible`）。**"推荐路径图省事把它关了"不是判降级的理由——
+     按"能不能移植"判，不按"默认关没关"判。**
 
    - **应用（模型 C）下重新诠释**：`no_adaptation`=纯运行时应用且 GUI 工具包鸿蒙已具备、直接跑；
      `recompile_only`=仅原生启动器/JNI agent 需重编；`needs_adaptation_full`=GUI/窗口/桌面集成需改
@@ -255,9 +286,9 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
    - ❌ **纯 Go/Rust/脚本库标成 `needs_adaptation_full`/`recompile_only`** → 应是 `no_adaptation`。有 adaptable 阻碍点不代表要改源码；
      除非你确实要为鸿蒙改代码，否则别升档。
    - ❌ **"该功能可选/量小"就把含不可适配 API 的库标 `needs_adaptation_full`** → 只要 `unadaptable_apis` 非空，**类别就是 `_partial`**（或 infeasible）。
-     "可选/量小/不影响核心"用**低 `person_days` + `notes` 说明**表达，**绝不因此升 `_full`**。（**服务端会强制校正此矛盾**：full/recompile/no + 非空 unadaptable_apis → 自动改判 `_partial` 并在面板提示，等于你白填了错的类别。）
+     "可选/量小/不影响核心"用**低 `person_days` + `notes` 说明**表达，**绝不因此升 `_full`**。（归一据 `unadaptable_apis` 自动把类别升到 `_partial` 并记 `porting_class_adjusted`——所以关键动作是把该 API 填进 `unadaptable_apis`，那才是升档依据。）
    - ❌ **把"没有现成鸿蒙 API"当成 `unadaptable`** → 能重建就是 `adaptable`。`unadaptable` 只留给硬件/闭源/内核机制（CUDA、闭源库、专有内核）。
-   - ❌ **dim-12 有 `needs_adaptation` 桶却把 porting_class 标成 `recompile_only`/`no_adaptation`** → 矛盾。"换后端/禁用后端/加平台分支只是改构建开关不算改源码"是常见误区：只要有模块需要为鸿蒙做**任何**适配动作，就不是"零源码改动"，应升 `needs_adaptation_full`。（**服务端会强制校正此矛盾**：recompile_only/no_adaptation + 非空 needs_adaptation 桶 → 自动改判 `needs_adaptation_full` 并在面板提示，等于你白填了错的类别。）
+   - ❌ **dim-12 有 `needs_adaptation` 桶却把模块塞进 `recompile_reuse`** → "换后端/禁用后端/加平台分支只是改构建开关不算改源码"是常见误区：只要有模块需要为鸿蒙做**任何**适配动作，就不是"零源码改动"，该模块应进 dim-12 的 `needs_adaptation` 桶。（归一据该桶自动把 porting_class 升到 `needs_adaptation_full`——所以关键动作是把该模块分进正确的桶，porting_class 会随之正确。）
 5b. **填 `unadaptable_apis`（API 粒度，父库综合用）** —— 仅当本库存在**确实无法在鸿蒙适配**的底层
    API 时列出；这是自底向上综合的关键：服务端会把**父库的 `dependencies[].used_symbols` 与子库此清单的
    `public_entry` 求交**，命中才把该子计为父的阻碍——所以 `public_entry` 要尽量填准，父库不调用到就不阻塞父的迁移。
@@ -332,9 +363,9 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
 - **C/C++ 库**：`porting_class: recompile_only`、`recommended_path: "recompile_napi"`、`effort.person_days` 约 `[3,8]`、
   `blockers` 多为个别 POSIX 子集缺口或 Win32 分支,`compatible` 含 STL/算法核心。
 - **应用 + 目标假设示例（VisualVM 类桌面 profiler，模型 C）**：`target_assumptions` 形如
-  `[{"capability":"headful Swing/AWT","required":true,"target_status":"unknown","impact":"不支持则整个 GUI 无法运行","source":"harmony-pc-capabilities.json#gui.swing"},`
-  `{"capability":"跨进程 attach (Attach API/JVMTI)","required":true,"target_status":"unknown","impact":"profiler 核心功能依赖","source":"…#5"},`
-  `{"capability":"jdk.internal.jvmstat/sun.tools.attach 开放","required":true,"target_status":"unknown","impact":"性能计数器/attach 启动依赖","source":"…#2"}]`；
+  `[{"capability":"headful Swing/AWT","capability_key":"swing","required":true,"target_status":"unknown","impact":"不支持则整个 GUI 无法运行","source":"harmony-pc-capabilities.json#gui.swing"},`
+  `{"capability":"跨进程 attach (Attach API/JVMTI)","capability_key":"cross_attach","required":true,"target_status":"unknown","impact":"profiler 核心功能依赖","source":"…#process_security.cross_attach"},`
+  `{"capability":"jdk.internal.jvmstat/sun.tools.attach 开放","capability_key":"jdk_jvmstat","required":true,"target_status":"unknown","impact":"性能计数器/attach 启动依赖","source":"…#jdk_internals.jdk_jvmstat"}]`；
   这些 `required+unknown` ⇒ **把 `confidence` 下调至多 `medium`、notes 注明依赖未核实事实**；其各平台预编译
   JNI agent `libprofilerinterface` 无 OHOS 版 → 进 `unadaptable_apis`/`blocker`。
 - **部分功能不可适配的库（partial 档示例）**：如某图形库的 GPU 加速路径走 `cuLaunchKernel`/特定
@@ -353,22 +384,19 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
   `unadaptable_apis` 近空，`notes` 注明「本仓为示例集合，平台 API 仅见于示例」。
 - 闭轴(`feasibility`/`porting_class`/`confidence`/`blockers[].severity`/`blockers[].adaptability`/`effort.level`)
   取值**必须**落在 schema enum 内;开放词(`recommended_path`/`category`/`harmony_status`)按实际写。
-  **`effort.level` 由 server 派生，你不必填**；你填 `porting_class` + `effort.person_days` + `feasibility`。
-  `porting_class` 必须与 `feasibility`/路径自洽（见 How-to 第 4/5 步映射），并与 `unadaptable_apis`
-  自洽：`unadaptable_apis` 非空 ⇒ `porting_class: needs_adaptation_partial`（或 `infeasible`）；
-  为空且仍需改造 ⇒ `needs_adaptation_full`；**完全零源码改动**（分区只有 reuse_direct/recompile_reuse）
-  ⇒ `recompile_only`（原生）/`no_adaptation`（脚本）。
+  **`porting_class`/`feasibility`/`effort.level` 三者均由归一（`report_normalize.py`）确定性派生 + 落盘**（见第 5 步）——
+  你只需给出 `porting_class` 的 best-guess 下限 + `effort.person_days` 区间，并把 `unadaptable_apis` 与 dim-12 分桶填准；
+  归一会据它们把 `porting_class` 只升不降、令 `feasibility` 与之自洽，落盘不会出现自相矛盾的值（你的原判留存 `porting_class_model`）。
 - 引用完整性 + 去重：每个 `caused_by`/`manifests_as`/`critical_dependencies[].refs` 引用的 id 必须在
   对应清单存在；同一事实只在主清单写完整内容、其余引用，避免重复计入难度。任一
   `blocker.adaptability: unadaptable` 应同时在 `unadaptable_apis` 有对应项（除非不是具体 API）。
-- **与 dim-12 `code_partition` 三方自洽**：分区 `unadaptable` 桶非空 ⇔ `unadaptable_apis` 非空 ⇔
-  `porting_class ∈ {needs_adaptation_partial, infeasible}`（桶内模块 reason 引用的 `ua:*` 要真实存在）；
-  分区 **`needs_adaptation` 桶非空 ⇒ `porting_class` 至少 `needs_adaptation_full`**（不得 `recompile_only`/
-  `no_adaptation`——那俩=零源码改动=分区只有 reuse_direct/recompile_reuse；server 会强制校正并告警。
-  例外：`no_adaptation` 的已移植运行时库若只有个别纯跨平台交叉编译文件被 dim-12 误列 needs_adaptation，
-  server 按 5% 规模阈值容忍不升档——但正解是 dim-12 本就不该把这类文件列入 needs_adaptation）；
-  `needs_adaptation` 桶很大而 `person_days` 很小（或反之）需要在 notes 给出理由。`effort.breakdown`
-  分项之和应落在 `effort.person_days` 区间附近（server 校验告警）。
+- **与 dim-12 `code_partition` 的自洽由归一保证（你只需分桶准）**：归一据分区桶把 porting_class 只升不降——
+  `unadaptable` 桶 / `unadaptable_apis` 非空 ⇒ 至少 `needs_adaptation_partial`；`needs_adaptation` 桶非空 ⇒ 至少
+  `needs_adaptation_full`（`recompile_only`/`no_adaptation` = 零源码改动 = 分区只有 reuse_direct/recompile_reuse）。
+  例外：`no_adaptation` 的已移植运行时库若只有个别纯跨平台交叉编译文件被 dim-12 误列 needs_adaptation，归一按 5%
+  规模阈值容忍不升档——但正解是 dim-12 本就不该把这类文件列入 needs_adaptation。**你的责任**：桶内模块 reason 引用的
+  `ua:*` 要真实存在；`needs_adaptation` 桶很大而 `person_days` 很小（或反之）在 notes 给理由；`effort.breakdown`
+  分项之和落在 `effort.person_days` 区间附近（归一校验告警）。
 - `critical_dependencies` 只列**未鸿蒙化**且真正阻塞推进的依赖（`harmony_adapted:true` 不列）；
   `name` 必须与 `dependencies[].name` 逐字一致（面板据此关联）。**单一登记源**：场景"是否涉及 + 鸿蒙状态"登记在 `capability_profile`、
   权限登记在 `required_permissions`、不可适配 API 登记在 `unadaptable_apis`、目标能力假设登记在
@@ -381,6 +409,15 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
   模型 B，并在 `notes` 注明。已移植运行时（Python/Node/Java/Rust/Go/Julia）本身不计为阻碍。
 - 描述要可执行:`remediation` 给具体的 `@ohos.*` 平替或裁剪决定,不空泛。
 - 评估基于代码证据,不臆造鸿蒙能力;不确定写进 `notes`。
+
+## 自我复核（一致性告警）
+组装后 `meta.harmony_warnings` 会带一批**跨维一致性告警**（`{code, class, message}`）。`class=="actionable"`
+的那些是"可能漏判/矛盾"的启发式信号（如 `scenario_no_dim9:*`=某 present+unavailable 场景在 dim-9 无
+对应 blocker/假设、`ua_no_cp_bucket`/`cp_unadapt_no_ua`=dim-9 与 dim-12 的 unadaptable 登记对不齐、
+`*_ref:*`/`ta_unref:*`=悬空引用）。按 agent 流程**步骤 4b** 单趟复核：**真漏**就带 file:line 证据补进
+对应源维度（本 skill 的 blocker/target_assumption/unadaptable_apis 或 capability_profile/cloud_services），
+**误报**就在 `blocks/meta.json` 的 `harmony_warnings_dismissed` 记 `{code, rationale}`（别臆造数据消告警）。
+`class=="info"` 的是归一器已确定性修好的留痕（如 `pclass_adjusted`），**不处理**。
 
 ## 自我发现（反哺）
 新的阻碍类别、适配路径或鸿蒙状态取值，或口径歧义，追加到顶层 `meta.observations`：

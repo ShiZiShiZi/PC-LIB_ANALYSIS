@@ -1372,7 +1372,8 @@
       "person_days": [
         4,
         10
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -1492,7 +1493,8 @@
       "用 CMake 配置 SDL_ttf 指向 OHOS SDL3 和 vendored/系统依赖，交叉编译产生 libSDL3_ttf.so",
       "在鸿蒙 PC 上验证字体加载与渲染功能的完整性（优先测试 surface 文本引擎，再逐步验证 GPU/OpenGL 引擎）"
     ],
-    "notes": "信心度为 medium 主要因为 SDL3 在鸿蒙 PC 的可用状态未知——本库完全依赖 SDL3 的跨平台能力，若 SDL3 可编译运行则本库 migration 难度极低（仅交叉编译 + 验证）。FreeType/HarfBuzz/PlutoSVG 均为纯标准 C/C 代码，理论上 OHOS NDK 可直接编译。无 unadaptable_apis——所有功能基于标准 C + 跨平台 SDL3 API + SIMD 运行时检测 + 标量回退。"
+    "notes": "信心度为 medium 主要因为 SDL3 在鸿蒙 PC 的可用状态未知——本库完全依赖 SDL3 的跨平台能力，若 SDL3 可编译运行则本库 migration 难度极低（仅交叉编译 + 验证）。FreeType/HarfBuzz/PlutoSVG 均为纯标准 C/C 代码，理论上 OHOS NDK 可直接编译。无 unadaptable_apis——所有功能基于标准 C + 跨平台 SDL3 API + SIMD 运行时检测 + 标量回退。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "SDL_ttf",
@@ -1541,7 +1543,8 @@
         "value": "harfbuzz windows-backend libs",
         "rationale": "usp10/gdi32/rpcrt4 是 Windows 上 HarfBuzz 的内部后端链接依赖，不是 SDL_ttf 直接依赖。但它们在 CMakeLists 中以 target_link_libraries 明确声明，故作为一条 build/optional 平台依赖列出——这种「依赖的依赖的构建链接」需要判断"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "SDL_ttf 是 SDL3 的字体渲染伴侣库，不直接操作 GPU/窗口/硬件设备，而是通过 SDL3 抽象层间接使用 GPU 纹理和渲染器。生产代码内嵌 SSE2/NEON SIMD 优化（带运行时检测与通用回退路径），无特定硬件依赖。",

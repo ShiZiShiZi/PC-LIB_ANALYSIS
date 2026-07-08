@@ -1741,7 +1741,8 @@
       "person_days": [
         18,
         32
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1948,7 +1949,8 @@
       "编写 OHOS 平台的 Platform.h 扩展（OHOS 编译器宏、musl 特定的 ASSERT/FORCE_INLINE 对应）",
       "在鸿蒙 PC 上运行现有单元测试 (googletest, 211 文件/1217 用例)，验证重编后功能完整性"
     ],
-    "notes": "评估按模型 A（C++ 库跑在 OHOS NDK 原生层，通过 napi 暴露给上层）。核心风险：TBB 是唯一强依赖且未鸿蒙化的运行时依赖，但由于 TBB 是纯 C++ 库（仅依赖 pthread+std::thread，不依赖 Linux 专有系统调用），用 OHOS NDK 交叉编译的可能性较高——若实践失败，需评估整体替换并行框架的工作量（此时 effor 上限升至 ~40）。已鸿蒙化 5/9 个核心依赖 (Boost/ZLIB/Blosc/Imath/Jemalloc) 大幅降低外围工作量。CUDA/VCL/LLVM/GLFW3 均为可选组件，裁剪不影响核心体数据处理功能。NanoVDB 的 __hostdev__ 宏设计已区分 CPU/GPU 代码路径，禁用 CUDA 后安全回退到 CPU。confidence=medium 因 TBB 的鸿蒙可用性为 unknown——这是整个移植的要点。"
+    "notes": "评估按模型 A（C++ 库跑在 OHOS NDK 原生层，通过 napi 暴露给上层）。核心风险：TBB 是唯一强依赖且未鸿蒙化的运行时依赖，但由于 TBB 是纯 C++ 库（仅依赖 pthread+std::thread，不依赖 Linux 专有系统调用），用 OHOS NDK 交叉编译的可能性较高——若实践失败，需评估整体替换并行框架的工作量（此时 effor 上限升至 ~40）。已鸿蒙化 5/9 个核心依赖 (Boost/ZLIB/Blosc/Imath/Jemalloc) 大幅降低外围工作量。CUDA/VCL/LLVM/GLFW3 均为可选组件，裁剪不影响核心体数据处理功能。NanoVDB 的 __hostdev__ 宏设计已区分 CPU/GPU 代码路径，禁用 CUDA 后安全回退到 CPU。confidence=medium 因 TBB 的鸿蒙可用性为 unknown——这是整个移植的要点。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "openvdb",
@@ -1997,7 +1999,8 @@
         "rationale": "OpenVDB 核心+非 GPU 路径为 recompile_only ~ needs_adaptation_full 区间，但因 NanoVDB CUDA 路径确实无法在鸿蒙运行 (且列入 unadaptable_apis)，整体应判 needs_adaptation_partial——虽然 CUDA 是可选组件且 CPU 回退完整，但按 schema 规则 unadaptable_apis 非空 => partial"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "OpenVDB 是纯计算类体数据处理库，不涉及传统桌面 GUI 或音视频媒体场景；核心触及体数据 3D 可视化 (OpenGL/GLFW) 与 GPU 硬件加速 (CUDA/SIMD) 两个鸿蒙适配重点场景。",

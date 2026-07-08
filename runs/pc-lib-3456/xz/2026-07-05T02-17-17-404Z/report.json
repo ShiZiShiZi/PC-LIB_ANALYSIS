@@ -1364,7 +1364,8 @@
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1486,7 +1487,8 @@
       "若需从 ArkTS 调用 liblzma，编写 Node-API (napi) 桥接层将 lzma_stream_encoder/decoder 暴露给 ArkTS"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙 NDK 编译的原生 .so 上）。liblzma 是极其自包含的纯 C 算法库（LZMA/LZMA2 完全自实现），所有外部依赖均为可选（Threads/NLS/libmd），平台代码均通过 #ifdef 守卫并有通用回退——这使得鸿蒙移植基本仅为重编工作。优先利用 musl 提供的 POSIX 子集；线程/sandbox 等可选模块可先关闭，降低初始移植复杂度。",
-    "required_permissions": []
+    "required_permissions": [],
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "one_liner": "通用数据压缩库（liblzma）与命令行工具集，支持 .xz/.lzma 格式，采用 LZMA2 算法",
@@ -1519,7 +1521,15 @@
     "repo_commit": null,
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(0BSD AND LGPL-2.1-or-later AND GPL-2.0-or-later AND GPL-3.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "纯计算型压缩库与命令行工具，不涉及 GUI、3D 渲染、媒体、或特定硬件场景。其 x86 CLMUL/SSE、ARM64 CRC、LoongArch CRC 加速均为 CPU 级 SIMD/汇编优化，属于通用 CPU 特性，不构成硬件依赖。",

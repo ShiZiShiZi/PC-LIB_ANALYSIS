@@ -1966,13 +1966,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (经 OHOS NDK/musl 重新编译为 .so 共享库; arm64/x86_64; 自研内核, 无 Linux ABI; 库可被鸿蒙原生应用通过 Node-API 或直接链接调用)",
-    "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "hard",
     "effort": {
       "person_days": [
         5,
         10
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -2159,7 +2160,12 @@
       "运行 NSS 测试套件（gtests + ssl_gtests）验证功能完整性和 TLS 互通性",
       "可选：评估 OHOS 上的 FIPS-140 认证路径——libaudit 审计集成需替换为 NSPR 日志或其他 OHOS 安全审计接口"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 C/C++ 运行时环境上，被 OHOS 原生应用链接调用）。NSPR 和 zlib 已在 cmd-pkgs 提供鸿蒙预编译包，大幅降低了平台适配复杂度。SQLite 为 vendored 纯 C 代码，重编无阻力。platform_adaptation 统计显示约 3709 行平台守卫代码（Windows 2309 + macOS 1257 + Linux 130 + POSIX 13），其中 Win32 和 macOS 分支与鸿蒙无关、被条件编译跳过；仅 Linux 分支的 POSIX API（mmap/dlopen/getauxval）需在 OHOS 上核实和适配。freebl 的汇编优化均有纯 C 回退，在任意架构上均可降级编译。FIPS 模式下的 Linux libaudit 审计集成在 OHOS 不可用但非必要——非 FIPS 构建自然禁用。整体 confidence 为 medium，因为 /dev/urandom 在 OHOS PC 的可用性尚未核实（target_assumptions 中 ta:dev_urandom 为 unknown），但其改造路径明确（改用 NSPR 随机数接口），不构成 blocker。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 C/C++ 运行时环境上，被 OHOS 原生应用链接调用）。NSPR 和 zlib 已在 cmd-pkgs 提供鸿蒙预编译包，大幅降低了平台适配复杂度。SQLite 为 vendored 纯 C 代码，重编无阻力。platform_adaptation 统计显示约 3709 行平台守卫代码（Windows 2309 + macOS 1257 + Linux 130 + POSIX 13），其中 Win32 和 macOS 分支与鸿蒙无关、被条件编译跳过；仅 Linux 分支的 POSIX API（mmap/dlopen/getauxval）需在 OHOS 上核实和适配。freebl 的汇编优化均有纯 C 回退，在任意架构上均可降级编译。FIPS 模式下的 Linux libaudit 审计集成在 OHOS 不可用但非必要——非 FIPS 构建自然禁用。整体 confidence 为 medium，因为 /dev/urandom 在 OHOS PC 的可用性尚未核实（target_assumptions 中 ta:dev_urandom 为 unknown），但其改造路径明确（改用 NSPR 随机数接口），不构成 blocker。",
+    "porting_class_model": "recompile_only",
+    "porting_class_adjusted": {
+      "from": "recompile_only",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "nss",
@@ -2213,7 +2219,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 recompile_only，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "NSS 是纯密码学库，生产代码不涉及 GUI 桌面界面、3D 图形渲染、音视频编解码/采集或特定硬件设备。freebl 模块中 AES-NI/SSE/AVX/ARM NEON/PowerPC AltiVec 等 SIMD 指令加速属 CPU ISA 扩展（运行时自动检测并可用纯 C 回退），不依赖特定外设或专用硬件。",

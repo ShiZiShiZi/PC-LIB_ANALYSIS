@@ -1059,8 +1059,8 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        5,
-        15
+        5.9,
+        12.9
       ],
       "breakdown": [
         {
@@ -1074,10 +1074,10 @@
         {
           "component": "api_adaptation",
           "person_days": [
-            1,
-            4
+            0.1,
+            0.1
           ],
-          "basis": "uWebSockets 自身仅 1 行平台守卫代码（LoopData.h:66-70 gmtime_s/gmtime_r），适配量极小；但 uSockets 底层 epoll/kqueue 调用需改写为 OHOS poll 等价"
+          "basis": "需适配 1 行 ÷ 500 行/天"
         },
         {
           "component": "build_system",
@@ -1086,8 +1086,17 @@
             3
           ],
           "basis": "自研 build.c + Makefile 构建系统需适配 OHOS NDK 交叉编译工具链"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            1.8,
+            1.8
+          ],
+          "basis": "重编译复用 5495 行 ÷ 3000 行/天"
         }
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -1180,7 +1189,8 @@
       "验证 WebSocket 协议功能（握手、消息收发、ping/pong、压缩）",
       "性能测试：对比 poll 后端与 epoll 后端的吞吐量差距"
     ],
-    "notes": "主要不确定性在于 OHOS NDK POSIX 子集的 socket API 完备性（bind/listen/accept/send/recv 应可用）和是否有高效的 I/O 多路复用替代。uSockets 已有多后端架构（epoll/kqueue/libuv/ASIO/GCD），增加 OHOS 后端是自然扩展。若 OHOS 支持类似 epoll 的高效接口则工作量更低。confidence 为 medium 因为 ta:ohos_ndk_event 状态为 unknown。"
+    "notes": "主要不确定性在于 OHOS NDK POSIX 子集的 socket API 完备性（bind/listen/accept/send/recv 应可用）和是否有高效的 I/O 多路复用替代。uSockets 已有多后端架构（epoll/kqueue/libuv/ASIO/GCD），增加 OHOS 后端是自然扩展。若 OHOS 支持类似 epoll 的高效接口则工作量更低。confidence 为 medium 因为 ta:ohos_ndk_event 状态为 unknown。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "uWebSockets",
@@ -1217,7 +1227,8 @@
         "value": "download_build",
         "rationale": "lsquic 通过 uSockets 子目录路径引用预编译静态库（build.c:44），属于 download+build 而非 submodule/vendored/system，用 download_build 描述"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "µWebSockets 是纯网络服务器库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其核心功能（TCP/WebSocket/HTTP 服务）在鸿蒙 PC 上通过 OHOS NDK 重编译即可工作。",

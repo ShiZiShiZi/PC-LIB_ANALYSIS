@@ -10,6 +10,12 @@ are the ones that most strongly drive HarmonyOS-PC porting cost or infeasibility
 then turns these flags into 修改量/能否移植 (porting_class/blockers/person_days). **职责分工**：
 本维度只标"是否涉及 + 涉及什么 + 鸿蒙是否支持"，**不**下移植结论（那是 dim-9）。
 
+**两层契约（见 `pc-lib-analyzer.md`「两层契约」）——本维度是 GUI/3D/媒体/硬件 四类的权威特征源。**
+"这四类涉及什么 + 鸿蒙支持状态（`harmony_status`/`specific_hardware`）"的判定**只在本维度做一次**：
+查 `references/harmony-pc-capabilities.json` 定状态的动作归本维度，dim-9 **直接消费**本维度的 `harmony_status`/
+`specific_hardware`（经 `caused_by`/`source_capability` 回指场景 `key`），**不会对这四类重查 caps、也不从
+native_api 重扫**。所以这四类的鸿蒙支持状态**以本维度为准，务必查准**（下调不确定项到 `unknown` 而非臆断）。
+
 ## 主旨与原则
 
 **输出契约（下方 Output）是唯一硬约束。** 推荐场景集（gui/rendering_3d/media/hardware）是
@@ -33,19 +39,22 @@ then turns these flags into 修改量/能否移植 (porting_class/blockers/perso
   "scenarios": [
     {"key": "gui", "present": true, "kind": ["qt6", "x11"],
      "via": ["Qt6", "libQt6Widgets.so"], "harmony_status": "partial",
-     "adaptation": "界面层需用 ArkUI 重写，业务逻辑可复用", "evidence": ["src/ui/main.cpp:42"]},
+     "adaptation": "基于 Qt6 Widgets 的桌面界面层，是鸿蒙 GUI 适配重点", "evidence": ["src/ui/main.cpp:42"]},
     {"key": "rendering_3d", "present": true, "kind": ["opengl"],
      "via": ["libGL", "glfw"], "harmony_status": "unknown",
-     "adaptation": "依赖鸿蒙 PC 的 OpenGL/EGL 可用性（目标事实未核实）", "evidence": ["src/render/gl.c:88"]},
+     "adaptation": "经 GLFW 的桌面 OpenGL 3D 渲染，鸿蒙 PC 的 OpenGL/EGL 可用性未核实", "evidence": ["src/render/gl.c:88"]},
     {"key": "media", "present": false},
     {"key": "hardware", "present": true, "kind": ["gpu_cuda"], "specific_hardware": true,
      "via": ["libcudart"], "harmony_status": "unavailable",
-     "adaptation": "CUDA 为 NVIDIA 专有，鸿蒙无等价，相关功能无法移植", "evidence": ["src/kernel.cu:10"]}
+     "adaptation": "CUDA GPU 加速计算，绑定 NVIDIA 专有硬件栈，鸿蒙无等价", "evidence": ["src/kernel.cu:10"]}
   ]
 }
 ```
 
 - `key`/`present`/`harmony_status`/`specific_hardware` 是**闭轴**；`kind`/`via`/`adaptation` 开放。
+- **`adaptation` 是一句客观描述性提示**（这是什么能力、为何是鸿蒙适配重点/难点），**不写移植方案/remediation/工作量**
+  ——那是 dim-9 的 `blockers[].remediation`/`effort`（dim-9 经场景 `key` 交叉引用本场景，不重述）。例如
+  写"CUDA 为 NVIDIA 专有 GPU 计算，鸿蒙无等价硬件栈"（描述），**不**写"改用 xxx 重写、约 N 人天"（结论）。
 - `present:false` 的场景可省略或保留占位；纯计算库 `scenarios` 可为 `[]`。
 
 ## 思路（Approach，可调整）
@@ -60,7 +69,8 @@ then turns these flags into 修改量/能否移植 (porting_class/blockers/perso
    **`specific_hardware`**：依赖特定/不可替代硬件（CUDA/NPU/FPGA、特定采集卡）置 true——这是 dim-9 判 infeasible 的强信号。
 5. 每个 present 场景对照 `references/harmony-pc-capabilities.json`（3D/媒体/硬件/GUI 段）判 `harmony_status`：
    目标事实 available→不阻碍；partial→部分；unavailable→阻碍；**查不到对应事实→`unknown`**（诚实，别臆断），
-   dim-9 会据 unknown 下调 confidence。`adaptation` 一句话点出修改量/路径。
+   dim-9 会据 unknown 下调 confidence。**这一步是这四类鸿蒙支持状态的唯一判定点**（dim-9 直接采用，不重判）。
+   `adaptation` 只一句**描述**该场景是什么/为何是适配重点，**不**给移植方案（见上）。
    可用鸿蒙文档技能（opencode 全局 `harmonyos-sdk-api-lookup`，run prompt 会提示可用性）核实对应
    Kit/@ohos API 的**存在性**，方法与口径护栏见 harmony-adaptation SKILL.md「目标侧 API 事实核查」——
    **文档存在 ≠ PC 可用，caps JSON 优先**；caps 查不到且文档也检索无果 → 倾向 unavailable/unknown 如实标注。

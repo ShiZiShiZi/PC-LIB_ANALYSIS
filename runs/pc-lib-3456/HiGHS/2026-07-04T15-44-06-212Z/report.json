@@ -1514,7 +1514,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1631,7 +1632,8 @@
       "确认编译器 intrinsics 探测（__builtin_clz/popcnt）在 clang 上通过，MSVC _BitScanReverse64 路径自动跳过",
       "编译 HiGHS 库 highs/ + 核心可执行文件 app/，在鸿蒙 PC 上跑通 .mps/.lp 格式基础求解测试"
     ],
-    "notes": "评估按模型 A（库经 OHOS NDK 交叉编译为 .so）。HiGHS 核心库为纯数值计算，平台耦合极低：code_metrics.platform_adaptation.total = 274 行（分散在 18 个文件），均为条件编译守卫。无 fork/mmap/ioctl/socket/注册表等系统级 API 调用；无外部命令 shell-out；无 /proc /sys 访问。唯一的平台相关 API（dlopen/LoadLibrary）有跨平台抽象层，OHOS musl 支持 POSIX dlfcn.h 路径。check/ 目录含 105 个测试实例文件（.mps/.lp，被 cloc 误判为 MUMPS 语言），不影响库本体的移植判断。"
+    "notes": "评估按模型 A（库经 OHOS NDK 交叉编译为 .so）。HiGHS 核心库为纯数值计算，平台耦合极低：code_metrics.platform_adaptation.total = 274 行（分散在 18 个文件），均为条件编译守卫。无 fork/mmap/ioctl/socket/注册表等系统级 API 调用；无外部命令 shell-out；无 /proc /sys 访问。唯一的平台相关 API（dlopen/LoadLibrary）有跨平台抽象层，OHOS musl 支持 POSIX dlfcn.h 路径。check/ 目录含 105 个测试实例文件（.mps/.lp，被 cloc 误判为 MUMPS 语言），不影响库本体的移植判断。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "HiGHS",
@@ -1674,7 +1676,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "HiGHS 是纯数学优化计算库，无 GUI/3D渲染/多媒体场景。唯一涉及的鸿蒙适配重点场景是可选的 NVIDIA CUDA GPU 加速（默认关闭），属特定硬件依赖。",

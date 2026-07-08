@@ -1195,25 +1195,25 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        5,
-        15
+        17.4,
+        23.4
       ],
       "breakdown": [
         {
           "component": "recompile",
           "person_days": [
-            2,
-            4
+            13,
+            13
           ],
-          "basis": "核心 C++ 库约 39k 行（src/SARibbonBar/ + src/）需用 OHOS NDK + 鸿蒙 Qt 5 重新编译，无源码改动。"
+          "basis": "重编译复用 39029 行 ÷ 3000 行/天"
         },
         {
           "component": "api_adaptation",
           "person_days": [
-            1,
-            2
+            1.4,
+            1.4
           ],
-          "basis": "Qt 6.5 以下系统暗色模式检测调用 macOS defaults / Linux gsettings，鸿蒙 PC 无对应命令；需补默认 fallback 或升级到 Qt 5.15+ 等方案。"
+          "basis": "需适配 695 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -1247,7 +1247,8 @@
           ],
           "basis": "产出鸿蒙 Qt 5 动态/静态库与可选 PyQt5 绑定 wheel。"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -1391,7 +1392,8 @@
       "评估 PyQt6/PySide6 绑定是否需要降级到 Qt 5 或暂缓支持",
       "跑通 Qt Test 单元测试，验证布局、RTL、主题、按钮等核心功能"
     ],
-    "notes": "评估基于模型 A（C++ 库在鸿蒙已移植运行时/Qt 5 上重编）。目标侧事实以 references/harmony-pc-capabilities.json 为准：Qt 5 可用，Qt 6 需降级。由于桌面窗口管理器在鸿蒙 PC 上状态为 unknown，置信度降至 medium。生产代码中无直接 Win32/POSIX/macOS 原生调用，阻碍点均为可选/降级项，核心功能可移植。"
+    "notes": "评估基于模型 A（C++ 库在鸿蒙已移植运行时/Qt 5 上重编）。目标侧事实以 references/harmony-pc-capabilities.json 为准：Qt 5 可用，Qt 6 需降级。由于桌面窗口管理器在鸿蒙 PC 上状态为 unknown，置信度降至 medium。生产代码中无直接 Win32/POSIX/macOS 原生调用，阻碍点均为可选/降级项，核心功能可移植。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "SARibbon",
@@ -1447,7 +1449,8 @@
         "value": "docs_in_reuse_direct",
         "rationale": "docs/、.github/、scripts/ 等非可执行目录被 metrics 计入 production.code，为保证覆盖率归入 reuse_direct。严格来说它们不属于迁移代码，但此举满足对账要求。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "SARibbon 是一个典型的桌面 GUI 控件库，核心场景是围绕 Qt Widgets 的 Ribbon 界面；不涉及 3D 渲染、媒体编解码或特定硬件访问。其鸿蒙适配关键取决于 Qt 在鸿蒙 PC 上的可用程度。",

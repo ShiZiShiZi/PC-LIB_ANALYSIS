@@ -1396,7 +1396,8 @@
       "person_days": [
         8,
         18
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1493,7 +1494,8 @@
       "运行单元测试（gtest 已鸿蒙化）验证编解码功能与 SIMD 结果一致性",
       "生成并安装 aom.pc 与 CMake config，作为鸿蒙 PC 系统/三方库分发"
     ],
-    "notes": "评估按库模型 A（OHOS NDK 重编后供应用链接）。置信度为 medium，主要因 x86_64 架构支持与三方视频编解码库在鸿蒙原生层的可用性尚未在 capabilities 中核实；arm64 路径已明确可用。若目标仅为 arm64，person_days 可降至 8–12；若需同时支持 x86_64 并验证全量 SIMD，工作量和不确定性会上升。"
+    "notes": "评估按库模型 A（OHOS NDK 重编后供应用链接）。置信度为 medium，主要因 x86_64 架构支持与三方视频编解码库在鸿蒙原生层的可用性尚未在 capabilities 中核实；arm64 路径已明确可用。若目标仅为 arm64，person_days 可降至 8–12；若需同时支持 x86_64 并验证全量 SIMD，工作量和不确定性会上升。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "aom",
@@ -1543,7 +1545,15 @@
         "value": "recompile_only for large SIMD library",
         "rationale": "AOM 规模很大（44 万行生产代码）且含大量 SIMD/汇编，虽平台差异被 #ifdef 隔离，但验证 OHOS NDK 能否编译全部 x86_64/arm64 intrinsic 仍需较多工作。recompile_only 与 person_days 区间需反映这一规模，而非小型纯 C 库。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:gui",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "AOM 是纯粹的音视频编解码库，核心触及媒体（AV1 视频编解码）场景；不触及 GUI、3D 渲染或特定不可替代硬件。SIMD 优化依赖 CPU ISA（x86/ARM），属于可移植架构优化而非特定硬件。",

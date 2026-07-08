@@ -1346,7 +1346,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1447,7 +1448,8 @@
       "如需要 Qt GUI，通过社区鸿蒙 Qt 移植版重新编译 Zint Barcode Studio",
       "在鸿蒙开发板/模拟器上运行 libzint 单元测试（backend/tests/）验证功能完整"
     ],
-    "notes": "Zint 是理想的鸿蒙移植候选项目——核心库零外部强依赖（所有外部依赖均可选），平台差异仅限 Win32 文件名处理且已通过 #ifdef 隔离，OHOS NDK 的 musl libc 完全覆盖其 POSIX 调用面。CI 已覆盖 Linux/macOS/Windows/FreeBSD + x86_64/arm64，证明代码可移植性强。若只需核心条码编码功能，禁用 libpng/GS1SE/Qt 后为纯 C 库，porting_class = recompile_only，工作量极低。"
+    "notes": "Zint 是理想的鸿蒙移植候选项目——核心库零外部强依赖（所有外部依赖均可选），平台差异仅限 Win32 文件名处理且已通过 #ifdef 隔离，OHOS NDK 的 musl libc 完全覆盖其 POSIX 调用面。CI 已覆盖 Linux/macOS/Windows/FreeBSD + x86_64/arm64，证明代码可移植性强。若只需核心条码编码功能，禁用 libpng/GS1SE/Qt 后为纯 C 库，porting_class = recompile_only，工作量极低。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "zint",
@@ -1473,7 +1475,15 @@
     "model_name": null,
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(BSD-3-Clause AND GPL-3.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Zint 触及 Qt GUI 场景（桌面 GUI 应用 Zint Barcode Studio）和 2D 渲染场景（内存图像缓冲区生成），不涉及 3D 渲染、媒体或特定硬件。核心库 libzint 本身不依赖 GUI。",

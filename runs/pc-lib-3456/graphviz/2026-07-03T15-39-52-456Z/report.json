@@ -2245,7 +2245,8 @@
       "person_days": [
         15,
         30
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "high",
     "recommended_path": "cross_compile_ohos",
@@ -2487,7 +2488,8 @@
       "在已移植的 Python/Node/Java 等运行时上重新构建 SWIG 绑定并跑通测试",
       "若需保留 GUI 工具，评估 Qt/GTK/OpenGL ES 或 ArkGraphics 3D 的界面迁移方案"
     ],
-    "notes": "本评估默认按库模型 A（核心 C/C++ 库经 OHOS NDK 重编，供已移植运行时调用）。仓库中的交互式 GUI 程序（gvedit、smyrna、macosx）是可选组件；若把它们作为必保应用（模型 C）处理，需额外确认桌面窗口管理器、文件对话框、拖拽剪贴板等目标能力，整体评级会上升为 needs_adaptation_partial/hard。dot.demo/plugin.demo 等示例目录已在生产范围中排除，不作为迁移阻碍。"
+    "notes": "本评估默认按库模型 A（核心 C/C++ 库经 OHOS NDK 重编，供已移植运行时调用）。仓库中的交互式 GUI 程序（gvedit、smyrna、macosx）是可选组件；若把它们作为必保应用（模型 C）处理，需额外确认桌面窗口管理器、文件对话框、拖拽剪贴板等目标能力，整体评级会上升为 needs_adaptation_partial/hard。dot.demo/plugin.demo 等示例目录已在生产范围中排除，不作为迁移阻碍。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "graphviz",
@@ -2550,7 +2552,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.读写存储",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.读写存储 的 source_capability=filesystem 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Graphviz 触及 GUI 桌面程序（Qt 版 GVEdit、GTK 版 Smyrna、macOS Cocoa 应用）与 OpenGL GPU 渲染（Smyrna/glcomp）两大鸿蒙高成本适配场景；不涉及音视频媒体处理，也不依赖特定硬件加速器。",

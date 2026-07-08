@@ -2386,7 +2386,8 @@
       "person_days": [
         20,
         40
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "selective_adaptation",
@@ -2715,7 +2716,8 @@
       "如鸿蒙提供 HiTrace/HiPerf 系统追踪接口——评估是否可为 traced_probes 开发 OHOS 版数据源后端",
       "测试并确认 Perfetto UI 在鸿蒙 PC 浏览器上可视化 trace 文件、SQL 查询等功能正常运行"
     ],
-    "notes": "评估基于默认模型 A/应用视角（Perfetto 的各独立组件分别在鸿蒙运行时或 ODK NDK 上运行）。整体置信度 medium 的主要原因是多项核心目标事实（OHOS NDK POSIX 子集范围、x86_64 工具链可用性、鸿蒙替代内核追踪接口）为 unknown——若这些待核实项结果为正面，则部分当前标为 blocker 的项可降级为 major/minor 甚至移除，porting_class 可升为 needs_adaptation_full。traced_probes 因深度耦合 Linux 内核追踪接口（ftrace/perf_event）在鸿蒙上确定不可用，但若仅移植 SDK+Trace Processor+UI+CLI 子集，可行性显著提升。"
+    "notes": "评估基于默认模型 A/应用视角（Perfetto 的各独立组件分别在鸿蒙运行时或 ODK NDK 上运行）。整体置信度 medium 的主要原因是多项核心目标事实（OHOS NDK POSIX 子集范围、x86_64 工具链可用性、鸿蒙替代内核追踪接口）为 unknown——若这些待核实项结果为正面，则部分当前标为 blocker 的项可降级为 major/minor 甚至移除，porting_class 可升为 needs_adaptation_full。traced_probes 因深度耦合 Linux 内核追踪接口（ftrace/perf_event）在鸿蒙上确定不可用，但若仅移植 SDK+Trace Processor+UI+CLI 子集，可行性显著提升。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "perfetto",
@@ -2770,7 +2772,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=gui 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Perfetto 是系统级追踪/性能剖析工具套件，其核心能力集中于 OS 级事件采集（ftrace/perf_event/procfs 等）和数据分析（SQLite Trace Processor + 浏览器可视化 UI）。不涉及桌面 GUI 工具包（UI 是纯浏览器 SPA）、3D 图形渲染、音视频编解码媒体处理、或特定硬件加速器依赖。总体为系统性能监测领域的纯计算+展示负载。",

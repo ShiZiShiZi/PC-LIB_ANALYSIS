@@ -674,7 +674,8 @@
       "person_days": [
         3,
         6
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -747,7 +748,8 @@
       "在鸿蒙 PC 上运行 install-tests/ 下的安装后测试（test-api.c / test-version.c），验证 API 可用性",
       "将编译产物（.so + 头文件）集成到目标鸿蒙应用的构建中"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植运行时/被其它 native 代码链接）。libunistring 作为纯 C 算法库，通过 gnulib 的可移植层已在近 20 年间覆盖了大量 Unix/Windows 变体，OHOS musl 只是又一个 POSIX 子集变体——gnulib 的 autoconf 探测机制会如常适配。唯一注意点：gnulib 模块 relocatable-lib-lgpl 在运行时可能尝试读取 /proc/self/exe（Linux 专有，OHOS 无 /proc），但该路径有 no-op 回退，不影响核心功能。若目标是 ArkTS 沙箱应用（模型 B），则需通过 Node-API 桥接暴露 C API 给 ArkTS 层，额外工作量约 +2-4 人-天。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植运行时/被其它 native 代码链接）。libunistring 作为纯 C 算法库，通过 gnulib 的可移植层已在近 20 年间覆盖了大量 Unix/Windows 变体，OHOS musl 只是又一个 POSIX 子集变体——gnulib 的 autoconf 探测机制会如常适配。唯一注意点：gnulib 模块 relocatable-lib-lgpl 在运行时可能尝试读取 /proc/self/exe（Linux 专有，OHOS 无 /proc），但该路径有 no-op 回退，不影响核心功能。若目标是 ArkTS 沙箱应用（模型 B），则需通过 Node-API 桥接暴露 C API 给 ArkTS 层，额外工作量约 +2-4 人-天。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "libunistring",
@@ -785,7 +787,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(weak_copyleft) 与依据 SPDX(LGPL-3.0-or-later OR GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "纯文本处理库，不涉及 GUI、3D 渲染、媒体编解码/播放或特定硬件访问。无鸿蒙适配重点场景。",

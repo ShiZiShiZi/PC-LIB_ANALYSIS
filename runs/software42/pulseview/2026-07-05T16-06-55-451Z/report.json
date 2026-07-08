@@ -1155,7 +1155,8 @@
       "person_days": [
         30,
         50
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -1345,7 +1346,8 @@
       "适配应用分发格式：若需 .hap 包装则封装为 Native C++ ability；若支持原生 ELF 则直接分发",
       "在鸿蒙 PC 上运行单元测试（Boost.Test，28 个用例）验证编译产物基本功能"
     ],
-    "notes": "评估按模型 C（整包桌面应用），三项关键目标能力为 unknown：桌面窗口环境（wm）、USB/串口设备访问（usb_serial）、应用交付模型（desktop_app）——因此 confidence 下调为 medium、note 中注明结论依赖未核实目标事实。若 Qt 桌面窗口环境和 USB 设备权限经核实均可用，则可降为 needs_adaptation_full、feasibility 升为 feasible_with_effort、person_days 约 [20,35]；若两者均不可用，则须 arkts_rewrite 或 abandon，端口 infeasible。libsigrok 及 libsigrokdecode 均未鸿蒙化，需自主交叉编译。ENABLE_DECODE 可选功能默认启用但仅依赖 libsigrokdecode（纯软件库），编译不涉硬件；ENABLE_FLOW 默认关闭，不计入阻碍。"
+    "notes": "评估按模型 C（整包桌面应用），三项关键目标能力为 unknown：桌面窗口环境（wm）、USB/串口设备访问（usb_serial）、应用交付模型（desktop_app）——因此 confidence 下调为 medium、note 中注明结论依赖未核实目标事实。若 Qt 桌面窗口环境和 USB 设备权限经核实均可用，则可降为 needs_adaptation_full、feasibility 升为 feasible_with_effort、person_days 约 [20,35]；若两者均不可用，则须 arkts_rewrite 或 abandon，端口 infeasible。libsigrok 及 libsigrokdecode 均未鸿蒙化，需自主交叉编译。ENABLE_DECODE 可选功能默认启用但仅依赖 libsigrokdecode（纯软件库），编译不涉硬件；ENABLE_FLOW 默认关闭，不计入阻碍。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "pulseview",
@@ -1390,7 +1392,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:media",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 media 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "PulseView 是 Qt 桌面 GUI 应用，涉及 GUI 窗口界面和通过 libsigrok 间接访问 USB/串口测量硬件。无 3D 渲染（不使用 OpenGL/Vulkan）、无媒体编解码（可选 GStreamer 流默认关闭）、不依赖云端服务。核心适配挑战在 Qt 桌面环境 + USB 设备 I/O 在鸿蒙 PC 上的可用性。",

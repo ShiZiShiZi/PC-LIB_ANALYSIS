@@ -774,13 +774,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，ArkTS 应用层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
         10,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -930,7 +931,12 @@
       "测试 ImageSharp 后端作为无原生依赖的备选渲染方案",
       "评估 NativeAOT 将 OxyPlot.Core 编译为原生二进制的可行性"
     ],
-    "notes": "OxyPlot 的架构设计本身即支持跨平台——核心库通过 IRenderContext/IPlotView 抽象隔离平台，已有 SkiaSharp 和 ImageSharp 两个跨平台渲染后端。主要不确定性在于 .NET 运行时在鸿蒙 PC 上的可用性（unknown），这是整个评估的关键前提。若 .NET 运行时不可用，需走 NativeAOT 路线（将托管代码 AOT 编译为原生二进制），工作量会显著增加。WPF/WinForms 后端不可移植是预期内的，不影响核心功能。"
+    "notes": "OxyPlot 的架构设计本身即支持跨平台——核心库通过 IRenderContext/IPlotView 抽象隔离平台，已有 SkiaSharp 和 ImageSharp 两个跨平台渲染后端。主要不确定性在于 .NET 运行时在鸿蒙 PC 上的可用性（unknown），这是整个评估的关键前提。若 .NET 运行时不可用，需走 NativeAOT 路线（将托管代码 AOT 编译为原生二进制），工作量会显著增加。WPF/WinForms 后端不可移植是预期内的，不影响核心功能。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "OxyPlot",
@@ -973,7 +979,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "OxyPlot 是数据可视化绘图库，涉及 GUI 桌面界面场景（WPF/WinForms 渲染后端为 Windows 专有 GUI 框架）和 2D 图形渲染（SkiaSharp 后端间接使用 Skia 原生库）。不涉及 3D 渲染、媒体或特定硬件。",

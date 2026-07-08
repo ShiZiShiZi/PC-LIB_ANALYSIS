@@ -2391,7 +2391,8 @@
       "person_days": [
         35,
         70
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -2665,7 +2666,8 @@
       "mobile-only 插件（barcode-scanner/biometric/geolocation/haptics/nfc）在桌面端条件编译排除，无需适配",
       "在鸿蒙 PC 环境运行各插件的集成测试，验证功能完整与稳定性"
     ],
-    "notes": "结论关键依赖两大未知前提：Tauri 框架鸿蒙移植状态与鸿蒙 PC 桌面集成能力支持。harmony-pc-capabilities.json 中 desktop_integration 的 6 项均为 unknown、gui.wm（窗口管理器）为 unknown、gui.electron（WebView 类）为 unknown——这 9 项 unknown 将 confidence 下调至 medium。已知 Rust 的 ohos target 为 available（不阻碍）。所有 30+ 依赖 crate 在 OpenHarmony PC 镜像均无预编译版，每个需自行验证 ohos 交叉编译。若 Tauri 无法在鸿蒙 PC 运行，则整个插件集合无法使用；若 Tauri 可用但部分桌面集成能力缺失，可对相应插件作功能降级（dialog/clipboard/notification/global-shortcut/autostart/deep-link）。person_days[35,70] 为全 workspace 30 个插件整体估算——各插件独立，可按需分别适配。按 Model A（库运行在已移植 Rust 运行时上，经 OHOS NDK 交叉编译）；非 ArkTS 沙箱应用（Model B 不适用）。所有移动端专属插件（barcode-scanner/biometric/geolocation/haptics/nfc/positioner）在桌面端 compile target 中本来就不编译，不影响桌面适配评估。"
+    "notes": "结论关键依赖两大未知前提：Tauri 框架鸿蒙移植状态与鸿蒙 PC 桌面集成能力支持。harmony-pc-capabilities.json 中 desktop_integration 的 6 项均为 unknown、gui.wm（窗口管理器）为 unknown、gui.electron（WebView 类）为 unknown——这 9 项 unknown 将 confidence 下调至 medium。已知 Rust 的 ohos target 为 available（不阻碍）。所有 30+ 依赖 crate 在 OpenHarmony PC 镜像均无预编译版，每个需自行验证 ohos 交叉编译。若 Tauri 无法在鸿蒙 PC 运行，则整个插件集合无法使用；若 Tauri 可用但部分桌面集成能力缺失，可对相应插件作功能降级（dialog/clipboard/notification/global-shortcut/autostart/deep-link）。person_days[35,70] 为全 workspace 30 个插件整体估算——各插件独立，可按需分别适配。按 Model A（库运行在已移植 Rust 运行时上，经 OHOS NDK 交叉编译）；非 ArkTS 沙箱应用（Model B 不适用）。所有移动端专属插件（barcode-scanner/biometric/geolocation/haptics/nfc/positioner）在桌面端 compile target 中本来就不编译，不影响桌面适配评估。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "plugins-workspace",
@@ -2727,7 +2729,8 @@
       }
     ],
     "warnings": [],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目作为 Tauri 桌面/移动应用插件集合，深度涉及操作系统桌面集成（原生对话框、剪贴板、系统通知、窗口管理、文件系统访问）与移动端硬件能力（摄像头、生物识别、GPS、NFC、振动反馈）。不涉及 3D 渲染或多媒体编解码。插件本身不绑定特定 GUI 工具包——GUI 渲染由宿主 Tauri 应用的 WebView 承担，插件负责与 OS 系统服务交互。",

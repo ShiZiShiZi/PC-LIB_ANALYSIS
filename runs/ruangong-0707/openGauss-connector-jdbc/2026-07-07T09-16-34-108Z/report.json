@@ -1124,7 +1124,8 @@
           ],
           "basis": "Maven 构建产物 jar 可直接复用，按鸿蒙应用/库要求重新打包"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -1225,7 +1226,8 @@
       "如需启用客户端加密，联系 openGauss 上游获取 gauss_cl_jni 源码并交叉编译为 OHOS .so",
       "验证 SSL/国密 TLCP 连接在鸿蒙 JDK 上的行为"
     ],
-    "notes": "评估按库口径（模型 A：跑在已移植的 Java 运行时上）。由于 ohos.permission.INTERNET 的可授予性在 caps JSON 中为 unknown，且 gauss_cl_jni 源码/鸿蒙版本未核实，整体 confidence 为 medium。默认关闭 enable_ce 时，本库可视为 no_adaptation。"
+    "notes": "评估按库口径（模型 A：跑在已移植的 Java 运行时上）。由于 ohos.permission.INTERNET 的可授予性在 caps JSON 中为 unknown，且 gauss_cl_jni 源码/鸿蒙版本未核实，整体 confidence 为 medium。默认关闭 enable_ce 时，本库可视为 no_adaptation。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "openGauss JDBC Driver",
@@ -1288,7 +1290,20 @@
         "rationale": "纯 Java 库主体走 run_on_ported_runtime，但存在可选 JNI 扩展（gauss_cl_jni）需单独处理；现有 recommended_path 枚举未显式覆盖这种混合口径。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=database 不在已标记场景中"
+      },
+      {
+        "code": "ua_no_cp_bucket",
+        "class": "actionable",
+        "message": "dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯数据库连接库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件设备；核心依赖 Java 标准网络/安全 API，仅有可选的客户端加密功能通过 JNI 调用外部原生库。",

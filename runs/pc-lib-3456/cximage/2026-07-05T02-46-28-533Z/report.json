@@ -1394,7 +1394,8 @@
       "person_days": [
         8,
         15
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "cross_compile",
@@ -1521,7 +1522,8 @@
       "编译时设 CXIMAGE_SUPPORT_WINDOWS=0（复用现有 Linux 编译路径），确认编解码与图像处理功能完整",
       "在鸿蒙设备上跑通格式编解码与变换功能的验证测试（需自建测试用例，仓库无测试）"
     ],
-    "notes": "评估按「模型 A——C/C++ 库经 OHOS NDK 重编后作为原生库使用」。库已有 Linux/macOS 编译路径（_LINUX/__APPLE__ 条件编译），核心逻辑为纯 C/C++，无 POSIX 专有系统调用、无 fork/pthread/ioctl 等 OHOS musl 缺口风险。Windows GDI 绘制层非必需——现有的 Linux 路径已证明禁用后库功能完整。最大工作量在构建体系迁移（Visual Studio→OHOS NDK CMake），而非代码改造。平台适配信号：code_metrics.platform_adaptation 显示 windows 平台守卫代码 296 行（50 文件），macOS 10 行（4 文件），量不大且已条件隔离。"
+    "notes": "评估按「模型 A——C/C++ 库经 OHOS NDK 重编后作为原生库使用」。库已有 Linux/macOS 编译路径（_LINUX/__APPLE__ 条件编译），核心逻辑为纯 C/C++，无 POSIX 专有系统调用、无 fork/pthread/ioctl 等 OHOS musl 缺口风险。Windows GDI 绘制层非必需——现有的 Linux 路径已证明禁用后库功能完整。最大工作量在构建体系迁移（Visual Studio→OHOS NDK CMake），而非代码改造。平台适配信号：code_metrics.platform_adaptation 显示 windows 平台守卫代码 296 行（50 文件），macOS 10 行（4 文件），量不大且已条件隔离。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "cximage",
@@ -1565,7 +1567,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "CxImage 为纯本地图像库，不涉及 3D 渲染、音视频媒体、特定硬件依赖。唯一鸿蒙适配关注点是 Windows GDI 绘制层（画图/缩放到 HDC/MakeBitmap/MakeIcon 等），但这些调用均受 CXIMAGE_SUPPORT_WINDOWS 宏守卫、在非 Windows 平台（Linux/macOS）已完全禁用，核心编解码与图像处理功能不依赖 GDI，可平滑移植。",

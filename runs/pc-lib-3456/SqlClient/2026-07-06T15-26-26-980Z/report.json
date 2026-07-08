@@ -1447,8 +1447,8 @@
     "notes": "构建需要 .NET 10 SDK（global.json 锁定），可交叉编译 net8.0/net9.0/net462 目标。Windows 上额外支持 net462（.NET Framework）目标。.NET Framework 目标仅在 Windows 上构建（csproj 条件限制）。"
   },
   "harmony_adaptation": {
-    "feasibility": "feasible",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime",
     "effort": {
@@ -1456,7 +1456,7 @@
         15,
         40
       ],
-      "level": null
+      "level": "high"
     },
     "blockers": [
       {
@@ -1536,7 +1536,8 @@
         "category": "platform",
         "evidence": [
           "src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/LocalDb/LocalDbApi.windows.cs:5"
-        ]
+        ],
+        "id": "ua:1"
       },
       {
         "api": "Windows 原生 SSPI 认证 (NativeSspiContextProvider)",
@@ -1546,7 +1547,8 @@
         "category": "platform",
         "evidence": [
           "src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/SSPI/NativeSspiContextProvider.windows.cs:5"
-        ]
+        ],
+        "id": "ua:2"
       }
     ],
     "target_assumptions": [
@@ -1555,35 +1557,40 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 .NET 运行时未完整移植，整个库不可运行",
-        "source": "references/harmony-pc-capabilities.json (runtimes section 无 .NET 条目)"
+        "source": "references/harmony-pc-capabilities.json (runtimes section 无 .NET 条目)",
+        "id": "ta:1"
       },
       {
         "capability": "System.Net.Sockets 在鸿蒙 PC .NET 运行时中可用",
         "required": true,
         "target_status": "unknown",
         "impact": "ManagedSNI 的 TCP 连接依赖此 API",
-        "source": "inferred"
+        "source": "inferred",
+        "id": "ta:2"
       },
       {
         "capability": "System.Net.Security.SslStream 在鸿蒙 PC .NET 运行时中可用",
         "required": true,
         "target_status": "unknown",
         "impact": "TLS 加密连接依赖此 API",
-        "source": "inferred"
+        "source": "inferred",
+        "id": "ta:3"
       },
       {
         "capability": "System.Security.Cryptography 完整实现在鸿蒙 PC .NET 运行时中可用",
         "required": true,
         "target_status": "unknown",
         "impact": "Always Encrypted 的 AES-CBC-HMAC 算法依赖密码学 API",
-        "source": "inferred"
+        "source": "inferred",
+        "id": "ta:4"
       },
       {
         "capability": "GSS API / Negotiate 认证在鸿蒙 PC 上可用",
         "required": false,
         "target_status": "unknown",
         "impact": "Windows 集成认证的跨平台替代方案",
-        "source": "inferred"
+        "source": "inferred",
+        "id": "ta:5"
       }
     ],
     "required_permissions": [
@@ -1597,7 +1604,12 @@
         ]
       }
     ],
-    "notes": "SqlClient 的鸿蒙适配核心路径是「在已移植的 .NET 运行时上运行」，使用 ManagedSNI（纯托管网络层）替代 Windows 原生 SNI。关键前提：(1) .NET 8+ 运行时已完整移植到鸿蒙 PC，包括 Sockets/SslStream/Cryptography；(2) 编译时禁用 Windows 专有代码（_WINDOWS 宏不定义）。受限功能：LocalDB 不可用（Windows 专有）；Windows 集成认证需替代方案（GSS API）；Azure AD 认证/KeyVault 依赖 Azure SDK 在鸿蒙 .NET 运行时上的正常工作。生产代码中的 6 处运行时平台分支（OsConstants.IsWindows/IsLinux/IsMacOS）在 .NET 移植后可自然扩展，增加 IsHarmonyOS 或使用 IsLinux（若鸿蒙 PC 的 .NET 运行时报告为 Linux-like）。整体评估：适配工作量中等，主要在验证 .NET 运行时兼容性和测试，代码改动量较小（条件编译路径已就绪）。置信度为 medium 因为 .NET 运行时在鸿蒙 PC 上的状态为 unknown。"
+    "notes": "SqlClient 的鸿蒙适配核心路径是「在已移植的 .NET 运行时上运行」，使用 ManagedSNI（纯托管网络层）替代 Windows 原生 SNI。关键前提：(1) .NET 8+ 运行时已完整移植到鸿蒙 PC，包括 Sockets/SslStream/Cryptography；(2) 编译时禁用 Windows 专有代码（_WINDOWS 宏不定义）。受限功能：LocalDB 不可用（Windows 专有）；Windows 集成认证需替代方案（GSS API）；Azure AD 认证/KeyVault 依赖 Azure SDK 在鸿蒙 .NET 运行时上的正常工作。生产代码中的 6 处运行时平台分支（OsConstants.IsWindows/IsLinux/IsMacOS）在 .NET 移植后可自然扩展，增加 IsHarmonyOS 或使用 IsLinux（若鸿蒙 PC 的 .NET 运行时报告为 Linux-like）。整体评估：适配工作量中等，主要在验证 .NET 运行时兼容性和测试，代码改动量较小（条件编译路径已就绪）。置信度为 medium 因为 .NET 运行时在鸿蒙 PC 上的状态为 unknown。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "kind": "library",
@@ -1692,7 +1704,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [

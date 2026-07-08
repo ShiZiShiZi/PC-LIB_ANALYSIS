@@ -12,83 +12,410 @@
     "ecosystem": "cpp",
     "bindings": []
   },
-
   "function_summary": {
     "summary": "GoAccess 是一个开源的实时 Web 日志分析器和交互式查看器，在终端或浏览器中运行。它能够实时解析 Apache/Nginx/CloudFront 等多种 Web 服务器日志格式，以 ncurses 终端界面或 HTML 仪表盘呈现访客统计、带宽、响应时间、状态码等关键指标。核心特性包括增量日志处理与磁盘持久化、内置 WebSocket 服务器实现浏览器实时推送、多线程并行解析、GeoIP 地理位置查询、DNS 反向解析、CSV/JSON 输出等。",
     "categories": [
       {
         "name": "日志解析与格式识别",
         "description": "支持 Apache、Nginx、Amazon S3/CloudFront、Caddy、IIS W3C、Squid 等几乎所有主流 Web 日志格式，并提供自定义格式字符串能力",
-        "evidence": ["src/parser.c", "src/settings.c:verify_formats"]
+        "evidence": [
+          "src/parser.c",
+          "src/settings.c:verify_formats"
+        ]
       },
       {
         "name": "终端 TUI 仪表盘",
         "description": "基于 ncurses 的全屏终端界面，支持多面板（访客/请求/状态码/带宽/OS/浏览器等）、键盘导航、实时滚动与搜索",
-        "evidence": ["src/ui.c", "src/goaccess.c:get_keys", "src/gdashboard.c", "src/dialogs.c"]
+        "evidence": [
+          "src/ui.c",
+          "src/goaccess.c:get_keys",
+          "src/gdashboard.c",
+          "src/dialogs.c"
+        ]
       },
       {
         "name": "HTML 实时仪表盘",
         "description": "生成含 D3.js 图表的 HTML 报告，通过内置 WebSocket 服务器实现浏览器端实时数据推送，支持 JWT 认证",
-        "evidence": ["src/output.c:output_html", "src/websocket.c", "src/gwsocket.c", "src/gchart.c", "resources/js/charts.js"]
+        "evidence": [
+          "src/output.c:output_html",
+          "src/websocket.c",
+          "src/gwsocket.c",
+          "src/gchart.c",
+          "resources/js/charts.js"
+        ]
       },
       {
         "name": "数据持久化与增量处理",
         "description": "将解析数据序列化到磁盘（基于 tpl 二进制格式），支持增量加载历史数据继续处理，适用于大日志或长期监控场景",
-        "evidence": ["src/persistence.c", "src/tpl.c"]
+        "evidence": [
+          "src/persistence.c",
+          "src/tpl.c"
+        ]
       },
       {
         "name": "网络与 WebSocket 服务器",
         "description": "内置 RFC 6455 合规的 WebSocket 服务器，支持 TCP/Unix 域套接字、TLS (OpenSSL)、管道通信、自管 trick 实现信号安全",
-        "evidence": ["src/websocket.c", "src/gwsocket.c"]
+        "evidence": [
+          "src/websocket.c",
+          "src/gwsocket.c"
+        ]
       },
       {
         "name": "地理定位与 ASN 查询",
         "description": "可选集成 GeoIP Legacy 或 MaxMindDB (GeoIP2)，提供 IP 到国家/城市/ASN 的映射",
-        "evidence": ["src/geoip1.c", "src/geoip2.c", "src/geoip1.h"]
+        "evidence": [
+          "src/geoip1.c",
+          "src/geoip2.c",
+          "src/geoip1.h"
+        ]
       },
       {
         "name": "DNS 反向解析",
         "description": "后台线程池异步执行 IP 反向 DNS 查询，结果缓存到哈希表",
-        "evidence": ["src/gdns.c"]
+        "evidence": [
+          "src/gdns.c"
+        ]
       }
     ],
     "domain": "日志分析 / 网络监控",
     "target_users": "系统管理员、DevOps 工程师、安全分析师"
   },
-
   "languages": {
     "primary": "C",
-    "all": ["C", "PO File", "JavaScript", "C/C++ Header", "CSS", "YAML", "Markdown", "HTML", "make", "m4", "Dockerfile", "SVG", "Bourne Shell", "JSON"],
+    "all": [
+      "C",
+      "PO File",
+      "JavaScript",
+      "C/C++ Header",
+      "CSS",
+      "YAML",
+      "Markdown",
+      "HTML",
+      "make",
+      "m4",
+      "Dockerfile",
+      "SVG",
+      "Bourne Shell",
+      "JSON"
+    ],
     "breakdown": [
-      {"language": "C", "files": 40, "code": 25933, "pct": 59.34, "production": {"files": 40, "code": 25933}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "PO File", "files": 13, "code": 7595, "pct": 17.38, "production": {"files": 13, "code": 7595}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "JavaScript", "files": 6, "code": 3360, "pct": 7.69, "production": {"files": 6, "code": 3360}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "C/C++ Header", "files": 40, "code": 3188, "pct": 7.29, "production": {"files": 40, "code": 3188}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "CSS", "files": 3, "code": 1818, "pct": 4.16, "production": {"files": 3, "code": 1818}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "YAML", "files": 9, "code": 518, "pct": 1.19, "production": {"files": 9, "code": 518}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "Markdown", "files": 4, "code": 404, "pct": 0.92, "production": {"files": 4, "code": 404}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "HTML", "files": 1, "code": 305, "pct": 0.7, "production": {"files": 1, "code": 305}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "make", "files": 1, "code": 257, "pct": 0.59, "production": {"files": 1, "code": 257}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "m4", "files": 1, "code": 256, "pct": 0.59, "production": {"files": 1, "code": 256}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "Dockerfile", "files": 2, "code": 45, "pct": 0.1, "production": {"files": 2, "code": 45}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "SVG", "files": 1, "code": 12, "pct": 0.03, "production": {"files": 1, "code": 12}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "Bourne Shell", "files": 1, "code": 8, "pct": 0.02, "production": {"files": 1, "code": 8}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}},
-      {"language": "JSON", "files": 3, "code": 7, "pct": 0.02, "production": {"files": 3, "code": 7}, "test": {"files": 0, "code": 0}, "example": {"files": 0, "code": 0}}
+      {
+        "language": "C",
+        "files": 40,
+        "code": 25933,
+        "pct": 59.34,
+        "production": {
+          "files": 40,
+          "code": 25933
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "PO File",
+        "files": 13,
+        "code": 7595,
+        "pct": 17.38,
+        "production": {
+          "files": 13,
+          "code": 7595
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JavaScript",
+        "files": 6,
+        "code": 3360,
+        "pct": 7.69,
+        "production": {
+          "files": 6,
+          "code": 3360
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 40,
+        "code": 3188,
+        "pct": 7.29,
+        "production": {
+          "files": 40,
+          "code": 3188
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "CSS",
+        "files": 3,
+        "code": 1818,
+        "pct": 4.16,
+        "production": {
+          "files": 3,
+          "code": 1818
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 9,
+        "code": 518,
+        "pct": 1.19,
+        "production": {
+          "files": 9,
+          "code": 518
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 4,
+        "code": 404,
+        "pct": 0.92,
+        "production": {
+          "files": 4,
+          "code": 404
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "HTML",
+        "files": 1,
+        "code": 305,
+        "pct": 0.7,
+        "production": {
+          "files": 1,
+          "code": 305
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "make",
+        "files": 1,
+        "code": 257,
+        "pct": 0.59,
+        "production": {
+          "files": 1,
+          "code": 257
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "m4",
+        "files": 1,
+        "code": 256,
+        "pct": 0.59,
+        "production": {
+          "files": 1,
+          "code": 256
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Dockerfile",
+        "files": 2,
+        "code": 45,
+        "pct": 0.1,
+        "production": {
+          "files": 2,
+          "code": 45
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "SVG",
+        "files": 1,
+        "code": 12,
+        "pct": 0.03,
+        "production": {
+          "files": 1,
+          "code": 12
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Bourne Shell",
+        "files": 1,
+        "code": 8,
+        "pct": 0.02,
+        "production": {
+          "files": 1,
+          "code": 8
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 3,
+        "code": 7,
+        "pct": 0.02,
+        "production": {
+          "files": 3,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
     ]
   },
-
   "code_metrics": {
     "tool": "cloc",
-    "total": {"files": 125, "code": 43706, "comment": 11122, "blank": 10150, "total_lines": 64978},
-    "production": {"files": 125, "code": 43706, "comment": 11122, "blank": 10150, "total_lines": 64978},
-    "test": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
-    "example": {"files": 0, "code": 0, "comment": 0, "blank": 0, "total_lines": 0},
+    "total": {
+      "files": 125,
+      "code": 43706,
+      "comment": 11122,
+      "blank": 10150,
+      "total_lines": 64978
+    },
+    "production": {
+      "files": 125,
+      "code": 43706,
+      "comment": 11122,
+      "blank": 10150,
+      "total_lines": 64978
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
     "platform_adaptation": {
       "by_platform": {
-        "windows": {"files": 6, "code": 25, "macros": ["_MSC_VER", "_WIN32", "__CYGWIN__", "__MINGW32__"]},
-        "macos": {"files": 1, "code": 6, "macros": ["__APPLE__"]},
-        "linux": {"files": 2, "code": 42, "macros": ["__linux__"]},
-        "posix": {"files": 1, "code": 1, "macros": ["_POSIX_C_SOURCE"]}
+        "windows": {
+          "files": 6,
+          "code": 25,
+          "macros": [
+            "_MSC_VER",
+            "_WIN32",
+            "__CYGWIN__",
+            "__MINGW32__"
+          ]
+        },
+        "macos": {
+          "files": 1,
+          "code": 6,
+          "macros": [
+            "__APPLE__"
+          ]
+        },
+        "linux": {
+          "files": 2,
+          "code": 42,
+          "macros": [
+            "__linux__"
+          ]
+        },
+        "posix": {
+          "files": 1,
+          "code": 1,
+          "macros": [
+            "_POSIX_C_SOURCE"
+          ]
+        }
       },
       "total": 74,
       "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
@@ -101,7 +428,6 @@
       "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
     }
   },
-
   "tests": {
     "test_files": 0,
     "test_cases": 0,
@@ -109,20 +435,24 @@
     "by_language": {},
     "notes": "GoAccess 项目没有自动化测试套件；仅有 CI 中的编译测试 (.github/workflows/build-test.yml)。"
   },
-
   "license": {
     "spdx": "MIT",
     "name": "MIT License",
     "confidence": "high",
     "is_dual_licensed": false,
-    "license_files": ["COPYING"],
+    "license_files": [
+      "COPYING"
+    ],
     "evidence": "COPYING 文件包含完整 MIT 许可证文本，版权人 Gerardo Orellana；所有源文件头部亦包含 MIT 许可声明",
-    "notes": "标准 MIT 许可证，无额外限制或例外条款"
+    "notes": "标准 MIT 许可证，无额外限制或例外条款",
+    "category": "permissive"
   },
-
   "dependencies": {
     "count": 7,
-    "manifests": ["configure.ac", "Makefile.am"],
+    "manifests": [
+      "configure.ac",
+      "Makefile.am"
+    ],
     "by_ecosystem": {
       "cpp": 7
     },
@@ -133,15 +463,30 @@
         "registry_name": "ncurses",
         "source_repo": null,
         "import_names": [],
-        "aliases": ["ncursesw", "curses"],
+        "aliases": [
+          "ncursesw",
+          "curses"
+        ],
         "scope": "runtime",
         "version": null,
         "purpose": "终端 TUI 界面渲染；ncursesw 变体提供宽字符/UTF-8 支持",
         "acquisition": "system",
         "locality": "system",
         "source": "系统库（configure.ac 中 AC_CHECK_LIB 检测 ncurses/ncursesw/curses）",
-        "declared_in": ["configure.ac:122-181"],
-        "used_symbols": ["initscr", "endwin", "newwin", "delwin", "wrefresh", "mvprintw", "mvwprintw", "wgetch", "wclear"],
+        "declared_in": [
+          "configure.ac:122-181"
+        ],
+        "used_symbols": [
+          "initscr",
+          "endwin",
+          "newwin",
+          "delwin",
+          "wrefresh",
+          "mvprintw",
+          "mvwprintw",
+          "wgetch",
+          "wclear"
+        ],
         "harmony_adapted": false,
         "harmony_adapted_source": null
       },
@@ -158,8 +503,18 @@
         "acquisition": "system",
         "locality": "system",
         "source": "系统 POSIX 线程库（configure.ac:29 AC_CHECK_LIB pthread）",
-        "declared_in": ["configure.ac:29"],
-        "used_symbols": ["pthread_create", "pthread_join", "pthread_mutex_lock", "pthread_mutex_unlock", "pthread_cond_broadcast", "pthread_cond_wait", "pthread_sigmask"],
+        "declared_in": [
+          "configure.ac:29"
+        ],
+        "used_symbols": [
+          "pthread_create",
+          "pthread_join",
+          "pthread_mutex_lock",
+          "pthread_mutex_unlock",
+          "pthread_cond_broadcast",
+          "pthread_cond_wait",
+          "pthread_sigmask"
+        ],
         "harmony_adapted": false,
         "harmony_adapted_source": null
       },
@@ -169,15 +524,29 @@
         "registry_name": "openssl",
         "source_repo": "https://github.com/openssl/openssl",
         "import_names": [],
-        "aliases": ["libssl", "libcrypto"],
+        "aliases": [
+          "libssl",
+          "libcrypto"
+        ],
         "scope": "optional",
         "version": null,
         "purpose": "WebSocket TLS 加密连接与 JWT 认证签名（HMAC-SHA256）；可选编译",
         "acquisition": "system",
         "locality": "system",
         "source": "系统库（configure.ac --with-openssl 选项检测 libssl/libcrypto）",
-        "declared_in": ["configure.ac:70-77"],
-        "used_symbols": ["SSL_CTX_new", "SSL_new", "SSL_accept", "SSL_read", "SSL_write", "SSL_free", "HMAC", "EVP_sha256"],
+        "declared_in": [
+          "configure.ac:70-77"
+        ],
+        "used_symbols": [
+          "SSL_CTX_new",
+          "SSL_new",
+          "SSL_accept",
+          "SSL_read",
+          "SSL_write",
+          "SSL_free",
+          "HMAC",
+          "EVP_sha256"
+        ],
         "harmony_adapted": false,
         "harmony_adapted_source": null
       },
@@ -187,15 +556,23 @@
         "registry_name": "zlib",
         "source_repo": "https://github.com/madler/zlib",
         "import_names": [],
-        "aliases": ["libz"],
+        "aliases": [
+          "libz"
+        ],
         "scope": "optional",
         "version": null,
         "purpose": "读取 gzip 压缩的日志文件；可选编译",
         "acquisition": "system",
         "locality": "system",
         "source": "系统库（configure.ac --with-zlib 选项检测 libz）",
-        "declared_in": ["configure.ac:79-90"],
-        "used_symbols": ["gzopen", "gzread", "gzclose"],
+        "declared_in": [
+          "configure.ac:79-90"
+        ],
+        "used_symbols": [
+          "gzopen",
+          "gzread",
+          "gzclose"
+        ],
         "harmony_adapted": false,
         "harmony_adapted_source": null
       },
@@ -205,15 +582,22 @@
         "registry_name": "libmaxminddb",
         "source_repo": "https://github.com/maxmind/libmaxminddb",
         "import_names": [],
-        "aliases": ["libmaxminddb", "GeoIP2"],
+        "aliases": [
+          "libmaxminddb",
+          "GeoIP2"
+        ],
         "scope": "optional",
         "version": null,
         "purpose": "GeoIP2 (MaxMindDB) 地理位置查询；可选编译（--enable-geoip=mmdb）",
         "acquisition": "system",
         "locality": "system",
         "source": "系统库（configure.ac --enable-geoip=mmdb 检测 libmaxminddb）",
-        "declared_in": ["configure.ac:93-100"],
-        "used_symbols": ["MMDB_open"],
+        "declared_in": [
+          "configure.ac:93-100"
+        ],
+        "used_symbols": [
+          "MMDB_open"
+        ],
         "harmony_adapted": false,
         "harmony_adapted_source": null
       },
@@ -223,15 +607,25 @@
         "registry_name": "GeoIP",
         "source_repo": null,
         "import_names": [],
-        "aliases": ["GeoIP legacy", "libGeoIP"],
+        "aliases": [
+          "GeoIP legacy",
+          "libGeoIP"
+        ],
         "scope": "optional",
         "version": null,
         "purpose": "GeoIP Legacy 地理位置查询；可选编译（--enable-geoip=legacy）",
         "acquisition": "system",
         "locality": "system",
         "source": "系统库（configure.ac --enable-geoip=legacy 检测 libGeoIP）",
-        "declared_in": ["configure.ac:102-107"],
-        "used_symbols": ["GeoIP_new", "GeoIP_open", "GeoIP_delete", "GeoIP_record_by_name"],
+        "declared_in": [
+          "configure.ac:102-107"
+        ],
+        "used_symbols": [
+          "GeoIP_new",
+          "GeoIP_open",
+          "GeoIP_delete",
+          "GeoIP_record_by_name"
+        ],
         "harmony_adapted": false,
         "harmony_adapted_source": null
       },
@@ -241,14 +635,18 @@
         "registry_name": null,
         "source_repo": null,
         "import_names": [],
-        "aliases": ["libintl"],
+        "aliases": [
+          "libintl"
+        ],
         "scope": "build",
         "version": null,
         "purpose": "国际化/本地化支持（翻译字符串）",
         "acquisition": "system",
         "locality": "system",
         "source": "系统库（configure.ac AM_GNU_GETTEXT + AC_CHECK_LIB intl）",
-        "declared_in": ["configure.ac:21-26"],
+        "declared_in": [
+          "configure.ac:21-26"
+        ],
         "used_symbols": [],
         "harmony_adapted": false,
         "harmony_adapted_source": null
@@ -256,7 +654,6 @@
     ],
     "notes": "GoAccess 设计为最小依赖——核心仅需 ncurses + pthread，其余全部可选（OpenSSL/zlib/GeoIP）。无包管理器依赖，全部通过 autoconf AC_CHECK_LIB 系统级检测。"
   },
-
   "native_api": {
     "summary": "GoAccess 大量使用 POSIX 系统调用和 C 标准库，核心 POSIX API 涵盖网络套接字（TCP + Unix 域）、多线程（pthread 全家桶）、信号处理（sigaction）、内存映射（mmap/munmap/ftruncate）、进程间通信（mkfifo/pipe）、文件 I/O（含 fstat/open/close）；终端 UI 依赖 ncurses 库；网络层直接使用 Berkeley 套接字 API 构建 WebSocket 服务器；可选使用 OpenSSL API（TLS + HMAC）和 zlib API（gzopen/gzread）。",
     "groups": [
@@ -265,73 +662,392 @@
         "category": "platform",
         "platform": "posix",
         "apis": [
-          {"name": "pthread_create", "purpose": "创建工作线程（日志解析、WebSocket 读写、DNS 解析、UI spinner）", "count": 5, "evidence": ["src/parser.c:2417", "src/gwsocket.c:534", "src/gwsocket.c:540", "src/gdns.c:272", "src/ui.c:1027"], "conditional": false},
-          {"name": "pthread_mutex_lock", "purpose": "互斥锁加锁，保护共享数据结构（DNS 队列、WebSocket 缓冲区、spinner 状态）", "count": 30, "evidence": ["src/goaccess.c:144", "src/gwsocket.c:448", "src/gdns.c:199"], "conditional": false},
-          {"name": "pthread_cond_broadcast", "purpose": "条件变量广播，通知 DNS 工作线程有新任务", "count": 5, "evidence": ["src/goaccess.c:823", "src/gdns.c:204", "src/goaccess.c:1172"], "conditional": false},
-          {"name": "sigaction", "purpose": "设置信号处理器（SIGINT/SIGTERM/SIGSEGV/SIGQUIT）", "count": 10, "evidence": ["src/goaccess.c:1666-1669", "src/goaccess.c:1268", "src/error.c:147"], "conditional": false},
-          {"name": "socket", "purpose": "创建 TCP 或 Unix 域套接字用于 WebSocket 服务器", "count": 3, "evidence": ["src/websocket.c:2784", "src/websocket.c:2801"], "conditional": false},
-          {"name": "bind", "purpose": "绑定套接字到地址/端口", "count": 2, "evidence": ["src/websocket.c:2790", "src/websocket.c:2810"], "conditional": false},
-          {"name": "getaddrinfo", "purpose": "DNS 解析获取 WebSocket 服务器监听地址", "count": 1, "evidence": ["src/websocket.c:2802"], "conditional": false},
-          {"name": "inet_ntop", "purpose": "IP 地址二进制转字符串（IPv4/IPv6）", "count": 8, "evidence": ["src/websocket.c:1017", "src/util.c:390", "src/gholder.c:589"], "conditional": false},
-          {"name": "inet_pton", "purpose": "IP 地址字符串转二进制", "count": 10, "evidence": ["src/util.c:390-403", "src/gdns.c:186-190", "src/gholder.c:584-595"], "conditional": false},
-          {"name": "mmap", "purpose": "内存映射文件（tpl 持久化读写、WebSocket 数据传输）", "count": 4, "evidence": ["src/tpl.c:1896", "src/tpl.c:1917", "src/win/mmap.c:25"], "conditional": false},
-          {"name": "munmap", "purpose": "解除内存映射", "count": 2, "evidence": ["src/tpl.c:1897"], "conditional": false},
-          {"name": "ftruncate", "purpose": "截断/扩展文件大小用于 mmap 输出", "count": 3, "evidence": ["src/tpl.c:1099", "src/tpl.c:1896"], "conditional": false},
-          {"name": "mkfifo", "purpose": "创建命名管道用于 WebSocket 进程间通信", "count": 1, "evidence": ["src/websocket.c:2333"], "conditional": false},
-          {"name": "poll", "purpose": "I/O 多路复用，WebSocket 连接事件循环", "count": 3, "evidence": ["src/gwsocket.c:482", "src/goaccess.c:890"], "conditional": false},
-          {"name": "htonl", "purpose": "字节序转换（网络字节序）", "count": 2, "evidence": ["src/websocket.c:2633", "src/websocket.c:2646"], "conditional": false}
+          {
+            "name": "pthread_create",
+            "purpose": "创建工作线程（日志解析、WebSocket 读写、DNS 解析、UI spinner）",
+            "count": 5,
+            "evidence": [
+              "src/parser.c:2417",
+              "src/gwsocket.c:534",
+              "src/gwsocket.c:540",
+              "src/gdns.c:272",
+              "src/ui.c:1027"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "pthread_mutex_lock",
+            "purpose": "互斥锁加锁，保护共享数据结构（DNS 队列、WebSocket 缓冲区、spinner 状态）",
+            "count": 30,
+            "evidence": [
+              "src/goaccess.c:144",
+              "src/gwsocket.c:448",
+              "src/gdns.c:199"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "pthread_cond_broadcast",
+            "purpose": "条件变量广播，通知 DNS 工作线程有新任务",
+            "count": 5,
+            "evidence": [
+              "src/goaccess.c:823",
+              "src/gdns.c:204",
+              "src/goaccess.c:1172"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sigaction",
+            "purpose": "设置信号处理器（SIGINT/SIGTERM/SIGSEGV/SIGQUIT）",
+            "count": 10,
+            "evidence": [
+              "src/goaccess.c:1666-1669",
+              "src/goaccess.c:1268",
+              "src/error.c:147"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "socket",
+            "purpose": "创建 TCP 或 Unix 域套接字用于 WebSocket 服务器",
+            "count": 3,
+            "evidence": [
+              "src/websocket.c:2784",
+              "src/websocket.c:2801"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "bind",
+            "purpose": "绑定套接字到地址/端口",
+            "count": 2,
+            "evidence": [
+              "src/websocket.c:2790",
+              "src/websocket.c:2810"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "getaddrinfo",
+            "purpose": "DNS 解析获取 WebSocket 服务器监听地址",
+            "count": 1,
+            "evidence": [
+              "src/websocket.c:2802"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "inet_ntop",
+            "purpose": "IP 地址二进制转字符串（IPv4/IPv6）",
+            "count": 8,
+            "evidence": [
+              "src/websocket.c:1017",
+              "src/util.c:390",
+              "src/gholder.c:589"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "inet_pton",
+            "purpose": "IP 地址字符串转二进制",
+            "count": 10,
+            "evidence": [
+              "src/util.c:390-403",
+              "src/gdns.c:186-190",
+              "src/gholder.c:584-595"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "mmap",
+            "purpose": "内存映射文件（tpl 持久化读写、WebSocket 数据传输）",
+            "count": 4,
+            "evidence": [
+              "src/tpl.c:1896",
+              "src/tpl.c:1917",
+              "src/win/mmap.c:25"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "munmap",
+            "purpose": "解除内存映射",
+            "count": 2,
+            "evidence": [
+              "src/tpl.c:1897"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "ftruncate",
+            "purpose": "截断/扩展文件大小用于 mmap 输出",
+            "count": 3,
+            "evidence": [
+              "src/tpl.c:1099",
+              "src/tpl.c:1896"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "mkfifo",
+            "purpose": "创建命名管道用于 WebSocket 进程间通信",
+            "count": 1,
+            "evidence": [
+              "src/websocket.c:2333"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "poll",
+            "purpose": "I/O 多路复用，WebSocket 连接事件循环",
+            "count": 3,
+            "evidence": [
+              "src/gwsocket.c:482",
+              "src/goaccess.c:890"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "htonl",
+            "purpose": "字节序转换（网络字节序）",
+            "count": 2,
+            "evidence": [
+              "src/websocket.c:2633",
+              "src/websocket.c:2646"
+            ],
+            "conditional": false
+          }
         ],
-        "evidence": ["src/websocket.c", "src/goaccess.c", "src/gwsocket.c", "src/gdns.c", "src/tpl.c"]
+        "evidence": [
+          "src/websocket.c",
+          "src/goaccess.c",
+          "src/gwsocket.c",
+          "src/gdns.c",
+          "src/tpl.c"
+        ]
       },
       {
         "type": "ncurses",
         "category": "platform",
         "platform": "posix",
         "apis": [
-          {"name": "initscr", "purpose": "初始化 ncurses 终端界面", "count": 1, "evidence": ["src/ui.c:133"], "conditional": false},
-          {"name": "endwin", "purpose": "结束 ncurses 模式恢复终端", "count": 3, "evidence": ["src/goaccess.c:230", "src/goaccess.c:1155", "src/error.c:188"], "conditional": false},
-          {"name": "newwin", "purpose": "创建子窗口（header/主面板/对话框）", "count": 8, "evidence": ["src/goaccess.c:205-211", "src/dialogs.c:150", "src/dialogs.c:253"], "conditional": false},
-          {"name": "mvwprintw", "purpose": "在窗口指定位置输出格式化文本", "count": 30, "evidence": ["src/gdashboard.c:549-835", "src/dialogs.c:163-972"], "conditional": false},
-          {"name": "wrefresh", "purpose": "刷新窗口显示", "count": 15, "evidence": ["src/ui.c:152-190", "src/gdashboard.c:1186"], "conditional": false},
-          {"name": "wgetch", "purpose": "获取键盘输入", "count": 1, "evidence": ["src/goaccess.c:1255"], "conditional": false}
+          {
+            "name": "initscr",
+            "purpose": "初始化 ncurses 终端界面",
+            "count": 1,
+            "evidence": [
+              "src/ui.c:133"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "endwin",
+            "purpose": "结束 ncurses 模式恢复终端",
+            "count": 3,
+            "evidence": [
+              "src/goaccess.c:230",
+              "src/goaccess.c:1155",
+              "src/error.c:188"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "newwin",
+            "purpose": "创建子窗口（header/主面板/对话框）",
+            "count": 8,
+            "evidence": [
+              "src/goaccess.c:205-211",
+              "src/dialogs.c:150",
+              "src/dialogs.c:253"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "mvwprintw",
+            "purpose": "在窗口指定位置输出格式化文本",
+            "count": 30,
+            "evidence": [
+              "src/gdashboard.c:549-835",
+              "src/dialogs.c:163-972"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "wrefresh",
+            "purpose": "刷新窗口显示",
+            "count": 15,
+            "evidence": [
+              "src/ui.c:152-190",
+              "src/gdashboard.c:1186"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "wgetch",
+            "purpose": "获取键盘输入",
+            "count": 1,
+            "evidence": [
+              "src/goaccess.c:1255"
+            ],
+            "conditional": false
+          }
         ],
-        "evidence": ["src/ui.c", "src/goaccess.c", "src/gdashboard.c", "src/dialogs.c", "src/gmenu.c"]
+        "evidence": [
+          "src/ui.c",
+          "src/goaccess.c",
+          "src/gdashboard.c",
+          "src/dialogs.c",
+          "src/gmenu.c"
+        ]
       },
       {
         "type": "cpp_stl",
         "category": "standard",
         "platform": "portable",
         "apis": [
-          {"name": "malloc", "purpose": "动态内存分配", "count": 5, "evidence": ["src/bin2c.c:56", "src/goaccess.c:429"], "conditional": false},
-          {"name": "fopen", "purpose": "打开文件用于读写", "count": 8, "evidence": ["src/bin2c.c:31", "src/output.c:1288"], "conditional": false},
-          {"name": "regcomp", "purpose": "编译正则表达式用于日志格式匹配", "count": 2, "evidence": ["src/parser.c"], "conditional": false},
-          {"name": "strptime", "purpose": "解析日期时间字符串", "count": 3, "evidence": ["src/util.c:622", "src/util.c:658"], "conditional": false}
+          {
+            "name": "malloc",
+            "purpose": "动态内存分配",
+            "count": 5,
+            "evidence": [
+              "src/bin2c.c:56",
+              "src/goaccess.c:429"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fopen",
+            "purpose": "打开文件用于读写",
+            "count": 8,
+            "evidence": [
+              "src/bin2c.c:31",
+              "src/output.c:1288"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "regcomp",
+            "purpose": "编译正则表达式用于日志格式匹配",
+            "count": 2,
+            "evidence": [
+              "src/parser.c"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "strptime",
+            "purpose": "解析日期时间字符串",
+            "count": 3,
+            "evidence": [
+              "src/util.c:622",
+              "src/util.c:658"
+            ],
+            "conditional": false
+          }
         ],
-        "evidence": ["src/goaccess.c", "src/parser.c", "src/util.c", "src/output.c"]
+        "evidence": [
+          "src/goaccess.c",
+          "src/parser.c",
+          "src/util.c",
+          "src/output.c"
+        ]
       },
       {
         "type": "win32",
         "category": "platform",
         "platform": "windows",
         "apis": [
-          {"name": "CreateFileMapping", "purpose": "Windows 下模拟 POSIX mmap 的内存映射文件", "count": 1, "evidence": ["src/win/mmap.c:58"], "conditional": true},
-          {"name": "MapViewOfFile", "purpose": "Windows 下将文件映射到内存", "count": 1, "evidence": ["src/win/mmap.c"], "conditional": true},
-          {"name": "UnmapViewOfFile", "purpose": "Windows 下解除文件映射", "count": 1, "evidence": ["src/win/mmap.c"], "conditional": true}
+          {
+            "name": "CreateFileMapping",
+            "purpose": "Windows 下模拟 POSIX mmap 的内存映射文件",
+            "count": 1,
+            "evidence": [
+              "src/win/mmap.c:58"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "MapViewOfFile",
+            "purpose": "Windows 下将文件映射到内存",
+            "count": 1,
+            "evidence": [
+              "src/win/mmap.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "UnmapViewOfFile",
+            "purpose": "Windows 下解除文件映射",
+            "count": 1,
+            "evidence": [
+              "src/win/mmap.c"
+            ],
+            "conditional": true
+          }
         ],
-        "evidence": ["src/win/mmap.c"]
+        "evidence": [
+          "src/win/mmap.c"
+        ]
       },
       {
         "type": "openssl",
         "category": "standard",
         "platform": "portable",
         "apis": [
-          {"name": "SSL_CTX_new", "purpose": "创建 SSL 上下文用于 WebSocket TLS 连接", "count": 2, "evidence": ["src/websocket.c:678-680", "src/parser.c:648"], "conditional": true},
-          {"name": "SSL_accept", "purpose": "接受 TLS 握手", "count": 1, "evidence": ["src/websocket.c:807"], "conditional": true},
-          {"name": "SSL_read", "purpose": "从 TLS 连接读取数据", "count": 1, "evidence": ["src/websocket.c:947"], "conditional": true},
-          {"name": "SSL_write", "purpose": "向 TLS 连接写入数据", "count": 1, "evidence": ["src/websocket.c:907"], "conditional": true},
-          {"name": "HMAC", "purpose": "JWT 认证令牌 HMAC-SHA256 签名", "count": 2, "evidence": ["src/wsauth.c:190", "src/wsauth.c:416"], "conditional": true}
+          {
+            "name": "SSL_CTX_new",
+            "purpose": "创建 SSL 上下文用于 WebSocket TLS 连接",
+            "count": 2,
+            "evidence": [
+              "src/websocket.c:678-680",
+              "src/parser.c:648"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SSL_accept",
+            "purpose": "接受 TLS 握手",
+            "count": 1,
+            "evidence": [
+              "src/websocket.c:807"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SSL_read",
+            "purpose": "从 TLS 连接读取数据",
+            "count": 1,
+            "evidence": [
+              "src/websocket.c:947"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SSL_write",
+            "purpose": "向 TLS 连接写入数据",
+            "count": 1,
+            "evidence": [
+              "src/websocket.c:907"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "HMAC",
+            "purpose": "JWT 认证令牌 HMAC-SHA256 签名",
+            "count": 2,
+            "evidence": [
+              "src/wsauth.c:190",
+              "src/wsauth.c:416"
+            ],
+            "conditional": true
+          }
         ],
-        "evidence": ["src/websocket.c", "src/wsauth.c", "src/parser.c"]
+        "evidence": [
+          "src/websocket.c",
+          "src/wsauth.c",
+          "src/parser.c"
+        ]
       }
     ],
     "dynamic_libraries": [
@@ -342,7 +1058,9 @@
         "source": "外部系统库 OpenSSL，需预装或 --with-openssl 编译",
         "description": "WebSocket TLS 加密与 JWT HMAC 签名",
         "optional": true,
-        "evidence": ["configure.ac:73-74"]
+        "evidence": [
+          "configure.ac:73-74"
+        ]
       },
       {
         "name": "libz.so",
@@ -351,7 +1069,9 @@
         "source": "外部系统库 zlib，需预装或 --with-zlib 编译",
         "description": "读取 gzip 压缩的 Web 日志文件",
         "optional": true,
-        "evidence": ["configure.ac:86"]
+        "evidence": [
+          "configure.ac:86"
+        ]
       },
       {
         "name": "libmaxminddb.so",
@@ -360,75 +1080,197 @@
         "source": "外部系统库 MaxMindDB，需预装或 --enable-geoip=mmdb 编译",
         "description": "GeoIP2 地理位置查询",
         "optional": true,
-        "evidence": ["configure.ac:97"]
+        "evidence": [
+          "configure.ac:97"
+        ]
       }
     ],
     "platform_dependence": "posix-only"
   },
-
   "runtime_surface": {
     "summary": "GoAccess 运行时依赖文件系统读取日志文件和持久化数据库、网络套接字提供 WebSocket 服务、信号处理管理进程生命周期，以及终端设备用于 TUI 输出。",
     "network": [
-      {"detail": "WebSocket 服务器监听 TCP 端口（默认 7890）或 Unix 域套接字，向浏览器推送实时日志分析数据", "purpose": "HTML 实时仪表盘数据推送", "evidence": ["src/websocket.c:ws_socket", "src/gwsocket.c"]},
-      {"detail": "DNS 反向解析（gethostbyaddr/getaddrinfo）", "purpose": "IP 地址反向 DNS 查询", "evidence": ["src/gdns.c", "configure.ac:248"]}
+      {
+        "detail": "WebSocket 服务器监听 TCP 端口（默认 7890）或 Unix 域套接字，向浏览器推送实时日志分析数据",
+        "purpose": "HTML 实时仪表盘数据推送",
+        "evidence": [
+          "src/websocket.c:ws_socket",
+          "src/gwsocket.c"
+        ]
+      },
+      {
+        "detail": "DNS 反向解析（gethostbyaddr/getaddrinfo）",
+        "purpose": "IP 地址反向 DNS 查询",
+        "evidence": [
+          "src/gdns.c",
+          "configure.ac:248"
+        ]
+      }
     ],
     "filesystem": [
-      {"detail": "读取 Web 服务器日志文件（access.log 等），支持本地文件或 stdin 管道", "purpose": "日志数据输入", "evidence": ["src/parser.c:read_log", "src/fileio.c"]},
-      {"detail": "持久化数据库目录（默认 /tmp 或配置的 db-path），存储 tpl 格式序列化数据", "purpose": "增量日志处理的数据持久化", "evidence": ["src/persistence.c:set_db_path", "config/goaccess.conf"]},
-      {"detail": "配置文件 goaccess.conf 及浏览器/OS 映射列表", "purpose": "运行时配置加载", "evidence": ["src/settings.c:parse_conf_file", "config/goaccess.conf"]},
-      {"detail": "HTML 报告输出文件", "purpose": "静态/实时 HTML 仪表盘输出", "evidence": ["src/output.c:output_html"]}
+      {
+        "detail": "读取 Web 服务器日志文件（access.log 等），支持本地文件或 stdin 管道",
+        "purpose": "日志数据输入",
+        "evidence": [
+          "src/parser.c:read_log",
+          "src/fileio.c"
+        ]
+      },
+      {
+        "detail": "持久化数据库目录（默认 /tmp 或配置的 db-path），存储 tpl 格式序列化数据",
+        "purpose": "增量日志处理的数据持久化",
+        "evidence": [
+          "src/persistence.c:set_db_path",
+          "config/goaccess.conf"
+        ]
+      },
+      {
+        "detail": "配置文件 goaccess.conf 及浏览器/OS 映射列表",
+        "purpose": "运行时配置加载",
+        "evidence": [
+          "src/settings.c:parse_conf_file",
+          "config/goaccess.conf"
+        ]
+      },
+      {
+        "detail": "HTML 报告输出文件",
+        "purpose": "静态/实时 HTML 仪表盘输出",
+        "evidence": [
+          "src/output.c:output_html"
+        ]
+      }
     ],
     "env_vars": [
-      {"name": "HOME", "purpose": "定位用户主目录下 .goaccessrc 配置文件", "evidence": ["src/settings.c"]},
-      {"name": "TZ", "purpose": "时区设置，影响日期时间解析与输出", "evidence": ["src/util.c"]}
+      {
+        "name": "HOME",
+        "purpose": "定位用户主目录下 .goaccessrc 配置文件",
+        "evidence": [
+          "src/settings.c"
+        ]
+      },
+      {
+        "name": "TZ",
+        "purpose": "时区设置，影响日期时间解析与输出",
+        "evidence": [
+          "src/util.c"
+        ]
+      }
     ],
     "subprocess": [],
     "devices": [
-      {"detail": "终端设备（/dev/tty），ncurses TUI 模式需要控制终端", "purpose": "终端用户界面渲染", "evidence": ["src/ui.c:initscr"]}
+      {
+        "detail": "终端设备（/dev/tty），ncurses TUI 模式需要控制终端",
+        "purpose": "终端用户界面渲染",
+        "evidence": [
+          "src/ui.c:initscr"
+        ]
+      }
     ],
     "services": []
   },
-
   "build_env": {
     "language_standard": "C99/C11（autoconf AC_PROG_CC，使用 stdint.h/inttypes.h 等 C99 特性）",
     "runtime_version": "无特定运行时版本要求，仅需 C 标准库（glibc/musl 等）",
     "build_system": "GNU Autotools（autoconf + automake），配置脚本 configure.ac + Makefile.am",
     "compiler_extensions": [
-      {"detail": "-pthread 编译/链接标志", "purpose": "POSIX 线程支持", "evidence": ["configure.ac:30"]},
-      {"detail": "-rdynamic 链接标志（非 Darwin/Cygwin/MinGW）", "purpose": "导出符号供动态链接器使用", "evidence": ["configure.ac:41-49"]},
-      {"detail": "-fsanitize=address（可选 ASan）", "purpose": "地址消毒器用于调试", "evidence": ["configure.ac:53-62"]},
-      {"detail": "大量 -W GCC/Clang 警告标志（-Wall -Wextra -Wshadow 等）", "purpose": "严格编译警告", "evidence": ["Makefile.am:274-278"]}
+      {
+        "detail": "-pthread 编译/链接标志",
+        "purpose": "POSIX 线程支持",
+        "evidence": [
+          "configure.ac:30"
+        ]
+      },
+      {
+        "detail": "-rdynamic 链接标志（非 Darwin/Cygwin/MinGW）",
+        "purpose": "导出符号供动态链接器使用",
+        "evidence": [
+          "configure.ac:41-49"
+        ]
+      },
+      {
+        "detail": "-fsanitize=address（可选 ASan）",
+        "purpose": "地址消毒器用于调试",
+        "evidence": [
+          "configure.ac:53-62"
+        ]
+      },
+      {
+        "detail": "大量 -W GCC/Clang 警告标志（-Wall -Wextra -Wshadow 等）",
+        "purpose": "严格编译警告",
+        "evidence": [
+          "Makefile.am:274-278"
+        ]
+      }
     ],
     "platforms": [
-      {"os": "Linux", "arch": "x86_64, aarch64", "evidence": ["configure.ac:__linux__ 宏检测", ".github/workflows/build-test.yml"]},
-      {"os": "macOS", "arch": "x86_64, arm64", "evidence": ["configure.ac:*darwin* 特殊处理 ncurses 名", "configure.ac:41"]},
-      {"os": "Windows (Cygwin/MinGW)", "arch": "x86_64", "evidence": ["src/win/mmap.c", "configure.ac:199"]},
-      {"os": "NetBSD/Solaris", "arch": "various", "evidence": ["configure.ac:24-26 NetBSD libintl", "configure.ac:207-208 Solaris nsl/socket"]}
+      {
+        "os": "Linux",
+        "arch": "x86_64, aarch64",
+        "evidence": [
+          "configure.ac:__linux__ 宏检测",
+          ".github/workflows/build-test.yml"
+        ]
+      },
+      {
+        "os": "macOS",
+        "arch": "x86_64, arm64",
+        "evidence": [
+          "configure.ac:*darwin* 特殊处理 ncurses 名",
+          "configure.ac:41"
+        ]
+      },
+      {
+        "os": "Windows (Cygwin/MinGW)",
+        "arch": "x86_64",
+        "evidence": [
+          "src/win/mmap.c",
+          "configure.ac:199"
+        ]
+      },
+      {
+        "os": "NetBSD/Solaris",
+        "arch": "various",
+        "evidence": [
+          "configure.ac:24-26 NetBSD libintl",
+          "configure.ac:207-208 Solaris nsl/socket"
+        ]
+      }
     ],
     "entry_points": [
       {
         "type": "main",
         "name": "goaccess",
         "command": "终端 TUI 模式：goaccess access.log；HTML 输出模式：goaccess access.log -o report.html --real-time-html；纯输出模式：goaccess access.log -o /dev/stdout",
-        "evidence": ["src/goaccess.c:main", "goaccess.1"]
+        "evidence": [
+          "src/goaccess.c:main",
+          "goaccess.1"
+        ]
       }
     ],
     "packaging": "源码编译安装（./configure && make && make install）；各发行版提供 deb/rpm/snap 包；Docker 镜像（Dockerfile）；Homebrew（macOS）。不捆绑运行时。",
     "notes": "GoAccess 是原生 C 编译的 CLI 应用，安装后直接运行二进制；配置文件可选安装到 sysconfdir/goaccess/。"
   },
-
   "capability_profile": {
     "summary": "GoAccess 涉及 GUI（终端 ncurses TUI）和少量网络服务场景，不涉及 3D 渲染、媒体或特定硬件。其 GUI 场景（ncurses 终端界面）在鸿蒙 PC 上的可用性取决于终端模拟器与 ncurses 库的移植状态。",
     "scenarios": [
       {
         "key": "gui",
         "present": true,
-        "kind": ["ncurses", "terminal_tui"],
+        "kind": [
+          "ncurses",
+          "terminal_tui"
+        ],
         "specific_hardware": false,
-        "via": ["ncurses"],
+        "via": [
+          "ncurses"
+        ],
         "harmony_status": "unknown",
         "adaptation": "ncurses TUI 依赖终端模拟器和 ncurses 库；若鸿蒙 PC 提供终端模拟器且 ncurses 可编译/移植，则 TUI 模式可用；否则只能使用 HTML 输出模式（不依赖终端）",
-        "evidence": ["src/ui.c:initscr", "src/goaccess.c:set_curses", "configure.ac:122-181"]
+        "evidence": [
+          "src/ui.c:initscr",
+          "src/goaccess.c:set_curses",
+          "configure.ac:122-181"
+        ]
       },
       {
         "key": "rendering_3d",
@@ -462,25 +1304,32 @@
       }
     ]
   },
-
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK native layer, musl + POSIX subset)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
-      "person_days": [15, 40]
+      "person_days": [
+        15,
+        40
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
       {
         "id": "ua:mkfifo",
-        "caused_by": ["ta:posix_ipc"],
+        "caused_by": [
+          "ta:posix_ipc"
+        ],
         "api": "mkfifo",
         "public_entry": "ws_socket",
         "reason": "mkfifo 用于 WebSocket 进程间命名管道通信；鸿蒙 OHOS NDK 的 musl/POSIX 子集可能不包含命名管道（FIFO），需确认或替换为 Unix 域套接字",
         "blocking_native_api": "mkfifo",
         "category": "platform",
-        "evidence": ["src/websocket.c:2333"]
+        "evidence": [
+          "src/websocket.c:2333"
+        ]
       }
     ],
     "target_assumptions": [
@@ -539,7 +1388,10 @@
         "reason": "WebSocket 服务器监听网络端口，向浏览器推送实时数据",
         "source_capability": "gui",
         "harmony_status": "unknown",
-        "evidence": ["src/websocket.c:ws_socket", "src/gwsocket.c"]
+        "evidence": [
+          "src/websocket.c:ws_socket",
+          "src/gwsocket.c"
+        ]
       }
     ],
     "recommended_path": "cross_compile",
@@ -554,9 +1406,15 @@
         "source_dimension": "native_api",
         "harmony_status": "partial",
         "remediation": "将 mkfifo 替换为 Unix 域套接字（AF_UNIX）或 pipe() 匿名管道，代码改动量较小",
-        "caused_by": ["ta:posix_ipc"],
-        "manifests_as": ["ua:mkfifo"],
-        "evidence": ["src/websocket.c:2333"]
+        "caused_by": [
+          "ta:posix_ipc"
+        ],
+        "manifests_as": [
+          "ua:mkfifo"
+        ],
+        "evidence": [
+          "src/websocket.c:2333"
+        ]
       },
       {
         "id": "bk:ncurses_tui",
@@ -567,9 +1425,15 @@
         "source_dimension": "dependencies",
         "harmony_status": "unknown",
         "remediation": "若 ncurses 不可用，可跳过 TUI 编译（--disable-curses），仅保留 HTML/JSON/CSV 输出模式；或自行交叉编译 ncurses",
-        "caused_by": ["ta:ncurses", "ta:terminal_emulator"],
+        "caused_by": [
+          "ta:ncurses",
+          "ta:terminal_emulator"
+        ],
         "manifests_as": [],
-        "evidence": ["src/ui.c:initscr", "configure.ac:122-181"]
+        "evidence": [
+          "src/ui.c:initscr",
+          "configure.ac:122-181"
+        ]
       },
       {
         "id": "bk:app_delivery",
@@ -580,31 +1444,47 @@
         "source_dimension": "build_env",
         "harmony_status": "unknown",
         "remediation": "若鸿蒙支持传统桌面应用（原生二进制 + 命令行启动），可直接安装；若仅支持 .hap 包，需打包为应用或提供命令行工具兼容层",
-        "caused_by": ["ta:desktop_app"],
+        "caused_by": [
+          "ta:desktop_app"
+        ],
         "manifests_as": [],
-        "evidence": ["src/goaccess.c:main"]
+        "evidence": [
+          "src/goaccess.c:main"
+        ]
       }
     ],
     "compatible": [
       {
         "aspect": "核心日志解析引擎",
         "note": "纯 C 逻辑，仅依赖标准 C 库函数（字符串处理/正则/时间解析），与 POSIX 兼容性高",
-        "evidence": ["src/parser.c", "src/util.c"]
+        "evidence": [
+          "src/parser.c",
+          "src/util.c"
+        ]
       },
       {
         "aspect": "HTML/JSON/CSV 输出",
         "note": "仅使用标准文件 I/O，无平台依赖，可在任何有文件系统的环境运行",
-        "evidence": ["src/output.c", "src/json.c", "src/csv.c"]
+        "evidence": [
+          "src/output.c",
+          "src/json.c",
+          "src/csv.c"
+        ]
       },
       {
         "aspect": "数据持久化（tpl 格式）",
         "note": "tpl 库已有 _WIN32 条件分支，跨平台适配经验丰富；mmap 可被替换为 read/write 回退",
-        "evidence": ["src/tpl.c:1872-1917"]
+        "evidence": [
+          "src/tpl.c:1872-1917"
+        ]
       },
       {
         "aspect": "多线程并行解析",
         "note": "OHOS NDK musl 提供 pthread 支持，线程逻辑无需修改",
-        "evidence": ["src/parser.c:2417", "src/gdns.c:272"]
+        "evidence": [
+          "src/parser.c:2417",
+          "src/gdns.c:272"
+        ]
       }
     ],
     "key_tasks": [
@@ -615,9 +1495,13 @@
       "确定应用交付方式（原生二进制 or .hap 打包）",
       "测试 HTML 实时仪表盘在鸿蒙浏览器中的 WebSocket 连接"
     ],
-    "notes": "GoAccess 的 HTML 输出模式是其最大优势——即使 TUI 不可用，浏览器实时仪表盘仍然可用且功能完整，这大幅降低了鸿蒙适配的紧迫性。主要不确定性来自鸿蒙 PC 的应用交付模型（是否支持传统 CLI 二进制）和 POSIX IPC 子集的覆盖范围。置信度设为 medium，因 target_assumptions 中有 4 项 required/optional 目标状态为 unknown。"
+    "notes": "GoAccess 的 HTML 输出模式是其最大优势——即使 TUI 不可用，浏览器实时仪表盘仍然可用且功能完整，这大幅降低了鸿蒙适配的紧迫性。主要不确定性来自鸿蒙 PC 的应用交付模型（是否支持传统 CLI 二进制）和 POSIX IPC 子集的覆盖范围。置信度设为 medium，因 target_assumptions 中有 4 项 required/optional 目标状态为 unknown。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
-
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
@@ -646,6 +1530,14 @@
         "value": "ncurses",
         "rationale": "ncurses 是独立于 POSIX 和 Win32 的终端 UI API 族，需单独归类以准确反映其对 TUI 模式的影响"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   }
 }

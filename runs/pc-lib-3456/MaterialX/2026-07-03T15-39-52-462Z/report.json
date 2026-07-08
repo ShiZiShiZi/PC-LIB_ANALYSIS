@@ -1866,7 +1866,8 @@
       "person_days": [
         20,
         45
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi_or_drop_viewer",
@@ -2164,7 +2165,8 @@
       "如需保留 OpenGL 渲染验证，将 GLContext 从 WGL/GLX/Cocoa 迁移到 OpenGL ES/EGL 或 ArkGraphics 3D",
       "验证可选 OpenImageIO/OpenColorIO 预编译包在鸿蒙 PC 上的链接与运行"
     ],
-    "notes": "评估按库模型 A 进行：核心功能可移植，难点是可选桌面工具与硬件渲染后端。由于 NanoGUI/ImGui/GLFW 桌面窗口栈、外部进程调用、存储权限等目标事实尚未核实，整体置信度为 medium。若用户只使用核心着色器生成与文档 I/O，难度可降至 needs_adaptation_full（约 5-15 人天）；若坚持保留 Viewer/Graph Editor 则工作量显著增加。"
+    "notes": "评估按库模型 A 进行：核心功能可移植，难点是可选桌面工具与硬件渲染后端。由于 NanoGUI/ImGui/GLFW 桌面窗口栈、外部进程调用、存储权限等目标事实尚未核实，整体置信度为 medium。若用户只使用核心着色器生成与文档 I/O，难度可降至 needs_adaptation_full（约 5-15 人天）；若坚持保留 Viewer/Graph Editor 则工作量显著增加。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "MaterialX",
@@ -2235,7 +2237,15 @@
         "value": "rendering_3d_shader_generation_only",
         "rationale": "MaterialX 的 3D 场景以着色器代码生成为主，不直接做 3D 渲染；现有 gui/rendering_3d/media/hardware 四键难以区分'生成着色器'与'运行 3D 渲染'。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.READ_MEDIA / 读写存储",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.READ_MEDIA / 读写存储 的 source_capability=filesystem 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "MaterialX 触及 GUI 桌面工具与 3D 渲染两大鸿蒙适配重点场景：核心库本身为数据模型/着色器生成，不直接依赖窗口或图形 API；但可选的 MaterialX Viewer（NanoGUI/OpenGL/Metal）和 Graph Editor（Dear ImGui/GLFW）以及 OpenGL/Metal 渲染后端均涉及桌面 GUI 与 3D 图形栈。无媒体编解码或特定不可替代硬件。",

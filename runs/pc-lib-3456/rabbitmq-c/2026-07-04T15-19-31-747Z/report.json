@@ -1164,7 +1164,8 @@
       "person_days": [
         3,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1284,7 +1285,8 @@
       "确定是否需要 OpenSSL——可先关闭 ENABLE_SSL_SUPPORT=OFF 降低初始障碍",
       "在鸿蒙环境中运行单元测试验证 TCP 连接与 AMQP 协议交互正常"
     ],
-    "notes": "rabbitmq-c 是较理想的鸿蒙移植候选库：纯 C 实现、无外部命令调用、无 GUI/3D/硬件依赖、跨平台抽象成熟、POSIX 路径已被 Linux/macOS/FreeBSD 大量验证。唯一不确定因素是 OHOS NDK musl 的 POSIX 子集覆盖程度——按经验 BSD socket 和 pthread 通常完整，仅 SO_NOSIGPIPE 等边缘 socket 选项可能缺失（源码已 #ifdef 处理）。OpenSSL 为可选项，关闭后库即退化为纯 TCP socket，进一步降低移植风险。预计 3-5 人-天即可完成（含交叉编译配置、符号验证和测试）。"
+    "notes": "rabbitmq-c 是较理想的鸿蒙移植候选库：纯 C 实现、无外部命令调用、无 GUI/3D/硬件依赖、跨平台抽象成熟、POSIX 路径已被 Linux/macOS/FreeBSD 大量验证。唯一不确定因素是 OHOS NDK musl 的 POSIX 子集覆盖程度——按经验 BSD socket 和 pthread 通常完整，仅 SO_NOSIGPIPE 等边缘 socket 选项可能缺失（源码已 #ifdef 处理）。OpenSSL 为可选项，关闭后库即退化为纯 TCP socket，进一步降低移植风险。预计 3-5 人-天即可完成（含交叉编译配置、符号验证和测试）。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "rabbitmq-c",
@@ -1318,7 +1320,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯 C 网络库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。所有场景均未触发。",

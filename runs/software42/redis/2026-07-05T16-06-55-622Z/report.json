@@ -2321,7 +2321,8 @@
       "person_days": [
         15,
         30
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -2556,7 +2557,8 @@
       "在鸿蒙 PC 上跑通 Tcl/Python 测试套件中的功能测试，验证核心命令集、复制与持久化的正确性"
     ],
     "notes": "评估按模型 C（整包应用）：Redis 是直接由终端用户启动的 TCP 服务端应用，非库被链接进其他代码。结论依赖一项关键未核实目标事实：OHOS NDK musl 的 POSIX 子集是否支持 fork()。fork 是 Redis 持久化（BGSAVE/BGREWRITEAOF/RDB 主从同步）的核心机制——若支持则 porting_class 可升为 needs_adaptation_full（全部可适配），person_days 降至 [5, 12]；若不支持则需要重新实现持久化架构，当前按最坏情况评估为 needs_adaptation_partial。libsystemd 为可选依赖，不影响核心功能。所有 SIMD 优化均有标准 C 回退路径无需修改。",
-    "required_permissions": []
+    "required_permissions": [],
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "redis",
@@ -2603,7 +2605,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(commercial) 与依据 SPDX(Redis-Source-Available-License-2.0 OR SSPL-1.0 OR AGPL-3.0-only) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Redis 是一个无 GUI 的纯 C 服务端应用，不涉及 3D 渲染和多媒体。包含 x86_64/ARM64 的 SIMD 编译优化但均有通用回退路径。",

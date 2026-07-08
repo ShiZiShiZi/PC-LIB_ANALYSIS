@@ -1018,7 +1018,8 @@
       "person_days": [
         7,
         14
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1182,7 +1183,8 @@
       "用鸿蒙版 ncurses（cmd-pkgs）替代 termcap 依赖，调整 configure 交叉编译参数",
       "在鸿蒙终端上运行示例程序（examples/rl、rlcat 等）验证行编辑、补全、历史功能正常"
     ],
-    "notes": "评估按模型 A（C 库经 OHOS NDK 重编 + Node-API 封装）口径。Readline 本身不包含 GUI/3D/媒体/硬件场景（capability_profile 为空），移植的不可替代核心是其对 POSIX 终端 I/O 子系统的依赖——这决定了「能否在鸿蒙 PC 上提供与 Linux 同等体验的命令行编辑」。confidence=medium 是因为两条关键目标假设（POSIX 终端 I/O 兼容性、信号处理兼容性）均为 unknown——结论依赖未核实的目标事实；若二者均 available 则可上调到 high 并缩短 person_days 至 [5,8]。platform_adaptation 共 143 行平台守卫代码（以 Windows _WIN32 为主），非关键阻碍——鸿蒙走 POSIX 路径自动覆盖。ncurses 已确认在 cmd-pkgs 中提供鸿蒙版（harmony_adapted=true），不计为阻碍。"
+    "notes": "评估按模型 A（C 库经 OHOS NDK 重编 + Node-API 封装）口径。Readline 本身不包含 GUI/3D/媒体/硬件场景（capability_profile 为空），移植的不可替代核心是其对 POSIX 终端 I/O 子系统的依赖——这决定了「能否在鸿蒙 PC 上提供与 Linux 同等体验的命令行编辑」。confidence=medium 是因为两条关键目标假设（POSIX 终端 I/O 兼容性、信号处理兼容性）均为 unknown——结论依赖未核实的目标事实；若二者均 available 则可上调到 high 并缩短 person_days 至 [5,8]。platform_adaptation 共 143 行平台守卫代码（以 Windows _WIN32 为主），非关键阻碍——鸿蒙走 POSIX 路径自动覆盖。ncurses 已确认在 cmd-pkgs 中提供鸿蒙版（harmony_adapted=true），不计为阻碍。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "readline",
@@ -1230,7 +1232,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为 GNU Readline —— 一个纯命令行行编辑 C 库。不涉及任何 GUI 桌面界面/窗口、3D 图形渲染、音视频媒体处理或特定硬件设备。所有交互通过标准终端 I/O（STDIN/STDOUT）完成，属于纯终端/文本界面库，不在鸿蒙适配重点场景（GUI/3D/媒体/硬件）中。",

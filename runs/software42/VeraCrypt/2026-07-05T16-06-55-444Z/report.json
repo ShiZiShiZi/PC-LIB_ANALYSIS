@@ -2376,7 +2376,8 @@
       "person_days": [
         720,
         1440
-      ]
+      ],
+      "level": "very_high"
     },
     "target_assumptions": [
       {
@@ -2550,7 +2551,8 @@
         ],
         "evidence": [
           "src/Driver/Fuse/FuseService.cpp:36"
-        ]
+        ],
+        "id": "ua:1"
       },
       {
         "api": "mount(2) / umount(2)",
@@ -2563,7 +2565,8 @@
         ],
         "evidence": [
           "src/Core/Unix/Linux/CoreLinux.cpp:19 (sys/mount.h)"
-        ]
+        ],
+        "id": "ua:2"
       },
       {
         "api": "IoCreateDevice / IoGetDeviceObjectPointer (NTDDK)",
@@ -2576,7 +2579,8 @@
         ],
         "evidence": [
           "src/Driver/Ntdriver.c:15 (#include <ntddk.h>)"
-        ]
+        ],
+        "id": "ua:3"
       },
       {
         "api": "DeviceIoControl (Win32)",
@@ -2589,7 +2593,8 @@
         ],
         "evidence": [
           "src/Mount/Mount.c:10"
-        ]
+        ],
+        "id": "ua:4"
       },
       {
         "api": "losetup (外部命令)",
@@ -2602,7 +2607,8 @@
         ],
         "evidence": [
           "src/Core/Unix/Linux/CoreLinux.cpp:57"
-        ]
+        ],
+        "id": "ua:5"
       },
       {
         "api": "CoreFoundation / IOKit (macOS)",
@@ -2613,7 +2619,8 @@
         "caused_by": [],
         "evidence": [
           "src/Core/Unix/MacOSX/CoreMacOSX.cpp:19"
-        ]
+        ],
+        "id": "ua:6"
       }
     ],
     "required_permissions": [
@@ -2654,7 +2661,8 @@
         ]
       }
     ],
-    "notes": "VeraCrypt 被判定为 infeasible 主要原因：其核心加密卷挂载功能深度依赖操作系统内核级的 I/O 拦截——Windows 上通过 NT 内核过滤驱动(driver stack)实现，Unix 上通过 FUSE 用户空间文件系统 + loop 设备 + mount 系统调用实现。这两个模型都绑定特定内核架构（Windows NT 和 Linux），无法跨内核移植。鸿蒙 PC 采用自研内核（非 Linux ABI），缺少 FUSE 协议、loop 设备和 Linux mount 机制。即使 GUI 层可以用 ArkTS/ArkUI 重写，缺少内核级磁盘 I/O 透明拦截能力意味着加密卷无法实时挂载为可读写的文件系统——而这正是 VeraCrypt 存在的原因。若仅做文件级加密容器（不涉及设备挂载），功能严重缩水，不再是 VeraCrypt 的同功能替代。confidence=medium 因 target_assumptions 中有多项 unknown（鸿蒙 PC 的块设备访问模型、桌面应用分发形态、权限模型），这些若证实可用可能略微降低难度，但 FUSE + loop + mount 的缺失已构成不可逾越的阻碍。"
+    "notes": "VeraCrypt 被判定为 infeasible 主要原因：其核心加密卷挂载功能深度依赖操作系统内核级的 I/O 拦截——Windows 上通过 NT 内核过滤驱动(driver stack)实现，Unix 上通过 FUSE 用户空间文件系统 + loop 设备 + mount 系统调用实现。这两个模型都绑定特定内核架构（Windows NT 和 Linux），无法跨内核移植。鸿蒙 PC 采用自研内核（非 Linux ABI），缺少 FUSE 协议、loop 设备和 Linux mount 机制。即使 GUI 层可以用 ArkTS/ArkUI 重写，缺少内核级磁盘 I/O 透明拦截能力意味着加密卷无法实时挂载为可读写的文件系统——而这正是 VeraCrypt 存在的原因。若仅做文件级加密容器（不涉及设备挂载），功能严重缩水，不再是 VeraCrypt 的同功能替代。confidence=medium 因 target_assumptions 中有多项 unknown（鸿蒙 PC 的块设备访问模型、桌面应用分发形态、权限模型），这些若证实可用可能略微降低难度，但 FUSE + loop + mount 的缺失已构成不可逾越的阻碍。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "name": "VeraCrypt",
@@ -2758,7 +2766,8 @@
       "shape coerced: harmony_adaptation.required_permissions[1].evidence string→array",
       "shape coerced: harmony_adaptation.required_permissions[2].evidence string→array",
       "shape coerced: harmony_adaptation.required_permissions[3].evidence string→array"
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "VeraCrypt 作为桌面磁盘加密应用，涉及 GUI 界面（wxWidgets）和硬件级磁盘访问（块设备直接 I/O、内核驱动/FUSE 文件系统），不涉及 3D 渲染、音视频媒体或云端服务。",

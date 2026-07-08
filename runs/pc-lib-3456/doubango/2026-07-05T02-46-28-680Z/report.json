@@ -2046,7 +2046,8 @@
       "person_days": [
         25,
         45
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -2349,7 +2350,8 @@
       "禁用未经 cmd-pkgs 覆盖的可选编解码 (--without-ilbc --without-amr --without-webrtc --without-srtp) 或自行交叉编译它们",
       "在鸿蒙上编译并运行核心 SIP 注册/呼叫端到端测试"
     ],
-    "notes": "评估按模型 A（库经 OHOS NDK 交叉编译为原生 .so）。核心 SIP/RTP 信令栈为纯 ANSI-C + BSD 套接字，对 POSIX 子集要求较低（socket/select/poll/pthread/dlopen），预期 OHOS NDK 基本覆盖——但 OHOS NDK POSIX 子集的精确覆盖范围在 harmony-pc-capabilities 中标记为 unknown，因此 confidence 下调至 medium。若核实 POSIX 覆盖充足则 confidence 回升。编解码依赖大量可选（configure 的 --with-* 即 checker），即使全部不可用，核心 SIP 信令（注册/呼叫/IM/Presence）仍可工作——框架设计为「编解码按需挂载」。本评估已将已知可移植但工作量大的部分归入 key_tasks 与 compatible，将确知不可移植的部分（CUDA/Windows 采集驱动/V4L2 ioctl）列入了 unadaptable_apis 与 blockers。"
+    "notes": "评估按模型 A（库经 OHOS NDK 交叉编译为原生 .so）。核心 SIP/RTP 信令栈为纯 ANSI-C + BSD 套接字，对 POSIX 子集要求较低（socket/select/poll/pthread/dlopen），预期 OHOS NDK 基本覆盖——但 OHOS NDK POSIX 子集的精确覆盖范围在 harmony-pc-capabilities 中标记为 unknown，因此 confidence 下调至 medium。若核实 POSIX 覆盖充足则 confidence 回升。编解码依赖大量可选（configure 的 --with-* 即 checker），即使全部不可用，核心 SIP 信令（注册/呼叫/IM/Presence）仍可工作——框架设计为「编解码按需挂载」。本评估已将已知可移植但工作量大的部分归入 key_tasks 与 compatible，将确知不可移植的部分（CUDA/Windows 采集驱动/V4L2 ioctl）列入了 unadaptable_apis 与 blockers。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "doubango",
@@ -2414,7 +2416,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本框架为电信 IMS 信令与媒体引擎，核心触及音视频编解码与采集（media 场景）和 GPU 硬件加速（hardware 场景），不涉及桌面 GUI 或 3D 图形渲染。",

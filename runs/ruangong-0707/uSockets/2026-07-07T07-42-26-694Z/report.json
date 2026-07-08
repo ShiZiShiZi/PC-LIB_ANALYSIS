@@ -957,7 +957,7 @@
   },
   "harmony_adaptation": {
     "porting_class": "needs_adaptation_partial",
-    "feasibility": "feasible",
+    "feasibility": "hard",
     "confidence": "medium",
     "recommended_path": "重编译 + 适配事件循环后端：核心 socket API 经 OHOS NDK musl/POSIX 子集可用，但需为鸿蒙提供新的事件循环后端（替代 epoll/kqueue）并解决 io_uring/recvmmsg 等不可用 API",
     "target_assumptions": [
@@ -1133,10 +1133,10 @@
     ],
     "effort": {
       "person_days": [
-        15,
-        40
+        2.9,
+        2.9
       ],
-      "level": "medium",
+      "level": "high",
       "breakdown": [
         {
           "component": "api_adaptation",
@@ -1144,7 +1144,12 @@
           "days": [
             8,
             20
-          ]
+          ],
+          "person_days": [
+            2.3,
+            2.3
+          ],
+          "basis": "需适配 1142 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -1169,6 +1174,14 @@
             2,
             5
           ]
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            0.6,
+            0.6
+          ],
+          "basis": "重编译复用 1842 行 ÷ 3000 行/天"
         }
       ]
     },
@@ -1178,14 +1191,16 @@
         "refs": [
           "bk:tls_backend"
         ],
-        "note": "TLS 功能核心依赖；鸿蒙可用性未知，若不可用则需移植"
+        "note": "TLS 功能核心依赖；鸿蒙可用性未知，若不可用则需移植",
+        "order": 1
       },
       {
         "name": "libuv",
         "refs": [
           "bk:event_loop"
         ],
-        "note": "可作为鸿蒙事件循环后端替代 epoll/kqueue；鸿蒙可用性未知"
+        "note": "可作为鸿蒙事件循环后端替代 epoll/kqueue；鸿蒙可用性未知",
+        "order": 2
       }
     ],
     "required_permissions": [
@@ -1199,7 +1214,8 @@
         ]
       }
     ],
-    "notes": "uSockets 的架构本身支持多种事件循环后端（已有多后端切换的编译宏），这为鸿蒙适配提供了良好的扩展点。关键工作是为鸿蒙实现一个新的事件循环后端（参照 libuv.c/epoll_kqueue.c 的模式），并在 bsd.c 中为鸿蒙适配平台特定 API（recvmmsg/sendmmsg 降级、eventfd 替代）。io_uring 和 GCD 后端可直接排除。lsquic（QUIC）依赖 recvmmsg/sendmmsg，在鸿蒙上需降级处理。"
+    "notes": "uSockets 的架构本身支持多种事件循环后端（已有多后端切换的编译宏），这为鸿蒙适配提供了良好的扩展点。关键工作是为鸿蒙实现一个新的事件循环后端（参照 libuv.c/epoll_kqueue.c 的模式），并在 bsd.c 中为鸿蒙适配平台特定 API（recvmmsg/sendmmsg 降级、eventfd 替代）。io_uring 和 GCD 后端可直接排除。lsquic（QUIC）依赖 recvmmsg/sendmmsg，在鸿蒙上需降级处理。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "kind": "library",
@@ -1285,7 +1301,15 @@
       "shape coerced: runtime_surface.filesystem object→array",
       "shape coerced: build_env.compiler_extensions string→array",
       "shape coerced: harmony_adaptation.required_permissions[0].evidence string→array"
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=networking 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [
@@ -1345,35 +1369,48 @@
           {
             "dir": "src/bsd.c (非平台分支部分)",
             "loc": 500,
-            "note": "核心 socket 创建/连接/收发/地址解析等 POSIX 标准函数"
+            "note": "核心 socket 创建/连接/收发/地址解析等 POSIX 标准函数",
+            "path": "src/bsd.c (非平台分支部分)",
+            "reason": "核心 socket 创建/连接/收发/地址解析等 POSIX 标准函数"
           },
           {
             "dir": "src/context.c",
             "loc": 350,
-            "note": "Socket context 管理、回调设置、监听逻辑"
+            "note": "Socket context 管理、回调设置、监听逻辑",
+            "path": "src/context.c",
+            "reason": "Socket context 管理、回调设置、监听逻辑"
           },
           {
             "dir": "src/socket.c",
             "loc": 200,
-            "note": "Socket 操作（write/close/timeout/shutdown）核心逻辑"
+            "note": "Socket 操作（write/close/timeout/shutdown）核心逻辑",
+            "path": "src/socket.c",
+            "reason": "Socket 操作（write/close/timeout/shutdown）核心逻辑"
           },
           {
             "dir": "src/loop.c",
             "loc": 350,
-            "note": "事件循环数据初始化、定时器扫描、socket 分发等与后端无关的逻辑"
+            "note": "事件循环数据初始化、定时器扫描、socket 分发等与后端无关的逻辑",
+            "path": "src/loop.c",
+            "reason": "事件循环数据初始化、定时器扫描、socket 分发等与后端无关的逻辑"
           },
           {
             "dir": "src/udp.c",
             "loc": 130,
-            "note": "UDP socket 抽象层（调用 bsd 层）"
+            "note": "UDP socket 抽象层（调用 bsd 层）",
+            "path": "src/udp.c",
+            "reason": "UDP socket 抽象层（调用 bsd 层）"
           },
           {
             "dir": "src/internal/",
             "loc": 312,
-            "note": "内部头文件和数据结构定义"
+            "note": "内部头文件和数据结构定义",
+            "path": "src/internal/",
+            "reason": "内部头文件和数据结构定义"
           }
         ],
-        "total_loc": 1842
+        "total_loc": 1842,
+        "loc": 1842
       },
       {
         "class": "needs_adaptation",
@@ -1382,20 +1419,27 @@
           {
             "dir": "src/eventing/epoll_kqueue.c",
             "loc": 400,
-            "note": "epoll/kqueue 后端需替换为鸿蒙等价实现"
+            "note": "epoll/kqueue 后端需替换为鸿蒙等价实现",
+            "path": "src/eventing/epoll_kqueue.c",
+            "reason": "epoll/kqueue 后端需替换为鸿蒙等价实现"
           },
           {
             "dir": "src/bsd.c (平台分支部分)",
             "loc": 114,
-            "note": "Windows/macOS 平台守卫代码（fcntl/eventfd/recvmmsg/sendmmsg/SO_NOSIGPIPE 等）需增加鸿蒙分支"
+            "note": "Windows/macOS 平台守卫代码（fcntl/eventfd/recvmmsg/sendmmsg/SO_NOSIGPIPE 等）需增加鸿蒙分支",
+            "path": "src/bsd.c (平台分支部分)",
+            "reason": "Windows/macOS 平台守卫代码（fcntl/eventfd/recvmmsg/sendmmsg/SO_NOSIGPIPE 等）需增加鸿蒙分支"
           },
           {
             "dir": "src/crypto/openssl.c",
             "loc": 628,
-            "note": "OpenSSL TLS 后端，依赖 OpenSSL/BoringSSL 在鸿蒙上的可用性"
+            "note": "OpenSSL TLS 后端，依赖 OpenSSL/BoringSSL 在鸿蒙上的可用性",
+            "path": "src/crypto/openssl.c",
+            "reason": "OpenSSL TLS 后端，依赖 OpenSSL/BoringSSL 在鸿蒙上的可用性"
           }
         ],
-        "total_loc": 1142
+        "total_loc": 1142,
+        "loc": 1142
       },
       {
         "class": "unadaptable",
@@ -1404,20 +1448,27 @@
           {
             "dir": "src/io_uring/",
             "loc": 537,
-            "note": "整个 io_uring 后端依赖 Linux io_uring，鸿蒙不可用"
+            "note": "整个 io_uring 后端依赖 Linux io_uring，鸿蒙不可用",
+            "path": "src/io_uring/",
+            "reason": "整个 io_uring 后端依赖 Linux io_uring，鸿蒙不可用"
           },
           {
             "dir": "src/eventing/gcd.c",
             "loc": 278,
-            "note": "GCD/libdispatch 后端依赖 Apple 平台，鸿蒙不可用"
+            "note": "GCD/libdispatch 后端依赖 Apple 平台，鸿蒙不可用",
+            "path": "src/eventing/gcd.c",
+            "reason": "GCD/libdispatch 后端依赖 Apple 平台，鸿蒙不可用"
           },
           {
             "dir": "src/quic.c",
             "loc": 400,
-            "note": "QUIC 实现依赖 lsquic + recvmmsg/sendmmsg，需大幅适配"
+            "note": "QUIC 实现依赖 lsquic + recvmmsg/sendmmsg，需大幅适配",
+            "path": "src/quic.c",
+            "reason": "QUIC 实现依赖 lsquic + recvmmsg/sendmmsg，需大幅适配"
           }
         ],
-        "total_loc": 1215
+        "total_loc": 1215,
+        "loc": 1215
       },
       {
         "class": "reuse_direct",
@@ -1426,10 +1477,13 @@
           {
             "dir": "src/libusockets.h",
             "loc": 579,
-            "note": "公共 API 头文件，定义平台条件编译宏"
+            "note": "公共 API 头文件，定义平台条件编译宏",
+            "path": "src/libusockets.h",
+            "reason": "公共 API 头文件，定义平台条件编译宏"
           }
         ],
-        "total_loc": 579
+        "total_loc": 579,
+        "loc": 579
       }
     ],
     "coverage": {

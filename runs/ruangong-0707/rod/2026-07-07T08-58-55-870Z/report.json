@@ -1082,17 +1082,17 @@
     "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
-        5,
-        12
+        4.2,
+        6.2
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            3,
-            8
+            2.2,
+            2.2
           ],
-          "basis": "lib/launcher 约 1.1k 行需新增鸿蒙 PC 平台分支：浏览器路径发现、下载源、进程组/杀进程、缓存目录等"
+          "basis": "需适配 1111 行 ÷ 500 行/天"
         },
         {
           "component": "testing_verification",
@@ -1110,7 +1110,8 @@
           ],
           "basis": "确认 ysmood/leakless 等依赖在鸿蒙 Go 运行时无平台编译问题"
         }
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "critical_dependencies": [],
@@ -1198,7 +1199,8 @@
       "调整 os_unix.go / os_windows.go 的构建标签，确保 GOOS=ohos（或鸿蒙 PC 所用 GOOS）能编译并选择合适后端",
       "跑通鸿蒙 PC 上的单元测试，重点验证 Browser.Connect、Launcher.Launch、Kill 流程"
     ],
-    "notes": "评估按库模型 A（跑在已移植的 Go 运行时上）。Electron 已声明 available，为独立 Chromium 可用性提供了正面信号，但尚未查到官方 standalone Chromium 下载/预装信息，因此 confidence 为 medium。若实际环境中无可用浏览器二进制，结论将收紧为 hard 或 infeasible。"
+    "notes": "评估按库模型 A（跑在已移植的 Go 运行时上）。Electron 已声明 available，为独立 Chromium 可用性提供了正面信号，但尚未查到官方 standalone Chromium 下载/预装信息，因此 confidence 为 medium。若实际环境中无可用浏览器二进制，结论将收紧为 hard 或 infeasible。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "rod",
@@ -1244,7 +1246,8 @@
         "value": "Go pure-Go modules vs reuse_direct",
         "rationale": "Go 是编译型语言，但 skill 的 'reuse_direct' 定义偏向脚本/零改动运行；纯 Go 代码在鸿蒙已移植运行时上需重新编译但零源码改动，更接近 reuse_direct 还是 recompile_reuse 存在口径歧义。本报告按 '零源码改动' 归入 reuse_direct。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Rod 本身不直接涉及桌面 GUI 工具包、3D 渲染、媒体编解码或硬件设备访问。它通过 DevTools Protocol 远程控制浏览器，浏览器进程本身（Chromium）负责图形、媒体与网络，而 Rod 库只向浏览器发送指令并接收事件。",

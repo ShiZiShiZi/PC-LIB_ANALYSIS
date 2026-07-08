@@ -1004,7 +1004,8 @@
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1105,7 +1106,8 @@
       "验证 utimensat/clock_gettime 等 POSIX 接口在 musl 下的行为，必要时启用回退分支",
       "（可选）为 ArkTS 应用封装 Node-API 绑定，暴露 LZ4_compress/LZ4_decompress_safe 等核心 API"
     ],
-    "notes": "评估按 HarmonyOS PC 原生 C 库口径（模型 A）；由于 lz4 是算法库，实际最常见的鸿蒙化路径是直接交叉编译为 .so 供 C/C++ 应用链接，而非必须走 Node-API。若目标为 ArkTS 应用，则需额外编写 N-API 封装层，工作量上浮 3-5 人天。无 GUI、3D、媒体、硬件或云服务依赖。"
+    "notes": "评估按 HarmonyOS PC 原生 C 库口径（模型 A）；由于 lz4 是算法库，实际最常见的鸿蒙化路径是直接交叉编译为 .so 供 C/C++ 应用链接，而非必须走 Node-API。若目标为 ArkTS 应用，则需额外编写 N-API 封装层，工作量上浮 3-5 人天。无 GUI、3D、媒体、硬件或云服务依赖。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "lz4",
@@ -1155,7 +1157,15 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(BSD-2-Clause AND GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "LZ4 是纯数据压缩算法库/CLI，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备；仅使用通用 CPU 位运算 intrinsic（有纯软件回退）。鸿蒙适配重点在于 C 代码经 OHOS NDK 重编与 POSIX 子集兼容性。",

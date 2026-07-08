@@ -1765,7 +1765,8 @@
       "person_days": [
         8,
         15
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1928,7 +1929,8 @@
       "构建验证：make 全编通过 libcrypto.so + libssl.so + 命令行工具 openssl；运行 make test 子集（核心算法正确性）",
       "可选：如需暴露给 ArkTS 应用，将关键 API 经 Node-API 封装为 .so 插件供 ArkTS 调用"
     ],
-    "notes": "评估按模型 A（C/C++ 库，经 OHOS NDK 重编为 .so，由鸿蒙原生应用或 Node-API 包装调用）。铜锁的构建系统为 Perl-based Configure（非 CMake），首次适配需手动新增 OHOS 目标配置——这是最主要的适配工作量。代码中 1735 行平台适配代码（#ifdef _WIN32/__APPLE__/__linux__/POSIX）需新增 OHOS 条件分支，但所有平台 API 都可解决（musl 提供 POSIX 子集 + 个别编译降级）。无不可适配的底层 API，porting_class 定为 needs_adaptation_full。FIPS 自测试与商用密码检测认证模块在鸿蒙上需额外评估合规性，不计入本次工作量。"
+    "notes": "评估按模型 A（C/C++ 库，经 OHOS NDK 重编为 .so，由鸿蒙原生应用或 Node-API 包装调用）。铜锁的构建系统为 Perl-based Configure（非 CMake），首次适配需手动新增 OHOS 目标配置——这是最主要的适配工作量。代码中 1735 行平台适配代码（#ifdef _WIN32/__APPLE__/__linux__/POSIX）需新增 OHOS 条件分支，但所有平台 API 都可解决（musl 提供 POSIX 子集 + 个别编译降级）。无不可适配的底层 API，porting_class 定为 needs_adaptation_full。FIPS 自测试与商用密码检测认证模块在鸿蒙上需额外评估合规性，不计入本次工作量。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "kind": "library",
@@ -1947,7 +1949,8 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "铜锁/Tongsuo 为纯密码学与安全通信库，不涉及 GUI、3D 渲染或音视频媒体场景。代码中多架构汇编优化（SSE/AVX/NEON/SVE 等）属于 CPU SIMD 指令加速，并非特定硬件依赖——均有 C 语言回退实现。",

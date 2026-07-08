@@ -2645,7 +2645,8 @@
       "person_days": [
         8,
         15
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -2809,7 +2810,8 @@
       "在鸿蒙 PC 上运行功能测试（sslocal/ssserver 的 SOCKS/HTTP 代理基本路径）",
       "处理 OHOS 权限声明（INTERNET），打包为鸿蒙可执行二进制或 HAP"
     ],
-    "notes": "评估按模型 C（CLI 应用，Rust 原生二进制经 ohos target 交叉编译）。Rust 运行时在鸿蒙 PC 已移植（available），运行时本身不是阻碍。平台特有代码均通过 target_os 条件编译隔离，新增 OHOS 条件后自动回退到 generic Unix 路径。大部分 Linux/BSD/Windows 特有功能（SO_MARK、IP_TRANSPARENT、PF ioctl、WSAIoctl、MPTCP、recvmmsg/sendmmsg）均为可选优化，核心 SOCKS/HTTP 代理不需要它们。daemonize 为 Unix 前台/后台运行辅助，非核心功能。target_assumptions 含 x86_64 状态 unknown——若仅 arm64 可用则约束 target 架构，但不影响 feasibility。ohos.permission.INTERNET 状态 unknown 下调 confidence 至 medium（该权限为代理功能必需，待核实 PC 形态下的授予流程）。"
+    "notes": "评估按模型 C（CLI 应用，Rust 原生二进制经 ohos target 交叉编译）。Rust 运行时在鸿蒙 PC 已移植（available），运行时本身不是阻碍。平台特有代码均通过 target_os 条件编译隔离，新增 OHOS 条件后自动回退到 generic Unix 路径。大部分 Linux/BSD/Windows 特有功能（SO_MARK、IP_TRANSPARENT、PF ioctl、WSAIoctl、MPTCP、recvmmsg/sendmmsg）均为可选优化，核心 SOCKS/HTTP 代理不需要它们。daemonize 为 Unix 前台/后台运行辅助，非核心功能。target_assumptions 含 x86_64 状态 unknown——若仅 arm64 可用则约束 target 架构，但不影响 feasibility。ohos.permission.INTERNET 状态 unknown 下调 confidence 至 medium（该权限为代理功能必需，待核实 PC 形态下的授予流程）。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "shadowsocks-rust",
@@ -2867,7 +2869,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯网络代理 CLI 应用，不涉及 GUI/3D 渲染/媒体处理/特定硬件设备等鸿蒙适配重点场景。TUN 虚拟网卡为软件虚拟网络接口（非硬件设备），归入网络维度。",

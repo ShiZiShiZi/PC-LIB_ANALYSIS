@@ -1242,25 +1242,25 @@
     "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
-        10,
-        20
+        15.4,
+        19.4
       ],
       "breakdown": [
         {
           "component": "recompile",
           "person_days": [
-            4,
-            8
+            3,
+            3
           ],
-          "basis": "recompile_reuse 桶约 8.9k LOC（NativeDB.c、extension-functions.c、平台头文件、Makefile）需用 OHOS NDK 交叉编译为 arm64/x86_64 .so"
+          "basis": "重编译复用 8975 行 ÷ 3000 行/天"
         },
         {
           "component": "api_adaptation",
           "person_days": [
-            3,
-            6
+            8.4,
+            8.4
           ],
-          "basis": "needs_adaptation 桶中 OSInfo.java（~308 LOC）与 SQLiteJDBCLoader.java（~436 LOC）需新增 HarmonyOS/OpenHarmony 平台识别与资源加载路径"
+          "basis": "需适配 4220 行 ÷ 500 行/天"
         },
         {
           "component": "build_system",
@@ -1278,7 +1278,8 @@
           ],
           "basis": "在鸿蒙 JDK 上跑通 447 个测试用例，验证 JNI 调用、UDF 回调、文件数据库、临时目录提取加载"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "critical_dependencies": [
@@ -1427,7 +1428,8 @@
       "验证 SQLiteJDBCLoader 在鸿蒙 PC 上能从 JAR 提取并加载 .so，跑通单元测试",
       "评估 OHOS 上 uname/readelf 的可用性，必要时简化 ARM 架构检测逻辑"
     ],
-    "notes": "按模型 A（库跑在已移植 JDK 上）评估。library.kind 为 library，不涉及 GUI/桌面集成/应用交付模型 C 的阻碍。无云端服务，无需 ohos.permission.INTERNET。file_access 假设为 unknown，若鸿蒙 PC 对 JVM 文件访问有额外沙箱限制，工作量可能小幅上升。"
+    "notes": "按模型 A（库跑在已移植 JDK 上）评估。library.kind 为 library，不涉及 GUI/桌面集成/应用交付模型 C 的阻碍。无云端服务，无需 ohos.permission.INTERNET。file_access 假设为 unknown，若鸿蒙 PC 对 JVM 文件访问有额外沙箱限制，工作量可能小幅上升。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "sqlite-jdbc",
@@ -1474,7 +1476,8 @@
         "value": "platform_headers_in_recompile",
         "rationale": "lib/inc_linux/inc_mac/inc_win 是平台特定头文件，按源码归属放入 recompile_reuse 桶；它们不会直接运行，只参与编译。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目仅触及本地嵌入式数据库访问场景，不涉及 GUI、3D 渲染、媒体编解码或特定硬件；鸿蒙 PC 上的核心适配点是 OHOS NDK 重编 SQLite JNI 原生库与平台识别。",

@@ -1,6 +1,6 @@
 # HarmonyOS PC —— 目标平台能力画像（由 harmony-pc-capabilities.json 渲染，勿手改本 .md）
 
-> 最近联网同步：2026-06-23T11:11:18.119Z
+> 最近联网同步：2026-07-08T03:23:04.395Z
 
 > 鸿蒙适配评估（dim-9）的准确性 = match(源所需能力, 目标平台能力)。本文件是目标侧事实的单一权威源，库与应用的鸿蒙评估都用它（目标事实与被分析对象无关）。状态：available（已确认支持）/ partial（部分或受限）/ unavailable（已确认不支持）/ unknown（尚未核实）。skill 规则：source 所需能力，目标 available→不计阻碍；partial→partial 阻碍；unavailable→blocker/unadaptable_apis；unknown 且 required→记 target_assumptions + 下调 confidence + notes 说明，禁止据 unknown 臆断为可行。带 check 的行可由 scripts/harmony_caps.js sync 从社区 cmd-pkgs/PyPI 自动核对；非包类行需人工/社区策展。鸿蒙 PC：自研内核（非 Linux ABI），原生层 OHOS NDK（musl + POSIX 子集）。
 
@@ -14,6 +14,7 @@
 | Rust | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.89+，有 ohos target |
 | Go | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.24+ / 1.22 |
 | Julia | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.10.6 |
+| .NET / CLR 运行时（C#/F#） | ⬜ 未核实 |  |  | 鸿蒙 PC 是否已移植 .NET/CLR 运行时——待核实；未列入官方已移植运行时清单，.NET 库/应用能否运行取决于此（模型反哺高频缺口） |
 
 ## JDK 内部模块开放性（Java 应用/工具常依赖）
 
@@ -33,8 +34,8 @@
 | Swing (javax.swing) | ✅ 已支持 |  | 2026-07-07 | swing已有鸿蒙版本 |
 | JavaFX | ⬜ 未核实 |  |  | 待核实（是否随附/可装） |
 | SWT | ⬜ 未核实 |  |  | 待核实 |
-| Qt (C/C++ GUI) | ✅ 已支持 | https://gitcode.com/OpenHarmonyPCDeveloper (人工核实) | 2026-07-07 | 社区已提供 Qt 鸿蒙版，只提供了Qt5，如果使用Qt6需要降级 |
-| GTK (C GUI) | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) — gtk | 2026-06-23 | — |
+| Qt (C/C++ GUI) | ✅ 已支持 | https://gitcode.com/OpenHarmonyPCDeveloper (人工核实) | 2026-07-08 | 社区已提供 Qt 鸿蒙版，只提供了Qt5，如果使用Qt6需要降级（2026-07-08 未在cmd-pkgs 列出，不代表不支持） |
+| GTK (C GUI) | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) — gtk | 2026-07-08 | 需要使用鸿蒙化方案 |
 | Electron / CEF (Chromium) | ✅ 已支持 |  | 2026-07-07 | Electron已有鸿蒙版本 |
 | 桌面窗口管理器 / 显示服务（是否存在桌面级多窗口环境） | ⬜ 未核实 |  |  | 鸿蒙 PC 是否提供传统桌面窗口环境 —— 待核实 |
 

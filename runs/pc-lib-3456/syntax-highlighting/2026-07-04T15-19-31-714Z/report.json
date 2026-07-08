@@ -3330,7 +3330,8 @@
       "person_days": [
         4,
         10
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -3442,7 +3443,8 @@
       "编译产物部署到鸿蒙 PC，验证语法定义加载与高亮功能正常",
       "（可选）编译 ksyntaxhighlighter CLI 工具并验证 HTML/ANSI 输出"
     ],
-    "notes": "平台适配信号极低：code_metrics.platform_adaptation 全部为 0（生产代码零编译宏守卫），platform_branches 仅 1 处且位于测试数据中（非生产代码）。库完全依赖 Qt6 的跨平台抽象层，自身不直接触碰任何平台/系统/硬件 API。Qt6 鸿蒙版已在社区可用（harmony-pc-capabilities.json 标记 available，含 qt6/qtbase 等组件），是该路径可行的关键前提。ECM 未在 caps 中收录（target_status=unknown），但 ECM 为纯 CMake 宏/Perl 脚本，不参与编译，不影响可行性——仅作为 minor 阻碍点记录。"
+    "notes": "平台适配信号极低：code_metrics.platform_adaptation 全部为 0（生产代码零编译宏守卫），platform_branches 仅 1 处且位于测试数据中（非生产代码）。库完全依赖 Qt6 的跨平台抽象层，自身不直接触碰任何平台/系统/硬件 API。Qt6 鸿蒙版已在社区可用（harmony-pc-capabilities.json 标记 available，含 qt6/qtbase 等组件），是该路径可行的关键前提。ECM 未在 caps 中收录（target_status=unknown），但 ECM 为纯 CMake 宏/Perl 脚本，不参与编译，不影响可行性——仅作为 minor 阻碍点记录。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "KSyntaxHighlighting",
@@ -3499,7 +3501,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目是文本处理库，自身不涉及 GUI 窗口/界面、3D 渲染、音视频媒体或特定硬件场景。底层依赖 Qt6 Core/Gui/Network 提供跨平台文本格式与网络能力，但这些均由 Qt 抽象层处理，库本体无平台特有的窗口/图形/硬件调用。",

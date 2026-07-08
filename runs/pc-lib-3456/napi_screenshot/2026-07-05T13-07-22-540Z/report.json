@@ -925,7 +925,8 @@
       "person_days": [
         8,
         15
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1043,7 +1044,8 @@
       "为 display-info 新增鸿蒙后端或改用 @ohos.display JS API 替代",
       "在鸿蒙 Node.js 上跑通单元测试，验证截屏功能完整"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。核心不确定性：鸿蒙 PC 是否提供屏幕像素捕获 API（类似 Win32 GDI 或 macOS CGDisplay）。若鸿蒙无此能力，该库核心功能不可移植（porting_class 升至 needs_adaptation_partial 或 infeasible）。display-info 的鸿蒙后端也为未知，但可通过 JS 层 @ohos.display 规避。所有 Rust 依赖均未在 OpenHarmony PC 镜像中预编译（harmony_adapted 均为 false），需逐一交叉编译。置信度中——因屏幕捕获能力（ta:screen_capture）为 unknown。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。核心不确定性：鸿蒙 PC 是否提供屏幕像素捕获 API（类似 Win32 GDI 或 macOS CGDisplay）。若鸿蒙无此能力，该库核心功能不可移植（porting_class 升至 needs_adaptation_partial 或 infeasible）。display-info 的鸿蒙后端也为未知，但可通过 JS 层 @ohos.display 规避。所有 Rust 依赖均未在 OpenHarmony PC 镜像中预编译（harmony_adapted 均为 false），需逐一交叉编译。置信度中——因屏幕捕获能力（ta:screen_capture）为 unknown。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "napi_screenshot",
@@ -1097,7 +1099,8 @@
         "rationale": "darwin.rs 与 linux.rs 的 capture_screen 返回 Err('not implemented')，但 Win32 后端的平台守卫分派机制已就绪——这表明该库设计为跨平台但当前仅 Windows 可用。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为 Node.js 桌面截屏原生插件，触及 GUI/桌面场景（通过 Win32 GDI 捕获屏幕像素），不涉及 3D 渲染、媒体编解码或特定硬件设备。",

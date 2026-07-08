@@ -1567,7 +1567,8 @@
       "person_days": [
         15,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime",
@@ -1775,7 +1776,8 @@
         ]
       }
     ],
-    "notes": "评估按模型 C（整包桌面应用）；SonarQube 为 Web 端应用，非传统桌面 GUI 应用——前端通过浏览器访问，无 Swing/AWT/JavaFX 依赖。鸿蒙 PC 已移植 JDK 17（available），这是最关键的前提条件。最大不确定因素：① ProcessBuilder 可用性（unknown，决定多进程架构是否需改造）；② 传统桌面应用交付模型（unknown，ZIP 分发+launcher 的形式鸿蒙是否支持）。JMX、网络、文件 I/O 均为标准 Java API，鸿蒙 JDK 大概率支持但需核实。因多项目标能力 unknown，置信度为 medium；待这些 unknown 核实后，结论可升为 high、porting_class 可能降为 recompile_only 或 no_adaptation。"
+    "notes": "评估按模型 C（整包桌面应用）；SonarQube 为 Web 端应用，非传统桌面 GUI 应用——前端通过浏览器访问，无 Swing/AWT/JavaFX 依赖。鸿蒙 PC 已移植 JDK 17（available），这是最关键的前提条件。最大不确定因素：① ProcessBuilder 可用性（unknown，决定多进程架构是否需改造）；② 传统桌面应用交付模型（unknown，ZIP 分发+launcher 的形式鸿蒙是否支持）。JMX、网络、文件 I/O 均为标准 Java API，鸿蒙 JDK 大概率支持但需核实。因多项目标能力 unknown，置信度为 medium；待这些 unknown 核实后，结论可升为 high、porting_class 可能降为 recompile_only 或 no_adaptation。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "sonarqube",
@@ -1807,7 +1809,20 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      },
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "SonarQube 为纯 Java Web 应用（无桌面 GUI 工具包、无 3D 渲染、无媒体编解码、无特定硬件依赖），前端通过浏览器访问嵌入式 Tomcat 提供的 Web UI，不涉及鸿蒙适配重点场景中的 GUI/3D/媒体/硬件。",

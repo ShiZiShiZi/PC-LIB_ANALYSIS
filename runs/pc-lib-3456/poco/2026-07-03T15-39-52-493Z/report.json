@@ -2190,7 +2190,8 @@
       "person_days": [
         20,
         45
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -2392,7 +2393,8 @@
       "对未鸿蒙化的可选依赖（MySQL/PostgreSQL/ODBC/libhpdf/quill/cpptrace）按需交叉编译或关闭对应组件",
       "运行 Foundation/Net/Util/JSON/XML/Zip 核心测试，修复 musl/OHOS 下的编译与行为差异"
     ],
-    "notes": "评估按 C++ 库默认模型 A（OHOS NDK 重编）。由于存在 required+unknown 的目标能力假设（fork/exec 支持）以及 Linux 专用 ioctl 明确不可用，confidence 下调至 medium。若目标是 ArkTS 沙箱应用（模型 B）或需要打包为桌面应用（模型 C），结论会完全不同，需额外评估 Node-API 桥接或应用交付形态。"
+    "notes": "评估按 C++ 库默认模型 A（OHOS NDK 重编）。由于存在 required+unknown 的目标能力假设（fork/exec 支持）以及 Linux 专用 ioctl 明确不可用，confidence 下调至 medium。若目标是 ArkTS 沙箱应用（模型 B）或需要打包为桌面应用（模型 C），结论会完全不同，需额外评估 Node-API 桥接或应用交付形态。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "poco",
@@ -2443,7 +2445,8 @@
         "value": "linux_ioctl_in_posix_backend",
         "rationale": "POCO 把 SIOCGIF* ioctl 放在 Environment_UNIX.cpp 中，文件命名上是 UNIX/POSIX 后端，实际使用了 Linux 专用 ioctl；按可移植性口径应归入 system+linux，但代码组织上容易误判为 posix。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "POCO 是系统/网络基础库，不直接涉及桌面 GUI、3D 渲染、音视频媒体编解码或专属硬件。其核心场景是跨平台网络通信、数据访问、文件系统与进程抽象。",

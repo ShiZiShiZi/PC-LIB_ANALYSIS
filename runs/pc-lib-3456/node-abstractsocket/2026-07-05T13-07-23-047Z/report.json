@@ -573,7 +573,8 @@
       "person_days": [
         3,
         10
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "low",
     "recommended_path": "recompile_napi",
@@ -670,7 +671,8 @@
       "若 AF_UNIX 完全不可用，评估改用鸿蒙原生 IPC API 替代的可行性",
       "在鸿蒙 Node.js 24 环境下运行 test/abstract-socket.test.js 验证功能"
     ],
-    "notes": "置信度为 low 的原因：鸿蒙自研内核对 AF_UNIX（尤其是抽象命名空间）的支持状态无法从现有 harmoney-pc-capabilities.json 确认——这是 Linux 内核专有特征。若该能力为 unavailable，则 porting_class 上升至 needs_adaptation_partial（核心通信机制需替代）或 infeasible（若无等价 IPC 方案）。建议优先在 OHOS 真机/模拟器上做一次 AF_UNIX socket+\\0 地址的快速验证（创建套接字、绑定抽象名称），十几分钟即可决定最终路径。评估按库→模型 A（跑在鸿蒙 Node.js 运行时上）；鸿蒙已移植的 Node.js 24 本身不是阻碍。"
+    "notes": "置信度为 low 的原因：鸿蒙自研内核对 AF_UNIX（尤其是抽象命名空间）的支持状态无法从现有 harmoney-pc-capabilities.json 确认——这是 Linux 内核专有特征。若该能力为 unavailable，则 porting_class 上升至 needs_adaptation_partial（核心通信机制需替代）或 infeasible（若无等价 IPC 方案）。建议优先在 OHOS 真机/模拟器上做一次 AF_UNIX socket+\\0 地址的快速验证（创建套接字、绑定抽象名称），十几分钟即可决定最终路径。评估按库→模型 A（跑在鸿蒙 Node.js 运行时上）；鸿蒙已移植的 Node.js 24 本身不是阻碍。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "node-abstractsocket",
@@ -724,7 +726,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为 Linux 抽象域套接字 IPC 库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备等鸿蒙适配重点场景。其唯一的平台耦合点是 Linux 内核的 AF_UNIX 抽象命名空间特性，该特性在鸿蒙自研内核上的可用性待核实（见 harmony_adaptation.target_assumptions）。",

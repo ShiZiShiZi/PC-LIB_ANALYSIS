@@ -1849,7 +1849,8 @@
       "person_days": [
         20,
         45
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "新增 OHOS 平台后端：以 Linux 实现为骨架，通过 OHOS NDK 交叉编译；逐项验证/替换 ptrace、/proc、信号、spawn、AF_UNIX socket 在鸿蒙 POSIX 子集上的可用性；上传走 libcurl（已鸿蒙化）或 socket + OpenSSL。",
@@ -2075,7 +2076,8 @@
       "将上传后端配置为 libcurl（已鸿蒙化）或验证 socket + OpenSSL 路径",
       "为 OHOS 新增/适配单元测试，覆盖崩溃捕获、minidump 生成、上传全流程"
     ],
-    "notes": "评估按库模型 A（C++ 经 OHOS NDK 重编 + 新增平台后端）。当前 confidence=medium 是因为 ptrace、外部进程启动、/proc、POSIX 信号等崩溃捕获关键能力在鸿蒙 PC 上的可用性均为 unknown。若后续核实这些能力 unavailable，则 porting_class 需上调为 needs_adaptation_partial 或 infeasible。由于 capability_profile 未涉及 GUI/3D/媒体/硬件，无特定硬件 blocker。"
+    "notes": "评估按库模型 A（C++ 经 OHOS NDK 重编 + 新增平台后端）。当前 confidence=medium 是因为 ptrace、外部进程启动、/proc、POSIX 信号等崩溃捕获关键能力在鸿蒙 PC 上的可用性均为 unknown。若后续核实这些能力 unavailable，则 porting_class 需上调为 needs_adaptation_partial 或 infeasible。由于 capability_profile 未涉及 GUI/3D/媒体/硬件，无特定硬件 blocker。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "crashpad",
@@ -2136,7 +2138,15 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:读写存储",
+        "class": "actionable",
+        "message": "required_permission 读写存储 的 source_capability=filesystem 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Crashpad 是底层系统库，不触及 GUI、3D 渲染、音视频媒体或特定硬件，但运行期需要网络（HTTP/HTTPS 上传崩溃报告）与文件系统/跨进程能力。",

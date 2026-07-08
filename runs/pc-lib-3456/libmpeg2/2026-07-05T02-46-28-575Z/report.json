@@ -1497,7 +1497,8 @@
       "person_days": [
         3,
         6
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1612,7 +1613,8 @@
       "排除 libvo 的 X11/DirectX/SDL 后端（或整体不编译 libvo），保留 null/pgm/md5 后端以用于测试与性能对比",
       "在鸿蒙模拟器或真机上运行解码一致性测试（对比已知测试流的 MD5 输出）"
     ],
-    "notes": "评估按模型 A（C 库经 OHOS NDK 重编后由原生代码调用）。libmpeg2 核心解码库为零依赖纯 C 代码，平台迁移极其友好——最大的障碍仅是可选 GUI 后端的排除和 SIMD 汇编语法适配，两者均有纯 C 回退或编译期关闭路径。porting_class 为 recompile_only 而非 needs_adaptation_full 是因为无需功能性代码改动——所有平台差异都已通过编译期守卫隔离，只需配置正确的交叉编译参数即可产出可工作的 .so。若目标为 arm64-only 或 x86_64-only，对应的 SIMD 路径可直接启用无需调整。"
+    "notes": "评估按模型 A（C 库经 OHOS NDK 重编后由原生代码调用）。libmpeg2 核心解码库为零依赖纯 C 代码，平台迁移极其友好——最大的障碍仅是可选 GUI 后端的排除和 SIMD 汇编语法适配，两者均有纯 C 回退或编译期关闭路径。porting_class 为 recompile_only 而非 needs_adaptation_full 是因为无需功能性代码改动——所有平台差异都已通过编译期守卫隔离，只需配置正确的交叉编译参数即可产出可工作的 .so。若目标为 arm64-only 或 x86_64-only，对应的 SIMD 路径可直接启用无需调整。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "libmpeg2",
@@ -1657,7 +1659,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:rendering_3d",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libmpeg2 核心解码库纯计算，不涉及 GUI/3D 渲染/特定硬件依赖。libvo 视频输出模块可选依赖 X11/SDL/DirectX 等桌面显示后端——属于 GUI 场景，均为可选组件、编译期可完全裁掉。核心解码部分使用 x86/PPC/SPARC/Alpha/ARM SIMD 指令加速，但均有纯 C 回退路径，不绑定特定硬件。",

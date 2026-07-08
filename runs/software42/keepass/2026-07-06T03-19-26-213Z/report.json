@@ -753,7 +753,8 @@
       "person_days": [
         90,
         180
-      ]
+      ],
+      "level": "very_high"
     },
     "effort_breakdown": {
       "gui_rewrite": [
@@ -779,35 +780,40 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "该插件的全部功能依赖于 KeePass 应用程序提供的插件 API（KP_Call/KP_Query、CPwManager 数据库操作等）。KeePass 是 Windows 原生应用，在鸿蒙 PC 上不可用。即使将插件代码移植到鸿蒙，也没有宿主可以加载和调用它。",
-        "source": "runtime_environment"
+        "source": "runtime_environment",
+        "id": "ta:1"
       },
       {
         "capability": "MFC/ATL GUI 框架",
         "required": true,
         "target_status": "unavailable",
         "impact": "密码输入对话框使用 MFC CDialog/DDX，消息提示使用 Win32 MessageBox，文件选择使用 KeePass WinGUI 封装。这些 GUI API 在鸿蒙上完全不可用，需要用 ArkUI 或其他鸿蒙原生框架重写。",
-        "source": "native_api"
+        "source": "native_api",
+        "id": "ta:2"
       },
       {
         "capability": "Windows 注册表访问",
         "required": false,
         "target_status": "unavailable",
         "impact": "插件读取 HKLM 注册表获取 Oubliette 安装路径。此为可选功能（仅用于读取分类名称映射），可在移植时移除或使用硬编码路径替代。",
-        "source": "native_api"
+        "source": "native_api",
+        "id": "ta:3"
       },
       {
         "capability": "MSVC C++ 编译器",
         "required": true,
         "target_status": "partial",
         "impact": "代码使用了 MSVC 专有扩展（_T()/TCHAR、_countof、_gmtime64_s、_tcscpy_s 等安全 CRT、#pragma pack）。这些在鸿蒙 NDK（Clang/LLVM）下需要替换为可移植等价实现。部分已在代码中有可移植替代（如 _countof 对应宏 OI_ARRAY_LENGTH）。",
-        "source": "build_env"
+        "source": "build_env",
+        "id": "ta:4"
       },
       {
         "capability": "Crypto++ 加密库",
         "required": true,
         "target_status": "unknown",
         "impact": "核心解密逻辑依赖 Crypto++（Blowfish、IDEA、SHA-1）。鸿蒙上 Crypto++ 的可用性待确认——该库是跨平台 C++ 库，理论上可在鸿蒙 NDK 下编译，但需实际验证。若不可用，需要寻找鸿蒙原生加密库替代。",
-        "source": "dependencies"
+        "source": "dependencies",
+        "id": "ta:5"
       }
     ],
     "blockers": [
@@ -887,7 +893,8 @@
           "trunk/Plugins/OublietteImport/Source/PlugIn.cpp:52-75 (KeePluginInit)",
           "trunk/Plugins/OublietteImport/Source/PlugIn.cpp:86-166 (KeePluginCall)",
           "trunk/Plugins/OublietteImport/Source/PlugIn.cpp:197-310 (ImportOublietteFile 使用 CPwManager, KP_Call, KP_Query)"
-        ]
+        ],
+        "id": "ua:1"
       },
       {
         "api": "CDialog / MessageBox / CWnd (MFC GUI)",
@@ -898,11 +905,13 @@
         "evidence": [
           "trunk/Plugins/OublietteImport/Source/PasswordDialog.cpp:28-31 (CDialog + DDX)",
           "trunk/Plugins/OublietteImport/Source/PlugIn.cpp:109-115 (MessageBox)"
-        ]
+        ],
+        "id": "ua:2"
       }
     ],
     "required_permissions": [],
-    "notes": "该插件的核心价值——Oubliette 文件格式解析（OublietteFile.cpp，约 340 行）和 Crypto++ 解密逻辑——是纯 C++ 标准代码，没有平台依赖，理论上可被复用到鸿蒙原生工具中。但作为 KeePass 插件整体移植到鸿蒙是不可行的，因为：1) KeePass 宿主不存在；2) MFC GUI 不可用。工作量估计假设了从头实现一个鸿蒙原生导入工具（复用文件解析逻辑，新建 ArkUI 交互层）的场景。"
+    "notes": "该插件的核心价值——Oubliette 文件格式解析（OublietteFile.cpp，约 340 行）和 Crypto++ 解密逻辑——是纯 C++ 标准代码，没有平台依赖，理论上可被复用到鸿蒙原生工具中。但作为 KeePass 插件整体移植到鸿蒙是不可行的，因为：1) KeePass 宿主不存在；2) MFC GUI 不可用。工作量估计假设了从头实现一个鸿蒙原生导入工具（复用文件解析逻辑，新建 ArkUI 交互层）的场景。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "name": "OublietteImport",
@@ -971,7 +980,45 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "blocker_ref:blk_keepass_host:target_keepass_host",
+        "class": "actionable",
+        "message": "blocker blk_keepass_host 的引用 target_keepass_host 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:blk_mfc_gui:target_mfc_atl",
+        "class": "actionable",
+        "message": "blocker blk_mfc_gui 的引用 target_mfc_atl 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:blk_win32_registry:target_registry",
+        "class": "actionable",
+        "message": "blocker blk_win32_registry 的引用 target_registry 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:blk_msvc_extensions:target_msvc_compiler",
+        "class": "actionable",
+        "message": "blocker blk_msvc_extensions 的引用 target_msvc_compiler 不存在（悬空引用）"
+      },
+      {
+        "code": "ta_unref:ta:1",
+        "class": "actionable",
+        "message": "target_assumption ta:1 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      },
+      {
+        "code": "ta_unref:ta:2",
+        "class": "actionable",
+        "message": "target_assumption ta:2 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      },
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [

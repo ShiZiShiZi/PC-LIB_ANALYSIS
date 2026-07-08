@@ -1271,21 +1271,21 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
-        10,
-        30
+        11.7,
+        21.7
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            5,
-            15
+            6.7,
+            6.7
           ],
-          "basis": "needs_adaptation 桶约 3.4k LOC（pcap/afpacket/pfring/routing），需替换 AF_PACKET/netlink/CGo 调用"
+          "basis": "需适配 3357 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -1311,7 +1311,8 @@
           ],
           "basis": "78 个测试文件需在鸿蒙运行时跑通，特别是平台相关测试"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -1534,7 +1535,12 @@
       "处理 bsdbpf/afpacket/pfring 子包的 build tag 排除或替代实现",
       "在鸿蒙环境跑通纯 Go 核心模块的测试"
     ],
-    "notes": "gopacket 的架构设计良好——抓包后端与协议解码完全解耦（通过 PacketDataSource 接口），因此即使所有平台特定后端不可用，核心解码和离线文件处理仍可直接使用。关键不确定性在于鸿蒙 PC 是否提供原始套接字/数据包捕获能力（target_assumption ta:raw_socket 为 unknown），这决定了在线抓包功能的可行性。pcapgo/capture.go 的 EthernetHandle 也依赖 AF_PACKET，需同样处理。"
+    "notes": "gopacket 的架构设计良好——抓包后端与协议解码完全解耦（通过 PacketDataSource 接口），因此即使所有平台特定后端不可用，核心解码和离线文件处理仍可直接使用。关键不确定性在于鸿蒙 PC 是否提供原始套接字/数据包捕获能力（target_assumption ta:raw_socket 为 unknown），这决定了在线抓包功能的可行性。pcapgo/capture.go 的 EthernetHandle 也依赖 AF_PACKET，需同样处理。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "gopacket",
@@ -1603,7 +1609,20 @@
         "value": "cgo_libpfring",
         "rationale": "CGo 调用 libpfring C 库，与 libpcap 不同为可选高性能后端"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=hardware 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "gopacket 不涉及 GUI、3D 渲染、媒体编解码或特定硬件场景。其硬件相关能力集中在网络数据包捕获，需要原始套接字和内核数据包捕获接口（AF_PACKET/BPF），属于网络设备访问而非 GPU/媒体/传感器等鸿蒙适配重点场景。",

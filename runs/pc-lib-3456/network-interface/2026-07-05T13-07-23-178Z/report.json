@@ -736,7 +736,8 @@
       "person_days": [
         8,
         15
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "rewrite_native_layer",
@@ -817,7 +818,8 @@
       "在 OHOS NDK 环境下重新编译网络插件，验证 N-API 模块在鸿蒙 Node.js 上能正常加载",
       "在鸿蒙 PC 上跑通 WiFi 状态变化事件监听的功能验证"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。该库目前为 Windows 专有，无任何跨平台后备（无 Linux/POSIX/macOS 分支），因此平台的确定性适配工作本质上是从零写鸿蒙原生层。体量小（生产 C++ 373 行）使得重写量可控。关键风险是鸿蒙 NDK 是否暴露 WiFi 状态监听的原生 C 接口——若原生层不可用，则需走 ArkTS @ohos.wifiManager 经 Node-API 桥接（增加复杂度，person_days 取区间上界）。依赖 bindings 与 node-addon-api 均为纯 JS/头文件，不经 OHOS 官方源适配也能直接在鸿蒙 Node.js 上运行，不构成阻碍。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。该库目前为 Windows 专有，无任何跨平台后备（无 Linux/POSIX/macOS 分支），因此平台的确定性适配工作本质上是从零写鸿蒙原生层。体量小（生产 C++ 373 行）使得重写量可控。关键风险是鸿蒙 NDK 是否暴露 WiFi 状态监听的原生 C 接口——若原生层不可用，则需走 ArkTS @ohos.wifiManager 经 Node-API 桥接（增加复杂度，person_days 取区间上界）。依赖 bindings 与 node-addon-api 均为纯 JS/头文件，不经 OHOS 官方源适配也能直接在鸿蒙 Node.js 上运行，不构成阻碍。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "network-interface",
@@ -863,7 +865,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯网络状态监听库，不涉及 GUI 界面、3D 渲染、音视频媒体编解码或特定硬件设备。唯一触碰的系统资源是 Windows WLAN API（wlanapi.dll），属于操作系统提供的标准无线网络服务接口，非直接硬件操作。",

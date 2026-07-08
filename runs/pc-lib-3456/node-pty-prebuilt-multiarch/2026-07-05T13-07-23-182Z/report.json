@@ -1757,7 +1757,8 @@
       "person_days": [
         8,
         15
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime",
@@ -1939,7 +1940,8 @@
       "淘汰 /proc 读取的 Linux 专有路径（PtyGetProc）——已有 #if defined(__linux__) 守卫，OHOS 上返回空即可",
       "在鸿蒙 Node.js 上构建并验证 PTY 的 spawn/open/fork 功能（创建 bash/sh 伪终端、读写 I/O、resize、退出回调）"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24.13 运行时上）。关键不确定性在于 OHOS NDK musl 对 POSIX PTY 原语（forkpty/openpty/posix_openpt）的支持程度——这是库的唯一硬依赖（无 PTY = 库无存在价值）。好消息：① 库已有基于 posix_spawn+posix_openpt 的 macOS 分支，比 forkpty 更轻量、更易移植；② 鸿蒙 PC 的进程/安全模型中对子进程创建（spawn）的态度待核实（target_assumptions 已标记 unknown）。Windows ConPTY/WinPTY 路径在鸿蒙上为死代码不编译。四个 ta: 均为 unknown+required ⇒ confidence 降至 medium。若鸿蒙 Node.js/NDK 确证不支持 PTY 原语，则该库在鸿蒙 PC 上无移植路径（infeasible）；但 musl 通常提供 pty.h，概率较大。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24.13 运行时上）。关键不确定性在于 OHOS NDK musl 对 POSIX PTY 原语（forkpty/openpty/posix_openpt）的支持程度——这是库的唯一硬依赖（无 PTY = 库无存在价值）。好消息：① 库已有基于 posix_spawn+posix_openpt 的 macOS 分支，比 forkpty 更轻量、更易移植；② 鸿蒙 PC 的进程/安全模型中对子进程创建（spawn）的态度待核实（target_assumptions 已标记 unknown）。Windows ConPTY/WinPTY 路径在鸿蒙上为死代码不编译。四个 ta: 均为 unknown+required ⇒ confidence 降至 medium。若鸿蒙 Node.js/NDK 确证不支持 PTY 原语，则该库在鸿蒙 PC 上无移植路径（infeasible）；但 musl 通常提供 pty.h，概率较大。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "node-pty-prebuilt-multiarch",
@@ -1980,7 +1982,8 @@
         "rationale": "PTY/termios 是库的核心依赖，但 harmony-pc-capabilities.json 未列 OHOS NDK 对 PTY 原语的支持状态。forkpty/openpty/posix_openpt 是 POSIX.1 标准中的可选部分（非全部 Unix 实现），musl 提供 pty.h 但 OHOS 内核是否支持 PTY 设备(/dev/ptmx) 是另一回事。需人工核实。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为 Node.js 伪终端（PTY）原生扩展库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件适配场景。其核心是封装 OS 层终端机制，适配工作量集中在 POSIX/Win32 系统 API 和 C++ N-API 原生扩展的重编译。",

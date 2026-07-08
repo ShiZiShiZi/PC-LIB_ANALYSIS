@@ -917,7 +917,8 @@
       "person_days": [
         40,
         80
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -1035,7 +1036,8 @@
       "2. 若鸿蒙有等价 API：用 OHOS NDK 完全重写 fsevents.c 的 C 层，替换 FSEventStream→OHOS 文件监听、CFRunLoop→OHOS 事件循环或裸 pthread",
       "3. 若鸿蒙无等价 API：放弃 fsevents 适配，评估 Chokidar 等上层跨平台库在鸿蒙 PC 的可用性作为替代方案"
     ],
-    "notes": "本库是 macOS FSEvents 的纯封装，无任何可移植的底层代码。即便 Node.js 已在鸿蒙可用，移植本质上是「用鸿蒙原生文件监控 API 完全重新实现一个等价库」，fsevents 存量代码不具备直接复用价值。target_assumptions 中「鸿蒙 PC 文件系统事件监控 API」状态为 unknown，此项若落实为 unavailable 则完全不可行；若为 available 则可通过完全重写 C 层实现等价功能（但这不是本项目代码的「移植」而是重写）。测试代码（test/）依赖 macOS 实际文件系统行为，无法在鸿蒙运行且不在评估范围内。"
+    "notes": "本库是 macOS FSEvents 的纯封装，无任何可移植的底层代码。即便 Node.js 已在鸿蒙可用，移植本质上是「用鸿蒙原生文件监控 API 完全重新实现一个等价库」，fsevents 存量代码不具备直接复用价值。target_assumptions 中「鸿蒙 PC 文件系统事件监控 API」状态为 unknown，此项若落实为 unavailable 则完全不可行；若为 available 则可通过完全重写 C 层实现等价功能（但这不是本项目代码的「移植」而是重写）。测试代码（test/）依赖 macOS 实际文件系统行为，无法在鸿蒙运行且不在评估范围内。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "name": "fsevents",
@@ -1067,7 +1069,8 @@
         "rationale": "metrics.py 将测试架判断为 jest/mocha，但实际测试使用 Node.js 内置 assert 模块配合自定义 test.sh（TAP 格式）运行，无 jest/mocha 依赖"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本库是纯文件系统事件监控的 Node.js 原生插件，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备。其唯一功能场景是文件系统事件监听，属于操作系统内核级 API 封装，不存在图形界面、GPU 计算、媒体处理或硬件设备依赖。",

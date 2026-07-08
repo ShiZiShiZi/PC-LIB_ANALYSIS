@@ -1134,7 +1134,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1210,7 +1211,8 @@
       "可选：用 Graphite2 测试用字体验证基本排版功能（face/segment/slot 流程）"
     ],
     "required_permissions": [],
-    "notes": "评估按模型 A（库经 OHOS NDK 重编，可被其他原生模块链接或经 Python ctypes 调用）。Graphite2 的平台耦合度极低：仅 gr_logging.cpp 有一段 Windows 条件编译代码（GR2_NTRACING=ON 默认禁用它，生产构建不需要）；无 POSIX 专有调用、无 Win32 核心依赖、无外部库。code_metrics.platform_adaptation 报告的 30 行 Windows 守卫代码主要是 Types.h 中的导入/导出宏（__declspec/__attribute__）和 Main.h 中的编译器扩展（__builtin_mul_overflow/intsafe.h），在 OHOS NDK (clang) 上都会走 GCC 路径，适配量微不足道。"
+    "notes": "评估按模型 A（库经 OHOS NDK 重编，可被其他原生模块链接或经 Python ctypes 调用）。Graphite2 的平台耦合度极低：仅 gr_logging.cpp 有一段 Windows 条件编译代码（GR2_NTRACING=ON 默认禁用它，生产构建不需要）；无 POSIX 专有调用、无 Win32 核心依赖、无外部库。code_metrics.platform_adaptation 报告的 30 行 Windows 守卫代码主要是 Types.h 中的导入/导出宏（__declspec/__attribute__）和 Main.h 中的编译器扩展（__builtin_mul_overflow/intsafe.h），在 OHOS NDK (clang) 上都会走 GCC 路径，适配量微不足道。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "kind": "library",
@@ -1238,7 +1240,15 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(LGPL-2.1-or-later OR MPL-2.0 OR GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [

@@ -1049,7 +1049,7 @@
     "notes": "构建需 macOS SDK，且 CMakeLists.txt 因 if (UNIX AND APPLE) 守卫，非 macOS 平台编译直接跳过"
   },
   "harmony_adaptation": {
-    "feasibility": "possible",
+    "feasibility": "feasible_with_effort",
     "porting_class": "needs_adaptation_full",
     "porting_path": "模型 C（桌面应用适配）",
     "recommended_path": "将整个原生实现替换为 HarmonyOS NEXT OHOS NDK + Node-API 方案：保持 JavaScript API 签名不变（getAuthStatus/askFor*），将底层 macOS 框架调用逐一替换为 @ohos.security 和 @ohos.abilityAccessCtrl 等系统能力 API。由于该库本质是 macOS 权限管理的一次性映射，鸿蒙侧需要为每种权限类型建立对应的鸿蒙权限名称和目标能力（ohos.permission.*）映射表。",
@@ -1058,7 +1058,8 @@
       "person_days": {
         "lo": 15,
         "hi": 25
-      }
+      },
+      "level": "medium"
     },
     "target_assumptions": [
       {
@@ -1225,7 +1226,8 @@
         "鸿蒙的权限模型以声明式（ohos.permission.*）为主，运行时授权接口（abilityAccessCtrl.requestPermissionsFromUser）与 macOS TCC 的异步授权模式相似",
         "TA-04~TA-10 共 6 项目标能力状态为 unknown，需人工核实后才能将 confidence 提升至 high"
       ]
-    }
+    },
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "@nut-tree/node-mac-permissions",
@@ -1277,7 +1279,50 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "blocker_ref:blk-01:src/permissions.mm:8-419",
+        "class": "actionable",
+        "message": "blocker blk-01 的引用 src/permissions.mm:8-419 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:blk-01:src/impl.h:180-404",
+        "class": "actionable",
+        "message": "blocker blk-01 的引用 src/impl.h:180-404 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:blk-02:src/impl.h:99-106：OpenPrefPane 函数",
+        "class": "actionable",
+        "message": "blocker blk-02 的引用 src/impl.h:99-106：OpenPrefPane 函数 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:blk-03:CMakeLists.txt:1-56",
+        "class": "actionable",
+        "message": "blocker blk-03 的引用 CMakeLists.txt:1-56 不存在（悬空引用）"
+      },
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      },
+      {
+        "code": "perm_dangling_cap:ohos.permission.CAMERA",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.CAMERA 的 source_capability=media 不在已标记场景中"
+      },
+      {
+        "code": "perm_dangling_cap:ohos.permission.MICROPHONE",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.MICROPHONE 的 source_capability=media 不在已标记场景中"
+      },
+      {
+        "code": "perm_dangling_cap:ohos.permission.LOCATION",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.LOCATION 的 source_capability=hardware 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "该库不直接涉及 GUI 渲染、3D 图形、媒体编解码或特定硬件驱动——它是一个纯权限管理接口层，仅通过 macOS 系统框架查询和请求摄像头、麦克风等设备的访问授权，不执行任何实际的捕获或媒体处理。",

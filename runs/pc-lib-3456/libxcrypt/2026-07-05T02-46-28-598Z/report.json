@@ -1071,7 +1071,8 @@
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1198,7 +1199,8 @@
       "交叉编译 libcrypt.so，在鸿蒙 PC 环境（arm64/x86_64）上运行测试套件（test/ 下 40+ 个测试程序）验证功能完整",
       "按需生成 OHOS 平台的 pkg-config 文件或 cmake 查找模块"
     ],
-    "notes": "1. 由于 OHOS musl CSPRNG 接口状态为 unknown，本评估置信度降为 medium——若 musl 完全无随机数源则需新增后端，工作量可能上升至 person_days 10–15。2. 平台适配代码量极低（total=10行），且均为 #ifdef 守卫的单行/几行分支，不构成大规模重构。3. libxcrypt 完全自包含（无外部依赖），这是移植的最大优势——无需等待任何依赖库先移植。4. 评估按库口径（模型 A：OHOS NDK 编译为 .so 供鸿蒙用户态程序链接），不涉及 ArkTS 沙箱。"
+    "notes": "1. 由于 OHOS musl CSPRNG 接口状态为 unknown，本评估置信度降为 medium——若 musl 完全无随机数源则需新增后端，工作量可能上升至 person_days 10–15。2. 平台适配代码量极低（total=10行），且均为 #ifdef 守卫的单行/几行分支，不构成大规模重构。3. libxcrypt 完全自包含（无外部依赖），这是移植的最大优势——无需等待任何依赖库先移植。4. 评估按库口径（模型 A：OHOS NDK 编译为 .so 供鸿蒙用户态程序链接），不涉及 ArkTS 沙箱。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "libxcrypt",
@@ -1249,7 +1251,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libxcrypt 是一个纯计算型密码学库，不涉及 GUI/3D 渲染/媒体/特定硬件设备场景。唯一与硬件相关的使用是 yescrypt 优化路径中的 x86 SIMD 指令集（SSE2/AVX/XOP），但仅为性能优化，所有路径都有纯 C 回退。",

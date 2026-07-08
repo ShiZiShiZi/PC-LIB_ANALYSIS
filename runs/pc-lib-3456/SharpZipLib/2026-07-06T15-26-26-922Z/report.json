@@ -810,31 +810,29 @@
     "platform_dependence": "cross-platform"
   },
   "runtime_surface": {
-    "runtime_surface": {
-      "summary": "运行期通过 System.IO 读写文件与临时目录，无网络访问、无子进程调用、无设备交互、无环境变量读取。",
-      "network": [],
-      "filesystem": [
-        {
-          "detail": "Path.GetTempPath() 返回的临时目录",
-          "purpose": "生成临时文件名用于压缩/解压缩的中间处理",
-          "evidence": [
-            "src/ICSharpCode.SharpZipLib/Core/PathUtils.cs:45"
-          ]
-        },
-        {
-          "detail": "用户指定的目录与文件路径",
-          "purpose": "创建/读取/写入 Zip/GZip/BZip2/Tar 归档文件",
-          "evidence": [
-            "src/ICSharpCode.SharpZipLib/Zip/FastZip.cs:395",
-            "src/ICSharpCode.SharpZipLib/Tar/TarArchive.cs:696"
-          ]
-        }
-      ],
-      "env_vars": [],
-      "subprocess": [],
-      "devices": [],
-      "services": []
-    }
+    "summary": "运行期通过 System.IO 读写文件与临时目录，无网络访问、无子进程调用、无设备交互、无环境变量读取。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "Path.GetTempPath() 返回的临时目录",
+        "purpose": "生成临时文件名用于压缩/解压缩的中间处理",
+        "evidence": [
+          "src/ICSharpCode.SharpZipLib/Core/PathUtils.cs:45"
+        ]
+      },
+      {
+        "detail": "用户指定的目录与文件路径",
+        "purpose": "创建/读取/写入 Zip/GZip/BZip2/Tar 归档文件",
+        "evidence": [
+          "src/ICSharpCode.SharpZipLib/Zip/FastZip.cs:395",
+          "src/ICSharpCode.SharpZipLib/Tar/TarArchive.cs:696"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
   },
   "build_env": {
     "language_standard": "C# 8.0+（使用 async/await、ValueTask、Span<T>）",
@@ -884,7 +882,8 @@
       "person_days": [
         0,
         2
-      ]
+      ],
+      "level": "very_low"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime",
@@ -928,7 +927,8 @@
       "若 .NET 运行时可用，直接部署 SharpZipLib NuGet 包并在鸿蒙环境运行单元测试验证",
       "若 .NET 运行时不可用，评估在鸿蒙 PC 上移植 .NET 运行时的可行性或选择替代压缩库"
     ],
-    "notes": "评估按模型 A（库跑在已移植运行时上）。.NET 运行时在鸿蒙 PC 的状态为 unknown，故 confidence 降为 medium。本库无任何原生/平台/硬件耦合，一旦 .NET 运行时可用，porting_class 即为 no_adaptation（零代码改动）。"
+    "notes": "评估按模型 A（库跑在已移植运行时上）。.NET 运行时在鸿蒙 PC 的状态为 unknown，故 confidence 降为 medium。本库无任何原生/平台/硬件耦合，一旦 .NET 运行时可用，porting_class 即为 no_adaptation（零代码改动）。",
+    "porting_class_model": "no_adaptation"
   },
   "library": {
     "kind": "library",
@@ -961,7 +961,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯数据压缩/归档库，不涉及 GUI、3D 渲染、媒体处理或特定硬件依赖。",

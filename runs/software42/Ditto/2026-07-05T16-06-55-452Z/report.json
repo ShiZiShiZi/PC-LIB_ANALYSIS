@@ -1935,7 +1935,8 @@
       "person_days": [
         120,
         200
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "high",
     "recommended_path": "arkts_rewrite",
@@ -2261,7 +2262,8 @@
       "将 .vcxproj/.sln 整个迁移为 CMakeLists.txt 构建体系",
       "适配文件系统路径（SHGetFolderPath → 鸿蒙 sandbox 路径 API）和配置存储（.ini / 注册表 → 鸿蒙首选项）"
     ],
-    "notes": "评估按模型 C（整包桌面应用）。Ditto 深度绑定 Windows MFC/Win32 技术栈，直接移植不可行 (infeasible)。核心挑战：(1) 100% GUI 重写——MFC/Win32 → ArkUI，工作量巨大(>80 个窗口/控件)；(2) 剪贴板操作是应用核心功能，从 Win32 ClipBoard API + OLE/COM → @ohos.pasteboard 转换涉及大量格式兼容问题；(3) 桌面集成能力（系统托盘/全局热键/剪贴板监听）在鸿蒙上的对应功能多为 unknown 状态，需核实后确定替代方案。可复用部分约占代码量的 40-50%（纯 C++ 业务逻辑+算法+存储），但整体仍需大规模重写。confidence 为 high 因为 MFC/Win32 不可用是确定的；部分 target_assumptions 标为 unknown 不影响核心 in 可性判断。"
+    "notes": "评估按模型 C（整包桌面应用）。Ditto 深度绑定 Windows MFC/Win32 技术栈，直接移植不可行 (infeasible)。核心挑战：(1) 100% GUI 重写——MFC/Win32 → ArkUI，工作量巨大(>80 个窗口/控件)；(2) 剪贴板操作是应用核心功能，从 Win32 ClipBoard API + OLE/COM → @ohos.pasteboard 转换涉及大量格式兼容问题；(3) 桌面集成能力（系统托盘/全局热键/剪贴板监听）在鸿蒙上的对应功能多为 unknown 状态，需核实后确定替代方案。可复用部分约占代码量的 40-50%（纯 C++ 业务逻辑+算法+存储），但整体仍需大规模重写。confidence 为 high 因为 MFC/Win32 不可用是确定的；部分 target_assumptions 标为 unknown 不影响核心 in 可性判断。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "kind": "application",
@@ -2304,7 +2306,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Ditto 是 Windows 原生 GUI 桌面应用，深度使用 MFC/Win32 窗口栈和 GDI+ 图形绘制，不涉及 3D 渲染、媒体编解码或特定硬件加速。",

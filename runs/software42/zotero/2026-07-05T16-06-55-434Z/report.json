@@ -2008,7 +2008,8 @@
       "person_days": [
         300,
         600
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "low",
     "recommended_path": "abandon",
@@ -2264,7 +2265,8 @@
       "应用打包：适配鸿蒙 .hap 打包/签名流程",
       "集成测试：在鸿蒙 PC 上跑通核心同步/翻译/引用/PDF 阅读流程"
     ],
-    "notes": "Zotero 移植到鸿蒙 PC 的本质问题是：它运行在 Mozilla/XULRunner 平台上而非标准 Node.js 上——这一平台在鸿蒙无对应实现，且不存在部分适配的可能。这不仅仅是 '换一个 GUI 工具包'——整个组件模型、系统服务抽象、UI 框架、文件 I/O、窗口管理、本地化均绑定 Mozilla 专有 API。建议从复用业务逻辑开始，在鸿蒙 PC 上重写一个全新客户端——这是新项目而非移植。评估基于 harmony-pc-capabilities.json（Mozilla/XULRunner 未收录于任何 section→视为 unavailable），且 GUI 窗口管理器、桌面交付形态、权限授予方式均为 unknown→confidence=low。若 Electron 在鸿蒙 PC 可用且 window manager 提供桌面窗口能力，走 Electron 路径可显著降低工作量（UI 层复用现有的 React 组件和 HTML/CSS 样式，避免完全重写）。npm 依赖和 WASM 模块均跨平台可直接使用——这是最大的复用资产。"
+    "notes": "Zotero 移植到鸿蒙 PC 的本质问题是：它运行在 Mozilla/XULRunner 平台上而非标准 Node.js 上——这一平台在鸿蒙无对应实现，且不存在部分适配的可能。这不仅仅是 '换一个 GUI 工具包'——整个组件模型、系统服务抽象、UI 框架、文件 I/O、窗口管理、本地化均绑定 Mozilla 专有 API。建议从复用业务逻辑开始，在鸿蒙 PC 上重写一个全新客户端——这是新项目而非移植。评估基于 harmony-pc-capabilities.json（Mozilla/XULRunner 未收录于任何 section→视为 unavailable），且 GUI 窗口管理器、桌面交付形态、权限授予方式均为 unknown→confidence=low。若 Electron 在鸿蒙 PC 可用且 window manager 提供桌面窗口能力，走 Electron 路径可显著降低工作量（UI 层复用现有的 React 组件和 HTML/CSS 样式，避免完全重写）。npm 依赖和 WASM 模块均跨平台可直接使用——这是最大的复用资产。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "name": "zotero",
@@ -2336,7 +2338,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Zotero 是一款桌面 GUI 应用，运行在 Mozilla XULRunner/Firefox 平台（XUL/XHTML UI），不直接依赖传统 GUI 工具包（Qt/GTK/Swing/Electron），但也并非纯 Web 应用——其 UI 框架基于 Mozilla 的 XUL/Gecko + 自定义 Web Components + React 组件。涉及 GUI 场景，另有 IPC 管道通信、PDF/EPUB 媒体阅读。不涉及 3D 渲染或特定硬件。",

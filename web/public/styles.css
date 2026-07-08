@@ -24,7 +24,7 @@ header { position: sticky; top: 0; z-index: 20; display: flex; align-items: cent
 .brand small { color: var(--faint); font-weight: 400; font-size: 12px; }
 .header-actions { display: flex; gap: 8px; }
 
-main { max-width: none; margin: 0; padding: 22px 5% 60px; }
+main { width: 90%; max-width: 1760px; margin: 0 auto; padding: 22px 0 60px; }
 
 /* buttons */
 .btn { border: 1px solid var(--line); background: var(--surface); color: var(--fg);
@@ -114,20 +114,32 @@ label > input, label > textarea, label > select { margin-top: 5px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* detail */
-.detail-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.detail-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
 .detail-head h1 { font-size: 20px; margin: 0; }
 .detail-head .spacer { flex: 1; }
-.cols { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; align-items: start; }
-.cols .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.cols .card { min-width: 0; max-width: 100%; }
+.run-pick { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+.run-pick > span { font-size: 12px; }
+.detail-head #runSelect { width: auto; min-width: 210px; max-width: 320px; padding: 6px 10px; font-size: 12.5px; }
+#consoleWrap { margin-bottom: 14px; padding: 12px 16px; }
+#consoleWrap > summary { cursor: pointer; font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--muted); font-weight: 600; list-style: revert; }
+#consoleWrap[open] > summary { margin-bottom: 10px; }
+#consoleWrap .console { margin: 0; }
+.report-card { margin-top: 0; }
+
+/* sticky report anchor nav (module TOC) — grey sticky wrapper tucks under the header
+   (top:48 < header height, no content bleed) with a top gap; chips ride a floating pill. */
+.report-nav { position: sticky; top: 48px; z-index: 15; padding: 14px 0 2px; margin-bottom: 10px; background: var(--bg); }
+.report-nav[hidden] { display: none; }
+.nav-inner { display: flex; flex-wrap: wrap; gap: 6px; padding: 7px 10px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); }
+.nav-chip { font-size: 12px; padding: 3px 11px; border-radius: 20px; background: var(--surface-2);
+  color: var(--muted); cursor: pointer; user-select: none; transition: .12s; }
+.nav-chip:hover { background: var(--accent-soft); color: var(--accent); }
+.nav-chip.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
 .section-title { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
   font-weight: 600; margin: 0 0 10px; }
-.runrow { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 8px; cursor: pointer; font-size: 12.5px; }
-.runrow:hover { background: var(--surface-2); }
-.runrow.sel { background: var(--accent-soft); }
-.runrow .ts { flex: 1; color: var(--muted); font-variant-numeric: tabular-nums; }
-.runrow-del { opacity: .45; }
-.runrow:hover .runrow-del { opacity: 1; }
 
 /* console */
 .console { background: #0f1722; color: #d6deea; border-radius: 10px; padding: 12px 14px;
@@ -138,7 +150,8 @@ label > input, label > textarea, label > select { margin-top: 5px; }
 .console .think { color: #9aa6b8; font-style: italic; }
 
 /* report */
-.rsec { border: 1px solid var(--line); border-radius: 11px; padding: 13px 15px; margin-bottom: 12px; background: var(--surface); }
+.rsec { border: 1px solid var(--line); border-radius: 11px; padding: 13px 15px; margin-bottom: 12px;
+  background: var(--surface); scroll-margin-top: 128px; }
 .rsec h3 { margin: 0 0 10px; font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: .03em; }
 .kv { display: grid; grid-template-columns: 110px 1fr; gap: 5px 12px; font-size: 13px; }
 .kv b { color: var(--muted); font-weight: 500; }
@@ -297,4 +310,9 @@ label > input, label > textarea, label > select { margin-top: 5px; }
   border-radius: 9px; box-shadow: var(--shadow-lg); padding: 10px 14px; font-size: 13px; max-width: 320px; }
 .toast.err { border-left-color: var(--err); } .toast.ok { border-left-color: var(--ok); }
 
-@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } .metrics-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 720px) {
+  main { width: 94%; }
+  .metrics-grid { grid-template-columns: repeat(2,1fr); }
+  .detail-head #runSelect { min-width: 150px; }
+  .report-nav { top: 48px; }
+}

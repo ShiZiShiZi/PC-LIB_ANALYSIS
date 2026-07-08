@@ -618,41 +618,39 @@
     "platform_dependence": "cross-platform"
   },
   "runtime_surface": {
-    "runtime_surface": {
-      "summary": "SDK 运行期需网络连接至阿里云 OSS 端点，使用本地临时目录存放断点续传记录文件，无子进程调用、无设备访问、无外部服务依赖。",
-      "network": [
-        {
-          "detail": "HTTPS 连接至用户配置的 OSS endpoint（如 oss-cn-hangzhou.aliyuncs.com）",
-          "purpose": "与阿里云 OSS REST API 通信",
-          "evidence": [
-            "sdk/Common/Communication/ServiceClientImpl.cs:381",
-            "sdk/Common/Communication/netcore/ServiceClientNewImpl.cs"
-          ]
-        }
-      ],
-      "filesystem": [
-        {
-          "detail": "Path.GetTempPath() 获取的系统临时目录",
-          "purpose": "断点续传时存放上传/下载进度记录文件",
-          "evidence": [
-            "sdk/Common/ResumableUploadManager.cs",
-            "sdk/Common/ResumableDownloadManager.cs"
-          ]
-        },
-        {
-          "detail": "用户指定的本地文件路径",
-          "purpose": "上传文件读取与下载文件写入",
-          "evidence": [
-            "sdk/Domain/UploadObjectRequest.cs",
-            "sdk/Domain/DownloadObjectRequest.cs"
-          ]
-        }
-      ],
-      "env_vars": [],
-      "subprocess": [],
-      "devices": [],
-      "services": []
-    }
+    "summary": "SDK 运行期需网络连接至阿里云 OSS 端点，使用本地临时目录存放断点续传记录文件，无子进程调用、无设备访问、无外部服务依赖。",
+    "network": [
+      {
+        "detail": "HTTPS 连接至用户配置的 OSS endpoint（如 oss-cn-hangzhou.aliyuncs.com）",
+        "purpose": "与阿里云 OSS REST API 通信",
+        "evidence": [
+          "sdk/Common/Communication/ServiceClientImpl.cs:381",
+          "sdk/Common/Communication/netcore/ServiceClientNewImpl.cs"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "detail": "Path.GetTempPath() 获取的系统临时目录",
+        "purpose": "断点续传时存放上传/下载进度记录文件",
+        "evidence": [
+          "sdk/Common/ResumableUploadManager.cs",
+          "sdk/Common/ResumableDownloadManager.cs"
+        ]
+      },
+      {
+        "detail": "用户指定的本地文件路径",
+        "purpose": "上传文件读取与下载文件写入",
+        "evidence": [
+          "sdk/Domain/UploadObjectRequest.cs",
+          "sdk/Domain/DownloadObjectRequest.cs"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
   },
   "build_env": {
     "language_standard": "C# (.NET Framework 2.0 / .NET Standard 2.0)",
@@ -702,7 +700,8 @@
       "person_days": [
         5,
         15
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "recommended_path": "find_alternative",
@@ -760,7 +759,8 @@
       "若 .NET 不可用：评估替换方案——使用阿里云 OSS Java SDK（鸿蒙 JDK 17 已可用）或 Python/Node.js SDK",
       "在鸿蒙 PC 上运行 SDK 的集成测试验证 Object 上传/下载/列举等核心功能"
     ],
-    "notes": "评估按模型 A（库跑在已移植运行时上）。.NET/Mono 运行时在鸿蒙 PC 上的可用性为 unknown，因此 confidence 降为 medium。SDK 本身完全跨平台、零原生依赖、零平台 API 调用——移植难度完全取决于运行时。若 .NET 运行时确认可用，porting_class 可升级为 no_adaptation、person_days 降至 [0,2]。"
+    "notes": "评估按模型 A（库跑在已移植运行时上）。.NET/Mono 运行时在鸿蒙 PC 上的可用性为 unknown，因此 confidence 降为 medium。SDK 本身完全跨平台、零原生依赖、零平台 API 调用——移植难度完全取决于运行时。若 .NET 运行时确认可用，porting_class 可升级为 no_adaptation、person_days 降至 [0,2]。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "aliyun-oss-csharp-sdk",
@@ -796,7 +796,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯云存储 SDK 库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

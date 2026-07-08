@@ -1996,7 +1996,8 @@
       "person_days": [
         20,
         45
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile_ohos",
@@ -2169,7 +2170,8 @@
       "跑通核心测试（pool、file_io、network_io、threadproc、locks、shm、dso），修复平台相关失败",
       "若需 PostgreSQL/ODBC/LDAP 驱动，单独评估移植或禁用"
     ],
-    "notes": "评估基于库模型 A（C 库经 OHOS NDK 交叉编译）。因鸿蒙 PC 部分 POSIX/进程能力在 harmony-pc-capabilities.json 中标记为 unknown，confidence 设为 medium；实际可行性高度依赖 OHOS NDK 对 POSIX 子集的具体实现。无 GUI/3D/媒体/硬件场景，故无相关 blocker。"
+    "notes": "评估基于库模型 A（C 库经 OHOS NDK 交叉编译）。因鸿蒙 PC 部分 POSIX/进程能力在 harmony-pc-capabilities.json 中标记为 unknown，confidence 设为 medium；实际可行性高度依赖 OHOS NDK 对 POSIX 子集的具体实现。无 GUI/3D/媒体/硬件场景，故无相关 blocker。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "aliases": [
@@ -2229,7 +2231,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network_io 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "APR 是底层系统运行时库，不涉及 GUI 桌面界面、3D 渲染、音视频媒体或特定硬件设备访问。其鸿蒙适配重点在于 POSIX 子集覆盖与系统调用替代，而非场景化能力重写。",

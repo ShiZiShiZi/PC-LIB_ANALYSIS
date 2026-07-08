@@ -1800,7 +1800,8 @@
       "person_days": [
         5,
         15
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "summary": "本库已具备较好的 HarmonyOS 移植基础：js-binding.js 原生插件加载器已包含 openharmony 平台分支，支持 arm64/x64/arm 三种架构的 .node 文件加载。核心图形引擎 Skia 已广泛用于 OpenHarmony/HarmonyOS 图形栈，编译到 OHOS NDK 目标可行。Rust 语言可通过 rustc 的 aarch64-unknown-linux-ohos 等 target 交叉编译。所有 Rust 依赖（napi、libavif、gif、cssparser 等）均为纯 Rust crate 或可交叉编译的 C FFI。主要工作量在于 CI/CD 流程中加入 OHOS 编译目标、构建 Skia 的 OHOS 静态库、以及发布对应的 npm 包（@napi-rs/canvas-openharmony-arm64 等）。",
@@ -1946,7 +1947,8 @@
         ]
       }
     ],
-    "notes": "本库对 HarmonyOS 已有部分支持（js-binding.js 中包含 openharmony 二进制加载分支），但尚未发布对应的预编译 .node 包。主要工作量为 CI/CD 构建流水线适配（约 5-15 人天），源码修改量极小。现有 11 个预编译平台加上 OHOS 后扩至 12+ 平台。置信度高，因为 napi-rs 框架原生支持 OHOS，且 Skia 已在 OpenHarmony 中使用。person_days 不含首次 Skia 交叉编译环境的搭建时间（取决于开发者 OHOS NDK 熟悉度）。"
+    "notes": "本库对 HarmonyOS 已有部分支持（js-binding.js 中包含 openharmony 二进制加载分支），但尚未发布对应的预编译 .node 包。主要工作量为 CI/CD 构建流水线适配（约 5-15 人天），源码修改量极小。现有 11 个预编译平台加上 OHOS 后扩至 12+ 平台。置信度高，因为 napi-rs 框架原生支持 OHOS，且 Skia 已在 OpenHarmony 中使用。person_days 不含首次 Skia 交叉编译环境的搭建时间（取决于开发者 OHOS NDK 熟悉度）。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "@napi-rs/canvas",
@@ -1987,7 +1989,15 @@
       }
     ],
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:gui",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本库是一个纯 2D 渲染引擎库，不具备传统桌面 GUI（无窗口/控件），不涉及 3D 渲染。主要触及媒体场景（多格式图像编解码与 Lottie 动画渲染），不依赖特定硬件。",

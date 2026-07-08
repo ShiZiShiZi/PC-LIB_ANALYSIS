@@ -786,7 +786,7 @@
   "harmony_adaptation": {
     "summary": "libgsm 核心编解码器为纯 ANSI C 实现，零平台 API 依赖，仅需通过 OHOS NDK（musl libc + clang）重新编译即可在鸿蒙 PC 原生层运行。命令行工具 toast 有条件使用的 POSIX API（signal/stat/chmod/chown/utime/pathconf），全部通过 `#ifdef HAS_*` 条件编译保护，缺失时编译不引入。整体移植工作量极低。",
     "porting_class": "recompile_only",
-    "feasibility": "feasible",
+    "feasibility": "feasible_with_effort",
     "difficulty": "very_low",
     "confidence": "high",
     "recommended_path": "使用 OHOS NDK（ohos.toolchain.cmake 或直接 clang --target=ohos）重新编译。配置 SASR 宏适配鸿蒙 PC 的算术右移行为（ARM 的 >> 为算术右移，设为 -DSASR=1）。输出 libgsm.so（替代 libgsm.a），可被其他鸿蒙原生组件通过 C ABI 链接调用。命令行工具 toast 按需编译（鸿蒙 shell 环境提供类似 POSIX 的文件语义时可直接使用）。",
@@ -794,7 +794,8 @@
       "person_days": [
         0.5,
         1
-      ]
+      ],
+      "level": "low"
     },
     "target_assumptions": [
       {
@@ -817,7 +818,8 @@
     "blockers": [],
     "unadaptable_apis": [],
     "required_permissions": [],
-    "notes": "SASR 编译宏是唯一需要按平台确认的编译参数：ARM 架构（鸿蒙 PC 主力）的 >> 是算术右移，设置 -DSASR 即可（Makefile 默认已开启）。如启用 USE_FLOAT_MUL 选项（用浮点乘法代替整数乘法），需确认 OHOS NDK 的浮点支持——musl + clang 的 float 运算与 IEEE 754 一致，无问题。WAV49 格式支持通过 Makefile 宏控制，无需额外适配。"
+    "notes": "SASR 编译宏是唯一需要按平台确认的编译参数：ARM 架构（鸿蒙 PC 主力）的 >> 是算术右移，设置 -DSASR 即可（Makefile 默认已开启）。如启用 USE_FLOAT_MUL 选项（用浮点乘法代替整数乘法），需确认 OHOS NDK 的浮点支持——musl + clang 的 float 运算与 IEEE 754 一致，无问题。WAV49 格式支持通过 Makefile 宏控制，无需额外适配。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "kind": "library",
@@ -840,7 +842,8 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为 GSM 06.10 语音编解码库，涉及媒体（音频编解码）场景。不涉及 GUI、3D 渲染或特定硬件依赖。",

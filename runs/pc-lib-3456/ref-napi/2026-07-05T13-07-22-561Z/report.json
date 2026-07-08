@@ -801,7 +801,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "run_on_ported_runtime",
@@ -857,7 +858,8 @@
       "在鸿蒙 Node.js 24.13.0 上安装并运行 npm test，验证单元测试（104 个用例）全部通过"
     ],
     "required_permissions": [],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。C++ 层仅用标准 C/C++ 库与 N-API，无平台特有 API（Win32/POSIX/Cocoa），无外部动态库依赖，无 shell-out，无 /proc|/sys 访问。Windows 条件编译块（6 行代码，src/binding.cc:8-20）仅为 MSVC 编译器兼容宏重定义——这些宏在 clang/musl 下走 #else 路径（inttypes.h），不产生额外适配工作。platform_adaptation 机械计数显示仅 Windows 6 行守卫代码，进一步印证低平台耦合度。get-symbol-from-current-process-h 在 N-API >= 6 时不需动态符号查找（鸿蒙 Node.js 24.13.0 满足），走直接调用路径。若目标为 ArkTS 沙箱应用（模型 B），则本库需完全重写为 ArkTS——不在本次评估范围。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。C++ 层仅用标准 C/C++ 库与 N-API，无平台特有 API（Win32/POSIX/Cocoa），无外部动态库依赖，无 shell-out，无 /proc|/sys 访问。Windows 条件编译块（6 行代码，src/binding.cc:8-20）仅为 MSVC 编译器兼容宏重定义——这些宏在 clang/musl 下走 #else 路径（inttypes.h），不产生额外适配工作。platform_adaptation 机械计数显示仅 Windows 6 行守卫代码，进一步印证低平台耦合度。get-symbol-from-current-process-h 在 N-API >= 6 时不需动态符号查找（鸿蒙 Node.js 24.13.0 满足），走直接调用路径。若目标为 ArkTS 沙箱应用（模型 B），则本库需完全重写为 ArkTS——不在本次评估范围。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "ref-napi",
@@ -890,7 +892,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为 Node.js 内存操作/FFI 基础库，纯 Buffer 读写与指针操作，不涉及 GUI、3D 渲染、媒体或特定硬件场景——无鸿蒙适配重点场景需要标注。",

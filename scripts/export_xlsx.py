@@ -20,31 +20,18 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
+# Single source of truth for dim-9 derivations (porting_class/feasibility/effort.level) and
+# code_partition canonicalization — shared with assemble_report.py and web/server.js. Used to
+# normalize a legacy (unstamped) report on load so the export matches the panel exactly.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import report_normalize  # noqa: E402
+
 JOIN = "；"
 
-# dim-9 difficulty rubric (mirrors web/server.js deriveDifficultyLevel/effortDays) so the
-# standalone export shows the derived 难度等级 + person_days even for legacy reports.
+# dim-9 难度等级 label. porting_class / feasibility / effort.level are single-sourced in
+# report_normalize (persisted into report.json by assemble; a legacy report is normalized on load
+# in _latest_report) — this module READS those persisted values, it no longer re-derives them.
 _LEVEL_ZH = {"very_low": "极低", "low": "低", "medium": "中", "high": "高", "very_high": "极高"}
-_RANK_LEVEL = ["very_low", "low", "medium", "high", "very_high"]
-_CLASS_FLOOR = {"no_adaptation": 0, "recompile_only": 1, "needs_adaptation_full": 2,
-                "needs_adaptation_partial": 3, "infeasible": 4}
-_FEAS_FOR_CLASS = {"no_adaptation": "feasible", "recompile_only": "feasible_with_effort",
-                   "needs_adaptation_full": "feasible_with_effort",
-                   "needs_adaptation_partial": "hard", "infeasible": "infeasible"}
-_CLAMPABLE_CLASSES = {"no_adaptation", "recompile_only", "needs_adaptation_full"}
-
-
-def _reconcile_porting_class(ha: dict):
-    """Mirror web/server.js reconcilePortingClass so the standalone xlsx matches the panel's
-    clamped value: a granular un-adaptability signal (unadaptable_apis, or a blocker with
-    adaptability=='unadaptable') forces the class up to at least needs_adaptation_partial."""
-    ha = ha or {}
-    cls = ha.get("porting_class")
-    has_un = bool(ha.get("unadaptable_apis")) or any(
-        (b or {}).get("adaptability") == "unadaptable" for b in (ha.get("blockers") or []))
-    if cls in _CLAMPABLE_CLASSES and has_un:
-        return "needs_adaptation_partial"
-    return cls
 
 
 def _effort_days(ha: dict):
@@ -56,34 +43,6 @@ def _effort_days(ha: dict):
         except (TypeError, ValueError):
             pass
     return None
-
-
-def _days_bucket(hi) -> int:
-    try:
-        d = float(hi)
-    except (TypeError, ValueError):
-        return 0
-    if d <= 2:
-        return 0
-    if d <= 5:
-        return 1
-    if d <= 15:
-        return 2
-    if d <= 40:
-        return 3
-    return 4
-
-
-def _difficulty_level(ha: dict):
-    # mirror server deriveDifficultyLevel: always derive from the (reconciled) porting_class
-    # floor × person_days bucket — do NOT trust a baked effort.level (the server never does).
-    cls = _reconcile_porting_class(ha)
-    if not cls:
-        return ""
-    days = _effort_days(ha)
-    floor = _CLASS_FLOOR.get(cls, 0)
-    rank = max(floor, _days_bucket(days[1] if days else 0))
-    return _LEVEL_ZH[_RANK_LEVEL[rank]]
 
 
 def _latest_report(lib_dir: str):
@@ -100,9 +59,17 @@ def _latest_report(lib_dir: str):
     path = os.path.join(lib_dir, runs[-1], "report.json")
     try:
         with open(path, encoding="utf-8") as fh:
-            return json.load(fh)
+            rep = json.load(fh)
     except (OSError, ValueError):
         return None
+    # A stamped report is already the single-source-of-truth form (assemble/migrate normalized it);
+    # only upgrade a legacy/unstamped one in memory so the export matches the panel exactly.
+    if isinstance(rep, dict) and not (isinstance(rep.get("meta"), dict) and rep["meta"].get("normalized_version")):
+        try:
+            report_normalize.normalize_report(rep)
+        except Exception:  # noqa: BLE001 — export must not fail on a normalize hiccup
+            pass
+    return rep
 
 
 def _collect(runs_dir: str, names: set[str] | None):
@@ -216,9 +183,9 @@ def rows_overview(name, r):
         be.get("language_standard", ""),
         be.get("runtime_version", ""),
         _join(be.get("platforms", []) or []),
-        _reconcile_porting_class(ha) or "",
-        _FEAS_FOR_CLASS.get(_reconcile_porting_class(ha), ha.get("feasibility", "")),
-        _difficulty_level(ha),
+        ha.get("porting_class") or "",
+        ha.get("feasibility", ""),
+        _LEVEL_ZH.get((ha.get("effort") or {}).get("level"), ""),
         (_effort_days(ha) or ["", ""])[0],
         (_effort_days(ha) or ["", ""])[1],
         ha.get("confidence", "") or _g(r, "meta", "confidence_overall", default=""),

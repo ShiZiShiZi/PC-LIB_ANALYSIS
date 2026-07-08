@@ -1886,7 +1886,8 @@
       "person_days": [
         10,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -2184,7 +2185,8 @@
       "确认 OpenCL 后端在鸿蒙 PC 上的可用性；若支持则验证 dlload 加载路径，若不支持则仅用 CPU 后端",
       "在鸿蒙 arm64 设备上编译运行单元测试（gtest），验证推理结果正确性"
     ],
-    "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编）进行。TNN 核心推理能力（CPU + ARM NEON）可移植，主要阻碍来自不可移植的可选硬件加速后端（CUDA/Metal/华为 NPU/瑞芯微 NPU），这些均为编译期选项默认关闭，不影响基本功能。OpenCL 与 X86 后端的鸿蒙可用性依赖未核实的目标事实（unknown），已下调 confidence 至 medium。跨进程共享缓存功能（shm_open/mmap）的适配需验证 OHOS musl POSIX 子集覆盖度，若不支持可用单进程模式运行。鸿蒙 PC 当前主力架构为 arm64（available），ARM NEON 后端可直接启用。"
+    "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编）进行。TNN 核心推理能力（CPU + ARM NEON）可移植，主要阻碍来自不可移植的可选硬件加速后端（CUDA/Metal/华为 NPU/瑞芯微 NPU），这些均为编译期选项默认关闭，不影响基本功能。OpenCL 与 X86 后端的鸿蒙可用性依赖未核实的目标事实（unknown），已下调 confidence 至 medium。跨进程共享缓存功能（shm_open/mmap）的适配需验证 OHOS musl POSIX 子集覆盖度，若不支持可用单进程模式运行。鸿蒙 PC 当前主力架构为 arm64（available），ARM NEON 后端可直接启用。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "TNN",
@@ -2233,7 +2235,8 @@
         "rationale": "NPU 加速器阻碍点（华为达芬奇/瑞芯微）不同于 GPU 加速器，现有推荐集无此 category，自造以区分"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目是纯计算型 C++ 推理库，不涉及 GUI/媒体。硬件层面深度集成了 GPU 通用计算（OpenCL/CUDA/Metal）与 NPU（华为达芬奇/瑞芯微）加速后端，并大量使用 ARM NEON 与 X86 AVX SIMD 向量指令。这些后端均为可选模块，核心 CPU 推理路径仅依赖 C++ STL 与基本 POSIX API。",

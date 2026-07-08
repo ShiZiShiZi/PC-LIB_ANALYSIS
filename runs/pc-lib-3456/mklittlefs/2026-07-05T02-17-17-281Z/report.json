@@ -677,7 +677,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "recompile_native",
@@ -760,7 +761,8 @@
       "在鸿蒙 PC（arm64/x86_64）上验证 mklittlefs 打包/解包/列出功能正确性"
     ],
     "required_permissions": [],
-    "notes": "评估按模型 C（CLI 应用，经 OHOS NDK 编译为原生二进制）。POSIX 目录操作（opendir/readdir/stat/mkdir）均为 musl libc 声称支持的 POSIX 标准 API，但 harmony-pc-capabilities.json 未单独列出 C 标准库/POSIX 子集覆盖率，两项 target_assumptions 均为 unknown 状态。若 OHOS NDK musl 确认覆盖这些 API（大概率），则实际无任何代码修改需求，纯重编即可。"
+    "notes": "评估按模型 C（CLI 应用，经 OHOS NDK 编译为原生二进制）。POSIX 目录操作（opendir/readdir/stat/mkdir）均为 musl libc 声称支持的 POSIX 标准 API，但 harmony-pc-capabilities.json 未单独列出 C 标准库/POSIX 子集覆盖率，两项 target_assumptions 均为 unknown 状态。若 OHOS NDK musl 确认覆盖这些 API（大概率），则实际无任何代码修改需求，纯重编即可。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "kind": "cli",
@@ -780,7 +782,15 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "纯命令行工具，不涉及 GUI、3D 渲染、媒体处理或特定硬件，仅通过 C 标准库和 POSIX API 读写本地文件系统。",

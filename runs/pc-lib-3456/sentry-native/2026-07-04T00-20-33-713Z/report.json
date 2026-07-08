@@ -2086,7 +2086,8 @@
       "person_days": [
         15,
         35
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "ohos_ndk_cross_compile_with_inproc_backend",
@@ -2297,7 +2298,8 @@
       "使用 ohos.toolchain.cmake 交叉编译，跑通单元测试与示例",
       "若启用 Qt 集成，链接社区 Qt 鸿蒙版并验证事件循环集成"
     ],
-    "notes": "本评估按库模型 A（OHOS NDK 原生层）进行。存在多项 required+unknown 目标假设（POSIX 信号、/proc 等价能力、INTERNET 权限），因此整体置信度为 medium；若后续核实 /proc 或信号缺失，则可能升级为 needs_adaptation_partial 或调整工作量。Windows/macOS 专属代码通过条件编译隔离，不进入 HarmonyOS 构建。"
+    "notes": "本评估按库模型 A（OHOS NDK 原生层）进行。存在多项 required+unknown 目标假设（POSIX 信号、/proc 等价能力、INTERNET 权限），因此整体置信度为 medium；若后续核实 /proc 或信号缺失，则可能升级为 needs_adaptation_partial 或调整工作量。Windows/macOS 专属代码通过条件编译隔离，不进入 HarmonyOS 构建。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "sentry-native",
@@ -2335,7 +2337,8 @@
         "value": "optional_qt_integration",
         "rationale": "Qt 集成由 SENTRY_INTEGRATION_QT 选项控制且默认关闭，但生产代码中存在 src/integrations/sentry_integration_qt.cpp。判定为 present=true 但标注可选，以免遗漏该库的 Qt 事件循环绑定能力；若项目口径要求只统计默认构建能力，可改为 present=false。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "sentry-native 核心为无界面可观测性库，不触及 3D 渲染、媒体编解码或硬件设备；仅在开启可选 SENTRY_INTEGRATION_QT 时与 Qt 事件循环集成。",

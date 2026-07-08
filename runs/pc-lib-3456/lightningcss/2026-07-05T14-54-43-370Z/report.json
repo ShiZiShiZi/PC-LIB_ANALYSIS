@@ -1451,7 +1451,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "cross_compile",
@@ -1464,14 +1465,16 @@
         "required": true,
         "target_status": "available",
         "impact": "直接可用，无阻碍",
-        "source": "harmony-pc-capabilities.json#runtimes.rust"
+        "source": "harmony-pc-capabilities.json#runtimes.rust",
+        "id": "ta:1"
       },
       {
         "capability": "napi-rs（napi crate）在 ohos target 可用性",
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 Node.js N-API 绑定层；若不支持，Node.js 绑定不可用，但 Rust 核心库和 CLI 仍可编译使用",
-        "source": "推理：napi crate 为跨平台 Rust 库，理论上在 ohos target 可编译，但需验证"
+        "source": "推理：napi crate 为跨平台 Rust 库，理论上在 ohos target 可编译，但需验证",
+        "id": "ta:2"
       }
     ],
     "required_permissions": [],
@@ -1508,7 +1511,8 @@
       "验证 napi crate 在 ohos target 下能否成功编译，如不兼容则剥离 napi 功能（不影响核心库与 CLI）",
       "在 OHOS 设备上跑通 CLI 和 Rust 单元测试验证功能完整性"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Rust 运行时上）。Rust 1.89+ 已合入 ohos target，交叉编译链可用。jemallocator（macOS 专用、条件编译）和 wasm32 target 不阻塞 OHOS 移植。napi crate 与 napi-rs 生态尚无明确的 OHOS 支持文档，但其底层仅使用标准 FFI，理论上可编译，若不可行则 N-API 绑定层需要适配。核心库与 CLI 无此顾虑。平台分支信号：cfg(target_os) 仅 2 处（macOS jemallocator），无运行时平台分支。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Rust 运行时上）。Rust 1.89+ 已合入 ohos target，交叉编译链可用。jemallocator（macOS 专用、条件编译）和 wasm32 target 不阻塞 OHOS 移植。napi crate 与 napi-rs 生态尚无明确的 OHOS 支持文档，但其底层仅使用标准 FFI，理论上可编译，若不可行则 N-API 绑定层需要适配。核心库与 CLI 无此顾虑。平台分支信号：cfg(target_os) 仅 2 处（macOS jemallocator），无运行时平台分支。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "lightningcss",
@@ -1533,7 +1537,8 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "纯 CSS 处理库，不涉及 GUI 窗口、3D 渲染、音视频媒体或特定硬件。",

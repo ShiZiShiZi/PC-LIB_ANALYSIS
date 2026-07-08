@@ -1862,7 +1862,8 @@
       "person_days": [
         20,
         50
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "target_assumptions": [
@@ -2045,7 +2046,8 @@
       "集成 mbedtls OHOS 编译（或禁用 TLS 走 mDNS_NoTLS 路径）",
       "功能验证——mDNS 服务注册/浏览/解析、SRP 协议、DNSSD 发现代理端到端测试"
     ],
-    "notes": "confidence=medium 原因：多项核心能力（UDP 组播、后台守护进程、UDS IPC）在鸿蒙 PC 的可用性均为 unknown——这些决定了迁移基础路径是否可行。若组播不可用则 infeasible；若仅守护进程模型受限则 effort 偏高但可通过 ArkTS shell 绕过。建议在投入改造前优先验证组播与进程模型两项。"
+    "notes": "confidence=medium 原因：多项核心能力（UDP 组播、后台守护进程、UDS IPC）在鸿蒙 PC 的可用性均为 unknown——这些决定了迁移基础路径是否可行。若组播不可用则 infeasible；若仅守护进程模型受限则 effort 偏高但可通过 ArkTS shell 绕过。建议在投入改造前优先验证组播与进程模型两项。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "mDNSResponder",
@@ -2092,7 +2094,8 @@
         "value": "library 但含守护进程与 CLI 工具",
         "rationale": "mDNSResponder 的主体是库（libdns_sd + dns_sd.h API），但同时提供守护进程二进制（mdnsd）和 CLI 工具（dns-sd），边界介于 library 与 service 之间。按 '主要分发形式 = 库' 判定为 library——第三方集成的是 API 而非守护进程命令行。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯网络协议与 DNS 服务发现库/守护进程，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。核心关注点为 POSIX/Windows 网络 socket API 的鸿蒙 NDK 等效替代。",

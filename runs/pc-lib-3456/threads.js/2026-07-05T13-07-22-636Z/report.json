@@ -842,7 +842,8 @@
       "person_days": [
         0,
         1
-      ]
+      ],
+      "level": "very_low"
     },
     "confidence": "high",
     "recommended_path": "run_on_ported_runtime",
@@ -891,7 +892,8 @@
       "确认 worker_threads 核心模块在鸿蒙 Node.js 中的可用性与表现一致（信号处理 SIGINT/SIGTERM 行为）",
       "若测试发现 worker_threads 在鸿蒙上的特定差异，做轻量条件补丁（预计零到极少量修改）"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。纯 JS/TS 库 + 已移植运行时 + 无原生扩展 → 理想的可移植情形。唯一需关注的是 worker_threads 在鸿蒙 Node.js 中的信号处理行为（SIGINT/SIGTERM 优雅终止），但这是 Node.js 运行时的职责而非本库需适配的点，且鸿蒙自研内核上 Node.js 应有自己的信号模拟/抽象。tiny-worker 可选依赖在 Node.js 24 环境下不会触发（程序自动走 worker_threads 路径），无需关注其鸿蒙兼容性。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。纯 JS/TS 库 + 已移植运行时 + 无原生扩展 → 理想的可移植情形。唯一需关注的是 worker_threads 在鸿蒙 Node.js 中的信号处理行为（SIGINT/SIGTERM 优雅终止），但这是 Node.js 运行时的职责而非本库需适配的点，且鸿蒙自研内核上 Node.js 应有自己的信号模拟/抽象。tiny-worker 可选依赖在 Node.js 24 环境下不会触发（程序自动走 worker_threads 路径），无需关注其鸿蒙兼容性。",
+    "porting_class_model": "no_adaptation"
   },
   "library": {
     "name": "threads.js",
@@ -915,7 +917,8 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯 JavaScript/TypeScript 并发库，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。所有功能通过 Node.js 标准模块（worker_threads）和浏览器 Web Worker API 实现，无原生 C/C++ 扩展、无 GPU 图形 API、无媒体编解码。",

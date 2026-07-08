@@ -2460,8 +2460,8 @@
     }
   },
   "harmony_adaptation": {
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "hard",
     "confidence": "low",
     "recommended_path": "模型 C（整包桌面应用）。核心路径：(1) FFmpeg 内嵌编解码引擎经 OHOS NDK 重编（纯 C，POSIX 子集可满足）；(2) 视频输出需写 OHOS 原生显示后端（替换 X11/Xv/OpenGL）；(3) 音频输出需写 OHOS 音频后端（替换 ALSA/OSS/PulseAudio）；(4) x86 SIMD 汇编需转换为 ARM64 NEON 或回退标量 C；(5) 网络流媒体（HTTP/RTSP sockets）在 OHOS 上基本可用；(6) GUI (GTK) 在鸿蒙 PC 上已具备但窗口管理器待核实。由于目标平台诸多关键能力状态 unknown（窗口管理器/桌面显示服务/音频 I/O），整体置信为 low。",
     "summary": "MPlayer 迁移至鸿蒙 PC 的核心挑战在于所有平台 I/O 层（视频输出/音频输出/输入）必须在 OHOS 上从零实现等价后端。内嵌 FFmpeg 编解码管线（约 60% 代码量）可通过 OHOS NDK 重编相对直接，但视频显示、音频播放、x86 汇编优化、窗口事件循环均需大量重写。",
@@ -2469,7 +2469,8 @@
       "person_days": [
         180,
         360
-      ]
+      ],
+      "level": "very_high"
     },
     "target_assumptions": [
       {
@@ -2629,7 +2630,8 @@
           "libmpcodecs/native/",
           "libvo/aclib.c",
           "libvo/fastmemcpy.h"
-        ]
+        ],
+        "id": "ua:1"
       },
       {
         "api": "Video4Linux2 (V4L2) ioctl 接口",
@@ -2639,7 +2641,8 @@
         "category": "platform",
         "evidence": [
           "stream/tvi_v4l2.c"
-        ]
+        ],
+        "id": "ua:2"
       },
       {
         "api": "Linux DVB ioctl 接口",
@@ -2650,7 +2653,8 @@
         "evidence": [
           "stream/stream_dvb.c",
           "stream/dvb_tune.c"
-        ]
+        ],
+        "id": "ua:3"
       },
       {
         "api": "Win32 PE DLL 加载器 (loader/子系统)",
@@ -2660,7 +2664,8 @@
         "category": "platform",
         "evidence": [
           "loader/"
-        ]
+        ],
+        "id": "ua:4"
       },
       {
         "api": "NVIDIA VDPAU 硬件解码 API",
@@ -2670,7 +2675,8 @@
         "category": "hardware",
         "evidence": [
           "libvo/vo_vdpau.c"
-        ]
+        ],
+        "id": "ua:5"
       }
     ],
     "required_permissions": [
@@ -2703,6 +2709,11 @@
     ],
     "meta": {
       "observations": []
+    },
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
     }
   },
   "library": {
@@ -2722,10 +2733,107 @@
   },
   "meta": {
     "observations": [],
-    "harmony_warnings": [],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "blocker_ref:no_ohos_video_output:vo_x11 不工作",
+        "class": "actionable",
+        "message": "blocker no_ohos_video_output 的引用 vo_x11 不工作 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:no_ohos_video_output:vo_xv 不工作",
+        "class": "actionable",
+        "message": "blocker no_ohos_video_output 的引用 vo_xv 不工作 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:no_ohos_video_output:vo_gl 需 EGL 适配",
+        "class": "actionable",
+        "message": "blocker no_ohos_video_output 的引用 vo_gl 需 EGL 适配 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:no_ohos_video_output:vo_directx 不工作",
+        "class": "actionable",
+        "message": "blocker no_ohos_video_output 的引用 vo_directx 不工作 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:no_ohos_audio_output:ao_alsa 不工作",
+        "class": "actionable",
+        "message": "blocker no_ohos_audio_output 的引用 ao_alsa 不工作 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:no_ohos_audio_output:ao_oss 不工作",
+        "class": "actionable",
+        "message": "blocker no_ohos_audio_output 的引用 ao_oss 不工作 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:no_ohos_audio_output:ao_pulse 不工作",
+        "class": "actionable",
+        "message": "blocker no_ohos_audio_output 的引用 ao_pulse 不工作 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:x86_simd_assembly:libmpcodecs/native/ 中的 x86 汇编文件",
+        "class": "actionable",
+        "message": "blocker x86_simd_assembly 的引用 libmpcodecs/native/ 中的 x86 汇编文件 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:x86_simd_assembly:libvo/aclib.c MMX/SSE 路径",
+        "class": "actionable",
+        "message": "blocker x86_simd_assembly 的引用 libvo/aclib.c MMX/SSE 路径 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:x86_simd_assembly:libvo/fastmemcpy.h x86 路径",
+        "class": "actionable",
+        "message": "blocker x86_simd_assembly 的引用 libvo/fastmemcpy.h x86 路径 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:x11_event_loop:libvo/x11_common.c X11 事件处理",
+        "class": "actionable",
+        "message": "blocker x11_event_loop 的引用 libvo/x11_common.c X11 事件处理 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:x11_event_loop:GUI 窗口事件循环",
+        "class": "actionable",
+        "message": "blocker x11_event_loop 的引用 GUI 窗口事件循环 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:win32_dll_loader_useless:loader/ 全部代码",
+        "class": "actionable",
+        "message": "blocker win32_dll_loader_useless 的引用 loader/ 全部代码 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:tv_dvb_capture_unavailable:stream/tvi_v4l2.c",
+        "class": "actionable",
+        "message": "blocker tv_dvb_capture_unavailable 的引用 stream/tvi_v4l2.c 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:tv_dvb_capture_unavailable:stream/stream_dvb.c",
+        "class": "actionable",
+        "message": "blocker tv_dvb_capture_unavailable 的引用 stream/stream_dvb.c 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:tv_dvb_capture_unavailable:stream/tvi_dshow.c",
+        "class": "actionable",
+        "message": "blocker tv_dvb_capture_unavailable 的引用 stream/tvi_dshow.c 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:platform_ioctl_direct_device:mplayer.c RTC 段",
+        "class": "actionable",
+        "message": "blocker platform_ioctl_direct_device 的引用 mplayer.c RTC 段 不存在（悬空引用）"
+      },
+      {
+        "code": "blocker_ref:platform_ioctl_direct_device:MTRR 相关代码",
+        "class": "actionable",
+        "message": "blocker platform_ioctl_direct_device 的引用 MTRR 相关代码 不存在（悬空引用）"
+      }
+    ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "MPlayer 作为媒体播放应用，核心触及 GUI/桌面 UI、媒体（音视频编解码/播放/采集）、3D 渲染（OpenGL 视频输出）三大鸿蒙适配重点场景，不涉及特定硬件依赖（仅为通用 PC 硬件）。",

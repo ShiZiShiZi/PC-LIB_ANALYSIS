@@ -902,6 +902,12 @@ async function openSettings() {
       <div id="sTestR" class="hint"></div></label>
     <label>opencode 命令 <input id="sCmd" type="text" value="${esc(s.opencodeCmd)}" /></label>
     <label>最大并发分析数 <input id="sConc" type="number" min="1" max="10" value="${s.maxConcurrent}" /></label>
+    <div class="row" style="gap:10px">
+      <label style="flex:1;margin:0">重编速率 行/天 <input id="sRecRate" type="number" min="1" step="100" value="${s.recompileLocPerDay}" />
+        <span class="hint" style="display:block">工作量分项「重编/交叉编译」= 代码分区 recompile_reuse 桶 LOC ÷ 此值</span></label>
+      <label style="flex:1;margin:0">适配速率 行/天 <input id="sAdpRate" type="number" min="1" step="50" value="${s.adaptationLocPerDay}" />
+        <span class="hint" style="display:block">「平台 API 适配」= needs_adaptation 桶 LOC ÷ 此值；改后对新分析生效，存量需重跑 migrate</span></label>
+    </div>
     <label><input id="sLogs" type="checkbox" ${s.printLogs ? 'checked' : ''} /> 记录 opencode 调试日志（--print-logs）</label>
     <label><input id="sCodegraph" type="checkbox" ${s.useCodegraph ? 'checked' : ''} ${cg ? '' : 'disabled'} /> 启用 codegraph 结构化分析${cg ? '' : '<span class="hint err" style="display:inline"> — 未检测到 codegraph，将回退 grep</span>'}</label>
     <label><input id="sPruneGit" type="checkbox" ${s.pruneGitAfterAnalyze ? 'checked' : ''} /> 分析完成后删除 repos/&lt;库&gt;/.git 省磁盘 <span class="hint" style="display:inline">（重新分析将读不到 commit）</span></label>
@@ -931,6 +937,8 @@ async function openSettings() {
       enableNetworkResolve: $('#sNetResolve').checked, enableHarmonyMirror: $('#sHarmonyMirror').checked,
       enableAgentResolve: $('#sAgentResolve').checked,
       recursiveAfterAnalyze: $('#sRecursive').checked,
+      recompileLocPerDay: Number($('#sRecRate').value) || 3000,
+      adaptationLocPerDay: Number($('#sAdpRate').value) || 500,
       promptTemplate: $('#sPrompt').value }) });
     closeModal(); toast('设置已保存', 'ok');
   };
@@ -939,8 +947,8 @@ async function openSettings() {
 // ===========================================================================
 //  OBSERVATIONS (skill 反哺)
 // ===========================================================================
-const OBS_KIND_LABELS = { new_value: '新造值', gap: '盲区', ambiguity: '歧义' };
-const OBS_KIND_CLS = { new_value: 'done', gap: 'running', ambiguity: 'queued' };
+const OBS_KIND_LABELS = { new_value: '新造值', gap: '盲区', ambiguity: '歧义', caps_gap: '目标能力缺口' };
+const OBS_KIND_CLS = { new_value: 'done', gap: 'running', ambiguity: 'queued', caps_gap: 'queued' };
 async function renderObservations() {
   setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>');
   $('#app').innerHTML = `<div class="detail-head"><h1>🔭 模型观察 / 词表反哺</h1></div>
@@ -982,7 +990,7 @@ async function renderHarmonyCaps() {
   setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>' +
     '<button class="btn" id="capSync">🔄 联网同步(包清单)</button>');
   $('#app').innerHTML = `<div class="detail-head"><h1>🧭 鸿蒙 PC 目标能力画像</h1><span id="capSynced" class="muted"></span></div>
-    <p class="muted">鸿蒙适配判定的<strong>目标侧事实源</strong>（库与应用通用）。带「检查源」的行可一键联网同步（复用 cmd-pkgs/PyPI）；其余需人工核实——把社区已确认的能力内联标记为已支持并填来源。<span class="hint" style="display:inline">未核实 / 过期(>${STALE_DAYS}天) 的行高亮。</span></p>
+    <p class="muted">鸿蒙适配判定的<strong>目标侧事实源</strong>（库与应用通用）。带「检查源」的行可一键联网同步（复用 cmd-pkgs/PyPI）；其余需人工核实——把社区已确认的能力内联标记为已支持并填来源。<strong>「研究优先级」</strong>列＝该能力被多少个已分析报告的 <code>target_assumptions</code> 需要（未核实 + 高需求 = 优先核实）。<span class="hint" style="display:inline">未核实 / 过期(>${STALE_DAYS}天) 的行高亮。</span></p>
     <div id="caps"><p class="muted">加载中…</p></div>`;
   $('#capSync').onclick = async () => {
     const btn = $('#capSync'); btn.disabled = true; btn.textContent = '同步中…';
@@ -998,22 +1006,35 @@ async function renderHarmonyCaps() {
 }
 function drawCaps(data) {
   const synced = $('#capSynced'); if (synced) synced.textContent = data.synced_at ? `最近联网同步：${fmtTime(data.synced_at)}` : '尚未联网同步';
-  $('#caps').innerHTML = (data.sections || []).map((sec) => `
+  const demand = data.demand || {};   // rowId -> {count, unknown, libs[]}（反哺：被 N 个分析需要）
+  const demandCell = (id) => {
+    const d = demand[id];
+    if (!d || !d.count) return '<span class="muted">—</span>';
+    const uk = d.unknown ? ` <span class="muted">(${d.unknown} 未核实)</span>` : '';
+    return `<span class="badge ${d.unknown ? 'queued' : 'gray'}" title="${esc((d.libs || []).join('、'))}">被 ${d.count} 需要</span>${uk}`;
+  };
+  $('#caps').innerHTML = (data.sections || []).map((sec) => {
+    // 高需求行在段内置顶（研究优先级）；其余保持原序
+    const rows = (sec.rows || []).map((r, i) => [r, i]).sort((a, b) =>
+      ((demand[b[0].id] && demand[b[0].id].count) || 0) - ((demand[a[0].id] && demand[a[0].id].count) || 0) || a[1] - b[1]);
+    return `
     <div class="card" style="margin-bottom:12px">
       <div class="section-title">${esc(sec.title)}</div>
-      <table class="obstable"><thead><tr><th>能力</th><th>状态</th><th>来源</th><th>核对时间</th><th>说明</th><th></th></tr></thead>
-      <tbody>${(sec.rows || []).map((r) => {
+      <table class="obstable"><thead><tr><th>能力</th><th>状态</th><th>研究优先级</th><th>来源</th><th>核对时间</th><th>说明</th><th></th></tr></thead>
+      <tbody>${rows.map(([r]) => {
     const st = r.status || 'unknown';
     const warn = (st === 'unknown' || capStale(r)) ? ' style="background:var(--warn-soft)"' : '';
     return `<tr data-id="${esc(r.id)}"${warn}>
         <td>${esc(r.capability)}${r.check ? ' <span class="chip" title="可联网同步">🔄</span>' : ''}</td>
         <td><span class="badge ${TGT_CLS[st] || 'gray'}">${TGT_LABELS[st] || esc(st)}</span></td>
+        <td>${demandCell(r.id)}</td>
         <td class="muted">${esc(r.source || '')}</td>
         <td class="muted">${esc(r.checked_at || '—')}</td>
         <td class="muted">${esc(r.note || '')}</td>
         <td><button class="btn sm ghost cap-edit" data-id="${esc(r.id)}">编辑</button></td></tr>`;
   }).join('')}</tbody></table>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   $$('.cap-edit').forEach((b) => b.onclick = () => capEdit(b.dataset.id, data));
 }
 function capEdit(id, data) {
@@ -1043,37 +1064,42 @@ function capEdit(id, data) {
 // ===========================================================================
 let curReport = null;     // {name, run, obj}
 let curRun = null;
+let tocObserver = null;   // scroll-spy for the report anchor nav (disconnected on re-render / leave)
 
 async function renderDetail(name) {
+  if (tocObserver) { try { tocObserver.disconnect(); } catch (_) {} tocObserver = null; }
   setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>');
   $('#app').innerHTML = `
     <div class="detail-head">
       <h1>${esc(name)}</h1>
       <span id="dStatus"></span>
+      <label class="run-pick"><span class="muted">运行</span>
+        <select id="runSelect" title="选择一次运行以查看报告"></select></label>
+      <button class="btn sm ghost danger" id="runDel" title="删除当前选中的运行记录" disabled>🗑</button>
       <span class="spacer"></span>
       <button class="btn sm" id="dTest">Test 模型</button>
       <button class="btn sm" id="dRecurse">🌳 递归分析依赖</button>
       <button class="btn primary sm" id="dAnalyze">重新分析</button>
     </div>
-    <div class="cols">
-      <div class="stack">
-        <div class="card"><div class="section-title">运行历史</div><div id="runs"></div></div>
+    <details id="consoleWrap" class="card">
+      <summary>实时 / 运行日志</summary>
+      <div id="console" class="console"></div>
+    </details>
+    <nav id="reportNav" class="report-nav" hidden></nav>
+    <div class="card report-card">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <div class="section-title" style="margin:0">分析报告</div>
+        <div class="row" style="gap:6px">
+          <button class="btn sm ghost" id="rawBtn" disabled>原始 JSON</button>
+          <button class="btn sm ghost" id="htmlBtn" disabled>导出 HTML</button>
+          <button class="btn sm ghost" id="dlBtn" disabled>下载</button></div>
       </div>
-      <div class="stack">
-        <div class="card"><div class="section-title">实时 / 运行日志</div><div id="console" class="console"></div></div>
-        <div class="card">
-          <div class="row" style="justify-content:space-between;margin-bottom:10px">
-            <div class="section-title" style="margin:0">分析报告</div>
-            <div class="row" style="gap:6px">
-              <button class="btn sm ghost" id="rawBtn" disabled>原始 JSON</button>
-              <button class="btn sm ghost" id="htmlBtn" disabled>导出 HTML</button>
-              <button class="btn sm ghost" id="dlBtn" disabled>下载</button></div>
-          </div>
-          <div id="report"><p class="muted">选择一次运行以查看报告。</p></div>
-          <pre id="rawJson" class="raw hidden"></pre>
-        </div>
-      </div>
+      <div id="report"><p class="muted">选择一次运行以查看报告。</p></div>
+      <pre id="rawJson" class="raw hidden"></pre>
     </div>`;
+
+  $('#runSelect').onchange = (e) => { if (e.target.value) loadRun(name, e.target.value); };
+  $('#runDel').onclick = () => { const run = $('#runSelect').value; if (run) deleteRun(name, run); };
 
   $('#dTest').onclick = async () => {
     toast('正在测试默认模型…');
@@ -1095,8 +1121,9 @@ function setDStatus(status) {
 
 async function loadDetail(name) {
   const d = await api('/api/library?name=' + enc(name) + '&' + gq());
-  if (d.error) { $('#runs').innerHTML = `<div class="hint err">${esc(d.error)}</div>`; return; }
+  if (d.error) { const s = $('#runSelect'); if (s) s.innerHTML = `<option>${esc(d.error)}</option>`; return; }
   renderRuns(name, d.runs, d.active);
+  const cw = $('#consoleWrap'); if (cw) cw.open = !!d.active;   // 展开日志仅当有正在进行的分析
   if (d.active) {
     setDStatus(d.active.status);
     subscribe(d.active.id, name, () => loadDetail(name));   // live, reload on end
@@ -1107,23 +1134,25 @@ async function loadDetail(name) {
   }
 }
 
+// Run history as a header dropdown (was a left-column list). Options: 状态 · 时间 · 📄;
+// an in-progress run (active, not yet in `runs`) is prepended. 🗑 deletes the selected run.
 function renderRuns(name, runs, active) {
-  const box = $('#runs');
-  if (!runs.length && !active) { box.innerHTML = '<div class="hint">暂无运行记录，点击「重新分析」。</div>'; return; }
-  box.innerHTML = runs.map((r) => `<div class="runrow ${r.run === curRun ? 'sel' : ''}" data-run="${esc(r.run)}">
-      <span class="badge ${r.status}">${statusZh(r.status)}</span>
-      <span class="ts">${fmtTime(r.startedAt)}</span>
-      ${r.reportAvailable ? '<span title="有报告">📄</span>' : ''}
-      <button class="btn sm danger ghost runrow-del" data-run="${esc(r.run)}" title="删除该运行记录">🗑</button></div>`).join('');
-  $$('.runrow', box).forEach((row) => row.onclick = () => {
-    curRun = row.dataset.run;
-    $$('.runrow', box).forEach((x) => x.classList.toggle('sel', x === row));
-    loadRun(name, row.dataset.run);
-  });
-  $$('.runrow-del', box).forEach((b) => b.onclick = (e) => {
-    e.stopPropagation();                                // 别触发整行的选中
-    deleteRun(name, b.dataset.run);
-  });
+  const sel = $('#runSelect'), del = $('#runDel');
+  if (!sel) return;
+  const opts = [];
+  // A running/queued job usually already appears in `runs` (its run dir + meta exist). If not yet,
+  // show an inert placeholder (value="" → onchange no-op) so the in-progress state is visible.
+  const hasLiveRow = runs.some((r) => r.status === 'running' || r.status === 'queued');
+  if (active && !hasLiveRow) opts.push('<option value="">▶ 分析中…</option>');
+  for (const r of runs) {
+    const lbl = `${statusZh(r.status)} · ${fmtTime(r.startedAt)}${r.reportAvailable ? ' · 📄' : ''}`;
+    opts.push(`<option value="${esc(r.run)}"${r.run === curRun ? ' selected' : ''}>${esc(lbl)}</option>`);
+  }
+  if (!opts.length) { sel.innerHTML = '<option value="">暂无运行记录</option>'; if (del) del.disabled = true; return; }
+  sel.innerHTML = opts.join('');
+  // default selection: current run if present, else the first option (latest / in-progress)
+  if (curRun && runs.some((r) => r.run === curRun)) sel.value = curRun;
+  if (del) del.disabled = !sel.value;
 }
 
 async function deleteRun(name, run) {
@@ -1551,8 +1580,15 @@ function coerceReportShapes(r) {
 
 function renderReport(r) {
   coerceReportShapes(r);
+  if (tocObserver) { try { tocObserver.disconnect(); } catch (_) {} tocObserver = null; }
   const el = $('#report'); el.classList.remove('hidden'); $('#rawJson').classList.add('hidden');
-  const sec = (title, inner) => `<div class="rsec"><h3>${title}</h3>${inner}</div>`;
+  // sec() also records a {id,title} into toc[] (display order) so the sticky #reportNav
+  // can anchor-jump to each module. id is per-render (toc + sections built in one pass).
+  const toc = [];
+  const sec = (title, inner) => {
+    const id = 'sec-' + toc.length; toc.push({ id, title });
+    return `<div class="rsec" id="${id}"><h3>${title}</h3>${inner}</div>`;
+  };
   const parts = [];
   const lib = r.library || {}, fs = r.function_summary || {}, cm = r.code_metrics || {},
     t = r.tests || {}, lic = r.license || {}, dep = r.dependencies || {}, na = r.native_api || {};
@@ -1670,7 +1706,10 @@ function renderReport(r) {
       `<p class="hint">${x86Only ? '⚠ 仅见 x86 架构实现、未见 ARM 对应——arm64 鸿蒙 PC 上需补 NEON/标量回退，是适配硬点。' : '机械计数：x86 与 ARM 并存时多为已有双路径，重编验证即可。'}</p>`));
   }
 
-  // 代码分区 (code_partition, dim 12) — 迁移复用性 LOC 分桶
+  // 代码分区 (code_partition, dim 12) — 迁移复用性 LOC 分桶。
+  // 构造成 cpInner 变量后并入「鸿蒙适配评估」(dim 9) 卡片（dim-12 是 dim-9 工作量的量化底座）；
+  // 仅当报告没有 harmony_adaptation 块时才独立成卡（见文末兜底）。
+  let cpInner = '';
   const cp = r.code_partition || {};
   const buckets = (cp.buckets || []).filter((b) => b && b.class);
   if (buckets.length || cp.summary) {
@@ -1705,11 +1744,11 @@ function renderReport(r) {
     const covTxt = cov.production_code
       ? `<p class="hint">对账：已分区 ${num(cov.partitioned_code)} / 生产代码 ${num(cov.production_code)} 行（覆盖 ${cov.pct != null ? cov.pct : Math.round(1000 * totalLoc / cov.production_code) / 10}%）；LOC 引用 code_metrics.dir_loc 机械数字。</p>`
       : '';
-    parts.push(sec('代码分区（鸿蒙迁移复用性）',
+    cpInner =
       (cp.summary ? `<p>${esc(cp.summary)}</p>` : '') +
       (buckets.length ? `<div class="part-bar">${bar}</div><div class="part-legend">${legend}</div>` : '') +
       modTables + covTxt +
-      (cp.notes ? `<p class="hint">${esc(cp.notes)}</p>` : '')));
+      (cp.notes ? `<p class="hint">${esc(cp.notes)}</p>` : '');
   }
 
   parts.push(sec('测试', `<div class="kv">
@@ -1851,7 +1890,8 @@ function renderReport(r) {
       (csvc.length ? '<p class="hint">涉及云端 ⇒ 鸿蒙化需网络权限（ohos.permission.INTERNET）；详见鸿蒙适配评估。</p>' : '')));
   }
 
-  // 鸿蒙适配评估 (harmony_adaptation, dim 9)
+  // 鸿蒙适配评估 (harmony_adaptation, dim 9) — 代码分区(dim 12)并入此卡
+  let harmonyRendered = false;
   const ha = r.harmony_adaptation || {};
   if (ha.feasibility || ha.summary || (ha.blockers || []).length ||
       ha.recommended_path || (ha.key_tasks || []).length ||
@@ -1955,8 +1995,11 @@ function renderReport(r) {
       <b>推荐路径</b><span>${ha.recommended_path ? `<code>${esc(ha.recommended_path)}</code>` : '—'}</span>
       <b>目标平台</b><span>${esc(ha.target || '—')}</span></div>` +
       (((r.meta || {}).harmony_warnings || []).length
-        ? `<div class="hint err" style="margin:6px 0">⚠ 数据一致性提示：<ul style="margin:4px 0 0">${r.meta.harmony_warnings.map((w) => `<li>${esc(w)}</li>`).join('')}</ul></div>` : '') +
+        ? `<div class="hint err" style="margin:6px 0">⚠ 数据一致性提示：<ul style="margin:4px 0 0">${r.meta.harmony_warnings.map((w) => `<li>${esc(typeof w === 'string' ? w : (w && w.message) || '')}</li>`).join('')}</ul></div>` : '') +
+      (((r.meta || {}).harmony_warnings_reviewed || []).length
+        ? `<details class="hint" style="margin:6px 0;opacity:.75"><summary>✓ 已复核（模型判为误报，${r.meta.harmony_warnings_reviewed.length}）</summary><ul style="margin:4px 0 0">${r.meta.harmony_warnings_reviewed.map((w) => `<li>${esc((w && w.message) || '')}<br><span style="opacity:.8">复核：${esc((w && w.rationale) || '')}</span></li>`).join('')}</ul></details>` : '') +
       (ha.summary ? `<p>${esc(ha.summary)}</p>` : '') +
+      (cpInner ? `<div class="subtitle">代码分区（迁移复用性 · 工作量底座）</div>${cpInner}` : '') +
       breakdown +
       critDeps +
       assumptions +
@@ -1966,7 +2009,10 @@ function renderReport(r) {
       (compat ? `<div class="subtitle">可平滑移植</div>${compat}` : '') +
       tasks +
       (ha.notes ? `<p class="hint">${esc(ha.notes)}</p>` : '')));
+    harmonyRendered = true;
   }
+  // 兜底：报告没有 harmony_adaptation 块但有代码分区 → 代码分区仍独立成卡，避免丢数据。
+  if (!harmonyRendered && cpInner) parts.push(sec('代码分区（鸿蒙迁移复用性）', cpInner));
 
   const warn = (r.meta || {}).warnings || [];
   if (warn.length) parts.push(sec('警告', warn.map((w) => `<div class="cat">⚠ ${esc(w)}</div>`).join('')));
@@ -1976,6 +2022,42 @@ function renderReport(r) {
   el.onclick = depHighlightHandler;   // delegated click-to-highlight for dep tags
   if (hasDeps) loadDepTree(curReport && curReport.name);
   decorateHarmonyBadges(el).then(() => updateDepHarmonyCount(r));
+  buildReportNav(toc);
+}
+
+// Sticky anchor bar for the report modules. Click smooth-scrolls to the section — NOT via
+// href="#..." (that would drive the SPA hash router); a scroll-spy highlights the current one.
+function buildReportNav(toc) {
+  const nav = $('#reportNav'); if (!nav) return;
+  if (!toc.length) { nav.hidden = true; nav.innerHTML = ''; return; }
+  nav.hidden = false;
+  // chip label is plain text — strip any HTML in the section title (e.g. 依赖's
+  // <span id="depHarmonyCount">, which belongs to the <h3> header, not the chip).
+  const label = (t) => esc(t.title.replace(/<[^>]*>/g, '').trim());
+  nav.innerHTML = '<div class="nav-inner">'
+    + toc.map((t) => `<a class="nav-chip" data-target="${t.id}">${label(t)}</a>`).join('')
+    + '</div>';
+  nav.onclick = (e) => {
+    const chip = e.target.closest('.nav-chip'); if (!chip) return;
+    const sec = document.getElementById(chip.dataset.target);
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  // scroll-spy: highlight the chip of the section nearest the top of the viewport.
+  if (tocObserver) { try { tocObserver.disconnect(); } catch (_) {} }
+  const chipFor = {}; $$('.nav-chip', nav).forEach((c) => { chipFor[c.dataset.target] = c; });
+  const visible = new Set();
+  tocObserver = new IntersectionObserver((entries) => {
+    for (const en of entries) {
+      if (en.isIntersecting) visible.add(en.target.id); else visible.delete(en.target.id);
+    }
+    // pick the visible section with the smallest DOM order (topmost) as active
+    const active = toc.find((t) => visible.has(t.id));
+    $$('.nav-chip', nav).forEach((c) => c.classList.toggle('active', !!active && c.dataset.target === active.id));
+    // top inset MUST track the sticky-nav bottom / .rsec scroll-margin-top (128px) so a clicked
+    // section becomes the topmost-visible immediately (else the prior section's tail, still in the
+    // band, keeps the highlight until you scroll down). Keep -130 in sync with that CSS value.
+  }, { rootMargin: '-130px 0px -55% 0px', threshold: 0 });
+  toc.forEach((t) => { const s = document.getElementById(t.id); if (s) tocObserver.observe(s); });
 }
 
 // "X/Y 已鸿蒙化" in the dependency section title, from the cached status.

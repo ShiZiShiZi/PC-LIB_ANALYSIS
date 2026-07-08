@@ -2276,7 +2276,8 @@
       "person_days": [
         35,
         70
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "find_alternative",
@@ -2532,7 +2533,8 @@
       "GPU 插桩头文件（TracyOpenGL.hpp/TracyVulkan.hpp 等）仅在用户代码中展开——确保鸿蒙上 GPU API 可用时宏正确展开",
       "Python 绑定适配：pybind11 + Python 3.12 在鸿蒙上构建 tracy_client wheel"
     ],
-    "notes": "评估按模型 C（整包桌面应用）口径。核心不确定性在 GUI 层：ImGui+GLFW+OpenGL 组合在鸿蒙 PC 上的可用性悬而未决。若鸿蒙 PC 仅支持 HAP 分发且无传统桌面窗口环境，GUI 分析器移植工作量将大幅上升（可能需 ArkUI 重写全部界面）。若只移植分析引擎+命令行工具（不含 GUI），person_days 可降至 [15, 30]、porting_class 可升至 needs_adaptation_full。客户端库的 4042 行平台守卫代码（platform_adaptation: windows 1467 / linux 2242 / macos 333）需要逐一评估鸿蒙等价替代，是主要的工作量来源。6/17 运行时依赖已鸿蒙化降低了一部分工作量。置信度受 3 项 required+unknown 目标假设（desktop_wm / desktop_app_delivery / file_dialog）影响下调为 medium。"
+    "notes": "评估按模型 C（整包桌面应用）口径。核心不确定性在 GUI 层：ImGui+GLFW+OpenGL 组合在鸿蒙 PC 上的可用性悬而未决。若鸿蒙 PC 仅支持 HAP 分发且无传统桌面窗口环境，GUI 分析器移植工作量将大幅上升（可能需 ArkUI 重写全部界面）。若只移植分析引擎+命令行工具（不含 GUI），person_days 可降至 [15, 30]、porting_class 可升至 needs_adaptation_full。客户端库的 4042 行平台守卫代码（platform_adaptation: windows 1467 / linux 2242 / macos 333）需要逐一评估鸿蒙等价替代，是主要的工作量来源。6/17 运行时依赖已鸿蒙化降低了一部分工作量。置信度受 3 项 required+unknown 目标假设（desktop_wm / desktop_app_delivery / file_dialog）影响下调为 medium。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "tracy",
@@ -2589,7 +2591,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Tracy 作为桌面 GUI 性能分析器，重度依赖 GUI 窗口系统（ImGui + GLFW/Wayland + OpenGL/EGL）和 3D 图形栈（通过 OpenGL 渲染 GUI）；使用硬件高精度计时器（x86 RDTSC / ARM CNTVCT）和 CPU 特性检测（cpuid）；GPU 分析功能通过客户端头文件提供对 Vulkan/D3D/Metal/CUDA/OpenCL 的插桩支持（但不直接调用）。",

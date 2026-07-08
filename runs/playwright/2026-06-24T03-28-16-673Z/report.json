@@ -405,7 +405,8 @@
       "NOTICE"
     ],
     "evidence": "根目录 LICENSE 为完整 Apache-2.0 文本；package.json 声明 license: Apache-2.0；NOTICE 文件说明包含 Puppeteer 项目衍生的 Apache-2.0 代码。",
-    "notes": "宽松许可证；需保留 NOTICE 文件。仓库内 browser_patches 等补丁代码可能保留各自原许可（如 WebKit 的 BSD-2-Clause、winldd 的 MIT）。"
+    "notes": "宽松许可证；需保留 NOTICE 文件。仓库内 browser_patches 等补丁代码可能保留各自原许可（如 WebKit 的 BSD-2-Clause、winldd 的 MIT）。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 48,
@@ -1768,7 +1769,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Node.js 已移植；OHOS NDK musl + POSIX 子集；自研内核、无 Linux ABI；arm64/x86_64）",
-    "feasibility": "hard",
+    "feasibility": "feasible_with_effort",
     "overall_difficulty": "very_high",
     "effort_estimate": "XL",
     "porting_class": "needs_adaptation_full",
@@ -1785,7 +1786,8 @@
         "evidence": [
           "packages/playwright-core/src/server/registry/index.ts:146-179 (仅 linux/mac/win 下载路径)",
           "packages/playwright-core/src/server/registry/browserFetcher.ts:35-77"
-        ]
+        ],
+        "id": "bk:1"
       },
       {
         "issue": "依赖平台特定的系统命令进行安装与校验（apt-get/ldd/ldconfig/powershell/sudo/wsl）",
@@ -1796,7 +1798,8 @@
         "remediation": "install-deps 与 dependency validation 路径需针对鸿蒙 PC 重写：使用鸿蒙包管理器/系统能力替代 apt-get/powershell；ldd 替换为 OHOS NDK 提供的 readelf/ldd 或静态链接；WSL 路径应移除。",
         "evidence": [
           "packages/playwright-core/src/server/registry/dependencies.ts:78-148,346-401"
-        ]
+        ],
+        "id": "bk:2"
       },
       {
         "issue": "browser_patches 中的 Windows 专用 C++ 浏览器启动器/PE 工具无法直接在鸿蒙运行",
@@ -1808,7 +1811,8 @@
         "evidence": [
           "browser_patches/webkit/embedder/Playwright/win/MainWindow.cpp",
           "browser_patches/winldd/PrintDeps.cpp"
-        ]
+        ],
+        "id": "bk:3"
       },
       {
         "issue": "可选原生依赖（fsevents 事件插件、Electron 自动化）无 OHOS 构建",
@@ -1820,7 +1824,8 @@
         "evidence": [
           "packages/playwright/package.json:55-57",
           "utils/build/build.js:639-665"
-        ]
+        ],
+        "id": "bk:4"
       }
     ],
     "unadaptable_apis": [],
@@ -1830,28 +1835,32 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时可用，框架 TS/JS 核心可直接执行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "id": "ta:1"
       },
       {
         "capability": "启动外部进程（exec/spawn）不受限",
         "required": true,
         "target_status": "unknown",
         "impact": "若受限则无法启动浏览器二进制，核心功能不可用",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "id": "ta:2"
       },
       {
         "capability": "OHOS 版 Chromium/WebKit/Firefox 浏览器二进制",
         "required": true,
         "target_status": "unknown",
         "impact": "无对应二进制则无法执行任何浏览器自动化，是决定性前提",
-        "source": "references/harmony-pc-capabilities.json#gui (Electron/CEF unknown；无 Chromium 行)"
+        "source": "references/harmony-pc-capabilities.json#gui (Electron/CEF unknown；无 Chromium 行)",
+        "id": "ta:3"
       },
       {
         "capability": "arm64 / x86_64 架构覆盖",
         "required": true,
         "target_status": "unknown",
         "impact": "影响浏览器与 Node 原生插件的预编译包选择",
-        "source": "references/harmony-pc-capabilities.json#arch"
+        "source": "references/harmony-pc-capabilities.json#arch",
+        "id": "ta:4"
       }
     ],
     "compatible": [
@@ -1887,7 +1896,11 @@
       "验证 WebSocket/CDP/BiDi 在鸿蒙进程间通信是否受限",
       "在鸿蒙 Node.js 上跑通核心库测试，确认 headless 与 headed 模式行为"
     ],
-    "notes": "评估按模型 A（库/框架跑在已移植的 Node.js 运行时上）。核心阻碍不是语言运行时或 JS 代码，而是 Playwright 必须启动的真实浏览器引擎二进制在鸿蒙 PC 上不存在/未核实；结论置信度因浏览器二进制与进程模型目标状态 unknown 而下调。若目标为 ArkTS 沙箱应用（模型 B），则 Node.js 核心模块不可用，结论将变为 infeasible/very_high。"
+    "notes": "评估按模型 A（库/框架跑在已移植的 Node.js 运行时上）。核心阻碍不是语言运行时或 JS 代码，而是 Playwright 必须启动的真实浏览器引擎二进制在鸿蒙 PC 上不存在/未核实；结论置信度因浏览器二进制与进程模型目标状态 unknown 而下调。若目标为 ArkTS 沙箱应用（模型 B），则 Node.js 核心模块不可用，结论将变为 infeasible/very_high。",
+    "porting_class_model": "needs_adaptation_full",
+    "effort": {
+      "level": "medium"
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1928,6 +1941,14 @@
         "value": "provide_ohos_browser_binaries",
         "rationale": "对 Playwright 这类浏览器自动化框架，适配路径首要取决于外部浏览器引擎二进制是否可用，现有推荐路径无法精确描述。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:gui",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   }
 }

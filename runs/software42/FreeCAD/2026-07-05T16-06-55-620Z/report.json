@@ -2558,13 +2558,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C——整包桌面应用：终端用户启动运行的 GUI 应用。Qt 经 OHOS NDK 重编译、鸿蒙 PC 桌面环境运行；Python 3.12 已移植；arm64 主力；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "hard",
     "effort": {
       "person_days": [
         80,
         180
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -2786,7 +2787,12 @@
       "确定鸿蒙 PC 的应用打包方案——cmake install 适配 + 鸿蒙应用包格式，可能需编写 ArkTS launcher 外壳",
       "跑通 FreeCAD 的 375 个测试文件 2524 个测试用例验证功能完整性"
     ],
-    "notes": "评估按模型 C（整包桌面应用）。FreeCAD 为巨型桌面 CAD 应用（680 万行生产代码），鸿蒙化工程量级极高——主要是将所有系统依赖逐一交叉编译 + OpenGL→GLES 渲染管线适配 + 各模块功能验证。不涉及云端服务（纯本地应用），无定位/摄像头/麦克风等敏感权限需求。关键未核实事实：鸿蒙 PC 桌面环境能否运行 Qt MDI 应用程序——此项为 go/no-go 决定项，需社区证实后置信度才能升至 high。Qt 在 cmd-pkgs 已列为 available（有预编译包），Python 已移植（3.12.9），核心迁移路径存在——但若鸿蒙 PC 无传统桌面环境、仅支持 ArkTS 容器，则需整体重写 GUI 为 ArkUI，工作量翻数倍、接近 infeasible。"
+    "notes": "评估按模型 C（整包桌面应用）。FreeCAD 为巨型桌面 CAD 应用（680 万行生产代码），鸿蒙化工程量级极高——主要是将所有系统依赖逐一交叉编译 + OpenGL→GLES 渲染管线适配 + 各模块功能验证。不涉及云端服务（纯本地应用），无定位/摄像头/麦克风等敏感权限需求。关键未核实事实：鸿蒙 PC 桌面环境能否运行 Qt MDI 应用程序——此项为 go/no-go 决定项，需社区证实后置信度才能升至 high。Qt 在 cmd-pkgs 已列为 available（有预编译包），Python 已移植（3.12.9），核心迁移路径存在——但若鸿蒙 PC 无传统桌面环境、仅支持 ArkTS 容器，则需整体重写 GUI 为 ArkUI，工作量翻数倍、接近 infeasible。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "FreeCAD",
@@ -2845,7 +2851,15 @@
         "rationale": "FreeCAD 的 3Dconnexion 驱动在 macOS 上通过 Cocoa CFRunLoop 获取事件——这是一种平台特有 API 家族，不完全是 'posix' 范畴"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "FreeCAD 作为桌面 CAD 应用，触及 GUI、3D 实时渲染和专用硬件输入设备三大鸿蒙适配重点场景。GUI 基于 Qt6/Qt5 框架，3D 渲染基于 OpenGL/Coin3D 场景图，硬件输入为 3Dconnexion 空间鼠标。无音视频媒体处理场景。",

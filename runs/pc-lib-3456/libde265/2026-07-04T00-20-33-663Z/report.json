@@ -977,7 +977,8 @@
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1043,7 +1044,8 @@
       "在 arm64 上确认 HAVE_X86 为假、标量回退路径可正常工作，并跑通一致性测试流",
       "如需给 ArkTS 应用使用，编写 Node-API 封装层暴露 de265 解码 API"
     ],
-    "notes": "本评估聚焦核心库 libde265；dec265/enc265/sherlock265 等示例程序默认可单独关闭，不构成移植阻碍。SDL2 已有官方鸿蒙预编译包，Qt5 尚未在 OpenHarmony PC 镜像中确认；但二者均非库核心依赖。x86_64 目标架构在鸿蒙 PC 上的覆盖情况尚未核实，建议优先以 arm64 为目标。"
+    "notes": "本评估聚焦核心库 libde265；dec265/enc265/sherlock265 等示例程序默认可单独关闭，不构成移植阻碍。SDL2 已有官方鸿蒙预编译包，Qt5 尚未在 OpenHarmony PC 镜像中确认；但二者均非库核心依赖。x86_64 目标架构在鸿蒙 PC 上的覆盖情况尚未核实，建议优先以 arm64 为目标。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "libde265",
@@ -1090,7 +1092,15 @@
         "value": "alloca_classification",
         "rationale": "alloca 既非标准 C/C++ 也非严格 POSIX，但几乎所有 Linux/Windows 工具链都支持；本报告将其归入 posix_memory 平台组，若未来词表增加 compiler_extension 或 nonstandard_runtime 类别会更准确。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:gui",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libde265 本身是一个纯视频编解码库，核心生产代码不涉及 GUI、3D 渲染或特定硬件；它触及的鸿蒙适配重点场景只有“媒体/视频解码”。",

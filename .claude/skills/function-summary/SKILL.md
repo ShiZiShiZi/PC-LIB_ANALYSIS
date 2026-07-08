@@ -16,6 +16,13 @@ is judgment work — read the source, don't pattern-match keywords.
 把判断写进 `library.kind`。**对 application，summary 与 categories 按「终端用户能用它做什么、
 有哪些功能模块」描述，而不是当作被调用的 API**（应用通常没有稳定对外 API）。
 
+**混合体（既是库又带 CLI/守护进程/示例工具，最常见的歧义）——按主用途落到 `library`/`application` 二选一，
+别造 `library_with_executable`/`library+cli` 这类复合 kind：** dim-9 的鸿蒙口径只在 `library`(模型A/B) 与
+`application`(模型C) 之间分叉，`kind` 首要就是这条主轴。判据——**主要被别的代码 import/链接** ⇒ `library`
+（附带的 CLI/守护进程只是它的一个入口，写进 summary/notes，不改变 kind）；**主要被终端用户直接启动运行** ⇒
+`application`。`framework` 视同 `library` 口径、常驻 `service`/daemon 视同 `application` 口径。拿不准时**就低不
+就高**归 `library`，并在 notes 说明其可执行/服务形态。`tool`/`cli`/`framework` 等细分只在确实两者皆非时才用。
+
 ## 主旨与原则
 **输出契约（下方 Output）是唯一硬约束。** 下面的清单与取值是**推荐起点，不是封闭清单** ——
 遇到不匹配的场景，尽力归类，必要时**自造一个简洁的小写值**，并写进 `meta.observations`。

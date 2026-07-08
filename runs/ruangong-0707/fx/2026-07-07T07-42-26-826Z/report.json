@@ -748,8 +748,8 @@
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
-        0.5,
-        1
+        0.6,
+        1.1
       ],
       "level": "very_low",
       "breakdown": [
@@ -760,6 +760,14 @@
             1
           ],
           "basis": "需为鸿蒙平台新增一个 build tag 文件（app_ohos.go 或修改 app_unixes.go tag），约 10 行代码"
+        },
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            0.1,
+            0.1
+          ],
+          "basis": "需适配 31 行 ÷ 500 行/天"
         }
       ]
     },
@@ -819,7 +827,8 @@
       "若 GOOS 非 linux/darwin/windows，新增 app_ohos.go 定义 _sigINT/_sigTERM 常量",
       "运行 Fx 测试套件验证（go test ./...）"
     ],
-    "notes": "Fx 的三个运行时依赖（dig、multierr、x/sys）均为纯 Go 包，无 CGO，在已移植的 Go 运行时上可直接使用。x/sys/unix 在鸿蒙上需对应 GOOS 的实现——Go 官方对 ohos 的支持情况决定 x/sys/unix 是否开箱可用，若 GOOS=linux 则完全兼容。"
+    "notes": "Fx 的三个运行时依赖（dig、multierr、x/sys）均为纯 Go 包，无 CGO，在已移植的 Go 运行时上可直接使用。x/sys/unix 在鸿蒙上需对应 GOOS 的实现——Go 官方对 ohos 的支持情况决定 x/sys/unix 是否开箱可用，若 GOOS=linux 则完全兼容。",
+    "porting_class_model": "no_adaptation"
   },
   "library": {
     "name": "fx",
@@ -854,7 +863,15 @@
         "value": "framework",
         "rationale": "Fx 既是库（被 API 调用）又是框架（控制应用启动/关闭/注入流程），取 framework 更准确"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "cp_loc_coverage",
+        "class": "info",
+        "message": "代码分区桶 LOC 之和(5460)与生产代码(7771)偏差超过 15%（覆盖不足或重复计入）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Fx 是纯 Go 依赖注入框架，不涉及 GUI、3D 渲染、媒体或特定硬件场景。所有能力均为纯计算/逻辑，无平台特有设备交互。",

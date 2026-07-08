@@ -1725,7 +1725,8 @@
       "person_days": [
         10,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1859,7 +1860,8 @@
       "在鸿蒙 PC 设备上跑通 USB 功能测试（至少枚举、控制传输、批量传输），确认权限模型是否需额外配置",
       "审核是否需申请 ohos.permission.USB 类权限并在文档中说明"
     ],
-    "notes": "libusb 已在 OpenHarmony PC 官方 cmd-pkgs 预编译包列表中（gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs），表明已有鸿蒙移植。本评估基于源代码分析该移植应涉及的工作规模。关键不确定性：鸿蒙 PC USB HDI 的完整性与设备访问权限模型——两者状态在 harmony-pc-capabilities.json 中均为 unknown，故 confidence 下调至 medium。若实际 USB HDI 完整且权限可获取（available），则工作量可降至 5-10 人-天（后端大部分已有现成移植代码），porting_class 保持 needs_adaptation_full。若 USB HDI 有显著缺口（无等时传输/批量传输受限），则某些 USB 设备类（音频/视频/大容量存储）的部分功能将无法适配——此时需加入 needs_adaptation_partial 并在 unadaptable_apis 中登记具体受限的 API。"
+    "notes": "libusb 已在 OpenHarmony PC 官方 cmd-pkgs 预编译包列表中（gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs），表明已有鸿蒙移植。本评估基于源代码分析该移植应涉及的工作规模。关键不确定性：鸿蒙 PC USB HDI 的完整性与设备访问权限模型——两者状态在 harmony-pc-capabilities.json 中均为 unknown，故 confidence 下调至 medium。若实际 USB HDI 完整且权限可获取（available），则工作量可降至 5-10 人-天（后端大部分已有现成移植代码），porting_class 保持 needs_adaptation_full。若 USB HDI 有显著缺口（无等时传输/批量传输受限），则某些 USB 设备类（音频/视频/大容量存储）的部分功能将无法适配——此时需加入 needs_adaptation_partial 并在 unadaptable_apis 中登记具体受限的 API。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "libusb",
@@ -1922,7 +1924,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "USB 设备访问库，核心场景为硬件（USB）设备通信，完全不涉及 GUI、3D 渲染、媒体等场景。各平台 USB 子系统差异通过可插拔后端封装。",

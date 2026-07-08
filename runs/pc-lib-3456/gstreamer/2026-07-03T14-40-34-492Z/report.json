@@ -2746,7 +2746,8 @@
       "person_days": [
         40,
         120
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -3245,7 +3246,8 @@
       "配置静态 gstreamer-full 构建，关闭 fork 插件扫描器，避免沙箱限制",
       "跑通 gst-launch-1.0 filesrc ! decodebin ! audiosink 等核心 pipeline 单元测试"
     ],
-    "notes": "评估按库/框架口径（模型 A/B）：GStreamer 不是终端用户应用，鸿蒙化目标通常是「核心库 + 部分插件可运行」。由于项目体量巨大（近 300 万行生产代码、大量插件），实际 person_days 取决于裁剪范围——若只保留核心 + 文件/网络/FFmpeg 插件，工作量可收敛到中低区间；若追求全插件移植，则进入高/极高区间。confidence=medium 源于 futex/camera/subprocess/窗口环境 等目标能力尚未核实。"
+    "notes": "评估按库/框架口径（模型 A/B）：GStreamer 不是终端用户应用，鸿蒙化目标通常是「核心库 + 部分插件可运行」。由于项目体量巨大（近 300 万行生产代码、大量插件），实际 person_days 取决于裁剪范围——若只保留核心 + 文件/网络/FFmpeg 插件，工作量可收敛到中低区间；若追求全插件移植，则进入高/极高区间。confidence=medium 源于 futex/camera/subprocess/窗口环境 等目标能力尚未核实。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "gstreamer",
@@ -3321,7 +3323,20 @@
         "value": "recompile_napi_with_selective_disable",
         "rationale": "GStreamer 这类大型插件化框架的鸿蒙化路径应是「核心重编 + 大量平台/硬件插件裁剪禁用」，而非全量重写"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "blocker_ref:bk:apple_media:ta:video_codec",
+        "class": "actionable",
+        "message": "blocker bk:apple_media 的引用 ta:video_codec 不存在（悬空引用）"
+      },
+      {
+        "code": "ua_ref:ua:coreaudio:ta:video_codec",
+        "class": "actionable",
+        "message": "unadaptable_api ua:coreaudio 的 caused_by ta:video_codec 不存在"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "GStreamer 是典型的多媒体框架，核心触及媒体（音视频编解码/采集/播放/传输）场景；插件层大量涉及 GUI 窗口集成、3D/GPU 渲染与各类硬件加速/设备访问。鸿蒙化评估需重点关注：媒体 pipeline 能否迁移到 @ohos.multimedia、GPU/窗口后端在鸿蒙 PC 的可用性、以及 V4L2/ALSA/PulseAudio 等平台音视频 IO 的替代。",

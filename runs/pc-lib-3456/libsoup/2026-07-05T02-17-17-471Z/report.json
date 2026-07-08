@@ -1195,7 +1195,8 @@
       "person_days": [
         10,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1329,7 +1330,8 @@
       "编译 libbrotlidec（Brotli 解压）与 sysprof-capture-4（性能剖析，可选）——两者为简单 C 库，可随 libsoup 一同交叉编译",
       "在 OHOS NDK 环境下跑通基础 HTTP 客户端/服务端功能测试，验证 TLS（需 GLib 的 TLS 后端 glib-networking/GnuTLS 可用）与 HTTP/2"
     ],
-    "notes": "评估按模型 A（C 原生库，经 OHOS NDK 重编后供鸿蒙应用链接）。libsoup 自身平台耦合极轻（platform_adaptation 仅 35 行 Windows 代码），主要不确定性来自 GLib 生态的鸿蒙可用状态。confidence: medium 因为核心依赖 GLib 未在 cmd-pkgs 确认鸿蒙化（尽管 GTK 列为 available 间接表明 GLib 可行，但尚未直接核实）。若 GLib 已鸿蒙化则 porting_class 可升级为 recompile_only、person_days 约 [3,8]。libsoup 不涉及 GUI/3D/媒体/硬件场景，无需额外权限。"
+    "notes": "评估按模型 A（C 原生库，经 OHOS NDK 重编后供鸿蒙应用链接）。libsoup 自身平台耦合极轻（platform_adaptation 仅 35 行 Windows 代码），主要不确定性来自 GLib 生态的鸿蒙可用状态。confidence: medium 因为核心依赖 GLib 未在 cmd-pkgs 确认鸿蒙化（尽管 GTK 列为 available 间接表明 GLib 可行，但尚未直接核实）。若 GLib 已鸿蒙化则 porting_class 可升级为 recompile_only、person_days 约 [3,8]。libsoup 不涉及 GUI/3D/媒体/硬件场景，无需额外权限。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "kind": "library",
@@ -1368,7 +1370,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libsoup 是纯网络/HTTP 库，不涉及 GUI、3D 渲染、媒体处理或特定硬件访问。核心场景为跨平台网络通信，所有 I/O 通过 GLib/GIO 抽象层完成。",

@@ -1526,7 +1526,8 @@
       "person_days": [
         40,
         200
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "low",
     "recommended_path": "find_alternative",
@@ -1777,7 +1778,8 @@
       "排除非目标平台扩展库（IO/Serial 的 Linux ARM JNI 部分）并验证鸿蒙文件系统访问权限模型",
       "在鸿蒙 JDK 上运行 Processing 的 JUnit 测试套件验证 Java 逻辑兼容性"
     ],
-    "notes": "评估置信度低（low）——因为本项目作为桌面应用移植的**核心前提能力（headful AWT/Swing、桌面窗口管理器、传统应用交付模型）在 harmony-pc-capabilities.json 中全部为 unknown**。person_days 区间 [40, 200] 的极大跨度反映了这一不确定性：下限（40天）假设 AWT/Swing 在鸿蒙 JDK 上可用且仅需适配平台专用代码与打包管线；上限（200天+）假设 AWT/Swing 不可用、需 ArkUI 重写整个 IDE 前端（≈ infeasible）。若 AWT/Swing 被确认 unavailable，建议直接转向 Processing 4 或 p5.js（浏览器/Web-based）作为鸿蒙上的替代方案——这比从零重写桌面 GUI 更经济。所需权限仅 INTERNET 一项（版本检查/文档下载），其余权限（文件存储/子进程/设备访问等）取决于鸿蒙 PC 的默认沙箱策略与桌面应用特权模型（均为 unknown）。processing.io NativeInterface 在非 Linux 平台已自动降级为仿真模式——该模式在 OHOS 上同样激活（系统属性 os.name != Linux），无需改动 IO 扩展库即不会暴露不支持的硬件 API。"
+    "notes": "评估置信度低（low）——因为本项目作为桌面应用移植的**核心前提能力（headful AWT/Swing、桌面窗口管理器、传统应用交付模型）在 harmony-pc-capabilities.json 中全部为 unknown**。person_days 区间 [40, 200] 的极大跨度反映了这一不确定性：下限（40天）假设 AWT/Swing 在鸿蒙 JDK 上可用且仅需适配平台专用代码与打包管线；上限（200天+）假设 AWT/Swing 不可用、需 ArkUI 重写整个 IDE 前端（≈ infeasible）。若 AWT/Swing 被确认 unavailable，建议直接转向 Processing 4 或 p5.js（浏览器/Web-based）作为鸿蒙上的替代方案——这比从零重写桌面 GUI 更经济。所需权限仅 INTERNET 一项（版本检查/文档下载），其余权限（文件存储/子进程/设备访问等）取决于鸿蒙 PC 的默认沙箱策略与桌面应用特权模型（均为 unknown）。processing.io NativeInterface 在非 Linux 平台已自动降级为仿真模式——该模式在 OHOS 上同样激活（系统属性 os.name != Linux），无需改动 IO 扩展库即不会暴露不支持的硬件 API。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "processing",
@@ -1836,7 +1838,20 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "blocker_ref:bk:packaging_delivery:ta:arkts_hap",
+        "class": "actionable",
+        "message": "blocker bk:packaging_delivery 的引用 ta:arkts_hap 不存在（悬空引用）"
+      },
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=runtime_surface 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Processing PDE 是一款桌面 GUI 应用，深度触及以下鸿蒙适配重点场景：Swing/AWT GUI（IDE 主界面）、OpenGL/JOGL 3D 渲染（P2D/P3D 渲染器）、JavaFX 2D 渲染（FX2D）、以及可选的硬件 I/O（Raspberry Pi GPIO/串口）。所有 GUI/3D 场景均依赖目标平台提供的本机窗口与图形系统。",

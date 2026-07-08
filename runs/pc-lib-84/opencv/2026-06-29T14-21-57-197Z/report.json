@@ -1437,7 +1437,8 @@
       "LICENSE"
     ],
     "evidence": "根目录 LICENSE 文件为标准 Apache License 2.0 全文；COPYRIGHT 文件列出了 Intel/NVIDIA/AMD/OpenCV Foundation 等版权持有者",
-    "notes": "部分 3rdparty/ 子目录（zlib/libjpeg-turbo/libpng/libtiff/openjpeg/protobuf 等）有各自独立的许可证，但 OpenCV 核心代码以 Apache-2.0 发布"
+    "notes": "部分 3rdparty/ 子目录（zlib/libjpeg-turbo/libpng/libtiff/openjpeg/protobuf 等）有各自独立的许可证，但 OpenCV 核心代码以 Apache-2.0 发布",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 18,
@@ -2537,13 +2538,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
         60,
         150
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -2757,7 +2759,12 @@
       "适配 highgui 模块的 GUI 后端（链接 GTK 鸿蒙版或使用无头模式）",
       "适配视频采集路径（使用 FFmpeg/GStreamer 鸿蒙版 + @ohos.multimedia.camera API 替代 V4L2/Media Foundation/AVFoundation）"
     ],
-    "notes": "OpenCV 主体为纯 CPU/SIMD 计算库，核心算法无硬性平台绑定，交叉编译可行。主要不确定性在 OpenCL/Vulkan 运行时和摄像头/V4L2 兼容层。vendored 依赖均可在鸿蒙 NDK 下编译，核心依赖（FFmpeg/GStreamer/GTK/protobuf/eigen）已有鸿蒙预编译包。"
+    "notes": "OpenCV 主体为纯 CPU/SIMD 计算库，核心算法无硬性平台绑定，交叉编译可行。主要不确定性在 OpenCL/Vulkan 运行时和摄像头/V4L2 兼容层。vendored 依赖均可在鸿蒙 NDK 下编译，核心依赖（FFmpeg/GStreamer/GTK/protobuf/eigen）已有鸿蒙预编译包。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2787,6 +2794,14 @@
         "value": "v4l2",
         "rationale": "Linux V4L2 API 用于摄像头采集，属于平台专有 API"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   }
 }

@@ -1963,7 +1963,8 @@
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -2066,7 +2067,8 @@
       "验证 SIGPIPE 信号处理在 OHOS musl 下的支持情况，必要时用 SO_NOSIGPIPE 替代或条件编译禁用",
       "在 OHOS 上运行 paho 测试套件验证功能完整性"
     ],
-    "notes": "该库已有成熟的 POSIX 平台抽象层（@src/Socket.c, Thread.c, MQTTTime.c），8 个系统/RTOS 平台支持。OHOS NDK 基于 musl libc，与 Linux/POSIX 高度兼容，核心 API（socket/pthread/poll/clock_gettime）均在 musl 中实现。最大不确定点是 SIGPIPE 处理在 OHOS 上的支持——即使受限也易于绕过。整体的工作量主要在 toolchain 配置与编译验证，代码级改动极少或无。无外部命令、无 /proc /sys 访问、无设备操作、无 HW 依赖。"
+    "notes": "该库已有成熟的 POSIX 平台抽象层（@src/Socket.c, Thread.c, MQTTTime.c），8 个系统/RTOS 平台支持。OHOS NDK 基于 musl libc，与 Linux/POSIX 高度兼容，核心 API（socket/pthread/poll/clock_gettime）均在 musl 中实现。最大不确定点是 SIGPIPE 处理在 OHOS 上的支持——即使受限也易于绕过。整体的工作量主要在 toolchain 配置与编译验证，代码级改动极少或无。无外部命令、无 /proc /sys 访问、无设备操作、无 HW 依赖。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "paho.mqtt.c",
@@ -2105,7 +2107,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(EPL-2.0 OR EDL-1.0) 派生的性质(weak_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "纯网络通信库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。通过 BSD socket API 与 MQTT broker 进行 TCP/TLS/WebSocket 通信，不涉及鸿蒙适配重点场景。",

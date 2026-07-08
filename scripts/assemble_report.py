@@ -437,6 +437,22 @@ def assemble(blocks_dir, metrics_path, out_path):
     if errors:
         return None, errors
 
+    # 7b) NORMALIZE (single source of truth) — derive the authoritative
+    #     harmony_adaptation.porting_class/feasibility/effort.level from the dim-12 buckets +
+    #     unadaptable_apis (keeping the model's raw pick in porting_class_model), canonicalize
+    #     code_partition, attach meta.harmony_warnings, and stamp meta.normalized_version. This
+    #     is the SAME logic web/server.js used to run only at serve-time (never persisting) and
+    #     export_xlsx.py re-implemented incompletely — running it here makes report.json born
+    #     self-consistent so the panel, the Excel export, and any direct reader agree.
+    try:
+        _here = os.path.dirname(os.path.abspath(__file__))
+        if _here not in sys.path:
+            sys.path.insert(0, _here)
+        import report_normalize
+        report_normalize.normalize_report(report)
+    except Exception as e:  # never fail assembly on a normalize hiccup — serve-time re-normalizes
+        _add_warnings([f"normalize skipped: {e}"])
+
     # 8) atomic write (tmp + os.replace) so a reader never sees a half-written report
     text = json.dumps(report, indent=2, ensure_ascii=False)
     tmp = out_path + ".tmp"
@@ -472,10 +488,15 @@ def main():
     cm = report.get("code_metrics", {})
     coerced = [w for w in ((report.get("meta") or {}).get("warnings") or [])
                if isinstance(w, str) and w.startswith("shape coerced:")]
+    ha = report.get("harmony_adaptation") or {}
+    pc, pcm = ha.get("porting_class"), ha.get("porting_class_model")
     print(f"Wrote {out_path}")
     print(f"  top-level keys : {len(report)}")
     print(f"  primary lang   : {(report.get('languages') or {}).get('primary')}")
     print(f"  production code: {(cm.get('production') or {}).get('code')} lines")
+    if pc:
+        adj = f" (模型原判 {pcm}，已校正)" if pcm and pcm != pc else ""
+        print(f"  porting_class  : {pc}{adj}")
     if coerced:
         print(f"  shape-coerced  : {len(coerced)} field(s) normalised to schema")
         for w in coerced:

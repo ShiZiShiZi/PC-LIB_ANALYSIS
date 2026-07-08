@@ -1823,7 +1823,8 @@
       "person_days": [
         40,
         80
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "low",
     "recommended_path": "cross_compile",
@@ -2127,7 +2128,8 @@
       "7. 在鸿蒙 Python 3.12 上编译安装 pygobject 及关联 GNOME gi typelibs，验证 Python 插件可加载运行",
       "8. 在鸿蒙 arm64 模拟器/设备上做全功能集成测试（音乐库扫描、播放、播客下载、插件加载）"
     ],
-    "notes": "评估按模型 C（整包桌面应用），因为 Rhythmbox 是终端用户启动的 GNOME 桌面音乐播放器。核心不确定性来自鸿蒙 PC 桌面环境的未知状态：①桌面窗口管理器（多窗口 GTK3 能否跑）为 unknown；②D-Bus 会话总线为 unknown（影响 MPRIS/进程间通信/通知/设备监控）；③音频 I/O 为 unknown（GStreamer 能否找到可用的音频输出后端）。若这些能力均不可用（最坏情况），则需将 Rhythmbox 的 GTK3 GUI 换为 ArkUI 重写（模型 B），工作量将远超当前估算的上限。当前评估基于乐观假设（GTK3 能在鸿蒙桌面跑 + GStreamer 能找到音频输出通道 + D-Bus 有替代方案），confidence: low。FM 广播（V4L2）和 USB 设备同步（GUdev/ipod/mtp）明确不可用，已标记为 unadaptable_apis/hardware。code_metrics 显示 platform_adaptation 与 platform_branches 均为 0（C 代码中无 Windows/macOS 编译宏守卫，也无可检测的运行时平台判断），平台耦合主要为 Linux 特有 API（prctl/V4L2/cfmakeraw/GNU 扩展）——多数已有条件编译保护。多数核心 GNOME 库已在 cmd-pkgs 提供鸿蒙版，减少了自编译工作量，但应用层 GNOME 桌面集成基建（非库）的鸿蒙等价物仍然缺失。"
+    "notes": "评估按模型 C（整包桌面应用），因为 Rhythmbox 是终端用户启动的 GNOME 桌面音乐播放器。核心不确定性来自鸿蒙 PC 桌面环境的未知状态：①桌面窗口管理器（多窗口 GTK3 能否跑）为 unknown；②D-Bus 会话总线为 unknown（影响 MPRIS/进程间通信/通知/设备监控）；③音频 I/O 为 unknown（GStreamer 能否找到可用的音频输出后端）。若这些能力均不可用（最坏情况），则需将 Rhythmbox 的 GTK3 GUI 换为 ArkUI 重写（模型 B），工作量将远超当前估算的上限。当前评估基于乐观假设（GTK3 能在鸿蒙桌面跑 + GStreamer 能找到音频输出通道 + D-Bus 有替代方案），confidence: low。FM 广播（V4L2）和 USB 设备同步（GUdev/ipod/mtp）明确不可用，已标记为 unadaptable_apis/hardware。code_metrics 显示 platform_adaptation 与 platform_branches 均为 0（C 代码中无 Windows/macOS 编译宏守卫，也无可检测的运行时平台判断），平台耦合主要为 Linux 特有 API（prctl/V4L2/cfmakeraw/GNU 扩展）——多数已有条件编译保护。多数核心 GNOME 库已在 cmd-pkgs 提供鸿蒙版，减少了自编译工作量，但应用层 GNOME 桌面集成基建（非库）的鸿蒙等价物仍然缺失。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "rhythmbox",
@@ -2201,7 +2203,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Rhythmbox 作为 GNOME 桌面音乐播放器，深度触及 GUI（GTK3 + X11 窗口栈）与媒体（GStreamer 音视频管线）场景；FM 广播插件直接操作 V4L2 内核硬件设备。GTK3 在鸿蒙 PC cmd-pkgs 中已适配，但桌面窗口管理器的多窗口/桌面集成能力待核实；GStreamer 核心库已适配，但具体编解码器插件与底层音频 I/O 后端状态待核实；V4L2 FM 硬件依赖仅 Linux 有对应，鸿蒙 PC 无可替代。",

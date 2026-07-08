@@ -1065,7 +1065,8 @@
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1185,7 +1186,8 @@
       "编译并运行 testsuite 中代表性测试用例验证功能正确性",
       "生成 ohos 适配的 CMake 配置包（blitzConfig.cmake），供鸿蒙 NDK 项目 find_package(blitz) 使用"
     ],
-    "notes": "评估按模型 A（库经 OHOS NDK 重编后链接进鸿蒙原生应用）。Blitz++ 极其轻量——核心为头文件模板库，唯一编译产物是 libblitz（globals.cpp→全局变量实例）。平台适配代码量仅 11 行（code_metrics.platform_adaptation.total=11）且全部 #ifdef 守卫，鸿蒙编译路径与 Linux 一致。linalg/gmres.cpp 单独声明 GPL-2.0 许可（非主库三选一），鸿蒙迁移时若使用 GMRES 求解器需注意 GPL 传染性合规。"
+    "notes": "评估按模型 A（库经 OHOS NDK 重编后链接进鸿蒙原生应用）。Blitz++ 极其轻量——核心为头文件模板库，唯一编译产物是 libblitz（globals.cpp→全局变量实例）。平台适配代码量仅 11 行（code_metrics.platform_adaptation.total=11）且全部 #ifdef 守卫，鸿蒙编译路径与 Linux 一致。linalg/gmres.cpp 单独声明 GPL-2.0 许可（非主库三选一），鸿蒙迁移时若使用 GMRES 求解器需注意 GPL 传染性合规。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "blitz",
@@ -1237,7 +1239,15 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(LGPL-3.0-only OR BSD-3-Clause OR Artistic-2.0) 派生的性质(weak_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Blitz++ 为纯数值计算库，不涉及 GUI 界面、3D 图形渲染、音视频媒体处理、或特定硬件设备依赖。SIMD 对齐辅助仅为编译期元编程与内存对齐编译器提示，不构成硬件锁定。",

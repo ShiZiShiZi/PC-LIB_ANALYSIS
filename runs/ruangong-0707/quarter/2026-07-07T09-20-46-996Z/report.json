@@ -954,8 +954,8 @@
     "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
-        10,
-        25
+        27.6,
+        37.6
       ],
       "breakdown": [
         {
@@ -969,18 +969,18 @@
         {
           "component": "api_adaptation",
           "person_days": [
-            2,
-            5
+            5.7,
+            5.7
           ],
-          "basis": "Qt 版本条件编译（QGLWidget/QOpenGLWidget）与 OpenGL 上下文初始化需针对鸿蒙 Qt5/OpenGL ES 验证/微调"
+          "basis": "需适配 2874 行 ÷ 500 行/天"
         },
         {
           "component": "recompile",
           "person_days": [
-            1,
-            3
+            14.9,
+            14.9
           ],
-          "basis": "Quarter 本库与 Qt Designer 插件（可选）用 OHOS NDK 重新编译"
+          "basis": "重编译复用 44648 行 ÷ 3000 行/天"
         },
         {
           "component": "testing_verification",
@@ -990,7 +990,8 @@
           ],
           "basis": "无单元测试，需验证示例程序在鸿蒙 Qt 环境下的渲染与事件交互"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "critical_dependencies": [
@@ -1101,7 +1102,8 @@
       "运行 Quarter 示例（如 minimal、examiner）验证 Qt 窗口、事件转换与 3D 渲染",
       "若 Qt6 为强制依赖，评估降级到 Qt5 的工作量或等待 Qt6 鸿蒙移植"
     ],
-    "notes": "评估按库模型 A（C++ 库经 OHOS NDK 重编）。置信度为 medium 是因为 Coin3D 的鸿蒙可用性尚未核实、OpenGL 支持为 partial。若 Coin3D 无法移植或 Qt6 为强制要求，工作量与难度会显著上升。"
+    "notes": "评估按库模型 A（C++ 库经 OHOS NDK 重编）。置信度为 medium 是因为 Coin3D 的鸿蒙可用性尚未核实、OpenGL 支持为 partial。若 Coin3D 无法移植或 Qt6 为强制要求，工作量与难度会显著上升。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "Quarter",
@@ -1142,7 +1144,8 @@
         "value": "spacenav",
         "rationale": "推荐场景集（gui/rendering_3d/media/hardware）未显式列出 3D 鼠标/SpaceNavigator 这类可选 USB HID 输入设备；Quarter 通过可选 spacenav 库支持它，特记为 hardware 下新 kind。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Quarter 触及两个鸿蒙适配重点场景：GUI（Qt 窗口/OpenGL 集成）与 3D 渲染（OpenGL）。Qt 在鸿蒙 PC 已有社区移植（以 Qt5 为主），OpenGL/OpenGL ES 为部分支持，整体可适配但需依赖鸿蒙版 Qt 与 OpenGL ES 后端。可选的 SpaceNavigator 输入设备属于硬件设备，但为可选功能，不影响核心渲染。",

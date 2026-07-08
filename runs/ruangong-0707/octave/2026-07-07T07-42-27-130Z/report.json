@@ -2115,7 +2115,7 @@
   },
   "harmony_adaptation": {
     "porting_class": "needs_adaptation_partial",
-    "feasibility": "partial",
+    "feasibility": "hard",
     "confidence": "medium",
     "recommended_path": "模型 C（整包桌面应用）：保留 CLI 模式作为核心功能（重编译即可），GUI 模式需将 Qt 替换为鸿蒙版 Qt5 或 ArkUI 重写，OpenGL 渲染需适配 OpenGL ES 或引入兼容层",
     "target_assumptions": [
@@ -2225,8 +2225,8 @@
     ],
     "effort": {
       "person_days": [
-        180,
-        360
+        390.9,
+        390.9
       ],
       "level": "very_high",
       "breakdown": [
@@ -2259,6 +2259,22 @@
           "component": "测试与验证",
           "lo": 20,
           "hi": 40
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            137.2,
+            137.2
+          ],
+          "basis": "重编译复用 411530 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            253.7,
+            253.7
+          ],
+          "basis": "需适配 126854 行 ÷ 500 行/天"
         }
       ]
     },
@@ -2267,46 +2283,54 @@
         "name": "Qt",
         "refs": [
           "bk:qt6_not_available"
-        ]
+        ],
+        "order": 1
       },
       {
         "name": "OpenGL",
         "refs": [
           "bk:opengl_desktop"
-        ]
+        ],
+        "order": 2
       },
       {
         "name": "SuiteSparse",
         "refs": [
           "ta:suitesparse"
-        ]
+        ],
+        "order": 3
       },
       {
         "name": "BLAS",
         "refs": [
           "ta:blas_lapack"
-        ]
+        ],
+        "order": 4
       },
       {
         "name": "LAPACK",
         "refs": [
           "ta:blas_lapack"
-        ]
+        ],
+        "order": 5
       },
       {
         "name": "FFTW3",
         "refs": [
           "ta:fftw"
-        ]
+        ],
+        "order": 6
       },
       {
         "name": "Readline",
         "refs": [
           "ta:readline"
-        ]
+        ],
+        "order": 7
       }
     ],
-    "notes": "GNU Octave 是一个大型科学计算应用（73 万行生产代码），鸿蒙适配的核心难点在于：(1) Qt GUI 需从 Qt6 降级到社区提供的 Qt5 鸿蒙版；(2) OpenGL 渲染需适配为 OpenGL ES；(3) 大量 C/C++ 科学计算库需在鸿蒙 NDK 下编译。纯数值计算核心（liboctave/liboctinterp 的解释器/数组/数值算法）无平台依赖，重编译即可。若仅使用 CLI 模式，适配难度大幅降低（仅需编译依赖库+Readline）。"
+    "notes": "GNU Octave 是一个大型科学计算应用（73 万行生产代码），鸿蒙适配的核心难点在于：(1) Qt GUI 需从 Qt6 降级到社区提供的 Qt5 鸿蒙版；(2) OpenGL 渲染需适配为 OpenGL ES；(3) 大量 C/C++ 科学计算库需在鸿蒙 NDK 下编译。纯数值计算核心（liboctave/liboctinterp 的解释器/数组/数值算法）无平台依赖，重编译即可。若仅使用 CLI 模式，适配难度大幅降低（仅需编译依赖库+Readline）。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "kind": "application",
@@ -2329,7 +2353,18 @@
     "model": "glm5.1",
     "confidence_overall": "medium",
     "observations": [],
-    "harmony_warnings": [],
+    "harmony_warnings": [
+      {
+        "code": "cp_loc_coverage",
+        "class": "info",
+        "message": "代码分区桶 LOC 之和(538384)与生产代码(731290)偏差超过 15%（覆盖不足或重复计入）"
+      },
+      {
+        "code": "ua_no_cp_bucket",
+        "class": "actionable",
+        "message": "dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）"
+      }
+    ],
     "schema_version": "1.0",
     "counter_tool": "cloc",
     "warnings": [
@@ -2372,7 +2407,8 @@
       "shape coerced: runtime_surface.filesystem object→array",
       "shape coerced: runtime_surface.devices object→array",
       "shape coerced: harmony_adaptation.unadaptable_apis[0].evidence string→array"
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [
@@ -2473,19 +2509,23 @@
         "modules": [
           {
             "dir": "liboctgui/src",
-            "loc": 62193
+            "loc": 62193,
+            "path": "liboctgui/src"
           },
           {
             "dir": "liboctgui/graphics",
-            "loc": 11142
+            "loc": 11142,
+            "path": "liboctgui/graphics"
           },
           {
             "dir": "liboctgui/qterminal",
-            "loc": 10873
+            "loc": 10873,
+            "path": "liboctgui/qterminal"
           }
         ],
         "total_loc": 84208,
-        "evidence": "Qt5/Qt6 在鸿蒙 PC 上不可用"
+        "evidence": "Qt5/Qt6 在鸿蒙 PC 上不可用",
+        "loc": 84208
       },
       {
         "class": "needs_adaptation",
@@ -2493,11 +2533,13 @@
         "modules": [
           {
             "dir": "liboctinterp/graphics",
-            "loc": 25184
+            "loc": 25184,
+            "path": "liboctinterp/graphics"
           }
         ],
         "total_loc": 25184,
-        "evidence": "OpenGL 在鸿蒙 PC 上不可用（gl2ps-renderer.cc, opengl-renderer.cc）"
+        "evidence": "OpenGL 在鸿蒙 PC 上不可用（gl2ps-renderer.cc, opengl-renderer.cc）",
+        "loc": 25184
       },
       {
         "class": "recompile_reuse",
@@ -2505,39 +2547,48 @@
         "modules": [
           {
             "dir": "liboctave/array",
-            "loc": 48672
+            "loc": 48672,
+            "path": "liboctave/array"
           },
           {
             "dir": "liboctave/numeric",
-            "loc": 28439
+            "loc": 28439,
+            "path": "liboctave/numeric"
           },
           {
             "dir": "liboctave/operators",
-            "loc": 9925
+            "loc": 9925,
+            "path": "liboctave/operators"
           },
           {
             "dir": "liboctave/external",
-            "loc": 23601
+            "loc": 23601,
+            "path": "liboctave/external"
           },
           {
             "dir": "liboctave/util",
-            "loc": 12648
+            "loc": 12648,
+            "path": "liboctave/util"
           },
           {
             "dir": "liboctave/wrappers",
-            "loc": 3863
+            "loc": 3863,
+            "path": "liboctave/wrappers"
           },
           {
             "dir": "liboctinterp/operators",
-            "loc": 12295
+            "loc": 12295,
+            "path": "liboctinterp/operators"
           },
           {
             "dir": "liboctinterp/octave-value",
-            "loc": 41517
+            "loc": 41517,
+            "path": "liboctinterp/octave-value"
           }
         ],
         "total_loc": 180960,
-        "evidence": "纯 C++ 数值计算，无 GUI/平台 API 依赖"
+        "evidence": "纯 C++ 数值计算，无 GUI/平台 API 依赖",
+        "loc": 180960
       },
       {
         "class": "recompile_reuse",
@@ -2545,19 +2596,23 @@
         "modules": [
           {
             "dir": "liboctinterp/interp",
-            "loc": 36709
+            "loc": 36709,
+            "path": "liboctinterp/interp"
           },
           {
             "dir": "liboctinterp/parse-tree",
-            "loc": 19197
+            "loc": 19197,
+            "path": "liboctinterp/parse-tree"
           },
           {
             "dir": "liboctinterp/corefcn",
-            "loc": 36495
+            "loc": 36495,
+            "path": "liboctinterp/corefcn"
           }
         ],
         "total_loc": 92401,
-        "evidence": "解释器/编译器/核心函数——纯 C++ 逻辑"
+        "evidence": "解释器/编译器/核心函数——纯 C++ 逻辑",
+        "loc": 92401
       },
       {
         "class": "needs_adaptation",
@@ -2565,15 +2620,18 @@
         "modules": [
           {
             "dir": "liboctave/system",
-            "loc": 4574
+            "loc": 4574,
+            "path": "liboctave/system"
           },
           {
             "dir": "src",
-            "loc": 3726
+            "loc": 3726,
+            "path": "src"
           }
         ],
         "total_loc": 8300,
-        "evidence": "fork/exec/pipe 等 POSIX 调用和 Windows/macOS 平台分支"
+        "evidence": "fork/exec/pipe 等 POSIX 调用和 Windows/macOS 平台分支",
+        "loc": 8300
       },
       {
         "class": "recompile_reuse",
@@ -2581,119 +2639,148 @@
         "modules": [
           {
             "dir": "scripts/plot",
-            "loc": 42608
+            "loc": 42608,
+            "path": "scripts/plot"
           },
           {
             "dir": "scripts/miscellaneous",
-            "loc": 11498
+            "loc": 11498,
+            "path": "scripts/miscellaneous"
           },
           {
             "dir": "scripts/general",
-            "loc": 10072
+            "loc": 10072,
+            "path": "scripts/general"
           },
           {
             "dir": "scripts/statistics",
-            "loc": 8429
+            "loc": 8429,
+            "path": "scripts/statistics"
           },
           {
             "dir": "scripts/image",
-            "loc": 6137
+            "loc": 6137,
+            "path": "scripts/image"
           },
           {
             "dir": "scripts/sparse",
-            "loc": 5716
+            "loc": 5716,
+            "path": "scripts/sparse"
           },
           {
             "dir": "scripts/elfun",
-            "loc": 1070
+            "loc": 1070,
+            "path": "scripts/elfun"
           },
           {
             "dir": "scripts/linear-algebra",
-            "loc": 4579
+            "loc": 4579,
+            "path": "scripts/linear-algebra"
           },
           {
             "dir": "scripts/optimization",
-            "loc": 4817
+            "loc": 4817,
+            "path": "scripts/optimization"
           },
           {
             "dir": "scripts/signal",
-            "loc": 4018
+            "loc": 4018,
+            "path": "scripts/signal"
           },
           {
             "dir": "scripts/gui",
-            "loc": 4321
+            "loc": 4321,
+            "path": "scripts/gui"
           },
           {
             "dir": "scripts/testfun",
-            "loc": 4143
+            "loc": 4143,
+            "path": "scripts/testfun"
           },
           {
             "dir": "scripts/pkg",
-            "loc": 3902
+            "loc": 3902,
+            "path": "scripts/pkg"
           },
           {
             "dir": "scripts/help",
-            "loc": 3745
+            "loc": 3745,
+            "path": "scripts/help"
           },
           {
             "dir": "scripts/geometry",
-            "loc": 1810
+            "loc": 1810,
+            "path": "scripts/geometry"
           },
           {
             "dir": "scripts/audio",
-            "loc": 1838
+            "loc": 1838,
+            "path": "scripts/audio"
           },
           {
             "dir": "scripts/ode",
-            "loc": 3412
+            "loc": 3412,
+            "path": "scripts/ode"
           },
           {
             "dir": "scripts/strings",
-            "loc": 3306
+            "loc": 3306,
+            "path": "scripts/strings"
           },
           {
             "dir": "scripts/polynomial",
-            "loc": 3120
+            "loc": 3120,
+            "path": "scripts/polynomial"
           },
           {
             "dir": "scripts/specfun",
-            "loc": 2980
+            "loc": 2980,
+            "path": "scripts/specfun"
           },
           {
             "dir": "scripts/legacy",
-            "loc": 2797
+            "loc": 2797,
+            "path": "scripts/legacy"
           },
           {
             "dir": "scripts/special-matrix",
-            "loc": 3495
+            "loc": 3495,
+            "path": "scripts/special-matrix"
           },
           {
             "dir": "scripts/java",
-            "loc": 2149
+            "loc": 2149,
+            "path": "scripts/java"
           },
           {
             "dir": "scripts/set",
-            "loc": 1694
+            "loc": 1694,
+            "path": "scripts/set"
           },
           {
             "dir": "scripts/time",
-            "loc": 1571
+            "loc": 1571,
+            "path": "scripts/time"
           },
           {
             "dir": "scripts/io",
-            "loc": 780
+            "loc": 780,
+            "path": "scripts/io"
           },
           {
             "dir": "scripts/profiler",
-            "loc": 658
+            "loc": 658,
+            "path": "scripts/profiler"
           },
           {
             "dir": "scripts/web",
-            "loc": 652
+            "loc": 652,
+            "path": "scripts/web"
           }
         ],
         "total_loc": 130167,
-        "evidence": "解释执行的 .m 脚本，只要解释器可运行即可复用"
+        "evidence": "解释执行的 .m 脚本，只要解释器可运行即可复用",
+        "loc": 130167
       },
       {
         "class": "recompile_reuse",
@@ -2701,11 +2788,13 @@
         "modules": [
           {
             "dir": "liboctinterp/load-save",
-            "loc": 8002
+            "loc": 8002,
+            "path": "liboctinterp/load-save"
           }
         ],
         "total_loc": 8002,
-        "evidence": "文件格式 I/O，需确保依赖库在鸿蒙上可用"
+        "evidence": "文件格式 I/O，需确保依赖库在鸿蒙上可用",
+        "loc": 8002
       },
       {
         "class": "needs_adaptation",
@@ -2713,15 +2802,18 @@
         "modules": [
           {
             "dir": "liboctmex",
-            "loc": 1743
+            "loc": 1743,
+            "path": "liboctmex"
           },
           {
             "dir": "liboctinterp/dldfcn",
-            "loc": 7419
+            "loc": 7419,
+            "path": "liboctinterp/dldfcn"
           }
         ],
         "total_loc": 9162,
-        "evidence": "MEX 接口和动态加载 .oct 模块，依赖 dlopen/LoadLibrary"
+        "evidence": "MEX 接口和动态加载 .oct 模块，依赖 dlopen/LoadLibrary",
+        "loc": 9162
       }
     ],
     "coverage": {

@@ -1993,12 +1993,13 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 库经 OHOS NDK 交叉编译为 arm64/x86_64 .so，跑在已移植语言运行时之外的原生层；自研内核，无 Linux ABI）",
     "porting_class": "needs_adaptation_partial",
-    "feasibility": "feasible_with_effort",
+    "feasibility": "hard",
     "effort": {
       "person_days": [
         15,
         30
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -2140,7 +2141,8 @@
       "在 arm64 鸿蒙设备/模拟器上运行单元测试，验证主要导入器与后处理步骤",
       "若需提供 Python/Java 绑定，使用鸿蒙对应运行时重新编译并测试 ctypes/JNI 加载"
     ],
-    "notes": "评估按 HarmonyOS PC 原生库口径（模型 A）：C++ 核心经 OHOS NDK 重编为 .so。由于 capability_profile 中 GUI/3D 渲染/媒体/硬件 均为 false，无需申请额外鸿蒙权限。x86_64 目标在 capabilities 中为 unknown，但 arm64 已确认可用，不影响可行性结论。"
+    "notes": "评估按 HarmonyOS PC 原生库口径（模型 A）：C++ 核心经 OHOS NDK 重编为 .so。由于 capability_profile 中 GUI/3D 渲染/媒体/硬件 均为 false，无需申请额外鸿蒙权限。x86_64 目标在 capabilities 中为 unknown，但 arm64 已确认可用，不影响可行性结论。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "assimp",
@@ -2210,7 +2212,8 @@
         "value": "3d_asset_processing_without_rendering",
         "rationale": "Assimp 这类只处理 3D 数据、不直接调用图形 API 的库，按当前 gui/rendering_3d/media/hardware 四分类会被标为全部 false。是否需要新增 \"3d_data_processing\" 场景来标识其领域属性，值得讨论。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Assimp 本身是离线 3D 数据加载/处理库，核心不涉及 GUI 窗口、3D 渲染 API、音视频媒体管线或特定硬件。其输出（aiScene/aiMesh）供上游渲染引擎使用，但库本体不调用 OpenGL/Vulkan/DirectX/Metal，也不操作 GPU/摄像头/蓝牙等设备。",

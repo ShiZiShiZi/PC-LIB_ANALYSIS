@@ -93,6 +93,17 @@ the `.claude/skills/...` and `references/...` paths below resolve.
      模块粒度 + LOC，**LOC 引用 `metrics.json` 的 `code_metrics.dir_loc` 机械数字**，桶和 ≈
      production.code；dim 9 据此定 person_days/breakdown)
 
+   **两层契约（消除重复分析，务必遵守）：** 分析分两层——
+   - **特征层**（`dim6 dependencies` / `dim7 native_api` / `dim8 runtime_surface+build_env` / `dim10 capability_profile`
+     + 脚本信号 `code_metrics.platform_adaptation`/`platform_branches`/`arch_specific`/`dir_loc`）：**客观描述"这个库碰了什么"，
+     是各自事实的唯一权威源**。尤其 **`capability_profile` 是 GUI/3D 渲染/媒体/特定硬件 四类「涉及什么 + 鸿蒙支持状态
+     (`harmony_status`/`specific_hardware`)」的权威源**——查 `harmony-pc-capabilities.json` 定这四类状态的动作只在 dim-10 做一次。
+   - **综合层**（`dim12 code_partition` / `dim9 harmony_adaptation`）：**只消费特征层，不重扫源码、不重判已判过的事实**，
+     且两者结论互不矛盾（`porting_class` 由归一据 dim-12 桶 + dim-9 `unadaptable_apis` 确定性派生）。dim-9 对 GUI/3D/媒体/硬件
+     **直接采用 dim-10 的 `harmony_status`**（不重查 caps、不从 native_api 重扫这四类），只把它翻译成 blocker/effort/remediation。
+   - **跨维同一事实只登记一次、其余用 id 交叉引用不重述**：`caused_by`/`source_capability`（回指 dim-10 场景 key 或
+     dim-9 `ta:*`）/`manifests_as`（指 `ua:*`）/`refs`/`used_symbols`。
+
    **分块流式产出（重要，避免十分钟输出尾巴）：** 本流程**不**在末尾一次性写整份 report.json。
    **每算完一个维度就立刻 `Write` 到 `<runDir>/blocks/<name>.json`**——文件名即报告顶层键、
    内容即该块的 JSON 值（不是 `{name: value}`，而直接是 value）。映射：
@@ -199,12 +210,11 @@ the `.claude/skills/...` and `references/...` paths below resolve.
      应 present 且推出对应 vendor；`cloud_services.present` 时 dim-9 应有 INTERNET 权限项。
    - `required_permissions[].source_capability` 必须指向一个 present 场景，或字面量 `"cloud_services"`（当权限源自云服务时）。
    - `code_partition` 对账：各桶 loc 之和 ≈ `code_metrics.production.code`（coverage.pct ≥90%）；
-     `unadaptable` 桶非空 ⇔ dim-9 `unadaptable_apis` 非空 ⇔ `porting_class ∈ {needs_adaptation_partial,
-     infeasible}`，桶内模块 reason 引用的 `ua:*` id 必须真实存在；**`needs_adaptation` 桶非空 ⇒
-     `porting_class ∈ {needs_adaptation_full, needs_adaptation_partial, infeasible}`，绝不能
-     `recompile_only`/`no_adaptation`**（后者=零源码改动=分区只有 reuse_direct/recompile_reuse；换后端/
-     加平台分支即使只切构建开关也算需适配——server 会强制校正此矛盾）；`effort.breakdown` 分项之和落在
-     `person_days` 区间附近；`critical_dependencies[].name` 都能在 `dependencies[]` 里找到。
+     `unadaptable` 桶 ⇔ dim-9 `unadaptable_apis`（桶内模块 reason 引用的 `ua:*` id 必须真实存在）；
+     **porting_class ↔ 分区桶的一致性由组装归一（`scripts/report_normalize.py`）确定性保证——你只需把模块分进
+     正确的桶、把不可适配 API 填进 `unadaptable_apis`，归一会据此派生并落盘正确的 porting_class（不必自己校对
+     recompile/full/partial，也不会落盘自相矛盾的值）**；`effort.breakdown` 分项之和落在 `person_days` 区间附近；
+     `critical_dependencies[].name` 都能在 `dependencies[]` 里找到。
    补齐发现的缺口；仍不确定的写入 `meta.observations` 或对应块的 `notes`。这一步与服务端的
    `validateReport` 启发式互补（一个是模型推理补全、一个是确定性兜底）。**inline 完成，禁子代理。**
 
@@ -217,8 +227,10 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    ```
    它会从 `metrics.json` splice `languages`/`code_metrics`/`tests`、合并 `blocks/*.json`、确定性补全
    `meta`（`schema_version:"1.0"`、`analyzer:"pc-lib-analyzer"`、`counter_tool`〈取自 fragment〉、并入
-   fragment 的 `_warnings`）与缺省的 `library.analyzed_at`、校验必填顶层键齐全，最后**原子写**
-   `<runDir>/report.json`。若脚本报"缺块/JSON 错/缺 metrics 键"，它**不会**产出 report.json——按提示补齐
+   fragment 的 `_warnings`）与缺省的 `library.analyzed_at`、校验必填顶层键齐全，**再经 `report_normalize.py` 归一**
+   （据 dim-12 桶 + `unadaptable_apis` 确定性派生并落盘 `harmony_adaptation.porting_class`/`feasibility`/`effort.level`，
+   你的原判留存于 `porting_class_model`，并附 `meta.harmony_warnings` + `normalized_version` 戳——所以最终报告的
+   porting_class 可能比你 block 里写的更严格，这是预期的），最后**原子写** `<runDir>/report.json`。若脚本报"缺块/JSON 错/缺 metrics 键"，它**不会**产出 report.json——按提示补齐
    对应 `blocks/<name>.json` 后**重跑**该脚本。最终报告须严格符合 `references/report_schema.json`。
 
    **以下是各块必须包含的字段**（写进对应 `blocks/<name>.json`）：
@@ -271,6 +283,27 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    you coin a new value, hit a gap, or face a classification ambiguity, record it in
    `meta.observations` (`{dimension, field, kind, value, rationale}`) so it can feed back
    into the skills.
+
+4b. **自我复核一致性告警（单趟反思，趁 checkout + codegraph 索引还在）。** 第一次 assemble 后，
+   `report.json` 的 `meta.harmony_warnings` 是 `{code, class, message}` 对象数组——这些是归一器的
+   **跨维一致性启发式**产出。**只处理 `class=="actionable"` 的告警**（`class=="info"` 是归一器已
+   确定性修好的审计留痕，跳过、不要动）。逐条用 `Grep`/`codegraph`/`Read` 回到**生产代码**核对：
+   - **真漏（信号成立）** → 回改对应的 `blocks/<name>.json` 把它补齐，**且必须带 file:line 证据**：
+     `cap_miss:<key>` → 在 `capability_profile.scenarios` 补该场景（present + kind/via/harmony_status +
+     evidence）；`cloud_miss:<vendor>` → 在 `cloud_services.services` 补该厂商；`scenario_no_evidence:<key>`
+     → 给该场景补 evidence；`scenario_no_dim9:<key>` → 在 dim-9 补对应 blocker/target_assumption；
+     `perm_dangling_cap:*`/`*_ref:*`/`critical_dep_notfound:*` → 修正 source_capability/引用 id/依赖名使其对齐。
+   - **误报（信号是假阳）** → **不要臆造数据来消告警**；改为在 `blocks/meta.json` 的
+     `harmony_warnings_dismissed` 追加 `{code, rationale}`，`code` 与告警逐字一致，`rationale` 用中文
+     说明为何良性（**典型良性来源**：命中只在 `tests/`/`examples/`/`demo/`、只出现在注释或字符串、
+     依赖名巧合〈如 `log` 命中日志库而非硬件〉、该能力实际已在别处登记）。归一会把它移入
+     `harmony_warnings_reviewed` 并附理由，不再计入 active。
+   **护栏**：① 任何**新增**（场景/厂商/权限/evidence）都要有生产代码 file:line 证据，拿不出证据就判误报、
+   别硬补；② **只改源维度块**（capability_profile / cloud_services / dependencies / target_assumptions /
+   evidence），**绝不手填** `porting_class`/`feasibility`/`effort.level`——它们在重组装时确定性重派生；
+   ③ **单趟即可**，不必把 active 清到 0（info 类和判为误报后仍留痕的都属正常残留）。
+   处理完**重跑** `python3 scripts/assemble_report.py --run-dir <runDir>`：归一据修好的数据重算、扣除
+   dismissed，落盘干净的 `harmony_warnings` + `harmony_warnings_reviewed`。
 
 5. **Report back.** The clone stays under `repos/` (it is gitignored). Return the
    absolute path to `report.json` plus a concise digest: one-liner, primary

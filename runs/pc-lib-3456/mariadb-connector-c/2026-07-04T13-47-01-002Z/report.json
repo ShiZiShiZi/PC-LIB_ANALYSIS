@@ -1578,7 +1578,8 @@
       "person_days": [
         5,
         12
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -1708,7 +1709,8 @@
       "关闭或替换未鸿蒙化的可选依赖（GSSAPI/Hogweed）",
       "按需申请 ohos.permission.INTERNET 等网络权限"
     ],
-    "notes": "评估按 HarmonyOS NEXT PC 库模型（OHOS NDK 重编后链接使用）。代码中 Windows named pipe/shared memory/Schannel 等专有路径仅在 _WIN32 下编译，鸿蒙上走 POSIX socket 分支。confidence 为 medium 是因为 capabilities.json 未单独列出 POSIX sockets/pthread/dlopen 等目标事实，需编译/测试验证。"
+    "notes": "评估按 HarmonyOS NEXT PC 库模型（OHOS NDK 重编后链接使用）。代码中 Windows named pipe/shared memory/Schannel 等专有路径仅在 _WIN32 下编译，鸿蒙上走 POSIX socket 分支。confidence 为 medium 是因为 capabilities.json 未单独列出 POSIX sockets/pthread/dlopen 等目标事实，需编译/测试验证。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "MariaDB Connector/C",
@@ -1754,7 +1756,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=database_networking 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "MariaDB Connector/C 是纯数据库客户端网络库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件访问。",

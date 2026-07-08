@@ -2392,7 +2392,8 @@
       "person_days": [
         20,
         35
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -2610,7 +2611,8 @@
       "在鸿蒙 Python 3.12 上安装 pysearpc，跑通 Python CLI（seaf-cli）的 RPC 调用链路",
       "运行现有 Python 单元测试（tests/ 目录，含 31 个测试用例）验证核心功能正确性"
     ],
-    "notes": "评估按模型 A（库跑在原生层 + Python 绑定跑在鸿蒙 Python 3.12 上）。若目标是 ArkTS 沙箱应用（模型 B），则需额外将 C 引擎通过 Node-API 暴露给 ArkTS、并重写 seaf-cli 的 Python 逻辑为 ArkTS——工作量大幅上升（person_days 约 [40,60]），且 file-monitor 等系统能力需走 @ohos.* 替代。当前评估中 target_assumptions 有 2 条 required+unknown（ta:ohos_fs_watch、ta:ohos_posix_subset），因此 confidence 下调至 medium——文件系统监听 API 与 POSIX 子集覆盖度直接影响适配工作量上下界。libsearpc 作为 Seafile 同组织维护的轻量库，移植确定性较高。GnuTLS 和 bpwrapper 均为可选（默认不使用），不阻塞主功能。platform_adaptation 3650 行平台守卫代码量中等——主要是三套文件系统监控后端和 Win32 文件操作分支，核心逻辑（common/ 层）几乎无平台差异。"
+    "notes": "评估按模型 A（库跑在原生层 + Python 绑定跑在鸿蒙 Python 3.12 上）。若目标是 ArkTS 沙箱应用（模型 B），则需额外将 C 引擎通过 Node-API 暴露给 ArkTS、并重写 seaf-cli 的 Python 逻辑为 ArkTS——工作量大幅上升（person_days 约 [40,60]），且 file-monitor 等系统能力需走 @ohos.* 替代。当前评估中 target_assumptions 有 2 条 required+unknown（ta:ohos_fs_watch、ta:ohos_posix_subset），因此 confidence 下调至 medium——文件系统监听 API 与 POSIX 子集覆盖度直接影响适配工作量上下界。libsearpc 作为 Seafile 同组织维护的轻量库，移植确定性较高。GnuTLS 和 bpwrapper 均为可选（默认不使用），不阻塞主功能。platform_adaptation 3650 行平台守卫代码量中等——主要是三套文件系统监控后端和 Win32 文件操作分支，核心逻辑（common/ 层）几乎无平台差异。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "seafile",
@@ -2675,7 +2677,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:读写文件系统",
+        "class": "actionable",
+        "message": "required_permission 读写文件系统 的 source_capability=gui 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目是纯后台守护进程/库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件场景。唯一的平台适配焦点是文件系统监控——需要为鸿蒙 PC 新增对应的 OHOS 文件系统事件监听后端。",

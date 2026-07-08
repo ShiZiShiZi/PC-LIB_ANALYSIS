@@ -997,7 +997,8 @@
       "person_days": [
         3,
         6
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -1082,7 +1083,8 @@
       "在鸿蒙 PC 上验证 Lua 5.1 + luabind 的基本绑定功能（函数注册、类绑定、虚函数覆盖）",
       "如目标为 ArkTS 应用，通过 Node-API (napi) 将 luabind 编译产物暴露给 ArkTS 层调用"
     ],
-    "notes": "评估按模型 A（库作为原生 .so 被链接进鸿蒙 C++/NAPI 项目）。luabind 无平台 API 调用、无外部命令、无硬件依赖——属于 C++ 库中最易适配的一类（仅需重编译）。Lua 5.1 自身同样仅需 OHOS NDK 交叉编译。若目标为 ArkTS 应用，需额外通过 N-API 封装 luabind 的注册 API（luabind::open、luabind::module、luabind::def、luabind::class_），工作量约额外 2–4 人-天。"
+    "notes": "评估按模型 A（库作为原生 .so 被链接进鸿蒙 C++/NAPI 项目）。luabind 无平台 API 调用、无外部命令、无硬件依赖——属于 C++ 库中最易适配的一类（仅需重编译）。Lua 5.1 自身同样仅需 OHOS NDK 交叉编译。若目标为 ArkTS 应用，需额外通过 N-API 封装 luabind 的注册 API（luabind::open、luabind::module、luabind::def、luabind::class_），工作量约额外 2–4 人-天。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "luabind",
@@ -1123,7 +1125,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "luabind 是纯 C++ 语言互操作库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件场景。全部能力围绕 C++↔Lua 的模板元编程绑定与类型转换展开。",

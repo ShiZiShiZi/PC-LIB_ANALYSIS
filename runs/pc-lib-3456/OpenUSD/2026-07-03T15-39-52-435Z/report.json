@@ -2076,7 +2076,8 @@
       "person_days": [
         40,
         80
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -2297,7 +2298,8 @@
       "按需重编可选依赖（OIIO/OCIO/Draco/Imath 等已鸿蒙化，OpenVDB/Embree/MaterialX 等需额外工作）",
       "在鸿蒙 Python 3.12 上跑通 Python 绑定单元测试"
     ],
-    "notes": "评估按库口径（模型 A）进行；usdview 作为终端用户应用应按模型 C 重新评估，GUI/窗口/桌面集成会进一步推高工作量。目标平台对 x86_64、Vulkan 及若干 POSIX 调试机制的状态未核实，已将置信度下调至 medium。"
+    "notes": "评估按库口径（模型 A）进行；usdview 作为终端用户应用应按模型 C 重新评估，GUI/窗口/桌面集成会进一步推高工作量。目标平台对 x86_64、Vulkan 及若干 POSIX 调试机制的状态未核实，已将置信度下调至 medium。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "OpenUSD",
@@ -2357,7 +2359,20 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:media",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 media 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      },
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(NOASSERTION) 派生的性质(undeclared) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "OpenUSD 核心场景描述能力本身不直接涉及 GUI/3D 渲染/媒体/特定硬件，但成像（Imaging）与检视器（usdview）组件深度依赖 3D 图形栈与 Qt GUI。",

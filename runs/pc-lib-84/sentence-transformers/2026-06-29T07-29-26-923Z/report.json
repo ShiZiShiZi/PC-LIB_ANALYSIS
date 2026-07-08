@@ -408,7 +408,8 @@
       "LICENSE"
     ],
     "evidence": "顶层 LICENSE 文件为完整 Apache License 2.0 文本；pyproject.toml [project].license = 'Apache-2.0'。",
-    "notes": "宽松许可，需保留 NOTICE/归属声明。"
+    "notes": "宽松许可，需保留 NOTICE/归属声明。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 28,
@@ -1265,13 +1266,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
+    "feasibility": "hard",
     "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
         3,
         8
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime",
@@ -1443,7 +1445,8 @@
       "运行核心单元测试（跳过 slow/custom 标记），确认 SentenceTransformer/CrossEncoder/SparseEncoder 在 CPU 下结果正确",
       "文档中声明 ONNX/OpenVINO 后端及多模态 extras 在鸿蒙 PC 上暂不推荐使用"
     ],
-    "notes": "评估按库默认口径（模型 A：跑在已移植 Python 运行时上）。核心文本嵌入/重排序功能无平台耦合；阻碍均来自可选原生后端/多模态解码。若目标是将库封装为 ArkTS 应用（模型 B），则需通过 Node-API 暴露 Python 能力，工作量和复杂度会显著增加。 存在 required 且 target_status=unknown 的目标假设（ta:hf-download：互联网访问与本地缓存），因此整体置信度下调至 medium；若鸿蒙 PC 对 Python 库的网络/文件访问受限，核心功能也会受影响。"
+    "notes": "评估按库默认口径（模型 A：跑在已移植 Python 运行时上）。核心文本嵌入/重排序功能无平台耦合；阻碍均来自可选原生后端/多模态解码。若目标是将库封装为 ArkTS 应用（模型 B），则需通过 Node-API 暴露 Python 能力，工作量和复杂度会显著增加。 存在 required 且 target_status=unknown 的目标假设（ta:hf-download：互联网访问与本地缓存），因此整体置信度下调至 medium；若鸿蒙 PC 对 Python 库的网络/文件访问受限，核心功能也会受影响。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "meta": {
     "schema_version": "1.0",
@@ -1459,6 +1462,19 @@
         "value": "docs/skills 非生产库代码",
         "rationale": "code-metrics 将 docs/ 与 skills/ 目录按目录 token 判为 production，但它们是文档与 Hugging Face Agent Skill，非 sentence-transformers 可安装生产代码；dim 1/6/7/9 结论以 sentence_transformers/ 包为准。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      },
+      {
+        "code": "perm_dangling_cap:读写存储（文件访问）",
+        "class": "actionable",
+        "message": "required_permission 读写存储（文件访问） 的 source_capability=filesystem 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   }
 }

@@ -2717,7 +2717,8 @@
       "person_days": [
         20,
         35
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -2962,7 +2963,8 @@
       "将 geany 应用打包为鸿蒙 PC 桌面应用包（格式待 OHOS 桌面生态明确），含 GTK/GLib 运行时与数据文件",
       "在鸿蒙 PC 实际环境中运行功能验证：编辑器、语法高亮、代码补全、构建执行、配置持久化"
     ],
-    "notes": "评估按模型 C（整包桌面应用）。GTK3 和 GLib 已在鸿蒙 cmd-pkgs 中适配（available），这是移植可行性最关键的正面信号——核心 GUI 框架无需从头开发。主要不确定性来自鸿蒙桌面生态尚未完全明确的目标能力：桌面窗口管理器是否支持 GTK 运行（ta:wm 为 unknown）、桌面应用打包格式（ta:desktop_app 为 unknown）、GModule 可用性（ta:gmodule 为 unknown）。这些 unknown 项导致 confidence 为 medium——在目标事实 verified 之前，porting_class 不升 infeasible 但也不降 no_adaptation。Windows/macOS 平台代码（win32.c/osx.c）由 #ifdef 隔离，不影响 OHOS 编译。VTE 终端可选，禁用以降低复杂度。vendored 库（Scintilla/Lexilla/ctags）为标准 C++，无平台 API 硬依赖，交叉编译即可。platform_adaptation 代码量约 791 行（主要为 Windows 分支），移除此平台守卫不影响核心功能——鸿蒙走 Unix/POSIX 路径。因 INTERNET 权限项在网络功能中使用（单实例 socket），且该权限的目标状态为 unknown，相关权限限制尚不明确。"
+    "notes": "评估按模型 C（整包桌面应用）。GTK3 和 GLib 已在鸿蒙 cmd-pkgs 中适配（available），这是移植可行性最关键的正面信号——核心 GUI 框架无需从头开发。主要不确定性来自鸿蒙桌面生态尚未完全明确的目标能力：桌面窗口管理器是否支持 GTK 运行（ta:wm 为 unknown）、桌面应用打包格式（ta:desktop_app 为 unknown）、GModule 可用性（ta:gmodule 为 unknown）。这些 unknown 项导致 confidence 为 medium——在目标事实 verified 之前，porting_class 不升 infeasible 但也不降 no_adaptation。Windows/macOS 平台代码（win32.c/osx.c）由 #ifdef 隔离，不影响 OHOS 编译。VTE 终端可选，禁用以降低复杂度。vendored 库（Scintilla/Lexilla/ctags）为标准 C++，无平台 API 硬依赖，交叉编译即可。platform_adaptation 代码量约 791 行（主要为 Windows 分支），移除此平台守卫不影响核心功能——鸿蒙走 Unix/POSIX 路径。因 INTERNET 权限项在网络功能中使用（单实例 socket），且该权限的目标状态为 unknown，相关权限限制尚不明确。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "geany",
@@ -3008,7 +3010,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Geany 是 GTK3 桌面 IDE 应用，核心场景为 GUI 桌面界面（多窗口编辑/标签页/菜单/对话框/侧栏布局）。无 3D 渲染、无媒体编解码/采集、无特定硬件依赖（纯软件应用）。所有场景均通过 GTK 工具包 + POSIX/Win32 平台适配层实现。",

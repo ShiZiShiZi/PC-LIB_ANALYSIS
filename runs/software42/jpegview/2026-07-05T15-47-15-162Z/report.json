@@ -1666,7 +1666,8 @@
       "person_days": [
         60,
         120
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "high",
     "recommended_path": "rewrite_arkui",
@@ -2031,7 +2032,8 @@
       "调研鸿蒙 PC 剪贴板/粘贴板服务(pasteboard)、打印、文件类型注册能力，据此实现或丢弃对应功能",
       "按鸿蒙 PC 应用交付模型打包为可安装分发包(.hap 或桌面应用形态)"
     ],
-    "notes": "JPEGView 为 Windows 专属桌面应用（模型 C）。WTL/ATL GUI 框架与 GDI+ 图形系统的 Windows 独占性、以及大量 Win32 系统/桌面级 API（注册表、Shell、COM、剪贴板、打印、桌面壁纸、多显示器）使整个 GUI 层无法迁移——不是'修改'而是'重写'。鸿蒙 PC 的桌面窗口管理器、文件对话框、剪贴板、打印等桌面级能力均在 `harmony-pc-capabilities.json` 中标注为 `unknown`，目标事实未核实时评审保守（假设多数不可用）。图像编解码与处理核心算法可复用，但占比不足 30%；GUI 层重写是主要工作量（>60 人天），且须等鸿蒙 PC 桌面能力成熟后才能完成。综上判为 `infeasible`。本项目的 `code_metrics.platform_adaptation` 统计到 281 行由 `#ifdef WIN32/_MSC_VER` 等 Windows 编译宏正向包裹的生产代码（macOS 3 行、Linux 1 行），印证平台耦合度极高。"
+    "notes": "JPEGView 为 Windows 专属桌面应用（模型 C）。WTL/ATL GUI 框架与 GDI+ 图形系统的 Windows 独占性、以及大量 Win32 系统/桌面级 API（注册表、Shell、COM、剪贴板、打印、桌面壁纸、多显示器）使整个 GUI 层无法迁移——不是'修改'而是'重写'。鸿蒙 PC 的桌面窗口管理器、文件对话框、剪贴板、打印等桌面级能力均在 `harmony-pc-capabilities.json` 中标注为 `unknown`，目标事实未核实时评审保守（假设多数不可用）。图像编解码与处理核心算法可复用，但占比不足 30%；GUI 层重写是主要工作量（>60 人天），且须等鸿蒙 PC 桌面能力成熟后才能完成。综上判为 `infeasible`。本项目的 `code_metrics.platform_adaptation` 统计到 281 行由 `#ifdef WIN32/_MSC_VER` 等 Windows 编译宏正向包裹的生产代码（macOS 3 行、Linux 1 行），印证平台耦合度极高。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "kind": "application",
@@ -2097,7 +2099,20 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "blocker_ref:bk:wtl_gui:ua:cdialog",
+        "class": "actionable",
+        "message": "blocker bk:wtl_gui 的引用 ua:cdialog 不存在（悬空引用）"
+      },
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为 Windows 原生桌面图片查看/编辑器应用，GUI/窗口/桌面集成/硬件加速场景突出；无网络/云服务依赖。",

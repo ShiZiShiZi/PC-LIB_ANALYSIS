@@ -1361,7 +1361,8 @@
       "person_days": [
         10,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1553,7 +1554,8 @@
       "验证 OpenMP 可用性，不可用时回退到单线程/自实现并行",
       "在鸿蒙 PC 上跑通 G'MIC CLI 与 libgmic 的基本图像处理管线"
     ],
-    "notes": "评估按库模型 A（C++ 库经 OHOS NDK 重编后链接）。因部分目标能力（OpenMP、存储/网络权限、显示后端）状态未完全核实，置信度取 medium。G'MIC 无 GUI 应用形态，不触及 ArkTS 沙箱模型 B。"
+    "notes": "评估按库模型 A（C++ 库经 OHOS NDK 重编后链接）。因部分目标能力（OpenMP、存储/网络权限、显示后端）状态未完全核实，置信度取 medium。G'MIC 无 GUI 应用形态，不触及 ArkTS 沙箱模型 B。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "gmic",
@@ -1612,7 +1614,25 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      },
+      {
+        "code": "perm_dangling_cap:读写存储",
+        "class": "actionable",
+        "message": "required_permission 读写存储 的 source_capability=filesystem 不在已标记场景中"
+      },
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(weak_copyleft) 与依据 SPDX(CECILL-C OR CECILL-2.1) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "G'MIC 核心库为纯图像处理计算库，可选地通过 CImg 使用 X11/GDI/SDL 进行 2D 图像显示；不涉及 3D 图形、音视频媒体或特定硬件。",

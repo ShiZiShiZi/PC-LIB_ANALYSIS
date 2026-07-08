@@ -2290,13 +2290,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK musl + POSIX 子集，arm64/x86_64；库经 OHOS NDK 重编译为 .so，模型 A——库跑在鸿蒙原生层上、非 ArkTS 沙箱）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "hard",
     "effort": {
       "person_days": [
         20,
         40
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -2520,7 +2521,12 @@
       "构建并运行测试套件（至少跑通 CPU 拓扑单元测试和 XML 导入导出测试），验证基本拓扑发现能力和输出正确性",
       "调试和性能调优：确保拓扑信息准确、加载速度合理、内存占用低"
     ],
-    "notes": "评估按模型 A（C 库经 OHOS NDK 重编为原生 .so）。置信度为 medium，因两个关键前提未核实：① 鸿蒙 PC 内核是否提供硬件拓扑信息查询接口（target_assumptions 中的 ta:ohos_topology_apis，unknown）——若接口缺失则 hwloc 在鸿蒙上的核心价值大幅削弱，最多提供处理器计数（类似 topology-noos.c 的降级模式）；② CPU 亲和性接口的可用性（ta:cpu_affinity_apis，unknown）。这些 unknown 假设使 confidence 下调至多 medium。所有 GPU 相关的 unadaptable_api（ua:cuInit, ua:nvmlInit）是编译时可选的——标记为 unadaptable 是客观声明其无法移植，但通过 configure 开关可完全排除，核心 CPU/内存拓扑不受影响，porting_class 仍为 needs_adaptation_full。Cairo 在 cmd-pkgs 中确认已鸿蒙化（available），可直接链接使用。"
+    "notes": "评估按模型 A（C 库经 OHOS NDK 重编为原生 .so）。置信度为 medium，因两个关键前提未核实：① 鸿蒙 PC 内核是否提供硬件拓扑信息查询接口（target_assumptions 中的 ta:ohos_topology_apis，unknown）——若接口缺失则 hwloc 在鸿蒙上的核心价值大幅削弱，最多提供处理器计数（类似 topology-noos.c 的降级模式）；② CPU 亲和性接口的可用性（ta:cpu_affinity_apis，unknown）。这些 unknown 假设使 confidence 下调至多 medium。所有 GPU 相关的 unadaptable_api（ua:cuInit, ua:nvmlInit）是编译时可选的——标记为 unadaptable 是客观声明其无法移植，但通过 configure 开关可完全排除，核心 CPU/内存拓扑不受影响，porting_class 仍为 needs_adaptation_full。Cairo 在 cmd-pkgs 中确认已鸿蒙化（available），可直接链接使用。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "hwloc",
@@ -2581,7 +2587,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "hwloc 主要是一个系统信息库，通过读取 OS 内核接口获取硬件拓扑。其图形展示功能（lstopo）可选地依赖 Cairo/X11 或 Windows GDI，涉及 GUI 输出与 GPU 设备查询。多种 GPU 后端（CUDA/NVML/OpenCL/LevelZero/RSMI）虽只读取设备属性，但仍依赖特定 GPU 厂商的专有驱动 API。不涉及媒体与云服务。",

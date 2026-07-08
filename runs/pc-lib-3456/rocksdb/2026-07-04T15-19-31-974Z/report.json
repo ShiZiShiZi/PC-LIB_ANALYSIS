@@ -2274,7 +2274,8 @@
       "person_days": [
         10,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -2434,7 +2435,8 @@
       "编译链接已鸿蒙化的依赖库（lz4/zstd/snappy/zlib/bzip2/gflags/jemalloc 预编译包）",
       "在鸿蒙 PC 上跑通 RocksDB 核心功能测试（db_test, compaction_test 等 5800+ 个 C++ 用例）"
     ],
-    "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 交叉编译为原生 .so，再通过 Node-API 桥接暴露给 ArkTS/JS 层，或直接供其他原生模块链接）。RocksDB 的 port 抽象层已证明其可移植性——成功移植到 Windows（含 Win32 纯原生后端）、macOS、FreeBSD、Solaris、Android、AIX 等多种平台。鸿蒙 PC（musl+OHOS NDK）的 POSIX 支持度高于 Android Bionic 但低于完整 Linux，核心 POSIX I/O 路径大概率可用。code_metrics.platform_adaptation 显示仅 413 行平台适配代码（占 420K 生产代码的 ~0.1%），平台耦合较轻。18 个依赖中 7/10 个 C++ 生产依赖已鸿蒙化，整体移植风险低。唯一不确定点为 x86_64 架构支持状态（非必需）。全功能可适配（unadaptable_apis 为空），故 porting_class=needs_adaptation_full。"
+    "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 交叉编译为原生 .so，再通过 Node-API 桥接暴露给 ArkTS/JS 层，或直接供其他原生模块链接）。RocksDB 的 port 抽象层已证明其可移植性——成功移植到 Windows（含 Win32 纯原生后端）、macOS、FreeBSD、Solaris、Android、AIX 等多种平台。鸿蒙 PC（musl+OHOS NDK）的 POSIX 支持度高于 Android Bionic 但低于完整 Linux，核心 POSIX I/O 路径大概率可用。code_metrics.platform_adaptation 显示仅 413 行平台适配代码（占 420K 生产代码的 ~0.1%），平台耦合较轻。18 个依赖中 7/10 个 C++ 生产依赖已鸿蒙化，整体移植风险低。唯一不确定点为 x86_64 架构支持状态（非必需）。全功能可适配（unadaptable_apis 为空），故 porting_class=needs_adaptation_full。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "rocksdb",
@@ -2491,7 +2493,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(Apache-2.0 OR GPL-2.0-only) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "RocksDB 为纯嵌入式数据存储引擎，不涉及 GUI、3D 渲染、音视频媒体、特定硬件设备等鸿蒙适配重点场景。依赖的 CPU SIMD（SSE4.2/ARM NEON/POWER CRC）均有纯软件回退路径，不构成硬件依赖。",

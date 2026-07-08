@@ -645,17 +645,17 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        3,
-        8
+        67.7,
+        69.7
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            2,
-            5
+            66.4,
+            66.4
           ],
-          "basis": "needs_adaptation 桶中 normal 后端 782 行需新增鸿蒙平台分支：替换 GLEW 为鸿蒙 GLES3/EGL 头文件 + eglGetProcAddress；normal/glew 的 31651 行整体替换（删除 GLEW 源码，改用系统 GLES3 头文件）；Qt 后端 746 行需改写 QGLFunctions→QOpenGLFunctions 或鸿蒙原生 GLES 调用"
+          "basis": "需适配 33179 行 ÷ 500 行/天"
         },
         {
           "component": "build_system",
@@ -672,8 +672,17 @@
             1
           ],
           "basis": "验证所有 GLES 2.0 函数封装在鸿蒙 GLES 3.2 上正常工作"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            0.3,
+            0.3
+          ],
+          "basis": "重编译复用 845 行 ÷ 3000 行/天"
         }
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -789,7 +798,8 @@
       "Qt 后端升级 QGLFunctions→QOpenGLFunctions（如需保留 Qt 后端）",
       "在鸿蒙 PC 上编译并运行测试，验证所有 GLES 2.0 封装函数正常工作"
     ],
-    "notes": "鸿蒙已支持 OpenGL ES 3.2（向下兼容 GLES 2.0）和 EGL，本库所需的所有图形 API 均有等价实现。主要改造集中在构建系统和平台适配层，核心 GL 封装逻辑无需修改。Qt 后端为可选适配项（如宿主项目不使用 Qt 则可跳过）。内嵌 GLEW 的 31651 行代码是整体删除替换，实际修改量远小于此数字。"
+    "notes": "鸿蒙已支持 OpenGL ES 3.2（向下兼容 GLES 2.0）和 EGL，本库所需的所有图形 API 均有等价实现。主要改造集中在构建系统和平台适配层，核心 GL 封装逻辑无需修改。Qt 后端为可选适配项（如宿主项目不使用 Qt 则可跳过）。内嵌 GLEW 的 31651 行代码是整体删除替换，实际修改量远小于此数字。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "gles2",
@@ -825,7 +835,15 @@
         "value": "yip",
         "rationale": "构建系统为 Yip（非主流），Yipfile 替代 CMakeLists.txt，需在报告中记录并作为迁移考量"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:gui",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目是一个 OpenGL ES 2.0 API 封装库，核心场景是 3D 图形渲染（通过 OpenGL/GLES 驱动）。不涉及 GUI 工具包、媒体编解码或特定硬件设备。",

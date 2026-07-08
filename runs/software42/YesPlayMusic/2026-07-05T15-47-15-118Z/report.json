@@ -1979,13 +1979,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（应用，模型 C — 整包桌面应用：Electron 桌面运行时 + Node.js 22，需桌面窗口环境与原生桌面集成能力）",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation_partial",
     "feasibility": "hard",
     "effort": {
       "person_days": [
         30,
         60
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "low",
     "recommended_path": "recompile_napi",
@@ -2172,7 +2173,12 @@
       "配置鸿蒙应用打包（替换 electron-builder 的 dmg/nsis/AppImage 产物）",
       "在鸿蒙 PC 上运行测试，验证 Electron 窗口渲染、音频播放、API 调用、快捷键、托盘等功能"
     ],
-    "notes": "评估走模型 C（整包桌面应用）。核心风险：Electron 框架在鸿蒙 PC 的可用性未知（target_assumptions 中标记 unknown），这是单点决定性因素——可用则工作量可控（30-45 人-天）、不可用则需 ArkUI 全量重写（100+ 人-天，升为 infeasible）。因多个关键目标能力（Electron、桌面窗口、系统托盘、桌面应用交付形态）均未核实，confidence 设为 low。Native API 中 Linux X11/MPRIS/DBus、macOS Touch Bar/Dock 等均为平台条件代码，HarmonyOS 新加平台分支即可不适用。@unblockneteasemusic/rust-napi 为可选功能（解锁变灰歌曲），非核心播放必需，最差可裁剪。Node.js 已移植、纯 Web 前端可复用是主要可顺移部分。"
+    "notes": "评估走模型 C（整包桌面应用）。核心风险：Electron 框架在鸿蒙 PC 的可用性未知（target_assumptions 中标记 unknown），这是单点决定性因素——可用则工作量可控（30-45 人-天）、不可用则需 ArkUI 全量重写（100+ 人-天，升为 infeasible）。因多个关键目标能力（Electron、桌面窗口、系统托盘、桌面应用交付形态）均未核实，confidence 设为 low。Native API 中 Linux X11/MPRIS/DBus、macOS Touch Bar/Dock 等均为平台条件代码，HarmonyOS 新加平台分支即可不适用。@unblockneteasemusic/rust-napi 为可选功能（解锁变灰歌曲），非核心播放必需，最差可裁剪。Node.js 已移植、纯 Web 前端可复用是主要可顺移部分。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "YesPlayMusic",
@@ -2244,7 +2250,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本应用基于 Electron 框架提供桌面 GUI，使用 Vue.js 构建前端界面，通过 howler.js（Web Audio API）和 plyr 实现音频/MV 播放。核心适配要点：Electron 桌面框架（含 Chromium 渲染、Native 窗口管理、系统托盘、全局快捷键、Touch Bar）以及 Linux 下的 MPRIS/DBus/X11 集成。无 3D 渲染或特定硬件依赖。",

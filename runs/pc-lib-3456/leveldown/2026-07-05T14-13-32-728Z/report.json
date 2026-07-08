@@ -667,14 +667,15 @@
   },
   "harmony_adaptation": {
     "porting_class": "recompile_only",
-    "feasibility": "feasible",
+    "feasibility": "feasible_with_effort",
     "confidence": "high",
     "recommended_path": "针对 OHOS arm64 目标，配置 node-gyp 使用 OHOS NDK 交叉编译链，将 leveldown 编译为 .node 原生扩展文件。具体步骤：① 安装 OHOS NDK 并配置环境变量（CC/CXX/LDFLAGS）；② 设置 node-gyp 的 --target_arch=arm64 和系统头文件/库路径；③ 利用 node-gyp-build 在安装时自动从源码构建（或生产预编译 .node 二进制）；④ 由于底层 LevelDB 和 Snappy 已有 OHOS PC 预编译包（cmd-pkgs），可静态链接或替换为系统提供的预编译库；⑤ Node.js npm 运行时依赖（abstract-leveldown、napi-macros）在已移植的 Node.js 上无需修改即可运行。",
     "effort": {
       "person_days": {
         "lo": 2,
         "hi": 5
-      }
+      },
+      "level": "low"
     },
     "target_assumptions": [
       {
@@ -682,27 +683,31 @@
         "required": true,
         "target_status": "available",
         "impact": "不阻碍，Node.js 24.13.0 已在 OHOS PC 移植就绪",
-        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs",
+        "id": "ta:1"
       },
       {
         "capability": "OHOS NDK（C++11 编译器 + musl libc + POSIX 子集）",
         "required": true,
         "target_status": "available",
         "impact": "已确认，leveldown 使用标准 C++11 + N-API，无需特殊系统接口",
-        "source": "OHOS NEXT NDK 官方文档"
+        "source": "OHOS NEXT NDK 官方文档",
+        "id": "ta:2"
       },
       {
         "capability": "libuv（port-libuv 使用 uv_mutex_t/uv_cond_t 等）",
         "required": true,
         "target_status": "available",
         "impact": "libuv 随 Node.js 一起移植，leveldown 的 LevelDB 内部通过 port-libuv 使用 libuv 进行线程同步",
-        "source": "Node.js 24.13.0 for OHOS"
+        "source": "Node.js 24.13.0 for OHOS",
+        "id": "ta:3"
       }
     ],
     "blockers": [],
     "unadaptable_apis": [],
     "required_permissions": [],
-    "notes": "leveldown 的 C++ 源码（binding.cc）仅使用 N-API（Node.js 标准原生接口）和 LevelDB C++ API，不含任何平台特有 API（Win32/POSIX/DirectX 等）。底层依赖 LevelDB 和 Snappy 已有 OHOS PC 预编译包（cmd-pkgs 收录）。Node.js 运行时已移植到 OHOS PC（24.13.0，含 N-API）。npm 包依赖（abstract-leveldown、napi-macros、node-gyp-build）为纯 JavaScript/宏代码，在移植的 Node.js 上直接运行。主要工作量为 OHOS arm64 交叉编译环境的配置和持续集成适配。生产代码共 19,915 行，其中 C++ 12,724 行、C/C++ 头文件 3,518 行、JS 191 行——均无需源码修改。"
+    "notes": "leveldown 的 C++ 源码（binding.cc）仅使用 N-API（Node.js 标准原生接口）和 LevelDB C++ API，不含任何平台特有 API（Win32/POSIX/DirectX 等）。底层依赖 LevelDB 和 Snappy 已有 OHOS PC 预编译包（cmd-pkgs 收录）。Node.js 运行时已移植到 OHOS PC（24.13.0，含 N-API）。npm 包依赖（abstract-leveldown、napi-macros、node-gyp-build）为纯 JavaScript/宏代码，在移植的 Node.js 上直接运行。主要工作量为 OHOS arm64 交叉编译环境的配置和持续集成适配。生产代码共 19,915 行，其中 C++ 12,724 行、C/C++ 头文件 3,518 行、JS 191 行——均无需源码修改。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "kind": "library",
@@ -741,7 +746,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "leveldown 是一个纯嵌入式键值存储引擎绑定库，不涉及 GUI、3D 渲染、媒体处理或特定硬件。",

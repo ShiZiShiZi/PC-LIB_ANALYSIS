@@ -223,7 +223,8 @@
       "LICENSE.txt"
     ],
     "evidence": "LICENSE.txt 包含完整 MIT License 文本（Copyright 2023 Niels Martignène）；README.md 第 58 行确认 'MIT License'；npm package.json 声明 'license: MIT'。历史版本曾使用 LGPL-3.0（2.2.5 版，2023-01-23），2.3.9 版（2023-03-10）重新许可为 MIT。",
-    "notes": "当前版本为 MIT 许可。历史曾短暂使用 LGPL-3.0（v2.2.5 至 v2.3.8），v2.3.9 起切换为 MIT 并沿用至今。"
+    "notes": "当前版本为 MIT 许可。历史曾短暂使用 LGPL-3.0（v2.2.5 至 v2.3.8），v2.3.9 起切换为 MIT 并沿用至今。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 2,
@@ -782,7 +783,8 @@
       "person_days": [
         15,
         40
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -917,7 +919,8 @@
       "添加 __OHOS__ 平台宏守卫，确保 Win32/Apple 专有代码正确排除",
       "在鸿蒙 Node.js 上运行 Koffi 测试套件验证功能完整性"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。Koffi 的核心难点是手写汇编——调用约定桥接代码需要与目标平台的 C ABI 精确匹配，这是移植工作量最大的部分。该库不依赖特定硬件或不可替代的 API，所有平台专有代码都有条件编译守卫，理论上可全部适配，但需要逐架构的 ABI 验证工作。若目标是 ArkTS 沙箱应用（模型 B），则 Node.js 运行时不可用于应用层，需要改走 N-API 桥接到 ArkTS 的路径，工作量更大。克隆仓库为前端仓库（仅含 README/LICENSE），实际源码位于 Codeberg 单仓 https://codeberg.org/Koromix/rygel/ 的 src/koffi 目录，本报告基于官方文档、npm 包元数据、CHANGELOG 及贡献指南分析，未直接读取 C++/汇编源码——置信度受此影响评为 medium。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。Koffi 的核心难点是手写汇编——调用约定桥接代码需要与目标平台的 C ABI 精确匹配，这是移植工作量最大的部分。该库不依赖特定硬件或不可替代的 API，所有平台专有代码都有条件编译守卫，理论上可全部适配，但需要逐架构的 ABI 验证工作。若目标是 ArkTS 沙箱应用（模型 B），则 Node.js 运行时不可用于应用层，需要改走 N-API 桥接到 ArkTS 的路径，工作量更大。克隆仓库为前端仓库（仅含 README/LICENSE），实际源码位于 Codeberg 单仓 https://codeberg.org/Koromix/rygel/ 的 src/koffi 目录，本报告基于官方文档、npm 包元数据、CHANGELOG 及贡献指南分析，未直接读取 C++/汇编源码——置信度受此影响评为 medium。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "meta": {
     "schema_version": "1.0",
@@ -950,6 +953,7 @@
         "value": "needs_adaptation_full",
         "rationale": "Koffi 需大量适配工作（汇编重验证、POSIX 子集缺口），但所有功能理论上均可在鸿蒙适配、无不可替代 API——归为 needs_adaptation_full（全部可适配）而非 needs_adaptation_partial（部分不可适配）。person_days 区间偏高（15–40）反映汇编验证工作量，但 porting_class 仍为 full 因 unadaptable_apis 为空"
       }
-    ]
+    ],
+    "normalized_version": 3
   }
 }

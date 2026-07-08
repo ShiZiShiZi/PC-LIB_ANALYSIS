@@ -1596,7 +1596,8 @@
       "person_days": [
         0,
         2
-      ]
+      ],
+      "level": "very_low"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -1706,7 +1707,8 @@
       "确认可通过 nodejs.org 或内网 dist-url 镜像下载对应版本的 Node.js 开发头文件",
       "运行 node-gyp configure/build 构建一个简单 test addon 验证端到端流程"
     ],
-    "notes": "评估按模型 A（CLI 工具跑在鸿蒙已移植 Node.js 运行时上）。node-gyp 自身为零适配（no_adaptation），不必编译、无原生部分。唯一未尽事宜为鸿蒙 PC 子进程模型的可用性（ta:subprocess_spawn，target_status=unknown），若受阻需等待平台能力成熟——但这不影响 node-gyp 代码自身的可移植性判定，confidence 因此仍为 high（该项影响的是它作为「可工作的构建工具」而非「可运行的代码」）。Windows 专有代码（find-visualstudio.js、Find-VisualStudio.cs、reg.exe 调用）在鸿蒙 PC 上因 process.platform !== 'win32' 而不会执行，无需适配。"
+    "notes": "评估按模型 A（CLI 工具跑在鸿蒙已移植 Node.js 运行时上）。node-gyp 自身为零适配（no_adaptation），不必编译、无原生部分。唯一未尽事宜为鸿蒙 PC 子进程模型的可用性（ta:subprocess_spawn，target_status=unknown），若受阻需等待平台能力成熟——但这不影响 node-gyp 代码自身的可移植性判定，confidence 因此仍为 high（该项影响的是它作为「可工作的构建工具」而非「可运行的代码」）。Windows 专有代码（find-visualstudio.js、Find-VisualStudio.cs、reg.exe 调用）在鸿蒙 PC 上因 process.platform !== 'win32' 而不会执行，无需适配。",
+    "porting_class_model": "no_adaptation"
   },
   "library": {
     "name": "node-gyp",
@@ -1756,7 +1758,15 @@
         "rationale": "ta:subprocess_spawn 的 target_status=unknown 属于「子进程启动」这一非 node-gyp 本体的平台能力问题。node-gyp 自身代码的可移植性（纯脚本、零原生）不受影响，故 confidence 仍为 high。但若严格按「任何 required+unknown ⇒ confidence≤medium」则应为 medium。这里选择了描述性上下文的判法：子进程能力未知不影响 node-gyp 代码自身无需改造的事实，仅在 notes 中注明。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "node-gyp 为 Node.js CLI 构建工具，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备等鸿蒙适配重点场景。其全部功能为命令行文件操作、网络下载和子进程构建编排，属于纯计算/工具类。",

@@ -1011,13 +1011,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C 库经 OHOS NDK/musl libc 交叉编译为 .so，arm64 架构；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation_partial",
+    "feasibility": "hard",
     "effort": {
       "person_days": [
         10,
         18
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1214,7 +1215,12 @@
       "用 OHOS NDK clang 交叉编译 libbsd.so（arm64），运行现有 test/ 下的测试确认基本功能",
       "如有必要编写 CMakeLists.txt 以支持 OHOS SDK 的 CMake 工具链（ohos.toolchain.cmake），替代 autotools"
     ],
-    "notes": "libbsd 的结构决定了其迁移工作量大但模式固定——本质上是在 configure.ac 加一个 OS 分支、按需要一个平台后端 C 文件。代码中已有 linux/macos/solaris/aix/hpux/hurd/win 七个平台后端作为参考模板，新增 OHOS 后端的模式完全一致。真正的未知数不在代码量而在目标平台能力：OHOS musl 的 POSIX 子集到底覆盖多少（termios/fcntl F_CLOSEM/SO_PEERCRED）以及 /dev/urandom 是否存在——这些在 harmony-pc-capabilities.json 中均为 unknown，导致 confidence=medium。若 OHOS 内核提供 Linux 兼容的 /dev/urandom 和基础 POSIX socket/termios，person_days 可缩至[8,12]。"
+    "notes": "libbsd 的结构决定了其迁移工作量大但模式固定——本质上是在 configure.ac 加一个 OS 分支、按需要一个平台后端 C 文件。代码中已有 linux/macos/solaris/aix/hpux/hurd/win 七个平台后端作为参考模板，新增 OHOS 后端的模式完全一致。真正的未知数不在代码量而在目标平台能力：OHOS musl 的 POSIX 子集到底覆盖多少（termios/fcntl F_CLOSEM/SO_PEERCRED）以及 /dev/urandom 是否存在——这些在 harmony-pc-capabilities.json 中均为 unknown，导致 confidence=medium。若 OHOS 内核提供 Linux 兼容的 /dev/urandom 和基础 POSIX socket/termios，person_days 可缩至[8,12]。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "one_liner": "为 Linux、musl、Solaris、Windows 等非 BSD 系统提供 BSD 风格的 C 工具函数库",
@@ -1286,7 +1292,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libbsd 是纯 C 系统工具函数库，不涉及 GUI 工具包、3D 渲染、音视频媒体或特定硬件设备。其功能集中在字符串处理、安全随机数、文件描述符操作、排序算法等纯计算或标准 POSIX 范畴。",

@@ -2385,7 +2385,8 @@
       "person_days": [
         180,
         360
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "high",
     "recommended_path": "abandon",
@@ -2655,7 +2656,8 @@
       "如确有容器引擎需求：推动鸿蒙内核团队评估实现 Linux namespace/cgroup/seccomp/netfilter 兼容层（内核级工程，非应用适配范畴）"
     ],
     "required_permissions": [],
-    "notes": "Moby 是 Docker 容器引擎的开源上游，其本质是 Linux 容器运行时编排器。移植到鸿蒙 PC 的根本障碍不在 Go 语言/代码层面（Go 运行时已移植），而在于其**运行时行为依赖 Linux 内核 API**（namespace/cgroup/seccomp/netlink/OverlayFS/iptables），这些在鸿蒙自研内核上不存在。这不是「重编/改 API/桥接」能解决的问题，而是「需要目标内核实现一套 Linux 容器原语」的内核级工程。Go 运行时（harmony-pc-capabilities 已确认 available）仅保证编译通过——生成的二进制在鸿蒙上执行仍会因内核 API 缺失而失败。评估基于模型 C（整包服务应用）口径，confidence=high（Linux 内核 API 缺失的事实明确）。"
+    "notes": "Moby 是 Docker 容器引擎的开源上游，其本质是 Linux 容器运行时编排器。移植到鸿蒙 PC 的根本障碍不在 Go 语言/代码层面（Go 运行时已移植），而在于其**运行时行为依赖 Linux 内核 API**（namespace/cgroup/seccomp/netlink/OverlayFS/iptables），这些在鸿蒙自研内核上不存在。这不是「重编/改 API/桥接」能解决的问题，而是「需要目标内核实现一套 Linux 容器原语」的内核级工程。Go 运行时（harmony-pc-capabilities 已确认 available）仅保证编译通过——生成的二进制在鸿蒙上执行仍会因内核 API 缺失而失败。评估基于模型 C（整包服务应用）口径，confidence=high（Linux 内核 API 缺失的事实明确）。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "name": "moby",
@@ -2719,7 +2721,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cloud_no_internet",
+        "class": "actionable",
+        "message": "cloud_services 涉及云端但 dim-9 未登记 ohos.permission.INTERNET（可能漏登记）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Moby（Docker Engine）是 headless 容器引擎守护进程，无 GUI 界面、无 3D 渲染、无音视频媒体处理。其主要依赖为 Linux 内核级功能（namespace、cgroup、seccomp、netlink）与操作系统文件系统能力，并通过可选日志驱动间接涉及云端服务（AWS CloudWatch、GCP Cloud Logging）。",

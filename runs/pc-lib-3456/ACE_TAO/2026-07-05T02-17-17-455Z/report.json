@@ -1792,7 +1792,8 @@
       "person_days": [
         20,
         40
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -1982,7 +1983,8 @@
       "可选：编译 ACE_SSL (依赖 OpenSSL OHOS 版) 和 TAO ZIOP 压缩 (依赖 zlib OHOS 版)",
       "文档化 OHOS 平台的构建步骤与已知限制"
     ],
-    "notes": "评估按模型 A（C++ 库经 OHOS NDK 交叉编译为 .so 供鸿蒙原生应用/N-API 链接）。ACE 自身就是平台移植框架——新增 OHOS 平台配置是 ACE 有几十年历史、对 20+ 平台做过的事，总体可控。主要风险在 OHOS NDK POSIX 子集的完整性（epoll/fork/ioctl 等支持未知数），但这些可通过 ACE 已有的条件编译与降级路径解决。confidence=medium 因多条 `target_assumptions` 中 `required:true` 且 `target_status:unknown`（OHOS NDK POSIX 子集具体 API 覆盖未逐项核实）。若 OHOS NDK 提供完整的 socket/pthread/mmap/dlopen 支持，则可下调至 `person_days:[12,25]`；若大量核心 POSIX API 缺失或受限，则难度上升但 ACE 仍可通过广泛的条件编译与替代路径保持可用。平台适配信号：`platform_adaptation.total=1216` (Windows 999/posix 181/macOS 36)，表明约 1216 行平台守卫代码需在 OHOS 路径新增对应的条件编译分支。"
+    "notes": "评估按模型 A（C++ 库经 OHOS NDK 交叉编译为 .so 供鸿蒙原生应用/N-API 链接）。ACE 自身就是平台移植框架——新增 OHOS 平台配置是 ACE 有几十年历史、对 20+ 平台做过的事，总体可控。主要风险在 OHOS NDK POSIX 子集的完整性（epoll/fork/ioctl 等支持未知数），但这些可通过 ACE 已有的条件编译与降级路径解决。confidence=medium 因多条 `target_assumptions` 中 `required:true` 且 `target_status:unknown`（OHOS NDK POSIX 子集具体 API 覆盖未逐项核实）。若 OHOS NDK 提供完整的 socket/pthread/mmap/dlopen 支持，则可下调至 `person_days:[12,25]`；若大量核心 POSIX API 缺失或受限，则难度上升但 ACE 仍可通过广泛的条件编译与替代路径保持可用。平台适配信号：`platform_adaptation.total=1216` (Windows 999/posix 181/macOS 36)，表明约 1216 行平台守卫代码需在 OHOS 路径新增对应的条件编译分支。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "ACE_TAO",
@@ -2046,7 +2048,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(NOASSERTION) 派生的性质(undeclared) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "ACE/TAO 核心为网络中间件库，不涉及 3D 渲染、媒体编解码或特定硬件。仅通过可选 GUI Reactor 集成模块 (FlReactor/FoxReactor/QtReactor/TkReactor) 触及桌面 GUI 框架，均为可选编译模块。核心网络通信与 CORBA 不依赖云端服务——全部为点对点/本地部署的分布式对象调用。",

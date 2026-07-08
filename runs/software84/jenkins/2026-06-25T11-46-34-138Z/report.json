@@ -833,7 +833,8 @@
       "LICENSE.txt"
     ],
     "evidence": "LICENSE.txt 全文与 MIT 许可证一致；README.md 与 pom.xml <licenses> 均声明 The MIT license。",
-    "notes": "宽松许可，需保留版权声明。仓库中捆绑的第三方依赖/插件可能携带不同许可。"
+    "notes": "宽松许可，需保留版权声明。仓库中捆绑的第三方依赖/插件可能携带不同许可。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 44,
@@ -2369,7 +2370,8 @@
       "person_days": [
         40,
         80
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "target_assumptions": [
@@ -2654,7 +2656,8 @@
       "核实鸿蒙 PC 对 JAR/WAR 桌面/服务器应用交付的支持，必要时重打包为 .hap",
       "在鸿蒙 JDK 上运行核心单元测试与集成测试"
     ],
-    "notes": "本评估按模型 C（整包应用）进行。Jenkins 不是 ArkTS 应用，因此不考虑 Node-API 桥接重写。Windows 专用原生组件（winp/Kernel32/winsw）在鸿蒙上不会加载，不视为本体核心阻碍；真正的核心风险是 JNA POSIX 路径与鸿蒙进程/权限模型。由于存在多项 target_status=unknown 的目标能力假设，整体置信度降至 medium。"
+    "notes": "本评估按模型 C（整包应用）进行。Jenkins 不是 ArkTS 应用，因此不考虑 Node-API 桥接重写。Windows 专用原生组件（winp/Kernel32/winsw）在鸿蒙上不会加载，不视为本体核心阻碍；真正的核心风险是 JNA POSIX 路径与鸿蒙进程/权限模型。由于存在多项 target_status=unknown 的目标能力假设，整体置信度降至 medium。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "meta": {
     "schema_version": "1.0",
@@ -2707,6 +2710,19 @@
         "value": "app_delivery",
         "rationale": "传统 JAR/WAR 桌面/服务器应用在鸿蒙 PC 的交付形态属于应用交付模型假设。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      },
+      {
+        "code": "perm_dangling_cap:读写存储",
+        "class": "actionable",
+        "message": "required_permission 读写存储 的 source_capability=filesystem 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   }
 }

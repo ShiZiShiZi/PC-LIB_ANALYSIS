@@ -1156,7 +1156,8 @@
       "person_days": [
         3,
         6
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1259,7 +1260,8 @@
       "交叉编译后运行 nettle 测试套件（make check）验证功能正确性",
       "生成 pkg-config .pc 文件供上层鸿蒙应用链接"
     ],
-    "notes": "Nettle 是本分析中最易于移植的 C 库之一——其设计哲学「只做密码学计算、不碰 I/O/内存分配/平台」在此体现优势。无 POSIX、无系统调用、无动态加载、无外部命令调用，唯一的 OS 耦合是 fat 库的 getenv（仅用于调试，musl 支持）。整体评估置信 high——目标平台事实均已核实或社区验证。若目标需要作为 ArkTS 应用的 Node-API 插件暴露（模型 B），额外工作包括写 Node-API 包装层（约 2-5 人天），库本身仍无需改动。"
+    "notes": "Nettle 是本分析中最易于移植的 C 库之一——其设计哲学「只做密码学计算、不碰 I/O/内存分配/平台」在此体现优势。无 POSIX、无系统调用、无动态加载、无外部命令调用，唯一的 OS 耦合是 fat 库的 getenv（仅用于调试，musl 支持）。整体评估置信 high——目标平台事实均已核实或社区验证。若目标需要作为 ArkTS 应用的 Node-API 插件暴露（模型 B），额外工作包括写 Node-API 包装层（约 2-5 人天），库本身仍无需改动。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "nettle",
@@ -1307,7 +1309,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(weak_copyleft) 与依据 SPDX(LGPL-3.0-or-later OR GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Nettle 是纯密码学计算库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定外设硬件。其唯一与硬件接近的是架构特定汇编优化（x86_64 AESNI/SHA-NI、ARM NEON/Crypto Extensions、PowerPC64、s390x、SPARC64），但每种优化均有纯 C 回退路径，不绑定特定硬件。",

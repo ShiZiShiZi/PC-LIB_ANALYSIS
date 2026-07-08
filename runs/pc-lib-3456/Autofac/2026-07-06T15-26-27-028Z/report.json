@@ -571,7 +571,8 @@
       "person_days": [
         0,
         1
-      ]
+      ],
+      "level": "very_low"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -616,7 +617,8 @@
       "确认 .NET 运行时（.NET 8+ 或 .NET Standard 2.0 兼容运行时）在鸿蒙 PC 上的可用性",
       "若 .NET 运行时可用，直接通过 NuGet 包引用即可使用，无需源码修改"
     ],
-    "notes": "本评估将 porting_class 判定为 no_adaptation 的前提是 .NET 运行时在鸿蒙 PC 可用。若 .NET 运行时不可用，则需考虑：(1) 通过 Wine/兼容层运行、(2) 用 .NET NativeAOT 编译为原生二进制、(3) 等待社区移植 .NET 运行时。由于 harmony-pc-capabilities.json 的 runtimes 段未列出 .NET，此为不确定因素，但鉴于鸿蒙 PC 已移植多种主流语言运行时，.NET 移植的可能性较高。confidence 维持 high 因为库本身零适配成本。"
+    "notes": "本评估将 porting_class 判定为 no_adaptation 的前提是 .NET 运行时在鸿蒙 PC 可用。若 .NET 运行时不可用，则需考虑：(1) 通过 Wine/兼容层运行、(2) 用 .NET NativeAOT 编译为原生二进制、(3) 等待社区移植 .NET 运行时。由于 harmony-pc-capabilities.json 的 runtimes 段未列出 .NET，此为不确定因素，但鉴于鸿蒙 PC 已移植多种主流语言运行时，.NET 移植的可能性较高。confidence 维持 high 因为库本身零适配成本。",
+    "porting_class_model": "no_adaptation"
   },
   "library": {
     "name": "Autofac",
@@ -640,7 +642,15 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Autofac 是纯 IoC/DI 容器库，不涉及 GUI 界面、3D 渲染、媒体处理或特定硬件，所有功能均在托管 .NET 运行时内完成。",

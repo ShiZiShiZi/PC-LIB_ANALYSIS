@@ -1215,7 +1215,8 @@
       "person_days": [
         3,
         7
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1336,7 +1337,8 @@
         ]
       }
     ],
-    "notes": "评估按模型 A（库经 OHOS NDK 交叉编译供鸿蒙原生程序调用）。库的设计核心即是跨平台可移植：APR 已鸿蒙化解决了底层抽象、OpenSSL/libuuid 已就绪、Win32 分支编译时自动排除。唯一的轻量工作：APR-Util 交叉编译（可参照 APR 的鸿蒙构建）和 musl POSIX 子集验证。person_days 区间 [3,7] 反映低不确定性——依赖栈已基本鸿蒙化、平台适配代码量小（编译宏守卫 227 行）、无障碍性 API。"
+    "notes": "评估按模型 A（库经 OHOS NDK 交叉编译供鸿蒙原生程序调用）。库的设计核心即是跨平台可移植：APR 已鸿蒙化解决了底层抽象、OpenSSL/libuuid 已就绪、Win32 分支编译时自动排除。唯一的轻量工作：APR-Util 交叉编译（可参照 APR 的鸿蒙构建）和 musl POSIX 子集验证。person_days 区间 [3,7] 反映低不确定性——依赖栈已基本鸿蒙化、平台适配代码量小（编译宏守卫 227 行）、无障碍性 API。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "activemq-cpp",
@@ -1359,7 +1361,15 @@
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=无（网络通信是库基本功能，非 capability_profile 场景驱动） 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "纯后端消息中间件客户端库，不涉及 GUI/3D 渲染/媒体/特定硬件场景。",

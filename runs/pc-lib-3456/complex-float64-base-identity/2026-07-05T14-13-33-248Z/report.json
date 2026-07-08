@@ -852,7 +852,7 @@
     "notes": "构建需要 node-gyp（及平台 C 编译器）编译 src/addon.c 生成 addon.node。纯 JS 路径（lib/main.js）无需编译。OS 兼容列表宽泛，实际运行须 Node.js 支持。"
   },
   "harmony_adaptation": {
-    "feasibility": "feasible",
+    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "confidence": "high",
     "effort": {
@@ -860,7 +860,7 @@
         0.5,
         1.5
       ],
-      "level": "very_low"
+      "level": "low"
     },
     "recommended_path": "Node.js 运行环境在 HarmonyOS NEXT 上已有移植版，纯 JavaScript 路径 (lib/main.js) 无需任何修改即可运行。如需原生扩展性能，将 C 源码 (src/main.c, src/addon.c) 通过 OHOS NDK 的 node-gyp 或 cmake 重新编译为 .node 文件即可——C 代码仅使用标准 C99 和 N-API (Node-API)，无平台相关系统调用，无需代码修改。",
     "blockers": [],
@@ -871,25 +871,29 @@
         "required": true,
         "target_status": "available",
         "impact": "ported - pure JS path runs out of the box",
-        "source": "https://gitee.com/openharmony/third_party_node"
+        "source": "https://gitee.com/openharmony/third_party_node",
+        "id": "ta:1"
       },
       {
         "capability": "Node-API (N-API) on HarmonyOS NEXT PC",
         "required": false,
         "target_status": "available",
         "impact": "available via OHOS Node.js port; needed for native addon path only",
-        "source": "OHOS NDK documentation"
+        "source": "OHOS NDK documentation",
+        "id": "ta:2"
       },
       {
         "capability": "POSIX sys/time.h (gettimeofday)",
         "required": false,
         "target_status": "available",
         "impact": "only used in benchmark code (non-production); available on OHOS",
-        "source": "OHOS NDK / musl libc"
+        "source": "OHOS NDK / musl libc",
+        "id": "ta:3"
       }
     ],
     "required_permissions": [],
-    "notes": "核心逻辑 f(z)=z 极其简单，恒等函数只需返回输入值，无任何平台假设。生产代码中 C 部分仅使用标准 C99 和 N-API，benchmark 使用的 gettimeofday 不产生产品依赖。鸿蒙化工作量约 0.5-1.5 人天，主要是搭建 OHOS NDK 编译环境重新编译 .node 文件。"
+    "notes": "核心逻辑 f(z)=z 极其简单，恒等函数只需返回输入值，无任何平台假设。生产代码中 C 部分仅使用标准 C99 和 N-API，benchmark 使用的 gettimeofday 不产生产品依赖。鸿蒙化工作量约 0.5-1.5 人天，主要是搭建 OHOS NDK 编译环境重新编译 .node 文件。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "kind": "library",
@@ -934,8 +938,8 @@
       }
     ],
     "warnings": [],
-    "harmony_warnings": [],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "scenarios": [

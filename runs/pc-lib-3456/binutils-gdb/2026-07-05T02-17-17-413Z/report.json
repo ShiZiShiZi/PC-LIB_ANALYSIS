@@ -3013,7 +3013,8 @@
       "person_days": [
         30,
         60
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -3305,7 +3306,8 @@
       "构建 gdbserver 并测试 GDB remote 模式在鸿蒙上的完整调试流程（断点/单步/变量查看/多线程）",
       "gprofng 性能采集器评估适配策略：如 LD_PRELOAD 注入不可用则降级为统计采样或对接 HiPerf"
     ],
-    "notes": "评估按原生 C/C++ 工具集口径（工具自身编译为鸿蒙原生可执行程序）。binutils 工具集（不含 GDB）可通过 OHOS NDK 交叉编译实现基本运行（person_days 约 10-20）；GDB 的本地调试模式因深度依赖 ptrace/fork/procfs/libthread_db，在鸿蒙自研内核上的可用性几乎完全取决于目标平台是否提供等价接口——当前所有核 ps 程调试相关目标能力状态均为 unknown（5 条 target_assumptions），因此整体置信度为 medium。建议路标：短期先交叉编译 binutils 并验证文件工具功能；中期评估鸿蒙调试接口可用性后决定 GDB 适配深度；长期目标为完整运行 GDB remote 调试 + core 分析场景。"
+    "notes": "评估按原生 C/C++ 工具集口径（工具自身编译为鸿蒙原生可执行程序）。binutils 工具集（不含 GDB）可通过 OHOS NDK 交叉编译实现基本运行（person_days 约 10-20）；GDB 的本地调试模式因深度依赖 ptrace/fork/procfs/libthread_db，在鸿蒙自研内核上的可用性几乎完全取决于目标平台是否提供等价接口——当前所有核 ps 程调试相关目标能力状态均为 unknown（5 条 target_assumptions），因此整体置信度为 medium。建议路标：短期先交叉编译 binutils 并验证文件工具功能；中期评估鸿蒙调试接口可用性后决定 GDB 适配深度；长期目标为完整运行 GDB remote 调试 + core 分析场景。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "binutils-gdb",
@@ -3364,7 +3366,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯 CLI 工具链，不涉及 GUI/桌面界面、3D 图形渲染、音视频媒体或特定硬件设备。核心运行时需求为文件 I/O（目标文件/可执行文件读写）、进程间通信（ptrace/信号/管道）和网络（远程调试）。属纯粹的计算/文件处理类工具集。",

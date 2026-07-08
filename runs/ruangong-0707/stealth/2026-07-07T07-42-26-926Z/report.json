@@ -397,10 +397,10 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        3,
-        8
+        3.2,
+        8.2
       ],
-      "level": "low",
+      "level": "medium",
       "breakdown": [
         {
           "component": "deps_porting",
@@ -425,6 +425,22 @@
             1
           ],
           "basis": "Go 模块构建无特殊要求；go generate 需 Node.js/npx 环境，但生成产物 assets.go 已包含在仓库中"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            0.1,
+            0.1
+          ],
+          "basis": "重编译复用 35 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            0.1,
+            0.1
+          ],
+          "basis": "需适配 19 行 ÷ 500 行/天"
         }
       ]
     },
@@ -516,7 +532,8 @@
       "若 launcher 不可用，适配为手动指定 CDP 端口连接模式",
       "在鸿蒙 PC 上运行集成测试验证 stealth 注入脚本能绕过 bot 检测"
     ],
-    "notes": "stealth 库代码体积极小（51 行核心 Go 代码），且无平台 API 依赖。实际适配工作量几乎全在依赖 rod 的兼容性验证上。rod 本身是一个较成熟的跨平台库，其核心通过 CDP（Chrome DevTools Protocol）与浏览器通信，这是基于 WebSocket 的协议，平台无关。主要风险点是 launcher 的进程启动机制。confidence 为 medium 是因为 subprocess_spawn 的目标状态为 unknown。"
+    "notes": "stealth 库代码体积极小（51 行核心 Go 代码），且无平台 API 依赖。实际适配工作量几乎全在依赖 rod 的兼容性验证上。rod 本身是一个较成熟的跨平台库，其核心通过 CDP（Chrome DevTools Protocol）与浏览器通信，这是基于 WebSocket 的协议，平台无关。主要风险点是 launcher 的进程启动机制。confidence 为 medium 是因为 subprocess_spawn 的目标状态为 unknown。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "go-rod/stealth",
@@ -544,7 +561,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": []
+    "observations": [],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "stealth 库本身不涉及 GUI/3D 渲染/媒体/硬件等鸿蒙适配重点场景。它是一个纯逻辑库，通过 rod 框架向 Chromium 浏览器注入 JavaScript 脚本来绕过 bot 检测，不直接操作任何硬件或图形栈。",

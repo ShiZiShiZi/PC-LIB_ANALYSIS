@@ -1173,13 +1173,14 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 运行时上; 原生插件经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible",
+    "feasibility": "feasible_with_effort",
     "confidence": "high",
     "effort": {
       "person_days": [
         1,
         3
-      ]
+      ],
+      "level": "low"
     },
     "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 JavaScript 数值转换库，鸿蒙 PC 已移植 Node.js 运行时，纯 JavaScript 部分（含主入口 lib/index.js 和 polyfill lib/polyfill.js）可直接运行，无需任何修改。C 原生插件（src/addon.c + src/main.c）仅使用 Node-API 和 C 标准库（stdint.h、string.h），无任何平台特有系统调用或外部依赖，可通过 OHOS NDK 交叉编译重新生成。整体移植难度极低，也可先跳过原生插件纯用 JS polyfill。",
@@ -1189,28 +1190,32 @@
         "required": true,
         "target_status": "available",
         "impact": "JavaScript 部分直接运行，无需改动",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "id": "ta:1"
       },
       {
         "capability": "Node-API (N-API) 在 OHOS NDK 中可用",
         "required": false,
         "target_status": "available",
         "impact": "C 原生插件可经 OHOS NDK 交叉编译，无需修改源码",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "id": "ta:2"
       },
       {
         "capability": "C 标准库（stdint.h, string.h, stdbool.h, assert.h）在 OHOS NDK (musl) 中可用",
         "required": false,
         "target_status": "available",
         "impact": "C 实现无需降级或替换，直接编译",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "id": "ta:3"
       },
       {
         "capability": "Math.f16round 在鸿蒙 Node.js 中可用（ECMAScript 可选特性）",
         "required": false,
         "target_status": "unknown",
         "impact": "若不可用，自动回退到 JS polyfill 路径，不影响功能",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "id": "ta:4"
       }
     ],
     "blockers": [
@@ -1268,7 +1273,8 @@
       "确认 JS polyfill 在纯 JS 环境下正确运行（可选，已自动降级）"
     ],
     "required_permissions": [],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库自带纯 JS polyfill 回退路径，即使原生插件暂时不可用，所有功能均可正常工作。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库自带纯 JS polyfill 回退路径，即使原生插件暂时不可用，所有功能均可正常工作。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "@stdlib/number-float32-base-to-float16",
@@ -1324,7 +1330,8 @@
     ],
     "warnings": [],
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "该库为纯数值计算库，不涉及 GUI、3D 渲染、媒体或硬件设备。所有逻辑均为标准 CPU 上的 IEEE 754 浮点数位操作，无任何外围设备或系统能力依赖。",

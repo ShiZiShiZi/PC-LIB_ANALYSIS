@@ -1303,7 +1303,8 @@
       "person_days": [
         12,
         25
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -1452,7 +1453,8 @@
       "放弃 Oracle OCI 和 MS SQL Server ODBC 后端——专有闭源且平台耦合深，鸿蒙上无合理替代",
       "在鸿蒙 PC 上编译并运行 odb-tests 验证 libodb + 选定数据库后端的正确性"
     ],
-    "notes": "评估基于模型 A（C++ 库经 OHOS NDK 交叉编译，运行在鸿蒙原生层）。ODB 的 GCC 插件编译器是唯一的 GCC 专有依赖，但该工具仅运行在构建宿主机上——类似 bison/flex 等代码生成器，对目标平台无影响。运行时库的核心代码（libodb）为纯净 C++11 + STL，平台兼容性好；数据库后端中 SQLite 后端移植最易（单文件 C 库），MySQL/PostgreSQL 后端需确认其 C 客户端库在鸿蒙的可用性（标记为 unknown，下调 confidence 到 medium），Oracle/MS SQL Server 后端建议放弃。所有适配工作均可完成，无需放弃核心 ORM 功能。本仓 odb-tests 和 odb-examples 被 metrics 脚本误分类为 production——实际为测试和示例代码，porting_class 基于生产目录（odb/libodb/libodb-*/libodb-boost/libodb-qt）判定。"
+    "notes": "评估基于模型 A（C++ 库经 OHOS NDK 交叉编译，运行在鸿蒙原生层）。ODB 的 GCC 插件编译器是唯一的 GCC 专有依赖，但该工具仅运行在构建宿主机上——类似 bison/flex 等代码生成器，对目标平台无影响。运行时库的核心代码（libodb）为纯净 C++11 + STL，平台兼容性好；数据库后端中 SQLite 后端移植最易（单文件 C 库），MySQL/PostgreSQL 后端需确认其 C 客户端库在鸿蒙的可用性（标记为 unknown，下调 confidence 到 medium），Oracle/MS SQL Server 后端建议放弃。所有适配工作均可完成，无需放弃核心 ORM 功能。本仓 odb-tests 和 odb-examples 被 metrics 脚本误分类为 production——实际为测试和示例代码，porting_class 基于生产目录（odb/libodb/libodb-*/libodb-boost/libodb-qt）判定。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "odb",
@@ -1520,7 +1522,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:gui",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "ODB 为纯数据库 ORM 框架，不涉及 GUI 桌面界面、3D 图形渲染、音视频媒体处理、或特定硬件设备访问。libodb-qt 提供的是 Qt Core 类型（QDate/QDateTime/QUuid/QByteArray 等）而非 QWidget 控件的 traits 特化——这些是 Qt 基础数据类型，不涉及窗口系统或 GUI 工具包；libodb-boost 同理仅处理 Boost 容器/智能指针类型。整体为纯计算/数据处理类库，所有适配场景均不涉及。",

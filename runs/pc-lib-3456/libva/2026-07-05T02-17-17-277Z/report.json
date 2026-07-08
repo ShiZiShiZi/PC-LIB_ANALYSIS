@@ -1731,7 +1731,8 @@
       "person_days": [
         30,
         50
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1921,7 +1922,8 @@
       "禁用不可移植后端（X11/Wayland/Win32），仅编译 OHOS 后端",
       "在鸿蒙 PC 上与至少一款已移植的 VA 驱动（如 intel-media-driver 鸿蒙版）联调验证编解码流水线"
     ],
-    "notes": "评估按模型 A（库经 OHOS NDK 重编译运行在鸿蒙原生层）。核心不确定性来自 target_assumptions 中 2 项 required + unknown 的目标能力（GPU 驱动接口、显示服务器/合成器），导致 confidence 下调至 medium——若鸿蒙 PC 不提供 GPU 驱动框架，libva 核心不可移植。平台适配信号：code_metrics.platform_adaptation 显示 37 行 windows 守卫 + 2 行 linux 守卫（总量 39 行，占比极低），但有大量平台专有 API 通过条件编译分散在各个后端文件中（每个后端文件数百行）。libdrm、x11、xext 已鸿蒙化（有 OHOS 预编译包），但 DRM/X11 后端本身仍需重写——已鸿蒙化的底层库可能意味着鸿蒙已有兼容层的初步支持，这是积极信号。"
+    "notes": "评估按模型 A（库经 OHOS NDK 重编译运行在鸿蒙原生层）。核心不确定性来自 target_assumptions 中 2 项 required + unknown 的目标能力（GPU 驱动接口、显示服务器/合成器），导致 confidence 下调至 medium——若鸿蒙 PC 不提供 GPU 驱动框架，libva 核心不可移植。平台适配信号：code_metrics.platform_adaptation 显示 37 行 windows 守卫 + 2 行 linux 守卫（总量 39 行，占比极低），但有大量平台专有 API 通过条件编译分散在各个后端文件中（每个后端文件数百行）。libdrm、x11、xext 已鸿蒙化（有 OHOS 预编译包），但 DRM/X11 后端本身仍需重写——已鸿蒙化的底层库可能意味着鸿蒙已有兼容层的初步支持，这是积极信号。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "libva",
@@ -1971,7 +1973,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libva 是硬件视频编解码与处理库，核心涉及媒体（视频编解码/后处理）与硬件（GPU/DRM）两大场景；另通过 GLX 后端与 OpenGL 3D 图形栈交叉。不涉及 GUI 界面本身——它是被媒体框架与多媒体应用调用的底层 API 库。",

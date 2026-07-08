@@ -627,17 +627,17 @@
     "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
-        5,
-        15
+        3.1,
+        8.1
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            3,
-            8
+            1,
+            1
           ],
-          "basis": "needs_adaptation 桶约 480 LOC（Unix/macOS 终端控制代码 keyboard.go + syscalls*.go + terminfo.go），需将 POSIX termios/ioctl/SIGIO/fcntl 替换为鸿蒙终端输入 API 或自行实现终端原始模式适配"
+          "basis": "需适配 480 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -654,8 +654,17 @@
             4
           ],
           "basis": "无现有测试用例，需在鸿蒙 PC 终端环境实际验证键盘事件捕获功能"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            0.1,
+            0.1
+          ],
+          "basis": "重编译复用 76 行 ÷ 3000 行/天"
         }
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "low",
     "unadaptable_apis": [
@@ -860,7 +869,8 @@
       "替代 SIGIO：改用 goroutine 阻塞读取或 poll 机制",
       "在鸿蒙 PC 终端环境验证键盘事件捕获功能"
     ],
-    "notes": "本评估置信度为 low，核心原因是 POSIX 终端 I/O（termios/ioctl//dev/tty/SIGIO）在鸿蒙 OHOS NDK 中的可用性均为 unknown。鸿蒙 PC 自研内核提供 musl + POSIX 子集，但子集的具体范围未公开确认——若恰好包含 termios 则适配工作大幅减少。Go 运行时已确认可用（1.22/1.24），公共 API 层可直接复用。最坏情况下需要为鸿蒙编写全新的终端输入后端（类似 Windows 分支的做法），工作量中等。"
+    "notes": "本评估置信度为 low，核心原因是 POSIX 终端 I/O（termios/ioctl//dev/tty/SIGIO）在鸿蒙 OHOS NDK 中的可用性均为 unknown。鸿蒙 PC 自研内核提供 musl + POSIX 子集，但子集的具体范围未公开确认——若恰好包含 termios 则适配工作大幅减少。Go 运行时已确认可用（1.22/1.24），公共 API 层可直接复用。最坏情况下需要为鸿蒙编写全新的终端输入后端（类似 Windows 分支的做法），工作量中等。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "keyboard",
@@ -914,7 +924,15 @@
         "value": "posix_api",
         "rationale": "POSIX 终端 I/O API 在鸿蒙不可用——不同于 win32_api（Windows 专有），这是 POSIX 标准但鸿蒙仅提供子集"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "ua_no_cp_bucket",
+        "class": "actionable",
+        "message": "dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI 桌面界面、3D 渲染、媒体或特定硬件场景。它是纯终端/控制台输入库，通过 POSIX 终端 I/O 和 Win32 控制台 API 捕获键盘事件，无 GUI 工具包依赖。",

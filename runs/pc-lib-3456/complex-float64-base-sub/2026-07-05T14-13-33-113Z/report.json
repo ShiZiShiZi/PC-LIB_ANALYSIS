@@ -615,7 +615,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -686,7 +687,8 @@
       "验证原生扩展正确加载：单元测试 test/test.native.js 全通过",
       "若 N-API 二进制兼容性有问题，纯 JS 后备已就绪可无缝降级"
     ],
-    "notes": "按模型 A（库跑在已移植的 Node.js 运行时上）评估。C 原生扩展仅是性能优化路径，纯 JS 实现可作为降级方案——即便 N-API 编译暂遇困难，库的功能完整性不受影响。"
+    "notes": "按模型 A（库跑在已移植的 Node.js 运行时上）评估。C 原生扩展仅是性能优化路径，纯 JS 实现可作为降级方案——即便 N-API 编译暂遇困难，库的功能完整性不受影响。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "complex-float64-base-sub",
@@ -712,7 +714,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "recompile_no_native",
+        "class": "info",
+        "message": "porting_class=recompile_only 但主生态为 nodejs（已移植运行时）且无原生调用面，疑似应为 no_adaptation"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI/3D 渲染/媒体播放/特定硬件等鸿蒙适配重点场景",

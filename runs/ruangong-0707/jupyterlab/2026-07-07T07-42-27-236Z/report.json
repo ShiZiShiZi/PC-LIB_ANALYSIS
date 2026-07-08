@@ -2012,17 +2012,17 @@
     "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
-        30,
-        60
+        46,
+        71
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            5,
-            10
+            21,
+            21
           ],
-          "basis": "平台分支适配（os.name/navigator.userAgent/navigator.platform 约 9 处）和终端 PTY 兼容性验证"
+          "basis": "需适配 10500 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -2064,7 +2064,8 @@
           ],
           "basis": "鸿蒙 PC 应用打包方式适配（.hap 或传统桌面应用形态）"
         }
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -2291,7 +2292,8 @@
       "验证 xterm.js + Canvas/WebGL 渲染在鸿蒙浏览器中的兼容性",
       "运行测试套件验证核心功能完整性"
     ],
-    "notes": "JupyterLab 作为应用走模型 C（整包桌面应用）。核心难点不在代码改造（平台分支极少），而在运行时环境验证：依赖链完整性（特别是 pyzmq C 扩展和 terminado PTY）、应用打包形态（.hap 适配）。若鸿蒙 PC 支持传统 Python 包安装 + 浏览器访问模式，适配工作量较低；若仅支持 .hap 沙箱应用，则需大量打包改造。confidence=medium 因为 spawn/desktop_app 两个 target_assumption 为 unknown。"
+    "notes": "JupyterLab 作为应用走模型 C（整包桌面应用）。核心难点不在代码改造（平台分支极少），而在运行时环境验证：依赖链完整性（特别是 pyzmq C 扩展和 terminado PTY）、应用打包形态（.hap 适配）。若鸿蒙 PC 支持传统 Python 包安装 + 浏览器访问模式，适配工作量较低；若仅支持 .hap 沙箱应用，则需大量打包改造。confidence=medium 因为 spawn/desktop_app 两个 target_assumption 为 unknown。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "jupyterlab",
@@ -2335,7 +2337,20 @@
         "value": "nodejs",
         "rationale": "JupyterLab 跨 Python+Node.js 双生态，前端主体为 TypeScript/Node.js 代码量更大，但 Python 后端是运行入口；选 nodejs 因生产代码中 TypeScript 占 71%"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "ua_no_cp_bucket",
+        "class": "actionable",
+        "message": "dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）"
+      },
+      {
+        "code": "critical_dep_notfound:terminado",
+        "class": "actionable",
+        "message": "critical_dependencies 的 terminado 在 dependencies 列表中找不到（名称须与 dependencies[].name 一致）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "JupyterLab 涉及 GUI（基于浏览器的 Web SPA 界面）和媒体（终端渲染含 Canvas/WebGL 加速）场景，不涉及 3D 渲染或特定硬件依赖。",

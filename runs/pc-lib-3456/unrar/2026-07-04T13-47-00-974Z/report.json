@@ -1236,7 +1236,8 @@
       "person_days": [
         8,
         20
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_ndk",
@@ -1366,7 +1367,8 @@
       "验证 /dev/urandom 可用性，或接入鸿蒙安全随机 API；保留现有回退",
       "在鸿蒙 PC 上跑通 RAR4/RAR5 解压、加密归档、分卷、完整性校验等核心测试"
     ],
-    "notes": "按库模型 A 评估；Windows 专用 CLI 功能（关机、UAC 提权、大页内存、注册表、NTFS 流/ACL）在鸿蒙构建中被条件编译自然排除，不影响 libunrar 核心 API。由于存在未核实的 POSIX 子集能力，confidence 取 medium；若实际编译验证后 musl 完整支持上述 API，则可升至 high 并将 porting_class 下调为 recompile_only。"
+    "notes": "按库模型 A 评估；Windows 专用 CLI 功能（关机、UAC 提权、大页内存、注册表、NTFS 流/ACL）在鸿蒙构建中被条件编译自然排除，不影响 libunrar 核心 API。由于存在未核实的 POSIX 子集能力，confidence 取 medium；若实际编译验证后 musl 完整支持上述 API，则可升至 high 并将 porting_class 下调为 recompile_only。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "unrar",
@@ -1400,7 +1402,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(commercial) 与依据 SPDX(NOASSERTION) 派生的性质(undeclared) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "UnRAR 是纯粹的文件/控制台工具类库，不涉及 GUI、3D 渲染、媒体编解码、特定硬件或云服务。唯一的硬件相关信号是 CPU SIMD 加速（SSE/AVX2/NEON），属于 CPU ISA 层，归类到 native_api 的 arch_simd。",

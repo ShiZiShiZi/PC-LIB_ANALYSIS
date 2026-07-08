@@ -687,17 +687,17 @@
     "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
-        5,
-        12
+        1.6,
+        3.6
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            3,
-            8
+            0.6,
+            0.6
           ],
-          "basis": "新增 clipboard_ohos.go 使用 cgo 调用 oh_pasteboard.h（libpasteboard.so）实现 ReadAll/WriteAll；约 300 行平台后端代码需新增/替换，并处理 ohos.permission.READ_PASTEBOARD 权限"
+          "basis": "需适配 309 行 ÷ 500 行/天"
         },
         {
           "component": "testing_verification",
@@ -715,7 +715,8 @@
           ],
           "basis": "为 cmd/gocopy、gopaste 添加 OHOS 安装说明/构建标签"
         }
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -807,7 +808,8 @@
       "处理 ohos.permission.READ_PASTEBOARD 权限声明（由最终应用负责）",
       "在鸿蒙 PC Go 运行时上编译并跑通单元测试"
     ],
-    "notes": "评估按库模型 A（Go 程序跑在已移植的 Go 运行时上）。若目标为 ArkTS 应用（模型 B），则无法直接复用 Go 库，需用 @ohos.pasteboard 重写。SDK 文档已确认 PhonePC/2in1TabletTVWearable 存在剪贴板 API，但 PC 形态可用性仍按 caps 表记为 unknown，因此置信度降至 medium。"
+    "notes": "评估按库模型 A（Go 程序跑在已移植的 Go 运行时上）。若目标为 ArkTS 应用（模型 B），则无法直接复用 Go 库，需用 @ohos.pasteboard 重写。SDK 文档已确认 PhonePC/2in1TabletTVWearable 存在剪贴板 API，但 PC 形态可用性仍按 caps 表记为 unknown，因此置信度降至 medium。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "clipboard",
@@ -844,7 +846,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目仅涉及系统剪贴板读写这一桌面集成场景；无 GUI 窗口工具包、3D 渲染、媒体编解码或特定硬件依赖。鸿蒙提供 oh_pasteboard.h（C API）和 @ohos.pasteboard（ArkTS API）剪贴板能力，文档显示支持 PhonePC/2in1TabletTVWearable，但 harmony-pc-capabilities.json 中桌面剪贴板能力仍为 unknown，PC 形态可用性待核实。",

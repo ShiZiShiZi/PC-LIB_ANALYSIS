@@ -1556,7 +1556,8 @@
       "person_days": [
         8,
         20
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1733,7 +1734,8 @@
       "适配网络层 POSIX socket 代码——确认 OHOS NDK musl 的 socket/select 支持情况，必要时条件编译排除 Win32 路径",
       "在 OHOS arm64 环境上运行基本功能测试（启动 OpenOCD、验证 Tcl 脚本引擎、TCP 适配器连接）"
     ],
-    "notes": "本评估按模型 C（CLI 应用）口径：OpenOCD 作为纯 C 命令行工具，无 GUI/无桌面集成/无特定运行时依赖，核心代码可移植性强。结论置信度为「中」的关键原因是 USB 设备访问能力在 OHOS PC 上未核实——这决定 OpenOCD 能否连接绝大多数物理调试探针。若 OHOS PC 支持 USB Host + libusb 移植，则 OpenOCD 核心功能完整可用；若 USB 不可用，则仅能通过 TCP 适配器（CMSIS-DAP TCP/XVC/Remote Bitbang/VPI）工作，功能严重受限但核心代码仍可编译运行。GCC/MSVC 特有的 compiler extensions 用量极少、均可条件编译排除。ARM 嵌入式 Flash Loader 的汇编代码运行在目标芯片上而非宿主机，不影响移植。Linux 专有适配器（GPIO/并口/SPI 等嵌入式场景）已通过条件编译隔离，不予编译即可。"
+    "notes": "本评估按模型 C（CLI 应用）口径：OpenOCD 作为纯 C 命令行工具，无 GUI/无桌面集成/无特定运行时依赖，核心代码可移植性强。结论置信度为「中」的关键原因是 USB 设备访问能力在 OHOS PC 上未核实——这决定 OpenOCD 能否连接绝大多数物理调试探针。若 OHOS PC 支持 USB Host + libusb 移植，则 OpenOCD 核心功能完整可用；若 USB 不可用，则仅能通过 TCP 适配器（CMSIS-DAP TCP/XVC/Remote Bitbang/VPI）工作，功能严重受限但核心代码仍可编译运行。GCC/MSVC 特有的 compiler extensions 用量极少、均可条件编译排除。ARM 嵌入式 Flash Loader 的汇编代码运行在目标芯片上而非宿主机，不影响移植。Linux 专有适配器（GPIO/并口/SPI 等嵌入式场景）已通过条件编译隔离，不予编译即可。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "openocd",
@@ -1800,7 +1802,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "OpenOCD 是一个纯 CLI 调试工具，不涉及 GUI/桌面界面、3D 渲染或音视频媒体处理。核心硬件交互通过标准 PC 外设接口（USB、GPIO、SPI、并口）访问调试探针，依赖 libusb/hidapi 等跨平台库抽象。部分 Linux 专有适配器直接访问 /dev 节点（mmap/ioctl），但无特定不可替代硬件。",

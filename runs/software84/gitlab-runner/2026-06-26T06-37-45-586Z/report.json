@@ -582,7 +582,8 @@
       "LICENSE"
     ],
     "evidence": "顶层 LICENSE 文件包含完整 MIT 许可文本；README.md 第 98-99 行明确声明代码按 MIT 许可分发。",
-    "notes": "宽松许可，需保留版权声明。"
+    "notes": "宽松许可，需保留版权声明。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 22,
@@ -1454,7 +1455,8 @@
       "person_days": [
         40,
         80
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -1681,7 +1683,8 @@
       "申请 ohos.permission.INTERNET 与文件读写权限，处理 .hap 打包或传统二进制分发形态",
       "在鸿蒙 PC 上跑通核心单元测试与 Shell executor 集成测试"
     ],
-    "notes": "评估按模型 C（整包命令行应用）进行。由于多个目标能力（spawn、service_manager、desktop_app、Docker/Kubernetes 后端）状态为 unknown，整体置信度为 medium；任何一项变为 unavailable 都可能导致 porting_class 上升为 infeasible 或需要大幅裁剪功能。"
+    "notes": "评估按模型 C（整包命令行应用）进行。由于多个目标能力（spawn、service_manager、desktop_app、Docker/Kubernetes 后端）状态为 unknown，整体置信度为 medium；任何一项变为 unavailable 都可能导致 porting_class 上升为 infeasible 或需要大幅裁剪功能。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "meta": {
     "schema_version": "1.0",
@@ -1711,6 +1714,29 @@
         "value": "bash_procfs_string",
         "rationale": "shells/bash.go:48-58 的 /proc 访问出现在生成的 Bash 脚本字符串中，非 Runner 进程直接读取；不计入 native_api 系统接口。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      },
+      {
+        "code": "perm_dangling_cap:读写存储",
+        "class": "actionable",
+        "message": "required_permission 读写存储 的 source_capability=filesystem 不在已标记场景中"
+      },
+      {
+        "code": "cloud_miss:aws",
+        "class": "actionable",
+        "message": "依赖/网络出现 aws 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
+      },
+      {
+        "code": "cloud_miss:azure",
+        "class": "actionable",
+        "message": "依赖/网络出现 azure 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   }
 }

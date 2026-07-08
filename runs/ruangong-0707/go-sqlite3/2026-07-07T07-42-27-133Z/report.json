@@ -1267,25 +1267,25 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        15,
-        30
+        74.5,
+        79.5
       ],
       "breakdown": [
         {
           "component": "recompile",
           "person_days": [
-            5,
-            10
+            57.9,
+            57.9
           ],
-          "basis": "SQLite3 amalgamation (170k+ LOC C 代码) 需用 OHOS NDK 交叉编译；主要工作为适配 VFS 层的 POSIX API 子集、解决编译问题、处理 arm64 内联汇编"
+          "basis": "重编译复用 173752 行 ÷ 3000 行/天"
         },
         {
           "component": "api_adaptation",
           "person_days": [
-            5,
-            10
+            11.6,
+            11.6
           ],
-          "basis": "SQLite amalgamation 的 POSIX VFS 层使用 fcntl/flock/mmap/pread/pwrite 等 POSIX API，需适配鸿蒙 OHOS NDK 提供的 POSIX 子集；rdtsc 内联汇编需替换为 arm64 等价"
+          "basis": "需适配 5796 行 ÷ 500 行/天"
         },
         {
           "component": "build_system",
@@ -1303,7 +1303,8 @@
           ],
           "basis": "验证 18 个测试文件在鸿蒙上跑通、数据库文件 I/O 正确性、并发安全（pthread/锁）"
         }
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -1441,7 +1442,8 @@
       "编译运行测试套件（18 个测试文件），验证数据库文件 I/O、事务、并发正确性",
       "验证 dlopen/dlsym（SQLite 扩展加载功能）在鸿蒙上的可用性"
     ],
-    "notes": "置信度为 medium，主要因为 POSIX API 子集在鸿蒙 NDK 的覆盖程度未知。SQLite3 amalgamation 本身是高度可移植的（已在 Android NDK 上广泛使用），核心逻辑不需要修改，适配工作集中在平台 VFS 层。若鸿蒙 OHOS NDK 的 POSIX 兼容层足够完整，工作量可降至低端（~10 人天）；若缺失 API 较多，可能需要编写较多 shim 代码。"
+    "notes": "置信度为 medium，主要因为 POSIX API 子集在鸿蒙 NDK 的覆盖程度未知。SQLite3 amalgamation 本身是高度可移植的（已在 Android NDK 上广泛使用），核心逻辑不需要修改，适配工作集中在平台 VFS 层。若鸿蒙 OHOS NDK 的 POSIX 兼容层足够完整，工作量可降至低端（~10 人天）；若缺失 API 较多，可能需要编写较多 shim 代码。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "go-sqlite3",
@@ -1494,7 +1496,8 @@
         "value": "cross_compile",
         "rationale": "对于 C/C++ amalgamation 库通过 OHOS NDK 交叉编译的场景，cross_compile 比 recompile_napi 更准确——不需要 N-API 封装，只需交叉编译 C 代码"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "go-sqlite3 不涉及 GUI、3D 渲染、媒体或特定硬件场景。它是一个纯数据库驱动库，核心功能为文件 I/O 与数据存储，无 GUI/3D/媒体/硬件依赖。",

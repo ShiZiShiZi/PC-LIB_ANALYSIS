@@ -1249,7 +1249,8 @@
       "person_days": [
         10,
         20
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "low",
     "unadaptable_apis": [],
@@ -1411,7 +1412,8 @@
       "调整 configure.ac 的 curses 检测逻辑以适配 OHOS 环境的头文件/库路径",
       "在鸿蒙 PC 上验证完整流程：ct-ng menuconfig（TUI 配置）→ ct-ng build（构建选定的交叉工具链样本）"
     ],
-    "notes": "crosstool-NG 是一个构建工具链的工具（meta-builder），其移植问题本质上是环境依赖问题而非代码适配问题。93% 的仓库体积是补丁数据（不涉及可执行逻辑），实际需要移植的代码（C shell）约 25K 行。评估置信度为 low，因为三个硬前提（GNU 命令行工具栈可用性、子进程执行能力、C 编译器可用性）在 harmony-pc-capabilities.json 中均为 unknown——这些是 crosstool-NG 运行的刚性基础前提，缺一不可。建议优先核实这三项：若三项均可满足，则整个工具移植工作量在中高水平（10-20 人天）；若任一不满足，则工具在此鸿蒙 PC 形态上不可运行。另注：crosstool-NG 的使用场景通常是在类 Unix 宿主机上构建 Linux 交叉编译工具链——该使用场景本身在鸿蒙 PC 上的适用性需另行评估（例如构建出的 Linux ARM 工具链运行在 Linux 目标上，与宿主是鸿蒙 PC 不冲突）。"
+    "notes": "crosstool-NG 是一个构建工具链的工具（meta-builder），其移植问题本质上是环境依赖问题而非代码适配问题。93% 的仓库体积是补丁数据（不涉及可执行逻辑），实际需要移植的代码（C shell）约 25K 行。评估置信度为 low，因为三个硬前提（GNU 命令行工具栈可用性、子进程执行能力、C 编译器可用性）在 harmony-pc-capabilities.json 中均为 unknown——这些是 crosstool-NG 运行的刚性基础前提，缺一不可。建议优先核实这三项：若三项均可满足，则整个工具移植工作量在中高水平（10-20 人天）；若任一不满足，则工具在此鸿蒙 PC 形态上不可运行。另注：crosstool-NG 的使用场景通常是在类 Unix 宿主机上构建 Linux 交叉编译工具链——该使用场景本身在鸿蒙 PC 上的适用性需另行评估（例如构建出的 Linux ARM 工具链运行在 Linux 目标上，与宿主是鸿蒙 PC 不冲突）。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "crosstool-NG",
@@ -1452,7 +1454,8 @@
         "rationale": "schema 里 library.kind 推荐值有 library/application/framework/tool/cli/service/plugin/other。crosstool-NG 是一个后台 CLI 构建工具，选 tool 最贴切——它既有 CLI 入口（ct-ng），又不完全是面向终端用户的交互应用，而是面向开发者的专业构建工具。tool 与 cli 在现词表中都合适，但 tool 强调「构建/制作用途」更准确"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "crosstool-NG 是一个纯 POSIX 命令行工具（终端构建工具链构建器），不涉及桌面 GUI 窗口、3D 图形渲染、媒体编解码/采集、或特定硬件设备。其唯一用户界面交互是 ncurses 终端的菜单界面（menuconfig/nconfig），但这是 TUI 而非桌面 GUI 窗口系统。",

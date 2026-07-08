@@ -562,7 +562,8 @@
       "LICENSE.md"
     ],
     "evidence": "LICENSE.md 文本与 zlib/libpng 许可证条款一致，header 与源文件中也包含相同的授权声明。",
-    "notes": "非常宽松的许可证，允许商业使用、修改与再分发，仅需保留版权声明；不构成 copyleft。"
+    "notes": "非常宽松的许可证，允许商业使用、修改与再分发，仅需保留版权声明；不构成 copyleft。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 20,
@@ -2248,7 +2249,8 @@
       "person_days": [
         30,
         70
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -2364,7 +2366,8 @@
       "移植/替代 Linux 手柄 inotify + /dev/input 路径",
       "跑通 GLFW tests/ 验证跨平台行为一致"
     ],
-    "notes": "评估按模型 A（C/C++ 库跑在鸿蒙已移植运行时的宿主进程中）进行。由于鸿蒙 PC 的 native window/input API 与 GPU 驱动状态在 capabilities 中为 unknown，整体置信度下调为 medium；若后续确认这些能力可用，则 person_days 可降至中档，若确认不可用则 porting_class 需调整为 infeasible 或按模型 B/C 整包重写。"
+    "notes": "评估按模型 A（C/C++ 库跑在鸿蒙已移植运行时的宿主进程中）进行。由于鸿蒙 PC 的 native window/input API 与 GPU 驱动状态在 capabilities 中为 unknown，整体置信度下调为 medium；若后续确认这些能力可用，则 person_days 可降至中档，若确认不可用则 porting_class 需调整为 infeasible 或按模型 B/C 整包重写。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "meta": {
     "schema_version": "1.0",
@@ -2380,6 +2383,14 @@
         "value": "implement_harmony_backend",
         "rationale": "GLFW 这类跨平台窗口抽象库需要为鸿蒙新增完整平台后端，简单 recompile_napi 不足以描述其迁移路径。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:rendering_3d",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   }
 }

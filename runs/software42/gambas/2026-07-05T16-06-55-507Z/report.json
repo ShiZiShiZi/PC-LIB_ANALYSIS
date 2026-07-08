@@ -2595,7 +2595,8 @@
       "person_days": [
         40,
         80
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "cross_compile",
@@ -2966,7 +2967,8 @@
       "IDE 功能验证——在 OHOS 上启动 Gambas IDE，验证工程管理/代码编辑/编译/运行/调试等核心流程",
       "编写 Gambas on HarmonyOS 适配文档和构建脚本"
     ],
-    "notes": "评估按模型 C（整包桌面应用）——Gambas 是终端用户启动运行的完整 IDE 和开发平台。核心不确定性来自 OHOS musl 的 POSIX 子集覆盖范围（fork/signal/mmap/pipe 具体支持情况未知）——fork 若不可用将显著增加工作量（+15-20 人-天）但非致命（有 posix_spawn 替代）。X11/D-Bus/V4L2/GNOME-Keyring/OpenAL/GTK2/Qt4/Qt5 均为可选组件，可禁用——不影响核心功能。Qt6 已有社区 OHOS 版（via cmd-pkgs），GTK3、FFmpeg、SQLite、OpenSSL 等大量系统库也已鸿蒙化，显著降低了底层依赖移植成本。Gambas IDE 本身用 Gambas 编写——只要 gb.qt6 组件能运行，IDE 即可零修改跑起来，这是最大的优势。confidence 设为 medium 因 POSIX 子集覆盖情况（特别是 fork）为 unknown，若 fork 不可用，effort 区间上限需上调 15-20 人-天。"
+    "notes": "评估按模型 C（整包桌面应用）——Gambas 是终端用户启动运行的完整 IDE 和开发平台。核心不确定性来自 OHOS musl 的 POSIX 子集覆盖范围（fork/signal/mmap/pipe 具体支持情况未知）——fork 若不可用将显著增加工作量（+15-20 人-天）但非致命（有 posix_spawn 替代）。X11/D-Bus/V4L2/GNOME-Keyring/OpenAL/GTK2/Qt4/Qt5 均为可选组件，可禁用——不影响核心功能。Qt6 已有社区 OHOS 版（via cmd-pkgs），GTK3、FFmpeg、SQLite、OpenSSL 等大量系统库也已鸿蒙化，显著降低了底层依赖移植成本。Gambas IDE 本身用 Gambas 编写——只要 gb.qt6 组件能运行，IDE 即可零修改跑起来，这是最大的优势。confidence 设为 medium 因 POSIX 子集覆盖情况（特别是 fork）为 unknown，若 fork 不可用，effort 区间上限需上调 15-20 人-天。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "gambas",
@@ -3031,7 +3033,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Gambas 作为一个完整的图形化 BASIC 开发平台（IDE + 运行时 + 组件生态），涉及四大鸿蒙适配重点场景：GUI（Qt6/Qt5/Qt4/GTK3/GTK2 + X11/Wayland 窗口栈）、3D 渲染（OpenGL/EGL）、媒体（FFmpeg 音视频编解码、V4L2 视频采集、OpenAL 3D 音频、SDL2 多媒体框架）以及硬件（V4L2 摄像头、GPU 渲染设备）。这些场景的鸿蒙支持状态各异——Qt/GTK 已适配但仍需大量适配工作，OpenGL 部分可用，FFmpeg 已移植但 V4L2/OpenAL/X11/D-Bus 等 Linux 特有组件在鸿蒙无直接等价。",

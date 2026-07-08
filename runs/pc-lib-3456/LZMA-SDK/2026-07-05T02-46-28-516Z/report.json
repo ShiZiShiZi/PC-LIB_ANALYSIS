@@ -1345,7 +1345,8 @@
       "person_days": [
         4,
         10
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1526,7 +1527,8 @@
       "在鸿蒙 PC 上运行压缩/解压功能测试（用 C/Util/Lzma 命令行工具交叉编译后测试或通过单元调用验证）",
       "按需编译 Java/C# 绑定到鸿蒙 JDK 17 / .NET（仅当鸿蒙侧需要这些语言绑定时）"
     ],
-    "notes": "评估按库分析（模型 A：C/C++ 原生库经 OHOS NDK 编译为 .so，Java/C# 绑定跑在已移植运行时上）。多线程支持为可选：_7ZIP_ST 单线程模式已足够多数嵌入场景（Linux makefile.gcc 默认如此）；若需多线程压缩加速，为 Threads.h 实现 pthread 后端增加约 3–5 人日。汇编优化（CRC/AES/x86 SIMD）有纯 C 回退路径，非 x86 架构自动降级，功能无损仅性能略有差异。platform_adaptation 信号（2,088 行 Windows 守卫代码）全部在 _WIN32 分支内，非 Windows 编译自动排除，不增加鸿蒙适配复杂度。"
+    "notes": "评估按库分析（模型 A：C/C++ 原生库经 OHOS NDK 编译为 .so，Java/C# 绑定跑在已移植运行时上）。多线程支持为可选：_7ZIP_ST 单线程模式已足够多数嵌入场景（Linux makefile.gcc 默认如此）；若需多线程压缩加速，为 Threads.h 实现 pthread 后端增加约 3–5 人日。汇编优化（CRC/AES/x86 SIMD）有纯 C 回退路径，非 x86 架构自动降级，功能无损仅性能略有差异。platform_adaptation 信号（2,088 行 Windows 守卫代码）全部在 _WIN32 分支内，非 Windows 编译自动排除，不增加鸿蒙适配复杂度。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "LZMA-SDK",
@@ -1584,7 +1586,8 @@
         "rationale": "Win32 多线程 API 封装（Threads.h/Threads.c）在非 Windows 平台通过 _7ZIP_ST 宏整体禁用。这种'整个模块有条件地不存在'的模式，blocker 的 severity 取 major（因为功能缺失——多线程），但 adaptability 取 adaptable（因有清晰的 POSIX 替代方案 pthread）。这种组合在当前 blocker 评估体系里可能需要更明确的指引。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "LZMA SDK 为纯计算型压缩库，不涉及 GUI、3D 渲染、媒体或特定硬件设备。唯一的硬件交互是运行时 x86 CPU 特性检测（CPUID 指令查 AES-NI），有纯 C 软件回退路径，不构成特定硬件依赖。",

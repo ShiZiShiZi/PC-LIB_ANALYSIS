@@ -3218,7 +3218,8 @@
       "person_days": [
         25,
         40
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -3468,7 +3469,8 @@
       "在鸿蒙 arm64/x86_64 目标上运行 mysql-test 回归套件验证功能完整性",
       "准备鸿蒙平台的安装/部署文档与 system service 配置文件"
     ],
-    "notes": "评估按模型 C（整包服务器应用移植到鸿蒙 PC）。关键不确定性：① OHOS NDK musl POSIX 子集覆盖范围未逐条核实——近百个 POSIX API 中部分可能受限（epoll/signal/fork/syscall/prctl 等），但因 MariaDB 已有 Windows/BSD 多平台回退路径，整体仍可适配（partial→adaptable）；② 网络栈与文件系统的权限模型在鸿蒙 PC 形态尚不明确——若 TCP 监听或文件随机读写受限则需调整；③ 鸿蒙 PC 是否支持传统多线程守护进程模式待核实——若仅支持 ArkTS HAP 包装则部署形态需调整。对 ③ 个 required+unknown 假设，本评估 confidence 下调至 medium——待上述目标事实核实后可重新判定。libmarias3 提供 S3 云存储访问，若鸿蒙侧网络/文件系统就绪则可复现。已鸿蒙化的第三方库（zlib/pcre2/rocksdb/duckdb/jemalloc）显著降低构建工作量。wolfssl（bundled + submodule）须自行编译——可换用 cmd-pkgs 已提供的 OpenSSL。初始移植范围建议为核心 server + InnoDB/Aria/MyISAM 引擎 + 基本客户端工具（~80% 业务价值），存储引擎按需逐步移植。"
+    "notes": "评估按模型 C（整包服务器应用移植到鸿蒙 PC）。关键不确定性：① OHOS NDK musl POSIX 子集覆盖范围未逐条核实——近百个 POSIX API 中部分可能受限（epoll/signal/fork/syscall/prctl 等），但因 MariaDB 已有 Windows/BSD 多平台回退路径，整体仍可适配（partial→adaptable）；② 网络栈与文件系统的权限模型在鸿蒙 PC 形态尚不明确——若 TCP 监听或文件随机读写受限则需调整；③ 鸿蒙 PC 是否支持传统多线程守护进程模式待核实——若仅支持 ArkTS HAP 包装则部署形态需调整。对 ③ 个 required+unknown 假设，本评估 confidence 下调至 medium——待上述目标事实核实后可重新判定。libmarias3 提供 S3 云存储访问，若鸿蒙侧网络/文件系统就绪则可复现。已鸿蒙化的第三方库（zlib/pcre2/rocksdb/duckdb/jemalloc）显著降低构建工作量。wolfssl（bundled + submodule）须自行编译——可换用 cmd-pkgs 已提供的 OpenSSL。初始移植范围建议为核心 server + InnoDB/Aria/MyISAM 引擎 + 基本客户端工具（~80% 业务价值），存储引擎按需逐步移植。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "MariaDB Server",
@@ -3541,7 +3543,8 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "MariaDB 为服务器端数据库系统，不涉及桌面 GUI、3D 渲染或音视频媒体处理。生产代码使用了 CPU SIMD 指令优化（SSE/AVX2/ARM NEON/CRC32 硬件加速）并依赖 /dev/urandom 熵源，均有跨平台通用回退路径，无非特定硬件依赖。",

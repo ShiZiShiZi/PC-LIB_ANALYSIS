@@ -1513,7 +1513,8 @@
       "将示例程序（app/）与库分离，库产物以 .so/.a 形式提供；示例可作为验证用。",
       "补充 ohos.permission.INTERNET 声明并测试网络连通性。"
     ],
-    "notes": "当前未在代码中发现无法适配的 API；核心风险在于 OHOS NDK 对 POSIX Socket 与 pthread 的完整程度尚未在公开资料中核实，因此置信度设为 medium。app/test_util.h 被 cloc 误判为测试文件，实际为示例辅助头；README 已说明 app/ 为示例程序。"
+    "notes": "当前未在代码中发现无法适配的 API；核心风险在于 OHOS NDK 对 POSIX Socket 与 pthread 的完整程度尚未在公开资料中核实，因此置信度设为 medium。app/test_util.h 被 cloc 误判为测试文件，实际为示例辅助头；README 已说明 app/ 为示例程序。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "udt",
@@ -1564,7 +1565,15 @@
         "value": "arch_hardware_timer",
         "rationale": "现有推荐 type 未包含内联汇编 rdtsc/itc 这类架构硬件定时器，本次使用 arch_hardware_timer 归类。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network_transport 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "UDT 是纯网络协议库，不涉及 GUI、3D 渲染、音视频媒体编解码及特定硬件访问。其鸿蒙适配重点仅在网络 Socket 与线程原语的可用性。",

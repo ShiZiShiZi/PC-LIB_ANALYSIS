@@ -1360,7 +1360,8 @@
       "person_days": [
         0,
         2
-      ]
+      ],
+      "level": "very_low"
     },
     "confidence": "high",
     "recommended_path": "run_on_ported_runtime",
@@ -1429,7 +1430,8 @@
       "启动 `jupyter notebook` 并通过浏览器访问 localhost:8888",
       "运行 pytest 单元测试和 jlpm jest 前端测试以验证功能完整性"
     ],
-    "notes": "按模型 C（整包桌面应用）评估。Jupyter Notebook 作为 Web 应用的特殊性：代码本身与操作系统解耦（Python 服务端→已移植的 Python 运行时；前端→浏览器），因此 porting_class 为 no_adaptation。唯一未核实的目标假设是鸿蒙 PC 上是否有兼容的现代 Web 浏览器——但这属于平台环境问题而非代码迁移工作，不计入 person_days。如鸿蒙 PC 无浏览器，需单独部署浏览器或考虑将前端改造为 ArkUI 原生应用（模型 B），届时 effort 显著上升至 [20, 60] person_days 且 porting_class 升至 needs_adaptation_partial。MathJax 默认配置引用 cdnjs 外部 CDN，可配置为本地路径消除外部依赖。"
+    "notes": "按模型 C（整包桌面应用）评估。Jupyter Notebook 作为 Web 应用的特殊性：代码本身与操作系统解耦（Python 服务端→已移植的 Python 运行时；前端→浏览器），因此 porting_class 为 no_adaptation。唯一未核实的目标假设是鸿蒙 PC 上是否有兼容的现代 Web 浏览器——但这属于平台环境问题而非代码迁移工作，不计入 person_days。如鸿蒙 PC 无浏览器，需单独部署浏览器或考虑将前端改造为 ArkUI 原生应用（模型 B），届时 effort 显著上升至 [20, 60] person_days 且 porting_class 升至 needs_adaptation_partial。MathJax 默认配置引用 cdnjs 外部 CDN，可配置为本地路径消除外部依赖。",
+    "porting_class_model": "no_adaptation"
   },
   "library": {
     "name": "notebook",
@@ -1486,7 +1488,15 @@
       }
     ],
     "warnings": [],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Jupyter Notebook 是基于 Web 的交互式计算环境——Python 后端提供 HTTP/WebSocket 服务，前端（TypeScript/JupyterLab/Lumino）完全运行在浏览器中。无原生 GUI 工具包(Qt/GTK/Swing 等)、无 3D 渲染、无原生媒体编解码、无特定硬件依赖——所有界面渲染由浏览器处理。内置的视频/音频/PDF/Vega 扩展仅为 JupyterLab 浏览器端 MIME 渲染器，不调用原生媒体库。",

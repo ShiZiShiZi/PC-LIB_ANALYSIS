@@ -1981,7 +1981,8 @@
       "person_days": [
         40,
         80
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "recommended_path": "arkui_rewrite_gui_or_cli_only",
@@ -2304,7 +2305,8 @@
       "验证 POSIX 子集（utimensat、link/symlink、pthread、signal）并做条件编译降级",
       "处理存储权限申请并验证沙箱外文件访问能力"
     ],
-    "notes": "本评估按整包桌面应用（模型 C）进行，置信度为 medium，主因是鸿蒙 PC 桌面应用交付形态、外部进程启动能力与存储权限模型尚为 unknown。若仅交付命令行版本，工作量可降至 10–20 人天，porting_class 可视为 needs_adaptation_full。"
+    "notes": "本评估按整包桌面应用（模型 C）进行，置信度为 medium，主因是鸿蒙 PC 桌面应用交付形态、外部进程启动能力与存储权限模型尚为 unknown。若仅交付命令行版本，工作量可降至 10–20 人天，porting_class 可视为 needs_adaptation_full。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "7-Zip",
@@ -2363,7 +2365,15 @@
         "rationale": "7-Zip 的 Win32 GUI 无法适配，推荐路径为「使用 ArkUI 重写 GUI」或「仅交付命令行版本」，单一现有取值不能精确描述。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:读写存储（文件访问）",
+        "class": "actionable",
+        "message": "required_permission 读写存储（文件访问） 的 source_capability=archive_file_io 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "7-Zip 是重度依赖 Windows 原生 GUI 与 Shell 的桌面应用；核心压缩算法与命令行后端跨平台，但文件管理器窗口、Explorer 扩展、注册表集成均为 Win32 专有。项目不涉及 3D 渲染、音视频媒体或特定硬件加速。",

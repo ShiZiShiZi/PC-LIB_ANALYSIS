@@ -1136,7 +1136,8 @@
       "person_days": [
         3,
         6
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1228,7 +1229,8 @@
       "可选：验证 mmap 在 OHOS musl 上的可用性；若不可用则通过 BUILD_MMAP=OFF 禁用，确保 malloc 路径的行为正确",
       "将 OHOS 构建目标与配套 CI 提交上游，使后续版本原生支持鸿蒙"
     ],
-    "notes": "libdwarf 是跨平台 C 库，当前已良好支持 Linux/macOS/FreeBSD/Windows。鸿蒙 PC 借助 OHOS NDK 可低工作量移植：所有平台特有 API 均被编译宏（HAVE_FULL_MMAP/HAVE_UNISTD_H/_WIN32 等）守卫且已有回退路径。评估按模型 A（库经 OHOS NDK 生成 .so 供链接使用）进行。mmap target_status 为 unknown 但因它可选（BHILD_MMAP=OFF 即可禁用）而不影响 confidence；若 OHOS musl 实际支持 mmap，工作量还可更低。"
+    "notes": "libdwarf 是跨平台 C 库，当前已良好支持 Linux/macOS/FreeBSD/Windows。鸿蒙 PC 借助 OHOS NDK 可低工作量移植：所有平台特有 API 均被编译宏（HAVE_FULL_MMAP/HAVE_UNISTD_H/_WIN32 等）守卫且已有回退路径。评估按模型 A（库经 OHOS NDK 生成 .so 供链接使用）进行。mmap target_status 为 unknown 但因它可选（BHILD_MMAP=OFF 即可禁用）而不影响 confidence；若 OHOS musl 实际支持 mmap，工作量还可更低。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "libdwarf-code",
@@ -1267,7 +1269,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(weak_copyleft) 与依据 SPDX(LGPL-2.1-only) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "libdwarf 是纯数据解析 C 库，离线读取磁盘上的目标文件以解析 DWARF 调试信息。不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。所有场景均 present:false。",

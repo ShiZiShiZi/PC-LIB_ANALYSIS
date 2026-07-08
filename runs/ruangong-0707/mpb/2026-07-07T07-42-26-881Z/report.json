@@ -846,17 +846,17 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        3,
-        8
+        3.1,
+        4.6
       ],
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            2,
-            5
+            0.3,
+            0.3
           ],
-          "basis": "cwriter 包约 163 LOC（含平台分支），需为 HarmonyOS/Linux 侧验证 ioctl(TIOCGWINSZ/TCGETS) 可用性；若鸿蒙终端不支持标准 POSIX ioctl 则需适配替代方案"
+          "basis": "需适配 163 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -873,8 +873,17 @@
             1
           ],
           "basis": "14 个测试文件约 3456 LOC，需在鸿蒙 PC 环境运行 go test 验证终端交互功能"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            1.3,
+            1.3
+          ],
+          "basis": "重编译复用 3883 行 ÷ 3000 行/天"
         }
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -962,7 +971,8 @@
       "若 ioctl 不可用，为 cwriter 实现基于 ANSI DSR 转义序列的终端尺寸查询替代方案",
       "运行 go test -race ./... 验证全量测试通过"
     ],
-    "notes": "Go 运行时已在鸿蒙 PC 移植（available），但终端 POSIX ioctl 可用性为 unknown，故 confidence 降为 medium。若核实 ioctl 可用，则 porting_class 可升至 recompile_only。"
+    "notes": "Go 运行时已在鸿蒙 PC 移植（available），但终端 POSIX ioctl 可用性为 unknown，故 confidence 降为 medium。若核实 ioctl 可用，则 porting_class 可升至 recompile_only。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "mpb",
@@ -997,7 +1007,8 @@
         "value": "posix_ioctl",
         "rationale": "Go 库通过 golang.org/x/sys/unix 调用 POSIX ioctl 不属于传统分类（win32/posix/ctypes_ffi），作为平台 API 的新类型更精确"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "mpb 不涉及 GUI 桌面界面、3D 渲染、媒体编解码或特定硬件设备。它是一个纯终端（TTY）进度条渲染库，唯一与设备相关的是通过 ioctl/Console API 访问终端设备以检测尺寸和 TTY 状态，不依赖 GPU/摄像头/蓝牙等硬件。",

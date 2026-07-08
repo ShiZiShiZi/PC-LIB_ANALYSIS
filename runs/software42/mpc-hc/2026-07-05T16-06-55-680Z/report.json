@@ -1835,7 +1835,8 @@
       "person_days": [
         200,
         500
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "high",
     "unadaptable_apis": [
@@ -2160,7 +2161,8 @@
       "将所有 Windows 注册表读写改为文件存储（JSON/ini）",
       "将 Crash Reporter/yt-dlp 集成/sendrpt 等 Windows 工具链依赖替换为鸿蒙等价方案"
     ],
-    "notes": "评估按模型 C（整包桌面应用）。该项目是 Windows 平台的深度耦合应用——其核心架构（DirectShow/Direct3D/MFC/WASAPI）全部为 Windows 专有技术，移植到鸿蒙 PC 的工作量相当于完全重写整个应用（person_days 按重写级别估算 200-500 天）。feasibility=infeasible 并非因某个具体 API 无法适配，而是整个应用的技术栈在目标平台不存在——重写成本远超「适配」。建议寻找鸿蒙生态中已有的播放器替代（如鸿蒙版 VLC 或其他 natives 播放器）。多个 target_assumptions 因目标任务在 harmony-pc-capabilities.json 中为 unknown（optical_drive/desktop_app/audio_io），因已有足够多的 blocker 判定 infeasible，这些 unknown 不影响结论。"
+    "notes": "评估按模型 C（整包桌面应用）。该项目是 Windows 平台的深度耦合应用——其核心架构（DirectShow/Direct3D/MFC/WASAPI）全部为 Windows 专有技术，移植到鸿蒙 PC 的工作量相当于完全重写整个应用（person_days 按重写级别估算 200-500 天）。feasibility=infeasible 并非因某个具体 API 无法适配，而是整个应用的技术栈在目标平台不存在——重写成本远超「适配」。建议寻找鸿蒙生态中已有的播放器替代（如鸿蒙版 VLC 或其他 natives 播放器）。多个 target_assumptions 因目标任务在 harmony-pc-capabilities.json 中为 unknown（optical_drive/desktop_app/audio_io），因已有足够多的 blocker 判定 infeasible，这些 unknown 不影响结论。",
+    "porting_class_model": "infeasible"
   },
   "library": {
     "name": "mpc-hc",
@@ -2223,7 +2225,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "MPC-HC 作为 Windows 桌面媒体播放器，触及 GUI（MFC/Win32 窗口）、3D 渲染（Direct3D 9/11 像素着色器）、媒体（DirectShow 音视频管线 + ffmpeg 解码 + WASAPI 音频 I/O）、硬件（CD/DVD 光驱设备直读）四大鸿蒙适配重点场景。所有场景均深度绑定 Windows 平台专有 API，鸿蒙无直接等价替代。",

@@ -1472,7 +1472,8 @@
       "person_days": [
         5,
         10
-      ]
+      ],
+      "level": "medium"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1597,7 +1598,8 @@
       "在鸿蒙 PC 上用编译产物运行现有 googletest 测试套件（780 条用例）验证 HTTP/WebSocket/JSON/URI 功能完整性",
       "验证 HTTP/HTTPS 客户端与服务器在鸿蒙网络栈下工作正常（DNS 解析、TCP、TLS 握手、代理等）"
     ],
-    "notes": "评估按模型 A（C++ 原生库，经 OHOS NDK 交叉编译作为 .so 链接到鸿蒙应用）。Windows 分支（WinHTTP/HTTPSYS/Win32 file I/O/WinRT，共约 1076 行 #ifdef WIN32 代码）在 OHOS 编译时不会被选中，无需处理。三大依赖（Boost/OpenSSL/zlib）已鸿蒙化可直接复用。websocketpp 为 header-only vendored 库随主库重编。唯一 POSIX 微调点在 pplxlinux.cpp 的 SYS_gettid。整体工作量集中在 CMake 工具链配置与交叉编译验证。若目标为 ArkTS 应用需通过 Node-API 桥接则将 person_days 上调至 [12, 20]（额外工作：编写 N-API 绑定层暴露 C++ API 给 ArkTS）。"
+    "notes": "评估按模型 A（C++ 原生库，经 OHOS NDK 交叉编译作为 .so 链接到鸿蒙应用）。Windows 分支（WinHTTP/HTTPSYS/Win32 file I/O/WinRT，共约 1076 行 #ifdef WIN32 代码）在 OHOS 编译时不会被选中，无需处理。三大依赖（Boost/OpenSSL/zlib）已鸿蒙化可直接复用。websocketpp 为 header-only vendored 库随主库重编。唯一 POSIX 微调点在 pplxlinux.cpp 的 SYS_gettid。整体工作量集中在 CMake 工具链配置与交叉编译验证。若目标为 ArkTS 应用需通过 Node-API 桥接则将 person_days 上调至 [12, 20]（额外工作：编写 N-API 绑定层暴露 C++ API 给 ArkTS）。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "cpprestsdk",
@@ -1640,7 +1642,8 @@
         "rationale": "cpprestsdk README 醒目标注 ARCHIVED（已归档不再维护）。虽然已停止维护但代码完整、功能明确，仍正常归类。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本项目为纯网络通信库（HTTP 客户端/服务器 + WebSocket + JSON + URI），不涉及 GUI 桌面界面、3D 图形渲染、音视频媒体处理或特定硬件（GPU/传感器/USB 等）。所有平台适配均限于网络传输层与文件 I/O，已有 POSIX 后端（Boost.ASIO）可跨平台复用。",

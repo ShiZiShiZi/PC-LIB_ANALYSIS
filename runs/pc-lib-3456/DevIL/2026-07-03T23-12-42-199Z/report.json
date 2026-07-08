@@ -1559,7 +1559,8 @@
       "person_days": [
         15,
         30
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi_with_binding_strip",
@@ -1911,7 +1912,8 @@
       "在源码中添加 __OHOS__ 平台分支，处理路径分隔符、字节序等差异",
       "在鸿蒙 PC 上跑通 IL/ILU 单元测试，验证图像格式读写正确性"
     ],
-    "notes": "评估按库模型 A（C/C++ 库经 NDK 重编后供其他应用链接）。若上层应用仅调用 IL/ILU（不碰 ILUT），则实际阻碍退化为少量可选依赖，porting_class 可降至 needs_adaptation_full。置信度评为 medium，因为鸿蒙 PC 桌面集成（剪贴板/打印）与 x86_64 覆盖情况仍为 unknown。"
+    "notes": "评估按库模型 A（C/C++ 库经 NDK 重编后供其他应用链接）。若上层应用仅调用 IL/ILU（不碰 ILUT），则实际阻碍退化为少量可选依赖，porting_class 可降至 needs_adaptation_full。置信度评为 medium，因为鸿蒙 PC 桌面集成（剪贴板/打印）与 x86_64 覆盖情况仍为 unknown。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "DevIL",
@@ -1968,7 +1970,15 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "perm_dangling_cap:ohos.permission.INTERNET",
+        "class": "actionable",
+        "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "DevIL 核心为图像处理库，本身不直接提供桌面 GUI；但 ILUT 子库包含大量平台相关的显示/图形绑定，涉及 Win32 GDI/剪贴板/打印、X11、OpenGL、DirectX 等场景。OpenGL 路径在鸿蒙 PC 上可部分适配，Win32/X11/DirectX 路径则无可行等价。",

@@ -1339,7 +1339,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "recommended_path": "recompile_napi",
@@ -1480,7 +1481,8 @@
       "在鸿蒙 PC 上运行 test_api/test_compress_roundtrip 等测试用例，验证功能完整性与性能"
     ],
     "required_permissions": [],
-    "notes": "评估按模型 A（C 库经 OHOS NDK 重编，供上层运行时/NDK 应用链接）。Blosc 是极度可移植的纯 C 库，所有平台差异已有条件编译处理，无需任何源码级改造即可在 OHOS NDK 下编译。pthread（核心运行时依赖）在 musl/OHOS 中可用。唯一注意点是 arm64 上 SIMD 加速不可用——但库已经内置通用 C 回退，性能下降可接受。code_metrics.platform_adaptation 共 668 行平台守卫代码（win:541, macos:73, linux:3, posix:51），主要集中在 Win32 兼容层，鸿蒙编译时全部自动排除。"
+    "notes": "评估按模型 A（C 库经 OHOS NDK 重编，供上层运行时/NDK 应用链接）。Blosc 是极度可移植的纯 C 库，所有平台差异已有条件编译处理，无需任何源码级改造即可在 OHOS NDK 下编译。pthread（核心运行时依赖）在 musl/OHOS 中可用。唯一注意点是 arm64 上 SIMD 加速不可用——但库已经内置通用 C 回退，性能下降可接受。code_metrics.platform_adaptation 共 668 行平台守卫代码（win:541, macos:73, linux:3, posix:51），主要集中在 Win32 兼容层，鸿蒙编译时全部自动排除。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "kind": "library",
@@ -1508,7 +1510,8 @@
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "本库为纯数据压缩库，涉及 SIMD 硬件加速（SSE2/AVX2），但每条 SIMD 路径均有通用 C 回退实现，非特定硬件依赖。不涉及 GUI、3D 渲染或音视频媒体。",

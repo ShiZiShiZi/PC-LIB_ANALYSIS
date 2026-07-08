@@ -1778,7 +1778,8 @@
       "person_days": [
         15,
         40
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "high",
     "recommended_path": "build_cpu_only_variant",
@@ -1958,7 +1959,8 @@
       "在鸿蒙 Python + PyTorch 环境中加载 fbgemm_gpu-cpu .so，跑通 C++/Python 单元测试",
       "裁剪 FBGEMM_GPU GenAI 中依赖 CUDA 的模块，或明确标记为 GPU-only 不可移植"
     ],
-    "notes": "评估基于模型 A（库跑在已移植运行时上）。因 CUDA 在鸿蒙 PC 目标事实中为 unavailable，GPU 功能无法移植；若评估口径要求保留 GPU 训练/推理能力，则结论应调整为 infeasible。CPU-only 路径置信度较高，但 asmjit/cpuinfo/cutlass/folly 的实际交叉编译工作量会显著影响总人天。"
+    "notes": "评估基于模型 A（库跑在已移植运行时上）。因 CUDA 在鸿蒙 PC 目标事实中为 unavailable，GPU 功能无法移植；若评估口径要求保留 GPU 训练/推理能力，则结论应调整为 infeasible。CPU-only 路径置信度较高，但 asmjit/cpuinfo/cutlass/folly 的实际交叉编译工作量会显著影响总人天。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "FBGEMM",
@@ -1996,7 +1998,8 @@
         "value": "python",
         "rationale": "仓库同时包含 C++ 核心库 fbgemm（CMake 项目 fbgemm）与 Python 分发包 fbgemm_gpu（setup.py）。按「可安装分发包/主交付物」口径选择 python；若按「核心实现语言」口径也可能判为 cpp。"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "FBGEMM 是一个纯计算/算子库，不涉及桌面 GUI、3D 图形渲染或音视频媒体处理；其鸿蒙适配的关键场景是**硬件/GPU 通用计算**（CUDA/ROCm 训练/推理算子），这是主要阻碍来源。",

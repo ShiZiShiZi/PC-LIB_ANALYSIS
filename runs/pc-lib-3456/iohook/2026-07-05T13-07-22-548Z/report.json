@@ -1664,7 +1664,8 @@
       "person_days": [
         20,
         35
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi",
@@ -1811,7 +1812,8 @@
       "在鸿蒙 Node.js 上加载并验证 iohook.node，跑通键盘/鼠标事件接收测试",
       "更新 build.js 预编译脚本以支持鸿蒙平台（新增 ohos target、OHOS NDK 工具链配置、打包上传）"
     ],
-    "notes": "评估按模型 A（库跑在已移植的鸿蒙 Node.js 24 上）。核心不确定性在鸿蒙 PC 是否提供系统级全局输入钩子能力——当前 harmony-pc-capabilities.json 未收录此题项（桌面窗口管理器/显示服务均为 unknown），故下调 confidence 至 medium。若鸿蒙提供等价能力，移植可行（needs_adaptation_full）；若不提供，iohook 的功能范围降为仅监听本应用内的事件（需改变 API 语义），或整体不可移植（infeasible）。libuiohook 已按平台分离后端，新增鸿蒙后端是增量、非破坏性工作。纯 JS 层（EventEmitter/快捷键）和 NAN 绑定层可复用，大大降低移植范围。"
+    "notes": "评估按模型 A（库跑在已移植的鸿蒙 Node.js 24 上）。核心不确定性在鸿蒙 PC 是否提供系统级全局输入钩子能力——当前 harmony-pc-capabilities.json 未收录此题项（桌面窗口管理器/显示服务均为 unknown），故下调 confidence 至 medium。若鸿蒙提供等价能力，移植可行（needs_adaptation_full）；若不提供，iohook 的功能范围降为仅监听本应用内的事件（需改变 API 语义），或整体不可移植（infeasible）。libuiohook 已按平台分离后端，新增鸿蒙后端是增量、非破坏性工作。纯 JS 层（EventEmitter/快捷键）和 NAN 绑定层可复用，大大降低移植范围。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "iohook",
@@ -1872,7 +1874,8 @@
         "rationale": "harmony-pc-capabilities.json 目前未收录「全局输入监听/钩子」这一桌面开发常用能力（Windows SetWindowsHookEx / macOS CGEventTap / X11 XRecord 的等价 API）——对于 iohook 等输入钩子类库，这是决定性的移植前提。建议在 GUI/桌面集成段新增此项，并在 @ohos.multimodalInput 或者其他系统能力中确认是否提供。"
       }
     ],
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "iohook 的核心功能是系统级键盘鼠标事件捕获，直接依赖各平台原生输入 API（Win32/IOKit/X11），不涉及 GUI 渲染、3D 图形、媒体编解码或特定硬件。虽然它是桌面应用基础设施的一部分，但自身仅是输入监听层——不绘制窗口、不做渲染、不访问 GPU/摄像头/蓝牙。",

@@ -908,7 +908,8 @@
       "LICENSE"
     ],
     "evidence": "仓库根目录 LICENSE 为完整 Apache-2.0 文本；README 与 python/setup.py classifiers 均声明 Apache Software License。",
-    "notes": "宽松型许可。vendored 的第三方子模块（third_party/*）各自保留原许可，不影响主体判定。"
+    "notes": "宽松型许可。vendored 的第三方子模块（third_party/*）各自保留原许可，不影响主体判定。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 38,
@@ -2545,7 +2546,8 @@
       "person_days": [
         15,
         40
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime + OHOS NDK 重编 C++ 扩展；关闭 USE_CUDA 走 CPU 后端；liburing 磁盘 I/O 路径回退到同步/线程池实现；epoll socket pool 使用单连接 fallback 或替换为 poll。",
@@ -2809,7 +2811,8 @@
       "将未鸿蒙化的纯 Python 依赖（networkx、requests 等）纳入安装清单或源码安装流程",
       "在鸿蒙 Python + PyTorch 上跑通核心单元测试，验证图操作、采样、分布式单机多进程路径"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。DGL 核心 CPU 功能可移植，但 GPU 加速与部分 Linux 特有 I/O/网络优化路径无法直接适配，因此 porting_class 为 needs_adaptation_partial。confidence 为 medium 主要因为 x86_64 支持状态及 OHOS NDK 对 epoll 的完整兼容度尚未核实。若目标为 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，结论将变为 infeasible 或需整体用 Node-API/C++ 重写。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。DGL 核心 CPU 功能可移植，但 GPU 加速与部分 Linux 特有 I/O/网络优化路径无法直接适配，因此 porting_class 为 needs_adaptation_partial。confidence 为 medium 主要因为 x86_64 支持状态及 OHOS NDK 对 epoll 的完整兼容度尚未核实。若目标为 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，结论将变为 infeasible 或需整体用 Node-API/C++ 重写。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "meta": {
     "schema_version": "1.0",
@@ -2839,6 +2842,7 @@
         "value": "needs_adaptation_partial",
         "rationale": "DGL 是库而非应用，CUDA 虽为重要特性但非唯一路径；CPU 路径完整可运行，因此未判 infeasible，而是按部分功能无法适配定级。"
       }
-    ]
+    ],
+    "normalized_version": 3
   }
 }

@@ -772,7 +772,8 @@
       "LICENSE"
     ],
     "evidence": "LICENSE 文件首行明确为 BSD 3-Clause License；setup.py license 字段声明为 BSD；两者一致。",
-    "notes": "宽松许可。预训练模型与部分数据集可能有独立授权（README 已声明）。"
+    "notes": "宽松许可。预训练模型与部分数据集可能有独立授权（README 已声明）。",
+    "category": "permissive"
   },
   "dependencies": {
     "count": 12,
@@ -1630,13 +1631,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Python 库跑在已移植的 Python 3.12 运行时上；原生 C++/CUDA 扩展需经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
         15,
         30
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "run_on_ported_runtime_with_native_extension_rebuild",
@@ -1850,7 +1852,12 @@
       "若需要 AVIF/HEIC，评估是否裁剪或基于 @ohos.multimedia 重新实现",
       "若需要 x86_64 分发，先核实鸿蒙 PC 对该架构的 NDK/运行时支持"
     ],
-    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。所有 CUDA/MPS 路径均为可选加速，CPU 路径可完整覆盖核心功能，因此 porting_class 定为 needs_adaptation_full（无不可适配的核心 API）。置信度为 medium，主要因为 x86_64 架构状态未核实，以及 LibTorch OHOS C++ 库可用性需实际验证。开源版 torchvision.io.video 依赖内部 pytorch.vision.fb.io.video，当前不可用，不影响图像/模型核心能力。"
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。所有 CUDA/MPS 路径均为可选加速，CPU 路径可完整覆盖核心功能，因此 porting_class 定为 needs_adaptation_full（无不可适配的核心 API）。置信度为 medium，主要因为 x86_64 架构状态未核实，以及 LibTorch OHOS C++ 库可用性需实际验证。开源版 torchvision.io.video 依赖内部 pytorch.vision.fb.io.video，当前不可用，不影响图像/模型核心能力。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1894,6 +1901,14 @@
         "value": "video_decode_stub",
         "rationale": "torchvision.io.video 在开源版中仅导入内部 pytorch.vision.fb.io.video，实际未提供可用实现，应标记为 stub 而非完整视频编解码。"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   }
 }

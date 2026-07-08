@@ -2856,13 +2856,14 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK 原生编译，musl + POSIX 子集，自研内核，非 Linux ABI）",
-    "feasibility": "feasible_with_effort",
+    "feasibility": "hard",
     "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
         30,
         60
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -3213,7 +3214,8 @@
       "（可选）编写 @ohos.multimedia 设备采集后端 libavdevice 插件",
       "（可选）验证 Vulkan 后端在鸿蒙 PC 上的可用性，若可用则保留"
     ],
-    "notes": "评估置信度为 medium，主要不确定因素：① Vulkan 在鸿蒙 PC 上的可用性（Vulkan Video 扩展是否支持）；② 鸿蒙 PC 是否支持 x86_64 架构（目前主力为 aarch64）；③ 音频/摄像头采集 API 的具体形态与权限模型；④ 部分可选编解码依赖（libx265/libmp3lame/libass/gnutls/libsrt 等）未在 cmd-pkgs 提供，暂时需禁用。以上均不影响核心软件管线——FFmpeg 的内置编解码器（FFV1/FLAC/PCM/MPEG-4 等数百种）完全不依赖外部库。工作量估计 30-60 人天基于 1.55M 行代码规模与 ~50 个外部可选依赖的集成验证需求；若只做最小可运行构建（禁用所有外部库 + 禁用硬件加速 + 禁用设备采集），估计可降至 15-30 人天。"
+    "notes": "评估置信度为 medium，主要不确定因素：① Vulkan 在鸿蒙 PC 上的可用性（Vulkan Video 扩展是否支持）；② 鸿蒙 PC 是否支持 x86_64 架构（目前主力为 aarch64）；③ 音频/摄像头采集 API 的具体形态与权限模型；④ 部分可选编解码依赖（libx265/libmp3lame/libass/gnutls/libsrt 等）未在 cmd-pkgs 提供，暂时需禁用。以上均不影响核心软件管线——FFmpeg 的内置编解码器（FFV1/FLAC/PCM/MPEG-4 等数百种）完全不依赖外部库。工作量估计 30-60 人天基于 1.55M 行代码规模与 ~50 个外部可选依赖的集成验证需求；若只做最小可运行构建（禁用所有外部库 + 禁用硬件加速 + 禁用设备采集），估计可降至 15-30 人天。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "library": {
     "name": "FFmpeg",
@@ -3294,7 +3296,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:rendering_3d",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "FFmpeg 核心触及两大鸿蒙适配重点场景：媒体（编解码/流媒体/格式处理）和硬件加速（多平台 GPU 编解码/计算）。无 GUI 依赖，无 3D 渲染需求。GPU 硬件加速均为可选编译功能，核心软件管线完整独立。",

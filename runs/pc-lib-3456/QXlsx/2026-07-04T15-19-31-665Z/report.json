@@ -958,7 +958,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "medium",
     "unadaptable_apis": [],
@@ -1007,7 +1008,8 @@
       "运行现有示例（HelloWorld/TestExcel）验证 .xlsx 读写正确性",
       "处理可能遇到的 Qt 私有头文件路径差异和编译警告"
     ],
-    "notes": "Qt 在鸿蒙 PC 侧整体标为 available（社区已提供），但 GuiPrivate 私有子模块（QZipReader/QZipWriter）的可用性未经核实——这是 target_assumptions 中的 unknown 项，若该模块缺失则需额外 ZIP 库适配，建议升级 confidence 至 high。库本身极简（单一 Qt 依赖、无平台 API），是 Qt 生态中最适合鸿蒙移植的类别之一。注意：仓库中 ShowConsole/TestExcel 等 16 个目录为示例应用，不作为移植范围考量——仅 QXlsx/ 目录的库代码需要适配。"
+    "notes": "Qt 在鸿蒙 PC 侧整体标为 available（社区已提供），但 GuiPrivate 私有子模块（QZipReader/QZipWriter）的可用性未经核实——这是 target_assumptions 中的 unknown 项，若该模块缺失则需额外 ZIP 库适配，建议升级 confidence 至 high。库本身极简（单一 Qt 依赖、无平台 API），是 Qt 生态中最适合鸿蒙移植的类别之一。注意：仓库中 ShowConsole/TestExcel 等 16 个目录为示例应用，不作为移植范围考量——仅 QXlsx/ 目录的库代码需要适配。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "QXlsx",
@@ -1041,7 +1043,15 @@
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "counter_tool": "cloc"
+    "counter_tool": "cloc",
+    "harmony_warnings": [
+      {
+        "code": "cap_miss:gui",
+        "class": "actionable",
+        "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "QXlsx 是一个纯文件处理库，不涉及 GUI 渲染、3D 图形、音视频媒体或特定硬件设备。它通过 Qt 框架使用 XML/ZIP/文件 I/O 等跨平台能力操作 Excel 文档。",

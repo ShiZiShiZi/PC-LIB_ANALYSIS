@@ -60,7 +60,11 @@ dependencies/function_summary 把项目触及的**鸿蒙适配重点场景**结�
 `{key(gui/rendering_3d/media/hardware，开放可扩), present, kind[], specific_hardware, via[],
 harmony_status(对照 caps), adaptation, evidence}`。回答"**是否涉及 X**"，dim-9 据此判修改量/能否移植：
 present 场景 `harmony_status=unavailable` 或 `specific_hardware` → blocker/unadaptable_api + person_days 上调
-（可推 infeasible）。dim-9 还产 **`harmony_adaptation.required_permissions[]`**（鸿蒙化后所需
+（可推 infeasible）。**两层契约（去重）：GUI/3D/媒体/硬件 四类的鸿蒙支持状态以 `capability_profile` 为权威源
+——查 caps 定 `harmony_status`/`specific_hardware` 只在 dim-10 做一次；dim-9 直接消费（经 `source_capability`/
+`caused_by` 回指场景 key）、不对这四类重查 caps 或从 native_api 重扫，只把状态翻译成 blocker/effort/remediation。
+`adaptation` 是描述性提示、不下移植结论（那是 dim-9 的 remediation）。** `target_assumptions` 只登记 dim-10
+覆盖不到的目标能力（运行时已移植性/JDK 内部模块/attach·进程模型/应用交付形态/桌面集成）。dim-9 还产 **`harmony_adaptation.required_permissions[]`**（鸿蒙化后所需
 `ohos.permission.*`，`{permission, reason, source_capability(交叉引用场景 key), harmony_status, evidence}`，
 对照 caps **权限模型段**）。目标侧 `references/harmony-pc-capabilities.json` 新增 **3D 图形栈 / 媒体 /
 硬件设备 / 权限模型** 4 段事实供对照（多为 unknown/partial，经面板 `#/harmony-caps` 人工核实后翻转）。
@@ -89,7 +93,12 @@ crash_reporting/…，开放）, confidence（闭轴 high/medium/low）, via[], 
 内联汇编命中，注释/字符串已剔除——仅 x86 无 arm 回退 ⇒ arm64 适配硬点）/ native_api 调用点 / capability_profile，
 **不重扫源码**。**单一登记源**：`unadaptable` 桶只登记模块+LOC，API 粒度引用 dim-9 `ua:*` 不重述。dim-9 据此定
 `effort.person_days` 并拆 **`effort.breakdown[]`** 分项（component 推荐集 recompile/api_adaptation/gui/
-deps_porting/build_system/testing_verification/packaging；分项和 ≈ 总区间，server 校验、缺总数时求和回填）；
+deps_porting/build_system/testing_verification/packaging）。**其中 `recompile`/`api_adaptation` 两项由归一
+（`report_normalize.py`/`server.js` 镜像）据 code_partition LOC **确定性派生**并覆盖模型值：`recompile =
+recompile_reuse 桶 LOC ÷ 速率`、`api_adaptation = needs_adaptation 桶 LOC ÷ 速率`（速率读 `.panel-settings.json`
+`recompileLocPerDay`/`adaptationLocPerDay`，默认 3000/500 行/天，面板「系统设置」可调；改后新分析即时生效、
+存量重跑 `migrate_normalize.py` 回填）。**模型产出 breakdown 时，`effort.person_days` 总量由归一重算为「各分项之和」**
+（含派生两项 + 模型其余分项），`effort.level` 随之派生；模型无 breakdown 时保留其整体 person_days。
 另产 **`harmony_adaptation.critical_dependencies[]`**（迁移关键路径依赖，有序：未鸿蒙化 + 阻塞核心推进才列，
 `name` 与 `dependencies[].name` 逐字一致，`refs` 引用 bk:/ua:/ta: id）。**serve-time 派生互补**：拓扑 rollup
 （`rollupAdaptation`）额外算每节点 `criticalPath[]`（沿贡献人天最大的已分析子依赖下钻的链）+ `blockingChildren`
@@ -104,8 +113,16 @@ xlsx 汇总加 汇编代码行+4 桶 LOC 列，新增「代码分区/关键路�
 `validateReport`(`web/server.js`，serve-time，与 `validateHarmony` 合入 `meta.harmony_warnings`)
 启发式查 capability_profile↔native_api↔dependencies↔dim-9 的漏判/矛盾（如 deps 有 Qt/cuda 但 capability_profile
 漏标、场景缺 evidence、权限 source_capability 悬空、present+unavailable 场景在 dim-9 无登记），面板「数据
-一致性提示」展示。**计数准确性**：platform_adaptation/platform_branches 已剔除注释与字符串字面量内的命中
-（`_masked_lines`），并有 `code-metrics/scripts/selftest.py` 单测固化。
+一致性提示」展示。**每条告警带稳定 `{code, class}`**（`report_normalize.py`/`server.js` 镜像同产）：`class` 闭轴
+`actionable`（召回/漏判启发式）/ `info`（归一器已确定性修好的审计留痕，如 `pclass_adjusted`）。**告警的模型
+自我复核（analyze 时 in-agent，agent 步骤 4b，单趟）**：agent 读回首次 assemble 的 `meta.harmony_warnings`，只处理
+`actionable` 的——**真漏**带 file:line 证据回改源维度块（capability_profile/cloud_services/dependencies/
+target_assumptions/evidence，**不碰派生轴**），**误报**在 `blocks/meta.json` 写 `meta.harmony_warnings_dismissed`
+（`[{code, rationale}]`）——重跑 assemble 后归一把被驳回的从 `harmony_warnings` 移入 **`meta.harmony_warnings_reviewed`**
+（`[{code, message, rationale}]`，面板「已复核」折叠区展示），active 只剩未驳回项。护栏：新增须有证据（拿不出→
+判误报别硬补）、单趟不清零、`info` 不可驳。**存量报告需重新分析才有自我复核**；warnings 形状升级（字符串→对象）
+由 `migrate_normalize.py` 确定性回填、`NORMALIZED_VERSION` 随之 bump。**计数准确性**：platform_adaptation/
+platform_branches 已剔除注释与字符串字面量内的命中（`_masked_lines`），并有 `code-metrics/scripts/selftest.py` 单测固化。
 
 Dependencies (dim 6) carry `acquisition` (how the build obtains each one:
 system/vendored/fetchcontent/download_build/submodule/package_manager/prebuilt_binary)
@@ -140,9 +157,17 @@ Open vocab: `recommended_path`/`blockers[].category`/`harmony_status`. The three
 **single-source-of-truth model with cross-refs**: a fact is登记 once in its primary list
 (`target_assumptions`=root cause, `unadaptable_apis`=granular machine layer for rollup, `blockers`=result)
 and referenced elsewhere by stable `id` via `caused_by`/`manifests_as` (no duplicate prose → no
-double-counted difficulty). `/api/report` runs serve-time `normalizeHarmony` (fills derived
-effort.level/person_days/ids/feasibility — 存量 reports gain them without a re-run) + `validateHarmony`
-(consistency warnings → `meta.harmony_warnings`, shown on the panel). The rollup also aggregates
+double-counted difficulty). **Single source of truth (`scripts/report_normalize.py`):** the dim-9/dim-12
+derivations (`porting_class` reconcile — model's pick is a FLOOR clamped UP by the dim-12
+`needs_adaptation`/`unadaptable` buckets + `unadaptable_apis`, never lowered; the model's raw pick kept in
+`harmony_adaptation.porting_class_model`), `feasibility`/`effort.level`, `code_partition` canonicalization,
+and the `validate*` consistency checks are implemented ONCE in Python and run at **assemble time** so
+`report.json` is **born normalized + stamped `meta.normalized_version`** — the panel, the Excel export
+(`export_xlsx.py` reads the persisted value, no longer re-derives), and any direct reader all agree.
+`web/server.js` keeps a byte-identical JS **mirror** (a full-corpus parity test asserts they match) only
+to upgrade legacy/older-stamp reports at serve time; `/api/report` serves a current-stamp report as-is.
+`scripts/migrate_normalize.py` back-fills 存量 reports on disk; bump both `NORMALIZED_VERSION`s together on
+a logic change. (`scripts/test_report_normalize.py` fixtures the derivation.) The rollup also aggregates
 `rollupEffort`(Σ person_days of actually-depended children)/`rollupLevel`/`rollupConfidence`.
 
 **API-granular un-adaptability + bottom-up roll-up.** When some functionality is truly
@@ -167,12 +192,18 @@ are sealed leaves; an unanalyzed child sets `rollup_uncertain`. This is serve-ti
 未命中不降级），与 `dependencies[].harmony_adapted` 同一数据源；② Tier3 人工策展——面板
 `#/harmony-caps` 页（`/api/harmony-caps` GET/sync/row）展示并高亮 unknown/过期行，可内联「标记已核实」
 写回 JSON（并自动 `render` 出 .md）。dim-9 把项目所需目标能力逐项对照该参考，写入 `harmony_adaptation.target_assumptions[]`
-（`{capability, required, target_status, impact, source}`）：`available`→不阻碍，`partial`→partial 阻碍，
+（`{capability, capability_key, required, target_status, impact, source}`）：`available`→不阻碍，`partial`→partial 阻碍，
 `unavailable`→blocker/unadaptable_apis，**`unknown` 且 required → 记假设 + 下调 `meta.confidence_overall`
 + notes 说明，禁止据未知臆断为可行**。对**应用**尤为关键（GUI 工具包/headful AWT、跨进程 attach、
 JDK 内部模块开放性、应用交付形态多为决定性且常 unknown）。面板鸿蒙段展示假设表 + 「N 项未核实」
 提示；xlsx 有「鸿蒙目标假设」sheet。参考文件是**人工维护的事实源**——把核实到的事实填回去，下次
 分析即受益（验证：把某项 unknown 改成 available 重分析，对应假设翻转、阻碍降级、置信回升）。
+**反哺闭环（模型观察 → 目标能力研究优先级）**：每条 `target_assumptions` 带 `capability_key`（命中 caps 行的**叶 id**，
+如 `swing`/`jdk_attach`/`dotnet`）——`web/server.js` 的 `/api/harmony-caps` 据此跨报告聚合每行 `demand`（`{count,unknown,libs}`
+＝「被 N 个分析需要」），面板 `#/harmony-caps`「研究优先级」列展示、未核实+高需求置顶。对**不上 caps 任何行的必需能力**，
+模型另记一条 `meta.observations{dimension:"harmony_caps", kind:"caps_gap"}` 提案补行，经既有 `/api/observations` 汇入
+`#/observations`（标签「目标能力缺口」）供人工把缺失能力补进参考——下次分析即可对号入座。**存量报告需重新分析才有
+`capability_key`/`caps_gap`**（面板 demand 聚合与标签对已分析报告即时生效）。
 **目标侧事实源分两层**：PC 形态可用性 = `harmony-pc-capabilities.json`（权威）；API 级存在性/权限精确名
 （ohos.permission.\*）/SysCap = **opencode 全局鸿蒙文档 skill**（辅助）——`~/.config/opencode/skills/` 下的
 `harmonyos-sdk-api-lookup`（4000+ 篇 API 参考）与 `harmonyos-docs-lookup`（2860 篇指南/FAQ）。server 启动时探测

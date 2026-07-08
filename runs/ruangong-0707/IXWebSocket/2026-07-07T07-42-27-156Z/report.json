@@ -1491,18 +1491,18 @@
     "porting_class": "needs_adaptation_full",
     "effort": {
       "person_days": [
-        5,
-        15
+        16,
+        21
       ],
-      "level": "medium",
+      "level": "high",
       "breakdown": [
         {
           "component": "api_adaptation",
           "person_days": [
-            3,
-            8
+            11.3,
+            11.3
           ],
-          "basis": "needs_adaptation 桶约 5,670 LOC，主要是 IXSocket/IXNetSystem/IXSocketConnect/IXSelectInterruptPipe/IXSetThreadName 等平台适配层，需添加 __OHOS__ 平台分支（鸿蒙 NDK musl 提供 POSIX socket 子集，pipe/fcntl/poll/select/getaddrinfo 可用，pthread_setname_np 需验证签名）；platform_adaptation 守卫代码 518 行"
+          "basis": "需适配 5670 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -1527,6 +1527,14 @@
             2
           ],
           "basis": "验证 WebSocket 客户端/服务端基本功能、TLS 握手、DNS 解析、per-message deflate 压缩；已有 Catch2 测试套件可复用"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            2.7,
+            2.7
+          ],
+          "basis": "重编译复用 8174 行 ÷ 3000 行/天"
         }
       ]
     },
@@ -1653,7 +1661,8 @@
       "验证 zlib 和 OpenSSL 在 OHOS NDK 下的链接和运行",
       "运行测试套件验证 WebSocket 客户端/服务端、TLS、DNS 解析、压缩功能"
     ],
-    "notes": "IXWebSocket 的平台适配层已高度抽象（IXNetSystem/IXSocket 封装了所有平台差异），添加 __OHOS__ 分支工作量可控。Apple SecureTransport 后端在鸿蒙上不可用但不构成阻碍（选择 OpenSSL/MbedTLS 即可）。Windows 证书存储 API（CertOpenStore 等）仅 MbedTLS/OpenSSL 后端的 Windows 专有功能，鸿蒙上不适用但不影响核心 TLS 功能。"
+    "notes": "IXWebSocket 的平台适配层已高度抽象（IXNetSystem/IXSocket 封装了所有平台差异），添加 __OHOS__ 分支工作量可控。Apple SecureTransport 后端在鸿蒙上不可用但不构成阻碍（选择 OpenSSL/MbedTLS 即可）。Windows 证书存储 API（CertOpenStore 等）仅 MbedTLS/OpenSSL 后端的 Windows 专有功能，鸿蒙上不适用但不影响核心 TLS 功能。",
+    "porting_class_model": "needs_adaptation_full"
   },
   "library": {
     "name": "IXWebSocket",
@@ -1689,7 +1698,8 @@
         "value": "apple_framework",
         "rationale": "Apple SecureTransport 通过 -framework Foundation -framework Security 链接，不属于 system(via find_package)/vendored/fetchcontent/package_manager 任何一类；暂归 system 但语义不够精确"
       }
-    ]
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "IXWebSocket 是纯网络通信库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件设备访问。唯一相关的鸿蒙适配场景是网络通信能力本身。",

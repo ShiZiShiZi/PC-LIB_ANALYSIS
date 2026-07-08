@@ -1858,29 +1858,29 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (arm64, OHOS NDK, musl + POSIX 子集)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "feasibility": "hard",
+    "porting_class": "needs_adaptation_partial",
     "effort": {
       "person_days": [
-        15,
-        30
+        109.3,
+        117.3
       ],
       "breakdown": [
         {
           "component": "recompile",
           "person_days": [
-            3,
-            5
+            36.3,
+            36.3
           ],
-          "basis": "recompile_reuse 桶约 109k LOC（纯算法 + 标准库代码），需在 OHOS NDK 交叉编译，配置 CMake 工具链文件"
+          "basis": "重编译复用 109000 行 ÷ 3000 行/天"
         },
         {
           "component": "api_adaptation",
           "person_days": [
-            5,
-            10
+            66,
+            66
           ],
-          "basis": "needs_adaptation 桶约 33k LOC，主要工作：验证 mmap/madvise 在 musl 可用性、SIMD 动态分派适配（已有 NEON 路径需验证）、平台宏增加鸿蒙分支、rdtsc 替换、Python loader 适配"
+          "basis": "需适配 33000 行 ÷ 500 行/天"
         },
         {
           "component": "deps_porting",
@@ -1906,7 +1906,8 @@
           ],
           "basis": "跑通 C++ 单元测试（googletest）+ Python 测试（pytest），验证核心索引功能在 ARM64 NEON 路径下的正确性"
         }
-      ]
+      ],
+      "level": "very_high"
     },
     "confidence": "medium",
     "unadaptable_apis": [
@@ -2171,7 +2172,12 @@
       "验证 SWIG + numpy ohos wheel 在鸿蒙环境可用",
       "跑通核心索引功能测试（CPU-only 构建）"
     ],
-    "notes": "Faiss 的 GPU 后端不可移植是预期内，不影响 CPU 核心搜索与聚类功能——这正是大多数用户使用的路径。关键不确定性在于 OpenMP 和 OpenBLAS 在鸿蒙 NDK 的可用性——若不可用需额外改造工作。confidence 为 medium 因有 3 个 target_assumptions 状态为 unknown（openmp_ndk、openblas_harmony、numpy_ohos_wheel）。"
+    "notes": "Faiss 的 GPU 后端不可移植是预期内，不影响 CPU 核心搜索与聚类功能——这正是大多数用户使用的路径。关键不确定性在于 OpenMP 和 OpenBLAS 在鸿蒙 NDK 的可用性——若不可用需额外改造工作。confidence 为 medium 因有 3 个 target_assumptions 状态为 unknown（openmp_ndk、openblas_harmony、numpy_ohos_wheel）。",
+    "porting_class_model": "needs_adaptation_full",
+    "porting_class_adjusted": {
+      "from": "needs_adaptation_full",
+      "to": "needs_adaptation_partial"
+    }
   },
   "library": {
     "name": "faiss",
@@ -2227,7 +2233,15 @@
         "value": "cross_compile",
         "rationale": "Faiss 是 C++ 原生库，主要路径是 OHOS NDK 交叉编译，而非 NAPI 封装（那是 Node.js 场景）或 ArkTS 重写"
       }
-    ]
+    ],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Faiss 涉及两个鸿蒙适配重点场景：硬件（GPU 计算与 SIMD 加速）和 3D 图形（Metal Compute Shader）。GPU 计算场景中 CUDA 在鸿蒙不可用，Metal 仅限 macOS，但 CPU SIMD（NEON）在 ARM64 鸿蒙上可用。无 GUI、无媒体场景。",

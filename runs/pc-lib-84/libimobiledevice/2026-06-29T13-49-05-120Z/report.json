@@ -506,7 +506,8 @@
       "COPYING"
     ],
     "evidence": "所有源文件头均声明 LGPL-2.1-or-later；仓库根目录提供 COPYING.LESSER（LGPL 2.1 全文），README 亦明确说明 LGPL v2.1。",
-    "notes": "弱 copyleft；作为库使用需遵守 LGPL。COPYING 文件本身为 GPL-2.0-only 文本，仅作为授权体系参考，项目实际授权以源文件头与 README 为准。"
+    "notes": "弱 copyleft；作为库使用需遵守 LGPL。COPYING 文件本身为 GPL-2.0-only 文本，仅作为授权体系参考，项目实际授权以源文件头与 README 为准。",
+    "category": "weak_copyleft"
   },
   "dependencies": {
     "count": 18,
@@ -1377,7 +1378,8 @@
       "person_days": [
         15,
         40
-      ]
+      ],
+      "level": "high"
     },
     "confidence": "medium",
     "recommended_path": "recompile_napi / recompile_only（取决于是否封装为 Node-API/ArkTS 可用形态，核心前提是 usbmuxd 可用）",
@@ -1411,8 +1413,13 @@
         "source_dimension": "dependencies",
         "harmony_status": "partial",
         "remediation": "使用 OHOS NDK 交叉编译 libusbmuxd、libplist、libimobiledevice-glue、libtatsu；SSL 后端优先使用已鸿蒙化的 OpenSSL/MbedTLS，readline/ed25519 可直接使用鸿蒙预编译包。",
-        "caused_by": ["ta:libusbmuxd-deps"],
-        "evidence": ["configure.ac:44-58", "dependencies[].harmony_adapted"]
+        "caused_by": [
+          "ta:libusbmuxd-deps"
+        ],
+        "evidence": [
+          "configure.ac:44-58",
+          "dependencies[].harmony_adapted"
+        ]
       },
       {
         "id": "bk:macos-frameworks",
@@ -1529,22 +1536,31 @@
       {
         "aspect": "跨平台 C 核心与 plist 协议实现",
         "note": "无桌面 GUI/3D/媒体；协议逻辑可在 OHOS NDK 下重编。",
-        "evidence": ["src/lockdown.c", "src/property_list_service.c"]
+        "evidence": [
+          "src/lockdown.c",
+          "src/property_list_service.c"
+        ]
       },
       {
         "aspect": "WiFi sync 网络路径",
         "note": "标准 TCP socket 连接在鸿蒙 NDK POSIX 子集下可用。",
-        "evidence": ["src/idevice.c:549-571"]
+        "evidence": [
+          "src/idevice.c:549-571"
+        ]
       },
       {
         "aspect": "Windows/macOS 条件分支隔离",
         "note": "平台相关代码被 #ifdef 包裹，不影响鸿蒙构建。",
-        "evidence": ["code_metrics.platform_adaptation"]
+        "evidence": [
+          "code_metrics.platform_adaptation"
+        ]
       },
       {
         "aspect": "部分依赖已鸿蒙化",
         "note": "OpenSSL、MbedTLS、readline、ed25519 已在 OpenHarmony PC cmd-pkgs 提供预编译包，可降低移植工作量。",
-        "evidence": ["dependencies[].harmony_adapted"]
+        "evidence": [
+          "dependencies[].harmony_adapted"
+        ]
       }
     ],
     "key_tasks": [
@@ -1554,7 +1570,8 @@
       "在鸿蒙 PC 上构建 libimobiledevice 并运行命令行工具验证 USB/WiFi 连接",
       "若打包为 ArkTS 应用，需通过 Node-API 封装核心接口并申请必要权限"
     ],
-    "notes": "评估默认按 C 库模型 A（经 OHOS NDK 重编为原生库）展开。库的核心价值依赖 usbmuxd/Apple USB 协议栈，而这是鸿蒙 PC 目标侧未核实的能力，因此结论为 hard/needs_adaptation_partial。OpenSSL、MbedTLS、readline、ed25519 已可在 OpenHarmony PC cmd-pkgs 获取，降低了部分依赖移植工作量。若目标环境确认无法连接 iOS 设备，则应升级为 infeasible；若仅使用 WiFi sync 且 usbmuxd 不必须，则工作量可降低。"
+    "notes": "评估默认按 C 库模型 A（经 OHOS NDK 重编为原生库）展开。库的核心价值依赖 usbmuxd/Apple USB 协议栈，而这是鸿蒙 PC 目标侧未核实的能力，因此结论为 hard/needs_adaptation_partial。OpenSSL、MbedTLS、readline、ed25519 已可在 OpenHarmony PC cmd-pkgs 获取，降低了部分依赖移植工作量。若目标环境确认无法连接 iOS 设备，则应升级为 infeasible；若仅使用 WiFi sync 且 usbmuxd 不必须，则工作量可降低。",
+    "porting_class_model": "needs_adaptation_partial"
   },
   "meta": {
     "schema_version": "1.0",
@@ -1586,6 +1603,7 @@
         "value": "autotools_pkgconfig",
         "rationale": "C/C++ 项目通过 configure.ac + Makefile.am 使用 pkg-config 检测系统依赖，推荐取值中未明确列出。"
       }
-    ]
+    ],
+    "normalized_version": 3
   }
 }

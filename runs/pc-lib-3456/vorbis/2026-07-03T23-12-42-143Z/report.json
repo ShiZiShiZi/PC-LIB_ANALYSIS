@@ -1244,7 +1244,8 @@
       "person_days": [
         2,
         5
-      ]
+      ],
+      "level": "low"
     },
     "confidence": "high",
     "unadaptable_apis": [],
@@ -1304,7 +1305,8 @@
       "运行 test/ 下的单元测试验证编码/解码/seek 正确性",
       "（可选）封装 Node-API/NAPI 接口供 ArkTS 应用调用"
     ],
-    "notes": "DEBUG_MALLOC 调试路径使用 pthread_mutex 与 gettimeofday，但默认不启用，不进入生产库。x86 内联汇编/SSE2 路径仅在 x86 编译器下生效，HarmonyOS PC 典型 aarch64 构建会自动走默认 C 实现。目标假设 ta:ogg 的 target_status 为 unknown，若后续确认 libogg 已提供，可进一步将工作量下限压至 1 人天。"
+    "notes": "DEBUG_MALLOC 调试路径使用 pthread_mutex 与 gettimeofday，但默认不启用，不进入生产库。x86 内联汇编/SSE2 路径仅在 x86 编译器下生效，HarmonyOS PC 典型 aarch64 构建会自动走默认 C 实现。目标假设 ta:ogg 的 target_status 为 unknown，若后续确认 libogg 已提供，可进一步将工作量下限压至 1 人天。",
+    "porting_class_model": "recompile_only"
   },
   "library": {
     "name": "vorbis",
@@ -1332,7 +1334,15 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": []
+    "observations": [],
+    "harmony_warnings": [
+      {
+        "code": "conf_high_unknown",
+        "class": "actionable",
+        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+      }
+    ],
+    "normalized_version": 3
   },
   "capability_profile": {
     "summary": "Vorbis 是专注于 Ogg Vorbis 音频的纯编解码库，触及鸿蒙适配重点场景中的「媒体（音频编解码）」，但不涉及 GUI、3D 渲染或专用硬件。其媒体能力完全可通过 OHOS NDK 重编或鸿蒙多媒体子系统复用。",
