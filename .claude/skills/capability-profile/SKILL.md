@@ -6,7 +6,7 @@ description: Flag the HarmonyOS-adaptation-heavy scenarios a library or applicat
 # Capability profile — adaptation-heavy scenario flags (model synthesis)
 
 A focused lens that answers **"是否涉及 GUI / 3D 渲染 / 媒体 / 特定硬件"**. These scenarios
-are the ones that most strongly drive HarmonyOS-PC porting cost or infeasibility. dim-9
+are the ones that most strongly drive HarmonyOS-PC porting cost or core-blocking（核心不可适配）. dim-9
 then turns these flags into 修改量/能否移植 (porting_class/blockers/person_days). **职责分工**：
 本维度只标"是否涉及 + 涉及什么 + 鸿蒙是否支持"，**不**下移植结论（那是 dim-9）。
 
@@ -66,7 +66,7 @@ native_api 重扫**。所以这四类的鸿蒙支持状态**以本维度为准�
 3. **media**：音视频编解码/播放/采集（FFmpeg/GStreamer/PortAudio/ALSA/WASAPI/CoreAudio、摄像头采集）→ present，
    `kind` 填 video_decode/audio_capture/codec 等。
 4. **hardware**：GPU 通用计算(CUDA/OpenCL/ROCm)、USB/串口、蓝牙、传感器、摄像头、NPU/FPGA → present。
-   **`specific_hardware`**：依赖特定/不可替代硬件（CUDA/NPU/FPGA、特定采集卡）置 true——这是 dim-9 判 infeasible 的强信号。
+   **`specific_hardware`**：依赖特定/不可替代硬件（CUDA/NPU/FPGA、特定采集卡）置 true——这是 dim-9 判 `overall:core_blocked`（核心不可适配）的强信号。
 5. 每个 present 场景对照 `references/harmony-pc-capabilities.json`（3D/媒体/硬件/GUI 段）判 `harmony_status`：
    目标事实 available→不阻碍；partial→部分；unavailable→阻碍；**查不到对应事实→`unknown`**（诚实，别臆断），
    dim-9 会据 unknown 下调 confidence。**这一步是这四类鸿蒙支持状态的唯一判定点**（dim-9 直接采用，不重判）。

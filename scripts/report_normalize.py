@@ -5,7 +5,7 @@ This is the ONE authoritative implementation of the serve-time derivations that
 `web/server.js` used to do only in memory (never persisting), and that
 `scripts/export_xlsx.py` re-implemented incompletely. Porting it here — and calling
 it from `assemble_report.py` — makes `report.json` born self-consistent: the derived
-`harmony_adaptation.porting_class` / `feasibility` / `effort.level`, the canonical
+`harmony_adaptation.porting_class` / `adaptation_assessment` / `effort.level`, the canonical
 `code_partition` bucket shape, and the `meta.harmony_warnings` are all persisted, so
 the panel, the Excel export, and any direct reader see the SAME values.
 
@@ -14,9 +14,10 @@ with the dim-12 `code_partition` buckets and the dim-9 `unadaptable_apis`. The m
 occasionally contradicts its own buckets (e.g. picks `recompile_only` while dim-12 has
 a 30% `needs_adaptation` bucket). We keep the model's raw pick in `porting_class_model`
 (advisory; recorded once, stable across re-normalization) and derive the authoritative
-value from the structured signals — mirroring how `effort.level`/`feasibility` are
-already derived. Deriving from the original model pick each run keeps a
-`normalized_version` bump re-derivable.
+3-value `porting_class` (no_adaptation/recompile_only/needs_adaptation) from the structured
+signals — mirroring how `effort.level` is derived. The core-vs-platform two-dimensional
+detail and topology/effort 5-way `effective_class` + `overall` verdict are further derived
+into `adaptation_assessment` from `unadaptable_apis[].functionality_class`.
 
 Faithful port of web/server.js: derivePortingClass / reconcilePortingClass /
 needsAdaptationOverride / needsAdaptationLoc / hasUnadaptableSignal / normalizeHarmony /
@@ -41,7 +42,11 @@ import sys
 #     model's self-review (meta.harmony_warnings_dismissed → meta.harmony_warnings_reviewed).
 # v3: effort.breakdown recompile/api_adaptation are derived from code_partition LOC at
 #     configurable rates, and effort.person_days total = Σ breakdown when itemized.
-NORMALIZED_VERSION = 3
+# v4: dim-9 refactor — feasibility/recommended_path removed; porting_class collapsed to 3 values
+#     (no_adaptation/recompile_only/needs_adaptation); unadaptable_apis[].functionality_class
+#     (core/platform_specific) drives a derived adaptation_assessment {effective_class(5-way),
+#     overall(3-way), core, platform_specific}; effort.level floor keyed by effective_class.
+NORMALIZED_VERSION = 4
 
 # Warning classes. `actionable` = a heuristic recall/漏判 check the model's self-review
 # pass may FIX (amend the source dimension with evidence) or DISMISS as a false positive
@@ -230,7 +235,21 @@ PLATFORM_BLOCKER_RE = re.compile(
 _NATIVE_CAT_RE = re.compile(r"native_dependency|ffi|toolchain|posix")
 
 NEEDS_ADAPTATION_MATERIAL_PCT = 0.05
-CLAMPABLE_PORTING_CLASSES = {"no_adaptation", "recompile_only", "needs_adaptation_full"}
+# 3-value porting_class; only no_adaptation/recompile_only can be clamped UP to needs_adaptation.
+CLAMPABLE_PORTING_CLASSES = {"no_adaptation", "recompile_only"}
+
+# Legacy (pre-v4) 5-value porting_class → new 3-value axis. Applied to the model pick and
+# porting_class_model when upgrading 存量 reports; the core/platform split is then re-derived
+# from unadaptable_apis[].functionality_class (defaulted per LEGACY_FUNC_CLASS_DEFAULT below).
+_LEGACY_PCLASS_MAP = {
+    "needs_adaptation_full": "needs_adaptation",
+    "needs_adaptation_partial": "needs_adaptation",
+    "infeasible": "needs_adaptation",
+}
+
+
+def _collapse_legacy_pclass(v):
+    return _LEGACY_PCLASS_MAP.get(v, v)
 
 
 def has_unadaptable_signal(ha):
@@ -258,7 +277,7 @@ def needs_adaptation_loc(report):
 
 
 def needs_adaptation_override(report, cls):
-    """A non-empty dim-12 needs_adaptation bucket forces cls UP to needs_adaptation_full:
+    """A non-empty dim-12 needs_adaptation bucket forces cls UP to needs_adaptation:
     recompile_only (C/C++) means "zero source change" so ANY needs_adaptation contradicts it
     → always override; no_adaptation (ported-runtime langs) tolerates trivial cross-compile
     branches so require the bucket to be MATERIAL (>=5% of production code)."""
@@ -268,16 +287,16 @@ def needs_adaptation_override(report, cls):
     if need <= 0:
         return None
     if cls == "recompile_only":
-        return "needs_adaptation_full"
+        return "needs_adaptation"
     prod = _num(_obj(_obj(report.get("code_metrics")).get("production")).get("code"))
-    return "needs_adaptation_full" if (prod > 0 and need >= NEEDS_ADAPTATION_MATERIAL_PCT * prod) else None
+    return "needs_adaptation" if (prod > 0 and need >= NEEDS_ADAPTATION_MATERIAL_PCT * prod) else None
 
 
 def reconcile_porting_class(report, ha, cls):
     if not cls:
         return cls
     if cls in CLAMPABLE_PORTING_CLASSES and has_unadaptable_signal(ha):
-        return "needs_adaptation_partial"
+        return "needs_adaptation"
     na = needs_adaptation_override(report, cls)
     if na:
         return na
@@ -286,46 +305,98 @@ def reconcile_porting_class(report, ha, cls):
 
 def derive_porting_class(report, base):
     """base = the model's ORIGINAL porting_class pick (or None if omitted). Trust it as the
-    starting point then reconcile UP against the structured signals; when the model omits it,
-    derive from feasibility/blockers/path/ecosystem (the from-scratch else-branch)."""
+    starting point (collapsing any legacy 5-value pick to the 3-value axis) then reconcile UP
+    against the structured signals; when the model omits it, derive from blockers/native surface
+    (the from-scratch else-branch)."""
     ha = report.get("harmony_adaptation") if isinstance(report, dict) else None
     if not isinstance(ha, dict):
         return None
     if base:
-        cls = base
-    elif ha.get("feasibility") == "infeasible":
-        cls = "infeasible"
+        cls = _collapse_legacy_pclass(base)
     else:
         unadaptable = _list(ha.get("unadaptable_apis"))
         blk = _list(ha.get("blockers"))
-        has_structured = any(isinstance(b, dict) and b.get("adaptability") for b in blk)
-        if unadaptable or any(isinstance(b, dict) and b.get("adaptability") == "unadaptable" for b in blk):
-            cls = "needs_adaptation_partial"
-        elif any(isinstance(b, dict) and (b.get("severity") == "blocker" or b.get("adaptability") == "partial") for b in blk):
-            cls = "needs_adaptation_full"
+        if (unadaptable
+                or any(isinstance(b, dict) and b.get("adaptability") in ("unadaptable", "partial") for b in blk)
+                or any(isinstance(b, dict) and b.get("severity") == "blocker" for b in blk)):
+            cls = "needs_adaptation"
         else:
             cats = [str((b or {}).get("category") or "").lower() for b in blk if isinstance(b, dict)]
             native = any(_NATIVE_CAT_RE.search(c) for c in cats)
-            if (not has_structured) and any(PLATFORM_BLOCKER_RE.search(c) for c in cats):
-                cls = "needs_adaptation_full"
+            if any(PLATFORM_BLOCKER_RE.search(c) for c in cats):
+                cls = "needs_adaptation"
+            elif native:
+                cls = "recompile_only"
             else:
-                path = str(ha.get("recommended_path") or "").lower()
-                if "run_on_ported_runtime" in path and not native:
-                    cls = "no_adaptation"
-                elif native:
-                    cls = "recompile_only"
-                else:
-                    cls = "no_adaptation"
+                cls = "no_adaptation"
     return reconcile_porting_class(report, ha, cls)
+
+
+# ---- adaptation_assessment: two-dimensional (core vs platform-difference) derivation -------
+# 5-way effective_class (topology color + difficulty floor + rollup rank) worst→best order.
+_EFFECTIVE_CLASSES = ["no_adaptation", "recompile_only", "needs_adaptation",
+                      "needs_adaptation_platform_partial", "needs_adaptation_core_partial"]
+# Default functionality_class when the model didn't tag an unadaptable_api. Legacy `infeasible`
+# meant "core unadaptable"; everything else defaulted to a platform-specific optional feature.
+LEGACY_FUNC_CLASS_DEFAULT_CORE = "core"
+LEGACY_FUNC_CLASS_DEFAULT_PLATFORM = "platform_specific"
+
+
+def _func_class_default(legacy_pclass):
+    return LEGACY_FUNC_CLASS_DEFAULT_CORE if legacy_pclass == "infeasible" else LEGACY_FUNC_CLASS_DEFAULT_PLATFORM
+
+
+def derive_adaptation_assessment(report, ha, legacy_pclass=None):
+    """Derive harmony_adaptation.adaptation_assessment from porting_class + the (model-tagged,
+    or legacy-defaulted) unadaptable_apis[].functionality_class. Returns the effective_class
+    (5-way) used for the effort.level floor. Mutates ha in place."""
+    cls = ha.get("porting_class")
+    core_ids, plat_ids = [], []
+    for u in _list(ha.get("unadaptable_apis")):
+        if not isinstance(u, dict):
+            continue
+        fc = u.get("functionality_class")
+        if u.get("functionality_class_defaulted"):
+            fc = _func_class_default(legacy_pclass)   # previously defaulted → re-derive, stay flagged
+            u["functionality_class"] = fc
+        elif fc in ("core", "platform_specific"):
+            pass                                       # model-provided
+        else:
+            fc = _func_class_default(legacy_pclass)    # newly missing → backfill + flag provenance
+            u["functionality_class"] = fc
+            u["functionality_class_defaulted"] = True
+        (core_ids if fc == "core" else plat_ids).append(u.get("id"))
+    core_ids = [i for i in core_ids if i]
+    plat_ids = [i for i in plat_ids if i]
+
+    if cls == "needs_adaptation":
+        if core_ids:
+            effective = "needs_adaptation_core_partial"
+        elif plat_ids:
+            effective = "needs_adaptation_platform_partial"
+        else:
+            effective = "needs_adaptation"
+    else:
+        effective = cls or "no_adaptation"
+
+    overall = ("core_blocked" if effective == "needs_adaptation_core_partial"
+               else "adaptable_with_tailoring" if effective == "needs_adaptation_platform_partial"
+               else "adaptable")
+
+    ha["adaptation_assessment"] = {
+        "effective_class": effective,
+        "overall": overall,
+        "core": {"adaptable": not core_ids, "unadaptable": core_ids},
+        "platform_specific": {"adaptable": not plat_ids, "unadaptable": plat_ids},
+    }
+    return effective
 
 
 # ---- difficulty level (5-tier) + effort person-days -----------------------
 _RANK_LEVEL = ["very_low", "low", "medium", "high", "very_high"]
-_CLASS_LEVEL_FLOOR = {"no_adaptation": 0, "recompile_only": 1, "needs_adaptation_full": 2,
-                      "needs_adaptation_partial": 3, "infeasible": 4}
-_FEAS_FOR_CLASS = {"no_adaptation": "feasible", "recompile_only": "feasible_with_effort",
-                   "needs_adaptation_full": "feasible_with_effort",
-                   "needs_adaptation_partial": "hard", "infeasible": "infeasible"}
+# floor keyed by the derived 5-way effective_class (NOT the 3-value porting_class).
+_CLASS_LEVEL_FLOOR = {"no_adaptation": 0, "recompile_only": 1, "needs_adaptation": 2,
+                      "needs_adaptation_platform_partial": 3, "needs_adaptation_core_partial": 4}
 
 
 def days_bucket(days_hi):
@@ -428,10 +499,16 @@ def normalize_harmony(report):
 
     cls = derive_porting_class(report, base)
     if cls:
-        if base and base != cls:
-            ha["porting_class_adjusted"] = {"from": base, "to": cls}
+        # Compare the COLLAPSED legacy base (not the raw 5-value pick) so a pure v3→v4 collapse
+        # (e.g. needs_adaptation_partial → needs_adaptation) is not flagged as a model contradiction;
+        # only a real clamp-up (recompile_only → needs_adaptation) records an adjustment.
+        collapsed_base = _collapse_legacy_pclass(base) if base else base
+        if collapsed_base and collapsed_base != cls:
+            ha["porting_class_adjusted"] = {"from": collapsed_base, "to": cls}
         ha["porting_class"] = cls
-        ha["feasibility"] = _FEAS_FOR_CLASS.get(cls) or ha.get("feasibility") or None
+    # dropped in v4: feasibility / recommended_path
+    ha.pop("feasibility", None)
+    ha.pop("recommended_path", None)
 
     ha["effort"] = ha["effort"] if isinstance(ha.get("effort"), dict) else {}
 
@@ -443,6 +520,10 @@ def normalize_harmony(report):
     _tag(ha.get("target_assumptions"), "ta")
     _tag(ha.get("unadaptable_apis"), "ua")
     _tag(ha.get("blockers"), "bk")
+
+    # Two-dimensional (core vs platform-difference) assessment + 5-way effective_class.
+    # Needs the ua ids assigned above; legacy default for functionality_class keys off the raw pick.
+    effective = derive_adaptation_assessment(report, ha, legacy_pclass=base)
 
     if isinstance(ha.get("required_permissions"), list):
         for p in ha["required_permissions"]:
@@ -469,7 +550,7 @@ def normalize_harmony(report):
         eff["person_days"] = [_days1(total[0]), _days1(total[1])]
     pd = eff.get("person_days")
     hi = pd[1] if isinstance(pd, list) and len(pd) == 2 else 0
-    eff["level"] = derive_difficulty_level(cls, hi)
+    eff["level"] = derive_difficulty_level(effective, hi)
 
     if isinstance(ha.get("critical_dependencies"), list):
         for i, c in enumerate(ha["critical_dependencies"]):
@@ -487,15 +568,10 @@ def validate_harmony(report):
         return []
     w = []
     cls = ha.get("porting_class") or derive_porting_class(report, ha.get("porting_class_model") or ha.get("porting_class"))
-    if cls and ha.get("feasibility") and _FEAS_FOR_CLASS.get(cls) and ha.get("feasibility") != _FEAS_FOR_CLASS[cls]:
-        w.append(("feas_pclass_inconsistent", W_INFO,
-                  f"feasibility({ha.get('feasibility')}) 与 porting_class({cls}) 不自洽，应为 {_FEAS_FOR_CLASS[cls]}"))
     pca = ha.get("porting_class_adjusted")
     if isinstance(pca, dict) and pca.get("from") != pca.get("to"):
-        reason = ("但代码分区(dim-12)存在需适配模块（非零源码改动）"
-                  if pca.get("to") == "needs_adaptation_full" else "但存在无法适配的 API/阻碍点")
         w.append(("pclass_adjusted", W_INFO,
-                  f"porting_class 模型原判 {pca.get('from')}，{reason}，已按\"不矛盾\"校正为 {pca.get('to')}"))
+                  f"porting_class 模型原判 {pca.get('from')}，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 {pca.get('to')}"))
     eco = str(_obj(report.get("library")).get("ecosystem") or "").lower()
     managed_eco = eco in ["go", "python", "java", "javascript", "nodejs", "node", "typescript"]
     na = _obj(report.get("native_api"))
@@ -510,9 +586,15 @@ def validate_harmony(report):
     ua = _list(ha.get("unadaptable_apis"))
     blk = _list(ha.get("blockers"))
     ta = _list(ha.get("target_assumptions"))
-    if ua and cls not in ("needs_adaptation_partial", "infeasible"):
+    if ua and cls != "needs_adaptation":
         w.append(("ua_pclass", W_INFO,
-                  f"unadaptable_apis 非空但 porting_class={cls}（应为 needs_adaptation_partial 或 infeasible）"))
+                  f"unadaptable_apis 非空但 porting_class={cls}（应为 needs_adaptation）"))
+    for u in ua:
+        # functionality_class is backfilled by normalize; flag ones the MODEL omitted so the
+        # self-review can tag core vs platform-difference with evidence (default may be wrong).
+        if isinstance(u, dict) and u.get("functionality_class_defaulted"):
+            w.append((f"ua_func_class_defaulted:{u.get('id') or u.get('api') or ''}", W_ACT,
+                      f"unadaptable_api {u.get('id') or u.get('api') or ''} 未标 functionality_class，已默认按 {u.get('functionality_class')} 归类——请据实标 core/platform_specific"))
     ids = set(x.get("id") for x in (ta + ua + blk) if isinstance(x, dict) and x.get("id"))
     for b in blk:
         if not isinstance(b, dict):
@@ -622,12 +704,12 @@ def validate_report(report):
             w.append(("cp_loc_coverage", W_INFO,
                       f"代码分区桶 LOC 之和({_intish(total)})与生产代码({_intish(prod_code)})偏差超过 15%（覆盖不足或重复计入）"))
         un_loc = sum(_num(b.get("loc")) for b in cp["buckets"] if isinstance(b, dict) and b.get("class") == "unadaptable")
-        if un_loc > 0 and cls not in ("needs_adaptation_partial", "infeasible"):
+        if un_loc > 0 and cls != "needs_adaptation":
             w.append(("cp_unadapt_pclass", W_INFO,
-                      f"代码分区含 unadaptable 桶({_intish(un_loc)} 行)但 porting_class={cls}（应为 needs_adaptation_partial/infeasible）"))
+                      f"代码分区含 unadaptable 桶({_intish(un_loc)} 行)但 porting_class={cls}（应为 needs_adaptation）"))
         if needs_adaptation_override(report, cls):
             w.append(("cp_needs_full", W_INFO,
-                      f"代码分区含 needs_adaptation 桶({_intish(needs_adaptation_loc(report))} 行)但 porting_class={cls}（应为 needs_adaptation_full；零源码改动才是 recompile_only）"))
+                      f"代码分区含 needs_adaptation 桶({_intish(needs_adaptation_loc(report))} 行)但 porting_class={cls}（应为 needs_adaptation；零源码改动才是 recompile_only）"))
         if un_loc > 0 and not ua_list:
             w.append(("cp_unadapt_no_ua", W_ACT, "代码分区含 unadaptable 桶但 dim-9 unadaptable_apis 为空（漏登记或分桶过严）"))
         if un_loc == 0 and ua_list:

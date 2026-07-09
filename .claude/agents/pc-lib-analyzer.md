@@ -55,7 +55,9 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    codegraph query <symbol> -p <repoPath> -j
    codegraph callers/callees <symbol> -p <repoPath>
    ```
-   Prefer it for the structural lookups in dims 1 and 7. If a codegraph call fails
+   Prefer it for the structural lookups in dims 1, 7, and 9 (dim-9: trace an unadaptable
+   API's native_api call site up to the library's public symbol to fill
+   `unadaptable_apis[].public_entry`). If a codegraph call fails
    (index not ready / not installed), fall back to grep/Read and add a `meta.warnings`
    note. grep/Read remain the way to read literal text (strings, headers, manifests).
    If you ever do need to (re)build it yourself: `codegraph init -i <repoPath>` (first
@@ -159,10 +161,11 @@ the `.claude/skills/...` and `references/...` paths below resolve.
 
 3b. **Synthesis dimension 9 — HarmonyOS PC adaptation.** AFTER the reasoned blocks
    above exist, read `.claude/skills/harmony-adaptation/SKILL.md` and fill
-   `harmony_adaptation` (feasibility / difficulty / path / blockers / effort +
-   the `porting_class` closed axis — no_adaptation / recompile_only /
-   needs_adaptation_full（全部可适配）/ needs_adaptation_partial（部分可适配）/ infeasible —
-   of porting to HarmonyOS NEXT PC) plus, when some functionality is truly unportable,
+   `harmony_adaptation` (blockers / effort + the `porting_class` closed axis — the
+   3-value no_adaptation / recompile_only / needs_adaptation of porting to HarmonyOS
+   NEXT PC; needs_adaptation 的核心 vs 平台差异两维细分由每条 `unadaptable_apis[].functionality_class`
+   (core/platform_specific) 驱动、归一派生 `adaptation_assessment`——你只给 porting_class 下限) plus,
+   when some functionality is truly unportable,
    the API-granular `unadaptable_apis[]` ({api, public_entry, reason, blocking_native_api,
    category, evidence} — drives the panel's bottom-up parent roll-up). This is a
    **synthesis** pass: do NOT re-scan the source — reason over the already-filled
@@ -228,7 +231,7 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    它会从 `metrics.json` splice `languages`/`code_metrics`/`tests`、合并 `blocks/*.json`、确定性补全
    `meta`（`schema_version:"1.0"`、`analyzer:"pc-lib-analyzer"`、`counter_tool`〈取自 fragment〉、并入
    fragment 的 `_warnings`）与缺省的 `library.analyzed_at`、校验必填顶层键齐全，**再经 `report_normalize.py` 归一**
-   （据 dim-12 桶 + `unadaptable_apis` 确定性派生并落盘 `harmony_adaptation.porting_class`/`feasibility`/`effort.level`，
+   （据 dim-12 桶 + `unadaptable_apis` 确定性派生并落盘 `harmony_adaptation.porting_class`（只升不降）/`adaptation_assessment`/`effort.level`，
    你的原判留存于 `porting_class_model`，并附 `meta.harmony_warnings` + `normalized_version` 戳——所以最终报告的
    porting_class 可能比你 block 里写的更严格，这是预期的），最后**原子写** `<runDir>/report.json`。若脚本报"缺块/JSON 错/缺 metrics 键"，它**不会**产出 report.json——按提示补齐
    对应 `blocks/<name>.json` 后**重跑**该脚本。最终报告须严格符合 `references/report_schema.json`。
@@ -265,10 +268,12 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `build_env` (language_standard/runtime_version/build_system/compiler_extensions/
    platforms) per the runtime-environment skill — descriptive only, `[]` when empty.
    Write `harmony_adaptation` per the harmony-adaptation skill: the closed axes
-   (`feasibility`/`porting_class`/`effort.person_days`/`blockers[].severity`/`blockers[].adaptability`)
-   must use schema enum values (`effort.level` is server-derived — don't fill it);
-   `recommended_path`/`blockers[].category`/`harmony_status` are open
-   vocab; each blocker carries its `source_dimension` + reused `evidence`.
+   (`porting_class`〔3 值下限〕/`unadaptable_apis[].functionality_class`〔core/platform_specific〕/
+   `effort.person_days`/`blockers[].severity`/`blockers[].adaptability`) must use schema enum
+   values; the derived `adaptation_assessment`/`effort.level` and the clamped-up `porting_class`
+   are server-derived — 你只给 porting_class 下限、别填 adaptation_assessment/effort.level;
+   `blockers[].category`/`harmony_status` are open vocab; each blocker carries its
+   `source_dimension` + reused `evidence`.
 
    For every entry in `dependencies.dependencies`, set `acquisition` (OPEN vocab — coin a
    concise value if none of the recommended ones fit), the closed `locality`
@@ -300,7 +305,7 @@ the `.claude/skills/...` and `references/...` paths below resolve.
      `harmony_warnings_reviewed` 并附理由，不再计入 active。
    **护栏**：① 任何**新增**（场景/厂商/权限/evidence）都要有生产代码 file:line 证据，拿不出证据就判误报、
    别硬补；② **只改源维度块**（capability_profile / cloud_services / dependencies / target_assumptions /
-   evidence），**绝不手填** `porting_class`/`feasibility`/`effort.level`——它们在重组装时确定性重派生；
+   evidence），**绝不手填**派生轴 `porting_class`(只升不降)/`adaptation_assessment`/`effort.level`——它们在重组装时确定性重派生；
    ③ **单趟即可**，不必把 active 清到 0（info 类和判为误报后仍留痕的都属正常残留）。
    处理完**重跑** `python3 scripts/assemble_report.py --run-dir <runDir>`：归一据修好的数据重算、扣除
    dismissed，落盘干净的 `harmony_warnings` + `harmony_warnings_reviewed`。

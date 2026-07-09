@@ -68,8 +68,9 @@ A focused lens that answers **"这个项目的生产代码里，有多少行能�
   **归一（`report_normalize.py`）据本 4 桶确定性派生 dim-9 `porting_class`**——本分区就是 porting_class 的事实源之一，
   分桶准则 porting_class 准：
   `recompile_reuse` = 该模块 **OHOS NDK 重编、零源码改动** → `recompile_only`；
-  `needs_adaptation` = 需要为鸿蒙**改动源码/加 OHOS 分支/换后端**（哪怕只靠构建开关切换后端）→ 至少 `needs_adaptation_full`；
-  `unadaptable` → `needs_adaptation_partial`/`infeasible`。**因此：C/C++ 等原生模块只要需要任何鸿蒙适配动作就归
+  `needs_adaptation` = 需要为鸿蒙**改动源码/加 OHOS 分支/换后端**（哪怕只靠构建开关切换后端）→ `needs_adaptation`；
+  `unadaptable` = 机制/硬件/闭源层无鸿蒙等价 → 仍是 `needs_adaptation`（该模块须与 dim-9 `unadaptable_apis` 交叉引用，
+  核心 vs 平台差异两维细分由 `functionality_class` 决定、归一派生 `adaptation_assessment`）。**因此：C/C++ 等原生模块只要需要任何鸿蒙适配动作就归
   `needs_adaptation`，别塞进 `recompile_reuse`——否则归一会把 porting_class 误派生成 `recompile_only`。**
   ⚠️ **例外——已移植运行时语言（Go/Rust/Python/Java…）的纯跨平台文件不算 needs_adaptation**：靠 `GOOS`/`cfg!(target_os)`/
   运行时自动选择、鸿蒙上**交叉编译即过、零改动**的平台分支文件（如 `app_unix.go`/`app_windows.go` 只做信号处理），

@@ -438,7 +438,7 @@ def assemble(blocks_dir, metrics_path, out_path):
         return None, errors
 
     # 7b) NORMALIZE (single source of truth) — derive the authoritative
-    #     harmony_adaptation.porting_class/feasibility/effort.level from the dim-12 buckets +
+    #     harmony_adaptation.porting_class/adaptation_assessment/effort.level from the dim-12 buckets +
     #     unadaptable_apis (keeping the model's raw pick in porting_class_model), canonicalize
     #     code_partition, attach meta.harmony_warnings, and stamp meta.normalized_version. This
     #     is the SAME logic web/server.js used to run only at serve-time (never persisting) and

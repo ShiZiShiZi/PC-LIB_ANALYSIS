@@ -61,9 +61,12 @@ const CAT_LEGEND = {
 };
 const PLAT_LABELS = { windows: 'Windows', posix: 'POSIX', linux: 'Linux', macos: 'macOS', portable: '跨平台', unknown: '' };
 // harmony_adaptation (dim 9) — closed axes
-const FEAS_LABELS = { feasible: '可行', feasible_with_effort: '可行（需投入）', hard: '困难', infeasible: '不可行' };
-const FEAS_CLS = { feasible: 'done', feasible_with_effort: 'running', hard: 'sev-major', infeasible: 'error' };
-// effort.level — 难度等级（server 派生：porting_class 下限 × person_days 数量级）
+// adaptation_assessment.overall — 是否可适配总判（派生，替代旧 feasibility）
+const OVERALL_LABELS = { adaptable: '可适配', adaptable_with_tailoring: '可适配（部分平台特性需裁剪）', core_blocked: '核心功能不完全可适配' };
+const OVERALL_CLS = { adaptable: 'done', adaptable_with_tailoring: 'sev-major', core_blocked: 'error' };
+// unadaptable_apis[].functionality_class — 功能类别（核心 vs 平台差异）
+const FUNC_CLASS_LABELS = { core: '核心功能', platform_specific: '平台差异功能' };
+// effort.level — 难度等级（server 派生：effective_class 下限 × person_days 数量级）
 const LVL_LABELS = { very_low: '极低', low: '低', medium: '中', high: '高', very_high: '极高' };
 const LVL_CLS = { very_low: 'done', low: 'done', medium: 'running', high: 'sev-major', very_high: 'error' };
 const CONF_LABELS = { high: '高', medium: '中', low: '低' };
@@ -105,19 +108,19 @@ const EFFORT_COMP_LABELS = {
   deps_porting: '依赖移植', build_system: '构建系统', testing_verification: '测试验证', packaging: '打包分发',
 };
 
-// dep-topology node status — label + color (HarmonyOS porting state, 5-way)
+// dep-topology node status — label + color (HarmonyOS 移植分级 5 档派生 effective_class)
 const TOPO_STATUS = {
-  harmonized:               { label: '已鸿蒙化', color: '#1f9d55' },
-  no_adaptation:            { label: '无需适配', color: '#3b6cf6' },
-  recompile_only:           { label: '仅需重新编译', color: '#0ea5a5' },
-  needs_adaptation_full:    { label: '全部可适配', color: '#e0a458' },
-  needs_adaptation_partial: { label: '部分可适配', color: '#dd7a33' },
-  infeasible:               { label: '无法适配', color: '#d65745' },
-  unanalyzed:               { label: '未分析', color: '#9aa4b2' },
+  harmonized:                          { label: '已鸿蒙化', color: '#1f9d55' },
+  no_adaptation:                       { label: '无需适配', color: '#3b6cf6' },
+  recompile_only:                      { label: '仅交叉编译', color: '#0ea5a5' },
+  needs_adaptation:                    { label: '需适配·全部可适配', color: '#e0a458' },
+  needs_adaptation_platform_partial:   { label: '需适配·平台差异有不可适配点', color: '#dd7a33' },
+  needs_adaptation_core_partial:       { label: '需适配·核心有不可适配点', color: '#d65745' },
+  unanalyzed:                          { label: '未分析', color: '#9aa4b2' },
 };
-const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'infeasible', 'unanalyzed'];
-// 移植分级（porting_class）的 5 个取值——用于列表过滤选项；不含拓扑专用的 harmonized/unanalyzed
-const PORTING_CLASS_ORDER = ['no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'infeasible'];
+const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adaptation', 'needs_adaptation_platform_partial', 'needs_adaptation_core_partial', 'unanalyzed'];
+// 移植分级（effective_class）的 5 个取值——用于列表过滤选项；不含拓扑专用的 harmonized/unanalyzed
+const PORTING_CLASS_ORDER = ['no_adaptation', 'recompile_only', 'needs_adaptation', 'needs_adaptation_platform_partial', 'needs_adaptation_core_partial'];
 const topoStatusMeta = (s) => TOPO_STATUS[s] || { label: s || '未知', color: '#9aa4b2' };
 
 // HarmonyOS-PC mirror adaptation status (already-ported packages), cached client-side.
@@ -208,7 +211,7 @@ async function renderDashboard() {
             '<a class="btn" href="#/topology">🕸 依赖拓扑</a>' +
             '<a class="btn" href="#/harmony-caps">🧭 鸿蒙目标能力</a>' +
             '<a class="btn" href="#/observations">🔭 模型观察</a>' +
-            '<button class="btn" id="hExport">⬇ 导出 Excel</button>' +
+            '<button class="btn" id="hExport">⬇ 导出 Excel(定制表)</button>' +
             '<button class="btn" id="hSettings">⚙ 系统设置</button>' +
             '<button class="btn primary" id="hClone">＋ 克隆库</button>');
   $('#hExport').onclick = () => {
@@ -1893,12 +1896,14 @@ function renderReport(r) {
   // 鸿蒙适配评估 (harmony_adaptation, dim 9) — 代码分区(dim 12)并入此卡
   let harmonyRendered = false;
   const ha = r.harmony_adaptation || {};
-  if (ha.feasibility || ha.summary || (ha.blockers || []).length ||
-      ha.recommended_path || (ha.key_tasks || []).length ||
+  const aa = ha.adaptation_assessment || {};
+  if (ha.summary || (ha.blockers || []).length ||
+      aa.overall || (ha.key_tasks || []).length ||
       ha.porting_class || (ha.unadaptable_apis || []).length ||
       (ha.target_assumptions || []).length) {
-    const feasBadge = ha.feasibility
-      ? `<span class="badge ${FEAS_CLS[ha.feasibility] || 'gray'}">${FEAS_LABELS[ha.feasibility] || esc(ha.feasibility)}</span>` : '—';
+    // 是否可适配总判（adaptation_assessment.overall，派生，替代旧 feasibility）
+    const overallBadge = aa.overall
+      ? `<span class="badge ${OVERALL_CLS[aa.overall] || 'gray'}">${OVERALL_LABELS[aa.overall] || esc(aa.overall)}</span>` : '—';
     // 难度等级（effort.level，server 派生）+ 工作量人天
     const lvl = (ha.effort && ha.effort.level) || null;
     const diffBadge = lvl
@@ -1925,18 +1930,34 @@ function renderReport(r) {
     const blockers = blockRows
       ? `<div class="subtitle">移植阻碍点</div><table class="apitable"><thead><tr><th>严重度 / 类别</th><th>问题与改造建议</th><th>鸿蒙状态 / 证据</th></tr></thead><tbody>${blockRows}</tbody></table>`
       : '';
-    const pcMeta = ha.porting_class ? topoStatusMeta(ha.porting_class) : null;
+    // 移植分级徽章：按 5 档 effective_class 上色（派生）
+    const effClass = aa.effective_class || ha.porting_class || null;
+    const pcMeta = effClass ? topoStatusMeta(effClass) : null;
     const pcBadge = pcMeta
       ? `<span class="badge" style="background:${pcMeta.color};color:#fff">${pcMeta.label}</span>` : '—';
     const unRows = (ha.unadaptable_apis || []).map((u) => {
       const cat = u.category ? `<code>${esc(u.category)}</code>` : '';
+      const fc = u.functionality_class
+        ? `<span class="badge ${u.functionality_class === 'core' ? 'error' : 'sev-major'}">${FUNC_CLASS_LABELS[u.functionality_class] || esc(u.functionality_class)}</span>` : '';
       const ev = (u.evidence || []).slice(0, 3).map(esc).join('、');
       return `<tr><td class="api-n"><code>${esc(u.api || '')}</code>${u.public_entry ? `<br><span class="muted">入口 <code>${esc(u.public_entry)}</code></span>` : ''}</td>
+        <td>${fc}</td>
         <td>${esc(u.reason || '')}${u.blocking_native_api && u.blocking_native_api !== u.api ? `<br><span class="muted">根源 <code>${esc(u.blocking_native_api)}</code></span>` : ''}</td>
         <td class="api-loc">${cat}${ev ? `<div>${ev}</div>` : ''}</td></tr>`;
     }).join('');
     const unadaptable = unRows
-      ? `<div class="subtitle">无法适配的 API（父库调用到才阻塞其迁移）</div><table class="apitable"><thead><tr><th>API / 公共入口</th><th>原因</th><th>类别 / 证据</th></tr></thead><tbody>${unRows}</tbody></table>`
+      ? `<div class="subtitle">无法适配的功能点（父库调用到才阻塞其迁移）</div><table class="apitable"><thead><tr><th>API / 公共入口</th><th>功能类别</th><th>原因</th><th>类别 / 证据</th></tr></thead><tbody>${unRows}</tbody></table>`
+      : '';
+    // 两维评估（核心功能 vs 平台差异功能），仅 needs_adaptation 有意义
+    const dimRow = (label, dim) => {
+      if (!dim) return '';
+      const ok = dim.adaptable;
+      const badge = `<span class="badge ${ok ? 'done' : 'error'}">${ok ? '全部可适配' : '部分不可适配'}</span>`;
+      const pts = (dim.unadaptable || []).map((id) => `<code>${esc(id)}</code>`).join(' ');
+      return `<tr><td>${label}</td><td>${badge}</td><td class="muted">${pts || '—'}</td></tr>`;
+    };
+    const twoDim = (aa.core || aa.platform_specific)
+      ? `<div class="subtitle">功能两维评估</div><table class="apitable"><thead><tr><th>功能维度</th><th>可适配性</th><th>不可适配点</th></tr></thead><tbody>${dimRow('核心功能（各平台交集）', aa.core)}${dimRow('平台差异功能（平台特有）', aa.platform_specific)}</tbody></table>`
       : '';
     const compat = (ha.compatible || []).map((c) => surfItem(c.aspect, c.note, c.evidence)).join('');
     const tasks = (ha.key_tasks || []).length
@@ -1987,18 +2008,18 @@ function renderReport(r) {
       ? `<div class="subtitle">工作量分项</div><table class="apitable"><thead><tr><th>分项</th><th>人天</th><th>估算依据</th></tr></thead><tbody>${ebRows}</tbody></table>`
       : '';
     parts.push(sec('鸿蒙适配评估', `<div class="kv">
+      <b>是否可适配</b><span>${overallBadge}</span>
       <b>移植分级</b><span>${pcBadge}</span>
-      <b>可行性</b><span>${feasBadge}</span>
       <b>难度等级</b><span>${diffBadge}</span>
       <b>工作量</b><span>${effortTxt}</span>
       <b>置信度</b><span>${confBadge}</span>
-      <b>推荐路径</b><span>${ha.recommended_path ? `<code>${esc(ha.recommended_path)}</code>` : '—'}</span>
       <b>目标平台</b><span>${esc(ha.target || '—')}</span></div>` +
       (((r.meta || {}).harmony_warnings || []).length
         ? `<div class="hint err" style="margin:6px 0">⚠ 数据一致性提示：<ul style="margin:4px 0 0">${r.meta.harmony_warnings.map((w) => `<li>${esc(typeof w === 'string' ? w : (w && w.message) || '')}</li>`).join('')}</ul></div>` : '') +
       (((r.meta || {}).harmony_warnings_reviewed || []).length
         ? `<details class="hint" style="margin:6px 0;opacity:.75"><summary>✓ 已复核（模型判为误报，${r.meta.harmony_warnings_reviewed.length}）</summary><ul style="margin:4px 0 0">${r.meta.harmony_warnings_reviewed.map((w) => `<li>${esc((w && w.message) || '')}<br><span style="opacity:.8">复核：${esc((w && w.rationale) || '')}</span></li>`).join('')}</ul></details>` : '') +
       (ha.summary ? `<p>${esc(ha.summary)}</p>` : '') +
+      twoDim +
       (cpInner ? `<div class="subtitle">代码分区（迁移复用性 · 工作量底座）</div>${cpInner}` : '') +
       breakdown +
       critDeps +
@@ -2256,7 +2277,7 @@ function drawTopology(data) {
   const elements = [];
   for (const n of data.nodes) elements.push({ data: {
     id: n.id, label: n.label, status: nodeStatus(n), selfStatus: n.status, rollupStatus: n.rollupStatus || n.status,
-    ecosystem: n.ecosystem, analyzed: n.analyzed, libName: n.libName, feasibility: n.feasibility || '',
+    ecosystem: n.ecosystem, analyzed: n.analyzed, libName: n.libName, overall: n.overall || '',
     summary: n.summary || '', isRoot: !!n.isRoot, level: n.level || '', rollupLevel: n.rollupLevel || '',
     rollupEffort: n.rollupEffort || null, rollupConfidence: n.rollupConfidence || '',
     rollupUncertain: !!n.rollupUncertain, blockingChildren: n.blockingChildren || [],
@@ -2320,7 +2341,7 @@ function showTopoDetail(d) {
       <b>是否已分析</b><span>${d.analyzed ? '是' : '否（未分析）'}</span>
       ${d.level ? `<b>本体难度</b><span>${esc(LVL_LABELS[d.level] || d.level)}</span>` : ''}
       ${d.rollupLevel ? `<b>综合难度</b><span>${esc(LVL_LABELS[d.rollupLevel] || d.rollupLevel)}${fmtDays(d.rollupEffort) ? ` <span class="muted">(${fmtDays(d.rollupEffort)})</span>` : ''}${d.rollupConfidence ? ` <span class="muted">置信 ${CONF_LABELS[d.rollupConfidence] || d.rollupConfidence}</span>` : ''}</span>` : ''}
-      ${d.feasibility ? `<b>可行性</b><span>${esc(FEAS_LABELS[d.feasibility] || d.feasibility)}</span>` : ''}
+      ${d.overall ? `<b>是否可适配</b><span>${esc(OVERALL_LABELS[d.overall] || d.overall)}</span>` : ''}
     </div>
     ${differs ? '<p class="hint">综合分级高于本体，因为它（用到的）依赖的适配等级更高，见下。</p>' : ''}
     ${cpathHtml}

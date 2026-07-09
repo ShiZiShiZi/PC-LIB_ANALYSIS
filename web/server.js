@@ -570,9 +570,10 @@ function reportSummary(name, run, group) {
   try {
     const r = JSON.parse(fs.readFileSync(path.join(runLibDir(group, name), run, 'report.json'), 'utf8'));
     // dim-9 鸿蒙适配结论（serve-time 派生，口径同 /api/report 的 normalizeHarmony）：
-    // 磁盘报告常有 porting_class 但无 effort.level，故现算难度等级，不直接读。
+    // 仪表盘徽章按 5 档 effective_class 上色；overall = 是否可适配总判。
     const ha = r.harmony_adaptation || null;
-    const portingClass = ha ? derivePortingClass(r) : null;
+    const portingClass = ha ? effectivePortingClass(r) : null;   // 5-way effective_class for the badge
+    const overall = (ha && ha.adaptation_assessment && ha.adaptation_assessment.overall) || overallForEffective(portingClass);
     const personDays = effortDays(ha);
     const difficultyLevel = portingClass
       ? deriveDifficultyLevel(portingClass, personDays ? personDays[1] : 0) : null;
@@ -587,7 +588,7 @@ function reportSummary(name, run, group) {
       licenseCategory: deriveLicenseCategory(r),
       subpath: (r.library && r.library.source_subpath) || null,
       analyzedAt: r.library && r.library.analyzed_at,
-      portingClass, difficultyLevel, personDays,
+      portingClass, difficultyLevel, personDays, overall,
     };
   } catch { return null; }
 }
@@ -907,7 +908,7 @@ function needsAdaptationLoc(report) {
   if (!cp || !Array.isArray(cp.buckets)) return 0;
   return cp.buckets.reduce((a, b) => a + (b && b.class === 'needs_adaptation' ? (Number(b.loc) || 0) : 0), 0);
 }
-// Should a dim-12 needs_adaptation bucket override cls UP to needs_adaptation_full? recompile_only
+// Should a dim-12 needs_adaptation bucket override cls UP to needs_adaptation? recompile_only
 // (C/C++) definitionally means "zero source change", so ANY needs_adaptation module contradicts it →
 // always override. no_adaptation (ported-runtime langs like Go/Rust/Python) legitimately tolerates
 // trivial cross-compile platform branches (GOOS/cfg files that recompile unchanged), so require the
@@ -919,24 +920,24 @@ function needsAdaptationOverride(report, cls) {
   if (cls !== 'no_adaptation' && cls !== 'recompile_only') return null;
   const need = needsAdaptationLoc(report);
   if (need <= 0) return null;
-  if (cls === 'recompile_only') return 'needs_adaptation_full';
+  if (cls === 'recompile_only') return 'needs_adaptation';
   const prod = Number(report && report.code_metrics && report.code_metrics.production
     && report.code_metrics.production.code) || 0;
-  return prod > 0 && need >= NEEDS_ADAPTATION_MATERIAL_PCT * prod ? 'needs_adaptation_full' : null;
+  return prod > 0 && need >= NEEDS_ADAPTATION_MATERIAL_PCT * prod ? 'needs_adaptation' : null;
 }
-// Hard invariant: a non-empty un-adaptability signal means the class is AT LEAST
-// needs_adaptation_partial — no_adaptation/recompile_only/needs_adaptation_full all assert
-// "every used API is portable" and thus contradict it. Clamp UP (never down; 'infeasible' is
-// the stricter value and is kept). Applied to BOTH the agent's explicit porting_class and the
-// fallback derivation, so a self-contradictory report (e.g. full + unadaptable CUDA) can't reach
-// the panel/topology. Mirrors how effort.level is server-derived to prevent drift.
-const CLAMPABLE_PORTING_CLASSES = new Set(['no_adaptation', 'recompile_only', 'needs_adaptation_full']);
+// Legacy (pre-v4) 5-value porting_class → new 3-value axis; applied to the model pick when
+// upgrading 存量 reports. The core/platform split is re-derived from unadaptable_apis[].functionality_class.
+const LEGACY_PCLASS_MAP = { needs_adaptation_full: 'needs_adaptation',
+  needs_adaptation_partial: 'needs_adaptation', infeasible: 'needs_adaptation' };
+function collapseLegacyPclass(v) { return (v && LEGACY_PCLASS_MAP[v]) || v; }
+// Hard invariant: a non-empty un-adaptability signal, or a dim-12 needs_adaptation bucket, means
+// the class is AT LEAST needs_adaptation — no_adaptation/recompile_only assert "zero source change"
+// and thus contradict it. Clamp UP (never down). Applied to BOTH the agent's explicit porting_class
+// and the fallback derivation, so a self-contradictory report can't reach the panel/topology.
+const CLAMPABLE_PORTING_CLASSES = new Set(['no_adaptation', 'recompile_only']);
 function reconcilePortingClass(report, ha, cls) {
   if (!cls) return cls;
-  // unadaptable signal → at least _partial (strongest; judged first).
-  if (CLAMPABLE_PORTING_CLASSES.has(cls) && hasUnadaptableSignal(ha)) return 'needs_adaptation_partial';
-  // dim-12 needs_adaptation bucket → at least needs_adaptation_full (recompile_only/no_adaptation
-  // assert "zero source change"). Materiality-gated for no_adaptation to tolerate cross-compile noise.
+  if (CLAMPABLE_PORTING_CLASSES.has(cls) && hasUnadaptableSignal(ha)) return 'needs_adaptation';
   const na = needsAdaptationOverride(report, cls);
   if (na) return na;
   return cls;
@@ -946,41 +947,101 @@ function derivePortingClass(report) {
   if (!ha) return null;
   let cls;
   if (ha.porting_class) {
-    cls = ha.porting_class;                               // explicit (agent) — incl. new 5-way values
-  } else if (ha.feasibility === 'infeasible') {
-    cls = 'infeasible';
+    cls = collapseLegacyPclass(ha.porting_class);         // explicit (agent) — collapse legacy 5-way
   } else {
     const unadaptable = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
     const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
-    // Prefer the structured closed signal blockers[].adaptability over open-vocab category regex.
-    const hasStructured = blk.some((b) => b.adaptability);
-    if (unadaptable.length || blk.some((b) => b.adaptability === 'unadaptable')) cls = 'needs_adaptation_partial';
-    else if (blk.some((b) => b.severity === 'blocker' || b.adaptability === 'partial')) cls = 'needs_adaptation_full';
-    else {
+    if (unadaptable.length
+        || blk.some((b) => b.adaptability === 'unadaptable' || b.adaptability === 'partial')
+        || blk.some((b) => b.severity === 'blocker')) {
+      cls = 'needs_adaptation';
+    } else {
       const cats = blk.map((b) => String(b.category || '').toLowerCase());
       const native = cats.some((c) => /native_dependency|ffi|toolchain|posix/.test(c));
-      // Legacy fallback: open-vocab category regex, only when no structured adaptability is present.
-      if (!hasStructured && cats.some((c) => PLATFORM_BLOCKER_RE.test(c))) cls = 'needs_adaptation_full';
-      else {
-        const path = String(ha.recommended_path || '').toLowerCase();
-        if (/run_on_ported_runtime/.test(path) && !native) cls = 'no_adaptation';
-        else if (native) cls = 'recompile_only';
-        else cls = 'no_adaptation';                       // pure script, no native work, no blockers
-      }
+      if (cats.some((c) => PLATFORM_BLOCKER_RE.test(c))) cls = 'needs_adaptation';
+      else if (native) cls = 'recompile_only';
+      else cls = 'no_adaptation';                         // pure script, no native work, no blockers
     }
   }
   return reconcilePortingClass(report, ha, cls);
 }
 
+// ---- adaptation_assessment: two-dimensional (core vs platform-difference) derivation -------
+// 5-way effective_class (topology color + difficulty floor + rollup rank) worst→best order.
+const LEGACY_FUNC_CLASS_DEFAULT_CORE = 'core';
+const LEGACY_FUNC_CLASS_DEFAULT_PLATFORM = 'platform_specific';
+function funcClassDefault(legacyPclass) {
+  return legacyPclass === 'infeasible' ? LEGACY_FUNC_CLASS_DEFAULT_CORE : LEGACY_FUNC_CLASS_DEFAULT_PLATFORM;
+}
+// Derive harmony_adaptation.adaptation_assessment from porting_class + the (model-tagged or
+// legacy-defaulted) unadaptable_apis[].functionality_class. Returns the 5-way effective_class used
+// for the effort.level floor. Mutates ha in place. Byte-mirror of report_normalize.derive_adaptation_assessment.
+function deriveAdaptationAssessment(report, ha, legacyPclass) {
+  const cls = ha.porting_class;
+  const coreIds = [], platIds = [];
+  const uas = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
+  for (const u of uas) {
+    if (!u || typeof u !== 'object') continue;
+    let fc = u.functionality_class;
+    if (u.functionality_class_defaulted) {
+      fc = funcClassDefault(legacyPclass);                // previously defaulted → re-derive, stay flagged
+      u.functionality_class = fc;
+    } else if (fc === 'core' || fc === 'platform_specific') {
+      // model-provided
+    } else {
+      fc = funcClassDefault(legacyPclass);                // newly missing → backfill + flag provenance
+      u.functionality_class = fc;
+      u.functionality_class_defaulted = true;
+    }
+    (fc === 'core' ? coreIds : platIds).push(u.id);
+  }
+  const core = coreIds.filter(Boolean);
+  const plat = platIds.filter(Boolean);
+  let effective;
+  if (cls === 'needs_adaptation') {
+    if (core.length) effective = 'needs_adaptation_core_partial';
+    else if (plat.length) effective = 'needs_adaptation_platform_partial';
+    else effective = 'needs_adaptation';
+  } else {
+    effective = cls || 'no_adaptation';
+  }
+  const overall = effective === 'needs_adaptation_core_partial' ? 'core_blocked'
+    : effective === 'needs_adaptation_platform_partial' ? 'adaptable_with_tailoring'
+      : 'adaptable';
+  ha.adaptation_assessment = {
+    effective_class: effective,
+    overall,
+    core: { adaptable: !core.length, unadaptable: core },
+    platform_specific: { adaptable: !plat.length, unadaptable: plat },
+  };
+  return effective;
+}
+// overall 是否可适配 verdict as a pure function of the 5-way effective_class (matches
+// deriveAdaptationAssessment) — for deriving it on raw/unnormalized reports (topology/summary).
+function overallForEffective(effectiveClass) {
+  if (effectiveClass === 'needs_adaptation_core_partial') return 'core_blocked';
+  if (effectiveClass === 'needs_adaptation_platform_partial') return 'adaptable_with_tailoring';
+  return effectiveClass ? 'adaptable' : null;
+}
+// The 5-way effective_class for a report (topology/rollup): prefer the persisted derivation, else compute.
+function effectivePortingClass(report) {
+  const ha = (report && report.harmony_adaptation) || null;
+  if (!ha) return null;
+  if (ha.adaptation_assessment && ha.adaptation_assessment.effective_class) return ha.adaptation_assessment.effective_class;
+  const cls = derivePortingClass(report);
+  const clone = { ...ha, porting_class: cls };
+  return deriveAdaptationAssessment(report, clone, ha.porting_class_model || ha.porting_class);
+}
+
 // ---- difficulty level (5-tier) + effort person-days -----------------------
-// effort.level is DERIVED (not an independent model axis) from porting_class (floor)
-// × person_days (magnitude bucket), take-higher — keeps it self-consistent with the
-// porting class while adding the "how much" the class alone can't express, and the
-// numeric person_days aggregates up the dep tree.
+// effort.level is DERIVED (not an independent model axis) from the 5-way effective_class (floor)
+// × person_days (magnitude bucket), take-higher — keeps it self-consistent with the porting class
+// while adding the "how much" the class alone can't express, and the numeric person_days aggregates up.
 const LEVEL_RANK = { very_low: 0, low: 1, medium: 2, high: 3, very_high: 4 };
 const RANK_LEVEL = ['very_low', 'low', 'medium', 'high', 'very_high'];
-const CLASS_LEVEL_FLOOR = { no_adaptation: 0, recompile_only: 1, needs_adaptation_full: 2,
-  needs_adaptation_partial: 3, infeasible: 4 };
+// floor keyed by the derived 5-way effective_class (NOT the 3-value porting_class).
+const CLASS_LEVEL_FLOOR = { no_adaptation: 0, recompile_only: 1, needs_adaptation: 2,
+  needs_adaptation_platform_partial: 3, needs_adaptation_core_partial: 4 };
 function daysBucket(daysHi) {            // person-days (upper bound) → level rank
   const d = Number(daysHi);
   if (!(d > 2)) return 0;
@@ -989,9 +1050,9 @@ function daysBucket(daysHi) {            // person-days (upper bound) → level 
   if (d <= 40) return 3;
   return 4;
 }
-function deriveDifficultyLevel(portingClass, personDaysHi) {
-  if (!portingClass) return null;
-  const floor = portingClass in CLASS_LEVEL_FLOOR ? CLASS_LEVEL_FLOOR[portingClass] : 0;
+function deriveDifficultyLevel(effectiveClass, personDaysHi) {
+  if (!effectiveClass) return null;
+  const floor = effectiveClass in CLASS_LEVEL_FLOOR ? CLASS_LEVEL_FLOOR[effectiveClass] : 0;
   return RANK_LEVEL[Math.max(floor, daysBucket(personDaysHi))];
 }
 // person-days [lo,hi] for a dim-9 block (the model's single effort axis).
@@ -1007,9 +1068,6 @@ function effortDays(ha) {
 // confidence ordinal for min-propagation up the tree.
 const CONF_RANK = { low: 0, medium: 1, high: 2 };
 const RANK_CONF = ['low', 'medium', 'high'];
-const FEAS_FOR_CLASS = { no_adaptation: 'feasible', recompile_only: 'feasible_with_effort',
-  needs_adaptation_full: 'feasible_with_effort',
-  needs_adaptation_partial: 'hard', infeasible: 'infeasible' };
 
 // Report normalization is now single-sourced in scripts/report_normalize.py and persisted at
 // assemble time (report.json is born normalized + stamped with meta.normalized_version). The JS
@@ -1020,7 +1078,10 @@ const FEAS_FOR_CLASS = { no_adaptation: 'feasible', recompile_only: 'feasible_wi
 // `actionable` one (meta.harmony_warnings_dismissed → meta.harmony_warnings_reviewed).
 // v3: effort.breakdown recompile/api_adaptation derived from code_partition LOC at configurable
 // rates, and effort.person_days total = Σ breakdown when itemized.
-const NORMALIZED_VERSION = 3;
+// v4: dim-9 refactor — feasibility/recommended_path removed; porting_class collapsed to 3 values;
+// unadaptable_apis[].functionality_class drives a derived adaptation_assessment {effective_class,
+// overall, core, platform_specific}; effort.level floor keyed by effective_class.
+const NORMALIZED_VERSION = 4;
 const W_ACT = 'actionable';   // model self-review may FIX (with evidence) or DISMISS as false positive
 const W_INFO = 'info';        // deterministic audit note — never dismissible
 
@@ -1058,23 +1119,33 @@ function applyDerivedComponent(bd, comp, loc, rate, zhLabel) {
 }
 
 // Serve-time normalize (mutates report.harmony_adaptation): fill the derived effort.level,
-// person_days (from breakdown / legacy), feasibility consistency, and stable ids — so 存量
-// reports gain the new structured fields without a re-run.
+// person_days (from breakdown / legacy), adaptation_assessment (two-dimensional core/platform +
+// 5-way effective_class + overall verdict), and stable ids — so 存量 reports gain the new
+// structured fields without a re-run. Byte-mirror of report_normalize.normalize_harmony.
 function normalizeHarmony(report) {
   const ha = report && report.harmony_adaptation;
   if (!ha || typeof ha !== 'object') return report;
-  const modelCls = ha.porting_class || null;              // what the agent claimed, before reconcile
-  const cls = derivePortingClass(report);                 // reconciled — may clamp the agent value up
+  // base = the model's ORIGINAL pick (may be a legacy 5-value); preserved in porting_class_model
+  // and read from there on re-normalization so the value stays re-derivable after overwrites.
+  const base = ('porting_class_model' in ha) ? ha.porting_class_model : (ha.porting_class || null);
+  ha.porting_class_model = base;
+  const cls = derivePortingClass(report);                 // reconciled 3-value — may clamp the agent value up
   if (cls) {
-    // Record a clamp so validateHarmony can surface it, then write the reconciled value back so the
-    // panel/topology/xlsx all read a self-consistent class + feasibility (derived, can't lag a clamp).
-    if (modelCls && modelCls !== cls) ha.porting_class_adjusted = { from: modelCls, to: cls };
+    // Compare the COLLAPSED legacy base (not the raw 5-value) so a pure v3→v4 collapse isn't flagged
+    // as a model contradiction; only a real clamp-up (recompile_only → needs_adaptation) records an adjustment.
+    const collapsedBase = base ? collapseLegacyPclass(base) : base;
+    if (collapsedBase && collapsedBase !== cls) ha.porting_class_adjusted = { from: collapsedBase, to: cls };
     ha.porting_class = cls;
-    ha.feasibility = FEAS_FOR_CLASS[cls] || ha.feasibility || null;
   }
+  // dropped in v4: feasibility / recommended_path
+  delete ha.feasibility;
+  delete ha.recommended_path;
   ha.effort = ha.effort && typeof ha.effort === 'object' ? ha.effort : {};
   const tag = (arr, p) => Array.isArray(arr) && arr.forEach((it, i) => { if (it && typeof it === 'object' && !it.id) it.id = `${p}:${i + 1}`; });
   tag(ha.target_assumptions, 'ta'); tag(ha.unadaptable_apis, 'ua'); tag(ha.blockers, 'bk');
+  // Two-dimensional (core vs platform-difference) assessment + 5-way effective_class. Needs the ua
+  // ids assigned above; legacy default for functionality_class keys off the raw pick.
+  const effective = deriveAdaptationAssessment(report, ha, base);
   // required_permissions: default missing harmony_status to unknown so the panel/xlsx
   // and confidence logic treat an unstated permission conservatively.
   if (Array.isArray(ha.required_permissions))
@@ -1100,7 +1171,7 @@ function normalizeHarmony(report) {
   }
   if (total) eff.person_days = [round1(total[0]), round1(total[1])];
   const pd = eff.person_days;
-  eff.level = deriveDifficultyLevel(cls, Array.isArray(pd) && pd.length === 2 ? pd[1] : 0);
+  eff.level = deriveDifficultyLevel(effective, Array.isArray(pd) && pd.length === 2 ? pd[1] : 0);
   // critical_dependencies: default a missing order to the array position (1-based).
   if (Array.isArray(ha.critical_dependencies))
     ha.critical_dependencies.forEach((c, i) => { if (c && typeof c === 'object' && !(Number(c.order) >= 1)) c.order = i + 1; });
@@ -1113,18 +1184,11 @@ function validateHarmony(report) {
   if (!ha || typeof ha !== 'object') return [];
   const w = [];
   const cls = ha.porting_class || derivePortingClass(report);
-  if (cls && ha.feasibility && FEAS_FOR_CLASS[cls] && ha.feasibility !== FEAS_FOR_CLASS[cls])
-    w.push(['feas_pclass_inconsistent', W_INFO,
-      `feasibility(${ha.feasibility}) 与 porting_class(${cls}) 不自洽，应为 ${FEAS_FOR_CLASS[cls]}`]);
-  // transparency: normalizeHarmony clamped a self-contradictory model porting_class UP — either
-  // (full/recompile/no + unadaptable signal) → _partial, or (recompile/no + needs_adaptation bucket)
-  // → _full. The reason line matches whichever axis was violated.
+  // transparency: normalizeHarmony clamped a self-contradictory model porting_class UP to needs_adaptation
+  // (recompile_only/no_adaptation + an unadaptable signal or a dim-12 needs_adaptation bucket).
   if (ha.porting_class_adjusted && ha.porting_class_adjusted.from !== ha.porting_class_adjusted.to) {
-    const reason = ha.porting_class_adjusted.to === 'needs_adaptation_full'
-      ? '但代码分区(dim-12)存在需适配模块（非零源码改动）'
-      : '但存在无法适配的 API/阻碍点';
     w.push(['pclass_adjusted', W_INFO,
-      `porting_class 模型原判 ${ha.porting_class_adjusted.from}，${reason}，已按"不矛盾"校正为 ${ha.porting_class_adjusted.to}`]);
+      `porting_class 模型原判 ${ha.porting_class_adjusted.from}，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按"不矛盾"校正为 ${ha.porting_class_adjusted.to}`]);
   }
   // soft hint (human-review only, not auto-clamped): recompile_only is definitionally the C/C++
   // NDK-rebuild class; a managed/ported-runtime lib (Go/Java/Python/JS/TS) with NO native surface
@@ -1141,8 +1205,15 @@ function validateHarmony(report) {
   const ua = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
   const blk = Array.isArray(ha.blockers) ? ha.blockers : [];
   const ta = Array.isArray(ha.target_assumptions) ? ha.target_assumptions : [];
-  if (ua.length && !['needs_adaptation_partial', 'infeasible'].includes(cls))
-    w.push(['ua_pclass', W_INFO, `unadaptable_apis 非空但 porting_class=${cls}（应为 needs_adaptation_partial 或 infeasible）`]);
+  if (ua.length && cls !== 'needs_adaptation')
+    w.push(['ua_pclass', W_INFO, `unadaptable_apis 非空但 porting_class=${cls}（应为 needs_adaptation）`]);
+  for (const u of ua) {
+    // functionality_class is backfilled by normalize; flag ones the MODEL omitted so the self-review
+    // can tag core vs platform-difference with evidence (the default may be wrong).
+    if (u && u.functionality_class_defaulted)
+      w.push([`ua_func_class_defaulted:${u.id || u.api || ''}`, W_ACT,
+        `unadaptable_api ${u.id || u.api || ''} 未标 functionality_class，已默认按 ${u.functionality_class} 归类——请据实标 core/platform_specific`]);
+  }
   const ids = new Set([...ta, ...ua, ...blk].map((x) => x && x.id).filter(Boolean));
   const arr = (v) => (Array.isArray(v) ? v : []);   // a malformed string ref must not spread to chars
   for (const b of blk) for (const r of [...arr(b.caused_by), ...arr(b.manifests_as)])
@@ -1244,12 +1315,12 @@ function validateReport(report) {
       w.push(['cp_loc_coverage', W_INFO, `代码分区桶 LOC 之和(${sum})与生产代码(${prodCode})偏差超过 15%（覆盖不足或重复计入）`]);
     const unLoc = cp.buckets.filter((b) => b && b.class === 'unadaptable')
       .reduce((a, b) => a + (Number(b.loc) || 0), 0);
-    if (unLoc > 0 && !['needs_adaptation_partial', 'infeasible'].includes(cls))
-      w.push(['cp_unadapt_pclass', W_INFO, `代码分区含 unadaptable 桶(${unLoc} 行)但 porting_class=${cls}（应为 needs_adaptation_partial/infeasible）`]);
+    if (unLoc > 0 && cls !== 'needs_adaptation')
+      w.push(['cp_unadapt_pclass', W_INFO, `代码分区含 unadaptable 桶(${unLoc} 行)但 porting_class=${cls}（应为 needs_adaptation）`]);
     // Same materiality gate as the reconcile clamp — only flag a genuine contradiction (a Go/Rust
     // no_adaptation lib with a few scattered cross-compile platform lines is NOT flagged).
     if (needsAdaptationOverride(report, cls))
-      w.push(['cp_needs_full', W_INFO, `代码分区含 needs_adaptation 桶(${needsAdaptationLoc(report)} 行)但 porting_class=${cls}（应为 needs_adaptation_full；零源码改动才是 recompile_only）`]);
+      w.push(['cp_needs_full', W_INFO, `代码分区含 needs_adaptation 桶(${needsAdaptationLoc(report)} 行)但 porting_class=${cls}（应为 needs_adaptation；零源码改动才是 recompile_only）`]);
     if (unLoc > 0 && !uaList.length)
       w.push(['cp_unadapt_no_ua', W_ACT, '代码分区含 unadaptable 桶但 dim-9 unadaptable_apis 为空（漏登记或分桶过严）']);
     if (unLoc === 0 && uaList.length)
@@ -1310,10 +1381,10 @@ function computeWarnings(report) {
 }
 
 // ---- bottom-up adaptation rollup (serve-time, API-granular) ----------------
-// worst-wins lattice over porting classes.
-const CLASS_RANK = { no_adaptation: 0, recompile_only: 1, needs_adaptation_full: 2,
-  needs_adaptation_partial: 3, infeasible: 4 };
-const RANK_CLASS = ['no_adaptation', 'recompile_only', 'needs_adaptation_full', 'needs_adaptation_partial', 'infeasible'];
+// worst-wins lattice over the 5-way effective_class (needs_adaptation_core_partial worst).
+const CLASS_RANK = { no_adaptation: 0, recompile_only: 1, needs_adaptation: 2,
+  needs_adaptation_platform_partial: 3, needs_adaptation_core_partial: 4 };
+const RANK_CLASS = ['no_adaptation', 'recompile_only', 'needs_adaptation', 'needs_adaptation_platform_partial', 'needs_adaptation_core_partial'];
 const rankOf = (cls) => (cls in CLASS_RANK ? CLASS_RANK[cls] : 0);
 const classOfRank = (r) => RANK_CLASS[Math.min(Math.max(r, 0), 4)];
 // normalize a symbol for cross-library matching: lowercase + also keep the last
@@ -1489,9 +1560,13 @@ function buildDepTopology(rootName, group, maxDepth = 6, maxNodes = 300) {
   for (const node of nodes.values()) {
     if (node.analyzed) {
       const rep = getRep(node.libName);
-      node.portingClass = node.selfClass = derivePortingClass(rep);
+      // color/rank by the 5-way effective_class (needs_adaptation core/platform split); the 3-value
+      // porting_class is kept separately for reference.
+      node.portingClass = node.selfClass = effectivePortingClass(rep);
       const ha = (rep && rep.harmony_adaptation) || {};
-      node.feasibility = ha.feasibility || null;
+      // derive overall from the (possibly computed) effective_class so raw/unnormalized on-disk reports work too
+      node.overall = (ha.adaptation_assessment && ha.adaptation_assessment.overall) || overallForEffective(node.selfClass);
+      node.adaptationAssessment = ha.adaptation_assessment || null;
       node.summary = ha.summary || '';
       node.unadaptableApis = Array.isArray(ha.unadaptable_apis) ? ha.unadaptable_apis : [];
       node.effortDays = effortDays(ha);
@@ -2585,6 +2660,7 @@ if (require.main === module) {
 } else {
   module.exports = { derivePortingClass, deriveDifficultyLevel, effortDays, normalizeHarmony,
     reconcilePortingClass, hasUnadaptableSignal, normalizeCodePartition,
+    deriveAdaptationAssessment, effectivePortingClass,
     validateHarmony, validateReport, computeWarnings, rollupAdaptation, buildDepTopology,
     deriveLicenseCategory, normalizeLicense, validateLicense, normalizeDim8,
     parseRepoUrl, canonicalRepoKey, normalizeCloneUrl };

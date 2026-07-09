@@ -50,7 +50,7 @@ codegraph 追踪种子，顺分支追下游平台调用判鸿蒙等价性（无�
 | 6 | Dependencies | model — `dependency-analysis` skill |
 | 7 | System & platform API calls (portability classes 标准/平台特有/系统内核/硬件/FFI; per-API name+purpose+call-site) | model — `native-api-analysis` skill |
 | 8 | Runtime & build environment (external-interaction surface + toolchain/platform matrix) | model — `runtime-environment` skill |
-| 9 | HarmonyOS PC adaptation assessment (可行性/难度/路径/工作量) — **synthesis** of dims 1/6/7/8/10/11 | model — `harmony-adaptation` skill |
+| 9 | HarmonyOS PC adaptation assessment (移植分级两维:核心功能vs平台差异功能/是否可适配/难度/工作量) — **synthesis** of dims 1/6/7/8/10/11 | model — `harmony-adaptation` skill |
 | 10 | Capability profile — GUI/3D 渲染/媒体/特定硬件 场景标志 + 鸿蒙支持状态 — **synthesis** of dims 1/6/7/8 | model — `capability-profile` skill |
 | 11 | Cloud service involvement — 是否涉及云端服务 + 云厂商推测 (auth/存储/数据库/函数/推送/分析/崩溃上报…) — **synthesis** of dims 1/6/8 | model — `cloud-service-analysis` skill |
 | 12 | Code partition — 生产代码按鸿蒙迁移复用性分桶（直接复用/重编译复用/需适配/无法适配 + LOC）— **synthesis** of dims 3/7/10/6 | model — `code-partition` skill |
@@ -59,8 +59,8 @@ codegraph 追踪种子，顺分支追下游平台调用判鸿蒙等价性（无�
 dependencies/function_summary 把项目触及的**鸿蒙适配重点场景**结构化标出——`scenarios[]`，每个
 `{key(gui/rendering_3d/media/hardware，开放可扩), present, kind[], specific_hardware, via[],
 harmony_status(对照 caps), adaptation, evidence}`。回答"**是否涉及 X**"，dim-9 据此判修改量/能否移植：
-present 场景 `harmony_status=unavailable` 或 `specific_hardware` → blocker/unadaptable_api + person_days 上调
-（可推 infeasible）。**两层契约（去重）：GUI/3D/媒体/硬件 四类的鸿蒙支持状态以 `capability_profile` 为权威源
+present 场景 `harmony_status=unavailable` 或 `specific_hardware` → blocker/unadaptable_api（标 functionality_class）+ person_days 上调
+（核心功能则 `overall:core_blocked`）。**两层契约（去重）：GUI/3D/媒体/硬件 四类的鸿蒙支持状态以 `capability_profile` 为权威源
 ——查 caps 定 `harmony_status`/`specific_hardware` 只在 dim-10 做一次；dim-9 直接消费（经 `source_capability`/
 `caused_by` 回指场景 key）、不对这四类重查 caps 或从 native_api 重扫，只把状态翻译成 blocker/effort/remediation。
 `adaptation` 是描述性提示、不下移植结论（那是 dim-9 的 remediation）。** `target_assumptions` 只登记 dim-10
@@ -136,31 +136,36 @@ polyglot library (e.g. a C++ core with Python/Java bindings). Dim 8 is purely
 descriptive (no adaptation advice). Dim 9 (`harmony_adaptation`) is the opposite —
 **prescriptive and a synthesis**: it reasons over the already-filled dims (ecosystem,
 native_api, runtime_surface, dependencies, build_env) to produce a HarmonyOS PC
-porting plan (feasibility/difficulty/path/blockers/effort), reusing their `evidence`
+porting plan (移植分级两维/difficulty/blockers/effort), reusing their `evidence`
 rather than re-scanning source. **Default口径: HarmonyOS PC with already-ported
 language runtimes** (Python/Node.js/Java/Rust/Go/Julia are ported) — a pure-script
-library runs on the ported runtime (`run_on_ported_runtime`), so the runtime itself
-is NOT a blocker and such libs are NOT auto-`infeasible`; the real work is native
+library runs on the ported runtime, so the runtime itself
+is NOT a blocker and such libs are NOT auto-blocked; the real work is native
 extensions / C deps / platform APIs. The strict ArkTS-sandbox model is a secondary口径
-used only when the target is an ArkTS app. **`porting_class` is the single authoritative
-machine axis** (no_adaptation/recompile_only/**needs_adaptation_full**(全部可适配)/
-**needs_adaptation_partial**(部分可适配)/infeasible — the dep-topology page's 5-way bucket).
-`feasibility` is a deterministic function of it
-(server validates). The model only estimates `effort.person_days:[lo,hi]` (numeric → aggregates up
+used only when the target is an ArkTS app. **移植分级重构（核心功能 vs 平台差异功能两维）**：
+`porting_class` is the single authoritative **3-value** machine axis
+(no_adaptation 无需适配 / recompile_only 仅交叉编译 / needs_adaptation 需适配). Within needs_adaptation the
+model tags each `unadaptable_apis[].functionality_class` (**core** = the Win/Linux/mac 功能交集 / **platform_specific**
+= 平台特有) and the normalizer DERIVES `adaptation_assessment` = `{core, platform_specific}`两维小结 +
+a 5-way `effective_class` (no_adaptation / recompile_only / needs_adaptation / needs_adaptation_platform_partial /
+needs_adaptation_core_partial — the dep-topology page's 5-way bucket color) + an `overall` 是否可适配 verdict
+(adaptable / adaptable_with_tailoring / core_blocked). **`feasibility` and `recommended_path` are REMOVED**;
+`overall` (derived from whether core functionality has unadaptable points) replaces the old feasibility verdict.
+The model only estimates `effort.person_days:[lo,hi]` (numeric → aggregates up
 the dep tree); the **5-tier difficulty `effort.level`** (very_low…very_high / 极低…极高) is
-**server-DERIVED** (`deriveDifficultyLevel` = porting_class floor × person_days bucket, take-higher)
-— NOT an independent model axis, so it can't drift from porting_class. `confidence` (high/medium/low)
+**server-DERIVED** (`deriveDifficultyLevel` = `effective_class` floor × person_days bucket, take-higher)
+— NOT an independent model axis, so it can't drift from the migration class. `confidence` (high/medium/low)
 drops to ≤medium when a required target_assumption is `unknown`, and propagates min up the rollup.
 Other closed axes: `blockers[].severity`/`blockers[].adaptability`(adaptable/partial/unadaptable —
-the structured signal `derivePortingClass` now reads instead of regex over open-vocab category).
-Open vocab: `recommended_path`/`blockers[].category`/`harmony_status`. The three problem lists are a
+the structured signal `derivePortingClass` reads instead of regex over open-vocab category).
+Open vocab: `blockers[].category`/`harmony_status`. The three problem lists are a
 **single-source-of-truth model with cross-refs**: a fact is登记 once in its primary list
 (`target_assumptions`=root cause, `unadaptable_apis`=granular machine layer for rollup, `blockers`=result)
 and referenced elsewhere by stable `id` via `caused_by`/`manifests_as` (no duplicate prose → no
 double-counted difficulty). **Single source of truth (`scripts/report_normalize.py`):** the dim-9/dim-12
-derivations (`porting_class` reconcile — model's pick is a FLOOR clamped UP by the dim-12
+derivations (`porting_class` reconcile — model's pick is a FLOOR clamped UP to needs_adaptation by the dim-12
 `needs_adaptation`/`unadaptable` buckets + `unadaptable_apis`, never lowered; the model's raw pick kept in
-`harmony_adaptation.porting_class_model`), `feasibility`/`effort.level`, `code_partition` canonicalization,
+`harmony_adaptation.porting_class_model`), `adaptation_assessment`/`effort.level`, `code_partition` canonicalization,
 and the `validate*` consistency checks are implemented ONCE in Python and run at **assemble time** so
 `report.json` is **born normalized + stamped `meta.normalized_version`** — the panel, the Excel export
 (`export_xlsx.py` reads the persisted value, no longer re-derives), and any direct reader all agree.
@@ -234,14 +239,15 @@ interpretive skill (dims 1, 5, 6, 7, 8, 9) follows this shape:
 - **Stable closed axes (model-set)**: `library.ecosystem`/`bindings`,
   `dependencies[].locality` (local/remote/system/runtime), `native_api.groups[].category`
   (standard/platform/system/hardware/ffi) and `.platform`. The UI relies on these.
-  Plus dim 9's `harmony_adaptation.porting_class`/`feasibility`/`confidence`/`effort.level`(server-derived)/
+  Plus dim 9's `harmony_adaptation.porting_class`(3-value)/`unadaptable_apis[].functionality_class`(core/platform_specific)/
+  `confidence`/`effort.level`(server-derived)/`adaptation_assessment.effective_class`+`.overall`(server-derived)/
   `blockers[].severity`/`blockers[].adaptability`. Plus dim 5's `license.category`
   (commercial/strong_copyleft/weak_copyleft/permissive/undeclared) — **a STRICT closed axis**:
   unlike the open词表 below, the model may **not** coin new values or log them to `meta.observations`;
   it must map to exactly one of the five. Server `deriveLicenseCategory`/`normalizeLicense`
   backfills it from `spdx`/`name` for 存量 reports (model value wins), like `derivePortingClass`.
 - **Open detail vocabulary (model may coin)**: `dependencies[].acquisition`,
-  `native_api.groups[].type`, `harmony_adaptation.recommended_path`/`blockers[].category`/
+  `native_api.groups[].type`, `harmony_adaptation.blockers[].category`/
   `blockers[].harmony_status`, etc. The UI degrades unknown values to the raw string.
 
 `meta.observations` (`{dimension, field, kind, value, rationale}`) is aggregated by
@@ -369,14 +375,14 @@ and `opencode` with a configured model. Excel export additionally needs
   `/api/dep-topology`.
 - **依赖拓扑 (`#/topology`):** pick an analyzed library → a **runtime-only transitive
   dependency graph** (Cytoscape.js, breadthfirst layout), each node colored by HarmonyOS
-  status: **已鸿蒙化** (mirror) / **未分析** / one of 5 未鸿蒙化 classes — **无需适配**
-  (pure script), **仅需重新编译** (C/C++, no platform API), **全部可适配** (needs work but all
-  used functionality portable), **部分可适配** (some APIs unportable — listed in `unadaptable_apis`),
-  **无法适配** (core/specific hardware). `/api/dep-topology?name=`
+  status: **已鸿蒙化** (mirror) / **未分析** / one of 5 未鸿蒙化 `effective_class` buckets — **无需适配**
+  (pure script), **仅交叉编译** (C/C++, no platform API), **需适配·全部可适配** (needs work but all
+  used functionality portable), **需适配·平台差异有不可适配点** (only platform-specific功能 unportable, core OK),
+  **需适配·核心有不可适配点** (core functionality has unadaptable points — most severe). `/api/dep-topology?name=`
   builds the DAG via `buildDepTopology` (runtime/optional + non-local deps, `resolveDepLib`
-  for alias matching) and sets each node's class from `harmony_adaptation.porting_class`
-  (closed axis the agent emits) or `derivePortingClass()` — a serve-time derivation from the
-  existing feasibility/difficulty/path/blockers/unadaptable_apis, so **存量 reports are classified
+  for alias matching) and sets each node's class from the derived `adaptation_assessment.effective_class`
+  (via `effectivePortingClass()`), a serve-time derivation from the
+  existing porting_class/blockers/unadaptable_apis[].functionality_class, so **存量 reports are classified
   without a re-run** (re-analyze upgrades to the agent's value). The page has a **本体 / 含依赖(综合)**
   toggle: 含依赖 colors by the bottom-up `rollupClass` (`rollupAdaptation`, see dim-9 above), with a
   「含未分析依赖」flag and a per-node list of which child deps (via which symbols) raised the class.

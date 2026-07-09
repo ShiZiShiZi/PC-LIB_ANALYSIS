@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Export analyzed PC-library reports into one summary .xlsx workbook.
+"""Export analyzed PC-library reports into ONE styled wide-table .xlsx.
 
 Standalone (CI/offline) and also invoked by the web panel's /api/export endpoint.
 Reads each library's LATEST run report.json under <runs>/<lib>/<ts>/report.json and
-flattens every field into a normalized multi-sheet workbook: one "汇总" row per
-library plus detail sheets (one row per nested item, keyed by library name).
+flattens the business-facing fields into a single "分析汇总" sheet with a two-level
+header (grouped 一级/二级 表头), 微软雅黑 font, merged group headers and light styling —
+one row per library.
 
 Usage:
   python3 scripts/export_xlsx.py --runs <runs_dir> --out <path.xlsx> [--names a,b,c]
@@ -17,10 +18,10 @@ import os
 import sys
 
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
-# Single source of truth for dim-9 derivations (porting_class/feasibility/effort.level) and
+# Single source of truth for dim-9 derivations (porting_class/adaptation_assessment/effort.level) and
 # code_partition canonicalization — shared with assemble_report.py and web/server.js. Used to
 # normalize a legacy (unstamped) report on load so the export matches the panel exactly.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -28,22 +29,8 @@ import report_normalize  # noqa: E402
 
 JOIN = "；"
 
-# dim-9 难度等级 label. porting_class / feasibility / effort.level are single-sourced in
-# report_normalize (persisted into report.json by assemble; a legacy report is normalized on load
-# in _latest_report) — this module READS those persisted values, it no longer re-derives them.
-_LEVEL_ZH = {"very_low": "极低", "low": "低", "medium": "中", "high": "高", "very_high": "极高"}
 
-
-def _effort_days(ha: dict):
-    e = (ha or {}).get("effort") or {}
-    pd = e.get("person_days")
-    if isinstance(pd, list) and len(pd) == 2:
-        try:
-            return [float(pd[0]), float(pd[1])]
-        except (TypeError, ValueError):
-            pass
-    return None
-
+# ── report loading (reused verbatim) ─────────────────────────────────────────
 
 def _latest_report(lib_dir: str):
     """Return the parsed report.json of the newest run (ISO-timestamp dir) or None."""
@@ -62,9 +49,11 @@ def _latest_report(lib_dir: str):
             rep = json.load(fh)
     except (OSError, ValueError):
         return None
-    # A stamped report is already the single-source-of-truth form (assemble/migrate normalized it);
-    # only upgrade a legacy/unstamped one in memory so the export matches the panel exactly.
-    if isinstance(rep, dict) and not (isinstance(rep.get("meta"), dict) and rep["meta"].get("normalized_version")):
+    # A report stamped at the CURRENT version is already the single-source-of-truth form; only
+    # upgrade a legacy/unstamped/older-stamp one in memory so the export matches the panel exactly
+    # (same version gate as web/server.js's /api/report serve path).
+    stamp = rep.get("meta", {}).get("normalized_version") if isinstance(rep, dict) else None
+    if isinstance(rep, dict) and (not isinstance(stamp, int) or stamp < report_normalize.NORMALIZED_VERSION):
         try:
             report_normalize.normalize_report(rep)
         except Exception:  # noqa: BLE001 — export must not fail on a normalize hiccup
@@ -89,6 +78,8 @@ def _collect(runs_dir: str, names: set[str] | None):
             out.append((name, rep))
     return out
 
+
+# ── generic accessors (reused) ───────────────────────────────────────────────
 
 def _g(obj, *path, default=None):
     """Safe nested get."""
@@ -125,478 +116,6 @@ def _join(items, key=None):
     return JOIN.join(vals)
 
 
-def _cat_names(categories):
-    """function_summary.categories -> list of (name, evidence) tolerant of shapes."""
-    out = []
-    for c in categories or []:
-        if isinstance(c, dict):
-            name = c.get("name") or c.get("category") or c.get("capability") or ""
-            ev = c.get("evidence") or []
-            out.append((str(name), _join(ev)))
-        else:
-            out.append((str(c), ""))
-    return out
-
-
-# ── per-sheet row builders ──────────────────────────────────────────────────
-
-def rows_overview(name, r):
-    cm, t = r.get("code_metrics", {}), r.get("tests", {})
-    dep, na = _dep_container(r), r.get("native_api", {})
-    ha, be = r.get("harmony_adaptation", {}), r.get("build_env", {})
-    return [[
-        name,
-        _g(r, "library", "source_url", default=""),
-        _g(r, "library", "source_subpath", default=""),
-        _g(r, "library", "commit", default=""),
-        _g(r, "library", "analyzed_at", default=""),
-        _g(r, "languages", "primary", default=""),
-        _join(_g(r, "languages", "all", default=[])),
-        _g(r, "library", "ecosystem", default=""),
-        _join(_g(r, "library", "bindings", default=[])),
-        _g(r, "function_summary", "summary", default=""),
-        _g(r, "function_summary", "domain", default=""),
-        _g(r, "function_summary", "target_users", default=""),
-        _g(cm, "total", "code"),
-        _g(cm, "production", "code"),
-        _g(cm, "test", "code"),
-        _g(cm, "example", "code"),
-        _g(cm, "platform_adaptation", "total", default=""),
-        _g(cm, "platform_branches", "total", default=""),
-        _g(cm, "arch_specific", "total", default=""),
-        _part_loc(r, "reuse_direct"), _part_loc(r, "recompile_reuse"),
-        _part_loc(r, "needs_adaptation"), _part_loc(r, "unadaptable"),
-        _cap_flag(r, "gui"), _cap_flag(r, "rendering_3d"), _cap_flag(r, "media"), _cap_flag(r, "hardware"),
-        _g(cm, "total", "total_lines"),
-        t.get("test_files"),
-        t.get("test_cases"),
-        _g(r, "license", "spdx", default=""),
-        _g(r, "license", "name", default=""),
-        _g(r, "license", "confidence", default=""),
-        _LIC_CAT_LABELS.get(_g(r, "license", "category", default=""), _g(r, "license", "category", default="")),
-        dep.get("count"),
-        len(dep.get("dependencies", []) or []),
-        na.get("summary", ""),
-        na.get("platform_dependence", ""),
-        len(na.get("dynamic_libraries", []) or []),
-        be.get("build_system", ""),
-        be.get("language_standard", ""),
-        be.get("runtime_version", ""),
-        _join(be.get("platforms", []) or []),
-        ha.get("porting_class") or "",
-        ha.get("feasibility", ""),
-        _LEVEL_ZH.get((ha.get("effort") or {}).get("level"), ""),
-        (_effort_days(ha) or ["", ""])[0],
-        (_effort_days(ha) or ["", ""])[1],
-        ha.get("confidence", "") or _g(r, "meta", "confidence_overall", default=""),
-        ha.get("recommended_path", ""),
-        ha.get("summary", ""),
-        len(ha.get("blockers", []) or []),
-        len(ha.get("unadaptable_apis", []) or []),
-        _join(ha.get("key_tasks", []) or []),
-        _g(r, "meta", "confidence_overall", default=""),
-    ]]
-
-
-HEAD_OVERVIEW = [
-    "库名", "源地址", "子目录", "commit", "分析时间", "主语言", "语言列表", "生态", "绑定",
-    "功能摘要", "领域", "目标用户", "总代码", "生产代码", "测试代码", "样例代码",
-    "平台适配代码", "平台判断分支(处)", "汇编代码行",
-    "直接复用LOC", "重编译复用LOC", "需适配LOC", "无法适配LOC",
-    "GUI", "3D渲染", "媒体", "硬件", "总物理行", "测试文件", "测试用例", "License(SPDX)", "License名", "License置信度", "License性质",
-    "运行时依赖数", "依赖总数", "API摘要", "平台依赖", "动态库数", "构建系统",
-    "语言标准", "运行时版本", "支持平台", "移植分级", "鸿蒙可行性", "鸿蒙难度",
-    "工作量min(人天)", "工作量max(人天)", "鸿蒙置信度",
-    "推荐路径", "鸿蒙总结", "阻碍点数", "不支持API数", "关键任务", "整体置信度",
-]
-
-
-def rows_categories(name, r):
-    return [[name, cat, ev] for cat, ev in _cat_names(_g(r, "function_summary", "categories", default=[]))]
-
-
-HEAD_CATEGORIES = ["库名", "功能分类", "证据"]
-
-
-def rows_languages(name, r):
-    out = []
-    for b in _g(r, "languages", "breakdown", default=[]) or []:
-        p, t, e = b.get("production", {}), b.get("test", {}), b.get("example", {})
-        out.append([
-            name, b.get("language", ""), b.get("files"), b.get("code"),
-            p.get("code"), p.get("files"), t.get("code"), t.get("files"),
-            e.get("code"), e.get("files"), b.get("pct"),
-        ])
-    return out
-
-
-HEAD_LANGUAGES = [
-    "库名", "语言", "文件", "代码", "生产代码", "生产文件", "测试代码", "测试文件",
-    "样例代码", "样例文件", "占比%",
-]
-
-
-_PLAT_LABELS = {"windows": "Windows", "macos": "macOS", "linux": "Linux", "posix": "POSIX"}
-
-
-def rows_platform(name, r):
-    by = _g(r, "code_metrics", "platform_adaptation", "by_platform", default={}) or {}
-    out = []
-    for k, v in by.items():
-        v = v or {}
-        out.append([
-            name, _PLAT_LABELS.get(k, k), v.get("code"), v.get("files"),
-            "/".join(v.get("macros", []) or []),
-        ])
-    return out
-
-
-HEAD_PLATFORM = ["库名", "平台", "代码行", "文件数", "命中编译宏"]
-
-
-_BRANCH_LANG_LABELS = {"python": "Python", "javascript": "JS/TS", "java": "Java/Kotlin",
-                       "go": "Go", "rust": "Rust", "csharp": "C#"}
-
-
-def rows_platform_branches(name, r):
-    out = []
-    for s in _g(r, "code_metrics", "platform_branches", "samples", default=[]) or []:
-        lang = s.get("language", "")
-        out.append([
-            name, _BRANCH_LANG_LABELS.get(lang, lang), s.get("file", ""),
-            s.get("line", ""), s.get("text", ""),
-        ])
-    return out
-
-
-HEAD_PLATFORM_BRANCHES = ["库名", "语言", "文件", "行号", "代码片段"]
-
-
-_CAP_LABELS = {"gui": "GUI 界面", "rendering_3d": "3D 渲染", "rendering_2d": "2D 绘制",
-               "media": "媒体", "hardware": "硬件/设备"}
-
-_LIC_CAT_LABELS = {"commercial": "商业协议", "strong_copyleft": "强传染协议",
-                   "weak_copyleft": "弱传染协议", "permissive": "友好协议",
-                   "undeclared": "未声明协议"}
-
-
-def rows_capabilities(name, r):
-    out = []
-    for s in _g(r, "capability_profile", "scenarios", default=[]) or []:
-        if not s.get("present"):
-            continue
-        out.append([
-            name, _CAP_LABELS.get(s.get("key"), s.get("key", "")),
-            "/".join(s.get("kind", []) or []),
-            "是" if s.get("specific_hardware") else "",
-            s.get("harmony_status", ""), "/".join(s.get("via", []) or []),
-            s.get("adaptation", ""), _join(s.get("evidence", []) or []),
-        ])
-    return out
-
-
-HEAD_CAPABILITIES = ["库名", "场景", "具体技术", "特定硬件", "鸿蒙状态", "来源", "适配说明", "证据"]
-
-
-_VENDOR_LABELS = {
-    "google_firebase": "Firebase (Google)", "aws": "AWS", "gcp": "Google Cloud",
-    "azure": "Azure", "alibaba_cloud": "阿里云", "tencent_cloud": "腾讯云",
-    "huawei_cloud": "华为云", "supabase": "Supabase", "sentry": "Sentry",
-    "cloudflare": "Cloudflare", "unknown": "未知厂商",
-}
-_CLOUD_CAT_LABELS = {
-    "auth": "登录鉴权", "cloud_storage": "云存储", "database": "云数据库",
-    "cloud_functions": "云函数", "push": "推送", "messaging": "消息",
-    "analytics": "分析统计", "crash_reporting": "崩溃上报", "remote_config": "远程配置",
-    "maps": "地图", "ml_ai": "AI 云推理", "ads": "广告", "hosting": "托管",
-}
-
-
-def rows_cloud_services(name, r):
-    out = []
-    for s in _g(r, "cloud_services", "services", default=[]) or []:
-        if not s.get("vendor"):
-            continue
-        cats = "/".join(_CLOUD_CAT_LABELS.get(c, c) for c in (s.get("categories", []) or []))
-        out.append([
-            name, _VENDOR_LABELS.get(s.get("vendor"), s.get("vendor", "")),
-            cats, s.get("confidence", ""),
-            "/".join(s.get("via", []) or []), "/".join(s.get("endpoints", []) or []),
-            _join(s.get("evidence", []) or []),
-        ])
-    return out
-
-
-HEAD_CLOUD_SERVICES = ["库名", "厂商", "类别", "置信度", "来源", "云端域名", "证据"]
-
-
-def rows_permissions(name, r):
-    out = []
-    for p in _g(r, "harmony_adaptation", "required_permissions", default=[]) or []:
-        out.append([
-            name, p.get("permission", ""), p.get("source_capability", ""),
-            p.get("harmony_status", ""), p.get("reason", ""),
-            _join(p.get("evidence", []) or []),
-        ])
-    return out
-
-
-HEAD_PERMISSIONS = ["库名", "权限", "来源场景", "鸿蒙可授予", "原因", "证据"]
-
-
-def _cap_flag(r, key):
-    for s in _g(r, "capability_profile", "scenarios", default=[]) or []:
-        if s.get("key") == key and s.get("present"):
-            return "是"
-    return ""
-
-
-def rows_deps(name, r):
-    out = []
-    for d in (_dep_container(r).get("dependencies") or []):
-        out.append([
-            name, d.get("name", ""), d.get("ecosystem", ""), d.get("scope", ""),
-            d.get("version", ""), d.get("locality", ""), d.get("acquisition", ""),
-            d.get("source", ""), d.get("purpose", ""), _join(d.get("declared_in", []) or []),
-            _join(d.get("used_symbols", []) or []),
-        ])
-    return out
-
-
-HEAD_DEPS = [
-    "库名", "名称", "生态", "作用域", "版本", "本地/远端", "获取方式", "来源", "用途",
-    "声明位置", "调用符号",
-]
-
-
-def rows_apis(name, r):
-    out = []
-    for g in _g(r, "native_api", "groups", default=[]) or []:
-        gtype, cat, plat = g.get("type", ""), g.get("category", ""), g.get("platform", "")
-        apis = g.get("apis") or []
-        if apis:
-            for a in apis:
-                out.append([
-                    name, gtype, cat, plat, a.get("name", ""), a.get("purpose", ""),
-                    a.get("count"), "是" if a.get("conditional") else "",
-                    _join(a.get("evidence", []) or []),
-                ])
-        else:  # legacy: only flat symbols
-            out.append([name, gtype, cat, plat, _join(g.get("symbols", []) or []),
-                        "", None, "", ""])
-    return out
-
-
-HEAD_APIS = [
-    "库名", "组类型", "类别", "平台", "API", "用途", "调用次数", "条件编译", "调用位置",
-]
-
-
-def rows_dynlibs(name, r):
-    out = []
-    for d in _g(r, "native_api", "dynamic_libraries", default=[]) or []:
-        out.append([
-            name, d.get("name", ""), d.get("mechanism", ""), d.get("acquisition", ""),
-            d.get("source", ""), d.get("purpose", ""),
-        ])
-    return out
-
-
-HEAD_DYNLIBS = ["库名", "名称", "加载机制", "获取方式", "来源", "用途"]
-
-
-def rows_surface(name, r):
-    rs = r.get("runtime_surface", {})
-    if not isinstance(rs, dict):
-        return []
-    out = []
-    for cat in ("network", "filesystem", "env_vars", "subprocess", "devices"):
-        val = rs.get(cat)
-        # 形状漂移：某些报告把 category 产成 dict/bool 概述而非条目列表 —— 跳过。
-        if not isinstance(val, list):
-            continue
-        for it in val:
-            if isinstance(it, dict):
-                label = it.get("name") or it.get("detail") or ""
-                out.append([name, cat, label, it.get("purpose", ""),
-                            _join(it.get("evidence", []) or [])])
-            elif it is not None:  # 条目偶发为字符串而非 dict
-                out.append([name, cat, str(it), "", ""])
-    return out
-
-
-HEAD_SURFACE = ["库名", "类别", "名称/明细", "用途", "证据"]
-
-
-def rows_blockers(name, r):
-    out = []
-    for b in _g(r, "harmony_adaptation", "blockers", default=[]) or []:
-        out.append([
-            name, b.get("id", ""), b.get("issue", ""), b.get("severity", ""),
-            b.get("adaptability", ""), b.get("category", ""),
-            b.get("source_dimension", ""), b.get("harmony_status", ""),
-            b.get("remediation", ""), _join(b.get("caused_by", []) or []),
-            _join(b.get("manifests_as", []) or []), _join(b.get("evidence", []) or []),
-        ])
-    return out
-
-
-HEAD_BLOCKERS = [
-    "库名", "ID", "阻碍点", "严重度", "可适配性", "类别", "来源维度", "鸿蒙状态",
-    "改造建议", "根因(caused_by)", "体现为(manifests_as)", "证据",
-]
-
-
-def rows_unadaptable(name, r):
-    out = []
-    for u in _g(r, "harmony_adaptation", "unadaptable_apis", default=[]) or []:
-        out.append([
-            name, u.get("id", ""), u.get("api", ""), u.get("public_entry", ""), u.get("reason", ""),
-            u.get("blocking_native_api", ""), u.get("category", ""),
-            _join(u.get("caused_by", []) or []), _join(u.get("evidence", []) or []),
-        ])
-    return out
-
-
-HEAD_UNADAPTABLE = [
-    "库名", "ID", "不支持API", "公共入口", "原因", "阻碍根源API", "类别", "根因(caused_by)", "证据",
-]
-
-
-def rows_target_assumptions(name, r):
-    out = []
-    for a in _g(r, "harmony_adaptation", "target_assumptions", default=[]) or []:
-        out.append([
-            name, a.get("id", ""), a.get("capability", ""), "是" if a.get("required") else "否",
-            a.get("target_status", ""), a.get("impact", ""), a.get("source", ""),
-        ])
-    return out
-
-
-HEAD_TARGET_ASSUMPTIONS = [
-    "库名", "ID", "目标能力", "必需", "目标状态", "影响", "来源",
-]
-
-
-def rows_observations(name, r):
-    out = []
-    for o in _g(r, "meta", "observations", default=[]) or []:
-        out.append([
-            name, o.get("dimension", ""), o.get("field", ""), o.get("kind", ""),
-            o.get("value", ""), o.get("rationale", ""),
-        ])
-    return out
-
-
-HEAD_OBSERVATIONS = ["库名", "维度", "字段", "类型", "取值", "理由"]
-
-
-# ── code_partition (dim 12) + dim-9 critical deps / effort breakdown ─────────
-_PART_LABELS = {"reuse_direct": "直接复用", "recompile_reuse": "重编译复用",
-                "needs_adaptation": "需适配", "unadaptable": "无法适配"}
-_EFFORT_COMP_LABELS = {"recompile": "重编/交叉编译", "api_adaptation": "平台API适配",
-                       "gui": "GUI改造", "deps_porting": "依赖移植", "build_system": "构建系统",
-                       "testing_verification": "测试验证", "packaging": "打包分发"}
-
-
-# field-name tolerance (the agent occasionally emits total_loc/dir/note instead of loc/path/reason;
-# the panel normalizes these serve-time, but this script reads report.json directly, so it must too)
-def _bucket_loc(b):
-    v = (b or {}).get("loc")
-    if v is None:
-        v = (b or {}).get("total_loc")
-    if v is None:
-        v = sum(int((m or {}).get("loc") or 0) for m in ((b or {}).get("modules") or []))
-    return int(v or 0)
-
-
-def _mod_path(m):
-    m = m or {}
-    return m.get("path") or m.get("dir") or m.get("module") or m.get("name") or ""
-
-
-def _part_loc(r, cls):
-    """Total LOC of one partition bucket class ('' when the block/bucket is absent)."""
-    buckets = _g(r, "code_partition", "buckets", default=[]) or []
-    hit = [_bucket_loc(b) for b in buckets if (b or {}).get("class") == cls]
-    return sum(hit) if hit else ""
-
-
-def rows_partition(name, r):
-    out = []
-    for b in _g(r, "code_partition", "buckets", default=[]) or []:
-        cls = _PART_LABELS.get(b.get("class"), b.get("class", ""))
-        mods = b.get("modules") or []
-        for m in mods or [{}]:
-            out.append([
-                name, cls, _bucket_loc(b) or "", b.get("pct"),
-                _mod_path(m), m.get("loc"), m.get("reason") or m.get("note") or "",
-                _join(m.get("evidence", []) or []), b.get("basis", ""),
-            ])
-    return out
-
-
-HEAD_PARTITION = ["库名", "分区", "桶LOC", "桶占比%", "模块", "模块LOC", "归类理由", "证据", "归类依据"]
-
-
-def rows_critical_deps(name, r):
-    out = []
-    for c in _g(r, "harmony_adaptation", "critical_dependencies", default=[]) or []:
-        pd = c.get("person_days_share") or []
-        out.append([
-            name, c.get("order"), c.get("name", ""), c.get("why", ""),
-            _join(c.get("refs", []) or []),
-            pd[0] if len(pd) == 2 else "", pd[1] if len(pd) == 2 else "",
-        ])
-    out.sort(key=lambda row: row[1] if isinstance(row[1], (int, float)) else 999)
-    return out
-
-
-HEAD_CRITICAL_DEPS = ["库名", "顺序", "依赖", "为何关键", "引用", "份额min(人天)", "份额max(人天)"]
-
-
-def rows_effort_breakdown(name, r):
-    out = []
-    for b in _g(r, "harmony_adaptation", "effort", "breakdown", default=[]) or []:
-        pd = b.get("person_days") or []
-        out.append([
-            name, _EFFORT_COMP_LABELS.get(b.get("component"), b.get("component", "")),
-            pd[0] if len(pd) == 2 else "", pd[1] if len(pd) == 2 else "", b.get("basis", ""),
-        ])
-    return out
-
-
-HEAD_EFFORT_BREAKDOWN = ["库名", "分项", "min(人天)", "max(人天)", "估算依据"]
-
-
-SHEETS = [
-    ("汇总", HEAD_OVERVIEW, rows_overview),
-    ("功能分类", HEAD_CATEGORIES, rows_categories),
-    ("语言分布", HEAD_LANGUAGES, rows_languages),
-    ("代码分区", HEAD_PARTITION, rows_partition),
-    ("平台适配代码量", HEAD_PLATFORM, rows_platform),
-    ("平台判断分支", HEAD_PLATFORM_BRANCHES, rows_platform_branches),
-    ("能力画像", HEAD_CAPABILITIES, rows_capabilities),
-    ("云服务", HEAD_CLOUD_SERVICES, rows_cloud_services),
-    ("鸿蒙权限", HEAD_PERMISSIONS, rows_permissions),
-    ("依赖", HEAD_DEPS, rows_deps),
-    ("系统平台API", HEAD_APIS, rows_apis),
-    ("动态加载库", HEAD_DYNLIBS, rows_dynlibs),
-    ("运行时交互面", HEAD_SURFACE, rows_surface),
-    ("鸿蒙阻碍点", HEAD_BLOCKERS, rows_blockers),
-    ("不支持API清单", HEAD_UNADAPTABLE, rows_unadaptable),
-    ("关键路径依赖", HEAD_CRITICAL_DEPS, rows_critical_deps),
-    ("工作量分项", HEAD_EFFORT_BREAKDOWN, rows_effort_breakdown),
-    ("鸿蒙目标假设", HEAD_TARGET_ASSUMPTIONS, rows_target_assumptions),
-    ("模型观察", HEAD_OBSERVATIONS, rows_observations),
-]
-
-HEAD_FILL = PatternFill("solid", fgColor="DDE6F0")
-HEAD_FONT = Font(bold=True)
-WRAP_COLS = {"功能摘要", "API摘要", "鸿蒙总结", "用途", "改造建议", "证据", "调用位置",
-             "理由", "关键任务", "代码片段", "归类理由", "归类依据", "为何关键", "估算依据"}
-
-
 def _cell(v):
     """把模型形状漂移里混入的非标量值（dict/list）强制转成可写字符串，避免单个异常
     字段（如 build_env.build_system 偶发产出对象而非字符串）拖垮整包导出。"""
@@ -609,53 +128,360 @@ def _cell(v):
     return str(v)
 
 
-def _write_sheet(ws, header, data):
-    data = [[_cell(v) for v in row] for row in data]
-    ws.append(header)
-    for c in ws[1]:
-        c.font = HEAD_FONT
-        c.fill = HEAD_FILL
-        c.alignment = Alignment(vertical="center")
-    for row in data:
-        ws.append(row)
-    ws.freeze_panes = "A2"
-    last_col = get_column_letter(len(header))
-    ws.auto_filter.ref = f"A1:{last_col}{ws.max_row}"
-    # column widths (cap), wrap long-text columns
-    for idx, title in enumerate(header, start=1):
-        letter = get_column_letter(idx)
-        longest = len(str(title))
-        for row in data:
-            v = row[idx - 1] if idx - 1 < len(row) else None
-            if v is not None:
-                longest = max(longest, min(len(str(v)), 60))
-        if title in WRAP_COLS:
-            ws.column_dimensions[letter].width = 48
-            for row_cells in ws.iter_rows(min_row=2, min_col=idx, max_col=idx):
-                row_cells[0].alignment = Alignment(wrap_text=True, vertical="top")
-        else:
-            ws.column_dimensions[letter].width = max(8, min(longest + 2, 40))
+def _effort_days(ha: dict):
+    e = (ha or {}).get("effort") or {}
+    pd = e.get("person_days")
+    if isinstance(pd, list) and len(pd) == 2:
+        try:
+            return [float(pd[0]), float(pd[1])]
+        except (TypeError, ValueError):
+            pass
+    return None
+
+
+def _cap_flag(r, key):
+    for s in _g(r, "capability_profile", "scenarios", default=[]) or []:
+        if s.get("key") == key and s.get("present"):
+            return "是"
+    return ""
+
+
+# code_partition (dim 12) bucket LOC — field-name tolerance mirrors the panel's serve-time
+# normalization (the agent occasionally emits total_loc/dir instead of loc/path).
+def _bucket_loc(b):
+    v = (b or {}).get("loc")
+    if v is None:
+        v = (b or {}).get("total_loc")
+    if v is None:
+        v = sum(int((m or {}).get("loc") or 0) for m in ((b or {}).get("modules") or []))
+    return int(v or 0)
+
+
+def _part_loc(r, cls):
+    """Total LOC of one partition bucket class ('' when the block/bucket is absent)."""
+    buckets = _g(r, "code_partition", "buckets", default=[]) or []
+    hit = [_bucket_loc(b) for b in buckets if (b or {}).get("class") == cls]
+    return sum(hit) if hit else ""
+
+
+# ── label maps ───────────────────────────────────────────────────────────────
+
+_LIC_CAT_LABELS = {"commercial": "商业协议", "strong_copyleft": "强传染协议",
+                   "weak_copyleft": "弱传染协议", "permissive": "友好协议",
+                   "undeclared": "未声明协议"}
+_LEVEL_ZH = {"very_low": "极低", "low": "低", "medium": "中", "high": "高", "very_high": "极高"}
+_PLAT_LABELS = {"windows": "Windows", "macos": "macOS", "linux": "Linux", "posix": "POSIX"}
+_VENDOR_LABELS = {
+    "google_firebase": "Firebase (Google)", "aws": "AWS", "gcp": "Google Cloud",
+    "azure": "Azure", "alibaba_cloud": "阿里云", "tencent_cloud": "腾讯云",
+    "huawei_cloud": "华为云", "supabase": "Supabase", "sentry": "Sentry",
+    "cloudflare": "Cloudflare", "unknown": "未知厂商",
+}
+_CLOUD_CAT_LABELS = {
+    "auth": "登录鉴权", "cloud_storage": "云存储", "database": "云数据库",
+    "cloud_functions": "云函数", "push": "推送", "messaging": "消息",
+    "analytics": "分析统计", "crash_reporting": "崩溃上报", "remote_config": "远程配置",
+    "maps": "地图", "ml_ai": "AI 云推理", "ads": "广告", "hosting": "托管",
+}
+_KIND_LABELS = {"library": "库", "application": "应用", "framework": "框架",
+                "tool": "工具", "cli": "命令行", "service": "服务", "plugin": "插件"}
+_HSTATUS_LABELS = {"available": "可用", "partial": "部分", "unavailable": "不可用",
+                   "unknown": "未知", "restricted": "受限"}
+# 移植分级 5 档 effective_class（派生）——与 app.js TOPO_STATUS 一致
+_PCLASS_LABELS = {"no_adaptation": "无需适配", "recompile_only": "仅交叉编译",
+                  "needs_adaptation": "需适配·全部可适配",
+                  "needs_adaptation_platform_partial": "需适配·平台差异有不可适配点",
+                  "needs_adaptation_core_partial": "需适配·核心有不可适配点"}
+# adaptation_assessment.overall — 是否可适配总判（派生，替代旧 feasibility）
+_OVERALL_LABELS = {"adaptable": "可适配", "adaptable_with_tailoring": "可适配（部分平台特性需裁剪）",
+                   "core_blocked": "核心功能不完全可适配"}
+
+
+# ── per-column value functions ───────────────────────────────────────────────
+
+def _v_name(name, r):
+    return _g(r, "library", "name", default="") or name
+
+
+def _v_source(name, r):
+    url = _g(r, "library", "source_url", default="") or ""
+    sub = _g(r, "library", "source_subpath", default="")
+    return f"{url}（子目录: {sub}）" if sub else url
+
+
+def _v_kind_form(name, r):
+    """library.kind → 中文基名 + 综合推断的形态（GUI/命令行/服务），如「应用·GUI」。"""
+    kind = _g(r, "library", "kind", default="library") or "library"
+    base = _KIND_LABELS.get(kind, kind)
+    types = set()
+    for e in _g(r, "build_env", "entry_points", default=[]) or []:
+        if isinstance(e, dict) and e.get("type"):
+            types.add(e["type"])
+        # entry_points 偶发混入裸字符串 —— 忽略即可
+    gui = _cap_flag(r, "gui") == "是"
+    forms = []
+    if gui:
+        forms.append("GUI")
+    if "console_script" in types or kind == "cli":
+        forms.append("命令行")
+    if "service" in types or "framework_startup" in types or kind == "service":
+        forms.append("服务")
+    if not forms and ("launcher" in types or "main" in types):
+        forms.append("GUI" if gui else "命令行")
+    seen = []
+    for f in forms:
+        if f not in seen:
+            seen.append(f)
+    return base + ("·" + "/".join(seen) if seen else "")
+
+
+def _v_desc(name, r):
+    return _g(r, "function_summary", "summary", default="")
+
+
+def _v_eco(name, r):
+    eco = _g(r, "library", "ecosystem", default="") or ""
+    bindings = _g(r, "library", "bindings", default=[]) or []
+    extra = _join([b for b in bindings if b and b != eco])
+    return f"{eco}（+{extra}）" if extra else eco
+
+
+def _v_primary(name, r):
+    return _g(r, "languages", "primary", default="")
+
+
+def _v_license_name(name, r):
+    return _g(r, "license", "name", default="") or _g(r, "license", "spdx", default="")
+
+
+def _v_license_cat(name, r):
+    c = _g(r, "license", "category", default="")
+    return _LIC_CAT_LABELS.get(c, c or "")
+
+
+def _v_dep_count(name, r):
+    return len(_dep_container(r).get("dependencies", []) or [])
+
+
+def _v_code(field):
+    def fn(name, r):
+        return _g(r, "code_metrics", field, "code")
+    return fn
+
+
+def _v_plat(key):
+    def fn(name, r):
+        v = _g(r, "code_metrics", "platform_adaptation", "by_platform", key, "code")
+        return v if v not in (None, "") else 0
+    return fn
+
+
+def _v_part(cls):
+    def fn(name, r):
+        return _part_loc(r, cls)
+    return fn
+
+
+def _v_cap(key):
+    def fn(name, r):
+        for s in _g(r, "capability_profile", "scenarios", default=[]) or []:
+            if s.get("key") == key and s.get("present"):
+                st = _HSTATUS_LABELS.get(s.get("harmony_status"), s.get("harmony_status") or "")
+                return f"是·{st}" if st else "是"
+        return "—"
+    return fn
+
+
+def _v_cloud_vendors(name, r):
+    seen = []
+    for s in _g(r, "cloud_services", "services", default=[]) or []:
+        v = s.get("vendor")
+        if not v:
+            continue
+        label = _VENDOR_LABELS.get(v, v)
+        if label not in seen:
+            seen.append(label)
+    return JOIN.join(seen) if seen else "—"
+
+
+def _v_cloud_cats(name, r):
+    seen = []
+    for s in _g(r, "cloud_services", "services", default=[]) or []:
+        for c in s.get("categories", []) or []:
+            label = _CLOUD_CAT_LABELS.get(c, c)
+            if label not in seen:
+                seen.append(label)
+    return "/".join(seen) if seen else "—"
+
+
+def _v_pclass(name, r):
+    # 移植分级 = 5 档派生 effective_class（回退到 3 值 porting_class）
+    c = (_g(r, "harmony_adaptation", "adaptation_assessment", "effective_class", default="")
+         or _g(r, "harmony_adaptation", "porting_class", default=""))
+    return _PCLASS_LABELS.get(c, c or "")
+
+
+def _v_overall(name, r):
+    o = _g(r, "harmony_adaptation", "adaptation_assessment", "overall", default="")
+    return _OVERALL_LABELS.get(o, o or "")
+
+
+def _v_level(name, r):
+    lv = _g(r, "harmony_adaptation", "effort", "level", default="")
+    return _LEVEL_ZH.get(lv, lv or "")
+
+
+def _v_days(name, r):
+    d = _effort_days(r.get("harmony_adaptation") or {})
+    if not d:
+        return ""
+    lo, hi = d
+    fmt = lambda x: (str(int(x)) if float(x).is_integer() else str(x))
+    return f"{fmt(lo)}–{fmt(hi)}"
+
+
+def _v_summary(name, r):
+    return _g(r, "harmony_adaptation", "summary", default="")
+
+
+# ── column spec (一级 → 二级) ────────────────────────────────────────────────
+# Each entry: (top_title | None, [(sub_title, value_fn), ...]).
+# top_title None → standalone column, header merged vertically across the two header rows.
+GROUPS = [
+    ("基本信息", [
+        ("名称", _v_name), ("源码仓地址", _v_source), ("类型", _v_kind_form),
+        ("描述", _v_desc), ("生态", _v_eco), ("主语言", _v_primary),
+    ]),
+    ("开源协议", [("协议类型", _v_license_name), ("协议友好类型", _v_license_cat)]),
+    (None, [("依赖库数量", _v_dep_count)]),
+    ("代码量(行)", [
+        ("总体", _v_code("total")), ("生产", _v_code("production")),
+        ("测试", _v_code("test")), ("样例", _v_code("example")),
+    ]),
+    ("平台适配代码量(行)", [
+        ("Windows", _v_plat("windows")), ("macOS", _v_plat("macos")),
+        ("Linux", _v_plat("linux")), ("POSIX", _v_plat("posix")),
+    ]),
+    ("代码分区(迁移复用性·工作量底座, LOC)", [
+        ("直接复用", _v_part("reuse_direct")), ("重编译复用", _v_part("recompile_reuse")),
+        ("需适配", _v_part("needs_adaptation")), ("无法适配", _v_part("unadaptable")),
+    ]),
+    ("能力画像", [
+        ("GUI界面", _v_cap("gui")), ("3D渲染", _v_cap("rendering_3d")),
+        ("媒体", _v_cap("media")), ("硬件/设备", _v_cap("hardware")),
+    ]),
+    ("云服务", [("厂商", _v_cloud_vendors), ("用途", _v_cloud_cats)]),
+    ("鸿蒙适配评估", [
+        ("移植分级", _v_pclass), ("是否可适配", _v_overall), ("难度", _v_level),
+        ("工作量(人天)", _v_days), ("评估总结", _v_summary),
+    ]),
+]
+
+# per-column presentation overrides keyed by sub-title
+WRAP_WIDTH = {"描述": 58, "评估总结": 58, "源码仓地址": 42, "用途": 22}
+
+# ── styling ──────────────────────────────────────────────────────────────────
+FONT_NAME = "微软雅黑"
+_TOP_FILL = PatternFill("solid", fgColor="B7C9E2")   # 一级表头（深）
+_SUB_FILL = PatternFill("solid", fgColor="DDE6F0")    # 二级表头（浅）
+_PART_TOP_FILL = PatternFill("solid", fgColor="E8D9B5")  # 代码分区组用暖色区分
+_PART_SUB_FILL = PatternFill("solid", fgColor="F3ECD8")
+_ZEBRA_FILL = PatternFill("solid", fgColor="F7F9FC")
+_THIN = Side(style="thin", color="B0B8C4")
+_BORDER = Border(left=_THIN, right=_THIN, top=_THIN, bottom=_THIN)
+_H_ALIGN = Alignment(horizontal="center", vertical="center", wrap_text=True)
+_CELL_ALIGN = Alignment(horizontal="center", vertical="center", wrap_text=False)
+_WRAP_ALIGN = Alignment(horizontal="left", vertical="top", wrap_text=True)
+
+
+def _flat_columns():
+    """Flatten GROUPS into ordered [(sub_title, fn)] and remember group spans."""
+    cols, spans, ci = [], [], 1
+    for top, subs in GROUPS:
+        start = ci
+        for sub, fn in subs:
+            cols.append((sub, fn))
+            ci += 1
+        spans.append((top, start, ci - 1))   # inclusive col range (1-based)
+    return cols, spans
 
 
 def build(entries, out_path):
     wb = Workbook()
-    wb.remove(wb.active)
-    for title, header, builder in SHEETS:
-        ws = wb.create_sheet(title)
-        data = []
-        for name, rep in entries:
-            # 单个库某个 block 的形状漂移（off-schema）不应拖垮整包导出：
-            # 该库在此 sheet 降级为跳过 + 告警，其余数据照常导出。
+    ws = wb.active
+    ws.title = "分析汇总"
+    cols, spans = _flat_columns()
+    ncols = len(cols)
+
+    # header rows 1 (一级) + 2 (二级)
+    for top, c1, c2 in spans:
+        is_part = top and top.startswith("代码分区")
+        top_fill = _PART_TOP_FILL if is_part else _TOP_FILL
+        sub_fill = _PART_SUB_FILL if is_part else _SUB_FILL
+        if top is None:                       # standalone → vertical merge over both header rows
+            ws.merge_cells(start_row=1, start_column=c1, end_row=2, end_column=c1)
+            cell = ws.cell(row=1, column=c1, value=cols[c1 - 1][0])
+            cell.fill = sub_fill
+        else:
+            if c2 > c1:
+                ws.merge_cells(start_row=1, start_column=c1, end_row=1, end_column=c2)
+            tcell = ws.cell(row=1, column=c1, value=top)
+            for c in range(c1, c2 + 1):
+                ws.cell(row=1, column=c).fill = top_fill
+            for c in range(c1, c2 + 1):
+                scell = ws.cell(row=2, column=c, value=cols[c - 1][0])
+                scell.fill = sub_fill
+        # (data written below)
+
+    # header styling
+    for row in (1, 2):
+        for c in range(1, ncols + 1):
+            cell = ws.cell(row=row, column=c)
+            cell.font = Font(name=FONT_NAME, bold=True, size=11)
+            cell.alignment = _H_ALIGN
+            cell.border = _BORDER
+    ws.row_dimensions[1].height = 24
+    ws.row_dimensions[2].height = 22
+
+    # data rows (start row 3)
+    for ri, (name, rep) in enumerate(entries):
+        r = 3 + ri
+        for ci, (sub, fn) in enumerate(cols, start=1):
             try:
-                data.extend(builder(name, rep))
-            except Exception as e:  # noqa: BLE001 — degrade gracefully, keep exporting
-                print(f"warn: skipped {name} in sheet {title!r}: {e}", file=sys.stderr)
-        _write_sheet(ws, header, data)
+                val = _cell(fn(name, rep))
+            except Exception as e:  # noqa: BLE001 — one bad field must not sink the row
+                print(f"warn: {name} 列 {sub!r}: {e}", file=sys.stderr)
+                val = ""
+            cell = ws.cell(row=r, column=ci, value=val)
+            cell.font = Font(name=FONT_NAME, size=10)
+            cell.border = _BORDER
+            cell.alignment = _WRAP_ALIGN if sub in WRAP_WIDTH else _CELL_ALIGN
+            if ri % 2 == 1 and sub not in WRAP_WIDTH:
+                cell.fill = _ZEBRA_FILL
+
+    ws.freeze_panes = "C3"                     # freeze both header rows + 名称/源码仓 两列
+    last_col = get_column_letter(ncols)
+    ws.auto_filter.ref = f"A2:{last_col}{ws.max_row}"
+
+    # column widths
+    for ci, (sub, fn) in enumerate(cols, start=1):
+        letter = get_column_letter(ci)
+        if sub in WRAP_WIDTH:
+            ws.column_dimensions[letter].width = WRAP_WIDTH[sub]
+            continue
+        longest = len(str(sub))
+        # measure from the already-rendered cells (rows 3..)
+        for r in range(3, ws.max_row + 1):
+            v = ws.cell(row=r, column=ci).value
+            if v is not None:
+                longest = max(longest, min(len(str(v)), 24))
+        ws.column_dimensions[letter].width = max(8, min(longest + 2, 26))
+
     wb.save(out_path)
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="Export library reports to a summary .xlsx")
+    ap = argparse.ArgumentParser(description="Export library reports to a styled wide-table .xlsx")
     ap.add_argument("--runs", required=True, help="runs/ directory")
     ap.add_argument("--out", required=True, help="output .xlsx path")
     ap.add_argument("--names", default="", help="comma-separated library names (default: all)")

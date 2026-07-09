@@ -32,73 +32,111 @@ def norm(report):
 
 
 # ── Fixture A: the uSockets bug — model says recompile_only, but dim-12 has a needs_adaptation
-#    bucket → must clamp UP to needs_adaptation_full, keep the model pick in porting_class_model.
+#    bucket → must clamp UP to needs_adaptation (3-value), keep the model pick in porting_class_model.
 A = {
     "code_metrics": {"production": {"code": 1000}},
     "code_partition": {"buckets": [
         {"class": "recompile_reuse", "loc": 700},
         {"class": "needs_adaptation", "loc": 300}]},
-    "harmony_adaptation": {"porting_class": "recompile_only", "feasibility": "feasible_with_effort",
+    "harmony_adaptation": {"porting_class": "recompile_only",
                            "effort": {"person_days": [3, 8]}, "blockers": [], "unadaptable_apis": []},
     "library": {"ecosystem": "cpp"},
 }
 a = norm(A)["harmony_adaptation"]
-check("A.porting_class", a.get("porting_class"), "needs_adaptation_full")
+check("A.porting_class", a.get("porting_class"), "needs_adaptation")
 check("A.porting_class_model", a.get("porting_class_model"), "recompile_only")
-check("A.feasibility", a.get("feasibility"), "feasible_with_effort")
+check("A.no_feasibility", "feasibility" in a, False)
+check("A.effective_class", (a.get("adaptation_assessment") or {}).get("effective_class"), "needs_adaptation")
+check("A.overall", (a.get("adaptation_assessment") or {}).get("overall"), "adaptable")
 check("A.effort.level", a["effort"].get("level"), "medium")
 check("A.adjusted.from", (a.get("porting_class_adjusted") or {}).get("from"), "recompile_only")
 
-# ── Fixture B: a non-empty unadaptable_apis forces at least needs_adaptation_partial even when
-#    the model claimed _full (the CUDA-style case).
+# ── Fixture B: unadaptable_apis tagged CORE → porting_class needs_adaptation, effective_class
+#    needs_adaptation_core_partial, overall core_blocked (the CUDA-core case).
 B = {
     "code_metrics": {"production": {"code": 1000}},
     "code_partition": {"buckets": [
         {"class": "needs_adaptation", "loc": 500},
         {"class": "unadaptable", "loc": 100},
         {"class": "recompile_reuse", "loc": 400}]},
-    "harmony_adaptation": {"porting_class": "needs_adaptation_full", "feasibility": "feasible_with_effort",
+    "harmony_adaptation": {"porting_class": "needs_adaptation_full",
                            "effort": {"person_days": [10, 20]},
-                           "unadaptable_apis": [{"api": "cuLaunchKernel", "reason": "无 CUDA 运行时"}],
+                           "unadaptable_apis": [{"api": "cuLaunchKernel", "reason": "无 CUDA 运行时",
+                                                 "functionality_class": "core"}],
                            "blockers": []},
     "library": {"ecosystem": "cpp"},
 }
 b = norm(B)["harmony_adaptation"]
-check("B.porting_class", b.get("porting_class"), "needs_adaptation_partial")
-check("B.feasibility", b.get("feasibility"), "hard")
-check("B.effort.level", b["effort"].get("level"), "high")
+check("B.porting_class", b.get("porting_class"), "needs_adaptation")
+check("B.effective_class", (b.get("adaptation_assessment") or {}).get("effective_class"), "needs_adaptation_core_partial")
+check("B.overall", (b.get("adaptation_assessment") or {}).get("overall"), "core_blocked")
+check("B.core.adaptable", (b["adaptation_assessment"]["core"]).get("adaptable"), False)
+check("B.core.unadaptable", (b["adaptation_assessment"]["core"]).get("unadaptable"), ["ua:1"])
+check("B.platform.adaptable", (b["adaptation_assessment"]["platform_specific"]).get("adaptable"), True)
+check("B.effort.level", b["effort"].get("level"), "very_high")
 check("B.ua.id", (b["unadaptable_apis"][0]).get("id"), "ua:1")   # id backfilled
+check("B.ua.not_defaulted", (b["unadaptable_apis"][0]).get("functionality_class_defaulted"), None)
 
-# ── Fixture C: pure-script lib, model omits porting_class → from-scratch derivation via
-#    recommended_path=run_on_ported_runtime → no_adaptation (no needs_adaptation bucket).
+# ── Fixture B2: unadaptable_apis UNTAGGED with a non-infeasible base → defaults platform_specific
+#    → effective_class platform_partial, overall adaptable_with_tailoring, and a defaulted warning.
+B2 = {
+    "code_metrics": {"production": {"code": 1000}},
+    "code_partition": {"buckets": [
+        {"class": "recompile_reuse", "loc": 900}, {"class": "unadaptable", "loc": 100}]},
+    "harmony_adaptation": {"porting_class": "recompile_only",
+                           "effort": {"person_days": [8, 12]},
+                           "unadaptable_apis": [{"api": "SomeWin32Cd", "reason": "无对应"}],
+                           "blockers": []},
+    "library": {"ecosystem": "cpp"},
+}
+b2r = norm(B2)
+b2 = b2r["harmony_adaptation"]
+check("B2.porting_class", b2.get("porting_class"), "needs_adaptation")
+check("B2.effective_class", (b2.get("adaptation_assessment") or {}).get("effective_class"), "needs_adaptation_platform_partial")
+check("B2.overall", (b2.get("adaptation_assessment") or {}).get("overall"), "adaptable_with_tailoring")
+check("B2.ua.func_class", (b2["unadaptable_apis"][0]).get("functionality_class"), "platform_specific")
+check("B2.ua.defaulted", (b2["unadaptable_apis"][0]).get("functionality_class_defaulted"), True)
+b2_codes = [x.get("code") for x in (b2r["meta"].get("harmony_warnings") or [])]
+check("B2.defaulted_warning", any(c and c.startswith("ua_func_class_defaulted") for c in b2_codes), True)
+# idempotency: the defaulted flag + class persist unchanged across a re-normalize.
+b2b = norm(b2r)["harmony_adaptation"]
+check("B2.idempotent.func_class", (b2b["unadaptable_apis"][0]).get("functionality_class"), "platform_specific")
+check("B2.idempotent.effective", (b2b.get("adaptation_assessment") or {}).get("effective_class"), "needs_adaptation_platform_partial")
+
+# ── Fixture C: pure-script lib, model omits porting_class → from-scratch derivation
+#    (no blockers, no needs_adaptation bucket) → no_adaptation.
 C = {
     "code_metrics": {"production": {"code": 500}},
     "code_partition": {"buckets": [{"class": "reuse_direct", "loc": 500}]},
-    "harmony_adaptation": {"feasibility": "feasible", "recommended_path": "run_on_ported_runtime",
-                           "effort": {"person_days": [0, 2]}, "blockers": [], "unadaptable_apis": []},
+    "harmony_adaptation": {"effort": {"person_days": [0, 2]}, "blockers": [], "unadaptable_apis": []},
     "library": {"ecosystem": "python"},
 }
 c = norm(C)["harmony_adaptation"]
 check("C.porting_class", c.get("porting_class"), "no_adaptation")
 check("C.porting_class_model", c.get("porting_class_model"), None)   # model omitted → null
-check("C.feasibility", c.get("feasibility"), "feasible")
+check("C.overall", (c.get("adaptation_assessment") or {}).get("overall"), "adaptable")
 check("C.effort.level", c["effort"].get("level"), "very_low")
 
-# ── Fixture D: model flags infeasible (holistic) with no porting_class → kept as infeasible
-#    (the model's stricter judgment survives; unadaptable core).
+# ── Fixture D: legacy report with porting_class=infeasible (pre-v4) → collapses to needs_adaptation;
+#    untagged unadaptable_api defaults to CORE (legacy infeasible meant core-unadaptable) →
+#    effective_class core_partial, overall core_blocked. Pure collapse ≠ clamp → no adjustment.
 D = {
     "code_metrics": {"production": {"code": 2000}},
     "code_partition": {"buckets": [
         {"class": "unadaptable", "loc": 1500},
         {"class": "recompile_reuse", "loc": 500}]},
-    "harmony_adaptation": {"feasibility": "infeasible", "effort": {"person_days": [40, 60]},
+    "harmony_adaptation": {"porting_class": "infeasible", "effort": {"person_days": [40, 60]},
                            "unadaptable_apis": [{"api": "cuLaunchKernel", "reason": "核心 CUDA"}],
                            "blockers": []},
     "library": {"ecosystem": "cpp"},
 }
 d = norm(D)["harmony_adaptation"]
-check("D.porting_class", d.get("porting_class"), "infeasible")
-check("D.feasibility", d.get("feasibility"), "infeasible")
+check("D.porting_class", d.get("porting_class"), "needs_adaptation")
+check("D.porting_class_model", d.get("porting_class_model"), "infeasible")   # raw legacy preserved
+check("D.effective_class", (d.get("adaptation_assessment") or {}).get("effective_class"), "needs_adaptation_core_partial")
+check("D.overall", (d.get("adaptation_assessment") or {}).get("overall"), "core_blocked")
+check("D.ua.func_class(legacy core)", (d["unadaptable_apis"][0]).get("functionality_class"), "core")
+check("D.no_adjustment(pure collapse)", d.get("porting_class_adjusted"), None)
 check("D.effort.level", d["effort"].get("level"), "very_high")
 
 # ── Fixture E: no_adaptation lib with a TRIVIAL (<5% of prod) needs_adaptation bucket → NOT
@@ -108,18 +146,18 @@ E = {
     "code_partition": {"buckets": [
         {"class": "reuse_direct", "loc": 9800},
         {"class": "needs_adaptation", "loc": 200}]},   # 2% < 5%
-    "harmony_adaptation": {"porting_class": "no_adaptation", "feasibility": "feasible",
-                           "recommended_path": "run_on_ported_runtime",
+    "harmony_adaptation": {"porting_class": "no_adaptation",
                            "effort": {"person_days": [1, 2]}, "blockers": [], "unadaptable_apis": []},
     "library": {"ecosystem": "go"},
 }
 e = norm(E)["harmony_adaptation"]
 check("E.porting_class(materiality)", e.get("porting_class"), "no_adaptation")
+check("E.overall", (e.get("adaptation_assessment") or {}).get("overall"), "adaptable")
 
 # ── Idempotency: normalizing an already-normalized report changes nothing material.
 A_once = norm(A)
 A_twice = norm(A_once)
-check("idempotent.porting_class", A_twice["harmony_adaptation"].get("porting_class"), "needs_adaptation_full")
+check("idempotent.porting_class", A_twice["harmony_adaptation"].get("porting_class"), "needs_adaptation")
 check("idempotent.porting_class_model", A_twice["harmony_adaptation"].get("porting_class_model"), "recompile_only")
 check("idempotent.stamp", A_twice["meta"].get("normalized_version"), rn.NORMALIZED_VERSION)
 
@@ -140,7 +178,7 @@ if not aw.get("message"):
 F = {
     "code_metrics": {"production": {"code": 800}},
     "code_partition": {"buckets": [{"class": "recompile_reuse", "loc": 800}]},
-    "harmony_adaptation": {"porting_class": "recompile_only", "feasibility": "feasible_with_effort",
+    "harmony_adaptation": {"porting_class": "recompile_only",
                            "effort": {"person_days": [2, 5]}, "blockers": [], "unadaptable_apis": []},
     "library": {"ecosystem": "cpp"},
     "capability_profile": {"scenarios": [{"key": "media", "present": True, "evidence": []}]},
@@ -173,7 +211,7 @@ H = {
         {"class": "recompile_reuse", "loc": 9000},
         {"class": "needs_adaptation", "loc": 2000},
         {"class": "reuse_direct", "loc": 1000}]},
-    "harmony_adaptation": {"porting_class": "needs_adaptation_full", "feasibility": "feasible_with_effort",
+    "harmony_adaptation": {"porting_class": "needs_adaptation_full",
                            "effort": {"person_days": [6, 12],
                                       "breakdown": [{"component": "gui", "person_days": [1, 2], "basis": "x"}]},
                            "blockers": [], "unadaptable_apis": []},
