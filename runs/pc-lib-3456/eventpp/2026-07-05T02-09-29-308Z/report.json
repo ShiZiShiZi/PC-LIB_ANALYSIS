@@ -535,7 +535,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C++ 库 → 模型 A：经 OHOS NDK clang + musl 重编译，不涉及 ArkTS/Node-API 桥接）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -553,11 +552,11 @@
         "required": true,
         "target_status": "available",
         "impact": "若缺失则核心并发功能不可用，但 OHOS NDK 已确认在此工具链，故无障碍",
-        "source": "references/harmony-pc-capabilities.json 引言：鸿蒙 PC 原生层 OHOS NDK（musl + POSIX 子集，clang/CMake ohos.toolchain.cmake）"
+        "source": "references/harmony-pc-capabilities.json 引言：鸿蒙 PC 原生层 OHOS NDK（musl + POSIX 子集，clang/CMake ohos.toolchain.cmake）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "该库是纯 C++ 头文件模板库，仅依赖 C++11 标准库。鸿蒙 PC 的 OHOS NDK 提供 clang + musl libc++，完整支持所用全部 C++11 STL 特性（std::thread、std::mutex、std::condition_variable、std::atomic、std::map 等）。无平台特定 API（零 #ifdef 守卫）、无外部依赖、无 GUI/媒体/硬件需求。移植工作仅为用 OHOS NDK clang 在 arm64/x86_64 目标上编译验证（约 4000 行生产头文件 + 运行测试套件），无需修改任何源码。",
     "blockers": [],
     "compatible": [
@@ -600,7 +599,21 @@
       "更新包管理分发（vcpkg/conan/Homebrew）的鸿蒙 target 配置，标记支持 ohos-aarch64 / ohos-x86_64"
     ],
     "notes": "按模型 A 评估（C++ 库，经 OHOS NDK 重编）。该库是纯头文件模板——「重编」实际就是引入头文件的消费项目用 OHOS NDK 编译即可，库本身无需要构建的 .cpp 文件。代码中零平台守卫、零系统调用，平台适配信号（platform_adaptation / platform_branches）均为空，平台耦合极轻。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "eventpp",
@@ -627,7 +640,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 C++ 模板头文件库，不涉及 GUI/3D 渲染/音视频媒体/特定硬件设备任何鸿蒙适配重点场景。全部功能基于 C++11 标准库的模板元编程与策略模式，在编译期生成代码，运行时仅依赖 STL 线程/容器/算法。",

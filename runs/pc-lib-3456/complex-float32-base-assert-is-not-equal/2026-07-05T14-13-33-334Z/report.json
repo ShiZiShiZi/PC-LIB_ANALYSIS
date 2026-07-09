@@ -528,7 +528,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (跑在已移植的 Node.js 运行时上; C 原生插件经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -537,7 +536,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库是 stdlib 下的单精度复数不等性判断工具，JavaScript 和 C 双实现。鸿蒙 PC 已移植 Node.js 24 (available)，JS 部分直接运行、无需改动。C 原生插件（src/main.c + 头文件）仅使用 C99 标准库（stdbool.h）和 stdlib 内部复数类型（stdlib_complex64_t, stdlib_complex64_reim），无任何平台特有 API/系统调用/外部命令依赖。门槛：将 C 插件及其依赖的 @stdlib/complex-float32-ctor/reim 的 C 部分用 OHOS NDK 重新编译即可。整体移植工作量极低。",
     "blockers": [
       {
@@ -569,7 +567,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 24.13.0 已移植（harmony-pc-capabilities.json#nodejs），JS 部分可直接运行",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -577,7 +576,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 原生插件的 stdbool.h 和标准 C 比较操作可用",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -617,7 +617,21 @@
       "确认 C 版本测试（examples/c/example.c）在 OHOS NDK 编译后可正常运行"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。所有 target_assumptions 均 available，无需下调 confidence。C 插件无平台特有 API，recompile_only 分类准确。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -638,19 +652,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "refinement",
-        "value": "tape",
-        "rationale": "metrics.json 将测试框架识别为 jest/mocha，但实际测试文件 test/test.js 使用 tape（require('tape')）"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数学计算库，不涉及 GUI、3D 渲染、媒体播放或特定硬件——无鸿蒙适配重点场景。",

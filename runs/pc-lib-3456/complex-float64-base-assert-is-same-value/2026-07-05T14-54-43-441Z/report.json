@@ -603,7 +603,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (Node.js 24 已移植运行时；C 原生插件经 OHOS NDK (musl libc + POSIX 子集) 重编；arm64/x86_64；自研内核，无 Linux ABI)，模型 A（库跑在已移植运行时上）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -612,7 +611,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 @stdlib 旗下的 Node.js 复数相等判定函数。JavaScript 部分直接跑在鸿蒙 PC 已移植的 Node.js 24 上，无需任何改动。C 原生插件（src/main.c）仅包含纯 C99 代码、仅依赖 <stdbool.h>（C 标准库），无任何平台特有 API（无 Win32/POSIX/系统调用/硬件访问），用 OHOS NDK 重新编译即可。整体移植工作极低。",
     "blockers": [
       {
@@ -638,7 +636,8 @@
         "target_status": "available",
         "impact": "JS 部分需要 Node.js 运行时",
         "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "C99 标准库（<stdbool.h>）",
@@ -646,7 +645,8 @@
         "target_status": "available",
         "impact": "C 插件编译依赖 C99 bool 支持",
         "source": "OHOS NDK (musl libc) 原生支持 C99",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -671,7 +671,21 @@
       "在鸿蒙 PC Node.js 上运行 test/test.js 验证功能正确"
     ],
     "notes": "按模型 A（跑在鸿蒙 Node.js 已移植运行时上）评估。C 原生层仅包含一行纯数值计算逻辑，无任何平台耦合。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-float64-base-assert-is-same-value",
@@ -693,19 +707,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "refinement",
-        "value": "tape",
-        "rationale": "metrics.py 自动检测出 jest/mocha，但实际测试使用 tape（require('tape')，见 test/test.js:23）。已确认 tape 为测试框架。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "scenarios": [],

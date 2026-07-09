@@ -1040,8 +1040,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK native 层，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1063,7 +1062,9 @@
         "category": "platform",
         "evidence": [
           "src/log4net/Util/NativeMethods.cs:44-65,127-144"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_advapi32",
@@ -1077,7 +1078,9 @@
         "category": "platform",
         "evidence": [
           "src/log4net/Util/NativeMethods.cs:32-42"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:eventlog",
@@ -1091,7 +1094,9 @@
         "category": "platform",
         "evidence": [
           "src/log4net/Appender/EventLogAppender.cs:21"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:posix_syslog",
@@ -1106,7 +1111,9 @@
         "evidence": [
           "src/log4net/Util/NativeMethods.cs:150-175",
           "src/log4net/Appender/LocalSyslogAppender.cs:314,338,357"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1116,7 +1123,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 .NET 运行时不可用则整体不可运行；log4net 是 .NET 库，必须跑在 .NET 运行时上",
-        "source": "references/harmony-pc-capabilities.json（当前无 .NET 运行时条目）"
+        "source": "references/harmony-pc-capabilities.json（当前无 .NET 运行时条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_syslog",
@@ -1124,7 +1132,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响 LocalSyslogAppender 可用性；不可用时可用 RemoteSyslogAppender 替代，不影响核心日志功能",
-        "source": "references/harmony-pc-capabilities.json（无 POSIX libc 子集条目）"
+        "source": "references/harmony-pc-capabilities.json（无 POSIX libc 子集条目）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1141,7 +1150,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "log4net 是纯 .NET 托管库，核心日志功能（Logger/ILog/Appender/Filter/Layout/Config）全部基于 .NET 标准库实现，无原生依赖。平台专有功能（Windows EventLog/OutputDebugString/控制台颜色/安全上下文、POSIX syslog）已被编译守卫和运行时平台检测隔离，属于可选 Appender。移植的关键前提是 .NET 运行时在鸿蒙 PC 上可用；若可用，则核心库可直接运行，仅需禁用或替换少数平台专有 Appender。",
     "blockers": [
       {
@@ -1229,6 +1237,25 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_kernel32",
+          "ua:win32_advapi32",
+          "ua:eventlog",
+          "ua:posix_syslog"
+        ]
+      }
     }
   },
   "library": {
@@ -1257,37 +1284,36 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "dotnet",
-        "rationale": "项目为 .NET/C# 库，生态应归为 dotnet 而非 other"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime_on_ohos",
-        "rationale": "harmony-pc-capabilities.json 当前无 .NET 运行时条目，但 .NET 运行时是该库能否在鸿蒙 PC 运行的决定性前提"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "dotnet_stdlib",
-        "rationale": "C# 项目通过 .NET BCL/System 命名空间调用标准库 API，与传统 C/C++ 标准库调用模式不同，需要单独的 API family 分类"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_kernel32",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_kernel32 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_advapi32",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_advapi32 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:eventlog",
+        "class": "actionable",
+        "message": "unadaptable_api ua:eventlog 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:posix_syslog",
+        "class": "actionable",
+        "message": "unadaptable_api ua:posix_syslog 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI 桌面界面、3D 渲染、媒体编解码或特定硬件设备——它是纯日志框架库。",

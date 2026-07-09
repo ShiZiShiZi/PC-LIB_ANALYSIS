@@ -724,8 +724,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核, 非 Linux ABI; OHOS NDK musl + POSIX 子集; arm64/x86_64）— 模型 A（库跑在已移植运行时上）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -734,7 +733,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "port_to_standard_node",
     "summary": "bare-url 是 Bare 运行时专用的 WHATWG URL 实现库，JavaScript 层使用 Bare 专有 API（require.addon、Bare.platform、bare.inspect），C 原生层使用 Bare 框架的 N-API 接口（bare.h、js.h）。鸿蒙 PC 已移植 Node.js 24，但 Bare 运行时的鸿蒙可用性未知。推荐的适配路径是：将原生层从 Bare N-API 迁移到标准 Node.js N-API（node_api.h），将 JavaScript 层的 Bare 专有调用替换为标准 Node.js API（require、process.platform），并改用标准 Node.js path 模块替代 bare-path 依赖。所有涉及的功能（URL 解析、序列化、查询参数处理、文件路径互转）均可通过此方式在鸿蒙上实现，无无法适配的功能。",
     "target_assumptions": [
       {
@@ -743,7 +741,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若 Bare 运行时已移植到鸿蒙，则本库可直接重编使用，工作量极低（仅 OHOS NDK 重编原生插件）；若不支持，则需将 Bare 专有 API 迁移到标准 Node.js N-API，工作量中等。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs（仅确认 Node.js 已移植，Bare 运行时未知）"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs（仅确认 Node.js 已移植，Bare 运行时未知）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:node_napi",
@@ -751,7 +750,8 @@
         "required": true,
         "target_status": "available",
         "impact": "可用——cmd-pkgs 社区已提供构建工具链支持；Node.js 24 自带 node_api.h。此为平稳替换路径的基石。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -836,7 +836,21 @@
       "重新构建原生插件并运行单元测试验证功能完整性"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。主要工作是将 Bare 运行时专有代码迁移到标准 Node.js API——这是机械替换，概念上一一对应，无平台耦合 API 需重写。若 Bare 运行时官方已适配鸿蒙（ta:bare_runtime unknown→available），则上述迁移工作可跳过，仅需 OHOS NDK 重编原生插件。鉴于该目标事实未核实，confidence 降为 medium。target_assumption ta:bare_runtime 的 required=false——即使 Bare 不移植，替换到标准 Node.js 的路径仍然可行，不影响 feasibility。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "bare-url",
@@ -851,19 +865,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "classifier",
-        "kind": "gap",
-        "value": "root-level test.js misclassified as production",
-        "rationale": "code-metrics 脚本按目录名 token 分类，test.js 位于仓库根目录（非 tests/ 目录），被计入生产代码。实际为 brittle 测试框架的单元测试文件（425 行）。模型认定其为 test 代码，不在维度结论中使用。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯文本处理的 JavaScript 库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备。无任何鸿蒙适配重点场景。",

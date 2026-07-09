@@ -1667,8 +1667,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         18,
@@ -1685,7 +1684,8 @@
         "required": true,
         "target_status": "available",
         "impact": "pygame 的 Python 逻辑与 C 扩展可跑在已移植 Python 上",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:sdl2",
@@ -1693,7 +1693,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "pygame 核心显示、事件、音频依赖 SDL2；cmd-pkgs 已列出 SDL2 适配包，但视频/音频后端细节未在参考中单独核实",
-        "source": "scripts/harmony_adapted.js 检测到 SDL2 已在 cmd-pkgs；harmony-pc-capabilities.json 无 SDL2 专门条目"
+        "source": "scripts/harmony_adapted.js 检测到 SDL2 已在 cmd-pkgs；harmony-pc-capabilities.json 无 SDL2 专门条目",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audio",
@@ -1701,7 +1702,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SDL2_mixer 音频后端若缺失，需接入 @ohos.multimedia.audio",
-        "source": "harmony-pc-capabilities.json#media.audio_io"
+        "source": "harmony-pc-capabilities.json#media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:camera",
@@ -1709,7 +1711,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "camera 模块为可选功能；默认 V4L2 不适用，可改用 OpenCV 或 @ohos.multimedia.camera",
-        "source": "harmony-pc-capabilities.json#media.camera_capture"
+        "source": "harmony-pc-capabilities.json#media.camera_capture",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:clipboard",
@@ -1717,7 +1720,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "scrap 模块可选；可改用 SDL2 clipboard 后端或鸿蒙桌面剪贴板能力",
-        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arm64",
@@ -1725,7 +1729,8 @@
         "required": true,
         "target_status": "available",
         "impact": "可在 arm64 鸿蒙 PC 上运行",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1749,7 +1754,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime + cross_compile_native_deps",
     "summary": "pygame 是纯 Python + C 扩展库，鸿蒙 PC 已移植 Python 运行时，核心障碍在于用 OHOS NDK 交叉编译其原生扩展及未官方适配的 SDL2 卫星库（SDL2_image/SDL2_mixer/SDL2_ttf），并调整 Linux 特有的 V4L2 摄像头、X11 剪贴板、系统字体枚举等平台后端。无核心不可适配的硬件/专有 API，整体可行但工作量较高。",
     "blockers": [
       {
@@ -1884,7 +1888,21 @@
       "在鸿蒙 Python 上运行 pygame 单元测试并修复平台差异"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时上）。pygame 的 camera/scrap/sysfont 等平台后端可通过条件编译或运行时后端选择适配，无核心不可移植功能；SDL2 卫星库和音频后端是当前最大不确定点。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1895,22 +1913,8 @@
       "harmony-pc-capabilities.json 未单独列出 SDL2 能力，SDL2 视频/音频后端按 unknown 处理；cmd-pkgs 已提供 SDL2 适配包。",
       "camera/scrap/sysfont 等平台后端在不同 OS 上实现不同，鸿蒙化需新增平台分支。"
     ],
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "sdl2",
-        "rationale": "pygame 的 GUI/窗口能力来自 SDL2，推荐场景集（gui/rendering_3d/media/hardware）未覆盖 SDL2，需单独标注。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "system/prebuilt_binary mixed",
-        "rationale": "SDL2 及其扩展在 Unix 为系统库，在 Windows 为下载预构建 DLL，单一 acquisition 值难以表达混合来源。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

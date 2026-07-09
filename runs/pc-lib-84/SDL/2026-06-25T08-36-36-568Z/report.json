@@ -2229,8 +2229,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 重新编译；arm64/x86_64；自研内核，无 Linux ABI；默认按模型 A 评估，即作为被其它代码链接/调用的库）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -2239,7 +2238,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "SDL2 是平台抽象层，核心 C 代码可经 OHOS NDK 编译；但鸿蒙 PC 没有 X11/Wayland/ALSA/PulseAudio 等现有后端，需要新增针对鸿蒙窗口、显示、音频、输入的驱动后端。OpenGL ES/EGL 有 partial 支持，可作为图形路径。由于大量目标平台能力（窗口系统、音频后端、USB/HID 输入）尚未核实，置信度为 medium。",
     "blockers": [
       {
@@ -2350,7 +2348,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 无对应桌面窗口环境，SDL 视频子系统需重写为 ArkUI/ArkGraphics 形态，工作量显著增加",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_egl",
@@ -2358,7 +2357,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "GLES 可用时图形上下文可运行；完整 OpenGL 覆盖与扩展不足可能限制部分渲染器功能",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:vulkan",
@@ -2366,7 +2366,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅当应用使用 SDL Vulkan 窗口标志时才有影响，缺失时可回退到 OpenGL ES",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audio_io",
@@ -2374,7 +2375,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙无 Linux 音频后端，需要实现新的 OHOS 音频驱动，否则音频子系统不可用",
-        "source": "references/harmony-pc-capabilities.json#media.audio_io"
+        "source": "references/harmony-pc-capabilities.json#media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:usb_hid",
@@ -2382,7 +2384,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响手柄/控制器热插拔；缺失时键盘鼠标仍可工作，游戏手柄等功能受限",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2441,7 +2444,21 @@
       "验证核心测试（test/ 下示例）在鸿蒙桌面/ ArkTS 集成环境中的运行"
     ],
     "notes": "评估默认按模型 A（库经 OHOS NDK 重编后供其它应用链接）。若目标是让 SDL2 驱动一个 ArkTS 应用（模型 B），则还需要额外封装 Node-API 层把 SDL API 暴露给 ArkTS，工作量进一步增加。SDL3 已有官方 OpenHarmony 后端，可考虑升级到 SDL3 或将其 OHOS 后端 backport 到 SDL2 以降低工作量。多个目标能力为 unknown，结论依赖这些事实后续核实。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2451,22 +2468,8 @@
     "warnings": [
       "本仓库 AGENTS.md 声明：AI 不得用于生成贡献代码。本次分析仅产出报告，未修改仓库代码。"
     ],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "new_value",
-        "value": "runtime_system_lib",
-        "rationale": "SDL2 的 pthread/libm/libdl 等属于运行时必须但通常由系统 C 库提供的依赖；现有 scope 值 runtime/dev/test/optional/build 无法精确表达「运行时系统库」这一常见 C/C++ 库依赖类型。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "category",
-        "kind": "new_value",
-        "value": "platform_backend",
-        "rationale": "SDL 这类平台抽象库的主要移植成本来自「视频/音频/输入后端替换」，而不是单个 API 替换；现有 category 清单缺少对「整后端重写」的概括。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

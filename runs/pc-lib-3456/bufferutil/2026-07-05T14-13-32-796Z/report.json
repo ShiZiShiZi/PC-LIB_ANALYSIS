@@ -451,7 +451,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接——无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -469,7 +468,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若 Node.js 运行时未移植则完全不可运行",
-        "source": "默认口径：HarmonyOS PC 已有已移植语言运行时，包括 Node.js。node-gyp-build 的预编译二进制需针对 OHOS ARM64 交叉编译。"
+        "source": "默认口径：HarmonyOS PC 已有已移植语言运行时，包括 Node.js。node-gyp-build 的预编译二进制需针对 OHOS ARM64 交叉编译。",
+        "target_status_model": "available"
       },
       {
         "id": "ta:node_gyp_build",
@@ -477,11 +477,11 @@
         "required": true,
         "target_status": "available",
         "impact": "缺少则 C 扩展无法编译",
-        "source": "OHOS NDK 自带 LLVM/Clang 工具链和 musl libc，支持 C99。"
+        "source": "OHOS NDK 自带 LLVM/Clang 工具链和 musl libc，支持 C99。",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "bufferutil 是一个纯计算型 Node.js 原生 C 扩展，仅依赖 N-API（Node-API）和 C99 标准库。无任何平台专有 API、系统调用或硬件依赖。在 Node.js 已移植到 HarmonyOS 的前提下，只需使用 OHOS NDK 对 C 源码进行交叉编译（arm64），保留 N-API 接口即可正常工作。纯 JavaScript fallback 无需任何修改：它不依赖任何特殊 Node.js API，仅在纯 JS 中使用 Buffer 对象做 XOR 运算。整体移植工作量极低。",
     "blockers": [],
     "compatible": [
@@ -515,7 +515,21 @@
       "运行测试套件验证 mask/unmask 结果与 fallback 一致"
     ],
     "notes": "该库极简（仅两个函数 169 行 C 代码），无运行时外部依赖、无平台分支、无文件/网络/设备访问。JavaScript fallback 本身就是平台无关的。核心风险在于 Node.js 在 OHOS 上对 N-API 的支持是否完整，以及 OHOS NDK 的 libc 是否提供 assert.h 等标准头——这两者在当前默认口径下均为已满足条件。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "bufferutil",
@@ -538,7 +552,8 @@
     "warnings": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "bufferutil 是一个纯计算型原生扩展，执行简单的 XOR 位运算。不涉及 GUI 界面、3D 渲染、音视频媒体或任何特定硬件。",

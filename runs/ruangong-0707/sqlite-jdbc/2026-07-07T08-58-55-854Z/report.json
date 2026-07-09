@@ -1238,8 +1238,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 JDK 17/8 运行时上；原生库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15.4,
@@ -1296,7 +1295,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime_with_ndk_recompile",
     "summary": "sqlite-jdbc 为纯 Java + JNI 原生库的数据库驱动。鸿蒙 PC 已移植 JDK，Java 层可直接运行；核心工作量是用 OHOS NDK 将 SQLite 与 NativeDB.c 交叉编译为 arm64/x86_64 共享库，并在 OSInfo/SQLiteJDBCLoader/pom.xml 中新增鸿蒙平台识别、资源加载与打包规则。无 GUI/3D/媒体/硬件/云服务依赖，无无法适配的 API，整体可行。",
     "blockers": [
       {
@@ -1364,7 +1362,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Java 字节码可直接运行，运行时是基础",
-        "source": "harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -1372,7 +1371,8 @@
         "required": true,
         "target_status": "available",
         "impact": "原生库可重编；缺失则无法提供 sqlitejdbc.so",
-        "source": "harmony-pc-capabilities.json#intro"
+        "source": "harmony-pc-capabilities.json#intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:jnidlsym",
@@ -1380,7 +1380,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JAR 内原生库可被加载；缺失则驱动无法初始化",
-        "source": "harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:file_access",
@@ -1388,7 +1389,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SQLite 数据库文件读写依赖；若沙箱严格限制需适配路径",
-        "source": "harmony-pc-capabilities.json#process_security.sandbox / permissions.perm_storage"
+        "source": "harmony-pc-capabilities.json#process_security.sandbox / permissions.perm_storage",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1429,7 +1431,21 @@
       "评估 OHOS 上 uname/readelf 的可用性，必要时简化 ARM 架构检测逻辑"
     ],
     "notes": "按模型 A（库跑在已移植 JDK 上）评估。library.kind 为 library，不涉及 GUI/桌面集成/应用交付模型 C 的阻碍。无云端服务，无需 ohos.permission.INTERNET。file_access 假设为 unknown，若鸿蒙 PC 对 JVM 文件访问有额外沙箱限制，工作量可能小幅上升。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "sqlite-jdbc",
@@ -1461,23 +1477,9 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "run_on_ported_runtime_with_ndk_recompile",
-        "rationale": "对 Java 库 + JNI 原生库的混合库，纯 run_on_ported_runtime 不足以描述还需 OHOS NDK 重编的工作，故 coined 该路径值。"
-      },
-      {
-        "dimension": "code_partition",
-        "field": "bucket",
-        "kind": "ambiguity",
-        "value": "platform_headers_in_recompile",
-        "rationale": "lib/inc_linux/inc_mac/inc_win 是平台特定头文件，按源码归属放入 recompile_reuse 桶；它们不会直接运行，只参与编译。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目仅触及本地嵌入式数据库访问场景，不涉及 GUI、3D 渲染、媒体编解码或特定硬件；鸿蒙 PC 上的核心适配点是 OHOS NDK 重编 SQLite JNI 原生库与平台识别。",

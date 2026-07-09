@@ -553,7 +553,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层 + OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -571,7 +570,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust 已移植到 HarmonyOS PC，纯 Rust crate 可直接交叉编译运行",
-        "source": "CLAUDE.md 默认口径：Rust 已移植到鸿蒙 PC"
+        "source": "CLAUDE.md 默认口径：Rust 已移植到鸿蒙 PC",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -579,11 +579,11 @@
         "required": true,
         "target_status": "available",
         "impact": "C API 版本和纯 C 版本需要 NDK 编译 C 代码",
-        "source": "鸿蒙 PC 提供 NDK 原生编译支持"
+        "source": "鸿蒙 PC 提供 NDK 原生编译支持",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "该库是纯计算库，无 OS 依赖、无 IO、无平台专有 API，仅需交叉编译即可在鸿蒙 PC 运行。主 crate (rustc-demangle) 是 no_std 的纯 Rust 解析器，可用 OHOS NDK 的 Rust 交叉编译目标直接编译。C API 版本和纯 C 版本同样只需标准 C 编译器重新编译。唯一的微小注意点是纯 C 版本引用了 POSIX <sys/param.h> 的 MIN/MAX 宏，可内联替换或改用标准 C 写法。",
     "blockers": [],
     "compatible": [
@@ -617,7 +617,21 @@
       "验证反解码功能正确性（可用现有测试用例）"
     ],
     "notes": "该库是 Rust 生态的基础设施库之一，被 backtrace、addr2line 等调试/堆栈库依赖。其零依赖、no_std、无 OS 交互的特性使得鸿蒙移植极其简单。Rust 运行时已移植到鸿蒙 PC 是默认口径假设，此处标记为 available。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "rustc-demangle",
@@ -644,7 +658,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯计算/字符串处理库，不涉及 GUI、3D 渲染、媒体处理或特定硬件——所有鸿蒙适配重点场景均不触及。",

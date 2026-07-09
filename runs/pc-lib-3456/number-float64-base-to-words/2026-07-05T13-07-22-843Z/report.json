@@ -794,7 +794,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24.13.0 运行时上；N-API 原生 addon 经 OHOS NDK 交叉编译；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -803,7 +802,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js npm 包，鸿蒙 PC 已移植 Node.js 24.13.0 运行时，纯 JavaScript 路径（TypedArray 叠加视图实现）可直接运行，无需任何改动。唯一工作量在其 N-API 原生 C addon（src/main.c + src/addon.c）需用 OHOS NDK 交叉编译为鸿蒙 .so 格式的 .node 文件。C 层仅依赖 C99 标准库（stdint.h/stdbool.h/assert.h）与 stdlib 内部头文件（字节序宏），无平台特有系统调用、无 POSIX 缺口、无硬件 API，交叉编译改造量极小。",
     "blockers": [
       {
@@ -845,7 +843,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 Node.js 24.13.0 已移植，本库纯 JS 路径可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos-ndk-musl",
@@ -853,7 +852,8 @@
         "required": true,
         "target_status": "available",
         "impact": "N-API addon 编译所需的 stdint.h/stdbool.h/assert.h 在 musl 中可用",
-        "source": "harmony-pc-capabilities.json#runtimes"
+        "source": "harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -887,7 +887,21 @@
       "在鸿蒙 Node.js 24 上运行单元测试，确认纯 JS 路径与 N-API 路径均返回正确结果"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。所有 8 个依赖均为 stdlib 内部纯 JS 包，无需额外编译；仅本库自身的 C N-API addon 需交叉编译。纯 JS 路径为零成本移植。C 代码无 #ifdef _WIN32/__APPLE__/__linux__ 编译宏分支、无 POSIX 系统调用、无外部命令。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "number-float64-base-to-words",
@@ -909,7 +923,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算基元库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

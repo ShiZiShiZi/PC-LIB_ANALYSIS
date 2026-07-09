@@ -468,8 +468,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -486,7 +485,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时已移植，纯 Julia 包装代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json runtimes.julia"
+        "source": "references/harmony-pc-capabilities.json runtimes.julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:hwloc_binary",
@@ -494,7 +494,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需为鸿蒙 PC aarch64 构建或交叉编译 hwloc C 库；若 OHOS NDK musl 环境可编译则可行，否则需适配",
-        "source": "模型推理：hwloc 为 C 库，需在目标平台编译"
+        "source": "模型推理：hwloc 为 C 库，需在目标平台编译",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libpciaccess",
@@ -502,11 +503,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "hwloc 在 Linux 上使用 libpciaccess 探测 PCI 设备；鸿蒙 PC 若无 PCI 设备访问能力，该功能不可用但不影响 hwloc 核心拓扑发现",
-        "source": "dependencies: Xorg_libpciaccess_jll"
+        "source": "dependencies: Xorg_libpciaccess_jll",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "Hwloc_jll 是 Julia 的 hwloc 二进制包装库，核心工作是使用 OHOS NDK 交叉编译 hwloc C 库并为鸿蒙 PC (aarch64) 构建 Julia Artifacts 包。Julia 运行时已移植到鸿蒙 PC，包装代码本身（纯 Julia）无需改动；关键在于 hwloc C 库的移植——hwloc 使用 POSIX API（sysfs/procfs 读取、dlopen 等），OHOS NDK 基于 musl + POSIX 子集，大部分功能可编译通过，但 PCI 设备探测等 Linux 专有功能可能受限。",
     "blockers": [
       {
@@ -565,7 +566,21 @@
       "验证 hwloc 核心功能（NUMA 拓扑、缓存层级、核心/线程分布）在鸿蒙 PC 上可正常工作"
     ],
     "notes": "hwloc 是高性能计算领域的核心基础设施库，被 Open MPI、MPI 库、调度器等广泛依赖。关键不确定性在于 hwloc C 库在 OHOS NDK 环境下的编译可行性——hwloc 的 configure 脚本会检测平台能力并自动启用/禁用后端，大概率可成功编译但部分 Linux 专有功能受限。置信度 medium 主要因为 ta:hwloc_binary 和 ta:libpciaccess 的 target_status 为 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Hwloc_jll",
@@ -590,30 +605,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia 生态不在枚举的 python/java/nodejs/cpp/rust/go/dotnet 中，使用 other 并记录观察"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia 包依赖的生态系统不在标准枚举中，使用 other；Julia 标准库（Libdl/Artifacts）也归入 other"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "julia_stdlib",
-        "rationale": "本包使用的 API 属于 Julia 标准库（Libdl 的 RTLD_* 常量），不属于现有推荐类型（win32/posix/cpp_stl/python_stdlib/java_std/node_core/ctypes_ffi 等），新增 jvm_stdlib 类型的 Julia 对应值"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目通过包装 libhwloc 动态库提供硬件拓扑发现能力，涉及硬件设备访问场景（CPU/PCI 拓扑探测），但不涉及 GUI、3D 渲染或媒体处理。",

@@ -684,7 +684,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 A：库跑在 .NET 运行时上; .NET 运行时在鸿蒙 PC 的移植状态为 unknown)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -693,7 +692,6 @@
       "level": "very_low"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "IPNetwork 是一个纯 .NET 托管库，不包含任何平台特有 API、P/Invoke、动态库加载或系统调用，完全跨平台。核心判断取决于 .NET 运行时在鸿蒙 PC 上的可用性——目前 references/harmony-pc-capabilities.json 未列出 .NET 运行时，状态为 unknown。若 .NET 运行时（或 Mono）可在鸿蒙 PC 运行，则库本体无需任何适配即可使用；CLI 工具需 .NET SDK 或 AOT 编译环境支持。",
     "blockers": [
       {
@@ -722,7 +720,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 .NET 运行时不可用则整个库无法运行；.NET Standard 2.0 兼容 Mono，但 Mono 在鸿蒙的可用性同样未核实",
-        "source": "references/harmony-pc-capabilities.json#runtimes（未列出 .NET）"
+        "source": "references/harmony-pc-capabilities.json#runtimes（未列出 .NET）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -742,7 +741,21 @@
       "CLI 工具需额外确认 Native AOT 编译链在鸿蒙的可用性"
     ],
     "notes": "评估按模型 A（库跑在已移植运行时上）。库本体为纯 .NET Standard 2.0+ 托管代码，无原生依赖、无平台分支、无 P/Invoke——这是最易移植的类型，唯一不确定性在于 .NET 运行时本身。若 .NET 不可用但 Mono 可用，Mono 兼容 .NET Standard 2.0，亦可运行。confidence 为 medium 因 .NET 运行时在鸿蒙 PC 的状态为 unknown。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "ipnetwork",
@@ -766,19 +779,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime",
-        "rationale": "references/harmony-pc-capabilities.json 的运行时清单只列了 Node.js/Python/Java/Rust/Go/Julia，未含 .NET——这对 dotnet 生态库是关键缺失事实，评估被迫标为 unknown 并下调 confidence"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯计算库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

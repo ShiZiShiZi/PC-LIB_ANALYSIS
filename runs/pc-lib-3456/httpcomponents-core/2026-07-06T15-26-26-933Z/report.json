@@ -754,7 +754,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Java JDK 17/8 已移植）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -772,11 +771,11 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 PC 已移植 JDK 17/8（来源：harmony-pc-capabilities.json java_jdk），本库纯 Java 字节码可直接运行",
-        "source": "references/harmony-pc-capabilities.json → runtimes.java_jdk (status: available)"
+        "source": "references/harmony-pc-capabilities.json → runtimes.java_jdk (status: available)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Apache HttpComponents Core 是纯 Java 库，无 JNI/本地方法、无平台专有 API、无 GUI/硬件依赖。所有功能基于 Java 标准库（java.nio / javax.net.ssl），在鸿蒙 PC 已移植的 JDK 上可直接运行，无需任何适配或重编译。",
     "blockers": [],
     "compatible": [
@@ -791,7 +790,21 @@
     ],
     "key_tasks": [],
     "notes": "本库的 5 个生产依赖（reactive-streams、jackson-databind、conscrypt-openjdk-uber、commons-cli、slf4j-api）均为纯 Java JAR 包，在鸿蒙 JDK 上同样可直接加载。conscrypt-openjdk-uber 是可选依赖，即使不可用也不影响核心功能（ConscryptSupport 有 fallback 路径）。核心模块 httpcore5 零外部依赖，最简场景下仅依赖 JDK 即可运行。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Apache HttpComponents Core",
@@ -822,17 +835,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "optional",
-        "rationale": "conscrypt-openjdk-uber 在 httpcore5-h2 pom.xml 中声明为 optional 依赖，生产代码有引用但存在 fallback 路径；将其归为 optional 而非 runtime"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯网络通信库，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",

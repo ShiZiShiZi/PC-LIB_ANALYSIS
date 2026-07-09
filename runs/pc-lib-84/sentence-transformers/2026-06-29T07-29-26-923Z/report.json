@@ -1266,8 +1266,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -1276,7 +1275,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "sentence-transformers 是纯 Python 库，核心 PyTorch 路径依赖的 torch/numpy/scipy/scikit-learn 已有 OpenHarmony PC PyPI 镜像版本，可直接运行在鸿蒙 Python 上。主要不可移植点来自可选的 ONNX/OpenVINO 推理后端及其原生运行时（未确认鸿蒙可用），以及可选的多模态解码依赖；核心文本嵌入/重排序/训练功能在 CPU 回退下可用。",
     "unadaptable_apis": [
       {
@@ -1288,7 +1286,9 @@
         "category": "ffi",
         "evidence": [
           "sentence_transformers/backend/load.py:26-58"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:openvino",
@@ -1299,7 +1299,9 @@
         "category": "ffi",
         "evidence": [
           "sentence_transformers/backend/load.py:104-130"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1309,7 +1311,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 纯代码可直接运行，运行时不构成阻碍",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:torch",
@@ -1317,7 +1320,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心张量计算与模型推理可运行",
-        "source": "scripts/harmony_adapted.js — torch adapted in OpenHarmony PC PyPI mirror"
+        "source": "scripts/harmony_adapted.js — torch adapted in OpenHarmony PC PyPI mirror",
+        "target_status_model": "available"
       },
       {
         "id": "ta:numpy-scipy-sklearn",
@@ -1325,7 +1329,8 @@
         "required": true,
         "target_status": "available",
         "impact": "数组运算、稀疏矩阵、评估指标可用",
-        "source": "scripts/harmony_adapted.js — numpy/scipy/scikit-learn adapted"
+        "source": "scripts/harmony_adapted.js — numpy/scipy/scikit-learn adapted",
+        "target_status_model": "available"
       },
       {
         "id": "ta:hf-download",
@@ -1333,7 +1338,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若网络或存储权限受限，则无法从 Hugging Face Hub 下载模型",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet / perm_storage"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet / perm_storage",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:onnx-openvino",
@@ -1341,7 +1347,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响可选 ONNX/OpenVINO 后端，不影响核心 PyTorch 路径",
-        "source": "dependencies optional analysis"
+        "source": "dependencies optional analysis",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1446,7 +1453,24 @@
       "文档中声明 ONNX/OpenVINO 后端及多模态 extras 在鸿蒙 PC 上暂不推荐使用"
     ],
     "notes": "评估按库默认口径（模型 A：跑在已移植 Python 运行时上）。核心文本嵌入/重排序功能无平台耦合；阻碍均来自可选原生后端/多模态解码。若目标是将库封装为 ArkTS 应用（模型 B），则需通过 Node-API 暴露 Python 能力，工作量和复杂度会显著增加。 存在 required 且 target_status=unknown 的目标假设（ta:hf-download：互联网访问与本地缓存），因此整体置信度下调至 medium；若鸿蒙 PC 对 Python 库的网络/文件访问受限，核心功能也会受影响。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:onnxruntime",
+          "ua:openvino"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1454,16 +1478,18 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "production_scope",
-        "kind": "ambiguity",
-        "value": "docs/skills 非生产库代码",
-        "rationale": "code-metrics 将 docs/ 与 skills/ 目录按目录 token 判为 production，但它们是文档与 Hugging Face Agent Skill，非 sentence-transformers 可安装生产代码；dim 1/6/7/9 结论以 sentence_transformers/ 包为准。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:onnxruntime",
+        "class": "actionable",
+        "message": "unadaptable_api ua:onnxruntime 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:openvino",
+        "class": "actionable",
+        "message": "unadaptable_api ua:openvino 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
@@ -1475,6 +1501,7 @@
         "message": "required_permission 读写存储（文件访问） 的 source_capability=filesystem 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

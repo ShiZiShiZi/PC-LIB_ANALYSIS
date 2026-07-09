@@ -696,7 +696,6 @@
     "notes": "C 原生插件需要 Node.js 原生插件编译工具链（node-gyp 或 CMake.js）。JS 实现无编译步骤，可直接在前端浏览器和 Node.js 中使用。package.json 声明了完整的跨平台支持（aix/darwin/freebsd/linux/macos/openbsd/sunos/win32/windows）。"
   },
   "harmony_adaptation": {
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "confidence": "high",
     "effort": {
@@ -706,7 +705,6 @@
       },
       "level": "low"
     },
-    "recommended_path": "该库已有纯 JS 实现，可直接在已移植的 Node.js 运行时上运行，无需任何修改。C 原生插件为可选性能优化层；如需启用，用 OHOS NDK 重新编译 `src/main.c`（仅依赖 C99 标准 `<stdbool.h>` 和 stdlib 内部类型，无平台特定 API），将 `.node` 产物链接到 JS 入口。npm 依赖（`@stdlib/complex-float32-ctor`、`@stdlib/complex-float32-reim`、`@stdlib/number-float32-base-assert-is-same-value`、`@stdlib/types`、`@stdlib/utils-library-manifest`）均为同仓库的 stdlib 子包，需一并移植或在 OHOS Node.js 上通过 npm 安装。",
     "blockers": [],
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -716,7 +714,8 @@
         "target_status": "available",
         "impact": "JS 实现可在此之上直接运行",
         "source": "default 口径：HarmonyOS PC with already-ported language runtimes",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "OHOS NDK (Native Development Kit for C compilation)",
@@ -724,10 +723,25 @@
         "target_status": "available",
         "impact": "可选。C 原生插件仅在需要更高性能时编译，非必需",
         "source": "OHOS NDK supports C99 compilation, arm64-v8a target",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       }
     ],
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-float32-base-assert-is-same-value",
@@ -761,24 +775,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "groups[].category",
-        "kind": "classification",
-        "value": "standard",
-        "rationale": "该库仅使用 C99 标准库 `<stdbool.h>` 和 stdlib 内部类型，无任何平台特有 API"
-      },
-      {
-        "dimension": "build_env",
-        "field": "platforms",
-        "kind": "declared_vs_actual",
-        "value": "package.json 声明了 9 个平台支持，但实际代码中无平台相关分支或条件编译，所有平台行为一致",
-        "rationale": "纯数值逻辑，无平台条件编译或运行时分支判断"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、媒体处理或特定硬件访问场景。",

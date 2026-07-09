@@ -1492,7 +1492,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK 原生 C 库部署模型：经 clang + musl libc 交叉编译为 .so，arm64 / x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1501,7 +1500,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libmpeg2 核心解码库为纯 C 实现，除 C 标准库外无任何依赖，无平台特有系统调用。唯一与平台相关的代码是 CPU 能力探测（x86 CPUID 内联汇编 + PPC/SPARC 信号捕获 SIGILL——均被 `#ifdef` 守卫且可编译期禁用）和各架构 SIMD 优化路径（均有纯 C 回退）。经 OHOS NDK (clang + musl) 交叉编译为 .so 即可运行；x86_64 上 SSE/SSE2 路径可直接使用（clang 支持对应内置函数），arm64 上 ARM 汇编路径需调整为 clang 汇编语法或改用 NEON 内置函数，也可先退回纯 C 路径上线后再逐步优化。libvo 的可选 GUI 显示后端（X11/DirectX/SDL）编译期可完全排除，用 null/pgm 后端替代。整体只需一次性交叉编译 + 验证解码正确性，无需代码适配。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1511,7 +1509,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libmpeg2 仅使用标准 C 库，musl 已全面支持；满足则无阻碍",
-        "source": "harmony-pc-capabilities.json — OHOS NDK 基于 musl libc，提供完整 C99/C11 标准库"
+        "source": "harmony-pc-capabilities.json — OHOS NDK 基于 musl libc，提供完整 C99/C11 标准库",
+        "target_status_model": "available"
       },
       {
         "id": "ta:clang_x86_simd",
@@ -1519,7 +1518,8 @@
         "required": false,
         "target_status": "available",
         "impact": "非必需（有纯 C 回退）；可用时 x86_64 平台获得最优性能",
-        "source": "harmony-pc-capabilities.json — OHOS NDK 使用 clang/LLVM 工具链"
+        "source": "harmony-pc-capabilities.json — OHOS NDK 使用 clang/LLVM 工具链",
+        "target_status_model": "available"
       },
       {
         "id": "ta:clang_arm_asm",
@@ -1527,7 +1527,8 @@
         "required": false,
         "target_status": "available",
         "impact": "非必需（有纯 C 回退）；arm64 平台性能优化路径",
-        "source": "harmony-pc-capabilities.json — OHOS NDK 使用 clang/LLVM 工具链，支持 ARM 汇编与 NEON"
+        "source": "harmony-pc-capabilities.json — OHOS NDK 使用 clang/LLVM 工具链，支持 ARM 汇编与 NEON",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1614,7 +1615,21 @@
       "在鸿蒙模拟器或真机上运行解码一致性测试（对比已知测试流的 MD5 输出）"
     ],
     "notes": "评估按模型 A（C 库经 OHOS NDK 重编后由原生代码调用）。libmpeg2 核心解码库为零依赖纯 C 代码，平台迁移极其友好——最大的障碍仅是可选 GUI 后端的排除和 SIMD 汇编语法适配，两者均有纯 C 回退或编译期关闭路径。porting_class 为 recompile_only 而非 needs_adaptation_full 是因为无需功能性代码改动——所有平台差异都已通过编译期守卫隔离，只需配置正确的交叉编译参数即可产出可工作的 .so。若目标为 arm64-only 或 x86_64-only，对应的 SIMD 路径可直接启用无需调整。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libmpeg2",
@@ -1634,29 +1649,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_loadlibrary",
-        "rationale": "DirectX 依赖不是通过传统 find_package/pc 检测，而是 configure 检测头文件存在后，在运行期通过 LoadLibrary/GetProcAddress 加载 DDRAW.DLL——这种'编译期头文件检测 + 运行期操作系统 DLL 查找'的获取方式不完全匹配现有 system/pkg-config 取值，建议增加 system_loadlibrary 作为 Windows 平台特有获取方式"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "gap",
-        "value": "arch_simd_detect",
-        "rationale": "cpu_accel.c 中的 CPUID/SIGILL 信号探测逻辑（mpeg2_detect_accel/arch_accel）既不是纯 SIMD 指令也不是纯 POSIX 信号——它是组合了内联汇编+信号处理的 CPU 能力检测层，当前归入 arch_simd 组不够精确，建议增加 arch_detect 或 cpu_feature 作为独立分型"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "ambiguity",
-        "value": "media",
-        "rationale": "libmpeg2 是纯软件视频解码库（codec），不属于'音视频编解码/播放/采集'意义上的完整媒体框架（无音视频同步、无音轨、无采集）。当前标为 media present 符合作品性质，但 'kind' 仅 codec/video_decode 过于细化，建议 media 场景下增加 'codec' 子类以区分纯解码器 vs 完整播放管线"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1667,7 +1660,8 @@
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "libmpeg2 核心解码库纯计算，不涉及 GUI/3D 渲染/特定硬件依赖。libvo 视频输出模块可选依赖 X11/SDL/DirectX 等桌面显示后端——属于 GUI 场景，均为可选组件、编译期可完全裁掉。核心解码部分使用 x86/PPC/SPARC/Alpha/ARM SIMD 指令加速，但均有纯 C 回退路径，不绑定特定硬件。",

@@ -465,8 +465,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -483,7 +482,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时已在鸿蒙 PC 上移植（1.10.6），本 JLL 包的 Julia 包装代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json → runtimes → julia"
+        "source": "references/harmony-pc-capabilities.json → runtimes → julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:liblz4_native",
@@ -491,11 +491,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本 JLL 包的核心功能依赖 liblz4.so/dylib/dll 预编译二进制；鸿蒙 PC 使用 musl + POSIX 子集的 OHOS NDK，需为 aarch64-linux-musl 目标重新编译 liblz4",
-        "source": "Artifacts.toml 声明的预编译产物目前不包含 ohos 目标"
+        "source": "Artifacts.toml 声明的预编译产物目前不包含 ohos 目标",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "本包是 LZ4 原生库的 Julia JLL 包装。Julia 运行时已在鸿蒙 PC 上移植（1.10.6），包装代码本身（Julia）无需修改。核心工作是为鸿蒙 PC（aarch64 + musl/OHOS NDK）交叉编译 liblz4 共享库和可执行文件，然后将其作为新的 Artifact 加入本包或创建独立的 Lz4_jll 鸿蒙分支。LZ4 上游是纯 C 代码、无平台专有依赖、BSD 许可，交叉编译难度低。",
     "blockers": [
       {
@@ -541,7 +541,21 @@
       "测试 Julia 中 `using Lz4_jll` 能正确加载 liblz4 并调用压缩/解压函数"
     ],
     "notes": "Julia 运行时已移植到鸿蒙 PC（1.10.6），本 JLL 包的 Julia 层代码直接可用。唯一阻碍是缺少鸿蒙 PC 平台的 liblz4 预编译二进制——LZ4 上游为纯 C、无平台专有依赖、BSD 许可，交叉编译工作量极小。但 JLL 包的 Artifact 分发机制依赖 JuliaBinaryWrappers 的上游 Yggdrasil 构建树，需要社区或手动为鸿蒙平台添加构建配方。confidence=medium 因 liblz4 鸿蒙构建尚未验证（target_status=unknown）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Lz4_jll.jl",
@@ -565,25 +579,11 @@
   "meta": {
     "schema_version": "1.0",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia 生态不在枚举 [python, java, nodejs, cpp, rust, go, dotnet, other] 中，归入 other。Julia 是独立语言生态，未来可考虑加入枚举。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "runtime",
-        "rationale": "Julia 标准库模块（Libdl、Artifacts）随 Julia 运行时分发，不属于 system/local/remote/package_manager/vendored 任何一类，用 runtime 表达'随运行时内置提供'。"
-      }
-    ],
+    "observations": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为 LZ4 压缩库的 Julia JLL 包装，不涉及 GUI、3D 渲染、媒体或特定硬件——仅动态加载 liblz4 共享库进行数据压缩/解压。",

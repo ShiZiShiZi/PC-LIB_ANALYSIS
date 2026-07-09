@@ -1211,8 +1211,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C 库经 OHOS NDK/musl 交叉编译为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1221,7 +1220,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libsodium 是纯 C 密码学库，核心算法可移植，平台相关代码集中在随机数、安全内存和 CPU 特性检测，且均通过 #ifdef 做了跨平台分支。在鸿蒙 PC 上主要工作是用 OHOS NDK 重新编译并验证 POSIX 子集（mmap/mprotect/mlock、getrandom//dev/urandom、getauxval）的行为。没有 GUI/3D/媒体/专用硬件依赖，也没有云后端，不存在核心不可适配的功能。",
     "blockers": [
       {
@@ -1297,7 +1295,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则 sodium_malloc 的安全内存分配与 mlock 保护将降级或失败",
-        "source": "references/harmony-pc-capabilities.json#process_security/posix_subset（未单独列出，按 unknown 处理）"
+        "source": "references/harmony-pc-capabilities.json#process_security/posix_subset（未单独列出，按 unknown 处理）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:random_source",
@@ -1305,7 +1304,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "无安全随机数源则所有密钥生成、nonce、salt 将不可行",
-        "source": "references/harmony-pc-capabilities.json（未明确列出熵源接口，按 unknown 处理）"
+        "source": "references/harmony-pc-capabilities.json（未明确列出熵源接口，按 unknown 处理）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cpu_features",
@@ -1313,7 +1313,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "缺失时 ARM 平台无法自动选择 NEON/ARM Crypto 加速路径，可回退到纯 C 实现",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1347,7 +1348,21 @@
       "跑通完整测试套件，验证所有加密原语在 arm64/x86_64 下的正确性"
     ],
     "notes": "评估按 C 库模型 A（经 OHOS NDK 重编后供其他应用链接）。由于鸿蒙 PC 对 getrandom、/dev/urandom、部分 POSIX 内存接口的可用性未在参考文件中明确核实，confidence 设为 medium。libsodium 本身没有 GUI、媒体、专用硬件或云依赖，不存在无法适配的核心功能；即使部分 POSIX 增强接口缺失，也有清晰的降级路径。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libsodium",
@@ -1370,26 +1385,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "no_runtime_dependencies",
-        "rationale": "libsodium 作为 C 密码学库没有第三方运行时依赖，所有加密实现内嵌；当前 skill 的 dependency 示例侧重有明确包依赖的场景，对纯自包含 C 库的描述方式需由模型判断。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "posix_entropy_source",
-        "rationale": "参考文件未单独列出 /dev/urandom、getrandom 等安全熵源接口的鸿蒙状态，但密码学库对此高度敏感，需在 target_assumptions 中显式假设为 unknown。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libsodium 是纯密码学计算库，不触及 GUI、3D 渲染、媒体编解码或特定硬件设备。其 SIMD/CPU 特性检测属于通用 CPU 能力而非不可替代的专用硬件，因此鸿蒙适配重点场景为空。",

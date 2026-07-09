@@ -926,7 +926,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植 Python 3.12 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -935,7 +934,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为纯 Python 实现，无原生扩展、无平台特有系统调用、无外部命令调用；唯一运行时依赖中的原生扩展 zstandard 已有 OpenHarmony PC PyPI ohos wheel，其余依赖（conda-package-streaming、requests）为纯 Python 包。直接在鸿蒙 Python 上安装即可运行，无需代码修改。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -945,7 +943,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库为纯 Python，需运行在已移植 Python 上",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -989,7 +988,21 @@
       "验证 cph extract/create/transmute/list 子命令在鸿蒙上可用"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时）。pyproject.toml 将 requests 声明为 runtime 依赖，但本仓生产源码未直接 import；远程包列表功能实际通过 conda-package-streaming.url 完成。utils.py:9 的 sys.platform == \"win32\" 平台判断当前未在库逻辑中使用，不影响移植。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -997,22 +1010,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "network_access",
-        "rationale": "该库虽不属 GUI/3D/媒体/硬件场景，但 list_contents 支持远程 .conda URL，涉及 HTTP 网络访问，需在能力画像中额外标注以便 dim-9 推导权限。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "requests declared but not imported",
-        "rationale": "pyproject.toml 将 requests 声明为 runtime 依赖，但 src/ 生产源码中无 import requests；实际 HTTP 能力由 conda-package-streaming.url 提供。仍按 manifest 收录为 runtime。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

@@ -1319,8 +1319,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C/C++ 库经 OHOS NDK 重编为 arm64/x86_64 .so；默认按模型 A：被其他应用/进程链接调用；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1329,7 +1328,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile_ohos_ndk",
     "summary": "x265 核心 HEVC 编码算法高度可移植，且已具备 arm64/aarch64 汇编与 intrinsics 路径；在鸿蒙 PC 上的主要工作是用 OHOS NDK 交叉编译、关闭/降级 Linux 专有接口（NUMA、/proc、sysfs cpufreq）以及可选 SVT-HEVC/reconplay 路径。无 GUI/3D/云服务，无核心不可适配 API。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1339,7 +1337,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库需经 NDK 交叉编译为鸿蒙 .so，是移植前提",
-        "source": "harmony-pc-capabilities.json intro（鸿蒙 PC 原生层 OHOS NDK）"
+        "source": "harmony-pc-capabilities.json intro（鸿蒙 PC 原生层 OHOS NDK）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -1347,7 +1346,8 @@
         "required": true,
         "target_status": "available",
         "impact": "高性能 SIMD 路径依赖 arm64 架构",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:video_codec_third_party",
@@ -1355,7 +1355,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "x265 自身即为 HEVC 编码器，不依赖外部 codec 生态，但作为第三方库被集成时的环境成熟度待观察",
-        "source": "harmony-pc-capabilities.json#media.video_codec"
+        "source": "harmony-pc-capabilities.json#media.video_codec",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1458,7 +1459,21 @@
       "打包 x265.so、x265_static.a 与 x265 CLI，生成 pkg-config 文件"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 重编后被其他应用使用）。若目标为 ArkTS 沙箱应用（模型 B），则需额外通过 Node-API 暴露 C API，工作量和复杂度会显著上升。置信度为 medium 是因为 OHOS NDK 对 POSIX 子集（/proc、sysfs、dlopen、mmap）的具体支持细节尚未完全核实，但核心编码功能无明显不可适配点。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "x265",
@@ -1483,33 +1498,12 @@
     "warnings": [
       "metrics.json 中 test_cases 为 0，因为脚本按测试框架习语计数；本仓 C++ 单测文件位于 source/test/，实际由 ENABLE_TESTS 选项控制。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library with CLI",
-        "rationale": "x265 仓库同时构建 libx265 静态/共享库与 x265 CLI 可执行文件；因其对外提供稳定 C API 并被 FFmpeg 等链接，主体判定为 library，CLI 作为附带入口点在 build_env 中说明。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "assembler",
-        "rationale": "nasm 作为构建期汇编器，不属于 runtime 库也不属于普通 build tool；现有推荐 acquisition 值未明确覆盖‘汇编器’这一类构建工具。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "arch_simd",
-        "rationale": "x265 大量代码为 x86/ARM64/RISC-V/LoongArch/Power 汇编与 intrinsics，建议将 arch_simd 作为硬件类 API 的常规分组。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "x265 是一个纯视频编码库，不涉及 GUI、3D 渲染或云服务；其鸿蒙适配重点在媒体（自身为 HEVC 编码器）与 CPU SIMD 硬件优化两条线。",

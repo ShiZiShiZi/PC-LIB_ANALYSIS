@@ -759,7 +759,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK musl + POSIX 子集，arm64/x86_64；Node.js 24 已移植可用）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -768,7 +767,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "此库为纯数值函数，JavaScript 实现仅 1 行 `return z.re`，C 实现仅使用 C99 标准特性（union type punning），不依赖任何平台特有 API 或系统调用。Node.js 运行时已在鸿蒙 PC 移植（24.13.0），库可零改动直接运行。C 实现如需在鸿蒙上编译，用 OHOS NDK 的 clang 重新编译即可，不存在任何编译期障碍。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -778,7 +776,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 是此库的运行基础（JS 实现）；已有移植版本则不阻碍",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -805,7 +804,21 @@
       "如需 C 实现：用 OHOS NDK clang 编译 src/main.c，链接到 @stdlib/complex-float64-ctor 的鸿蒙版即可"
     ],
     "notes": "评估按模型 A（库跑在已移植的鸿蒙 Node.js 24 运行时上）。C benchmark 代码使用了 POSIX gettimeofday，但 benchmark 非库核心交付物，不影响移植判定。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float64-real",
@@ -827,19 +840,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "production_scope",
-        "kind": "ambiguity",
-        "value": "benchmark_as_production",
-        "rationale": "metrics 脚本将 benchmark/ 目录归类为 production，但 benchmark 中的 C 代码使用了 POSIX gettimeofday。该 API 并非库的核心交付物，仅为 CI 性能测试用途。按 production 口径纳入 native_api 但以 evidence 区分标注。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及任何 GUI、3D 渲染、音视频媒体或特定硬件场景。",

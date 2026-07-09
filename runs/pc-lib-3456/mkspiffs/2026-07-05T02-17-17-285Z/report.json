@@ -814,7 +814,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -832,7 +831,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心功能依赖这些 API 进行目录遍历与文件系统操作",
-        "source": "references/harmony-pc-capabilities.json — OHOS NDK 基于 musl libc，提供标准 POSIX 文件 I/O 接口"
+        "source": "references/harmony-pc-capabilities.json — OHOS NDK 基于 musl libc，提供标准 POSIX 文件 I/O 接口",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cxx_stdlib",
@@ -840,11 +840,11 @@
         "required": true,
         "target_status": "available",
         "impact": "代码广泛使用 std::vector、std::string、iostream 等 C++11 STL 设施",
-        "source": "references/harmony-pc-capabilities.json — OHOS NDK 支持 libc++ 与 C++11/14/17 标准"
+        "source": "references/harmony-pc-capabilities.json — OHOS NDK 支持 libc++ 与 C++11/14/17 标准",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "mkspiffs 是纯 C++ 命令行工具，仅依赖 C++ STL 与 POSIX 文件/目录 API，无平台特有调用（Win32 mkdir 仅为条件编译的一行回退）。OHOS NDK 基于 musl libc，提供完整的 POSIX 文件 I/O 与目录操作接口，同时支持 C++11 标准库。只需用 OHOS NDK 工具链重编 Makefile 项目即可生成鸿蒙原生可执行文件，无需代码修改。目前无无法适配的 API，无阻碍点。",
     "blockers": [],
     "compatible": [
@@ -887,7 +887,21 @@
       "4. 功能测试：运行 SPIFFS 镜像的创建/解包/列表/可视化 四个子命令，验证输出正确性"
     ],
     "notes": "代码中唯一的平台条件编译是 dirCreate() 中 Win32 的 _mkdir vs POSIX mkdir（main.cpp:329-333），鸿蒙走 POSIX 路径即正确。spiffs 子模块是纯 C 库，无任何系统调用，重编即可。工作量极小（1-3 人天），主要是工具链适配与测试验证，无代码修改风险。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "mkspiffs",
@@ -911,7 +925,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 CLI 工具，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。",

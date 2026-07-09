@@ -491,7 +491,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，支持 Node.js 已移植运行时，OHOS NDK 原生层）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -502,7 +501,6 @@
     },
     "confidence": "high",
     "summary": "fs-minipass 是纯 JavaScript 库，仅使用 Node.js 内置模块（fs、events、Buffer）和一个纯 JS 运行期依赖 minipass。HarmonyOS NEXT PC 已移植 Node.js 运行时，该库可直接在现有运行时上运行，无需任何代码修改或重新编译。文件系统操作经 fs 模块映射到鸿蒙内核的文件系统接口，无平台差异。",
-    "recommended_path": "run_on_ported_runtime",
     "compatible": [
       {
         "aspect": "语言运行时",
@@ -554,7 +552,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若 Node.js 运行时不可用，本库无法运行",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:fs_module",
@@ -562,14 +561,29 @@
         "required": true,
         "target_status": "available",
         "impact": "若 fs 模块功能不完整，文件流操作可能受限",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       }
     ],
     "blockers": [],
     "unadaptable_apis": [],
     "required_permissions": [],
     "notes": "纯脚本库，运行于已移植的 Node.js 运行时上，无原生扩展、无平台特有 API、无硬件依赖。鸿蒙化完全无阻碍。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "fs-minipass",
@@ -588,7 +602,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯文件 I/O 工具库，专注于文件读写流操作，不涉及 GUI 界面、3D 渲染、音视频处理或特定硬件。",

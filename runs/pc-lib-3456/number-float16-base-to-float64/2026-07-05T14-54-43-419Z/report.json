@@ -786,7 +786,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; N-API 原生插件经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -795,7 +794,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 @stdlib 生态的数值转换库，主体为纯 JavaScript，可直接运行在鸿蒙 PC 已移植的 Node.js 24 上。附带一个小型 N-API C 原生插件（包装了 float16→float32→float64 的纯数值转换），该插件不依赖任何平台 API/系统调用/Win32/POSIX，只需经 OHOS NDK 重新编译即可。所有 npm 运行时依赖均为 @stdlib 内部包，其中含 N-API 插件的也按相同方式处理。无平台分支、无外部命令、无网络或文件系统访问，整体适配难度低。",
     "blockers": [
       {
@@ -836,7 +834,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 主体代码可直接运行，N-API 插件需 OHOS NDK 重编",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -844,7 +843,8 @@
         "required": true,
         "target_status": "available",
         "impact": "随鸿蒙 Node.js 提供 N-API 6+ 接口，原生插件需重编即可",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -880,7 +880,21 @@
       "将编译产物与包文件一同纳入鸿蒙 npm registry（pypi.cnb.cool/OpenHarmonyPCDeveloper 或自建源）"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。该库不含任何平台特有 API、外部命令、设备访问或 GUI 代码。所有测试/基准代码中的平台相关用法（os/fs 等均在 benchmark/test 中）不纳入生产范围。二进制包支持 x86_64/arm64 双架构。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -897,20 +911,13 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.py 将测试框架判为 jest/mocha，但实际测试文件 test/test.js 使用 tape（TAP 协议）而非 jest/mocha。所有 test 文件（test.js、test.native.js）均使用 tape。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值转换库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。所有鸿蒙适配重点场景均不适用。",

@@ -1189,8 +1189,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (C 原生库，经 OHOS NDK/musl 重编为 .so；arm64/x86_64；自研内核，无 Linux ABI)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1199,7 +1198,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libsoup 是纯 C 实现的 HTTP 库，所有平台 I/O 通过 GLib/GIO 抽象层完成，自身平台耦合代码极少（仅 35 行 Windows 条件编译）。移植的首要瓶颈是 GLib 生态（glib/gobject/gio）尚未在 cmd-pkgs 中确认鸿蒙化（尽管 GTK 已列为 available，间接表明 GLib 可行），libsoup 本身仅需 OHOS NDK 交叉编译、少量平台分支调整与 Meson 构建配置适配。已鸿蒙化的依赖（zlib/sqlite3/nghttp2/libpsl/libzstd，共 5/12）直接可用，不构成阻碍。NTLM 外部进程认证与 GSSAPI/Kerberos 为编译时可选项，可暂时禁用。",
     "blockers": [
       {
@@ -1264,7 +1262,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libsoup 的全部网络 I/O 与事件循环均依赖 GLib/GIO；若不可用则整个库无法运行",
-        "source": "harmony-pc-capabilities.json — GTK 列 available 暗示 GLib 可行，但 cmd-pkgs 中未单独确认 glib-2.0"
+        "source": "harmony-pc-capabilities.json — GTK 列 available 暗示 GLib 可行，但 cmd-pkgs 中未单独确认 glib-2.0",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_process",
@@ -1272,7 +1271,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 NTLM 单点登录功能，编译时可禁用",
-        "source": "harmony-pc-capabilities.json#spawn"
+        "source": "harmony-pc-capabilities.json#spawn",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -1331,7 +1331,21 @@
       "在 OHOS NDK 环境下跑通基础 HTTP 客户端/服务端功能测试，验证 TLS（需 GLib 的 TLS 后端 glib-networking/GnuTLS 可用）与 HTTP/2"
     ],
     "notes": "评估按模型 A（C 原生库，经 OHOS NDK 重编后供鸿蒙应用链接）。libsoup 自身平台耦合极轻（platform_adaptation 仅 35 行 Windows 代码），主要不确定性来自 GLib 生态的鸿蒙可用状态。confidence: medium 因为核心依赖 GLib 未在 cmd-pkgs 确认鸿蒙化（尽管 GTK 列为 available 间接表明 GLib 可行，但尚未直接核实）。若 GLib 已鸿蒙化则 porting_class 可升级为 recompile_only、person_days 约 [3,8]。libsoup 不涉及 GUI/3D/媒体/硬件场景，无需额外权限。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1345,33 +1359,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "category",
-        "kind": "gap",
-        "value": "cookies_hsts_merged",
-        "rationale": "Cookie 与 HSTS 功能虽独立模块，但共享 SQLite 持久化后端且同属 HTTP 状态管理——合并到一条能力分类可读性更好。功能分类已从 9 个合并为 8 个。仍为适度粒度。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "ambiguity",
-        "value": "glib_not_in_cmd_pkgs",
-        "rationale": "cmd-pkgs 确认 GTK available 但 GLib(glib-2.0) 未命中——可能因 cmdpkgs 使用不同包名（如 libglib/glib），或 GLib 随 GTK 作为隐式依赖一起提供。建议在 cmd-pkgs README 或 caps.json 中补充 GLib 条目的 name variants。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "depends_on_glib_unconfirmed",
-        "rationale": "porting_class 定为 needs_adaptation_full 而非 recompile_only，完全因 GLib 未在 cmd-pkgs 确认——若 GLib 已鸿蒙化则本库应为 recompile_only。5/12 依赖已鸿蒙化、平台适配代码仅 35 行，libsoup 本体非常干净。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libsoup 是纯网络/HTTP 库，不涉及 GUI、3D 渲染、媒体处理或特定硬件访问。核心场景为跨平台网络通信，所有 I/O 通过 GLib/GIO 抽象层完成。",

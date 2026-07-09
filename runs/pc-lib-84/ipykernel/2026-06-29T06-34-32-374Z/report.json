@@ -1403,8 +1403,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在已移植 Python 3.12 运行时上；关键原生依赖经 OpenHarmony PC PyPI 镜像复用；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1421,7 +1420,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 运行时可用，纯 Python 部分无需改写即可运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_spawn",
@@ -1429,7 +1429,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "内核中断子进程、优雅关机等核心功能依赖；OHOS POSIX 子集是否完整支持待核实",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn（类推）"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn（类推）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:qt",
@@ -1437,7 +1438,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选 Qt 集成路径可用",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:gtk",
@@ -1445,11 +1447,11 @@
         "required": false,
         "target_status": "available",
         "impact": "可选 GTK 集成路径可用",
-        "source": "references/harmony-pc-capabilities.json#gui.gtk"
+        "source": "references/harmony-pc-capabilities.json#gui.gtk",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "ipykernel 是纯 Python 库，核心 Jupyter 协议/ZeroMQ 功能可在鸿蒙已移植 Python 上直接运行；pyzmq、psutil、tornado 已有鸿蒙 PyPI 镜像。主要适配工作在于验证 OHOS 对 POSIX 进程组/信号语义的支持，并处理可选 GUI 工具包（wx/tk/Cocoa）的可用性缺口；Windows/macOS 专有分支为条件代码，在鸿蒙上不会触发。",
     "blockers": [
       {
@@ -1521,7 +1523,21 @@
       "验证 %qtconsole magic 在鸿蒙上能否正确启动 qtconsole 子进程"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。Windows/macOS 专有代码路径均为 sys.platform/os.name 条件分支，在鸿蒙（非 win32/darwin）上不会执行，因此不构成 unadaptable_apis。POSIX 进程组/信号为唯一需要核实的核心能力，若目标平台支持度不足会降级为 needs_adaptation_partial。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1530,6 +1546,7 @@
     "confidence_overall": "medium",
     "warnings": [],
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

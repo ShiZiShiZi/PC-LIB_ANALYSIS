@@ -1447,8 +1447,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK, musl + POSIX 子集, 自研内核, 无 Linux ABI)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1471,7 +1470,9 @@
         "evidence": [
           "src/x11/fg_window_x11_glx.c:335",
           "src/x11/fg_window_x11.c:423"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wgl_context",
@@ -1484,7 +1485,9 @@
         "evidence": [
           "src/mswin/fg_window_mswin.c:291",
           "src/mswin/fg_window_mswin.c:822"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_window",
@@ -1497,7 +1500,9 @@
         "evidence": [
           "src/mswin/fg_window_mswin.c:662",
           "src/mswin/fg_main_mswin.c:492"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cocoa_window",
@@ -1510,7 +1515,9 @@
         "evidence": [
           "src/cocoa/fg_window_cocoa.m:1196",
           "src/cocoa/fg_init_cocoa.m:40"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11_window",
@@ -1525,7 +1532,9 @@
         "evidence": [
           "src/x11/fg_init_x11.c:170",
           "src/x11/fg_window_x11.c:297"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1535,7 +1544,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "freeglut 核心功能是管理 OpenGL 上下文；鸿蒙有 OpenGL ES/EGL（partial），若仅支持 ES 则 GLX/GL 完整桌面 OpenGL 后端不可用，需走 EGL/GLES 路径",
-        "source": "references/harmony-pc-capabilities.json → graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json → graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:wm",
@@ -1543,7 +1553,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "freeglut 的核心价值是窗口创建与管理；若鸿蒙 PC 无传统桌面窗口环境，则所有窗口后端均无法工作，整体不可移植",
-        "source": "references/harmony-pc-capabilities.json → gui.wm"
+        "source": "references/harmony-pc-capabilities.json → gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:egl",
@@ -1551,11 +1562,11 @@
         "required": true,
         "target_status": "partial",
         "impact": "EGL 是最可行的鸿蒙适配路径（已有 EGL 后端代码），但具体版本/扩展支持程度待核实",
-        "source": "references/harmony-pc-capabilities.json → graphics_3d.egl"
+        "source": "references/harmony-pc-capabilities.json → graphics_3d.egl",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "new_backend_egl",
     "summary": "freeglut 移植到鸿蒙 PC 的核心挑战是需要一个可工作的鸿蒙窗口系统后端。最佳路径是编写新的平台后端（类似 src/wayland/ 的结构），复用已有的 EGL 抽象层（src/egl/），对接鸿蒙原生窗口系统或 X11 兼容层。X11 库已有鸿蒙预编译包，若鸿蒙桌面环境支持 X11 协议则可直接复用 X11 后端。否则需编写鸿蒙原生后端，工作量较大但架构上可行（已有 5 个平台后端作为参考）。",
     "blockers": [
       {
@@ -1638,7 +1649,27 @@
       "适配 CMake 构建系统（新增 TARGET_HARMONY 宏和 HarmonyOS 工具链文件）"
     ],
     "notes": "置信度为 low 的主要原因：鸿蒙 PC 桌面窗口环境（wm）和完整 OpenGL 支持程度均为 unknown，这两项是决定 freeglut 能否移植的关键前提。若鸿蒙 PC 确实提供桌面级窗口环境和 OpenGL ES/EGL，则编写新后端的工作量中等（参照 Wayland 后端约 10 个文件、~2500 行代码）。freeglut 的 progs/demos/ 目录中所有示例按 example 处理，不影响生产代码的适配评估。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:glx_context",
+          "ua:wgl_context",
+          "ua:win32_window",
+          "ua:cocoa_window",
+          "ua:x11_window"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1646,29 +1677,35 @@
     "counter_tool": "cloc",
     "confidence_overall": "low",
     "warnings": [],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "x11_glx",
-        "rationale": "X11 与 GLX 在 freeglut 中紧密耦合（窗口管理+OpenGL 上下文绑定），合并为一个 group 比分开更清晰"
+        "code": "ua_func_class_defaulted:ua:glx_context",
+        "class": "actionable",
+        "message": "unadaptable_api ua:glx_context 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "new_backend_egl",
-        "rationale": "freeglut 的架构天然支持新增平台后端，且已有 EGL 抽象层；推荐路径是编写鸿蒙原生后端 + 复用 EGL，而非试图逐 API 适配 Win32/X11"
+        "code": "ua_func_class_defaulted:ua:wgl_context",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wgl_context 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "code_metrics",
-        "field": "platform_adaptation",
-        "kind": "gap",
-        "value": "platform_adaptation 严重低估 freeglut 的平台适配量",
-        "rationale": "freeglut 通过独立源文件实现平台适配（src/mswin/、src/x11/ 等），而非编译宏内分支，脚本仅统计了 #ifdef 守卫代码（166 行），但实际平台特定代码约 15000+ 行"
+        "code": "ua_func_class_defaulted:ua:win32_window",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_window 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cocoa_window",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cocoa_window 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:x11_window",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_window 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

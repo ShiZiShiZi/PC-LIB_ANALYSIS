@@ -1241,7 +1241,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：库运行在已移植的 Node.js 运行时上）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1260,7 +1259,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SQLCipher 加密后端所需——若无则需改用鸿蒙原生密码学 API，增加适配量",
-        "source": "references/harmony-pc-capabilities.json：OpenHarmony PC C/C++ 预编译包 cmd-pkgs 含 openssl"
+        "source": "references/harmony-pc-capabilities.json：OpenHarmony PC C/C++ 预编译包 cmd-pkgs 含 openssl",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_pthread",
@@ -1268,11 +1268,11 @@
         "required": true,
         "target_status": "available",
         "impact": "SQLCipher VFS 层依赖的标准 POSIX 接口——若无部分缺失需重写 VFS 层",
-        "source": "OHOS NDK 基于 musl libc，提供标准 POSIX 子集"
+        "source": "OHOS NDK 基于 musl libc，提供标准 POSIX 子集",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "blockers": [],
     "compatible": [
       {
@@ -1310,7 +1310,21 @@
       "锁定 OpenSSL 在鸿蒙 cmd-pkgs 中的版本，确保头文件与二进制兼容"
     ],
     "notes": "该库的前身 node-sqlite3 已在社区有大量跨平台编译经验，SQLCipher 分化仅替换加密引擎。当前代码通过 SQLCIPHER_CRYPTO_CC（macOS CommonCrypto）/ SQLCIPHER_CRYPTO_OPENSSL（Linux）条件编译控制加密后端——新增 OHOS 条件仅需设置合适的加密宏 + 链接路径。platform_adaptation 中显示的 2559 行平台守卫代码主要来自 SQLCipher 本身的跨平台兼容层（内存映射、文件锁、随机数等），这些是标准 POSIX 抽象，不是某平台专有 API，在 OHOS NDK 的 musl 环境下可复用 Linux/POSIX 路径。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@journeyapps/sqlcipher",
@@ -1336,7 +1350,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为加密数据库访问的 Node.js 原生扩展，不涉及 GUI、3D 渲染、音视频媒体或特定硬件（GPU/传感器等）。加密操作通过软件密码学库（OpenSSL/CommonCrypto）实现，无硬件加速依赖。",

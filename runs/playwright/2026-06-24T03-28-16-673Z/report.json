@@ -1769,11 +1769,9 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Node.js 已移植；OHOS NDK musl + POSIX 子集；自研内核、无 Linux ABI；arm64/x86_64）",
-    "feasibility": "feasible_with_effort",
     "overall_difficulty": "very_high",
     "effort_estimate": "XL",
-    "porting_class": "needs_adaptation_full",
-    "recommended_path": "provide_ohos_browser_binaries",
+    "porting_class": "needs_adaptation",
     "summary": "Playwright 的 TypeScript/JavaScript 核心逻辑可在鸿蒙已移植的 Node.js 上直接运行，但框架的实质功能是启动并控制真实的 Chromium/Firefox/WebKit 浏览器二进制。当前官方仅提供 Linux/macOS/Windows 的浏览器构建，鸿蒙 PC 没有对应 OHOS 浏览器引擎二进制，也缺乏 apt-get/ldd/powershell 等平台命令，因此整体移植工作量极大，核心前提是先在鸿蒙 PC 上提供可用的浏览器引擎构建。",
     "blockers": [
       {
@@ -1836,7 +1834,8 @@
         "target_status": "available",
         "impact": "运行时可用，框架 TS/JS 核心可直接执行",
         "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "启动外部进程（exec/spawn）不受限",
@@ -1844,7 +1843,8 @@
         "target_status": "unknown",
         "impact": "若受限则无法启动浏览器二进制，核心功能不可用",
         "source": "references/harmony-pc-capabilities.json#process_security.spawn",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "unknown"
       },
       {
         "capability": "OHOS 版 Chromium/WebKit/Firefox 浏览器二进制",
@@ -1852,7 +1852,8 @@
         "target_status": "unknown",
         "impact": "无对应二进制则无法执行任何浏览器自动化，是决定性前提",
         "source": "references/harmony-pc-capabilities.json#gui (Electron/CEF unknown；无 Chromium 行)",
-        "id": "ta:3"
+        "id": "ta:3",
+        "target_status_model": "unknown"
       },
       {
         "capability": "arm64 / x86_64 架构覆盖",
@@ -1860,7 +1861,8 @@
         "target_status": "unknown",
         "impact": "影响浏览器与 Node 原生插件的预编译包选择",
         "source": "references/harmony-pc-capabilities.json#arch",
-        "id": "ta:4"
+        "id": "ta:4",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -1900,6 +1902,20 @@
     "porting_class_model": "needs_adaptation_full",
     "effort": {
       "level": "medium"
+    },
+    "confidence_model": null,
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
     }
   },
   "meta": {
@@ -1912,36 +1928,7 @@
       "Playwright's core feasibility on HarmonyOS PC depends on whether Chromium/WebKit browser engine binaries for OHOS exist; this is currently unknown.",
       "Production scope includes browser_patches and utils/doclint tooling, which are not part of the core npm runtime library but were counted as production code by the line counter."
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "framework",
-        "rationale": "Playwright 兼具库、CLI 与测试框架属性；它比单一 library 更接近 framework/tool，因此 kind 取 framework。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "package_manager_then_bundled",
-        "rationale": "运行时 npm 依赖先通过 npm 安装，再由 esbuild 打包进 utilsBundle.js/coreBundle.js，acquisition 填 package_manager，但需额外说明 bundled 形态。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "gap",
-        "value": "browser_patch_embedder",
-        "rationale": "browser_patches 中的 C++ 代码不是库本身调用，而是构建浏览器二进制时使用的补丁/启动器；其平台 API 用法是否应计入库的平台依赖需要 skill 明确口径。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "provide_ohos_browser_binaries",
-        "rationale": "对 Playwright 这类浏览器自动化框架，适配路径首要取决于外部浏览器引擎二进制是否可用，现有推荐路径无法精确描述。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cap_miss:gui",
@@ -1949,6 +1936,7 @@
         "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   }
 }

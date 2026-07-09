@@ -1523,8 +1523,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（整包桌面应用模型 C；应用以已移植 JDK 17/8 运行，原生 agent 需 OHOS NDK 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1533,7 +1532,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "port_as_desktop_app_rebuild_agent",
     "summary": "VisualVM 是桌面 Java 应用，能否鸿蒙化首先取决于鸿蒙 PC JDK 是否支持 headful AWT/Swing 及 JDK 内部模块（attach/jvmstat/JVMTI）。在目标事实未核实前无法判定为可行。即便 JDK 能力具备，仍需用 OHOS NDK 重编 profiler 原生 agent、替换/适配 Windows 专用启动器、验证 NetBeans RCP 窗口系统，并评估跨进程 attach 权限。核心 Profiler 功能所依赖的预编译 libprofilerinterface 无现成 OHOS 版本，是主要部分不可适配点。",
     "blockers": [
       {
@@ -1663,7 +1661,9 @@
           "visualvm/libs.profiler/lib.profiler/native/src-jdk15/attach.c:91-144",
           "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Timers.c:68-88",
           "visualvm/libs.profiler/lib.profiler/native/src-jdk15/Threads.c:236-310"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1673,7 +1673,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "VisualVM 所有 Swing 组件与系统托盘都依赖 headful AWT；不支持则无法显示任何界面。",
-        "source": "references/harmony-pc-capabilities.json#gui.awt_headful"
+        "source": "references/harmony-pc-capabilities.json#gui.awt_headful",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:swing",
@@ -1681,7 +1682,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "整个桌面 UI 与 NetBeans RCP 建立在 Swing 之上；不支持则应用无法运行。",
-        "source": "references/harmony-pc-capabilities.json#gui.swing"
+        "source": "references/harmony-pc-capabilities.json#gui.swing",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:netbeans_rcp",
@@ -1689,7 +1691,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "VisualVM 的模块管理、TopComponent 窗口、菜单、自动更新依赖 NetBeans Platform；需 Swing/AWT 与桌面窗口管理器配合。",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.docking"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.docking",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jdk_attach",
@@ -1697,7 +1700,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本地进程发现、堆转储、jcmd、Profiler attach 均依赖该模块；缺失则核心监控能力不可用。",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_attach"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_attach",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jdk_jvmstat",
@@ -1705,7 +1709,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本地 JVM 进程枚举与运行时计数器读取依赖该模块；缺失则进程树为空。",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_jvmstat"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_jvmstat",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jvmti",
@@ -1713,7 +1718,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Profiler 原生 agent 依赖 JVMTI 进行 instrumentation、线程控制、计时；缺失则采样/分析功能不可移植。",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals.jvmti"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.jvmti",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:add_opens",
@@ -1721,7 +1727,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "visualvm.conf 默认大量 --add-exports/--add-opens 以访问 JDK 内部包；不支持则启动即失败。",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals.add_opens"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.add_opens",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cross_attach",
@@ -1729,7 +1736,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Profiler/采样器必须 attach 到其它 JVM；沙箱或权限限制会使核心功能失效。",
-        "source": "references/harmony-pc-capabilities.json#process_security.cross_attach"
+        "source": "references/harmony-pc-capabilities.json#process_security.cross_attach",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ptrace",
@@ -1737,7 +1745,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "部分高级诊断能力可能受限；非核心功能。",
-        "source": "references/harmony-pc-capabilities.json#process_security.ptrace"
+        "source": "references/harmony-pc-capabilities.json#process_security.ptrace",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:tray",
@@ -1745,7 +1754,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "systray 插件功能；缺失时可禁用。",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.tray"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.tray",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1753,7 +1763,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 VisualVM 能否以现有形态在鸿蒙 PC 上打包并启动；若仅支持 .hap 则需重写启动与交付流程。",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1783,7 +1794,23 @@
       "根据鸿蒙应用交付形态（zip 桌面应用 vs .hap）调整打包与签名流程。"
     ],
     "notes": "本评估按整包桌面应用模型 C 进行。由于多个关键目标能力（headful AWT/Swing、JDK 内部模块、JVMTI、跨进程 attach、传统桌面交付形态）在 harmony-pc-capabilities.json 中均为 unknown，置信度下调至 medium；在相关事实核实前不能判定为可行。Windows 启动器中的 Win32 注册表/SHGetFolderPath 调用仅影响 Windows 构建，不构成鸿蒙端口的全局阻碍。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:libprofilerinterface"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1793,36 +1820,15 @@
     "warnings": [
       "本报告为整包桌面应用评估（模型 C），大量结论依赖鸿蒙 PC JDK/桌面环境的目标事实，需人工核实 harmony-pc-capabilities.json 中相关条目。"
     ],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "VisualVM 是终端用户启动的桌面工具，有 launcher、zip 分发、GUI，不是被 API 调用的库；应在 kind 中明确标识。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build",
-        "rationale": "NetBeans Platform 作为 RCP 框架通过官方发布 zip 下载并解压到构建目录，不是 Maven/Gradle 依赖；使用 download_build 描述。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "system_tray",
-        "rationale": "VisualVM 的 systray 插件使用 java.awt.SystemTray，是桌面集成的一个独立场景，推荐场景清单中未包含，应补充。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "new_value",
-        "value": "jdk_internal_api",
-        "rationale": "Java 桌面监控工具大量依赖 jdk.attach/jdk.internal.jvmstat/com.sun.management 等 JDK 内部 API，现有 blocker category 未突出此类，应作为独立类别。"
+        "code": "ua_func_class_defaulted:ua:libprofilerinterface",
+        "class": "actionable",
+        "message": "unadaptable_api ua:libprofilerinterface 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

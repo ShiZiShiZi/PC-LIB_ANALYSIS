@@ -494,7 +494,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -512,7 +511,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若鸿蒙 PC 无 C++14 编译器则无法编译",
-        "source": "references/harmony-pc-capabilities.json runtimes 段——C/C++ 编译工具链随 OHOS NDK 提供"
+        "source": "references/harmony-pc-capabilities.json runtimes 段——C/C++ 编译工具链随 OHOS NDK 提供",
+        "target_status_model": "available"
       },
       {
         "id": "ta:boost_headers",
@@ -520,11 +520,11 @@
         "required": true,
         "target_status": "available",
         "impact": "若鸿蒙 PC 无 Boost 则需替换为标准库等价实现",
-        "source": "cmd-pkgs 已提供 boost 预编译包"
+        "source": "cmd-pkgs 已提供 boost 预编译包",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "pycxx 是纯 C++ 编译器前端工具，无 GUI/硬件/平台 API 依赖，仅有一个条件编译的 POSIX cxxabi.h 调用。使用 OHOS NDK 交叉编译即可移植，Boost 已在鸿蒙 PC 预编译包中可用，variantxx 是 header-only 的 git submodule 可直接包含。仅需确保编译工具链支持 C++14。",
     "blockers": [],
     "compatible": [
@@ -560,7 +560,21 @@
       "验证 abi::__cxa_demangle 在 OHOS NDK 的可用性（_type_name.hpp 条件守卫，不可用时降级为 mangled 名）"
     ],
     "notes": "项目规模极小（约 1400 行生产代码），无 GUI/网络/设备依赖，移植难度极低。_type_name.hpp 中的 abi::__cxa_demangle 已被 #ifndef _MSC_VER 守卫，属于条件编译的平台特有代码，即使 OHOS NDK 不提供该符号，type_name 功能仅降级为返回 mangled 名而非编译失败。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -568,22 +582,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "new_value",
-        "value": "tool",
-        "rationale": "pycxx 是一个编译器前端工具——它不作为库被 API 调用（无 package_name/无 install 目标），也不是终端用户直接运行的完整应用（无打包/无 GUI），而是开发者通过 make 编译后使用的编译工具。归为 tool 最贴切。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_cxxabi",
-        "rationale": "cxxabi.h 是 GCC/Clang 的 C++ ABI 支持库头文件，提供 __cxa_demangle 等符号。它不属于标准 POSIX API，也不完全是编译器扩展，而是 C++ 运行时 ABI 的平台实现。现有推荐 type（posix/win32/cpp_stl 等）无法精确覆盖，单独列为 posix_cxxabi。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

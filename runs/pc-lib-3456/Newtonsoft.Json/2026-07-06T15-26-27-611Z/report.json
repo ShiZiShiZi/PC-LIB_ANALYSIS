@@ -660,7 +660,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -669,7 +668,6 @@
       "level": "very_low"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Newtonsoft.Json 为纯 .NET 托管库，无原生扩展、无平台特有 API、无 P/Invoke、无动态库加载、无网络/文件/进程/设备等外部依赖。只要鸿蒙 PC 上存在可用的 .NET 运行时，该库即可直接运行，无需任何代码改动。唯一不确定性在于鸿蒙 PC 是否已移植 .NET 运行时——当前 harmony-pc-capabilities.json 未记录该事实，因此置信度为 medium。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -680,7 +678,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无可用 .NET 运行时，则整个库无法运行；若有则零改动直接可用",
-        "source": "harmony-pc-capabilities.json 无 .NET 运行时条目"
+        "source": "harmony-pc-capabilities.json 无 .NET 运行时条目",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -699,7 +698,21 @@
       "验证条件编译特性（如 Reflection.Emit 在鸿蒙 .NET 上是否可用；不可用时库有 LateBound 回退路径）"
     ],
     "notes": "评估按模型 A（库跑在已移植运行时上）。Newtonsoft.Json 是纯托管库，所有 API 调用均来自 .NET BCL（System.IO、System.Reflection、System.Collections 等），无任何平台特有依赖。.NET 运行时本身的可移植性是该库能否在鸿蒙运行的唯一前提。若鸿蒙 PC 无 .NET 运行时，则需先移植 .NET（工作量不属于本库）。confidence 因 .NET 运行时状态 unknown 而非 high。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Newtonsoft.Json",
@@ -720,19 +733,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime",
-        "rationale": "harmony-pc-capabilities.json 无 .NET 运行时条目，无法确认鸿蒙 PC 是否已移植 .NET；此为该库能否运行的唯一前提，导致 confidence 只能为 medium"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Newtonsoft.Json 为纯数据序列化库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

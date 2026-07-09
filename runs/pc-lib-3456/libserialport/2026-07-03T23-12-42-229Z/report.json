@@ -1492,8 +1492,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（原生 C 库经 OHOS NDK/musl 交叉编译；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         12,
@@ -1502,7 +1501,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_ohos_backend",
     "summary": "libserialport 是跨平台 C 串口库，核心 open/read/write/termios 逻辑与公共 API 可在 OHOS NDK 上复用，但鸿蒙 PC 不是 Linux，无法直接使用 Linux sysfs/termios2/termiox 等专有后端。需新增一个 ohos.c 平台后端，替代枚举与元数据获取，并验证 termios/ioctl/设备文件可用性。由于鸿蒙串口/USB 设备 API 的可用性尚未核实，当前置信度为 medium。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1512,7 +1510,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Linux/macOS/FreeBSD 后端的核心打开、配置、读写、信号控制均依赖 termios 与上述 ioctl；若缺失则 POSIX 路径无法直接编译运行，需整体换用鸿蒙专有串口 API。",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial（intro：OHOS NDK musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial（intro：OHOS NDK musl + POSIX 子集）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_devtty",
@@ -1520,7 +1519,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "POSIX open/read/write 依赖设备文件路径；若鸿蒙 PC 设备节点命名或权限模型不同，需调整后端路径与权限申请。",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_serial_enum",
@@ -1528,7 +1528,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "sp_list_ports 与 get_port_details 的枚举、USB VID/PID/厂商/产品/序列号、蓝牙地址获取需要鸿蒙等价机制（如 @ohos.usb / @ohos.bluetooth 或 NDK 接口）。",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial / #hardware_devices.bluetooth"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial / #hardware_devices.bluetooth",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_flock",
@@ -1536,7 +1537,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "排他打开串口当前使用 flock + TIOCEXCL；缺失 flock 时可通过 TIOCEXCL 或其他机制降级。",
-        "source": "references/harmony-pc-capabilities.json#process_security.sandbox"
+        "source": "references/harmony-pc-capabilities.json#process_security.sandbox",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1685,7 +1687,21 @@
       "在鸿蒙 PC 上运行 examples 验证枚举、配置、读写功能"
     ],
     "notes": "评估按库模型 A（C 库经 OHOS NDK 重编）进行。当前核心风险在于鸿蒙 PC 的串口/USB/蓝牙设备访问 API 与设备节点模型均为 unknown：若 OHOS 提供 POSIX termios + /dev/tty 等价路径，则工作量为新增后端；若完全不提供，则 porting_class 将收紧为 needs_adaptation_partial 或 infeasible，需改用 @ohos.* 整体重写 I/O 路径。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libserialport",
@@ -1711,7 +1727,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目仅涉及硬件串口/USB/蓝牙通信场景，不涉及 GUI、3D 渲染或媒体处理；其鸿蒙适配难点集中在串口/USB 设备访问 API 与权限模型是否可用。",

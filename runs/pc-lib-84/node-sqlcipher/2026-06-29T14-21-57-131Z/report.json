@@ -1480,8 +1480,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1498,7 +1497,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植到鸿蒙 PC，N-API 插件可编译；此为最核心前提",
-        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:crypto_backend",
@@ -1506,7 +1506,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SQLCipher 需要加密后端提供 AES 实现；若鸿蒙无 libcrypto 等价则需适配 SQLCipher 的 crypto provider 接口",
-        "source": "references/harmony-pc-capabilities.json — 无对应条目"
+        "source": "references/harmony-pc-capabilities.json — 无对应条目",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:pthread",
@@ -1514,7 +1515,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 基于 musl libc，提供 pthread 支持；互斥锁可直接使用",
-        "source": "OHOS NDK 文档"
+        "source": "OHOS NDK 文档",
+        "target_status_model": "available"
       },
       {
         "id": "ta:nodegyp_toolchain",
@@ -1522,11 +1524,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "原生插件需在鸿蒙 PC 上编译；需 node-gyp + 编译器可用",
-        "source": "待核实"
+        "source": "待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "node-sqlcipher 需要在鸿蒙 PC 上用 OHOS NDK 重新编译 C++ 原生插件和内嵌的 SQLCipher amalgamation。核心挑战是 SQLCipher 的加密后端：macOS 使用 CommonCrypto，Linux 使用 OpenSSL libcrypto——鸿蒙需选择或适配一种加密 provider（可能需编写自定义 SQLCipher crypto provider 对接鸿蒙的 @ohos.security.cryptoFramework 或 musl 自带的 crypto 功能）。SQLite/SQLCipher 本身高度可移植（纯 C amalgamation），pthread_mutex 在 OHOS NDK 可用，libuv 和 N-API 随 Node.js 提供。总体可行但需适配加密后端。",
     "blockers": [
       {
@@ -1607,7 +1609,21 @@
       "运行完整 mocha 测试套件验证功能正确性"
     ],
     "notes": "生产代码范围：deps/（SQLCipher amalgamation）、src/（C++ 绑定）、lib/（JS 封装）为生产代码；test/、examples/ 排除。平台守卫代码（platform_adaptation 统计 2559 行）主要来自 SQLCipher amalgamation（跨平台加密后端选择 + Win32/POSIX 线程），实际需要适配的仅是加密 provider 选择逻辑。crypto_backend 目标状态为 unknown 导致 confidence 降为 medium",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1615,43 +1631,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "sqlite3",
-        "rationale": "SQLite C API 是独立的标准库类型，不属 posix/cpp_stl/node_core，需单独分类"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "commoncrypto",
-        "rationale": "macOS CommonCrypto/Security.framework 是平台专有加密 API，区别于 openssl_libcrypto"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "openssl_libcrypto",
-        "rationale": "Linux 下动态链接系统 libcrypto，是平台条件依赖而非标准库"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "framework_link",
-        "rationale": "macOS Security.framework 通过 -framework 链接，区别于 system/vendored/package_manager"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "cross_compile",
-        "rationale": "本库需用 OHOS NDK 重编译 C/C++ 代码，非纯重编（有加密后端适配），但也非完全重写——交叉编译并适配 provider 最贴切"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

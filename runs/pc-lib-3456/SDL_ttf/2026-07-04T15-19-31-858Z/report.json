@@ -1367,7 +1367,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK 模型 A：C 库经 OHOS NDK cross-compile 为 .so，供鸿蒙原生应用或已移植运行时上运行的其他库链接使用；自研内核、非 Linux ABI；arm64/x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         4,
@@ -1376,7 +1375,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "SDL_ttf 是纯 C 字体渲染封装库（封装 FreeType/HarfBuzz/PlutoSVG），自身不直接调用任何平台特有系统 API——所有 OS 级操作均通过 SDL3 的跨平台抽象层间接完成。核心技术路径：用 OHOS NDK（musl + clang）交叉编译本库及其 C 依赖，生成 arm64/x86_64 .so 即可；CPU SIMD 优化路径（SSE2/NEON）有运行时检测与通用标量回退，不影响可移植性。主要不确定性来自 SDL3 自身在鸿蒙 PC 的可用状态（未知），若 SDL3 尚未适配则本库需先等待或协助 SDL3 适配。",
     "blockers": [
       {
@@ -1434,7 +1432,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SDL_ttf 完全依赖 SDL3 的公共 API 和构建系统——若 SDL3 无法在鸿蒙 PC 上编译运行，本库也无法工作",
-        "source": "references/harmony-pc-capabilities.json —— SDL3 未在已知已鸿蒙化清单中"
+        "source": "references/harmony-pc-capabilities.json —— SDL3 未在已知已鸿蒙化清单中",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:freetype_harfbuzz_portable",
@@ -1442,7 +1441,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FreeType 是强制依赖（字体引擎核心），HarfBuzz 可选——两者均为纯 C/C 标准库代码，理论上 OHOS NDK 可编译，但需实际验证 musl 兼容性",
-        "source": "references/harmony-pc-capabilities.json —— FreeType/HarfBuzz 未在已知已鸿蒙化清单中"
+        "source": "references/harmony-pc-capabilities.json —— FreeType/HarfBuzz 未在已知已鸿蒙化清单中",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_subset",
@@ -1450,7 +1450,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本库依赖 SDL3 的内存/IO/锁抽象层，不直接调 POSIX API——但 vendored FreeType/HarfBuzz 直接使用标准 C 库，需确认 musl 提供所需符号",
-        "source": "references/harmony-pc-capabilities.json —— musl POSIX 子集覆盖范围待核实"
+        "source": "references/harmony-pc-capabilities.json —— musl POSIX 子集覆盖范围待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1494,7 +1495,21 @@
       "在鸿蒙 PC 上验证字体加载与渲染功能的完整性（优先测试 surface 文本引擎，再逐步验证 GPU/OpenGL 引擎）"
     ],
     "notes": "信心度为 medium 主要因为 SDL3 在鸿蒙 PC 的可用状态未知——本库完全依赖 SDL3 的跨平台能力，若 SDL3 可编译运行则本库 migration 难度极低（仅交叉编译 + 验证）。FreeType/HarfBuzz/PlutoSVG 均为纯标准 C/C 代码，理论上 OHOS NDK 可直接编译。无 unadaptable_apis——所有功能基于标准 C + 跨平台 SDL3 API + SIMD 运行时检测 + 标量回退。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "SDL_ttf",
@@ -1521,30 +1536,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "sdl3_api",
-        "rationale": "SDL3 API 跨平台抽象层——既不是标准库也不是平台 API，其自身提供跨 OS 的图形/窗口/IO 能力。归为 category:standard 因为 SDL3 的设计目标就是提供跨平台标准接口"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "freetype_api / harfbuzz_api",
-        "rationale": "FreeType 和 HarfBuzz 的 C API 是较通用的跨平台第三方库接口。它们通过被链接（非动态加载）来使用，介于 standard（语言标准）和 platform（OS 专有）之间——分类为 standard/portable 因为它们自身就是跨平台库"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "name",
-        "kind": "ambiguity",
-        "value": "harfbuzz windows-backend libs",
-        "rationale": "usp10/gdi32/rpcrt4 是 Windows 上 HarfBuzz 的内部后端链接依赖，不是 SDL_ttf 直接依赖。但它们在 CMakeLists 中以 target_link_libraries 明确声明，故作为一条 build/optional 平台依赖列出——这种「依赖的依赖的构建链接」需要判断"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "SDL_ttf 是 SDL3 的字体渲染伴侣库，不直接操作 GPU/窗口/硬件设备，而是通过 SDL3 抽象层间接使用 GPU 纹理和渲染器。生产代码内嵌 SSE2/NEON SIMD 优化（带运行时检测与通用回退路径），无特定硬件依赖。",

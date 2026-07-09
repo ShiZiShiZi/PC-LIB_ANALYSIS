@@ -67,6 +67,12 @@ native_api 重扫**。所以这四类的鸿蒙支持状态**以本维度为准�
    `kind` 填 video_decode/audio_capture/codec 等。
 4. **hardware**：GPU 通用计算(CUDA/OpenCL/ROCm)、USB/串口、蓝牙、传感器、摄像头、NPU/FPGA → present。
    **`specific_hardware`**：依赖特定/不可替代硬件（CUDA/NPU/FPGA、特定采集卡）置 true——这是 dim-9 判 `overall:core_blocked`（核心不可适配）的强信号。
+4b. **cpu_simd（CPU 架构耦合）**：生产代码用 x86 SIMD intrinsics（SSE/AVX/AVX512，`_mm*`/`__m128/256/512`）、
+   内联汇编或 CPUID 探测，而**无 ARM NEON 等价路径** → present，`key:"cpu_simd"`，`kind` 填 `simd`/`inline_asm`。
+   `via`/`evidence` 引 `native_api` 的 `arch_simd` 组与 `code_metrics.arch_specific`（`by_arch.x86.simd_loc` 有量而无 arm 键即"仅 x86"）。
+   `harmony_status`（鸿蒙 PC 为 arm64）：**x86-only SIMD 若有标量回退（编译宏/运行时降级）能正确编译运行 → `partial`（能力在但性能降级）；
+   完全无回退、arm64 构建即失败 → `unavailable`**。`specific_hardware` 一般 **false**（SIMD 是可退化的性能优化，非绑定特定硬件）。
+   `adaptation` 只一句描述（如"x86 SIMD 加速，arm64 需补 NEON 或退标量"），**不下移植结论**——dim-9 step 10 据本场景产 `arch_specific_asm` blocker。
 5. 每个 present 场景对照 `references/harmony-pc-capabilities.json`（3D/媒体/硬件/GUI 段）判 `harmony_status`：
    目标事实 available→不阻碍；partial→部分；unavailable→阻碍；**查不到对应事实→`unknown`**（诚实，别臆断），
    dim-9 会据 unknown 下调 confidence。**这一步是这四类鸿蒙支持状态的唯一判定点**（dim-9 直接采用，不重判）。
@@ -82,6 +88,7 @@ native_api 重扫**。所以这四类的鸿蒙支持状态**以本维度为准�
 - 3D：`libGL/libEGL/libGLES`、`vulkan`/`libvulkan`、`d3d11/d3d12/dxgi`、`Metal`、`OpenGL.framework`、着色器 `.glsl/.spv`。
 - 媒体：`ffmpeg/libav*`、`gstreamer`、`portaudio/libasound/pulse`、`libvpx/x264/openh264`、`opencv`(含视频)、摄像头 `v4l2`/`AVFoundation`/`DirectShow`。
 - 硬件：`cuda/cudart/nvcc`、`opencl`、`libusb`、串口 `termios`/`SetupComm`、蓝牙 `bluez`/`Winsock BT`、传感器/`/dev/*`。
+- CPU 架构/SIMD（cpu_simd）：`immintrin.h`/`x86intrin.h`/`intrin.h`、`_mm256_*`/`_mm512_*`/`__m128`、内联 `__asm__`/`cpuid`；ARM 侧 `arm_neon.h`/`float32x4_t`/`vld1q_*`。仅见 x86 而无 ARM → arm64 适配点（多为可退化的性能优化）。
 
 ## 自我发现（反哺）
 

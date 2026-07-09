@@ -1868,8 +1868,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（CLI 应用口径；跑在已移植 Python 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1878,7 +1877,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_python + recompile_native_attach_and_cython",
     "summary": "debugpy 主体为纯 Python，可在鸿蒙已移植 Python 上直接运行；主要工作量是为 OHOS NDK 重编 pydevd Cython 扩展与 attach_to_process 原生二进制。--pid 跨进程附加功能依赖 gdb/lldb/ptrace，鸿蒙相关能力尚未核实，是置信度下调的主因。",
     "blockers": [
       {
@@ -1934,7 +1932,8 @@
         "required": true,
         "target_status": "available",
         "impact": "debugpy 为 Python 包，主体逻辑依赖已移植 Python 运行时",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cross_attach",
@@ -1942,7 +1941,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "--pid 附加功能依赖 gdb/lldb/ptrace 或等价能力；若不支持则该功能不可用",
-        "source": "references/harmony-pc-capabilities.json#process_security.cross_attach"
+        "source": "references/harmony-pc-capabilities.json#process_security.cross_attach",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -1950,7 +1950,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "DAP 适配器与启动器需派生 Python 子进程；受限时 launch 调试会失败",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1958,7 +1959,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "debugpy 作为 CLI 工具需以 Python 包或命令行应用形式安装分发",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2013,7 +2015,21 @@
       "若跨进程 attach 不可行，则在 CLI/API 中对 --pid 模式给出明确降级提示或禁用"
     ],
     "notes": "按 CLI 应用口径评估（library.kind=application）。GUI/桌面集成不是必需。跨进程 attach 与外部进程派生在鸿蒙 PC 上的可用性尚未核实，因此整体置信度为 medium；若目标平台最终不支持 ptrace/gdb/lldb，则 --pid 功能需要从 needs_adaptation_full 降级为 needs_adaptation_partial。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2021,22 +2037,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "application vs cli",
-        "rationale": "debugpy 既是可 import 的 Python 库，也是终端用户直接运行的 CLI 工具；按代理说明中“终端用户启动运行的应用（桌面/CLI）”口径，判为 application，但亦可用 cli/tool 描述其形态。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "cross_process_attach",
-        "rationale": "debugpy 不涉及 gui/rendering_3d/media/hardware，但其 attach-to-PID 能力严重依赖跨进程调试接口（ptrace/gdb/lldb/DLL 注入），是鸿蒙适配的关键场景，故新增 cross_process_attach 场景。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

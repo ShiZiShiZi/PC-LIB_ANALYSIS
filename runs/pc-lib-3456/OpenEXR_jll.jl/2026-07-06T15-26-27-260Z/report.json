@@ -533,8 +533,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层 + ArkTS 应用层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -551,7 +550,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时已可用，本 JLL 包装的 Julia 代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json runtimes.julia"
+        "source": "references/harmony-pc-capabilities.json runtimes.julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openexr_native_build",
@@ -559,7 +559,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "OpenEXR C++ 库（含 Imath/zlib 依赖）需用 OHOS NDK 重新编译为 aarch64 架构的共享库；若无预编译包则需自行构建，这是核心工作量所在",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libdl_dlopen",
@@ -567,11 +568,11 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 原生层支持 musl libc 的 dlopen/dlsym，Julia Libdl 可正常工作",
-        "source": "references/harmony-pc-capabilities.json（OHOS NDK 提供 musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json（OHOS NDK 提供 musl + POSIX 子集）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "本 JLL 包装库的 Julia 代码本身可运行在已移植的 Julia 运行时上，无需修改。核心适配工作在于：需使用 OHOS NDK 交叉编译 OpenEXR C++ 库（含 Imath、zlib 依赖）为 aarch64-ohos 共享库，并生成对应的 Julia wrapper 脚本（aarch64-ohos 平台变体），然后通过 Julia Artifacts 机制分发该预编译二进制。没有平台特有 API 阻碍，OpenEXR 本身是跨平台 C++ 库，主要依赖 POSIX 标准接口和 zlib/Imath，均可在 OHOS NDK 环境中编译。",
     "blockers": [
       {
@@ -631,7 +632,21 @@
       "测试 Julia 中通过 ccall 调用 OpenEXR 库的基本功能"
     ],
     "notes": "Julia 运行时已移植到 HarmonyOS PC（1.10.6），因此该 JLL 包装的 Julia 层代码无需修改。OpenEXR 的 target_status 为 unknown——虽然 OpenEXR 是标准 C++ 跨平台库，主要依赖 POSIX + zlib，理论上可编译，但尚未有已验证的 OHOS 构建实例，因此 confidence 为 medium。若 OpenEXR 及其依赖可成功交叉编译（高概率），实际工作量主要在构建配置调试而非代码修改。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "OpenEXR_jll",
@@ -658,23 +673,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia JLL 包装库的生态系统不属于 python/java/nodejs/cpp/rust/go/dotnet 中的任何一种，使用 other 表示 Julia 生态"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "julia_stdlib",
-        "rationale": "Julia 标准库（Libdl）不属于现有推荐类型（win32/posix/cpp_stl/python_stdlib/java_std/node_core/syscall/ctypes_ffi/jni/opengl/directx/arch_simd），需新增以准确描述"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "OpenEXR 是高动态范围图像格式库，本身不涉及 GUI/3D 渲染/媒体播放/特定硬件等鸿蒙适配重点场景。它是纯计算/文件 I/O 库，读写 EXR 图像文件格式，不直接使用 GPU 加速或硬件设备。",

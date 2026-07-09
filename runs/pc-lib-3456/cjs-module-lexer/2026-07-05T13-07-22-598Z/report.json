@@ -723,7 +723,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; 预编译 Wasm 可直接运行, 无需重编; arm64/x86_64; 自研内核, 非 Linux ABI)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -732,7 +731,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "cjs-module-lexer 为纯 JavaScript/WebAssembly 库，零运行时依赖，无平台特有 API 调用。鸿蒙 PC 已移植 Node.js 24 运行时，WebAssembly API 为标准能力可直接使用，该库无需任何适配即可在鸿蒙 PC Node.js 下运行。预编译的 Wasm 二进制为平台无关格式，无需重编。至多需要注意 npm 包的安装与打包。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -743,7 +741,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库运行所需的 JS 运行时（含 WebAssembly API 支持）",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -775,7 +774,21 @@
       "运行 npm test 验证语法分析与导出检测功能正常"
     ],
     "notes": "此为模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）评估。库为纯 JS + 预编译 Wasm 形态，零原生扩展，零平台耦合，是最理想的移植场景——工作量仅安装与验证。若目标是 ArkTS 沙箱应用（模型 B），则 Node 运行时不可用，需将词法分析器整体用 ArkTS 重写，结论将收紧。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -798,7 +811,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "纯文本处理/解析库，不涉及 GUI、3D 渲染、媒体或特定硬件等鸿蒙适配重点场景。",

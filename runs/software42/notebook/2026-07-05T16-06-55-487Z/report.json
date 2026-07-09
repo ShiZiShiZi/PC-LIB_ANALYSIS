@@ -1355,7 +1355,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C：整包桌面应用。Python 服务端跑在已移植的 Python 3.12 运行时上；前端为浏览器端 Web 应用；arm64/x86_64）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -1363,8 +1362,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
+    "confidence": "medium",
     "summary": "Jupyter Notebook 是纯 Python + TypeScript Web 应用——服务端无任何原生扩展或平台特有 API，仅依赖标准 Python 库和 Tornado Web 框架；前端完全运行在浏览器中。鸿蒙 PC 已移植 Python 3.12 运行时，因此可直接 pip install 运行。唯一弱依赖是默认 MathJax CDN 配置可改为本地路径。整体无需任何代码改造，只需在鸿蒙 PC 上安装 Python、pip install notebook、启动即可通过浏览器访问。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1375,7 +1373,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 服务端依赖 Python 3.10+ 运行时；鸿蒙已移植 Python 3.12，该能力满足，不构成阻碍。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:web_browser",
@@ -1383,7 +1382,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Jupyter Notebook 作为 Web 应用需要浏览器承载前端界面；鸿蒙 PC 是否有兼容浏览器尚待核实，但该问题不涉及本代码库的改造——是平台/用户侧环境问题，非代码迁移阻碍。",
-        "source": "references/harmony-pc-capabilities.json（未专门登记浏览器能力）"
+        "source": "references/harmony-pc-capabilities.json（未专门登记浏览器能力）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1431,7 +1431,21 @@
       "运行 pytest 单元测试和 jlpm jest 前端测试以验证功能完整性"
     ],
     "notes": "按模型 C（整包桌面应用）评估。Jupyter Notebook 作为 Web 应用的特殊性：代码本身与操作系统解耦（Python 服务端→已移植的 Python 运行时；前端→浏览器），因此 porting_class 为 no_adaptation。唯一未核实的目标假设是鸿蒙 PC 上是否有兼容的现代 Web 浏览器——但这属于平台环境问题而非代码迁移工作，不计入 person_days。如鸿蒙 PC 无浏览器，需单独部署浏览器或考虑将前端改造为 ArkUI 原生应用（模型 B），届时 effort 显著上升至 [20, 60] person_days 且 porting_class 升至 needs_adaptation_partial。MathJax 默认配置引用 cdnjs 外部 CDN，可配置为本地路径消除外部依赖。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "notebook",
@@ -1456,47 +1470,19 @@
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application (Web 应用)",
-        "rationale": "Jupyter Notebook 是终端用户通过 CLI 启动、浏览器访问的 Web 应用，既非被 API 调用的库也非传统原生桌面应用。其`library.kind=application`采用模型 C 评估但实际情况特殊：无原生 GUI 工具包、无平台耦合、前端运行在浏览器中，导致其可移植性接近纯脚本库而非典型桌面应用。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "gap",
-        "value": "web_platform",
-        "rationale": "TypeScript 前端代码中使用了浏览器 DOM API（document.createElement、window.addEventListener）和 Webpack/Rspack Module Federation 运行时 API（__webpack_init_sharing__、_JUPYTERLAB），这些是标准 Web 平台 API 而非传统意义上的 native API 分组，当前推荐分类（standard/platform/system/ffi/hardware）不完全覆盖。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "gap",
-        "value": "gui via web browser",
-        "rationale": "gui 场景的 kind 推荐值（qt/gtk/swing/electron 等）均为原生工具包，web 应用通过浏览器渲染 GUI 的情况缺乏匹配项。本分析使用 kind=['web','jupyterlab_ui'] 并记录此观察，建议后续补充 web 相关 kind 值。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "package_manager 对 yarn 工作区 monorepo",
-        "rationale": "本仓库自身是 yarn workspaces monorepo，多个内部 @jupyter-notebook/* 包通过 yarn workspace 协议互相引用（本地包，非远端 npm registry 依赖）。在依赖清单中已将这些内部包排除（仅报告与 monorepo 同名命名空间），但 acquisition 分类对此类 workspace:协议 内部的本地解析尚无精确对应项。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "warnings": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Jupyter Notebook 是基于 Web 的交互式计算环境——Python 后端提供 HTTP/WebSocket 服务，前端（TypeScript/JupyterLab/Lumino）完全运行在浏览器中。无原生 GUI 工具包(Qt/GTK/Swing 等)、无 3D 渲染、无原生媒体编解码、无特定硬件依赖——所有界面渲染由浏览器处理。内置的视频/音频/PDF/Vega 扩展仅为 JupyterLab 浏览器端 MIME 渲染器，不调用原生媒体库。",

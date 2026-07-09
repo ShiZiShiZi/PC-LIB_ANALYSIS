@@ -1260,8 +1260,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 库经 OHOS NDK/musl 交叉编译，arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         12,
@@ -1270,7 +1269,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile_with_ohos_ndk",
     "summary": "Apache Log4cxx 核心为跨平台 C++ 日志框架，移植到鸿蒙 PC 的主要工作是用 OHOS NDK 交叉编译 APR-Util 与 log4cxx 自身，并处理可选的 Windows 专用 Appender 在鸿蒙上不可用的问题。APR 与 expat 已有鸿蒙预编译包；网络、文件、异步等核心 Appender 可经 OHOS NDK 复用。Windows NTEventLogAppender 与 OutputDebugStringAppender 依赖 Win32 API，无法在鸿蒙运行，但已在源码中通过 #ifdef 隔离，不影响核心日志功能。",
     "unadaptable_apis": [
       {
@@ -1284,7 +1282,9 @@
         "evidence": [
           "src/main/cpp/nteventlogappender.cpp:229",
           "src/main/cpp/nteventlogappender.cpp:240"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:outputdebugstring",
@@ -1297,7 +1297,9 @@
         "evidence": [
           "src/main/cpp/outputdebugstringappender.cpp:42",
           "src/main/cpp/outputdebugstringappender.cpp:45"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1307,7 +1309,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 库能在鸿蒙原生层编译链接的基础",
-        "source": "harmony-pc-capabilities.json intro / arch"
+        "source": "harmony-pc-capabilities.json intro / arch",
+        "target_status_model": "available"
       },
       {
         "id": "ta:musl_posix",
@@ -1315,7 +1318,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "APR、pthread、socket、zip/gzip 子进程等依赖其可用性；多数可用但部分接口可能缺失或行为有差异",
-        "source": "harmony-pc-capabilities.json intro"
+        "source": "harmony-pc-capabilities.json intro",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:qt_optional",
@@ -1323,7 +1327,8 @@
         "required": false,
         "target_status": "available",
         "impact": "启用 Qt 桥接时需重新编译 log4cxx-qt",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1427,7 +1432,24 @@
       "在鸿蒙 PC 上运行核心单元测试，确认 Console/File/Rolling/Async/PatternLayout 功能完整"
     ],
     "notes": "评估按模型 A（C++ 库经 OHOS NDK 重编后链接到鸿蒙应用）进行。Windows 专用 Appender 已在源码中通过 #ifdef _WIN32 隔离，不会阻塞核心日志功能；若需 Qt 集成，社区 Qt 鸿蒙版可用（非 cmd-pkgs 来源）。zip/gzip 子进程压缩为可选功能，鸿蒙环境中若不允许 spawn 外部命令可关闭该特性。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:nteventlog",
+          "ua:outputdebugstring"
+        ]
+      }
+    }
   },
   "library": {
     "name": "logging-log4cxx",
@@ -1455,30 +1477,21 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "gap",
-        "value": "C++ test framework not detected by cloc regex",
-        "rationale": "metrics.py 的测试用例计数基于正则匹配常见测试惯用法，log4cxx 使用自研 testingUtilities/testingFramework 与大量 XML 测试配置，导致 test_cases=0；实际测试文件 285 个，需结合源码判断。"
+        "code": "ua_func_class_defaulted:ua:nteventlog",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nteventlog 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "ambiguity",
-        "value": "Qt",
-        "rationale": "scripts/harmony_adapted.js（cmd-pkgs 清单）未命中 Qt，但 references/harmony-pc-capabilities.json 标记 Qt 为 available（社区独立移植源）。因此 dim-9 对可选 log4cxx-qt 的评估以目标能力表为准，而非 mirror 脚本。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "macos_dyld",
-        "rationale": "log4cxx 在 system.cpp 中直接使用 _NSGetExecutablePath 获取 macOS 可执行路径，属于 macOS 专有动态链接器 API，不适合归到通用 posix 组，故单独列出 macos_dyld 组。"
+        "code": "ua_func_class_defaulted:ua:outputdebugstring",
+        "class": "actionable",
+        "message": "unadaptable_api ua:outputdebugstring 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   },
   "capability_profile": {
     "summary": "本项目核心为纯 C++ 日志库，不涉及 GUI、3D 渲染、媒体或特定硬件；仅在可选的 log4cxx-qt 桥接模块中触及 Qt 工具包。",

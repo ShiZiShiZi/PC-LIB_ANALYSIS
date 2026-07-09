@@ -598,7 +598,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Node.js 运行时 + OHOS NDK 原生层）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -616,11 +615,11 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 实现依赖 Node.js 运行；Node.js 已官方适配鸿蒙 PC，无需额外工作",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "JS 侧为纯 JavaScript 实现（仅使用 Float32Array，无原生依赖），直接在鸿蒙 PC 已移植的 Node.js 运行时上执行即可，无需任何代码修改。C 侧（src/main.c）为标准 C 实现、无平台 API，如需要则用 OHOS NDK 重新编译即可（recompile_only）。综合判定为 no_adaptation——作为 Node.js npm 包可直接安装运行。",
     "blockers": [],
     "compatible": [
@@ -645,7 +644,21 @@
       "（可选）若需 C 原生 API：用 OHOS NDK 编译 src/main.c"
     ],
     "notes": "依赖项 @stdlib/array-float32、@stdlib/complex-float32、@stdlib/types、@stdlib/utils-library-manifest 均为 stdlib 内部包，同为纯 JS 或标准 C 实现，鸿蒙化后同样适用本结论。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-reimf",
@@ -668,7 +681,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI/3D 渲染/媒体/硬件等鸿蒙适配重点场景。",

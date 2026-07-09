@@ -1011,8 +1011,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C 库经 OHOS NDK/musl libc 交叉编译为 .so，arm64 架构；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1021,7 +1020,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libbsd 本身即为跨平台移植适配层，核心结构极有利于鸿蒙移植：大部分函数（字符串/内存/排序/格式化等）是纯 C 算法逻辑，直接可用 musl C 库重编；需要新增一个 OHOS 平台后端——新增 getentropy 的 OHOS 实现（替换 Linux getrandom/urandom/sysctl 三元回退）、适配 closefrom（缺少 /proc/self/fd 需用 OHOS 文件描述符机制替代）、适配 getpeereid（取决于 OHOS socket 凭据能力）等平台相关模块。整体'新增一个 OHOS 后端'的工作量与现有各平台后端（linux/win/solaris/aix…）的模式一致——在 configure.ac 新增一个 *-ohos* 分支 + 提供 getentropy_ohos.c。唯一外部依赖 libmd 已鸿蒙化，可直接使用。",
     "blockers": [
       {
@@ -1107,7 +1105,9 @@
         ],
         "caused_by": [
           "bk:ohos_getentropy"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:closefrom_procfs",
@@ -1121,7 +1121,9 @@
         ],
         "caused_by": [
           "bk:ohos_closefrom"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:closefrom_close_range",
@@ -1135,7 +1137,9 @@
         ],
         "caused_by": [
           "bk:ohos_closefrom"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1145,7 +1149,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libbsd 大量使用基础 POSIX API（open/read/write/mmap/pthread/socket/fcntl/termios）；若 OHOS musl 对这些支持不完整，移植难度将大幅上升。",
-        "source": "references/harmony-pc-capabilities.json — 未明确列出 musl POSIX 子集覆盖范围"
+        "source": "references/harmony-pc-capabilities.json — 未明确列出 musl POSIX 子集覆盖范围",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_dev_urandom",
@@ -1153,7 +1158,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "arc4random/getentropy 的核心功能依赖随机数熵源；若无等效接口，将需回退到性能较差或安全性较低的方案。",
-        "source": "references/harmony-pc-capabilities.json — 未列出设备文件支持"
+        "source": "references/harmony-pc-capabilities.json — 未列出设备文件支持",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_dev_tty",
@@ -1161,7 +1167,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "readpassphrase 依赖 /dev/tty 和 tcgetattr/tcsetattr 进行终端输入；若不可用，该函数可禁用（可选功能）。",
-        "source": "references/harmony-pc-capabilities.json — 未列出终端支持"
+        "source": "references/harmony-pc-capabilities.json — 未列出终端支持",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -1220,6 +1227,24 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:getentropy_linux_syscalls",
+          "ua:closefrom_procfs",
+          "ua:closefrom_close_range"
+        ]
+      }
     }
   },
   "library": {
@@ -1239,57 +1264,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "gap",
-        "value": "pidfile",
-        "rationale": "pidfile API（pidfile_open/pidfile_write/pidfile_close/pidfile_remove）在 src/pidfile.c 中实现，功能较独立（创建/写入 PID 文件），最终归入'文件描述符与流操作'类别，未单独设类。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "gap",
-        "value": "readpassphrase",
-        "rationale": "readpassphrase（终端密码输入）和 pwcache（passwd/group 缓存）在 libutil API 范围内，归入'数据格式化与编码'类名下有偏差；实际应属'用户/系统信息'范畴但已收敛到最后一个综合类别。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "libmd 的获取方式为 AC_SEARCH_LIBS / expect pre-installed，属于标准 system 获取；推荐值已覆盖。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "ambiguity",
-        "value": "linux_nlist_elf 归为 platform 而非 system",
-        "rationale": "nlist() 读取 ELF 二进制符号表底层用了 open/read/mmap 等标准 POSIX + ELF header 解析；虽涉及二进制格式解析，但依赖的是 POSIX I/O 而非 syscall/内核接口，故归 platform 类而非 system。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "OHOS musl POSIX 子集覆盖范围未在 capabilities 中列出",
-        "rationale": "harmony-pc-capabilities.json 列出了语言运行时/桌面 GUI/JDK 内部/3D/媒体/硬件/权限等，但没有系统级的 musl libc POSIX API 覆盖度清单——这对 C 库的移植评估是核心依赖。建议新增 'posix_subsystem' section。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "OHOS /dev/urandom 可用性未知",
-        "rationale": "capabilities 中未列出设备文件/伪文件系统的支持情况（/dev/urandom、/dev/tty、/proc 等），强烈建议补充。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "confidence",
-        "kind": "gap",
-        "value": "多个 target_assumptions 为 unknown 且 required",
-        "rationale": "OHOS POSIX 子集覆盖和 /dev/urandom 可用性两项均为 core required + unknown，导致 confidence 下调至 medium。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1297,10 +1272,26 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:getentropy_linux_syscalls",
+        "class": "actionable",
+        "message": "unadaptable_api ua:getentropy_linux_syscalls 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:closefrom_procfs",
+        "class": "actionable",
+        "message": "unadaptable_api ua:closefrom_procfs 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:closefrom_close_range",
+        "class": "actionable",
+        "message": "unadaptable_api ua:closefrom_close_range 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libbsd 是纯 C 系统工具函数库，不涉及 GUI 工具包、3D 渲染、音视频媒体或特定硬件设备。其功能集中在字符串处理、安全随机数、文件描述符操作、排序算法等纯计算或标准 POSIX 范畴。",

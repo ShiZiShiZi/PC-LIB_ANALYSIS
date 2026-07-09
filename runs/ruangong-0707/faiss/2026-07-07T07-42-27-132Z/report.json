@@ -1858,8 +1858,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (arm64, OHOS NDK, musl + POSIX 子集)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         109.3,
@@ -1924,7 +1923,9 @@
         "evidence": [
           "faiss/gpu/GpuIndex.cu",
           "faiss/gpu/GpuResources.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metal_compute",
@@ -1936,7 +1937,9 @@
         "category": "hardware",
         "evidence": [
           "faiss/gpu_metal/MetalIndexIVFFlat.mm"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:rdtsc",
@@ -1949,7 +1952,9 @@
         "evidence": [
           "faiss/utils/simd_impl/partitioning_simdlib256.h:236",
           "faiss/utils/utils.cpp:170"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1959,7 +1964,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OnDiskInvertedLists 和 mapped_io 依赖 mmap；若 musl 不支持或受限，磁盘索引功能需重写 I/O 层",
-        "source": "references/harmony-pc-capabilities.json intro: OHOS NDK (musl + POSIX 子集)"
+        "source": "references/harmony-pc-capabilities.json intro: OHOS NDK (musl + POSIX 子集)",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:openmp_ndk",
@@ -1967,7 +1973,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Faiss 核心并行化依赖 OpenMP；若不可用则性能大幅下降，需改为 std::thread 或单线程",
-        "source": "references/harmony-pc-capabilities.json (未明确列出 OpenMP 支持状态)"
+        "source": "references/harmony-pc-capabilities.json (未明确列出 OpenMP 支持状态)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:openblas_harmony",
@@ -1975,7 +1982,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Faiss 距离计算核心依赖 BLAS（矩阵乘法）；若无 OpenBLAS 则需自行编译或替代",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gpu_cuda",
@@ -1983,7 +1991,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA 不可用——GPU 加速索引功能无法移植，但不影响 CPU 核心功能",
-        "source": "references/harmony-pc-capabilities.json id:gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json id:gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:numpy_ohos_wheel",
@@ -1991,7 +2000,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Python 绑定依赖 numpy；若无 ohos wheel 则 Python 接口不可用，仅 C++ API 可用",
-        "source": "OpenHarmony PC PyPI mirror"
+        "source": "OpenHarmony PC PyPI mirror",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arm64_neon",
@@ -1999,7 +2009,8 @@
         "required": false,
         "target_status": "available",
         "impact": "ARM64 NEON 可用——CPU 向量搜索的 SIMD 优化路径可直接复用",
-        "source": "references/harmony-pc-capabilities.json id:arm64"
+        "source": "references/harmony-pc-capabilities.json id:arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -2035,7 +2046,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "Faiss 的 CPU 核心功能（向量搜索与聚类）可在鸿蒙 ARM64 上通过 OHOS NDK 交叉编译运行。项目已有完整的 ARM NEON SIMD 优化路径，是重大利好。主要工作在于：验证 musl 对 mmap/madvise 的支持、确认 OpenBLAS/OpenMP 在鸿蒙上的可用性、适配 Python loader 的平台检测逻辑。GPU 加速后端（CUDA/Metal）不可移植，但为可选功能，不影响核心搜索能力。",
     "blockers": [
       {
@@ -2177,6 +2187,24 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda_runtime",
+          "ua:metal_compute",
+          "ua:rdtsc"
+        ]
+      }
     }
   },
   "library": {
@@ -2204,44 +2232,31 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_framework",
-        "rationale": "Metal 框架作为 macOS 系统框架由平台提供，不同于一般的 system find_package 依赖"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "openmp",
-        "rationale": "OpenMP 编译指示（#pragma omp parallel for）构成一类特殊的并行化 API，不属于 cpp_stl 也不属于 posix"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "arch_simd_neon",
-        "rationale": "SIMD 指令集加速是硬件场景的一个独立子类，与 gpu_cuda 等不同——它不依赖特定厂商 GPU 而是架构固有"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "cross_compile",
-        "rationale": "Faiss 是 C++ 原生库，主要路径是 OHOS NDK 交叉编译，而非 NAPI 封装（那是 Node.js 场景）或 ArkTS 重写"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cuda_runtime",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda_runtime 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:metal_compute",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal_compute 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:rdtsc",
+        "class": "actionable",
+        "message": "unadaptable_api ua:rdtsc 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Faiss 涉及两个鸿蒙适配重点场景：硬件（GPU 计算与 SIMD 加速）和 3D 图形（Metal Compute Shader）。GPU 计算场景中 CUDA 在鸿蒙不可用，Metal 仅限 macOS，但 CPU SIMD（NEON）在 ARM64 鸿蒙上可用。无 GUI、无媒体场景。",

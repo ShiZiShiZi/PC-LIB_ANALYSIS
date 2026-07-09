@@ -1042,8 +1042,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（默认库口径：跑在已移植运行时上；但 Cronet 当前形态为 Android 库，需额外评估 Android API 不可用性）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1052,7 +1051,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "rewrap_cpp_core",
     "summary": "Cronet 的 C++ 网络核心理论可经 OHOS NDK 重编，但其公共 Java API、JNI 注册、Android 系统属性/StatsLog/HttpEngine 包装均深度依赖 Android 运行时与 SDK，在鸿蒙 PC 上无法直接运行。可行路径是：将 C++ 核心从 Android JNI 层解耦，用 OHOS NDK 编译 Chromium //base //net 依赖后，重新以 Node-API 或标准 Java/JNI 包装供鸿蒙应用调用；现有 Android API 层需要大规模重写或废弃。",
     "target_assumptions": [
       {
@@ -1061,7 +1059,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Cronet 公共 API 以 android.content.Context 为入口；鸿蒙 PC 无 Android 运行时，当前 Java/Android 形态不可直接运行",
-        "source": "项目代码公共 API 与 BUILD.gn 均依赖 Android SDK；HarmonyOS PC 非 Android 系统"
+        "source": "项目代码公共 API 与 BUILD.gn 均依赖 Android SDK；HarmonyOS PC 非 Android 系统",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_ndk_chromium",
@@ -1069,7 +1068,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无法编译，则连 C++ 核心也无法复用，项目将接近 infeasible",
-        "source": "references/harmony-pc-capabilities.json#runtimes 仅保证语言运行时，未覆盖 Chromium 庞大专有构建栈"
+        "source": "references/harmony-pc-capabilities.json#runtimes 仅保证语言运行时，未覆盖 Chromium 庞大专有构建栈",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_posix_socket",
@@ -1077,7 +1077,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "//net 依赖 POSIX socket 与部分 Linux 特定实现；OHOS NDK POSIX 子集可能缺失或需补丁",
-        "source": "references/harmony-pc-capabilities.json#runtimes / POSIX 子集为 partial"
+        "source": "references/harmony-pc-capabilities.json#runtimes / POSIX 子集为 partial",
+        "target_status_model": "partial"
       }
     ],
     "unadaptable_apis": [
@@ -1093,7 +1094,9 @@
         "category": "platform",
         "evidence": [
           "android/api/src/org/chromium/net/CronetEngine.java:154"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:android_system_properties",
@@ -1108,7 +1111,9 @@
         "evidence": [
           "android/java/src/org/chromium/net/impl/AndroidOsSystemProperties.java:19",
           "android/cronet_library_loader.cc:149"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:android_statslog",
@@ -1122,7 +1127,9 @@
         "category": "platform",
         "evidence": [
           "android/java/src/org/chromium/net/telemetry/CronetStatsLog.java:14"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:android_httpengine",
@@ -1136,7 +1143,9 @@
         "category": "platform",
         "evidence": [
           "android/java/src/org/chromium/net/impl/HttpEngineNativeProvider.java:8"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [
@@ -1243,7 +1252,26 @@
       "移除或替换 Android 遥测（StatsLog、ATrace）为鸿蒙日志/性能跟踪方案"
     ],
     "notes": "本评估按库口径（模型 A）进行：若目标是把现有 Android AAR/JAR 直接跑在鸿蒙 PC 上，则因 Android 运行时不可用而几乎不可行（infeasible）；若允许提取 C++ 核心并重新包装，则属于 needs_adaptation_partial，工作量在 1–2 人月以上。结论依赖两个未核实目标事实：OHOS NDK 能否编译 Chromium //base//net、以及鸿蒙 PC 的 POSIX socket/TLS 覆盖度，因此 confidence 为 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:android_context",
+          "ua:android_system_properties",
+          "ua:android_statslog",
+          "ua:android_httpengine"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1253,50 +1281,35 @@
     "warnings": [
       "code-metrics 按目录名 token 将 android/ 整体标为 test，但该目录下 android/api/src 与 android/java/src 是 Cronet 主要生产代码；分析时已按子目录结构收敛。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "android-specific_library",
-        "rationale": "Cronet 是 library，但公共 API 完全依赖 Android SDK；在鸿蒙评估中需要明确区分“作为 Android 库不可直接运行”与“C++ 核心可复用”两种口径。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "gap",
-        "value": "android_dir_classified_as_test",
-        "rationale": "metrics.py 按目录名将 android/ 判为 test，导致 top_dirs 中 production/test 边界与真实源码结构不符；后续分析以实际文件路径为准。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "monorepo_module",
-        "rationale": "Chromium //base、//net、//components/prefs 等属于同一 monorepo 内部模块，现有 acquisition 推荐值（vendored/fetchcontent/...）不能准确描述。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "android_sdk_system",
-        "rationale": "android_library 依赖 Android SDK 系统 jar（//third_party/android_sdk:public_framework_system_java），既不是本地 vendored 也不是远程注册表包。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "rewrap_cpp_core",
-        "rationale": "Cronet 是 Android API + C++ 核心的库；鸿蒙化不能直接复用 Java API，需提取 C++ 核心并重新包装。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:android_context",
+        "class": "actionable",
+        "message": "unadaptable_api ua:android_context 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:android_system_properties",
+        "class": "actionable",
+        "message": "unadaptable_api ua:android_system_properties 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:android_statslog",
+        "class": "actionable",
+        "message": "unadaptable_api ua:android_statslog 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:android_httpengine",
+        "class": "actionable",
+        "message": "unadaptable_api ua:android_httpengine 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

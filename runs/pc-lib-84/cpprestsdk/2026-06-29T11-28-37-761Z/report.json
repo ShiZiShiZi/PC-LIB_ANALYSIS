@@ -1300,8 +1300,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK native layer, musl + POSIX subset)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1318,7 +1317,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "鸿蒙 OHOS NDK 基于 musl libc，提供 POSIX 子集；pread/pwrite 等应可用，但需验证",
-        "source": "references/harmony-pc-capabilities.json (runtimes section — C/C++ NDK 基于 musl)"
+        "source": "references/harmony-pc-capabilities.json (runtimes section — C/C++ NDK 基于 musl)",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:boost_asio_ohos",
@@ -1326,7 +1326,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 Boost.Asio 无法在 OHOS NDK 上编译，则需替换整个网络后端，工作量极大",
-        "source": "references/harmony-pc-capabilities.json (boost 已在 cmd-pkgs 中)"
+        "source": "references/harmony-pc-capabilities.json (boost 已在 cmd-pkgs 中)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:openssl_ohos",
@@ -1334,7 +1335,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OpenSSL 已在鸿蒙 PC 预编译包中提供，TLS 通信可直接使用",
-        "source": "references/harmony-pc-capabilities.json (cmd-pkgs: openssl)"
+        "source": "references/harmony-pc-capabilities.json (cmd-pkgs: openssl)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pthread_ohos",
@@ -1342,7 +1344,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OHOS NDK (musl) 提供 pthread 子集，pthread_self 应可用，但需验证",
-        "source": "references/harmony-pc-capabilities.json (runtimes — C/C++ NDK 基于 musl)"
+        "source": "references/harmony-pc-capabilities.json (runtimes — C/C++ NDK 基于 musl)",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [
@@ -1357,7 +1360,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "cpprestsdk 在鸿蒙 PC 上的适配核心在于使用 OHOS NDK 交叉编译。Linux/macOS 后端（Boost.Asio + OpenSSL + POSIX 文件 I/O）是主要适配路径。Boost 和 OpenSSL 已在鸿蒙 PC 预编译包中提供，zlib 和 brotli 同样已适配。主要工作量在于：1) 确保 Boost.Asio 在 OHOS NDK 上正确编译和运行；2) 适配 POSIX 文件 I/O（musl libc 应提供所需 API）；3) websocketpp 需随主库一起编译（header-only，依赖 Boost 和 OpenSSL）。Windows 专用后端（WinHTTP/HTTP.sys/BCrypt）在鸿蒙上不适用，但编译路径通过 CPPREST_FORCE_HTTP_CLIENT_ASIO/CPPREST_FORCE_HTTP_LISTENER_ASIO 宏可以切换。",
     "blockers": [
       {
@@ -1465,7 +1467,21 @@
       "编写 CMake 工具链文件以支持 OHOS NDK 交叉编译"
     ],
     "notes": "该库已归档停止维护，迁移后需自行维护。Windows 专用代码路径（WinHTTP/HTTP.sys/BCrypt/WinRT）在鸿蒙上不使用，只需编译 Linux/POSIX 路径。Boost.Asio 的兼容性是最大不确定性——已标记为 medium 置信度。如果 Boost.Asio 在 OHOS NDK 上可正常编译运行，则整体适配工作量较低。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1473,22 +1489,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "macos_framework",
-        "rationale": "macOS 的 CoreFoundation/Security 框架不属于传统 posix/win32 分类，单独归类为 macos_framework"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "submodule",
-        "rationale": "websocketpp 通过 git submodule 引入（.gitmodules），区别于 system/vendored/fetchcontent"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

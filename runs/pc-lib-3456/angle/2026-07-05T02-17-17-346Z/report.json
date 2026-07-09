@@ -2133,8 +2133,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C++ 原生库，经 OHOS NDK (musl+clang) 重编译；arm64/x86_64；默认 Vulkan 后端 + 可选 GLES/EGL 后端；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -2143,7 +2142,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "ANGLE 是 C++ 图形翻译层库，通过 OHOS NDK 重编译后可部署为鸿蒙 PC 原生共享库。核心 Vulkan 渲染后端（vk_* 函数簇）和着色器编译器（SPIR-V/GLSL 翻译）是平台无关的 C++ 代码，可经 NDK 直接重编译。主要工作量：① 实现 OHOS 平台的 Vulkan 显示表面集成（新增 DisplayVkOhos/WindowSurfaceVkOhos 替代 win32/linux/mac/android 各平台 Display ）；② 裁剪/禁用不可移植的后端（Direct3D、Metal、WGL/CGL/GLX 桌面 GL 路径）；③ 适配 GPU 信息检测（替换 X11/libpci/DXGI/IOKit 等 OS 专有路径为 Vulkan 物理设备枚举或 OHOS 系统接口）；④ 处理 POSIX 子集差异（dlopen/dlsym 等加载器路径）。由于 Vulkan 在鸿蒙 PC 上的目标支持状态为 unknown，置信度记为 medium。",
     "blockers": [
       {
@@ -2217,7 +2215,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Vulkan 不可用 → 主渲染路径失效，回退到 GLES/EGL（partial），核心功能不确定。若两路都不可用则 infeasible。",
-        "source": "harmony-pc-capabilities.json#graphics_3d.vulkan"
+        "source": "harmony-pc-capabilities.json#graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gles_egl",
@@ -2225,7 +2224,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "备选路径，已知 partial 状态——可运行部分 GLES 功能，但可能功能不完整。",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl + #graphics_3d.egl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl + #graphics_3d.egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:vulkan_display",
@@ -2233,7 +2233,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "缺少 OHOS Vulkan 表面扩展则无法创建可显示的 Vulkan 交换链，只能运行离屏渲染（headless/offscreen 模式）。",
-        "source": "harmony-pc-capabilities.json#graphics_3d"
+        "source": "harmony-pc-capabilities.json#graphics_3d",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -2280,7 +2281,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（C++ 库经 OHOS NDK 重编译为鸿蒙 PC 原生 .so）；当前最大不确定性是鸿蒙 PC 的 Vulkan 目标支持状态 unknown——该事实核实后若为 available 则难度大幅下降（person_days 可减至 [20,35]）、confidence 升至 high；若 Vulkan unavailable 但 EGL/GLES 可用则仍可行但需更多 GL ES 后端适配工作（person_days [35,55]）；若两路均不可用则 porting_class 升至 infeasible。ANGLE 的 Direct3D/Metal/桌面 GL 后端在 OHOS 上不可用但非必需——多后端架构支持按需裁剪，仅保留 Vulkan/GLES 即可。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -2298,40 +2313,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "value",
-        "value": "vendored",
-        "rationale": "ANGLE 通过 Chromium DEPS 机制将大量第三方库以 vendored 方式拉入 third_party/ 树。这是一种独特的获取方式：比 'vendored（手工拷贝）' 更结构化（带版本锁定），比 'fetchcontent（CMake 下载）' 更本地化（与主仓库同版本管理）。现有 skill 的 acquisition 推荐值未覆盖此模式，vendored 最接近但语义偏手工。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "value",
-        "value": "apple_frameworks",
-        "rationale": "macOS/iOS 的 Objective-C frameworks（Metal.framework、CoreFoundation、IOKit）介于 '平台 API' 和 '硬件 API' 之间——渲染用 Metal 归 hardware、GPU 检测用 IOKit 归 platform。现按功能拆为 metal（hardware）和 apple_frameworks（platform）两组。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "vulkan_display",
-        "rationale": "鸿蒙 PC 是否支持 Vulkan VK_OHOS_* 平台扩展（类似 Android 的 VK_ANDROID_native_buffer / VK_KHR_android_surface）对 ANGLE 能否做离屏以上渲染至关重要。harmony-pc-capabilities.json 尚未覆盖此维度，以 unknown 登记。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "ambiguity",
-        "value": "gui",
-        "rationale": "ANGLE 处理原生窗口系统表面（X11/Wayland/Win32/Cocoa/Android ANativeWindow）但自身不实现 GUI 控件。严格说是 'windowing integration' 而非 'GUI'。按现有词表不记 gui 场景（无 Qt/GTK/sdl 等工具包依赖），窗口系统集成的工作量在 dim-9 的 display_surface 阻碍中体现。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "ANGLE 是底层图形 API 翻译层，触及 3D 渲染和 GPU 硬件两大鸿蒙适配重点场景。不涉及传统桌面 GUI 控件或音视频媒体。",

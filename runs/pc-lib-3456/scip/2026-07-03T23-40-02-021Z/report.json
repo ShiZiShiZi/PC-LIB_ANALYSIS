@@ -1861,8 +1861,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK + musl libc + POSIX 子集；arm64/x86_64；无 Linux ABI）。默认按库模型 A 评估：作为 C/C++ 库经 OHOS NDK 交叉编译后运行。",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -1879,7 +1878,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心前提；C/C++ 库必须经 NDK 重编为 .so",
-        "source": "references/harmony-pc-capabilities.json 引言"
+        "source": "references/harmony-pc-capabilities.json 引言",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -1887,7 +1887,8 @@
         "required": true,
         "target_status": "available",
         "impact": "主力架构已确认支持",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -1895,7 +1896,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若需 x86_64 分发则需进一步核实",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_clock_signal",
@@ -1903,11 +1905,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SCIP 计时、CTRL-C 中断、TinyCThread 线程、临时目录、错误处理均依赖这些接口；缺失时需增加条件编译降级",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile_with_alternative_deps",
     "summary": "SCIP 核心算法代码为可移植 C/C++，平台耦合轻。鸿蒙化的主要工作是将默认 LP 求解器从尚未适配的 SoPlex 切换至已适配的 HiGHS，关闭或自行交叉编译未适配的可选依赖，并使用 OHOS NDK 交叉编译整个库。无 GUI/媒体/硬件/网络场景，也无不可适配的底层 API。",
     "blockers": [
       {
@@ -2036,7 +2038,21 @@
       "在鸿蒙 PC 上运行 SCIP 自带 check 测试集，验证 MIP/LP 功能正确性"
     ],
     "notes": "评估按库模型 A（C/C++ 库经 OHOS NDK 交叉编译）进行，未假设 ArkTS 应用封装。若目标是让 ArkTS 应用调用 SCIP，则需额外编写 Node-API 绑定层，工作量显著增加。由于 POSIX 子集覆盖与 x86_64 支持存在未核实项，置信度评为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "scip",
@@ -2061,23 +2077,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library_with_executable",
-        "rationale": "SCIP 同时以 libscip 库和 scip 命令行可执行文件分发；本次按 library 归类，因为主要消费形态是可嵌入的 C/C++ API。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored_source_in_tree",
-        "rationale": "SCIP 将 CppAD、AMPL mp、Nauty、Dejavu、TinyCThread 等完整源码随仓库分发并编译进 libscip，值得在面板中显式提示其源码内嵌特性。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "SCIP 是纯数学优化/运筹学计算库，不触及 GUI、3D 渲染、媒体或特定硬件设备访问，鸿蒙化时无需考虑这些重场景。",

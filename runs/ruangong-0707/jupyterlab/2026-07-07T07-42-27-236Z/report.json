@@ -2008,8 +2008,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         46,
@@ -2082,7 +2081,9 @@
         "evidence": [
           "packages/terminal/src/widget.ts",
           "packages/services/src/terminal/default.ts"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2092,7 +2093,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JupyterLab 前端是纯浏览器 SPA，需要现代浏览器渲染。鸿蒙 PC 有 Chromium/Electron（已确认 available），核心渲染可行",
-        "source": "references/harmony-pc-capabilities.json → electron"
+        "source": "references/harmony-pc-capabilities.json → electron",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_runtime",
@@ -2100,7 +2102,8 @@
         "required": true,
         "target_status": "available",
         "impact": "后端基于 Python/Tornado，鸿蒙 Python 3.12.9 已确认可用",
-        "source": "references/harmony-pc-capabilities.json → python"
+        "source": "references/harmony-pc-capabilities.json → python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:nodejs_runtime",
@@ -2108,7 +2111,8 @@
         "required": true,
         "target_status": "available",
         "impact": "构建工具链依赖 Node.js/yarn/rspack，鸿蒙 Node.js 24.13.0 已确认可用",
-        "source": "references/harmony-pc-capabilities.json → nodejs"
+        "source": "references/harmony-pc-capabilities.json → nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -2116,7 +2120,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "终端功能依赖 PTY 会话；扩展构建依赖子进程调用 node/npm。若鸿蒙 PC 不允许 PTY 或子进程受限，终端功能和扩展构建将不可用",
-        "source": "references/harmony-pc-capabilities.json → spawn"
+        "source": "references/harmony-pc-capabilities.json → spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -2124,7 +2129,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JupyterLab 以 pip install + console_script 方式分发，依赖系统 Python 和浏览器。若鸿蒙 PC 仅支持 .hap 安装，需重新打包",
-        "source": "references/harmony-pc-capabilities.json → desktop_app"
+        "source": "references/harmony-pc-capabilities.json → desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet_access",
@@ -2132,7 +2138,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "扩展发现/安装需访问 PyPI 和 npm registry，正常使用需 WebSocket 连接 Jupyter Server",
-        "source": "references/harmony-pc-capabilities.json → perm_internet"
+        "source": "references/harmony-pc-capabilities.json → perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2201,7 +2208,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "JupyterLab 是一个基于 Web 的交互式计算应用（前端浏览器 SPA + 后端 Python/Tornado 服务）。由于没有原生 C/C++ 代码，核心逻辑可在已移植的 Python 和 Node.js 运行时上运行。主要适配点在于：(1) 终端功能依赖 PTY，鸿蒙 PC 进程模型是否支持待核实；(2) 依赖链（tornado/jupyter_server/ipykernel/pyzmq/terminado）在鸿蒙 Python 上的可用性需逐一验证；(3) 应用交付形态需适配鸿蒙 PC 的打包/安装机制。整体可行但存在不确定因素。",
     "blockers": [
       {
@@ -2293,7 +2299,23 @@
       "运行测试套件验证核心功能完整性"
     ],
     "notes": "JupyterLab 作为应用走模型 C（整包桌面应用）。核心难点不在代码改造（平台分支极少），而在运行时环境验证：依赖链完整性（特别是 pyzmq C 扩展和 terminado PTY）、应用打包形态（.hap 适配）。若鸿蒙 PC 支持传统 Python 包安装 + 浏览器访问模式，适配工作量较低；若仅支持 .hap 沙箱应用，则需大量打包改造。confidence=medium 因为 spawn/desktop_app 两个 target_assumption 为 unknown。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:terminado_pty"
+        ]
+      }
+    }
   },
   "library": {
     "name": "jupyterlab",
@@ -2322,23 +2344,13 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "JupyterLab 是终端用户启动运行的 Web 应用（jupyter-lab 命令启动服务+浏览器），不是被 API 调用的库"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "nodejs",
-        "rationale": "JupyterLab 跨 Python+Node.js 双生态，前端主体为 TypeScript/Node.js 代码量更大，但 Python 后端是运行入口；选 nodejs 因生产代码中 TypeScript 占 71%"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:terminado_pty",
+        "class": "actionable",
+        "message": "unadaptable_api ua:terminado_pty 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "ua_no_cp_bucket",
         "class": "actionable",
@@ -2350,7 +2362,8 @@
         "message": "critical_dependencies 的 terminado 在 dependencies 列表中找不到（名称须与 dependencies[].name 一致）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "JupyterLab 涉及 GUI（基于浏览器的 Web SPA 界面）和媒体（终端渲染含 Canvas/WebGL 加速）场景，不涉及 3D 渲染或特定硬件依赖。",

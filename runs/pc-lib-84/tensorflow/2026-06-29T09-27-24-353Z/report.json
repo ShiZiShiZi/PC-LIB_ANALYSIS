@@ -1434,8 +1434,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, OHOS NDK native层, ArkTS应用层)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         120,
@@ -1457,7 +1456,9 @@
         "category": "hardware",
         "evidence": [
           "third_party/xla/xla/stream_executor/cuda/cuda_stream.cc:596"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cuMemAllocManaged",
@@ -1471,7 +1472,9 @@
         "category": "hardware",
         "evidence": [
           "third_party/xla/xla/stream_executor/cuda/cuda_unified_allocator.cc:43"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cupti_tracer",
@@ -1485,7 +1488,9 @@
         "category": "hardware",
         "evidence": [
           "third_party/xla/xla/backends/profiler/gpu/cupti_tracer.cc:887"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1495,7 +1500,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "CUDA 为 TensorFlow GPU 加速的核心依赖，鸿蒙不可用——GPU 训练/推理功能无法移植，需降级到 CPU 或寻找替代 GPU 后端",
-        "source": "references/harmony-pc-capabilities.json → gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json → gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:opencl",
@@ -1503,7 +1509,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 支持 OpenCL，可作为 CUDA 的替代路径（需重写 GPU 后端），但当前未知",
-        "source": "references/harmony-pc-capabilities.json → opencl"
+        "source": "references/harmony-pc-capabilities.json → opencl",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:vulkan_compute",
@@ -1511,7 +1518,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 支持 Vulkan，可走 Vulkan Compute 路径替代 CUDA，但当前可用性未知",
-        "source": "references/harmony-pc-capabilities.json → vulkan"
+        "source": "references/harmony-pc-capabilities.json → vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:python_runtime",
@@ -1519,7 +1527,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 已移植到鸿蒙 PC，纯 Python 层可运行",
-        "source": "references/harmony-pc-capabilities.json → python"
+        "source": "references/harmony-pc-capabilities.json → python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_ndk",
@@ -1527,7 +1536,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "TensorFlow C++ 核心依赖 POSIX API（dlopen/mmap/pthread），若 OHOS NDK POSIX 子集不够完整则需适配",
-        "source": "references/harmony-pc-capabilities.json intro（musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json intro（musl + POSIX 子集）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_es",
@@ -1535,11 +1545,11 @@
         "required": false,
         "target_status": "partial",
         "impact": "TFLite GPU delegate 的 OpenGL ES 路径可能部分兼容，但桌面完整 OpenGL 覆盖程度待核实",
-        "source": "references/harmony-pc-capabilities.json → opengl"
+        "source": "references/harmony-pc-capabilities.json → opengl",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile_cpu_first",
     "summary": "TensorFlow 移植到鸿蒙 PC 的核心阻碍是 NVIDIA CUDA 专有生态不可用——GPU 训练/推理是 TensorFlow 的核心价值，而鸿蒙 PC 无 CUDA 运行时。推荐路径：第一步先以 CPU-only 模式在鸿蒙 PC 上用 OHOS NDK 交叉编译 C++ 核心 + Python 运行时，使纯 CPU 推理可用；第二步探索 OpenCL/Vulkan Compute 替代 CUDA 后端（需鸿蒙侧确认 OpenCL/Vulkan 可用性）；第三步适配 TFLite GPU delegate 的 OpenGL ES 路径。GPU 训练功能在鸿蒙 PC 上短期内不可行。",
     "blockers": [
       {
@@ -1654,7 +1664,25 @@
       "适配 TFLite GPU delegate（OpenGL ES / Vulkan 路径）"
     ],
     "notes": "置信度 low：关键目标能力（OpenCL/Vulkan Compute 可用性、OHOS NDK POSIX 完整性）为 unknown，无法确定替代 GPU 后端路径是否可行。TensorFlow 体量极大（238 万行生产 C++），交叉编译本身即是巨大工程。CPU-only 模式在技术层面可行但丧失核心价值（GPU 加速）。nvidia-* Python wheels 在鸿蒙无法使用，但 CPU-only 版本无需这些依赖。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuLaunchKernel",
+          "ua:cuMemAllocManaged",
+          "ua:cupti_tracer"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1662,36 +1690,25 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "framework",
-        "rationale": "TensorFlow 是多语言绑定的机器学习框架（C++ 核心 + Python/Java/Go 接口），非纯库也非应用"
+        "code": "ua_func_class_defaulted:ua:cuLaunchKernel",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuLaunchKernel 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "XLA 以内嵌源码形式（third_party/xla + local_path_override）提供，不同于 fetchcontent/submodule"
+        "code": "ua_func_class_defaulted:ua:cuMemAllocManaged",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuMemAllocManaged 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cupti",
-        "rationale": "CUPTI (CUDA Profiling Tools Interface) 是 NVIDIA 专有的性能追踪 API，不归于 cuda_driver 或 opengl"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "cross_compile_cpu_first",
-        "rationale": "对 CUDA 依赖沉重的框架，推荐先以 CPU-only 模式交叉编译建立基线，再逐步探索 GPU 后端替代"
+        "code": "ua_func_class_defaulted:ua:cupti_tracer",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cupti_tracer 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

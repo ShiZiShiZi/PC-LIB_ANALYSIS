@@ -2290,8 +2290,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK musl + POSIX 子集，arm64/x86_64；库经 OHOS NDK 重编译为 .so，模型 A——库跑在鸿蒙原生层上、非 ArkTS 沙箱）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -2300,7 +2299,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "hwloc 是一个高度平台耦合的 C 库——其核心价值在于从各 OS 内核接口读取硬件拓扑。鸿蒙 PC 为自研内核（非 Linux），现有的 Linux sysfs/procfs 后端、Windows/BSD/Solaris/AIX 后端均无法直接使用。核心数据结构和算法（拓扑对象树、位图、XML 序列化、距离/内存属性）是纯 C 实现，可经 OHOS NDK 重编直接复用。关键工作是编写一个新的 HarmonyOS 拓扑发现后端（类似现有的 topology-linux.c/topology-windows.c 但面向鸿蒙内核的硬件信息接口），并在缺失 sysfs/procfs 时回退到 x86 CPUID 或 ACPI 固件表。所有 GPU 后端（CUDA/NVML/OpenCL/LevelZero/RSMI）均为可选的编译时开关，鸿蒙环境下可全部禁用，不影响核心 CPU/内存拓扑功能。lstopo 的 X11/Cairo 图形展示可替换为 Cairo 直接输出图片格式或通过 ArkUI 嵌入。整体工作量集中在开发和测试新 OHOS 后端。",
     "blockers": [
       {
@@ -2406,7 +2404,9 @@
         ],
         "evidence": [
           "hwloc/topology-cuda.c:42"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nvmlInit",
@@ -2420,7 +2420,9 @@
         ],
         "evidence": [
           "hwloc/topology-nvml.c"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2430,7 +2432,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙内核不提供任何可编程的硬件拓扑查询接口，则 hwloc 只能退化为仅报告处理器数量（类似 topology-noos.c），失去核心价值。若有 sysfs 类似文件接口或专有 API，则可编写功能完整的后端。",
-        "source": "references/harmony-pc-capabilities.json 未覆盖此能力——鸿蒙内核硬件拓扑信息机制待核实"
+        "source": "references/harmony-pc-capabilities.json 未覆盖此能力——鸿蒙内核硬件拓扑信息机制待核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cpu_affinity_apis",
@@ -2438,7 +2441,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "非核心功能——若缺失则 CPU/Memory 绑定 API 返回 ENOSYS（已有机理），仅影响绑定功能，不影响拓扑查询。",
-        "source": "references/harmony-pc-capabilities.json 未覆盖——待核实鸿蒙内核调度接口"
+        "source": "references/harmony-pc-capabilities.json 未覆盖——待核实鸿蒙内核调度接口",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cuda",
@@ -2446,7 +2450,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA/NVML 后端不可用，NVIDIA GPU 设备不在拓扑中展示——不影响核心 CPU/内存拓扑功能，可编译时禁用。",
-        "source": "references/harmony-pc-capabilities.json#5 (gpu_compute_cuda)"
+        "source": "references/harmony-pc-capabilities.json#5 (gpu_compute_cuda)",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:x11",
@@ -2454,7 +2459,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "图形 lstopo 窗口不可用，但文本/Cairo 图片导出仍可用——非核心功能。",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -2526,6 +2532,23 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuInit",
+          "ua:nvmlInit"
+        ]
+      }
     }
   },
   "library": {
@@ -2548,43 +2571,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependency-analysis",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "hwloc 大量依赖不是通过传统 package manager 而是直接调用 OS 内核 API（sysfs/procfs/Windows API 等），这些在 dependency 维度按 system locality 处理，但严格来说是 OS-provided runtime interfaces 而非外部库，边界有些模糊",
-        "rationale": "hwloc 的核心依赖并非外部库而是操作系统内核接口（/sys、/proc、Win32 API），native_api 维度记录了这些，但在依赖维度更应强调 OS 级的互操作性而非传统包依赖"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_sysfs_procfs",
-        "rationale": "hwloc 大量使用 Linux sysfs/procfs 作为系统信息接口，传统包名分类无法覆盖，这些路径本质上是内核 API 的伪文件形式，应归类为 category:system 的独立类型"
-      },
-      {
-        "dimension": "native_api",
-        "field": "apis",
-        "kind": "gap",
-        "value": "hwloc 中大量的 sysfs 路径访问（如 /sys/devices/system/node/node*/cpumap）是通过 fopen/sprintf/read/fclose 进行的标准 C I/O 操作，但在 purpose 上属于内核查询",
-        "rationale": "这类调用需要同时在标准 C I/O（category:standard）和系统接口（category:system）两个组中体现，属于 intentional two-lens listing"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "ambiguity",
-        "value": "platform_api vs native_dependency for GPU backends",
-        "rationale": "GPU 后端（CUDA/NVML 等）既是通过 system linkage 引入的依赖（dependency），也是通过桩代码调用的 API（native_api），这里以 native_api 为主、dependency 引用，因为迁移时核心判断是该 API 在鸿蒙是否可用，而非该依赖本身是否需要重编（依赖的 API 实现本身就是平台专有）"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].kind",
-        "kind": "ambiguity",
-        "value": "hwloc 的 GPU 场景是 hardware（查询 GPU 属性）而非 media（使用 GPU 计算/渲染），它在 category:hardware 但用途是拓扑信息收集而非计算",
-        "rationale": "与典型的 GPU 计算场景（CUDA kernel launch）不同，hwloc 仅 call GPU 驱动的设备查询 API 来获取 PCI 位置和属性，这更像是硬件设备枚举而非使用 GPU 计算能力"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2592,10 +2579,21 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cuInit",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuInit 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nvmlInit",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nvmlInit 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "hwloc 主要是一个系统信息库，通过读取 OS 内核接口获取硬件拓扑。其图形展示功能（lstopo）可选地依赖 Cairo/X11 或 Windows GDI，涉及 GUI 输出与 GPU 设备查询。多种 GPU 后端（CUDA/NVML/OpenCL/LevelZero/RSMI）虽只读取设备属性，但仍依赖特定 GPU 厂商的专有驱动 API。不涉及媒体与云服务。",

@@ -810,8 +810,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -828,7 +827,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 无 .NET 运行时，则整个库无法运行；需确认是否有社区移植版 .NET",
-        "source": "references/harmony-pc-capabilities.json (runtimes 段无 .NET 条目)"
+        "source": "references/harmony-pc-capabilities.json (runtimes 段无 .NET 条目)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dotnet_sockets",
@@ -836,7 +836,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FTP 通信核心依赖 TCP 套接字，若 .NET 运行时在鸿蒙上不支持 Sockets 则不可行",
-        "source": "推断：依赖 .NET BCL System.Net.Sockets"
+        "source": "推断：依赖 .NET BCL System.Net.Sockets",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dotnet_ssl",
@@ -844,7 +845,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FTPS 加密连接核心依赖 SslStream，无替代则 FTPS 功能不可用",
-        "source": "推断：依赖 .NET BCL System.Net.Security"
+        "source": "推断：依赖 .NET BCL System.Net.Security",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -858,7 +860,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "FluentFTP 是纯 C# 托管库，无原生 C/C++ 依赖，核心功能全部基于 .NET BCL 标准库（Sockets、SslStream、Cryptography、IO）。唯一的平台特定调用是 Windows SSPI (secur32.dll) 的 P/Invoke，但仅在 .NET Framework 4.6.2 / .NET Standard 2.0 目标下使用，且该功能在 .NET 5+ 中有标准 API 替代。适配关键取决于鸿蒙 PC 是否有可用的 .NET 运行时——若有，则仅需移除/条件化 Windows SSPI P/Invoke 代码并确保 BCL 网络栈可用即可；若无，则需考虑通过其他语言重写或桥接。",
     "blockers": [
       {
@@ -926,7 +927,21 @@
       "测试 FTP 主动/被动模式在鸿蒙网络栈上的兼容性"
     ],
     "notes": "核心不确定性在于鸿蒙 PC 上 .NET 运行时的可用性。harmony-pc-capabilities.json 的 runtimes 段列出了 Python/Node.js/Java/Rust/Go/Julia 但无 .NET，这意味着目前无已知的官方/社区 .NET 移植。若 .NET 不可用，则 feasible_with_effort 将降为 hard/infeasible，因为需要用其他语言重写整个库。confidence 设为 medium 是因为 .NET 运行时可用性为 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "FluentFTP",
@@ -951,23 +966,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "dotnet",
-        "rationale": "FluentFTP 是 .NET 生态库，ecosystem 枚举中有 dotnet 但参考资料中 runtimes 段未覆盖 .NET，故记录此值以提示"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "run_on_ported_runtime",
-        "rationale": ".NET 托管库的最佳路径是跑在已移植的 .NET 运行时上，与纯脚本库的 run_on_ported_runtime 类似但 .NET 目前尚无鸿蒙移植确认"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "FluentFTP 是纯 .NET 托管库，不涉及 GUI、3D 渲染、媒体或硬件设备场景。核心功能为网络 FTP 协议通信与文件传输。",

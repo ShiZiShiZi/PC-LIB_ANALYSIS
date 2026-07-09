@@ -1326,7 +1326,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (工具模型：SWIG 自身作为 C/C++ 原生可执行文件，经 OHOS NDK (clang + musl libc) 交叉编译为 arm64/x86_64 .so/.bin；鸿蒙自研内核，无 Linux ABI 兼容层)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1343,7 +1342,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SWIG 核心 IO 与文件操作完全依赖标准 C 库与 POSIX 基础调用，musl/OHOS NDK 均提供",
-        "source": "references/harmony-pc-capabilities.json#runtimes（OHOS NDK = musl + POSIX 子集）；SWIG 自身的 native_api 均为 standard/portable 或已有 POSIX/Windows 双路径"
+        "source": "references/harmony-pc-capabilities.json#runtimes（OHOS NDK = musl + POSIX 子集）；SWIG 自身的 native_api 均为 standard/portable 或已有 POSIX/Windows 双路径",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cxx_stl",
@@ -1351,7 +1351,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SWIG 大量使用 C++ STL 与 iostream，clang + libc++ 在 OHOS NDK 上可用",
-        "source": "references/harmony-pc-capabilities.json#runtimes（OHOS NDK 支持 C++）"
+        "source": "references/harmony-pc-capabilities.json#runtimes（OHOS NDK 支持 C++）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:autotools_or_cmake",
@@ -1359,11 +1360,11 @@
         "required": true,
         "target_status": "available",
         "impact": "SWIG 使用 Autotools 为主构建系统（CMake 备选）；OHOS NDK 提供 ohos.toolchain.cmake，CMake 路径可直接交叉编译；Autotools 路径需手动指定 CC/CXX/LDFLAGS 指向 OHOS NDK 工具链",
-        "source": "CMake 有 OHOS 官方工具链 (ohos.toolchain.cmake)；Autotools 可通过 --host=aarch64-linux-ohos + CC/CXX 环境变量指定"
+        "source": "CMake 有 OHOS 官方工具链 (ohos.toolchain.cmake)；Autotools 可通过 --host=aarch64-linux-ohos + CC/CXX 环境变量指定",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "SWIG 是纯 C/C++ CLI 编译器工具，平台耦合极低——核心为 C++ STL + 标准 C 库，平台特定代码仅有 Windows 下的 _mkdir 和文件名路径修正（均经 #ifdef _WIN32 守卫，鸿蒙走 POSIX 路径）。两项外部依赖（PCRE2、Bison）均已在 OpenHarmony PC 官方源提供移植产物。主要工作仅为将 SWIG 自身经 OHOS NDK 交叉编译为目标架构可执行文件，并修改 Autotools/CMake 构建脚本以识别 OHOS 目标平台。无不可适配 API，整体为低难度、低风险移植。",
     "blockers": [
       {
@@ -1430,7 +1431,21 @@
       "在鸿蒙 PC 上运行 SWIG 自带的回归测试（make -k check）以验证代码生成正确性"
     ],
     "notes": "评估按工具模型（SWIG 自身作为本地可执行文件在 OHOS 上运行）而非库模型。SWIG 生成的包装代码和 SWIG 运行时库（Lib/）是独立产物——它们最终在目标平台上编译链接，不受 SWIG 自身的移植限制，属于用户代码的编译范畴。适配后 SWIG 可作为鸿蒙 PC 的原生开发工具链一部分，用于生成鸿蒙目标语言的 C/C++ 包装代码。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "swig",
@@ -1457,26 +1472,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "test_cases",
-        "kind": "gap",
-        "value": "test suite not captured by counting script",
-        "rationale": "SWIG 的测试框架基于 GNU Make，测试用例分布在 Examples/test-suite/ 下各语言子目录中，采用 .cpptest/.ctest 等自定义后缀驱动的 make target，未被 code-metrics 脚本的正则匹配捕获（test_files=1, test_cases=0 显然不准）。实际 SWIG 的测试套件包含数千个测试用例。已在 tests 块 notes 中说明"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "ambiguity",
-        "value": "Examples classified as example, but contains test suite",
-        "rationale": "Examples/ 目录下既有 examples（示例）也有 test-suite（测试），脚本按顶层目录名 token 全部归为 example。但实际 test-suite 中的测试是按语言组织的回归测试，与纯示例不同。这对结论无实质影响（均非生产代码），仅在 tests 计数上偏低了真实测试规模"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "SWIG 是纯命令行编译器工具，不涉及 GUI 界面、3D 渲染、音媒体编解码或特定硬件设备的任何场景——所有四个鸿蒙适配重点场景均不涉及。",

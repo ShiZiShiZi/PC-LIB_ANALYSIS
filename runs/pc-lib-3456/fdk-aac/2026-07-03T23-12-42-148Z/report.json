@@ -862,7 +862,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK native 层，无 Linux ABI；评估默认口径为已移植语言运行时/C++ NDK 交叉编译）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -880,7 +879,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库整体为 C/C++ 标准库代码，只要 NDK 可用即可编译；若不可用则无法以原生库形态移植。",
-        "source": "references/harmony-pc-capabilities.json 运行时段"
+        "source": "references/harmony-pc-capabilities.json 运行时段",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_libm",
@@ -888,11 +888,11 @@
         "required": true,
         "target_status": "available",
         "impact": "fdk-aac 的唯一系统依赖是 sin 等数学函数；libm 可用则无需改动。",
-        "source": "CMakeLists.txt/configure.ac 对 libm 的探测逻辑"
+        "source": "CMakeLists.txt/configure.ac 对 libm 的探测逻辑",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "fdk-aac 是仅依赖 C/C++ 标准库与 libm 的原生编解码库，无 POSIX/Win32 专有系统调用、无 GUI/硬件/网络依赖。在 HarmonyOS NEXT PC 上通过 OHOS NDK 交叉编译即可运行，预计工作量较低，仅需适配 CMake 工具链、验证 aarch64 下的定点/浮点类型与编译器属性宏。",
     "blockers": [],
     "compatible": [
@@ -928,7 +928,21 @@
       "根据需要将 libfdk-aac 封装为 N-API 桥，供 ArkTS/Stage 应用调用。"
     ],
     "notes": "本评估置信度为 high：fdk-aac 的平台依赖非常有限，且均可在 OHOS NDK 上找到对应实现。需注意 AAC 专利授权问题，与平台适配无关。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "fdk-aac",
@@ -963,7 +977,8 @@
         "message": "license.category(permissive) 与依据 SPDX(NOASSERTION) 派生的性质(undeclared) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "fdk-aac 的核心场景是媒体处理中的音频编解码，不触及 GUI、3D 渲染、特定硬件或云端服务。其 AAC 编解码能力在鸿蒙 PC 上可通过 NDK 重编译或替换为系统媒体框架实现，但库本身不直接依赖 GPU/摄像头/蓝牙等硬件。",

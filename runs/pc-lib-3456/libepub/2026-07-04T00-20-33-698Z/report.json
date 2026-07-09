@@ -882,8 +882,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 库经 OHOS NDK/musl 重编为 .so；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -892,7 +891,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "replace_xml_and_unzip_then_recompile_napi",
     "summary": "libepub 的核心算法（CSS 选择器、哈希、SQLite 持久化）可移植，但解压路径硬编码依赖 POSIX fork+execl 调用 /usr/bin/unzip，且核心 XML/字符串栈依赖尚未鸿蒙化的 libxml++/glibmm。建议将 unzip 调用替换为进程内 ZIP 库，并将 libxml++/glibmm 替换为可在 OHOS NDK 上编译的 XML/字符串方案，随后用 OHOS NDK 重编为 Node-API 原生模块。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -902,7 +900,8 @@
         "required": true,
         "target_status": "available",
         "impact": "路径、目录、临时文件操作可继续复用，不构成阻碍",
-        "source": "scripts/harmony_adapted.js 查询结果：boost 已适配"
+        "source": "scripts/harmony_adapted.js 查询结果：boost 已适配",
+        "target_status_model": "available"
       },
       {
         "id": "ta:sqlite3",
@@ -910,7 +909,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SQLite 持久化逻辑无需改动",
-        "source": "scripts/harmony_adapted.js 查询结果：sqlite3 已适配"
+        "source": "scripts/harmony_adapted.js 查询结果：sqlite3 已适配",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libxmlpp",
@@ -918,7 +918,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libxml++ 与 glibmm 是核心 XML 解析与字符串依赖；若无法获取也无合适替代，则 OPF/容器/HTML 解析栈需重写",
-        "source": "scripts/harmony_adapted.js 查询结果：libxml++、glibmm 均未适配；harmony-pc-capabilities.json 未明确其状态"
+        "source": "scripts/harmony_adapted.js 查询结果：libxml++、glibmm 均未适配；harmony-pc-capabilities.json 未明确其状态",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -992,7 +993,21 @@
       "若需暴露给 ArkTS，封装 Node-API 接口；若仅作为 C++ 库使用，保持头文件接口稳定"
     ],
     "notes": "本评估按 C++ 库模型 A（经 OHOS NDK 重编）进行。由于 libxml++/glibmm 在鸿蒙 PC 的可用性未知，置信度降至 medium；若实际确认 glib 栈无法移植，则工作量与风险将进一步上升。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libepub",
@@ -1015,33 +1030,12 @@
   "meta": {
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "usage",
-        "kind": "gap",
-        "value": "declared_but_unused_runtime_dep",
-        "rationale": "SConstruct 将 cryptopp 加入链接库，但生产源码中未出现 Crypto++ 的调用。当前做法将其作为 runtime 依赖列出并注明未使用，但更合适的分类（build/runtime/optional）在现有契约中不明确。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "new_value",
-        "value": "subprocess_unavailable",
-        "rationale": "库通过 fork+execl 硬编码调用 /usr/bin/unzip，这种「依赖外部命令」的阻碍在现有推荐分类中未列出，需自造分类。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "replace_xml_and_unzip_then_recompile_napi",
-        "rationale": "该库需要同时替换 unzip 子进程与 libxml++/glibmm 栈后再重编，单一推荐路径值无法覆盖，因此组合为一个新路径值。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libepub 是一个纯文档解析库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件访问；鸿蒙适配重点集中在依赖栈（libxml++/glibmm）与 POSIX 子进程调用。",

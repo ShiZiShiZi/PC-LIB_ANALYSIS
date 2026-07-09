@@ -1148,8 +1148,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK native layer, ArkTS app layer)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1166,7 +1165,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt 已有鸿蒙版，QPA 层应提供原生窗口接口（类似 QNativeInterface），否则无法获取底层窗口句柄",
-        "source": "references/harmony-pc-capabilities.json gui.qt"
+        "source": "references/harmony-pc-capabilities.json gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_wm",
@@ -1174,7 +1174,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 不提供传统桌面窗口管理能力（多窗口、标题栏隐藏/自定义），则本库核心功能无法实现",
-        "source": "references/harmony-pc-capabilities.json gui.wm"
+        "source": "references/harmony-pc-capabilities.json gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_native_window_api",
@@ -1182,11 +1183,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需要鸿蒙提供原生窗口事件拦截/自定义绘制标题栏的 API，否则无法实现无边框窗口",
-        "source": "references/harmony-pc-capabilities.json gui.wm"
+        "source": "references/harmony-pc-capabilities.json gui.wm",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "find_alternative",
     "summary": "QWindowKit 是深度绑定三大桌面平台原生窗口 API 的框架，其核心功能（Win32 WndProc hook / DWM 特效 / ObjC runtime swizzle / X11-Wayland 协议）在鸿蒙 PC 上均无直接等价。但架构已将平台逻辑隔离在 Context 子类中（Win32WindowContext/CocoaWindowContext/LinuxX11Context/LinuxWaylandContext），可为鸿蒙新增 OhosWindowContext。关键前提是鸿蒙 PC 必须提供桌面窗口管理能力和原生窗口操作 API。Qt 已有鸿蒙版，提供了基础 QPA 层。",
     "blockers": [
       {
@@ -1289,7 +1290,21 @@
       "适配 Qt 鸿蒙版的 QPA 原生接口（QNativeInterface）"
     ],
     "notes": "置信度为 medium，主要因为鸿蒙 PC 的桌面窗口管理能力和原生窗口操作 API 状态为 unknown。若鸿蒙 PC 不提供桌面级多窗口环境和窗口自定义 API，则核心功能（无边框窗口、系统按钮集成）无法移植。库的架构设计（平台 Context 隔离）对适配有利，预计新增约 500-1000 行平台代码。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1299,29 +1314,8 @@
       "code_metrics.platform_adaptation 总计为 0：脚本机械计数未捕获 CMake if(WIN32)/if(APPLE)/else() 编译条件分支（非 #ifdef 宏守卫），实际平台条件代码占比很高"
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "field": "platform_adaptation",
-        "kind": "gap",
-        "value": "cmake_if_platform_guard",
-        "rationale": "CMakeLists.txt 用 if(WIN32)/elseif(APPLE)/else() 做平台条件编译选择源文件，而非 #ifdef 宏，导致 platform_adaptation 机械计数为 0，但实际平台条件代码占比极高"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "dwm",
-        "rationale": "DWM (Desktop Window Manager) API 是 Windows 独立的窗口合成 API 族，与通用 Win32 API 有本质区别，单独归类更准确"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cocoa_appkit",
-        "rationale": "macOS Cocoa/AppKit API 族包含 NSWindow/NSButton/NSNotificationCenter/ObjC runtime 等，统一归类便于理解"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

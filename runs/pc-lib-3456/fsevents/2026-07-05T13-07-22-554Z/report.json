@@ -911,8 +911,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核 + OHOS NDK + Node.js 已移植运行时）",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -932,7 +931,9 @@
         "category": "platform",
         "evidence": [
           "src/fsevents.c:210-214"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cfsrunloop",
@@ -944,7 +945,9 @@
         "category": "platform",
         "evidence": [
           "src/fsevents.c:61-66"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:corefoundation",
@@ -957,7 +960,9 @@
         "evidence": [
           "src/fsevents.c:176-177",
           "src/fsevents.c:211-212"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -967,7 +972,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植到鸿蒙 PC，其 JS 层可直接运行，N-API 桥接机制可用——但本库的 C 层全部调用 macOS API，即便 N-API 存在也无法复用原生代码",
-        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs (available, 24.13.0)"
+        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs (available, 24.13.0)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:fs-monitor-hm",
@@ -975,11 +981,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本库核心功能依赖文件系统事件监控。若鸿蒙有对应 API（如 inotify 兼容层或 OHOS 原生文件监听），可通过完全重写 C 层实现等价功能；若无，则本库无法适配",
-        "source": "references/harmony-pc-capabilities.json → 未找到文件系统事件监控条目（unknown）"
+        "source": "references/harmony-pc-capabilities.json → 未找到文件系统事件监控条目（unknown）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "find_alternative",
     "summary": "fsevents 是 macOS FSEvents API 的纯粹封装，其全部 C 层代码（约 350 行）直接调用 macOS 专有的 FSEventStream、CoreFoundation RunLoop、CoreServices 框架，无任何跨平台抽象或可移植的备选路径。鸿蒙 PC 上这些 API 全部不存在。虽然 Node.js（含 N-API）已在鸿蒙 PC 可用，JS 层代码可运行，但原生插件 fsevents.node 的 C 代码完全无法编译或运行。若要在鸿蒙 PC 上实现文件系统事件监控，需用鸿蒙原生 API 完全重写 C 层，或直接使用 Chokidar 等上层跨平台库（若其鸿蒙适配后可用）。本库存量代码无直接移植价值。",
     "blockers": [
       {
@@ -1037,7 +1043,25 @@
       "3. 若鸿蒙无等价 API：放弃 fsevents 适配，评估 Chokidar 等上层跨平台库在鸿蒙 PC 的可用性作为替代方案"
     ],
     "notes": "本库是 macOS FSEvents 的纯封装，无任何可移植的底层代码。即便 Node.js 已在鸿蒙可用，移植本质上是「用鸿蒙原生文件监控 API 完全重新实现一个等价库」，fsevents 存量代码不具备直接复用价值。target_assumptions 中「鸿蒙 PC 文件系统事件监控 API」状态为 unknown，此项若落实为 unavailable 则完全不可行；若为 available 则可通过完全重写 C 层实现等价功能（但这不是本项目代码的「移植」而是重写）。测试代码（test/）依赖 macOS 实际文件系统行为，无法在鸿蒙运行且不在评估范围内。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:fseventstream",
+          "ua:cfsrunloop",
+          "ua:corefoundation"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "fsevents",
@@ -1059,18 +1083,28 @@
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "assert",
-        "rationale": "metrics.py 将测试架判断为 jest/mocha，但实际测试使用 Node.js 内置 assert 模块配合自定义 test.sh（TAP 格式）运行，无 jest/mocha 依赖"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:fseventstream",
+        "class": "actionable",
+        "message": "unadaptable_api ua:fseventstream 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cfsrunloop",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cfsrunloop 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:corefoundation",
+        "class": "actionable",
+        "message": "unadaptable_api ua:corefoundation 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本库是纯文件系统事件监控的 Node.js 原生插件，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备。其唯一功能场景是文件系统事件监听，属于操作系统内核级 API 封装，不存在图形界面、GPU 计算、媒体处理或硬件设备依赖。",

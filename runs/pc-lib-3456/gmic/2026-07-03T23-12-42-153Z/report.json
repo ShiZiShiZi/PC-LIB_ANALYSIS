@@ -1355,8 +1355,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK，musl + POSIX 子集，arm64/x86_64；库模型 A：经 NDK 重编 + 链接）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1365,7 +1364,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "G'MIC 为 C++ 图像处理库，核心算法纯计算、跨平台；主要移植工作是用 OHOS NDK 重新编译 CImg 头库与 G'MIC 自身，并处理少量 POSIX/系统调用细节。所有功能均有替代或裁剪路径，无硬件绑定。",
     "blockers": [
       {
@@ -1456,7 +1454,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心库必须经 NDK 交叉编译",
-        "source": "references/harmony-pc-capabilities.json#arch / OHOS NDK"
+        "source": "references/harmony-pc-capabilities.json#arch / OHOS NDK",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_threads",
@@ -1464,7 +1463,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "并行解释器依赖 pthreads；缺失则需关闭并行",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:posix_signals",
@@ -1472,7 +1472,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "仅 CLI 的段错误回退处理使用",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:raw_syscall",
@@ -1480,7 +1481,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "仅用于线程 ID 日志，可替换为 pthread_self",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:openmp",
@@ -1488,7 +1490,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "可选并行加速；缺失可关闭",
-        "source": "references/harmony-pc-capabilities.json#runtimes"
+        "source": "references/harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:display",
@@ -1496,7 +1499,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "显示为可选功能；可关闭 cimg_display=0 仅做离线处理",
-        "source": "references/harmony-pc-capabilities.json#gui"
+        "source": "references/harmony-pc-capabilities.json#gui",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [
@@ -1555,7 +1559,21 @@
       "在鸿蒙 PC 上跑通 G'MIC CLI 与 libgmic 的基本图像处理管线"
     ],
     "notes": "评估按库模型 A（C++ 库经 OHOS NDK 重编后链接）。因部分目标能力（OpenMP、存储/网络权限、显示后端）状态未完全核实，置信度取 medium。G'MIC 无 GUI 应用形态，不触及 ArkTS 沙箱模型 B。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "gmic",
@@ -1581,36 +1599,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "library vs cli",
-        "rationale": "G'MIC 仓库同时构建 libgmic 共享/静态库与 gmic CLI。因 README 与 CMakeLists 均将 libgmic 作为首要对外 API 产品，且 CLI 只是其调用入口之一，故判为 library；若分析目标侧重终端用户工具，也可视为 cli/tool。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build_header",
-        "rationale": "CImg 与 GMicStdlib 并非通过包管理器或子模块引入，而是在 CMake/Make 构建时下载单个头文件（CImg.h / gmic_stdlib_community.h）并内嵌编译，现有 acquisition 推荐值未精确覆盖此形态。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cimg_platform_abstraction",
-        "rationale": "G'MIC 大量平台能力（显示、网络、文件、计时）通过 CImg 头库封装调用，并非直接调用 OS API；单独列出 cimg_platform_abstraction 组以表明平台依赖是间接且可随 CImg 配置关闭的。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_full vs recompile_only",
-        "rationale": "G'MIC 核心跨平台且依赖多为已鸿蒙化系统库，理论上接近 recompile_only；但存在 syscall(SYS_gettid)、sigaction、OpenMP 可选路径等 POSIX 细节，保守定为 needs_adaptation_full。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
@@ -1632,7 +1621,8 @@
         "message": "license.category(weak_copyleft) 与依据 SPDX(CECILL-C OR CECILL-2.1) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "G'MIC 核心库为纯图像处理计算库，可选地通过 CImg 使用 X11/GDI/SDL 进行 2D 图像显示；不涉及 3D 图形、音视频媒体或特定硬件。",

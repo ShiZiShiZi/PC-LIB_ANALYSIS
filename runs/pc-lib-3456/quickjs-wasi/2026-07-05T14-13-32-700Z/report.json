@@ -1094,8 +1094,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24 运行时上；WASM 二进制运行于鸿蒙 WASM 运行时；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -1104,7 +1103,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "quickjs-wasi 是一个 TypeScript/JS npm 包，其核心逻辑为纯 TypeScript（含 WASI shim、扩展加载器、快照序列化等），可直接在鸿蒙 Node.js 24 上运行。唯一的不确定性是预编译 WASM 二进制（quickjs.wasm）在鸿蒙 WASM 运行时的兼容性——WASM 标准本身应可用，但 WASM 动态链接（dylink.0 扩展加载）为实验性功能，鸿蒙方舟运行时是否支持有待核实。若 WASM 动态链接不工作，各扩展（URL/Crypto/Encoding/Headers/structuredClone）需重新编译合并到主模块，或改用静态链接编译方案。",
     "blockers": [
       {
@@ -1145,7 +1143,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS/TS 层可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:wasm_runtime",
@@ -1153,7 +1152,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不兼容则核心 WASM 二进制无法实例化",
-        "source": "推测：鸿蒙方舟运行时对标 V8，应支持标准 WASM；但 WASI 模块加载方式与纯 WASM 有别"
+        "source": "推测：鸿蒙方舟运行时对标 V8，应支持标准 WASM；但 WASI 模块加载方式与纯 WASM 有别",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wasm_dynamic_linking",
@@ -1161,7 +1161,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "不支持的扩展需改为静态链接方案",
-        "source": "WASM 动态链接是社区实验性规范（WebAssembly/tool-conventions#DynamicLinking.md），非所有 WASM 运行时支持"
+        "source": "WASM 动态链接是社区实验性规范（WebAssembly/tool-conventions#DynamicLinking.md），非所有 WASM 运行时支持",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -1206,7 +1207,21 @@
     ],
     "required_permissions": [],
     "notes": "按模型 A（库跑在鸿蒙已移植的 Node.js 24 运行时上）评估。纯 JS/TS 层无阻碍；核心不确定性来自鸿蒙 WASM 运行时对 WASI 式模块和实验性 WASM 动态链接的支持程度。若 WASM 动态链接不工作，需改为整体静态编译方案——增加一定工作量但不改变可行性。mbedTLS 和 ada-url 等 C/C++ 依赖已在 WASM 中预编译，不依赖宿主 OS 原生库。置信度中等因 WASM 动态链接状态 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "quickjs-wasi",
@@ -1221,12 +1236,13 @@
     "analyzed_at": "2026-07-05T14:17:44Z"
   },
   "meta": {
-    "confidence_overall": "high",
+    "confidence_overall": "medium",
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "scenarios": [

@@ -1735,8 +1735,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (C++ 库走模型 A: 经 OHOS NDK (musl + POSIX 子集, ohos.toolchain.cmake) 重新编译为 .so; arm64 主力 + x86_64; 自研内核, 无 Linux ABI)",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         18,
@@ -1745,7 +1744,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "OpenVDB 核心库是高度可移植的 C++17 代码（仅 ~188 行平台条件编译），主要障碍为：(1) 核心依赖 TBB 尚未鸿蒙化，需先移植或替换为 OHOS 并行方案；(2) NanoVDB 的 CUDA GPU 路径依赖 NVIDIA CUDA——鸿蒙无等价，但 NanoVDB 有完整的 CPU 回退路径，核心功能可保留；(3) VCL SIMD (x86 SSE/AVX) 需在 arm64 上用 NEON 重写或回退标量；(4) OpenVDB AX 的 LLVM JIT 后端鸿蒙未适配。已鸿蒙化的依赖 (Boost/ZLIB/Blosc/Imath/Jemalloc/numpy) 显著降低工作量。整体核心可适配，GPU 加速部分需隔离/裁剪，person_days 估为 18–32。",
     "blockers": [
       {
@@ -1858,7 +1856,9 @@
         ],
         "caused_by": [
           "ta:cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cudakernel",
@@ -1874,7 +1874,9 @@
         ],
         "caused_by": [
           "ta:cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1884,7 +1886,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "NanoVDB CUDA 路径无法使用，但 NanoVDB 有完整 CPU 回退，核心保持可用；此项非必需",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:tbb",
@@ -1892,7 +1895,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "如果 TBB 无法在鸿蒙 PC 移植，OpenVDB 需替换整个并行框架——工作量大幅上升；TBB 是纯 C++ 库无平台专有 API，理论可移植",
-        "source": "harmony_adapted.js 显示 tbb adapted=false；cmd-pkgs 未见，但 TBB 是纯 C++ 标准库依赖的跨平台库，不依赖 Linux 专有特性"
+        "source": "harmony_adapted.js 显示 tbb adapted=false；cmd-pkgs 未见，但 TBB 是纯 C++ 标准库依赖的跨平台库，不依赖 Linux 专有特性",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:llvm_jit",
@@ -1900,7 +1904,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅在需要 OpenVDB AX 表达式语言时需此能力；AX 是可选组件，不影响核心库",
-        "source": "references/harmony-pc-capabilities.json（未收录 LLVM 条目）"
+        "source": "references/harmony-pc-capabilities.json（未收录 LLVM 条目）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1950,7 +1955,24 @@
       "在鸿蒙 PC 上运行现有单元测试 (googletest, 211 文件/1217 用例)，验证重编后功能完整性"
     ],
     "notes": "评估按模型 A（C++ 库跑在 OHOS NDK 原生层，通过 napi 暴露给上层）。核心风险：TBB 是唯一强依赖且未鸿蒙化的运行时依赖，但由于 TBB 是纯 C++ 库（仅依赖 pthread+std::thread，不依赖 Linux 专有系统调用），用 OHOS NDK 交叉编译的可能性较高——若实践失败，需评估整体替换并行框架的工作量（此时 effor 上限升至 ~40）。已鸿蒙化 5/9 个核心依赖 (Boost/ZLIB/Blosc/Imath/Jemalloc) 大幅降低外围工作量。CUDA/VCL/LLVM/GLFW3 均为可选组件，裁剪不影响核心体数据处理功能。NanoVDB 的 __hostdev__ 宏设计已区分 CPU/GPU 代码路径，禁用 CUDA 后安全回退到 CPU。confidence=medium 因 TBB 的鸿蒙可用性为 unknown——这是整个移植的要点。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cudamem",
+          "ua:cudakernel"
+        ]
+      }
+    }
   },
   "library": {
     "name": "openvdb",
@@ -1972,35 +1994,22 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "OpenVDB 全系 C/C++ 依赖通过 CMake find_package 声明为系统预装 (system locality)；无 FetchContent / Conan / vcpkg 等远端获取，此模式在 C++ 库中是推荐取值 system 的典例"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "rationale": "TBB 应归 standard (跨平台，类似标准库级并行) 还是 platform (若算作特定并行框架)？因 TBB 已跨 Windows/Linux/macOS 广泛可用且有标准化趋势 (oneAPI)，此处归 standard 合理"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "rationale": "VCL SIMD 的 specific_hardware 设为 true——虽然 x86 SSE/AVX 非「特定硬件」而是广泛架构，但在鸿蒙 arm64 语境下等同不可用，设置 true 以正确向 dim-9 发出 blocker 信号"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "rationale": "OpenVDB 核心+非 GPU 路径为 recompile_only ~ needs_adaptation_full 区间，但因 NanoVDB CUDA 路径确实无法在鸿蒙运行 (且列入 unadaptable_apis)，整体应判 needs_adaptation_partial——虽然 CUDA 是可选组件且 CPU 回退完整，但按 schema 规则 unadaptable_apis 非空 => partial"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:cudamem",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cudamem 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cudakernel",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cudakernel 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "OpenVDB 是纯计算类体数据处理库，不涉及传统桌面 GUI 或音视频媒体场景；核心触及体数据 3D 可视化 (OpenGL/GLFW) 与 GPU 硬件加速 (CUDA/SIMD) 两个鸿蒙适配重点场景。",

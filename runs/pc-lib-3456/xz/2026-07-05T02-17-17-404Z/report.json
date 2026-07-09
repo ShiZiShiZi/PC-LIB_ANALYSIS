@@ -1359,7 +1359,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (liblzma 作为原生 C 库经 OHOS NDK 编译为 .so；若需从 ArkTS 调用则经 Node-API 桥接；arm64/x86_64；鸿蒙自研内核，非 Linux ABI，但 OHOS NDK 提供 musl libc + POSIX 子集)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1368,7 +1367,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "liblzma 为核心纯 C 算法库，LZMA1/LZMA2 压缩算法完全自实现，无外部依赖。所有平台特定代码（线程、沙箱、CPU/内存查询、SIMD 优化）均通过 #ifdef 守卫并配有纯 C 通用回退。移植仅需：1) 用 OHOS NDK（clang + musl）交叉编译为 arm64/x86_64 .so；2) 为 OHOS 平台新增 CPU 核心数/物理内存查询的分支（musl 提供的 sysconf 已覆盖常用场景）；3) CRC 硬件加速使用纯 C 查表法通用回退（后续可选移植 CLMUL/ARM64 CRC 优化路径）；4) 排除沙箱代码（Linux Landlock/pledge/Capsicum 在鸿蒙上无对应，通过 #ifdef 排除）。整体工作量低，核心功能无阻碍。",
     "blockers": [
       {
@@ -1434,7 +1432,8 @@
         "target_status": "available",
         "impact": "liblzma 核心算法仅需 C99 标准库；平台查询（CPU/内存）需 sysconf 支持；多线程需 pthread",
         "source": "references/harmony-pc-capabilities.json",
-        "note": "OHOS NDK 基于 musl 提供 C/POSIX 子集，满足 liblzma 编译运行的基本需求"
+        "note": "OHOS NDK 基于 musl 提供 C/POSIX 子集，满足 liblzma 编译运行的基本需求",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64-target",
@@ -1442,7 +1441,8 @@
         "required": true,
         "target_status": "available",
         "impact": "交叉编译目标架构；liblzma 已有 ARM64 CRC 指令优化（可选）",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1488,7 +1488,21 @@
     ],
     "notes": "评估按模型 A（库跑在鸿蒙 NDK 编译的原生 .so 上）。liblzma 是极其自包含的纯 C 算法库（LZMA/LZMA2 完全自实现），所有外部依赖均为可选（Threads/NLS/libmd），平台代码均通过 #ifdef 守卫并有通用回退——这使得鸿蒙移植基本仅为重编工作。优先利用 musl 提供的 POSIX 子集；线程/sandbox 等可选模块可先关闭，降低初始移植复杂度。",
     "required_permissions": [],
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "one_liner": "通用数据压缩库（liblzma）与命令行工具集，支持 .xz/.lzma 格式，采用 LZMA2 算法",
@@ -1507,15 +1521,7 @@
     "analyzed_at": "2026-07-05T02:36:53Z"
   },
   "meta": {
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library (with cli)",
-        "rationale": "XZ Utils 既是 liblzma 库（被其他软件链接调用）又是 xz/xzdec 等命令行工具。按主要价值（liblzma 为可被调用的公共 API）判定为 library，但 entry_points 中列出了 CLI 入口。这与同时作为库和工具的混合型项目（如 OpenSSL/zlib）一致。"
-      }
-    ],
+    "observations": [],
     "analysis_date": "2026-07-05T02:17:17.404Z",
     "model": "deepseek-v4-pro",
     "repo_commit": null,
@@ -1529,7 +1535,8 @@
         "message": "license.category(permissive) 与依据 SPDX(0BSD AND LGPL-2.1-or-later AND GPL-2.0-or-later AND GPL-3.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "纯计算型压缩库与命令行工具，不涉及 GUI、3D 渲染、媒体、或特定硬件场景。其 x86 CLMUL/SSE、ARM64 CRC、LoongArch CRC 加速均为 CPU 级 SIMD/汇编优化，属于通用 CPU 特性，不构成硬件依赖。",

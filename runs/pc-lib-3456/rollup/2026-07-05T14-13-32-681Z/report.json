@@ -1087,7 +1087,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上；Rust NAPI 原生扩展经 OHOS NDK/musl 交叉编译；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -1096,7 +1095,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Rollup 已原生支持 OpenHarmony PC：native.js 内置 openharmony arm64 平台入口（native.js:81-83），package.json napi.targets 包含 aarch64-unknown-linux-ohos（package.json:39），Rust NAPI 扩展经 napi-rs `--target aarch64-unknown-linux-ohos` 交叉编译即产出 .node 二进制。纯 JS/TS 源码直接运行在鸿蒙 Node.js 24 上，无需任何改造。",
     "blockers": [
       {
@@ -1137,7 +1135,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS/TS 源码运行的基础",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:rust_ohos",
@@ -1145,7 +1144,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust NAPI 原生扩展交叉编译的前提",
-        "source": "references/harmony-pc-capabilities.json#rust"
+        "source": "references/harmony-pc-capabilities.json#rust",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi_ohos",
@@ -1153,7 +1153,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust NAPI 扩展在 OHOS 上运行的基础",
-        "source": "references/harmony-pc-capabilities.json#napi（napi-rs 跨平台支持）"
+        "source": "references/harmony-pc-capabilities.json#napi（napi-rs 跨平台支持）",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1194,7 +1195,21 @@
       "验证 native.js 的 getReportHeader() 在 OHOS 上不崩溃（已含 try-catch）"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。Rollup 上游已有 OpenHarmony 平台适配代码和数据路径；真实工作量主要在于 CI 发布流程建立和验证测试。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1213,24 +1228,10 @@
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "category_clarification",
-        "value": "tool_vs_library",
-        "rationale": "Rollup 既有 CLI（bin）又有 JS API（exports），作为 npm 包分发，归类为 library 以利依赖拓扑分析。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "platform_support",
-        "kind": "existing_support",
-        "value": "inline_openharmony_entry",
-        "rationale": "Rollup 上游已在 native.js 内置 openharmony arm64 平台入口（native.js:81-83），package.json napi.targets 包含 aarch64-unknown-linux-ohos，表明官方已深度支持 OpenHarmony——recompile_only 评估偏低的 person_days 反映了这一事实。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "本项目为纯开发者构建工具，不涉及 GUI、3D 渲染、媒体处理或特定硬件。",

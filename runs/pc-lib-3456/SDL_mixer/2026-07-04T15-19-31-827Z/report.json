@@ -1439,7 +1439,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 A：C 库经 OHOS NDK 交叉编译为 .so，由 SDL3 鸿蒙版提供音频设备抽象；arm64 主力 / x86_64 待核实；自研内核，musl libc POSIX 子集）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1448,7 +1447,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "SDL_mixer 为纯 C 库，核心依赖 SDL3（已鸿蒙化）作为唯一强制运行时依赖。库自身不直接调用任何平台特有 API（无 Win32/POSIX 直接调用、无 fork/ioctl/procfs、无 GUI），所有系统交互均经 SDL3 跨平台抽象。仅需用 OHOS NDK（ohos.toolchain.cmake + clang + musl）重新编译即可运行。内建解码后端（dr_flac/dr_mp3/stb_vorbis/timidity）为纯 C 单头文件库，无需额外适配。vendored 外部解码库多数已鸿蒙化（ogg/vorbis/FLAC/opusfile/mpg123/WavPack 均可在 cmd-pkgs 获取预编译包），未适配的 libxmp/libgme/FluidSynth/tremor 为可选后端，构建时关闭对应 CMake 选项（SDLMIXER_MOD_XMP=OFF 等）即可，不影响核心功能。SIMD 向量运算（SSE/NEON）存在标量回退路径，arm64 可直接走 NEON 路径（鸿蒙 arm64 已支持）。",
     "blockers": [
       {
@@ -1502,7 +1500,8 @@
         "required": true,
         "target_status": "available",
         "impact": "唯一强制运行时依赖；已鸿蒙化则库可直接运行。",
-        "source": "harmony-pc-capabilities.json（cmd-pkgs 预编译清单含 SDL3）"
+        "source": "harmony-pc-capabilities.json（cmd-pkgs 预编译清单含 SDL3）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -1510,7 +1509,8 @@
         "required": true,
         "target_status": "available",
         "impact": "主力架构；NEON SIMD 路径直接可用。",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -1518,7 +1518,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "可选架构（SSE SIMD 路径）；unknown 不影响核心功能（arm64 主力，x86_64 非必需）。",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1577,7 +1578,21 @@
       "在鸿蒙 arm64 设备上验证音频播放/混音/空间音效功能"
     ],
     "notes": "评估按模型 A（C 库经 OHOS NDK 重编后链接到鸿蒙应用/SDL3 运行时）。所有未适配依赖均为可选且有关闭开关；开启全部内建后端后功能覆盖完整（WAV/AIFF/VOC/AU/MP3(dr_mp3)/FLAC(dr_flac)/Vorbis(stb_vorbis)/MIDI(Timidity)/RAW/Sinewave）。SIMD 有标量回退，arm64（鸿蒙主力架构）直接走 NEON 路径。x86_64 鸿蒙支持待核实但非必需。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "SDL3_mixer",
@@ -1600,33 +1615,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "apis",
-        "kind": "classification",
-        "value": "SDL3 framework as standard category",
-        "rationale": "SDL3 虽是第三方库，但对该库而言是唯一运行框架——所有系统/平台访问均经其抽象，作用类似语言标准库。将 SDL3 的 API 调用归入 standard/portable 组而非 platform，因为 SDL3 本身已将平台差异封装，本库不直接触碰任何平台特有 API。若将来 SDL3 归类策略调整需联动改。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "external/ 目录下的库以 git submodules 形式存在、由 CMake add_subdirectory 直接编入，不通过包管理器也不经过 FetchContent/ExternalProject，符合 'vendored' 语义（源码内嵌，构建期编译入产物）。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "count",
-        "kind": "ambiguity",
-        "value": "15",
-        "rationale": "dr_flac/dr_mp3/stb_vorbis 三个内联库归入 'other' ecosystem（非独立包，是项目自有的单头文件库），它们技术上是集成的第三方代码但与 vendored external 库的集成方式不同（无 submodule/无外部构建目标）。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯音频处理库，不涉及 GUI/图形界面、3D 渲染或特定硬件（GPU 加速/SIMD 有标量回退不算硬件依赖）。涉及媒体场景（音频编解码/混音/效果处理），所有媒体能力通过 SDL3 跨平台抽象层与可选 vendored 解码库实现，不直接依赖平台特有音频 API（ALSA/CoreAudio/WASAPI 等）。",

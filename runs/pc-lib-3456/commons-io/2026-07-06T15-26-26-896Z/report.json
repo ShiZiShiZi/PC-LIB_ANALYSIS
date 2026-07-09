@@ -636,10 +636,8 @@
     "notes": "跨平台纯 Java 库，无需编译原生代码。pom.xml 中 maven.compiler.source/target=1.8，Java 9+ 使用 maven.compiler.release=8。OSGi 元数据声明 sun.misc/sun.nio.ch 为 optional import。"
   },
   "harmony_adaptation": {
-    "feasibility": "feasible",
     "porting_class": "run_on_ported_runtime",
     "difficulty": "very_low",
-    "recommended_path": "直接在已移植的 HarmonyOS PC JDK 上运行 commons-io JAR，无需重新编译或修改源码。sun.misc/sun.nio.ch 的反射访问（ByteBufferCleaner）在 JDK 模块系统限制下可能无法工作，但该功能为可选且会优雅降级。",
     "confidence": "high",
     "effort": {
       "person_days": [
@@ -658,7 +656,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心运行时——纯 Java 库需 JDK 运行",
-        "source": "references/harmony-pc-capabilities.json#java_jdk"
+        "source": "references/harmony-pc-capabilities.json#java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta_add_opens",
@@ -666,12 +665,27 @@
         "required": false,
         "target_status": "unknown",
         "impact": "ByteBufferCleaner 通过反射访问 sun.misc/sun.nio.ch，若鸿蒙 JDK 不支持 --add-opens 则该功能不可用，但为可选功能且库会优雅降级，不影响主体功能",
-        "source": "references/harmony-pc-capabilities.json#add_opens"
+        "source": "references/harmony-pc-capabilities.json#add_opens",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
     "notes": "Apache Commons IO 是零依赖纯 Java 库，所有功能均基于 java.io/java.nio.file 标准 API。唯一的 JDK 内部 API 使用（ByteBufferCleaner 对 sun.misc.Cleaner/sun.misc.Unsafe/sun.nio.ch.DirectBuffer 的反射）已声明为 OSGi optional import，运行时不可用时不影响核心功能。FileSystem 枚举通过 System.getProperty(\"os.name\") 检测平台，鸿蒙 PC JDK 若返回非 Linux/Mac/Windows 值则回退到 GENERIC 配置，功能无损。",
-    "porting_class_model": "run_on_ported_runtime"
+    "porting_class_model": "run_on_ported_runtime",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "run_on_ported_runtime",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -702,7 +716,8 @@
       "shape coerced: runtime_surface.env_vars object→array",
       "shape coerced: runtime_surface.devices object→array"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "scenarios": [

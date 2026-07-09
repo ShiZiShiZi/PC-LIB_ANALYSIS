@@ -2114,10 +2114,8 @@
     }
   },
   "harmony_adaptation": {
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "confidence": "medium",
-    "recommended_path": "模型 C（整包桌面应用）：保留 CLI 模式作为核心功能（重编译即可），GUI 模式需将 Qt 替换为鸿蒙版 Qt5 或 ArkUI 重写，OpenGL 渲染需适配 OpenGL ES 或引入兼容层",
     "target_assumptions": [
       {
         "id": "ta:posix_subsystem",
@@ -2125,7 +2123,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "OHOS NDK 提供 musl + POSIX 子集，fork/exec/pipe 预期可用但 dlopen 行为待核实；若受限则 .oct 动态加载机制需改写",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:qt5_available",
@@ -2133,7 +2132,8 @@
         "required": true,
         "target_status": "available",
         "impact": "社区已提供 Qt 鸿蒙版（仅 Qt5）；Octave 需从 Qt6 降级到 Qt5，GUI 部分可复用但需适配测试",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl_es",
@@ -2141,7 +2141,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "鸿蒙提供 OpenGL ES/EGL（partial），Octave 使用桌面 OpenGL；需将 OpenGL 调用适配为 OpenGL ES 子集，gl2ps 可能需替换",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:blas_lapack",
@@ -2149,7 +2150,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "数值计算核心依赖；若 cmd-pkgs 不提供则需自行编译 OpenBLAS/LAPACK",
-        "source": "cmd-pkgs 预编译库可用性待查"
+        "source": "cmd-pkgs 预编译库可用性待查",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:suitesparse",
@@ -2157,7 +2159,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "稀疏矩阵功能核心依赖；需确认 cmd-pkgs 是否提供或自行编译",
-        "source": "cmd-pkgs 预编译库可用性待查"
+        "source": "cmd-pkgs 预编译库可用性待查",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:fftw",
@@ -2165,7 +2168,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FFT 计算核心依赖；若无则回退 FFTPACK（性能较低）",
-        "source": "cmd-pkgs 预编译库可用性待查"
+        "source": "cmd-pkgs 预编译库可用性待查",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:readline",
@@ -2173,7 +2177,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "CLI 行编辑依赖；若无则 CLI 体验严重退化",
-        "source": "cmd-pkgs 预编译库可用性待查"
+        "source": "cmd-pkgs 预编译库可用性待查",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app_model",
@@ -2181,7 +2186,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 .hap 沙箱形态，则 Octave 的多进程/动态加载/文件系统访问模式均需根本性重构",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -2220,7 +2226,9 @@
         "category": "graphics_api",
         "evidence": [
           "liboctinterp/graphics/gl2ps-print.cc: 依赖 gl2ps 库的 OpenGL 反馈模式"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "effort": {
@@ -2330,7 +2338,23 @@
       }
     ],
     "notes": "GNU Octave 是一个大型科学计算应用（73 万行生产代码），鸿蒙适配的核心难点在于：(1) Qt GUI 需从 Qt6 降级到社区提供的 Qt5 鸿蒙版；(2) OpenGL 渲染需适配为 OpenGL ES；(3) 大量 C/C++ 科学计算库需在鸿蒙 NDK 下编译。纯数值计算核心（liboctave/liboctinterp 的解释器/数组/数值算法）无平台依赖，重编译即可。若仅使用 CLI 模式，适配难度大幅降低（仅需编译依赖库+Readline）。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:gl2ps"
+        ]
+      }
+    }
   },
   "library": {
     "kind": "application",
@@ -2354,6 +2378,11 @@
     "confidence_overall": "medium",
     "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:gl2ps",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gl2ps 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "cp_loc_coverage",
         "class": "info",
@@ -2408,7 +2437,8 @@
       "shape coerced: runtime_surface.devices object→array",
       "shape coerced: harmony_adaptation.unadaptable_apis[0].evidence string→array"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "scenarios": [

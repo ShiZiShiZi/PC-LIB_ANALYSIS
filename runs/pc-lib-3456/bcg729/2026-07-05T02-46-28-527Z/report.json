@@ -535,7 +535,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（通过 OHOS NDK 交叉编译为 arm64/x86_64 原生 .so 库；自研内核，非 Linux ABI；musl libc + POSIX 子集）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -544,7 +543,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "bcg729 为纯 C99 语音编解码库，零外部依赖，仅使用 C 标准库（stdlib.h/string.h/stdint.h）。代码已跨 Windows/Linux/macOS/iOS/Android 多平台移植，平台特有代码仅约 23 行（共享库符号可见性的预处理宏），不涉及任何 POSIX 专有系统调用、文件 I/O、子进程、网络、设备访问或 GUI/3D 图形。用 OHOS NDK（clang + musl）直接交叉编译为 .so 并运行测试即可完成移植，工作量极低。",
     "blockers": [
       {
@@ -583,7 +581,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 以 musl libc 为基础，完全支持 ANSI C 与 POSIX 基本函数，此为最基本的 C 开发能力",
-        "source": "references/harmony-pc-capabilities.json — NDK/musl C99 标准库为基础能力"
+        "source": "references/harmony-pc-capabilities.json — NDK/musl C99 标准库为基础能力",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_cmake",
@@ -591,7 +590,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 NDK 已提供标准 CMake 交叉编译工具链，可直接使用构建本库的 CMake 工程",
-        "source": "harmony-pc-capabilities.json — arch:arm64/x86_64 支持"
+        "source": "harmony-pc-capabilities.json — arch:arm64/x86_64 支持",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -634,7 +634,21 @@
       "可选：用 OHOS NDK 的 node-API（napi）封装 C 函数，将 libbcg729 暴露给 ArkTS 层调用"
     ],
     "notes": "该库是极简纯 C 计算库，移植障碍几乎为零。platform_adaptation 仅 23 行 Windows DLL 可见性宏（预处理阶段消解，运行时不走条件分支），platform_branches 为 0。已在 Android NDK 成功构建（Android.mk 存在），Android NDK 与 OHOS NDK 同为 musl 基础工具链，移植经验直接适用。若目标是将 libbcg729 作为 ArkTS 应用的原生模块（模型 B），仅需增加一层 napi 封装（key_tasks 第 3 项），工作量+1-2 人天，不改变 porting_class。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "bcg729",
@@ -656,26 +670,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "media/kind",
-        "kind": "new_value",
-        "value": "speech_codec",
-        "rationale": "bcg729 是纯软件语音编解码器（G.729），不同于音视频采集/播放框架（FFmpeg/GStreamer/PortAudio），属于 codec 子类。media 场景的 kind 推荐集（video_decode/audio_capture/codec 等）中 codec 可覆盖，speech_codec 为其特化，表明是窄带语音编码器而非通用音视频编解码。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "recompile_napi",
-        "rationale": "该库为纯 C 库无上层语言运行时，模型 A（跑在已移植运行时上）不直接适用——C 库作为被链接的原生组件而非可运行实体。适配路径定为 recompile_napi（OHOS NDK 重编 + 可选 napi 封装暴露给 ArkTS），这在语义上介于 recompile_only（仅重编为 .so）与 wrap_ffi（桥接）之间。当前 recompile_napi 作为推荐路径准确表达了核心工作为交叉编译，napi 封装为可选增强。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为纯计算型语音编解码库，不涉及 GUI/3D 渲染/特定硬件场景。作为语音编解码器触及媒体（media）场景，但完全通过 C99 定点数学运算实现，无任何音视频采集/播放硬件依赖（无 ALSA/PortAudio/WASAPI 等），亦无 FFmpeg/GStreamer 等外部媒体框架依赖。",

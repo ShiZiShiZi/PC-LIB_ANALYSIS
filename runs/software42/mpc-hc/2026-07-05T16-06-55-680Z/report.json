@@ -1829,8 +1829,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 C：整包桌面应用。自研内核、非 Linux ABI；鸿蒙 JDK 17/Node.js/Python 运行时已移植——但本应用为 Native C++ MFC 应用，不基于运行时语言，无法直接跑在移植的运行时上。需 OHOS NDK 重编 + 鸿蒙图形/媒体/窗口 API 全面替代。）",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         200,
@@ -1838,7 +1837,7 @@
       ],
       "level": "very_high"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [
       {
         "id": "ua:directshow",
@@ -1854,7 +1853,9 @@
           "src/mpc-hc/FGManager.cpp:38",
           "src/filters/stdafx.h:41",
           "src/filters/parser/BaseSplitter/BaseSplitter.cpp"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:direct3d",
@@ -1869,7 +1870,9 @@
         "evidence": [
           "src/filters/renderer/VideoRenderers/SyncRenderer.cpp:28-31",
           "src/filters/renderer/VideoRenderers/PixelShaderCompiler.cpp:37-41"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:mfc_win32",
@@ -1885,7 +1888,9 @@
           "src/mpc-hc/MainFrm.h:100",
           "src/mpc-hc/mplayerc.cpp:1890-2270",
           "src/mpc-hc/stdafx.h:27-36"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wasapi_dsound",
@@ -1900,7 +1905,9 @@
         "evidence": [
           "src/mpc-hc/mpc-hc.vcxproj:74 (dsound.lib)",
           "src/thirdparty/MpcAudioRenderer/"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:registry",
@@ -1915,7 +1922,9 @@
         "evidence": [
           "src/mpc-hc/FakeFilterMapper2.cpp:37-188",
           "src/mpc-hc/mplayerc.cpp:1912"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1925,7 +1934,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "DirectShow 为 Windows 独占，鸿蒙无等价——整个播放器管线不可移植",
-        "source": "harmony-pc-capabilities.json#gui.wm（桌面能力段，无 DirectShow 条目——不存在于鸿蒙平台能力集中）"
+        "source": "harmony-pc-capabilities.json#gui.wm（桌面能力段，无 DirectShow 条目——不存在于鸿蒙平台能力集中）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:direct3d",
@@ -1933,7 +1943,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Direct3D 为 Windows 独占，鸿蒙仅支持 OpenGL ES/EGL（partial）与 ArkGraphics 3D，无法直接替代",
-        "source": "harmony-pc-capabilities.json#graphics_3d (Direct3D 不在平台能力中；最接近的替代是 ArkGraphics 3D 或 OpenGL ES partial)"
+        "source": "harmony-pc-capabilities.json#graphics_3d (Direct3D 不在平台能力中；最接近的替代是 ArkGraphics 3D 或 OpenGL ES partial)",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:mfc",
@@ -1941,7 +1952,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "MFC 为 Windows 独占框架，鸿蒙无等价——全部 UI 代码（>8 万行 MFC 源文件）不可复用",
-        "source": "harmony-pc-capabilities.json#gui——MFC 不在平台能力集中（Qt/GTK 为 available、Win32/MFC 为 unavailable）"
+        "source": "harmony-pc-capabilities.json#gui——MFC 不在平台能力集中（Qt/GTK 为 available、Win32/MFC 为 unavailable）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:audio_io",
@@ -1949,7 +1961,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙 PC 底层音频 I/O 待核实；WASAPI 与 DirectSound 为 Windows 专有，不可直接移植",
-        "source": "harmony-pc-capabilities.json#media.audio_io——状态 unknown"
+        "source": "harmony-pc-capabilities.json#media.audio_io——状态 unknown",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:registry",
@@ -1957,7 +1970,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "鸿蒙无注册表——所有设置读写/过滤器枚举逻辑须改用文件存储",
-        "source": "harmony-pc-capabilities.json——注册表不在平台能力集中"
+        "source": "harmony-pc-capabilities.json——注册表不在平台能力集中",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:optical_drive",
@@ -1965,7 +1979,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "光驱读盘功能为可选，若鸿蒙不支持可裁剪（用户可能不在意）",
-        "source": "harmony-pc-capabilities.json（未列此能力，默认 unknown）"
+        "source": "harmony-pc-capabilities.json（未列此能力，默认 unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1973,7 +1988,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定能否按桌面应用形态直接部署；若鸿蒙仅支持 .hap 且要求 ArkTS 前端，则交付形态根本不同",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app——状态 unknown"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app——状态 unknown",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1998,7 +2014,6 @@
         ]
       }
     ],
-    "recommended_path": "abandon_rewrite",
     "summary": "MPC-HC 是纯粹的 Windows 桌面应用，其架构——MFC GUI 框架、DirectShow 多媒体管线、Direct3D 视频渲染、WASAPI 音频 I/O、Windows 注册表——全部为 Windows 平台独占技术，在 HarmonyOS PC 上无任何等价替代。移植此应用到鸿蒙 PC 不是 '适配' 而是 '重写'：需用 ArkUI 重建全部 UI（含百余个属性页/对话框/面板），用 @ohos.multimedia 或移植 ffmpeg+自定义播放管道替代 DirectShow，用 OpenGL ES/ArkGraphics 3D 重写渲染器，并应对鸿蒙桌面窗口管理器/传统应用交付等未知目标能力。整体工作量相当于重写完整播放器，不建议移植；建议寻找鸿蒙生态中已有的原生媒体播放器替代。",
     "blockers": [
       {
@@ -2162,7 +2177,27 @@
       "将 Crash Reporter/yt-dlp 集成/sendrpt 等 Windows 工具链依赖替换为鸿蒙等价方案"
     ],
     "notes": "评估按模型 C（整包桌面应用）。该项目是 Windows 平台的深度耦合应用——其核心架构（DirectShow/Direct3D/MFC/WASAPI）全部为 Windows 专有技术，移植到鸿蒙 PC 的工作量相当于完全重写整个应用（person_days 按重写级别估算 200-500 天）。feasibility=infeasible 并非因某个具体 API 无法适配，而是整个应用的技术栈在目标平台不存在——重写成本远超「适配」。建议寻找鸿蒙生态中已有的播放器替代（如鸿蒙版 VLC 或其他 natives 播放器）。多个 target_assumptions 因目标任务在 harmony-pc-capabilities.json 中为 unknown（optical_drive/desktop_app/audio_io），因已有足够多的 blocker 判定 infeasible，这些 unknown 不影响结论。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:directshow",
+          "ua:direct3d",
+          "ua:mfc_win32",
+          "ua:wasapi_dsound",
+          "ua:registry"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "mpc-hc",
@@ -2185,55 +2220,45 @@
     "analyzed_at": "2026-07-05T17:30:58Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application (Windows media player)",
-        "rationale": "MPC-HC 是终端用户启动运行的应用（含 .exe 入口、MFC GUI、安装包分发），非可被外部 API 调用的库；归入 application 符合模型 C 评估口径"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "registry",
-        "rationale": "Windows 注册表 API 在 native_api 分类中无固定 type，自创 registry 以区别于普通的 system 分类，体现注册表作为 Windows 独有系统接口的特殊性"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "media_foundation",
-        "rationale": "Media Foundation API 按 platform/windows 归类，但 API 家族 type 与 directshow 不同，自创 media_foundation 以示区分"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "media.kind: dvd_css",
-        "rationale": "CSS 解密为 DVD 播放特有需求，标准媒体场景 kind 列表中无此细分；dvd_css 是 media 场景的合理细分"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "abandon_rewrite",
-        "rationale": "对于核心架构完全不可移植的 Windows-only 应用，推荐路径不是 adapt/recompile 而是放弃/重写；abandon_rewrite 比单纯的 abandon 更准确地表达了结论：不推荐移植，但若执意移植则需要完全重写"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
+        "code": "ua_func_class_defaulted:ua:directshow",
         "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "message": "unadaptable_api ua:directshow 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:direct3d",
+        "class": "actionable",
+        "message": "unadaptable_api ua:direct3d 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:mfc_win32",
+        "class": "actionable",
+        "message": "unadaptable_api ua:mfc_win32 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wasapi_dsound",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wasapi_dsound 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:registry",
+        "class": "actionable",
+        "message": "unadaptable_api ua:registry 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "MPC-HC 作为 Windows 桌面媒体播放器，触及 GUI（MFC/Win32 窗口）、3D 渲染（Direct3D 9/11 像素着色器）、媒体（DirectShow 音视频管线 + ffmpeg 解码 + WASAPI 音频 I/O）、硬件（CD/DVD 光驱设备直读）四大鸿蒙适配重点场景。所有场景均深度绑定 Windows 平台专有 API，鸿蒙无直接等价替代。",

@@ -1487,8 +1487,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK clang + musl，arm64/x86_64；C++ 库经 NDK 重编为 .so）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1497,7 +1496,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "Skia 作为 C++ 图形库，可通过 OHOS NDK 交叉编译；CPU 栅格后端与多数图像编解码路径可完整运行。OpenGL ES/EGL 后端在鸿蒙为 partial 支持，Vulkan 后端可用性 unknown，而 Metal/Direct3D 后端为平台专有、无法移植，因此 GPU 功能需部分裁剪或降级。大量依赖已入驻 cmd-pkgs，但仍需处理未鸿蒙化的编解码/GPU 依赖。",
     "unadaptable_apis": [
       {
@@ -1513,7 +1511,9 @@
         "evidence": [
           "include/gpu/ganesh/mtl/GrMtlDirectContext.h:26",
           "src/gpu/ganesh/mtl/GrMtlUtil.h:11"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:d3d",
@@ -1528,7 +1528,9 @@
         "evidence": [
           "include/gpu/ganesh/d3d/GrD3DDirectContext.h:23",
           "include/gpu/ganesh/d3d/GrD3DBackendContext.h:29"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_font_file",
@@ -1543,7 +1545,9 @@
         "evidence": [
           "src/ports/SkOSFile_win.cpp:57",
           "src/utils/win/SkDWrite.cpp:34"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:mac_font_file",
@@ -1558,7 +1562,9 @@
         "evidence": [
           "src/ports/SkFontMgr_mac_ct.cpp:314",
           "src/utils/SkGetExecutablePath_mac.cpp:14"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1568,7 +1574,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++20 是 Skia 最低语言标准，NDK 需支持 -std=c++20",
-        "source": "references/harmony-pc-capabilities.json#arch + 模型默认假设"
+        "source": "references/harmony-pc-capabilities.json#arch + 模型默认假设",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_file_thread",
@@ -1576,7 +1583,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "Skia 通用 POSIX 端口依赖这些 API；缺失需实现 OHOS 专用端口",
-        "source": "references/harmony-pc-capabilities.json#process_security + OHOS NDK POSIX 子集"
+        "source": "references/harmony-pc-capabilities.json#process_security + OHOS NDK POSIX 子集",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:opengl_egl",
@@ -1584,7 +1592,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "若不支持足够扩展，Ganesh OpenGL 后端需大量 workaround 或降级 CPU",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl/egl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl/egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:vulkan",
@@ -1592,7 +1601,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Vulkan 可用则可作为更现代的 GPU 后端；不可用不影响 CPU 栅格路径",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:metal",
@@ -1600,7 +1610,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Metal 后端必须裁剪，仅影响 macOS 专用代码路径",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d（Metal 未列出，Apple 专有）"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d（Metal 未列出，Apple 专有）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:d3d",
@@ -1608,7 +1619,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "D3D 后端必须裁剪，仅影响 Windows 专用代码路径",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d（D3D 未列出，Microsoft 专有）"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d（D3D 未列出，Microsoft 专有）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:win32",
@@ -1616,7 +1628,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Windows 专用端口不可直接复用",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:macos",
@@ -1624,7 +1637,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "macOS 专用端口不可直接复用",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [],
@@ -1765,7 +1779,26 @@
       "运行 Skia 单元测试与 gm/bench，验证 CPU 与 GPU 路径在鸿蒙 PC 上的正确性"
     ],
     "notes": "评估按 C++ 库模型 A（经 OHOS NDK 重编为 .so）进行；核心 2D 绘图功能可适配，但 Metal/Direct3D 为不可移植平台专有后端，必须裁剪。OpenGL/Vulkan 后端可行性依赖鸿蒙 PC 图形栈实际可用性，本报告将其记为 target_status=partial/unknown，因此 confidence 为 medium。若目标为 ArkTS 应用（模型 B），还需额外通过 Node-API 或 ArkGraphics 3D 做上层包装，工作量与难度会显著上升。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:metal",
+          "ua:d3d",
+          "ua:win32_font_file",
+          "ua:mac_font_file"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1776,36 +1809,30 @@
       "platform_adaptation 机械计数仅覆盖 #ifdef 平台宏正向包裹的代码行；Skia 实际平台耦合主要通过目录隔离（src/ports、src/gpu/ganesh/{gl,vk,mtl,d3d}），计数偏小。",
       "部分 GPU 后端（Vulkan/Dawn）在鸿蒙 PC 的可用性为 unknown，结论依赖未核实目标事实。"
     ],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "bindings",
-        "kind": "new_value",
-        "value": "nodejs/rust",
-        "rationale": "Skia 同时维护 CanvasKit（WebAssembly/JS，modules/canvaskit）与 rust/ 子 crates，bindings 字段取 [nodejs, rust] 可准确反映多语言绑定。"
+        "code": "ua_func_class_defaulted:ua:metal",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "git-sync-deps_submodule",
-        "rationale": "Skia 不依赖 CMake FetchContent 或 vcpkg，而是通过 DEPS 文件 + tools/git-sync-deps 拉取 third_party/externals 子模块，建议将 acquisition 记为 git-sync-deps 或 submodule。"
+        "code": "ua_func_class_defaulted:ua:d3d",
+        "class": "actionable",
+        "message": "unadaptable_api ua:d3d 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "gpu_backend_directory_isolation",
-        "rationale": "Skia 的 GPU 后端平台差异主要通过 src/gpu/ganesh/{gl,vk,mtl,d3d} 目录隔离，而非大量 #ifdef，平台适应计数偏低，需结合目录结构判断真实耦合度。"
+        "code": "ua_func_class_defaulted:ua:win32_font_file",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_font_file 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "recompile_napi_with_port_cuts",
-        "rationale": "Skia 不仅是重编，还需新增 OHOS 平台端口并裁剪 Metal/D3D 后端，路径可细化为 recompile_napi + platform_port + backend_cuts。"
+        "code": "ua_func_class_defaulted:ua:mac_font_file",
+        "class": "actionable",
+        "message": "unadaptable_api ua:mac_font_file 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

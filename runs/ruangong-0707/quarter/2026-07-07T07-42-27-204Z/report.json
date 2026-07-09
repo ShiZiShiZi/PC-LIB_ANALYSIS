@@ -971,8 +971,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK native 层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         4.4,
@@ -1015,7 +1014,8 @@
         "required": true,
         "target_status": "available",
         "impact": "QuarterWidget 继承 QGLWidget/QOpenGLWidget，Qt 不可用则整个库无法运行",
-        "source": "references/harmony-pc-capabilities.json gui.qt"
+        "source": "references/harmony-pc-capabilities.json gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl_partial",
@@ -1023,7 +1023,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "Coin3D 使用 OpenGL 渲染场景图，OpenGL 不可用或不兼容则 3D 渲染无法工作",
-        "source": "references/harmony-pc-capabilities.json graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:coin_recompilable",
@@ -1031,7 +1032,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Coin 是 Quarter 的核心依赖，若 Coin 无法在鸿蒙重编译/运行，则 Quarter 整体不可用",
-        "source": "推断：Coin 为大型 C++ 3D 库，需验证其 OpenGL/平台层兼容性"
+        "source": "推断：Coin 为大型 C++ 3D 库，需验证其 OpenGL/平台层兼容性",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_ndk_musl",
@@ -1039,7 +1041,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Quarter 使用标准 C++ 和 Qt API，需要 NDK 提供完整的 C++ 运行时支持",
-        "source": "推断：OHOS NDK 基于 musl，POSIX 子集覆盖度待验证"
+        "source": "推断：OHOS NDK 基于 musl，POSIX 子集覆盖度待验证",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1058,7 +1061,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "Quarter 是一个轻量级 C++ 胶水库（核心约 3.2k LOC），将 Coin3D 与 Qt OpenGL 桥接。其核心代码高度跨平台，使用 CMake 构建，迁移到鸿蒙 PC 的主要工作量在于前置依赖 Coin3D 的重编译与 OpenGL 兼容性验证。Qt 已 available，OpenGL 为 partial 支持。可选的 SpaceNavigator X11 功能在鸿蒙不可用但可关闭。推荐路径：先移植 Coin3D → OHOS NDK 交叉编译 Quarter → 验证 OpenGL 渲染。",
     "blockers": [
       {
@@ -1130,7 +1132,21 @@
       "5. 测试 Qt 事件桥接（鼠标、键盘、拖放）在鸿蒙 PC 的表现"
     ],
     "notes": "置信度 medium 的原因：Coin3D 是否能在鸿蒙 PC 成功重编译并正常运行尚为 unknown（ta:coin_recompilable）；OpenGL partial 支持的具体限制未核实。若 Coin3D 可成功移植且 OpenGL 兼容，则 Quarter 的迁移工作量极低（核心库仅约 3.2k LOC 跨平台代码）。SpaceNavigator/X11 功能为可选，不影响核心可用性。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Quarter",
@@ -1160,7 +1176,8 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Quarter 涉及 GUI（Qt 桌面组件）和 3D 渲染（OpenGL）两个鸿蒙适配重点场景。Qt 在鸿蒙 PC 已可用（available），OpenGL 为 partial 支持。3DConnexion SpaceNavigator 硬件设备支持属于可选功能，受 X11 平台限制。",

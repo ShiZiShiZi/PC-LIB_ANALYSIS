@@ -754,7 +754,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Go 1.24+ 已移植运行时；arm64/x86_64；OHOS NDK 原生层；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -790,12 +789,12 @@
         "required": true,
         "target_status": "available",
         "impact": "Fx 为纯 Go 库，依赖 Go 运行时；目标平台 Go 1.24+ 已移植，因此库可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.go"
+        "source": "references/harmony-pc-capabilities.json#runtimes.go",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Fx 是纯 Go 依赖注入框架，无原生扩展、无平台特有 API、无 GUI/3D/媒体/硬件依赖。鸿蒙 PC 已移植 Go 运行时，因此无需修改源码或重新编译即可在目标平台运行；仅需常规验证。",
     "blockers": [],
     "compatible": [
@@ -832,7 +831,21 @@
       "（可选）验证 os/signal 与 POSIX 信号常量在 OHOS 构建标签下正常解析"
     ],
     "notes": "评估按库口径（模型 A）：Fx 被其他 Go 应用以 API 调用，非终端应用。其平台相关文件 app_unixes.go / app_windows.go / app_wasm.go 仅定义 SIGINT/SIGTERM 常量，属于标准跨平台 Go 构建标签模式；鸿蒙 Go 运行时可用时，这些信号路径可直接工作。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "fx",
@@ -855,26 +868,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "test_cases",
-        "kind": "gap",
-        "value": "go_test_cases_not_detected",
-        "rationale": "code-metrics 脚本无法准确解析 Go 的 TestXxx 函数，报告 test_cases=0。实际仓库包含 58 个测试文件、约 10362 行测试代码，Go 测试用例数量远高于 0，需面板展示时依赖 test_files 而非 test_cases。"
-      },
-      {
-        "dimension": "code_partition",
-        "field": "docs_dir_classification",
-        "kind": "ambiguity",
-        "value": "docs_example_code_as_production",
-        "rationale": "metrics 脚本将 docs/ex/ 与 docs/src/ 按目录名 token 判为 production，但 docs/ex/get-started/ 下是独立可运行的教程示例。为对账 production.code，已将 docs/ 全部归入 reuse_direct；其内容不影响库本体的迁移工作量。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Fx 是纯逻辑型 Go 库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件访问；鸿蒙适配重点场景均无触及。",

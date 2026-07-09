@@ -1510,7 +1510,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（库，模型 A：经 OHOS NDK/musl 交叉编译为 .so，供鸿蒙原生应用通过 N-API 桥接调用；Python/Perl/Ruby/PHP 绑定需在鸿蒙对应运行时下重新链接 OHOS 版本 libsixel.so）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1519,7 +1518,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libsixel 是一个纯 C 实现、无 GUI/3D/媒体/硬件的图像编解码库。核心编码/解码算法仅依赖 C 标准库和 vendored stb_image(Public Domain)，无需改造。POSIX TTY 交互（termios/ioctl/select）全部由 #ifdef HAVE_TERMIOS_H/SYS_IOCTL_H/ISATTY 守卫，在 musl 未提供时自动编译为无 TTY 交互的简化版——不影响核心功能。Windows 平台代码（~104 行 nanosleep 模拟）仅编译于 _WIN32 目标，鸿蒙无关。整体移植工作仅为 OHOS NDK 交叉编译（arm64/x86_64）和验证。可选依赖（libpng/libjpeg/libcurl/gd）需各自在鸿蒙上可用（均为通用开源库，部分已由 OpenHarmony PC 社区预编译）。",
     "blockers": [
       {
@@ -1575,7 +1573,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无此能力则无法编译 C 库；OHOS NDK 已提供 musl，核心 API 全覆盖",
-        "source": "OHOS NDK 文档 + references/harmony-pc-capabilities.json"
+        "source": "OHOS NDK 文档 + references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_tty",
@@ -1583,7 +1582,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "非必需——全部由 #ifdef 守卫，缺失时核心功能不受影响，仅终端交互优化不可用",
-        "source": "references/harmony-pc-capabilities.json（无直接条目，musl POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json（无直接条目，musl POSIX 子集）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1629,7 +1629,21 @@
       "在鸿蒙 Python/Perl/Ruby/PHP 运行时上重新构建对应语言绑定并验证加载 OHOS 版 libsixel.so"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 重编）进行。libsixel 设计上仅依赖标准 C 库（C99），所有平台特定代码均条件编译守卫（#ifdef _WIN32 / HAVE_TERMIOS_H / HAVE_SYS_IOCTL_H / HAVE_SYS_SELECT_H），缺失时自动降级。核心核心编码/解码算法为纯 C 字符串处理与位运算，无外部系统调用。code_metrics.platform_adaptation 仅 104 行 Windows 平台代码，与鸿蒙无关。code_metrics.platform_branches 为空——无运行时平台分支。因此 porting_class 为 recompile_only（仅需重新编译）。stb_image/stb_image_write 为 vendored Public Domain 代码，与库本体一同编译，不构成额外阻碍。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libsixel",
@@ -1660,7 +1674,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯图像编解码库，不涉及 GUI 界面、3D 渲染、音视频媒体、特定硬件设备。仅依赖标准 C 库和可选图像编解码库（libpng/libjpeg/libcurl/gd），均为纯软件算法库。",

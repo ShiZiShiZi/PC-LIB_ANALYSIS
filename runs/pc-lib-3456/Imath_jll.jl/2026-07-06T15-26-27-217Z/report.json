@@ -448,8 +448,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -457,7 +456,7 @@
       ],
       "level": "medium"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -466,7 +465,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时可用，纯 Julia 代码可直接运行；但本包的核心功能是加载预编译的 C++ 共享库 libImath",
-        "source": "references/harmony-pc-capabilities.json #julia"
+        "source": "references/harmony-pc-capabilities.json #julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libimath_native",
@@ -474,7 +474,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本包的核心价值是为 Julia 提供 libImath 预编译二进制；若无鸿蒙版 libImath，需要用 OHOS NDK 交叉编译 Imath C++ 库并制作对应的 Artifacts tarball",
-        "source": "references/harmony-pc-capabilities.json（无 Imath 相关条目）"
+        "source": "references/harmony-pc-capabilities.json（无 Imath 相关条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:julia_libdl",
@@ -482,7 +483,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时已移植，Libdl 作为标准库应可用",
-        "source": "references/harmony-pc-capabilities.json #julia（Julia 运行时可用）"
+        "source": "references/harmony-pc-capabilities.json #julia（Julia 运行时可用）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:julia_artifacts",
@@ -490,11 +492,11 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时已移植，Artifacts 作为标准库模块应可用",
-        "source": "references/harmony-pc-capabilities.json #julia"
+        "source": "references/harmony-pc-capabilities.json #julia",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "本包是 Imath C++ 库的 Julia 二进制包装器，Julia 运行时已在鸿蒙 PC 可用。主要适配工作是：1) 使用 OHOS NDK 交叉编译 Imath C++ 库生成 aarch64-linux-ohos 共享库；2) 为本 JLL 包添加鸿蒙平台 wrapper（src/wrappers/aarch64-linux-ohos.jl）；3) 在 Artifacts.toml 中添加鸿蒙平台 tarball 条目。Julia 包装器代码本身（JLLWrappers 宏生成）无需修改。",
     "blockers": [
       {
@@ -539,7 +541,21 @@
       "确保 Imath C++ 库无 Linux 特有 API 依赖（Imath 是纯数学库，预期无平台 API 依赖）"
     ],
     "notes": "Imath 是纯数学计算库（向量/矩阵/半精度浮点），无 GUI/网络/设备依赖，交叉编译风险极低。主要工作量在于首次搭建 OHOS NDK 交叉编译环境和制作 Julia Artifacts tarball。本评估假设 Imath C++ 库本身不依赖 Linux 特有 API（如 epoll/inotify 等），该假设基于 Imath 是纯计算库的性质，若实际编译发现问题则需调整。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Imath_jll.jl",
@@ -564,48 +580,20 @@
     ]
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia 生态不在 schema 闭轴（python/java/nodejs/cpp/rust/go/dotnet）中，使用 other。Julia JLL 包是特殊的二进制包装器模式，核心功能是加载 C++ 预编译库，而非 Julia 原生计算库。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "package_manager",
-        "rationale": "Julia Pkg 是语言内建包管理器，虽不在推荐集（system/vendored/fetchcontent/download_build/submodule/package_manager/prebuilt_binary）的常见示例中，但 package_manager 语义吻合。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "julia_stdlib",
-        "rationale": "Julia 标准库模块（Libdl）是动态库加载的核心 API，不属于现有推荐集（win32/posix/cpp_stl/python_stdlib/java_std/node_core/syscall/ctypes_ffi/jni/opengl/directx/arch_simd）中的任何一种。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries.acquisition",
-        "kind": "new_value",
-        "value": "prebuilt_binary",
-        "rationale": "JLL 包的 libImath 是从 GitHub Releases 下载的预编译二进制（不是本仓构建、不是系统库、不是捆绑库），prebuilt_binary 语义最吻合。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本包是 Imath C++ 数学库的 Julia 二进制包装器，不涉及 GUI、3D 渲染、媒体或特定硬件场景。它仅通过动态库加载机制访问纯计算数学库。",

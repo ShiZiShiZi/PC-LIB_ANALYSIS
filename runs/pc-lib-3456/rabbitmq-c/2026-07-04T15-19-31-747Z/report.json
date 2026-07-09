@@ -1159,7 +1159,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK + musl libc + POSIX 子集；arm64/x86_64；C/C++ 库经 OHOS NDK 交叉编译为 .so）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1167,8 +1166,7 @@
       ],
       "level": "low"
     },
-    "confidence": "high",
-    "recommended_path": "recompile_napi",
+    "confidence": "medium",
     "summary": "rabbitmq-c 是纯 C 语言 AMQP 客户端库，已包含跨平台抽象层（POSIX/Win32 条件编译），主要使用标准 BSD socket API 和 POSIX 时钟/线程接口，这些在 OHOS NDK 的 musl libc POSIX 子集中基本可用。鸿蒙化仅需 OHOS NDK 交叉编译，Win32 分支自然不启用（走 POSIX 路径即为鸿蒙路径）。OpenSSL 可选依赖即使需要也可经 OHOS NDK 编译。工作量极低——相当于新增一个编译目标。",
     "blockers": [
       {
@@ -1235,7 +1233,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若缺乏则 socket 通信或计时器无法工作，需寻找替代或回退方案",
-        "source": "harmony-pc-capabilities.json（无专门条；musl/POSIX 子集为 NDK 基础设施）"
+        "source": "harmony-pc-capabilities.json（无专门条；musl/POSIX 子集为 NDK 基础设施）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:openssl_ohos",
@@ -1243,7 +1242,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "可选依赖，关闭 SSL 可完全免除；即使需要也大概率可用",
-        "source": "harmony-pc-capabilities.json（cmd-pkgs 预编译包列表）"
+        "source": "harmony-pc-capabilities.json（cmd-pkgs 预编译包列表）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1286,7 +1286,21 @@
       "在鸿蒙环境中运行单元测试验证 TCP 连接与 AMQP 协议交互正常"
     ],
     "notes": "rabbitmq-c 是较理想的鸿蒙移植候选库：纯 C 实现、无外部命令调用、无 GUI/3D/硬件依赖、跨平台抽象成熟、POSIX 路径已被 Linux/macOS/FreeBSD 大量验证。唯一不确定因素是 OHOS NDK musl 的 POSIX 子集覆盖程度——按经验 BSD socket 和 pthread 通常完整，仅 SO_NOSIGPIPE 等边缘 socket 选项可能缺失（源码已 #ifdef 处理）。OpenSSL 为可选项，关闭后库即退化为纯 TCP socket，进一步降低移植风险。预计 3-5 人-天即可完成（含交叉编译配置、符号验证和测试）。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "rabbitmq-c",
@@ -1308,27 +1322,20 @@
     "analyzed_at": "2026-07-04T15:33:49Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "",
-        "rationale": "SOCKET_LIBRARIES 和 rt 为 CMake 自动探测的系统库（非 find_package 方式），没有规范的包名，只能用描述性 name。这类非显式声明的系统依赖在已鸿蒙化查询时无法匹配——建议面板对这类 dep 标注为系统库、不可单独查询。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯 C 网络库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。所有场景均未触发。",

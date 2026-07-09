@@ -1055,8 +1055,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK, musl + POSIX 子集)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5.9,
@@ -1107,7 +1106,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "uSockets 底层网络 I/O 依赖 POSIX socket API；鸿蒙 NDK 提供 musl + POSIX 子集，基本 socket 操作应可用，但 epoll/kqueue 需替换为 poll",
-        "source": "references/harmony-pc-capabilities.json 进程/安全模型段"
+        "source": "references/harmony-pc-capabilities.json 进程/安全模型段",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ohos_ndk_event",
@@ -1115,7 +1115,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "uSockets 的核心性能依赖于高效 I/O 多路复用（Linux epoll / macOS kqueue）；若 OHOS NDK 仅提供 poll/select 则性能回退但功能可用",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1144,7 +1145,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "µWebSockets 自身代码几乎无平台依赖（仅 1 行 _WIN32 守卫），是标准 C++17 头文件库。适配的关键在于底层依赖 uSockets——它封装了 epoll/kqueue/libuv 等事件后端。推荐路径：1) 先将 uSockets 适配到 OHOS NDK（用 poll 替代 epoll/kqueue，或实现基于 OHOS 事件机制的 backend）；2) 交叉编译 uWebSockets 链接适配后的 uSockets；3) 可选链接 zlib（已有鸿蒙版）启用压缩。整体可行但需中等工作量。",
     "blockers": [
       {
@@ -1190,7 +1190,21 @@
       "性能测试：对比 poll 后端与 epoll 后端的吞吐量差距"
     ],
     "notes": "主要不确定性在于 OHOS NDK POSIX 子集的 socket API 完备性（bind/listen/accept/send/recv 应可用）和是否有高效的 I/O 多路复用替代。uSockets 已有多后端架构（epoll/kqueue/libuv/ASIO/GCD），增加 OHOS 后端是自然扩展。若 OHOS 支持类似 epoll 的高效接口则工作量更低。confidence 为 medium 因为 ta:ohos_ndk_event 状态为 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "uWebSockets",
@@ -1219,16 +1233,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build",
-        "rationale": "lsquic 通过 uSockets 子目录路径引用预编译静态库（build.c:44），属于 download+build 而非 submodule/vendored/system，用 download_build 描述"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "µWebSockets 是纯网络服务器库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其核心功能（TCP/WebSocket/HTTP 服务）在鸿蒙 PC 上通过 OHOS NDK 重编译即可工作。",

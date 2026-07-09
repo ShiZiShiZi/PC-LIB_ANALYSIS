@@ -942,8 +942,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -960,7 +959,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "OpenAL-Soft 需要底层音频后端；若鸿蒙 PC 无 ALSA/PulseAudio 兼容层，则需替换 OpenAL-Soft 的音频后端模块或使用 @ohos.multimedia.audio",
-        "source": "references/harmony-pc-capabilities.json → media.audio_io"
+        "source": "references/harmony-pc-capabilities.json → media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:java_jdk",
@@ -968,7 +968,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Java 字节码可直接在鸿蒙已移植的 JDK 上运行，非阻碍",
-        "source": "references/harmony-pc-capabilities.json → runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json → runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:jni",
@@ -976,7 +977,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JOAL 依赖 JNI 加载原生 OpenAL 库；鸿蒙 JDK 的 JNI 支持程度待核实",
-        "source": "references/harmony-pc-capabilities.json → jdk_internals (推断)"
+        "source": "references/harmony-pc-capabilities.json → jdk_internals (推断)",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -990,7 +992,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "JOAL 是 Java 对 OpenAL 的绑定库，核心工作是用 OHOS NDK 交叉编译 OpenAL-Soft 原生库和 JOAL JNI 胶水库（libjoal + libopenal），确保鸿蒙 JDK 的 JNI 可正常加载。OpenAL-Soft 在 Linux 上默认使用 ALSA/PulseAudio/PipeWire 后端，鸿蒙 PC 是否有兼容音频后端是最大不确定性。若无兼容后端，需改写 OpenAL-Soft 的音频后端层对接鸿蒙音频 API，或整体替换为 @ohos.multimedia.audio。",
     "blockers": [
       {
@@ -1054,7 +1055,21 @@
       "若音频后端不兼容，需改写 OpenAL-Soft 的音频后端层或替换为鸿蒙音频 API"
     ],
     "notes": "置信度为 medium，主要因为鸿蒙 PC 的底层音频 I/O 机制和 JNI 完整支持情况未核实。JOAL 自身 C 代码量极小（almisc.c 仅 62 行），平台适配代码极少（仅 6 行 #ifdef _WIN32），真正的适配工作量集中在 OpenAL-Soft 原生库的交叉编译和音频后端对接。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1062,22 +1077,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "sibling_checkout",
-        "rationale": "GlueGen 需作为同级目录检出而非标准包管理，用 sibling_checkout 描述这种构建时同级依赖模式"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "openal",
-        "rationale": "JOAL 封装的 OpenAL C API 不属于 win32/posix/opengl 等已有分类，新建 openal 类型描述音频 API 绑定"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

@@ -973,8 +973,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核/非 Linux ABI；OHOS NDK (musl libc + POSIX 子集) + clang 交叉编译；arm64 主力，x86_64 待核实；库形态走模型 A——经 OHOS NDK 重编为 .so，被其他鸿蒙原生应用链接调用）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -983,7 +982,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "ORC 为纯 C 编译器库，无第三方依赖（仅系统 libm/pthreads），核心编译器逻辑（opcode 解析、SIMD 指令编码、寄存器分配、循环展开）完全可移植。主要适配工作集中在：① JIT 代码内存分配（mmap 双映射策略）在 OHOS NDK/musl 环境下的验证与调适；② CPU 特性运行时检测（Linux getauxval/FreeBSD elf_aux_info//proc/cpuinfo）需新增 OHOS 内核对应机制或退回硬编码默认值——但该库内置仿真回退路径，即使缺失平台检测仍可正常运行。无 GUI、无云服务、无特定硬件依赖，整体可行。",
     "blockers": [
       {
@@ -1055,7 +1053,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JIT 编译器最基本能力——若 OHOS 内核不支持分配可执行内存页，JIT 功能彻底失效，仅剩仿真模式",
-        "source": "references/harmony-pc-capabilities.json（无对应条目，需实测）"
+        "source": "references/harmony-pc-capabilities.json（无对应条目，需实测）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cpu_detect",
@@ -1063,7 +1062,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "缺失时 ORC 无法自动选择最优 SIMD 后端，但仍可工作——仿真回退（orc_emulate）和硬编码目标选择（编译期选择默认后端）均可保证可用",
-        "source": "references/harmony-pc-capabilities.json（无对应条目）"
+        "source": "references/harmony-pc-capabilities.json（无对应条目）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1116,7 +1116,21 @@
       "评估各 SIMD 后端（SSE/AVX/NEON）在 OHOS 上的 JIT 表现——JIT 内存分配可用则全部后端可用，否则仅仿真"
     ],
     "notes": "评估按模型 A（库被鸿蒙原生 C/C++ 应用链接调用，非 ArkTS 沙箱）。置信度 medium：两条 target_assumptions 均为 unknown——mmap PROT_EXEC 是否在 OHOS 内核可用、CPU 检测接口是否存在均未核实，建议实测后更新 harmony-pc-capabilities.json 并重分析。即使这俩都不满足，ORC 的仿真回退和 C 源码生成能力仍保证代码可运行，只是丢掉了 JIT 编译优化的性能增益。平台适配代码总计 ~591 行（#ifdef 平台守卫），为 C/C++ 库中平台耦合较轻的一档。不含 Qt/GTK/GUI 组件、不依赖 GPU 硬件 API（SIMD 指令由库自身生成），无不被 OHOS NDK 涵盖的系统库。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "orc",
@@ -1136,7 +1150,8 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "ORC 是一个 JIT 编译器库，其核心是自生成的 SIMD 机器码和跨 CPU 架构的指令编码。它不涉及桌面 GUI、3D 渲染 API、音频/视频编解码或特定硬件设备。库内的 SIMD 后端（SSE/AVX/NEON 等）是 ORC 自身的产物（生成并写入机器码字节），不依赖外部 GPU/硬件加速库。唯一的硬件相关调用是 CPUID/xgetbv 用于 CPU 特性运行时检测，但这是编译器基础设施的常规操作，非特定硬件依赖。",

@@ -1775,7 +1775,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK musl+POSIX 子集，clang/CMake ohos.toolchain.cmake；arm64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -1792,7 +1791,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SDL3 是 SDL_image 的唯一强制运行时依赖和跨平台抽象层，已鸿蒙化则可直接链接编译",
-        "source": "cmd-pkgs: SDL3 已有 OpenHarmony PC C/C++ 预编译包"
+        "source": "cmd-pkgs: SDL3 已有 OpenHarmony PC C/C++ 预编译包",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -1800,11 +1800,11 @@
         "required": true,
         "target_status": "available",
         "impact": "C 语言库编译与基本 POSIX API（文件 IO、内存分配）所需的核心工具链",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "SDL_image 为纯 C 图像解码库，核心代码通过 SDL3 抽象层实现跨平台，无直接系统调用或硬件访问。所有运行时依赖（SDL3、libjpeg、libpng、zlib、libtiff、libwebp、libavif、libjxl、dav1d、aom）均已在 OpenHarmony PC 预编译包中可用。唯一工作是：用 OHOS NDK (ohos.toolchain.cmake) 交叉编译，禁用 Windows WIC 和 macOS ImageIO 平台后端，改用跨平台的 stb_image + 内置解码器 + 已鸿蒙化的系统图像库组合。平台适配代码量低（生产代码中条件编译块约 875 行，集中在可选后端），无阻碍性平台 API，可较快完成。",
     "blockers": [
       {
@@ -1923,7 +1923,21 @@
       "在鸿蒙 PC（arm64）上运行测试程序验证各格式（至少 BMP/PNG/JPEG/GIF/WebP）加载保存正确"
     ],
     "notes": "评估按「库链接进鸿蒙原生应用」（模型 A）口径。平台适配代码量 875 行集中在可选平台后端（WIC/ImageIO/Emscripten），均为条件编译守卫，鸿蒙编译时不触发。所有运行时图像库依赖均已在 OpenHarmony PC 预编译清单中（cmd-pkgs: SDL3/libjpeg/libpng/zlib/libtiff/libwebp/libavif/libjxl/dav1d/aom = 全部 adapted），无需额外移植依赖。整体工时估算 2–5 人-天，主要是交叉编译配置、禁用平台后端、回归测试。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "SDL_image",
@@ -1958,7 +1972,8 @@
         "message": "依赖/native_api 出现 media 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "SDL_image 是纯图像文件解码/编码库，不涉及 GUI 界面渲染、3D 图形管线、音视频媒体或特定硬件访问。所有图像解码为 CPU 像素缓冲（SDL_Surface），GPU 纹理创建委托给 SDL3 运行时完成。",

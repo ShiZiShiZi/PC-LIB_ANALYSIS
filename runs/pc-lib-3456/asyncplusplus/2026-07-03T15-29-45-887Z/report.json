@@ -658,7 +658,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C/C++ 库经 OHOS NDK/musl 交叉编译为 .so；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -675,7 +674,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库核心完全基于 C++11 标准并发原语；OHOS NDK 提供 clang + musl + C++ 标准库支持，是移植前提。",
-        "source": "references/harmony-pc-capabilities.json 引言（原生层 OHOS NDK：musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json 引言（原生层 OHOS NDK：musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pthreads",
@@ -683,7 +683,8 @@
         "required": true,
         "target_status": "available",
         "impact": "线程库是 std::thread 与底层同步的依赖；musl/OHOS NDK 提供 pthread 支持。",
-        "source": "references/harmony-pc-capabilities.json 引言（musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json 引言（musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:aligned_alloc",
@@ -691,11 +692,11 @@
         "required": true,
         "target_status": "available",
         "impact": "非 Windows 路径使用 posix_memalign 分配对齐内存；musl 支持该 POSIX 接口。",
-        "source": "POSIX/musl 标准接口"
+        "source": "POSIX/musl 标准接口",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "Async++ 是纯 C++11 并发库，核心逻辑完全基于 C++ 标准库线程与同步原语，平台相关代码极少且被条件编译隔离（Windows 路径、iOS pthread TLS 模拟）。在 HarmonyOS PC 上只需使用 OHOS NDK 重新编译即可；非 Windows/iOS 路径的代码无需修改，迁移工作量低。",
     "blockers": [],
     "compatible": [
@@ -734,7 +735,21 @@
       "根据需求选择构建为共享库或静态库，并生成 CMake 包配置供下游使用"
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编为原生库）进行。若目标是将 Async++ 以 N-API 形式暴露给 ArkTS 应用（模型 B），则需额外编写 N-API 绑定层，但库本体仍可复用，工作量会小幅增加。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "asyncplusplus",
@@ -764,7 +779,8 @@
     "warnings": [],
     "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Async++ 是纯计算型并发库，不涉及 GUI、3D 渲染、音视频媒体或硬件设备访问，因此没有鸿蒙适配重点场景。",

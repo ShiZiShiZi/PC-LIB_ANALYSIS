@@ -539,8 +539,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -557,7 +556,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时已可用，本 JLL 包装器的 Julia 代码可在鸿蒙 PC 的 Julia 上运行",
-        "source": "references/harmony-pc-capabilities.json runtimes/julia"
+        "source": "references/harmony-pc-capabilities.json runtimes/julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:mpich_native_build",
@@ -565,7 +565,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "MPICH 是 C/Fortran 原生库，需要为鸿蒙 PC（OHOS NDK/musl）编译。MPICH 使用 POSIX API（进程管理/共享内存/网络套接字），鸿蒙 NDK 的 POSIX 子集是否足够尚不确定——若缺少所需 POSIX 接口则需改造",
-        "source": "MPICH 上游依赖 POSIX 进程间通信与网络栈"
+        "source": "MPICH 上游依赖 POSIX 进程间通信与网络栈",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:hwloc_harmony",
@@ -573,11 +574,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "MPICH 依赖 hwloc 进行进程绑核与拓扑感知；若 hwloc 不可用，MPICH 的绑核功能受限但不影响核心 MPI 通信",
-        "source": "Project.toml 依赖 Hwloc_jll"
+        "source": "Project.toml 依赖 Hwloc_jll",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "MPICH_jll.jl 的 Julia 包装器代码本身可在已移植的 Julia 运行时上运行，无适配问题。核心挑战在于被包装的 MPICH 预编译二进制——需要使用 OHOS NDK 为鸿蒙 PC 重新编译 MPICH（含 hwloc 依赖），生成对应的 aarch64-ohos 二进制产物，并在 Artifacts.toml 中添加鸿蒙平台条目。MPICH 依赖 POSIX 进程管理、共享内存和网络套接字进行 MPI 通信，需验证 OHOS NDK 的 POSIX 子集是否满足需求。",
     "blockers": [
       {
@@ -641,7 +642,21 @@
       "在 Yggdrasil 构建树中添加鸿蒙平台构建配方（build_tarballs.jl 修改）"
     ],
     "notes": "本 JLL 包的核心适配工作量不在 Julia 包装器代码本身，而在被包装的 MPICH C/Fortran 原生库的鸿蒙编译。MPICH 是成熟的跨平台 MPI 实现，已支持多种 Unix 变体，OHOS NDK 基于 musl libc 且提供 POSIX 子集，成功编译的可能性较高。关键不确定项：(1) OHOS NDK 的 POSIX 覆盖是否满足 MPICH 进程管理与共享内存需求；(2) hwloc 在鸿蒙上的硬件拓扑检测能力。confidence 为 medium 因为 mpich_native_build 的 target_status 为 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "MPICH_jll.jl",
@@ -666,31 +681,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia JLL 包不属于 python/java/nodejs/cpp/rust/go/dotnet 中的任何一个，归入 other"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "prebuilt_binary",
-        "rationale": "MPICH 二进制产物从 GitHub Releases 下载预编译 tarball，非源码编译，与 package_manager（Julia Pkg 管理的是 Julia 包本身）不同"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "julia_stdlib",
-        "rationale": "Julia 标准库模块（Libdl/Artifacts/TOML/BinaryPlatforms）作为 API 组，不属于已有分类（win32/posix/cpp_stl/python_stdlib 等），新增 julia_stdlib 以覆盖 Julia 标准库调用"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "MPICH_jll.jl 是一个 Julia JLL 二进制包装器，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其核心功能仅为动态加载预编译的 MPICH 共享库，属于纯计算/通信库包装层。",

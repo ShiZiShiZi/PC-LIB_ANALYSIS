@@ -1238,7 +1238,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1247,7 +1246,7 @@
       ],
       "level": "low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -1256,7 +1255,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Vorbis 为原生 C 库，需使用 OHOS NDK 编译出 aarch64/x86_64 OHOS 目标产物。",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ogg",
@@ -1264,11 +1264,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Vorbis 运行时依赖 libogg 进行 Ogg 分帧；若目标平台尚未提供，需同步用 OHOS NDK 交叉编译 libogg。",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "Vorbis 是标准的跨平台 C 音频编解码库，正常构建路径几乎不依赖平台专有 API。HarmonyOS PC 适配主要工作是用 OHOS NDK 交叉编译 libogg 与 libvorbis 三件套；x86 FPU/SSE 优化为条件编译，在非 x86 平台自动回退到可移植 C 实现。无不可适配 API，亦无 GUI/硬件/云服务阻碍。",
     "blockers": [],
     "compatible": [
@@ -1306,7 +1306,21 @@
       "（可选）封装 Node-API/NAPI 接口供 ArkTS 应用调用"
     ],
     "notes": "DEBUG_MALLOC 调试路径使用 pthread_mutex 与 gettimeofday，但默认不启用，不进入生产库。x86 内联汇编/SSE2 路径仅在 x86 编译器下生效，HarmonyOS PC 典型 aarch64 构建会自动走默认 C 实现。目标假设 ta:ogg 的 target_status 为 unknown，若后续确认 libogg 已提供，可进一步将工作量下限压至 1 人天。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "vorbis",
@@ -1333,16 +1347,17 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "warnings": [],
-    "confidence_overall": "high",
+    "confidence_overall": "medium",
     "observations": [],
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Vorbis 是专注于 Ogg Vorbis 音频的纯编解码库，触及鸿蒙适配重点场景中的「媒体（音频编解码）」，但不涉及 GUI、3D 渲染或专用硬件。其媒体能力完全可通过 OHOS NDK 重编或鸿蒙多媒体子系统复用。",

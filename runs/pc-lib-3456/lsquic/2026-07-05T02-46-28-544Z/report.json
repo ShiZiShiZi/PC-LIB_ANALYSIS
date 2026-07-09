@@ -1045,8 +1045,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (C/C++ 库经 OHOS NDK/musl 跨编译为 .so；arm64 / x86_64；自研内核，非 Linux ABI)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1055,7 +1054,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "lsquic 是纯 C 网络协议库，不含 GUI/3D/媒体/硬件依赖。鸿蒙化路径为经 OHOS NDK（musl libc）重新编译 + 适配平台相关计时与 TLS 后端。核心 QUIC/HTTP3 协议逻辑为纯 C 标准库可移植代码，无需改动。时间获取有 clock_gettime（POSIX）后端可复用（musl 支持）；TLS 依赖 BoringSSL/OpenSSL 需找到鸿蒙构建版本。zlib 在 cmd-pkgs 中已有鸿蒙版。ls-qpack/lshpack 同仓 submodule 编译为库静态部分。平台适配代码量小（152 行条件编译），无阻塞性平台 API。整体可适配，工作量主要在工具链配置与 TLS 库交叉编译。",
     "blockers": [
       {
@@ -1121,7 +1119,8 @@
         "required": true,
         "target_status": "available",
         "impact": "交叉编译基础——已可用，不构成阻碍",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ssl_ohos",
@@ -1129,7 +1128,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "需交叉编译或适配为鸿蒙架构的 TLS 库；有替代路径但不 trivial",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:zlib_ohos",
@@ -1137,7 +1137,8 @@
         "required": true,
         "target_status": "available",
         "impact": "cmd-pkgs 中已有鸿蒙版，不构成阻碍",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1176,7 +1177,21 @@
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编）。库本身不涉及 GUI/3D/媒体/硬件，无外部命令调用，无 /proc /sys 访问，无动态加载库。所有平台逻辑由 #ifdef 守卫，鸿蒙路径新增后不影响现有平台。主要工作量为 TLS 库（BoringSSL/OpenSSL）的鸿蒙交叉编译——这是最大的不确定性与工作量来源。若鸿蒙社区已有 BoringSSL 移植版，工作量可降至低档 [3,5] person_days。",
     "required_permissions": [],
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "one_liner": "LiteSpeed QUIC (LSQUIC) —— 开源 QUIC 与 HTTP/3 协议的 C 库，用于构建高性能服务器与客户端",
@@ -1197,7 +1212,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "纯网络协议库，不涉及 GUI、3D 渲染、媒体、特定硬件设备。所有场景均为 absent。",

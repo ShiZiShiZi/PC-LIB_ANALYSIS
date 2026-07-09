@@ -1561,8 +1561,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 C — 整包桌面应用评估；Java JDK 17 已移植可复用；自研内核，无 Linux ABI；原生层 OHOS NDK/musl；arm64 可用 / x86_64 待核实)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1571,7 +1570,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "SonarQube 为纯 Java Web 服务应用（嵌入式 Tomcat + Elasticsearch + H2/PostgreSQL），无桌面 GUI 工具包依赖，前端为浏览器访问的 Web UI。鸿蒙 PC 已移植 JDK 17，Java 字节码可直接运行；主要改造工作：① 捆绑的 Elasticsearch 二进制包需替换为鸿蒙兼容版本或直接运行 Java 版 ES；② 多进程架构依赖 ProcessBuilder 启动 JVM 子进程——鸿蒙上 ProcessBuilder 可用性待核实，若受限需改为单进程内聚或线程模型；③ JMX 监控与平台脚本需适配 OHOS；④ JRE 分发包需更换为鸿蒙兼容 JDK（Eclipse Adoptium 暂无 OHOS 构建）。整体可行，核心障碍可控，但多项目标能力未核实。",
     "target_assumptions": [
       {
@@ -1580,7 +1578,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无阻碍——鸿蒙 PC 已移植 JDK 17，Java 字节码可跑",
-        "source": "harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -1588,7 +1587,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SonarQube 多进程架构（App 主进程→Web/CE/ES 子进程）依赖 ProcessBuilder 启动独立 JVM 进程；若鸿蒙不支持/受限，需改造为单进程模式或线程池——架构级改动",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jmx",
@@ -1596,7 +1596,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "SonarQube 用 JMX 注册 MBean 供运维监控；若不可用，监控功能降级但不影响核心代码分析能力",
-        "source": "harmony-pc-capabilities.json#jdk_internals.jdk_management"
+        "source": "harmony-pc-capabilities.json#jdk_internals.jdk_management",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network",
@@ -1604,7 +1605,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Web 服务需绑定端口对外提供 REST API；OkHttp 客户端需对外发起 ALM 集成 API 调用——标准 Java Socket/HTTP 操作，鸿蒙大概率支持但需核实",
-        "source": "harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:filesystem",
@@ -1612,7 +1614,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需要读写临时文件、ES 索引数据、数据库文件——标准 Java I/O，鸿蒙 musl 大概率支持但需核实",
-        "source": "harmony-pc-capabilities.json#permissions.perm_storage"
+        "source": "harmony-pc-capabilities.json#permissions.perm_storage",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1620,7 +1623,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SonarQube 以 ZIP 包分发，由 Launcher 脚本启动 JVM；鸿蒙 PC 是否支持此形态决定整条打包路径",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arm64_arch",
@@ -1628,7 +1632,8 @@
         "required": true,
         "target_status": "available",
         "impact": "arm64 为鸿蒙 PC 主力架构，已确认支持",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "blockers": [
@@ -1777,7 +1782,21 @@
       }
     ],
     "notes": "评估按模型 C（整包桌面应用）；SonarQube 为 Web 端应用，非传统桌面 GUI 应用——前端通过浏览器访问，无 Swing/AWT/JavaFX 依赖。鸿蒙 PC 已移植 JDK 17（available），这是最关键的前提条件。最大不确定因素：① ProcessBuilder 可用性（unknown，决定多进程架构是否需改造）；② 传统桌面应用交付模型（unknown，ZIP 分发+launcher 的形式鸿蒙是否支持）。JMX、网络、文件 I/O 均为标准 Java API，鸿蒙 JDK 大概率支持但需核实。因多项目标能力 unknown，置信度为 medium；待这些 unknown 核实后，结论可升为 high、porting_class 可能降为 recompile_only 或 no_adaptation。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "sonarqube",
@@ -1797,15 +1816,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "SonarQube 为自托管代码质量平台，有 main() 入口、多平台启动脚本（Linux/macOS/Windows）、Gradle ZIP 打包分发、捆绑 JRE 和 Elasticsearch——是典型的 application 而非 library"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
@@ -1822,7 +1833,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "SonarQube 为纯 Java Web 应用（无桌面 GUI 工具包、无 3D 渲染、无媒体编解码、无特定硬件依赖），前端通过浏览器访问嵌入式 Tomcat 提供的 Web UI，不涉及鸿蒙适配重点场景中的 GUI/3D/媒体/硬件。",

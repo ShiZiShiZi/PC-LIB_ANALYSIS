@@ -1984,7 +1984,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；Rust 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1993,7 +1992,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "River 主体为纯 Python，可直接运行在鸿蒙已移植 Python 上；唯一原生工作是使用 OHOS NDK 交叉编译 PyO3 Rust 扩展 river._river_rust。numpy、scipy、pandas、scikit-learn、sqlalchemy 等核心依赖已有鸿蒙 PyPI wheel， narwhals/requests 为纯 Python 可随运行时分发。需补充 stream.Cache 对 HarmonyOS 的默认目录回退，并核实网络权限模型。",
     "blockers": [
       {
@@ -2018,7 +2016,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库主体纯 Python 部分可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:rust_pyo3_extension",
@@ -2026,7 +2025,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "river._river_rust 必须在鸿蒙上重新编译，PyO3 与 CPython ABI 的可用性待核实",
-        "source": "references/harmony-pc-capabilities.json#runtimes.rust + OHOS NDK 推断"
+        "source": "references/harmony-pc-capabilities.json#runtimes.rust + OHOS NDK 推断",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2073,7 +2073,21 @@
       "若启用网络功能，确认 ohos.permission.INTERNET 申请机制并文档化"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时上）。核心风险在于 PyO3 Rust 扩展能否在 OHOS NDK 下顺利编译并加载；HarmonyOS PC 能力表未明确 native extension/PyO3 支持，故置信度为 medium。x86_64 目标状态为 unknown，但 arm64 已确认可用，可优先交付 arm64 版本。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2081,29 +2095,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "dev-group deps used in production",
-        "rationale": "pyproject.toml dependency-groups.dev 中的 polars、gymnasium、graphviz 等包，以及完全未声明的 requests、vaex，实际被 river/stream、river/bandit、river/tree 等生产模块使用；难以简单归为 dev 或 runtime，本报告按 optional 处理并记录。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries.mechanism",
-        "kind": "new_value",
-        "value": "python_extension_module",
-        "rationale": "river._river_rust 是 maturin/PyO3 构建的 Python 原生扩展模块，通过正常 import 加载，不是 ctypes/dlopen/JNI/N-API，现有 mechanism 取值列表未覆盖。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.key",
-        "kind": "new_value",
-        "value": "network",
-        "rationale": "river 的 stream 模块包含 Twitter/Twitch 实时流与远程数据集下载等网络访问场景，不在默认 gui/rendering_3d/media/hardware 四键中，作为新键记录。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

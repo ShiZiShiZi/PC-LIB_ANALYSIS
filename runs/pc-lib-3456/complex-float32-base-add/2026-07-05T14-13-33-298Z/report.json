@@ -735,7 +735,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上；原生 C addon 经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -744,7 +743,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为纯计算库，JavaScript 核心逻辑不依赖任何平台特有 API，可直接跑在鸿蒙已移植的 Node.js 24 运行时上。唯一的移植工作在其 C 原生 addon（通过 Node-API 桥接）——该 C 代码仅使用纯 C99 数学运算和 stdlib 自家的跨平台复数类型（stdlib_complex64_t），无 Win32/POSIX/系统调用/硬件 API 依赖，用 OHOS NDK 重新编译即可。纯 JavaScript 回退路径（lib/main.js）已存在，无原生插件亦可纯 JS 运行，进一步降低风险。整体可行性高，工作量小。",
     "blockers": [
       {
@@ -784,7 +782,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 24 已移植，运行时本身不构成阻碍。C addon 需经 OHOS NDK 重编为 .node 插件（N-API ABI 兼容）。",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -821,7 +820,21 @@
       "在鸿蒙上 npm install 并运行单元测试，验证功能正确性和浮点一致性"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）评估，不涉及 ArkTS 沙箱口径。已存在 JS-only 回退（lib/main.js），即使 C addon 暂未编译，纯 JS 核心功能也可用。全部依赖为 @stdlib 系列微包。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-float32-base-add",
@@ -842,33 +855,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "ambiguity",
-        "value": "复数算术运算",
-        "rationale": "本库功能极其单一（仅复数加法），拆成多个分类意义不大。归为单一类别「复数算术运算」+ Node-API 桥接。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "locality",
-        "kind": "ambiguity",
-        "value": "remote",
-        "rationale": "所有 @stdlib/* 依赖均从 npm registry 获取。虽然都来自同一组织（stdlib），但它们是独立发布的 npm 包，标记为 remote 而非 local。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "cpp_stl",
-        "rationale": "C 代码使用 stdlib 自定义的复数类型（stdlib_complex64_t）和 Node-API 宏，非标准 C 语言库 API。归为 standard/portable 的 cpp_stl 组，因为它们都是跨平台抽象。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为纯数值计算库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备。所有场景均不触及。",

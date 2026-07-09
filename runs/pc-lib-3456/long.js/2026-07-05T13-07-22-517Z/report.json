@@ -549,7 +549,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13.0 运行时上; 纯 JS 无原生扩展; arm64/x86_64)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -558,7 +557,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "long.js 是纯 JavaScript 库，零运行时依赖，仅使用 JS 语言标准内置 API（Math、BigInt、WebAssembly）——不涉及任何平台专有或系统级 API。鸿蒙 PC 已移植 Node.js 24（available），该库可直接运行，无需任何代码修改或重新编译。WebAssembly 模块内联于 JS 中（Uint8Array），WASM 兼容性由鸿蒙 Node.js 的 V8 引擎原生提供；BigInt 由 ES2020+ 标准支持，同样是运行时内置。整体零工作量。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -569,7 +567,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时不支持则库无法加载；已确认可用 → 无阻碍",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -588,7 +587,21 @@
       "发布到鸿蒙 PC 的 npm 注册表或让其通过 npm install long 正常安装"
     ],
     "notes": "纯 JS 无原生依赖库，WebAssembly 为可选加速路径（不支持时自动回退纯 JS 算法），BigInt 转换由 typeof BigInt 守卫。这是典型的最无阻碍情形——只需鸿蒙 Node.js 运行时存在即可工作。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "long.js",
@@ -607,7 +620,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 JavaScript 大整数算术库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

@@ -2315,8 +2315,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C：整包应用。经 OHOS NDK/musl 重新编译为原生可执行文件；自研内核，非 Linux ABI，arm64 为主；TCP 服务端应用，无 GUI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -2325,7 +2324,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "Redis 是纯 C 编写的服务端应用，核心逻辑（数据结构引擎、网络 I/O 抽象层、集群协议、Lua 脚本等）无特殊平台依赖，可经 OHOS NDK 重新编译。主要阻碍在于：持久化机制深度依赖 fork() 系统调用实现写时复制快照与 AOF 后台重写，该 API 在 OHOS POSIX 子集中可能缺失；Linux 特有的 /proc /sys 伪文件系统接口在 OHOS 上不存在或不兼容；epoll/eventfd 等 Linux 专用 IO 原语依赖需回退到 select/poll。多个关键的 vendored 依赖（jemalloc、hiredis、tre、xxhash、openssl）已在鸿蒙 PC 预编译生态中有移植版本，可降低依赖层面工作量。整体核心内存数据库功能可适配，但部分依赖 fork 的运维特性（如不停机的 BGSAVE）可能需重新实现或降级。",
     "blockers": [
       {
@@ -2435,7 +2433,9 @@
         ],
         "caused_by": [
           "ta:posix_subset"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:fork_bgrewrite",
@@ -2449,7 +2449,9 @@
         ],
         "caused_by": [
           "ta:posix_subset"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:fork_rdb",
@@ -2464,7 +2466,9 @@
         ],
         "caused_by": [
           "ta:posix_subset"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2474,7 +2478,8 @@
         "required": true,
         "target_status": "available",
         "impact": "提供 C 编译器与标准库，是重编译的前提",
-        "source": "harmony-pc-capabilities.json#runtimes"
+        "source": "harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_subset",
@@ -2482,7 +2487,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "fork/eventfd/epoll/sync_file_range 等接口是否支持决定核心持久化功能能否保持；若不支持 fork 而仅支持线程，则需重新设计持久化架构",
-        "source": "harmony-pc-capabilities.json （无直接对应行，需核实 OHOS NDK musl 的 POSIX 覆盖范围）"
+        "source": "harmony-pc-capabilities.json （无直接对应行，需核实 OHOS NDK musl 的 POSIX 覆盖范围）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libsystemd",
@@ -2490,7 +2496,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "可选集成，OHOS 上不依赖即可",
-        "source": "harmony-pc-capabilities.json （无对应）"
+        "source": "harmony-pc-capabilities.json （无对应）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_arm64",
@@ -2498,7 +2505,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS PC 主力架构为 arm64，Redis 已支持 arm64/NEON 编译",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -2558,7 +2566,25 @@
     ],
     "notes": "评估按模型 C（整包应用）：Redis 是直接由终端用户启动的 TCP 服务端应用，非库被链接进其他代码。结论依赖一项关键未核实目标事实：OHOS NDK musl 的 POSIX 子集是否支持 fork()。fork 是 Redis 持久化（BGSAVE/BGREWRITEAOF/RDB 主从同步）的核心机制——若支持则 porting_class 可升为 needs_adaptation_full（全部可适配），person_days 降至 [5, 12]；若不支持则需要重新实现持久化架构，当前按最坏情况评估为 needs_adaptation_partial。libsystemd 为可选依赖，不影响核心功能。所有 SIMD 优化均有标准 C 回退路径无需修改。",
     "required_permissions": [],
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:fork_bgsave",
+          "ua:fork_bgrewrite",
+          "ua:fork_rdb"
+        ]
+      }
+    }
   },
   "library": {
     "name": "redis",
@@ -2580,40 +2606,34 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "OHOS musl POSIX 子集的 fork/eventfd/sync_file_range 等接口覆盖范围未在 harmony-pc-capabilities.json 中显式记录",
-        "rationale": "Redis 作为 C 语言服务端应用，核心档案依赖 fork() 的写时复制机制；目标能力文件中仅列语言运行时而无详细的 C 库 POSIX 覆盖描述，dim-9 评估需依赖该未核实事实"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "Redis 将所有 C 依赖（jemalloc/hiredis/lua 等）以内嵌 subtree/vendored 方式放在 deps/ 中通过统一 Makefile 构建，标准 acquisition 词表已覆盖此场景"
-      },
-      {
-        "dimension": "native_api",
-        "field": "event_loop_backends",
-        "kind": "ambiguity",
-        "value": "ae_select.c 作为 select() 回退在 ae.c 的条件编译链最低优先级",
-        "rationale": "OHOS 上 epoll/kqueue/evport 均不可用时，select/poll 回退理论上可用且无需代码改动；但需要 OHOS 确认 select/poll 的 fd_set 限制是否满足生产需求"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:fork_bgsave",
+        "class": "actionable",
+        "message": "unadaptable_api ua:fork_bgsave 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:fork_bgrewrite",
+        "class": "actionable",
+        "message": "unadaptable_api ua:fork_bgrewrite 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:fork_rdb",
+        "class": "actionable",
+        "message": "unadaptable_api ua:fork_rdb 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "license_category_mismatch",
         "class": "actionable",
         "message": "license.category(commercial) 与依据 SPDX(Redis-Source-Available-License-2.0 OR SSPL-1.0 OR AGPL-3.0-only) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Redis 是一个无 GUI 的纯 C 服务端应用，不涉及 3D 渲染和多媒体。包含 x86_64/ARM64 的 SIMD 编译优化但均有通用回退路径。",

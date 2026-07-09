@@ -972,7 +972,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 交叉编译为 .so；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -982,7 +981,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "RTTR 是纯 C++11 反射库，核心仅依赖标准模板库与系统动态加载器；平台相关代码被 #ifdef 分隔为 Windows 与 POSIX 两条后端，OHOS NDK（clang + musl）可直接编译 POSIX 路径。无需改动业务逻辑，工作量集中在交叉编译脚本、验证 std::mutex/atomic/dlopen 在 musl 下的行为，以及可选地通过 Node-API 暴露给 ArkTS。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -993,7 +991,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心反射容器与线程安全机制正常编译运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes"
+        "source": "references/harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_dlopen",
@@ -1001,7 +1000,8 @@
         "required": true,
         "target_status": "available",
         "impact": "rttr::library 动态库加载功能可用",
-        "source": "musl POSIX 子集常规能力"
+        "source": "musl POSIX 子集常规能力",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1038,7 +1038,21 @@
       "关闭或跳过 Windows/MSVC 专属编译分支与 __declspec 路径"
     ],
     "notes": "评估按库模型 A（C/C++ 经 OHOS NDK 重编）。core_prerequisites.h 对未识别编译器会报错，但 OHOS 使用 clang，走 GCC/Clang 分支，无问题；RTTR_PLATFORM 默认回退到 LINUX，恰好启用 POSIX dlopen 与 .so 后缀，符合 OHOS 实际。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "rttr",
@@ -1064,7 +1078,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "RTTR 是纯粹的 C++ 反射/元数据库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件访问。唯一与平台相关的功能是共享库加载，已在 native_api 中列为跨平台后端。",

@@ -1389,7 +1389,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (OHOS NDK + musl libc 原生层, C/C++ 库经 clang/ohos.toolchain.cmake 交叉编译; arm64/x86_64; 自研内核, 非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         8,
@@ -1398,7 +1397,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile",
     "summary": "CxImage 为 C/C++ 图像处理库，核心编解码与图像处理逻辑使用 C 标准库 I/O 与内存操作，完全不依赖 Linux ABI——已在非 Windows 平台（Linux/macOS）有 _LINUX/__APPLE__ 条件编译路径，且 Windows GDI 绘制层已由 CXIMAGE_SUPPORT_WINDOWS 宏隔离（非 Windows 下禁用）。所有第三方格式依赖（jpeg/png/zlib/tiff/jasper）均已内嵌源码（vendored），其中大多数在 OpenHarmony PC 已有预编译包。主要工作：用 OHOS NDK 为完整项目建立交叉编译构建体系（填补当前仅 Visual Studio 工程的缺口），并验证 vendored 代码在 musl libc 下的兼容性。",
     "blockers": [
       {
@@ -1471,7 +1469,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "非必需——库已有 CXIMAGE_SUPPORT_WINDOWS=0 的编译路径（Linux/macOS 同行为），禁用后仅丢失 CxImage::Draw/MakeBitmap/MakeIcon 等 Windows-specific 接口，编解码与图像处理核心功能完整保留",
-        "source": "references/harmony-pc-capabilities.json#gui.wm (鸿蒙桌面未知)、无 GDI 等价"
+        "source": "references/harmony-pc-capabilities.json#gui.wm (鸿蒙桌面未知)、无 GDI 等价",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:musl_posix",
@@ -1479,7 +1478,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库所有 C 标准库调用均落入 musl 支持范围，已有 _LINUX 条件编译路径",
-        "source": "OHOS NDK (musl) 标准文档"
+        "source": "OHOS NDK (musl) 标准文档",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1523,7 +1523,21 @@
       "在鸿蒙设备上跑通格式编解码与变换功能的验证测试（需自建测试用例，仓库无测试）"
     ],
     "notes": "评估按「模型 A——C/C++ 库经 OHOS NDK 重编后作为原生库使用」。库已有 Linux/macOS 编译路径（_LINUX/__APPLE__ 条件编译），核心逻辑为纯 C/C++，无 POSIX 专有系统调用、无 fork/pthread/ioctl 等 OHOS musl 缺口风险。Windows GDI 绘制层非必需——现有的 Linux 路径已证明禁用后库功能完整。最大工作量在构建体系迁移（Visual Studio→OHOS NDK CMake），而非代码改造。平台适配信号：code_metrics.platform_adaptation 显示 windows 平台守卫代码 296 行（50 文件），macOS 10 行（4 文件），量不大且已条件隔离。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "cximage",
@@ -1542,33 +1556,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].key",
-        "kind": "ambiguity",
-        "value": "gui",
-        "rationale": "CxImage 使用了 Win32 GDI 绘制 API，但这属于图像库内部的格式转换/渲染辅助层（如 WMF 解码需经 GDI），而非 GUI 工具包。将 GDI 用法归入 gui 场景的关键是它属于窗口系统 API（win32），但该用法已完全条件隔离（CXIMAGE_SUPPORT_WINDOWS=0 时禁用），实际可移植性影响有限。此案例提醒：库内部使用平台 GUI API 与库本身是 GUI 框架有区别，dim-9 的 adapted 与否应据隔离程度而非单纯标记 present。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions[].capability",
-        "kind": "ambiguity",
-        "value": "GDI 在能力表无直接条目",
-        "rationale": "harmony-pc-capabilities.json 的 gui 段仅列 Qt/GTK/Swing/AWT/Electron 等 UI 工具包，未覆盖 Win32 GDI 这一 Windows 专有系统级 2D 绘图 API。在鸿蒙评估中，GDI 调用应比照「不可用的平台 API」（类似 DirectX），本分析据此判 unavailable——但建议能力表将来的 tier3 更新中加一行 GDI 等价（如 OHOS Drawing API），供 CxImage 这类图像库准确对照。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "CxImage 所有第三方依赖（jpeg/png/zlib/tiff/jasper/mng/raw/libpsd/jbig）均以完整源码拷贝方式内嵌在仓库中，无 git submodule、无 FetchContent、无 find_package。'vendored' 被推荐词表覆盖，但此案例规模极大（共 ~318K 行 vendored 代码 vs ~42K 行 CxImage 本体），提醒面板展示时应区分外部依赖 vs 本库代码占比。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "CxImage 为纯本地图像库，不涉及 3D 渲染、音视频媒体、特定硬件依赖。唯一鸿蒙适配关注点是 Windows GDI 绘制层（画图/缩放到 HDC/MakeBitmap/MakeIcon 等），但这些调用均受 CXIMAGE_SUPPORT_WINDOWS 宏守卫、在非 Windows 平台（Linux/macOS）已完全禁用，核心编解码与图像处理功能不依赖 GDI，可平滑移植。",

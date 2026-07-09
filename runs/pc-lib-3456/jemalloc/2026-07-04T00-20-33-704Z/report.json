@@ -1252,8 +1252,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK = clang + musl libc + POSIX 子集；arm64/x86_64）。按模型 A 评估：jemalloc 作为 C 库经 OHOS NDK 重编为 .so 后链接进鸿蒙应用/服务。",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         12,
@@ -1270,7 +1269,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "jemalloc 核心分配路径依赖这些 API；若缺失则整体不可运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes / POSIX 子集"
+        "source": "references/harmony-pc-capabilities.json#runtimes / POSIX 子集",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ohos_linux_specific",
@@ -1278,7 +1278,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "缺失时高级特性（批量 decay、THP、VMA 命名、prof maps）需降级或关闭",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_x86_64",
@@ -1286,11 +1287,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若仅 arm64 则需在 arm64 上验证；x86_64 覆盖未知会限制分发面",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "jemalloc 是 C 实现的系统内存分配库，核心逻辑可移植；鸿蒙化主要工作是用 OHOS NDK 重新编译，并为 OHOS 内核补充平台检测与条件分支。基础 mmap/munmap/mprotect/pthread 在 musl 下大概率可用，但 process_madvise、prctl VMA 命名、部分 madvise 提示等 Linux 专用优化需要逐项验证或降级。Windows/Darwin 专用后端可通过条件编译排除。profiling 的回溯依赖 libunwind/libgcc/execinfo，需确认鸿蒙可用或改用 frame pointer/gcc intrinsics 降级。",
     "blockers": [
       {
@@ -1406,7 +1407,21 @@
       "在 arm64 鸿蒙 PC 上跑通单元测试与压力测试，视情况补充 x86_64 验证"
     ],
     "notes": "评估基于 HarmonyOS PC 默认库模型 A。jemalloc 公共 API（malloc/free/mallctl 等）本身不绑定平台，无 unadaptable_apis；阻碍主要在内核级可选优化与平台分支适配。confidence 为 medium，因为 OHOS 对 x86_64、process_madvise、部分 madvise 提示及 /proc 格式的实际支持尚未在公开文档中完全核实。若目标是 ArkTS 应用（模型 B），则需额外通过 Node-API 封装 mallctl 等接口，工作量与 person_days 会进一步上升。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "jemalloc",
@@ -1431,30 +1446,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "new_value",
-        "value": "系统/内存管理",
-        "rationale": "jemalloc 是典型的系统级内存分配库，现有推荐 domain 示例（networking/graphics/ML/crypto/data/GUI）均不适用，因此使用 '系统/内存管理' 描述其领域。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_memory",
-        "rationale": "jemalloc 大量调用 POSIX 内存管理 API（mmap/munmap/madvise/mprotect），单独列为 posix_memory 组比混入通用 posix 组更清晰，便于 dim-9 识别内存相关平台依赖。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "new_value",
-        "value": "linux_specific_syscall",
-        "rationale": "jemalloc 使用 process_madvise、prctl VMA 命名、MADV_COLLAPSE 等 Linux 专有接口，这些既不是通用 POSIX 缺口也不是硬件依赖，故新增 'linux_specific_syscall' 类别。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "jemalloc 为纯系统/内存管理库，生产代码不涉及 GUI、3D 渲染、音视频媒体或专用硬件访问。其鸿蒙适配难点集中在 POSIX 子集、内存管理相关系统调用与平台后端上。",

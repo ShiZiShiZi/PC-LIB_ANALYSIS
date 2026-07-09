@@ -720,7 +720,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24 运行时上；C N-API 原生模块经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "confidence": "high",
     "effort": {
@@ -730,7 +729,6 @@
       ],
       "level": "low"
     },
-    "recommended_path": "run_on_ported_runtime",
     "summary": "纯数值计算函数，以 Node.js 包发布。JS 实现可直接运行在已移植的鸿蒙 Node.js 24 上。C N-API 原生模块（addon.node）需使用 OHOS NDK 工具链重新编译：代码无任何平台特有 API（无 Win32/POSIX/系统调用）、无可移植性条件编译、无外部 C 依赖，重编工作量极小。整体移植可行性高、难度极低。",
     "blockers": [
       {
@@ -757,7 +755,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无此运行时则 JS 部分不可执行，C 扩展也无法构建；已确认可用，不构成阻碍。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -791,7 +790,21 @@
       "若需发布为鸿蒙原生包，可在 package.json 的 os 字段补充 ohos 并打包 .tgz"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。Node.js 24 确认已移植（参考资料：harmony-pc-capabilities.json）。本库无任何平台条件编译（platform_adaptation=0）、无运行时平台分支（platform_branches=0）、无外部命令调用、无文件/网络/设备访问。唯一工作是 C N-API 扩展的交叉编译。置信度高。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float32-base-neg",
@@ -815,19 +828,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.py 推断框架为 jest/mocha，实际源代码（test/test.js、test/test.native.js）使用 tape（var tape = require('tape')）；仅 style 差异，不影响计数。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及任何 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。",

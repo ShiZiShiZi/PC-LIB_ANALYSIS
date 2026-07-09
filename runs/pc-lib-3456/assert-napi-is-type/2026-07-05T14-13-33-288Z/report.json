@@ -714,7 +714,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC — Node.js 24.13.0 运行时（已移植 available），N-API 稳定 ABI 由 Node.js 提供支持；原生 C 扩展经 OHOS NDK (musl + clang) 重编；自研内核，无 Linux ABI；arm64 / x86_64",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -723,7 +722,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库为 Node.js N-API 类型断言工具，核心为 C 语言实现的 N-API 原生扩展。鸿蒙 PC 已移植 Node.js 24.13.0 运行时（含 N-API 稳定 ABI），JS 层（返回头文件路径）与 npm 依赖可正常运行。C 层代码仅调用 N-API（napi_typeof / napi_create_function 等）和 C 标准库（assert），无任何 Win32/POSIX/硬件平台特有 API。移植工作主要在于：1）将 C 源码通过 OHOS NDK 重新编译为 arm64/x86_64 的原生模块；2）确认 @stdlib/ 依赖链在鸿蒙 npm 源上的可用性。整体可行性高，工作量低。",
     "blockers": [
       {
@@ -764,7 +762,8 @@
         "target_status": "available",
         "impact": "不阻碍。JS 层可直接运行，N-API 为 Node.js 内置的跨版本稳定 ABI，鸿蒙 Node.js 提供支持",
         "source": "harmony-pc-capabilities.json.runtimes.nodejs",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -797,7 +796,21 @@
       "确认 @stdlib/assert-napi-equal-types 和 @stdlib/assert-napi-status-ok 依赖在鸿蒙源中的可用性"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库为 stdlib 标准库的原子子包，其 C API 仅通过 N-API 与 JavaScript 交互，不依赖任何平台特定 API（无 Win32/POSIX/硬件调用），是鸿蒙移植的最佳候选类型。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "assert-napi-is-type",
@@ -818,7 +831,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯 C/JS 类型断言工具，不涉及 GUI、3D 渲染、媒体处理或特定硬件依赖。",

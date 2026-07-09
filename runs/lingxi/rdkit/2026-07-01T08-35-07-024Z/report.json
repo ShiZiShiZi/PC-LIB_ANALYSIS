@@ -2063,8 +2063,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC：C++ 核心经 OHOS NDK（musl + POSIX 子集）重新编译为 arm64/x86_64 .so；Python/Java/C# 绑定依赖已移植的语言运行时，只需重建原生扩展。",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -2073,7 +2072,6 @@
       "level": "high"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "RDKit 以 C++20 算法核心为主，平台相关代码极少（仅 MemoryMappedFileReader 的 mmap/CreateFileMapping 双路径、少量 Win32/x86 popcount 内建函数），且都有通用回退或 POSIX 路径；Python/Java/C# 绑定依赖已移植的运行时，只需用 OHOS NDK 重新编译 C/C++ 扩展和外部依赖。主要工作量在于为 OHOS NDK 交叉编译 Boost、Eigen 及大量可选外部库（InChI/CoordGen/maeparser/FreeSASA/Avalon/YAeHMOP/ChemDraw/pubchem_shape），并验证多线程/文件路径行为。",
     "blockers": [
       {
@@ -2127,7 +2125,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心与原生扩展经 OHOS NDK 重编的基础",
-        "source": "references/harmony-pc-capabilities.json intro / arch.arm64"
+        "source": "references/harmony-pc-capabilities.json intro / arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -2165,7 +2164,21 @@
       "验证多线程（std::thread/atomic/mutex）在 OHOS 下的行为"
     ],
     "notes": "默认按模型 A（库跑在已移植运行时上）评估；未启用可选 Qt/Cairo 时工作量可控。历史 DepictorDLL（WIN32_DLLBUILD）为 Windows 专属遗留功能，鸿蒙下不可用，但默认不编译。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2173,29 +2186,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "bindings",
-        "kind": "new_value",
-        "value": "nodejs",
-        "rationale": "RDKit 通过 Emscripten 生成 MinimalLib JS/WASM 包装，可运行在 Node.js 或浏览器，故在 bindings 中加入 nodejs。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.key",
-        "kind": "new_value",
-        "value": "rendering_2d",
-        "rationale": "RDKit 的 MolDraw2D 是典型的 2D 分子绘制场景，既非 GUI 也不属于 3D 渲染，建议 capability_profile 增加 rendering_2d 键。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "SWIG as other",
-        "rationale": "SWIG 是 C++ 代码生成工具，不是目标语言库；按 skill 要求 ecosystem 不能填 tool，故记为 other + scope:build。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

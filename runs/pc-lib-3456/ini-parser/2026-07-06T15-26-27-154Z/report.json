@@ -459,8 +459,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -477,11 +476,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 .NET 运行时不可用，则本库无法直接运行，需通过其他语言桥接或等待运行时移植",
-        "source": "references/harmony-pc-capabilities.json — runtimes 段无 .NET/Mono 条目"
+        "source": "references/harmony-pc-capabilities.json — runtimes 段无 .NET/Mono 条目",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "ini-parser 是纯 .NET Standard 2.0 库，无平台 API 依赖、无原生扩展、无动态库加载。若鸿蒙 PC 上可运行 .NET 运行时（.NET Core 或 Mono），则本库可直接运行，无需任何代码修改。核心风险在于 .NET 运行时在鸿蒙 PC 的可用性尚属未知——目前 harmony-pc-capabilities 中未列出 .NET/Mono 运行时。",
     "blockers": [
       {
@@ -526,7 +525,21 @@
       "若 .NET 不可用，考虑将核心解析逻辑移植为其他已支持语言（如 Python/Java/Node.js）的实现"
     ],
     "notes": "本库的可移植性本身极好（纯 BCL 代码），唯一不确定因素是 .NET 运行时在鸿蒙 PC 的可用性。若 .NET 运行时可用，porting_class 实际为 no_adaptation（仅需编译），person_days 降至 0.5-2 天；当前按 needs_adaptation_full 评估是因为运行时未知。confidence 降至 medium 因为 target_assumptions 中有 required 且 unknown 的条目。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "ini-parser",
@@ -555,16 +568,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "run_on_ported_runtime",
-        "rationale": "纯 .NET 托管库无平台 API 依赖，若 .NET 运行时已移植则可直接运行，无需代码修改。现有推荐值（recompile_napi/cross_compile 等）均针对 C/C++ 场景，不适合纯托管 .NET 库"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本库为纯文本解析库，不涉及 GUI、3D 渲染、媒体或硬件设备等鸿蒙适配重点场景。",

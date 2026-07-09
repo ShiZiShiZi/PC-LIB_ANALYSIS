@@ -699,7 +699,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -717,7 +716,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node-API 已被 OHOS NDK 原生支持，所有 napi_* 调用可直接使用",
-        "source": "references/harmony-pc-capabilities.json（Node.js Runtime 段）"
+        "source": "references/harmony-pc-capabilities.json（Node.js Runtime 段）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:node-runtime",
@@ -725,11 +725,11 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 24.13.0 已回合主社区，JS/TS 可直接运行在 HarmonyOS PC",
-        "source": "references/harmony-pc-capabilities.json（Node.js: available）"
+        "source": "references/harmony-pc-capabilities.json（Node.js: available）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "该库是纯 Node-API（N-API）C 扩展 + C99 标准库实现，无任何平台特有 API。HarmonyOS PC 的 OHOS NDK 已原生支持 Node-API，Node.js 运行时也已移植。仅需使用 OHOS NDK 的编译器重新编译 C 源码（node-gyp 或 cmake），无需修改一行代码。全部运行时依赖（@stdlib/assert-napi-*、@stdlib/napi-argv）同属 stdlib 的 Node-API 系列包，可一并重编。工作量为极低。",
     "compatible": [
       {
@@ -773,7 +773,21 @@
       "打包为 ohos 平台 npm 包发布"
     ],
     "notes": "评估基于 HarmonyOS NEXT PC 口径（OHOS NDK + 已移植 Node.js 24.13.0）。所有运行时 C 依赖（@stdlib/assert-napi-is-type 等）也是纯 Node-API 包，鸿蒙移植性与此库相同。此库为 stdlib 庞大生态中的一个微包，若整体移植 stdlib 则需系统化 CI/CD 支持。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "napi-argv-int32",
@@ -788,24 +802,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "kind": "ambiguity",
-        "value": "test_framework",
-        "rationale": "metrics.py 报告的测试框架为 'jest/mocha'，但实际 test.js 使用 tape（require('tape')）。YAML 文件（CI 配置）可能包含 jest/mocha 引用。模型纠正为 tape。"
-      },
-      {
-        "dimension": "dependencies",
-        "kind": "ambiguity",
-        "value": "c_dependency_scope",
-        "rationale": "manifest.json 中声明的 C 依赖项（@stdlib/assert-napi-is-type 等）在 C 编译时链接，但也在 package.json 中列为 runtime dependencies。在 GYP/binding.gyp 生态中，这些同时是构建时（头文件）和运行时（链接）依赖，scope 标 runtime，但 C 层面本质是编译期集成。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备，属于纯计算型 Node-API 原生扩展工具。",

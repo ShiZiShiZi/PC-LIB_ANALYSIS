@@ -992,7 +992,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (C++ 库，经 OHOS NDK (musl + POSIX 子集) 交叉编译为 .so；arm64 主力 / x86_64 待核实；自研内核，非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1000,7 +999,7 @@
       ],
       "level": "medium"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -1009,7 +1008,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "luabind 是 Lua 的 C++ 绑定层，若无 Lua 5.x 运行时则整体不可用——但 Lua 是高度可移植的纯 ANSI C 库，OHOS NDK (musl) 交叉编译应无障碍",
-        "source": "harmony-pc-capabilities.json 中未收录 Lua C 运行时（非语言运行时类）"
+        "source": "harmony-pc-capabilities.json 中未收录 Lua C 运行时（非语言运行时类）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:boost_ohos",
@@ -1017,11 +1017,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "luabind 大量使用 Boost.MPL/TypeTraits/Preprocessor 等模板元编程设施，均纯头文件。用 OHOS NDK clang++ 编译模板代码应无障碍",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "luabind 是高度模板化的 C++ 头文件库（79个头文件）+ 17个编译单元，核心唯一运行时依赖是 Lua 5.1 C API。无任何操作系统级平台 API（Win32/POSIX-only/系统调用），无硬件依赖，无外部命令调用，无网络/文件系统访问。极少量 MSVC/GCC 编译器扩展仅用于 DLL 符号导出和警告抑制，OHOS NDK clang 均有等价。适配工作 = 用 OHOS NDK 交叉编译 luabind 17个 .cpp 为 .so + 同样交叉编译 Lua 5.1 自身；Boost 头文件无需编译。纯 STL + Lua C API 代码经 OHOS NDK 直接编译应无平台差异。",
     "blockers": [
       {
@@ -1084,7 +1084,21 @@
       "如目标为 ArkTS 应用，通过 Node-API (napi) 将 luabind 编译产物暴露给 ArkTS 层调用"
     ],
     "notes": "评估按模型 A（库作为原生 .so 被链接进鸿蒙 C++/NAPI 项目）。luabind 无平台 API 调用、无外部命令、无硬件依赖——属于 C++ 库中最易适配的一类（仅需重编译）。Lua 5.1 自身同样仅需 OHOS NDK 交叉编译。若目标为 ArkTS 应用，需额外通过 N-API 封装 luabind 的注册 API（luabind::open、luabind::module、luabind::def、luabind::class_），工作量约额外 2–4 人-天。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "luabind",
@@ -1099,41 +1113,20 @@
     "analyzed_at": "2026-07-05T02:54:13Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "system_via_env",
-        "rationale": "luabind 通过 LUA_PATH/BOOST_ROOT 环境变量定位系统预装的 Lua/Boost 头文件与库，build 系统 (Boost.Build V2) 动态探测路径而非通过 pkg-config 或 find_package。这与 CMake 的 find_package 模式不同，相当于'弱约定的系统依赖'，现有 acquisition 推荐的 'system' 勉强覆盖但探测机制差异较大。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "lua_c_api",
-        "rationale": "Lua C API 严格来说是一个外部 C 库的 FFI 调用，但它同时也是 luabind 的核心接口层——几乎每个函数都调用它。归为 category:ffi 是因为它是 C++→C 的互操作桥，但这与典型的 ffi（如 ctypes/JNI/N-API）不同，Lua C API 是库存在的唯一目的而非辅助桥接。"
-      },
-      {
-        "dimension": "build_env",
-        "field": "entry_points",
-        "kind": "ambiguity",
-        "value": "header_only_with_optional_lib",
-        "rationale": "luabind 的主体是头文件（79个 .hpp，8146行），src/ 下 17个 .cpp（1834行）是可选编译单元，用户可以直接把 .cpp 源文件加入自己的项目而不是链接预编译库。entry_points 适用于应用，但 packaging 字段里描述了这种特殊的'header-only + 可选编译'分发模式。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "luabind 是纯 C++ 语言互操作库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件场景。全部能力围绕 C++↔Lua 的模板元编程绑定与类型转换展开。",

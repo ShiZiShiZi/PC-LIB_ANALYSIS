@@ -948,8 +948,7 @@
     "notes": "Unix 系统编译依赖 pkg-config 查找系统库；Windows 编译依赖 GTK all-in-one bundle。可选库（libjpeg/giflib/librsvg）在编译时检测可用性，通过 HAVE_JPEG/HAVE_GIF/HAVE_RSVG 条件编译控制"
   },
   "harmony_adaptation": {
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "confidence": "medium",
     "effort": {
       "person_days": [
@@ -958,7 +957,6 @@
       ],
       "level": "very_high"
     },
-    "recommended_path": "1) 将 Cairo/Pango/libpng/FreeType/pixman 等系统 C 库交叉编译至 OHOS NDK（musl）目标，提供 .so 或静态库；2) 修改 binding.gyp 支持 OHOS 交叉编译工具链（替换 pkg-config 查找路径为 OHOS sysroot）；3) 新增 src/register_font.cc 中 __OHOS__ 平台分支，使用 OHOS 字体管理 API（或通过 fontconfig OHOS 移植版）；4) 使用 prebuild-install 发布 OHOS aarch64 预编译 .node 二进制；5) 条件编译支持 - 可选依赖（libjpeg/giflib/librsvg）按 OHOS 可用性逐步启用",
     "target_assumptions": [
       {
         "id": "assumption-1",
@@ -966,7 +964,8 @@
         "required": true,
         "target_status": "available",
         "impact": "原生插件编译的前提条件",
-        "source": "OHOS NDK 文档"
+        "source": "OHOS NDK 文档",
+        "target_status_model": "available"
       },
       {
         "id": "assumption-2",
@@ -974,7 +973,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Cairo 是整个 2D 渲染引擎的核心，占 API 调用的主要部分；Cairo 是纯软件渲染（无 GPU/窗口依赖），理论上可编译",
-        "source": "native_api.groups[0].apis 中 80+ cairo 调用"
+        "source": "native_api.groups[0].apis 中 80+ cairo 调用",
+        "target_status_model": "unknown"
       },
       {
         "id": "assumption-3",
@@ -982,7 +982,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Pango 提供文本排版/度量/字体描述符，约 30 个 API 调用",
-        "source": "native_api.groups[0].apis 中 pango 调用"
+        "source": "native_api.groups[0].apis 中 pango 调用",
+        "target_status_model": "unknown"
       },
       {
         "id": "assumption-4",
@@ -990,7 +991,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "PNG 编解码、字体光栅化和像素合成的基础组件",
-        "source": "native_api.groups[0].apis"
+        "source": "native_api.groups[0].apis",
+        "target_status_model": "unknown"
       },
       {
         "id": "assumption-5",
@@ -998,7 +1000,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "字体查找/注册的核心机制（Linux 路径使用 FcConfigAppFontAddFile）",
-        "source": "src/register_font.cc:307（Linux 字体注册路径）"
+        "source": "src/register_font.cc:307（Linux 字体注册路径）",
+        "target_status_model": "unknown"
       },
       {
         "id": "assumption-6",
@@ -1006,7 +1009,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植（24.13.0），N-API v7 应正常工作",
-        "source": "references/harmony-pc-capabilities.json runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "blockers": [
@@ -1066,7 +1070,21 @@
     "unadaptable_apis": [],
     "required_permissions": [],
     "notes": "默认口径（HarmonyOS PC + 已移植的 Node.js 运行时）下，node-canvas 的整体移植可行。核心挑战是 Cairo/Pango/libpng/FreeType 四库的 OHOS NDK 交叉编译——它们都是成熟、广泛移植的 C/C++ 库，纯软件无硬件依赖，理论上可行但需实际验证。构建系统需从 node-gyp 迁移至 OHOS 交叉编译工具链。预编译二进制分发（prebuild-install）是可行的分发策略。三平台的约 94 行平台守卫代码（platform_adaptation）是主要需适配的 C++ 部分。如果 Cairo/Pango 最终无法编译（概率低），则整个项目不可移植。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "canvas",
@@ -1082,31 +1100,13 @@
     "analyzed_at": "2026-07-05T14:27:32Z"
   },
   "meta": {
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "kind": "new_value",
-        "value": "项目提供了 browser.js 在浏览器端做同名 API 垫片，表明设计支持同构",
-        "rationale": "browser.js 使用原生 document.createElement('canvas') 做沙盒，使得 createCanvas/createImageData/loadImage 在 Node.js 和浏览器中 API 一致"
-      },
-      {
-        "dimension": "native_api",
-        "kind": "new_value",
-        "value": "BMP 解析器纯自实现（src/bmp/BMPParser.cc），不依赖外部库",
-        "rationale": "BMP 解码完全自写，但不属于核心渲染路径——PNG/JPEG 仍依赖 libpng/libjpeg"
-      },
-      {
-        "dimension": "dependency-analysis",
-        "kind": "new_value",
-        "value": "pixman 是 Cairo 的显式依赖但不在 binding.gyp 的头文件/库依赖里出现",
-        "rationale": "pkg-config pixman-1 --libs 显式链接 pixman，但源代码不直接 #include pixman.h——Cairo 内部使用它"
-      }
-    ],
+    "observations": [],
     "confidence_overall": "medium",
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "scenarios": [

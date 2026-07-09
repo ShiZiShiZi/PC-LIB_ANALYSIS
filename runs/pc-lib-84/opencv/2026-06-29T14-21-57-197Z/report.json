@@ -2538,8 +2538,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -2559,7 +2558,9 @@
         "evidence": [
           "modules/core/src/cuda/stream.cpp",
           "modules/dnn/src/cuda/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:mf",
@@ -2570,7 +2571,9 @@
         "category": "platform",
         "evidence": [
           "modules/videoio/src/cap_msmf.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:avf",
@@ -2581,7 +2584,9 @@
         "category": "platform",
         "evidence": [
           "modules/videoio/src/cap_avfoundation.mm"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2591,7 +2596,8 @@
         "required": true,
         "target_status": "available",
         "impact": "基础编译能力",
-        "source": "references/harmony-pc-capabilities.json runtimes"
+        "source": "references/harmony-pc-capabilities.json runtimes",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_posix",
@@ -2599,7 +2605,8 @@
         "required": true,
         "target_status": "available",
         "impact": "并行框架与插件加载机制",
-        "source": "references/harmony-pc-capabilities.json runtimes"
+        "source": "references/harmony-pc-capabilities.json runtimes",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_cmdpkgs",
@@ -2607,7 +2614,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心依赖的鸿蒙版本可用性",
-        "source": "references/harmony-pc-capabilities.json gui"
+        "source": "references/harmony-pc-capabilities.json gui",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_opengl",
@@ -2615,7 +2623,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "OpenGL 交互渲染功能需适配 GLES 子集",
-        "source": "references/harmony-pc-capabilities.json graphics_3d"
+        "source": "references/harmony-pc-capabilities.json graphics_3d",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ohos_opencl",
@@ -2623,7 +2632,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "OpenCL 加速路径可用性未知，若不可用则仅依赖 CPU/SIMD",
-        "source": "references/harmony-pc-capabilities.json hardware_devices"
+        "source": "references/harmony-pc-capabilities.json hardware_devices",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_vulkan",
@@ -2631,7 +2641,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Vulkan DNN 后端取决于鸿蒙 Vulkan 驱动可用性",
-        "source": "references/harmony-pc-capabilities.json graphics_3d"
+        "source": "references/harmony-pc-capabilities.json graphics_3d",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2663,7 +2674,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "OpenCV 是一个跨平台 C++ 计算机视觉库，核心算法为纯 CPU/SIMD 计算，无硬性平台绑定。主要适配工作集中在：(1) 用 OHOS NDK（musl + POSIX）交叉编译核心模块及 vendored 依赖；(2) 用 cmd-pkgs 鸿蒙预编译包替代系统依赖（FFmpeg/GStreamer/GTK/protobuf/eigen 均已有鸿蒙版）；(3) 关闭 CUDA/Media Foundation/AVFoundation 等不可用后端，改用 FFmpeg/GStreamer 鸿蒙版替代视频 I/O；(4) OpenCL/Vulkan 加速后端可用性取决于鸿蒙 GPU 驱动，若不可用则回退到 CPU/SIMD 路径。总体可行但需较大编译适配工作量。",
     "blockers": [
       {
@@ -2764,6 +2774,24 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda",
+          "ua:mf",
+          "ua:avf"
+        ]
+      }
     }
   },
   "meta": {
@@ -2772,36 +2800,30 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cocoa",
-        "rationale": "macOS Cocoa API 用于 highgui 窗口系统，属于平台专有 API"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "avfoundation",
-        "rationale": "Apple AVFoundation API 用于视频采集，属于平台专有 API"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "v4l2",
-        "rationale": "Linux V4L2 API 用于摄像头采集，属于平台专有 API"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:mf",
+        "class": "actionable",
+        "message": "unadaptable_api ua:mf 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:avf",
+        "class": "actionable",
+        "message": "unadaptable_api ua:avf 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

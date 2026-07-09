@@ -1439,8 +1439,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24 运行时上；原生 addon 经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1457,7 +1456,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时已移植，纯 JS 部分可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libuv_napi",
@@ -1465,7 +1465,8 @@
         "required": true,
         "target_status": "available",
         "impact": "原生 addon 的 libuv/N-API 调用在鸿蒙 Node.js 上可用",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_dlfcn",
@@ -1473,7 +1474,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙 musl 若不支持 dlopen 系列，则动态库加载功能不可用——本库核心功能将失效",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs (间接推断，musl POSIX 子集待核实)"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs (间接推断，musl POSIX 子集待核实)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ffi_closure_exec",
@@ -1481,11 +1483,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙不允许运行时分配可执行内存，则 JS 回调转 C 函数指针功能不可用——Callback API 将失效",
-        "source": "libffi 闭包机制依赖 OS 支持可执行内存，鸿蒙安全策略待核实"
+        "source": "libffi 闭包机制依赖 OS 支持可执行内存，鸿蒙安全策略待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "ffi-napi 是 Node.js FFI 桥接库，鸿蒙 PC 已移植 Node.js 24，纯 JS 部分可直接运行。核心工作量：①原生 N-API addon 需用 OHOS NDK 重编；②内嵌 libffi 已有鸿蒙预编译包可复用；③两个关键目标能力待核实——POSIX dlopen 在 OHOS musl 中是否可用（决定动态库加载功能），ffi_closure 可执行内存分配是否被鸿蒙安全策略允许（决定回调功能）。若 dlopen 可用且 ffi_closure 可正常工作，则全部功能可适配。",
     "blockers": [
       {
@@ -1591,7 +1593,21 @@
       "在鸿蒙 Node.js 上运行 mocha 测试套件验证功能完整性"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。两个关键目标能力待核实：① OHOS musl 的 POSIX dlfcn 子集是否包含 dlopen（若缺失则核心功能失效，feasibility 将降为 hard/infeasible）；② ffi_closure 所需的可执行内存分配是否被鸿蒙安全策略允许（影响 Callback API）。因存在 required 且 target_status=unknown 的假设，confidence 下调至 medium。deps/ 目录中 libffi 的代码量极大（~10 万行），但这些属于 vendored 依赖，已有鸿蒙预编译包，不计入本库适配工作量。若目标是 ArkTS 沙箱应用（模型 B），则 Node.js 运行时不可用，须整体换原生实现或重写，结论收紧为 infeasible。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1599,57 +1615,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "new_value",
-        "value": "系统编程 / FFI 桥接",
-        "rationale": "FFI 库同时属于系统编程和语言桥接领域，现有推荐值无精确匹配"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "napi",
-        "rationale": "N-API (Node-API) 是 Node.js 原生 addon 的标准接口，归类为 FFI 桥接层的一种"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "libffi_api",
-        "rationale": "libffi 是一个独立的可移植 FFI 库，其 API 既非平台特有也非语言标准库，需单独分类"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_dlfcn",
-        "rationale": "POSIX dlfcn 是动态库加载的 POSIX 标准接口族，不同于单个系统调用"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "win32_kernel32",
-        "rationale": "Win32 Kernel32.dll 中的动态库加载 API 族（LoadLibraryW/GetProcAddress/FreeLibrary）"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "libffi 源码内嵌于 deps/libffi 目录，随项目一起静态编译，符合 vendored 定义"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "category",
-        "kind": "new_value",
-        "value": "posix_subset_gap",
-        "rationale": "鸿蒙 OHOS NDK musl 的 POSIX 子集可能缺少某些接口（如 dlopen），需逐项核实，不同于 platform（平台专有 API）或 system（内核调用）"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

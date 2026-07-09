@@ -1654,8 +1654,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (库跑在已移植 Node.js 24 运行时上; N-API 原生插件经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1678,7 +1677,9 @@
         "evidence": [
           "src/linux/mouse.c:52",
           "src/linux/keypress.c:11"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cg_event",
@@ -1693,7 +1694,9 @@
         "evidence": [
           "src/macos/mouse.c:80",
           "src/macos/keypress.c:91"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:sendinput",
@@ -1708,7 +1711,9 @@
         "evidence": [
           "src/win32/mouse.c:57",
           "src/win32/keypress.c:58"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11_window",
@@ -1727,7 +1732,9 @@
           "src/linux/window_manager.cc:76",
           "src/linux/window_manager.cc:88",
           "src/linux/window_manager.cc:98"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_window",
@@ -1743,7 +1750,9 @@
           "src/win32/window_manager.cc:25",
           "src/win32/window_manager.cc:47",
           "src/win32/window_manager.cc:70"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cocoa_window",
@@ -1759,7 +1768,9 @@
           "src/macos/window_manager.mm:17",
           "src/macos/window_manager.mm:178",
           "src/macos/window_manager.mm:146"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:screen_capture",
@@ -1775,7 +1786,9 @@
           "src/linux/screengrab.c:14",
           "src/win32/screengrab.c:42",
           "src/macos/screengrab.m:24"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:iohid",
@@ -1790,7 +1803,9 @@
         "evidence": [
           "src/macos/keypress.c:49",
           "src/macos/keypress.c:22"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1800,7 +1815,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "不支持则库的核心功能（鼠标/键盘模拟、窗口管理、屏幕截图）全部不可运行，整库不可移植",
-        "source": "harmony-pc-capabilities.json#gui.wm — 桌面窗口管理器/显示服务状态 unknown；三大桌面平台专有 API 无鸿蒙等价"
+        "source": "harmony-pc-capabilities.json#gui.wm — 桌面窗口管理器/显示服务状态 unknown；三大桌面平台专有 API 无鸿蒙等价",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:hid_input",
@@ -1808,7 +1824,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则无法模拟鼠标点击/移动/键盘输入，核心自动化功能不可用",
-        "source": "harmony-pc-capabilities.json#hardware_devices — 设备访问与权限模型待核实"
+        "source": "harmony-pc-capabilities.json#hardware_devices — 设备访问与权限模型待核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:nodejs_runtime",
@@ -1816,7 +1833,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 绑定层可在鸿蒙 Node.js 上运行，但 N-API 原生插件仍需重编且其调用的平台 API 需有等价",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs — Node.js 24.13.0 已移植"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs — Node.js 24.13.0 已移植",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1832,7 +1850,6 @@
         ]
       }
     ],
-    "recommended_path": "find_alternative",
     "summary": "libnut-core 的核心价值在于跨平台桌面自动化——鼠标/键盘模拟、窗口管理、屏幕截图——这些功能全部建立在各平台专有的窗口系统与输入事件合成 API（X11/XTest、Win32 SendInput/GDI、macOS CoreGraphics/IOKit/Accessibility）之上。鸿蒙 PC 的窗口系统与输入框架与这三大桌面平台完全不同，且当前无公开等价 API 可替代。Node.js 运行时虽已移植，但 N-API 原生插件调用的底层平台 API 在鸿蒙上全部不可用。除非鸿蒙 PC 提供等价的输入注入与窗口管理能力（如 @ohos.multimodalInput + 窗口管理 API），否则该库的核心功能无法移植。",
     "blockers": [
       {
@@ -1949,7 +1966,30 @@
       "在 OHOS NDK 上交叉编译 libnut.node 原生插件并测试"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库的核心功能几乎全部由平台专有 API 驱动（输入模拟、窗口管理、截图），不涉及可移植的算法/业务逻辑——因此即使 Node.js 运行时已移植，底层能力的缺失使得整体判定为 infeasible。confidence 为 medium 而非 low，是因为鸿蒙 PC 的窗口管理与输入注入能力虽当前 unknown，但作为桌面操作系统这些能力大概率会以某种形式提供——一旦确认可用，porting_class 可调整为 needs_adaptation_full，person_days 约 [30, 60]（编写鸿蒙后端 + 重编插件）。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:x11_input",
+          "ua:cg_event",
+          "ua:sendinput",
+          "ua:x11_window",
+          "ua:win32_window",
+          "ua:cocoa_window",
+          "ua:screen_capture",
+          "ua:iohid"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1957,29 +1997,50 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "new_value",
-        "value": "桌面自动化 / GUI 测试",
-        "rationale": "推荐取值无'桌面自动化'域，该库核心功能是模拟用户输入操作桌面 GUI，与纯'GUI'工具包不同"
+        "code": "ua_func_class_defaulted:ua:x11_input",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_input 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "iohidlib",
-        "rationale": "macOS IOKit HID 库用于媒体键模拟，属于平台专有但不同于 CoreGraphics/Cocoa 的分类，需独立归组"
+        "code": "ua_func_class_defaulted:ua:cg_event",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cg_event 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "find_alternative",
-        "rationale": "该库的核心 API 在鸿蒙无 drop-in 替代，需等鸿蒙提供等价平台能力后方可适配，不属于 recompile/rewrite 等现有路径"
+        "code": "ua_func_class_defaulted:ua:sendinput",
+        "class": "actionable",
+        "message": "unadaptable_api ua:sendinput 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:x11_window",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_window 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_window",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_window 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cocoa_window",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cocoa_window 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:screen_capture",
+        "class": "actionable",
+        "message": "unadaptable_api ua:screen_capture 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:iohid",
+        "class": "actionable",
+        "message": "unadaptable_api ua:iohid 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

@@ -623,8 +623,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核，OHOS NDK musl + POSIX 子集，Go 1.22/1.24 已移植)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3.1,
@@ -682,7 +681,9 @@
           "keyboard.go:159",
           "keyboard.go:174",
           "keyboard.go:213"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:dev_tty",
@@ -697,7 +698,9 @@
         "evidence": [
           "keyboard.go:135",
           "keyboard.go:139"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:sigio_fcntl",
@@ -713,7 +716,9 @@
           "keyboard.go:149",
           "keyboard.go:151",
           "keyboard.go:154"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -723,7 +728,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Go 已移植，纯 Go 代码可运行；本库的核心逻辑和公共 API 层可直接复用",
-        "source": "references/harmony-pc-capabilities.json runtimes.go"
+        "source": "references/harmony-pc-capabilities.json runtimes.go",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_terminal",
@@ -731,7 +737,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "termios ioctl 是 Unix 端终端原始模式的核心机制，若鸿蒙不支持则必须寻找替代方案（如鸿蒙终端 API、PTY 模拟等）；/dev/tty 和 SIGIO 同理——不支持则 Unix 端的 initConsole/releaseConsole 必须全部重写",
-        "source": "references/harmony-pc-capabilities.json intro (OHOS NDK musl + POSIX 子集，子集范围未明确)"
+        "source": "references/harmony-pc-capabilities.json intro (OHOS NDK musl + POSIX 子集，子集范围未明确)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:terminfo_fs",
@@ -739,7 +746,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "terminfo 查找失败会回退到内置终端映射，不影响核心功能但会限制终端兼容性",
-        "source": "推断：鸿蒙 PC 终端环境是否提供 /usr/share/terminfo 等目录未知"
+        "source": "推断：鸿蒙 PC 终端环境是否提供 /usr/share/terminfo 等目录未知",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:golang_sys_unix",
@@ -747,7 +755,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 Go 的 golang.org/x/sys 不提供 unix.Termios/unix.IoctlSetTermios 等符号，Unix 端代码无法编译，需为鸿蒙添加新的构建标签分支",
-        "source": "推断：鸿蒙 Go 的 syscall/Unix 封装覆盖范围未核实"
+        "source": "推断：鸿蒙 Go 的 syscall/Unix 封装覆盖范围未核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -765,7 +774,6 @@
         ]
       }
     ],
-    "recommended_path": "api_adaptation",
     "summary": "本库的核心功能（捕获终端键盘事件）深度依赖 POSIX 终端 I/O（termios ioctl、/dev/tty、SIGIO/fcntl），这些 API 在鸿蒙 OHOS NDK 的 POSIX 子集中的可用性未知。Go 运行时已移植，公共 API 层和事件解析逻辑可直接复用。推荐路径：为鸿蒙新增构建标签分支，使用鸿蒙终端输入 API（若存在）或 PTY 仿真方案替代 POSIX termios，保留公共 API 不变。由于 POSIX 终端 I/O 可用性未知，置信度为 low。",
     "blockers": [
       {
@@ -870,7 +878,25 @@
       "在鸿蒙 PC 终端环境验证键盘事件捕获功能"
     ],
     "notes": "本评估置信度为 low，核心原因是 POSIX 终端 I/O（termios/ioctl//dev/tty/SIGIO）在鸿蒙 OHOS NDK 中的可用性均为 unknown。鸿蒙 PC 自研内核提供 musl + POSIX 子集，但子集的具体范围未公开确认——若恰好包含 termios 则适配工作大幅减少。Go 运行时已确认可用（1.22/1.24），公共 API 层可直接复用。最坏情况下需要为鸿蒙编写全新的终端输入后端（类似 Windows 分支的做法），工作量中等。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:ioctl_termios",
+          "ua:dev_tty",
+          "ua:sigio_fcntl"
+        ]
+      }
+    }
   },
   "library": {
     "name": "keyboard",
@@ -895,44 +921,31 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "api_adaptation",
-        "rationale": "库需要在鸿蒙上替换 POSIX 终端 I/O API 为鸿蒙等价方案，但保留公共 API 不变——不同于完整的 recompile_napi（非 C 库）或 arkts_rewrite（非应用），属于 API 层适配"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_termios",
-        "rationale": "POSIX termios ioctl 是独立的 API 族，不同于通用 posix（如 mmap/fork）——它专门用于终端属性控制，在鸿蒙 POSIX 子集中的可用性不确定"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_device_file",
-        "rationale": "/dev/tty 是 POSIX 终端设备文件，不同于文件系统路径——它是内核设备节点，鸿蒙可能不提供此设备文件"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers.category",
-        "kind": "new_value",
-        "value": "posix_api",
-        "rationale": "POSIX 终端 I/O API 在鸿蒙不可用——不同于 win32_api（Windows 专有），这是 POSIX 标准但鸿蒙仅提供子集"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:ioctl_termios",
+        "class": "actionable",
+        "message": "unadaptable_api ua:ioctl_termios 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:dev_tty",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dev_tty 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:sigio_fcntl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:sigio_fcntl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "ua_no_cp_bucket",
         "class": "actionable",
         "message": "dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI 桌面界面、3D 渲染、媒体或特定硬件场景。它是纯终端/控制台输入库，通过 POSIX 终端 I/O 和 Win32 控制台 API 捕获键盘事件，无 GUI 工具包依赖。",

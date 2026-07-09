@@ -759,7 +759,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，无 Linux ABI；OHOS NDK + musl + POSIX 子集；arm64/x86_64）。Node.js 24 已移植，库跑在已移植的 Node.js 运行时上（模型 A）。",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -768,7 +767,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库为纯数学断言库，JavaScript 实现可直接跑在鸿蒙 Node.js 上，无需改动。唯一的适配工作是其 N-API C 原生插件（addon.node），仅使用 C99 标准库（math.h HUGE_VAL）与 Node-API 标准宏，无平台专有 API、无 #ifdef 平台分支、无外部命令、无图形/媒体/硬件依赖。经 OHOS NDK 重编 C 源码即可。整体极低工作量。",
     "blockers": [
       {
@@ -795,7 +793,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无此则 JavaScript 实现不可运行；但参考确认鸿蒙 Node.js 24 已移植可用。",
-        "source": "references/harmony-pc-capabilities.json 的 runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json 的 runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi_abi",
@@ -803,7 +802,8 @@
         "required": true,
         "target_status": "available",
         "impact": "原生 C 插件通过 N-API 宏与 Node.js 交互；鸿蒙 Node.js 保留 N-API，不成为阻碍。",
-        "source": "HarmonyOS Node-API 开发文档"
+        "source": "HarmonyOS Node-API 开发文档",
+        "target_status_model": "available"
       },
       {
         "id": "ta:musl_math",
@@ -811,7 +811,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 实现仅为 HUGE_VAL 比较与 double 算术运算，musl 完全支持。",
-        "source": "references/harmony-pc-capabilities.json 的 posix.musl_libc"
+        "source": "references/harmony-pc-capabilities.json 的 posix.musl_libc",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -851,7 +852,21 @@
       "发布鸿蒙专用 npm 包或按平台条件编译"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 24 上）。JavaScript 实现无需改动；唯一工作量在 N-API 原生插件的 OHOS NDK 重编。无子进程/文件系统/网络/硬件/图形需求，无平台 #ifdef 分支。置信高。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "math-base-assert-is-finite",
@@ -865,19 +880,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "浮点数有限性断言",
-        "rationale": "该类别的单一断言功能不在推荐清单的典型场景中，自造描述"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数学断言库，不涉及 GUI/3D 渲染/音视频媒体/特定硬件场景。",

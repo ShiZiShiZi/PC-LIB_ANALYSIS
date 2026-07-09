@@ -2380,8 +2380,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK（musl + POSIX 子集，clang/CMake）；arm64/x86_64；应用交付形态待定）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -2390,7 +2389,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "selective_adaptation",
     "summary": "Perfetto 是一个复杂的多组件系统级追踪套件，包含 SDK、守护进程、分析引擎和 Web UI 四个层面，各部分可移植性差异很大：(1) Tracing SDK（C++17）经 OHOS NDK 重编后可移植；(2) Trace Processor（C++17 + SQLite）可交叉编译——已有 WASM 编译先例；(3) Perfetto UI（TypeScript SPA）纯浏览器端，无需移植；(4) 核心守护进程（traced/traced_probes/heapprofd/traced_perf）深度依赖 Linux 专有 API（ftrace/perf_event/procfs/sysfs/Binder/Android HAL）且这些鸿蒙无对应——是其自身平台适配的根本阻碍。综合判断：SDK 和 Trace Processor 部分可适配（needs_adaptation_full），但守护进程的 OS 探测器部分因目标平台缺少等价内核追踪设施而不可移植（unadaptable→partial 级），整体为 needs_adaptation_partial。",
     "blockers": [
       {
@@ -2555,7 +2553,9 @@
         "evidence": [
           "src/traced/probes/ftrace/",
           "runtime_surface.filesystem"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:procfs_sysfs",
@@ -2570,7 +2570,9 @@
         "evidence": [
           "src/traced/probes/sys_stats/sys_stats_data_source.cc:20",
           "src/kallsyms/kernel_symbol_map.cc:314"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:perf_event",
@@ -2585,7 +2587,9 @@
         "evidence": [
           "src/profiling/perf/event_reader.cc:60",
           "src/profiling/perf/event_reader.cc:488"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:android_hal",
@@ -2600,7 +2604,9 @@
         "evidence": [
           "src/android_internal/atrace_hal.cc:22",
           "src/android_internal/lazy_library_loader.cc:42"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:journald_dlopen",
@@ -2612,7 +2618,9 @@
         "category": "platform",
         "evidence": [
           "src/traced/probes/journald/journald_data_source.cc:106"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2622,7 +2630,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "traced_probes 和 traced_perf 守护进程的核心数据采集依赖于这些 Linux 内核接口；鸿蒙自研内核不提供等价功能，这些组件在没有替代系统 API 的情况下无法移植",
-        "source": "harmony-pc-capabilities.json#runtimes（鸿蒙自研内核，非 Linux ABI）"
+        "source": "harmony-pc-capabilities.json#runtimes（鸿蒙自研内核，非 Linux ABI）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:android_hal_services",
@@ -2630,7 +2639,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Android Internal 模块（src/android_internal/）仅在 Android 构建时启用；此模块不影响主工具链在鸿蒙的可用性，可条件编译移除",
-        "source": "harmony-pc-capabilities.json#runtimes（鸿蒙非 Android）"
+        "source": "harmony-pc-capabilities.json#runtimes（鸿蒙非 Android）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_ndk_posix",
@@ -2638,7 +2648,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "IPC 层、守护进程生命周期管理、事件通知机制均依赖这些 POSIX 接口；若 OHOS NDK 对 musl POSIX 子集的覆盖足够广，可大幅降低适配工作量；若部分不支持则需改用鸿蒙等价 API（如 @ohos.rpc 换 Unix socket、Ability 换 fork/exec）",
-        "source": "harmony-pc-capabilities.json（未直接记载 musl/POSIX 子集覆盖范围——待核实）"
+        "source": "harmony-pc-capabilities.json（未直接记载 musl/POSIX 子集覆盖范围——待核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_system_tracing",
@@ -2646,7 +2657,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若鸿蒙提供类似 HiTrace/HiPerf 的系统追踪接口，traced_probes 的部分功能可以在 OHOS 上重新实现——仅增加工作量而非功能不可用；若无任何内核追踪工具，OS 级数据采集功能将完全无法恢复",
-        "source": "harmony-pc-capabilities.json（未直接记载系统追踪能力——待核实）"
+        "source": "harmony-pc-capabilities.json（未直接记载系统追踪能力——待核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_arm64_x86",
@@ -2654,7 +2666,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "arm64 已确认可用（主力架构），x86_64 待核实（OHOS NDK 工具链是否完整覆盖）；若 x86_64 暂缺则需仅先做 arm64 二进制",
-        "source": "harmony-pc-capabilities.json#arch"
+        "source": "harmony-pc-capabilities.json#arch",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [
@@ -2717,7 +2730,27 @@
       "测试并确认 Perfetto UI 在鸿蒙 PC 浏览器上可视化 trace 文件、SQL 查询等功能正常运行"
     ],
     "notes": "评估基于默认模型 A/应用视角（Perfetto 的各独立组件分别在鸿蒙运行时或 ODK NDK 上运行）。整体置信度 medium 的主要原因是多项核心目标事实（OHOS NDK POSIX 子集范围、x86_64 工具链可用性、鸿蒙替代内核追踪接口）为 unknown——若这些待核实项结果为正面，则部分当前标为 blocker 的项可降级为 major/minor 甚至移除，porting_class 可升为 needs_adaptation_full。traced_probes 因深度耦合 Linux 内核追踪接口（ftrace/perf_event）在鸿蒙上确定不可用，但若仅移植 SDK+Trace Processor+UI+CLI 子集，可行性显著提升。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:ftrace_procfs",
+          "ua:procfs_sysfs",
+          "ua:perf_event",
+          "ua:android_hal",
+          "ua:journald_dlopen"
+        ]
+      }
+    }
   },
   "library": {
     "name": "perfetto",
@@ -2740,47 +2773,44 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "tool",
-        "rationale": "Perfetto 兼具库与工具/应用的双重身份：Tracing SDK 是 library（被其他应用调用的 API），traced/traced_probes 等守护进程是 service/tool（独立运行的进程），Perfetto UI 是 application（SPA）。整体归类为 tool 最能涵盖其多形态本质。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "Perfetto 几乎所有 C++ 依赖都以 vendored 方式整合（abseil-cpp/protobuf/sqlite/zlib 等源码内嵌在 buildtools/ 或 third_party/ 中）——与典型的 package_manager 或 system 方式不同，体现了大型 C++ 项目的常见实践。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "gap",
-        "value": "platform: linux vs android",
-        "rationale": "Perfetto 的 Android HAL 绑定（Binder/IPC）与 Linux 原生 API（ftrace/perf_event/syscall）虽然都归 platform 类别，但鸿蒙化的影响完全不同——Android 接口完全不可移植（Binder/HAL 仅在 Android 存在），而 Linux POSIX 接口在 OHOS NDK musl 上有子集支持。建议在 skill 中引入 'android_framework' 子类别以示区分。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "selective_adaptation",
-        "rationale": "Perfetto 这类多组件系统级工具无法套用单一的 run_on_ported_runtime 或 recompile_napi 路径——需要按组件拆分评估：SDK 部分可重编，UI 无需移植，守护进程可选择性裁剪。现有的路径值无法表达这种分层策略。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:ftrace_procfs",
+        "class": "actionable",
+        "message": "unadaptable_api ua:ftrace_procfs 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:procfs_sysfs",
+        "class": "actionable",
+        "message": "unadaptable_api ua:procfs_sysfs 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:perf_event",
+        "class": "actionable",
+        "message": "unadaptable_api ua:perf_event 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:android_hal",
+        "class": "actionable",
+        "message": "unadaptable_api ua:android_hal 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:journald_dlopen",
+        "class": "actionable",
+        "message": "unadaptable_api ua:journald_dlopen 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=gui 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Perfetto 是系统级追踪/性能剖析工具套件，其核心能力集中于 OS 级事件采集（ftrace/perf_event/procfs 等）和数据分析（SQLite Trace Processor + 浏览器可视化 UI）。不涉及桌面 GUI 工具包（UI 是纯浏览器 SPA）、3D 图形渲染、音视频编解码媒体处理、或特定硬件加速器依赖。总体为系统性能监测领域的纯计算+展示负载。",

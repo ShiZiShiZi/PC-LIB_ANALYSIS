@@ -694,7 +694,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK / musl libc / clang; arm64 / x86_64; 自研内核，非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -703,7 +702,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "GNU MPC 是一个纯 C 语言复数浮点运算库，仅依赖 GMP 和 MPFR。两个依赖均已鸿蒙化（OpenHarmony PC cmd-pkgs 已收编 gmp 和 mpfr 的预编译包），且所有产品代码仅使用 C 标准库（stdio/stdlib/string/limits/float/ctype/inttypes/locale.h），无任何平台特有系统调用、无 Win32/Linux 专有 API、无硬件加速代码。用 OHOS NDK（ohos.toolchain.cmake + clang + musl）重新编译为 .so 即可运行。可选的日志功能（--enable-logging）使用 dlsym 自引用，musl 支持 dlsym，在鸿蒙 NDK 编译下同样可用。整体迁移难度极低。",
     "blockers": [
       {
@@ -742,7 +740,8 @@
         "required": true,
         "target_status": "available",
         "impact": "MPC 仅使用这些标准头文件；musl 已完整实现，不影响编译与运行",
-        "source": "harmony-pc-capabilities.json#runtimes (OHOS NDK 基于 musl libc)"
+        "source": "harmony-pc-capabilities.json#runtimes (OHOS NDK 基于 musl libc)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:dlsym_musl",
@@ -750,7 +749,8 @@
         "required": false,
         "target_status": "available",
         "impact": "仅 --enable-logging 选项下需要；musl 实现了 dlsym，默认禁用则无需该能力",
-        "source": "harmony-pc-capabilities.json (musl POSIX 子集含 dlfcn)"
+        "source": "harmony-pc-capabilities.json (musl POSIX 子集含 dlfcn)",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -791,7 +791,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按库模型 A（C 库经 OHOS NDK 重编译后链接到其他代码）。因仅使用纯 C 标准库 + 已鸿蒙化的 GMP/MPFR，不存在平台专有 API 阻碍。code_metrics 显示 platform_adaptation 与 platform_branches 均为 0，进一步确认无平台耦合。可选的 Windows DLL 导出声明（__MPC_DECLSPEC）在非 Windows 目标下展开为空，不影响鸿蒙编译。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -815,7 +829,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、媒体或特定硬件等鸿蒙适配重点场景。所有计算为纯 CPU 上的多精度数学运算。",

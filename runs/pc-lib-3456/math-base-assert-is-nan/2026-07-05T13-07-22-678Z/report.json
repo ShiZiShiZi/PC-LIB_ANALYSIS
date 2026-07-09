@@ -695,7 +695,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 A：库跑在已移植的 Node.js 24.13.0 运行时上；可选 N-API 原生插件经 OHOS NDK/musl 重编；arm64/x86_64）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -704,7 +703,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js 数值断言库，默认入口 lib/index.js 使用纯 JavaScript 实现（x !== x），可在鸿蒙 PC 已移植的 Node.js 24 运行时上直接运行，零改动。可选的原生 N-API 插件（src/addon.cpp + src/is_nan.c）仅使用 C99 标准库（stdbool/assert/stdint）与 N-API 桥接，无任何平台特有系统调用或条件编译，若需启用也仅需 OHOS NDK 交叉编译一两个源文件，工作量极小。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -715,7 +713,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 JS 实现可直接在鸿蒙 Node.js 上运行，无需改动",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -738,7 +737,21 @@
     ],
     "key_tasks": [],
     "notes": "纯 JavaScript 默认实现无需任何适配工作。若需要原生加速版本，仅需用 OHOS NDK（clang + musl）编译 src/is_nan.c + src/addon.cpp 为 addon.so，无代码改动。评估置信度高——鸿蒙 PC Node.js 运行时已确认可用（harmony-pc-capabilities.json#runtimes.nodejs: available），且库无平台耦合。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/math-base-assert-is-nan",
@@ -757,7 +770,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数值计算断言库（单函数 NaN 检测），不涉及 GUI、3D 渲染、音视频媒体或特定硬件等鸿蒙适配重点场景。",

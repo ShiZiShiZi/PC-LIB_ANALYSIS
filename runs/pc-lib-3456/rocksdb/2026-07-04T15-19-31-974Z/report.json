@@ -2268,8 +2268,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (OHOS NDK 用 musl libc + POSIX 子集交叉编译 .so，arm64/x86_64；自研内核非 Linux ABI — 无 /proc/sys 内核伪文件、无 io_uring、无 prctl 等 Linux 特有调用)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -2278,7 +2277,6 @@
       "level": "high"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "RocksDB 为高度可移植的 C++ 嵌入式存储库，其核心算法（LSM-Tree 压缩/合并、SST 表读写、Bloom filter 等）为平台无关的纯 C++ STL 代码。仓库拥有精心设计的 port 抽象层（port_posix/port_win），已将平台差异隔离。鸿蒙 PC 上的移植路径：用 OHOS NDK（clang+musl）交叉编译 .so，基于现有 POSIX 端口新增 OHOS 适配宏，关闭 Linux 特有功能（io_uring），处理 musl 对 /proc/sys/prctl/sched_getcpu 等缺失的降级路径。7/10 个运行期依赖已在鸿蒙预制包提供（lz4/zstd/snappy/zlib/bzip2/gflags/jemalloc）。全部功能可适配，无 blocking 性阻碍。",
     "blockers": [
       {
@@ -2360,7 +2358,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 库（含 POSIX 后端）必须能经 OHOS NDK 交叉编译",
-        "source": "OpenHarmonyPCDeveloper 提供 OHOS NDK（musl+clang）"
+        "source": "OpenHarmonyPCDeveloper 提供 OHOS NDK（musl+clang）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -2368,7 +2367,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库需编译出 arm64 .so",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -2376,7 +2376,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "非必需（arm64 为主力架构即可）",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -2436,7 +2437,21 @@
       "在鸿蒙 PC 上跑通 RocksDB 核心功能测试（db_test, compaction_test 等 5800+ 个 C++ 用例）"
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 交叉编译为原生 .so，再通过 Node-API 桥接暴露给 ArkTS/JS 层，或直接供其他原生模块链接）。RocksDB 的 port 抽象层已证明其可移植性——成功移植到 Windows（含 Win32 纯原生后端）、macOS、FreeBSD、Solaris、Android、AIX 等多种平台。鸿蒙 PC（musl+OHOS NDK）的 POSIX 支持度高于 Android Bionic 但低于完整 Linux，核心 POSIX I/O 路径大概率可用。code_metrics.platform_adaptation 显示仅 413 行平台适配代码（占 420K 生产代码的 ~0.1%），平台耦合较轻。18 个依赖中 7/10 个 C++ 生产依赖已鸿蒙化，整体移植风险低。唯一不确定点为 x86_64 架构支持状态（非必需）。全功能可适配（unadaptable_apis 为空），故 porting_class=needs_adaptation_full。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "rocksdb",
@@ -2461,36 +2476,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "ambiguity",
-        "value": "tools",
-        "rationale": "RocksDB 的 tools/ 目录（db_bench、ldb、sst_dump 等）在 metrics 中被记为 production（约 48K 行），但它们本质是开发/运维 CLI 工具而非库的核心 API。按 CLIs/apps 的普遍做法，主库与配套工具应区分——但报告体系中 library 维度不细分，故 tools 仍归入 function_summary 的 categories 中。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "xxHash 源码直接拷贝在仓库中（util/xxhash.cc），不是 submodule 也不是 find_package，是最经典的 vendored 模式。现有 acquisition 推荐值为 system/submodule/fetchcontent/download_build/package_manager/prebuilt_binary，vendored 应为推荐值之首。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "arch_simd",
-        "rationale": "硬件加速 CRC32C 与 CPU 忙等待指令（SSE4.2/ARM CRC/POWER CRC/asm pause）同时跨越 standard 与 hardware 的分类边界——它们不是 GPU 也不是设备，但在鸿蒙适配中是与 arch/指令集相关的考量点。当前归入 hardware 因 schema 的 arch_simd 组通常在此类，但严格说这是 CPU 特性而非独立硬件。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers",
-        "kind": "ambiguity",
-        "value": "recompile_only vs needs_adaptation_full",
-        "rationale": "RocksDB 的平台适配代码量极少（413 行），理论上接近 recompile_only（只需 OHOS NDK 重编+新增平台宏即可），但考虑到需验证 musl POSIX 子集的 API 可用性、处理 /proc/sys 降级路径、关闭 Linux 独有功能——这些是实质的代码修改工作，因而不归入 pure recompile_only。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2501,7 +2487,8 @@
         "message": "license.category(permissive) 与依据 SPDX(Apache-2.0 OR GPL-2.0-only) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "RocksDB 为纯嵌入式数据存储引擎，不涉及 GUI、3D 渲染、音视频媒体、特定硬件设备等鸿蒙适配重点场景。依赖的 CPU SIMD（SSE4.2/ARM NEON/POWER CRC）均有纯软件回退路径，不构成硬件依赖。",

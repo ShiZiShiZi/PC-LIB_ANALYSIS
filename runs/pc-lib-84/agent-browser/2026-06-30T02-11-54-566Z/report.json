@@ -2141,8 +2141,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（应用模型 C：作为终端用户启动的 CLI/桌面应用打包运行；Rust/Node 运行时已移植）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -2151,7 +2150,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile_ohos + adapt_browser_integration",
     "summary": "agent-browser 主体是 Rust CLI，可交叉编译到鸿蒙 PC；Node 包装器与仪表板可在已移植 Node.js 上运行。核心难点在于本地浏览器自动化依赖 Chrome/Chromium 或兼容 CDP 的浏览器二进制，而鸿蒙 PC 上该能力尚未核实；若不存在，核心 open 命令需改为仅支持 --cdp/--provider 远程浏览器，或引入可在鸿蒙运行的引擎。大量 macOS/Windows/Linux 条件分支（浏览器发现、进程管理、系统包管理器、Safari/iOS 驱动）需要新增鸿蒙分支或裁剪。",
     "unadaptable_apis": [
       {
@@ -2164,7 +2162,9 @@
         "evidence": [
           "cli/src/native/webdriver/ios.rs:14",
           "cli/src/native/actions.rs:9048"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:safaridriver",
@@ -2175,7 +2175,9 @@
         "category": "platform",
         "evidence": [
           "cli/src/native/webdriver/safari.rs:50"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2185,7 +2187,8 @@
         "required": true,
         "target_status": "available",
         "impact": "bin/agent-browser.js 包装器与 Next.js 仪表板依赖 Node.js",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:rust_runtime",
@@ -2193,7 +2196,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 Rust CLI 需要交叉编译到鸿蒙",
-        "source": "references/harmony-pc-capabilities.json#rust"
+        "source": "references/harmony-pc-capabilities.json#rust",
+        "target_status_model": "available"
       },
       {
         "id": "ta:chrome_binary",
@@ -2201,7 +2205,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本地浏览器自动化核心功能（open）依赖可启动的浏览器二进制；若不可用需仅支持远程 CDP/Provider 或引入新引擎",
-        "source": "references/harmony-pc-capabilities.json#electron（最接近的未核实项）"
+        "source": "references/harmony-pc-capabilities.json#electron（最接近的未核实项）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_cli_delivery",
@@ -2209,7 +2214,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "agent-browser 以 npm 包/原生二进制形式分发，需鸿蒙 PC 支持此类应用启动与文件系统访问",
-        "source": "references/harmony-pc-capabilities.json#desktop_app"
+        "source": "references/harmony-pc-capabilities.json#desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_subset",
@@ -2217,7 +2223,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "daemon 与 CLI 通过 Unix domain socket 通信，进程管理依赖 POSIX 信号",
-        "source": "references/harmony-pc-capabilities.json#spawn + OHOS NDK POSIX 子集说明"
+        "source": "references/harmony-pc-capabilities.json#spawn + OHOS NDK POSIX 子集说明",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ffmpeg",
@@ -2225,7 +2232,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "录像功能需要 ffmpeg；缺失则该功能不可用",
-        "source": "cli/src/native/recording.rs:82"
+        "source": "cli/src/native/recording.rs:82",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2364,7 +2372,24 @@
       "在鸿蒙 Node.js 上验证包装器与仪表板的构建与运行"
     ],
     "notes": "评估按应用模型 C（整包 CLI 应用）。若鸿蒙 PC 最终不支持传统 CLI 应用分发，则需改为 ArkTS/命令行沙箱形态，结论会收紧为 infeasible。关键目标能力（Chrome/Chromium 二进制、桌面 CLI 交付形态）当前为 unknown，因此整体置信度为 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:xcrun",
+          "ua:safaridriver"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2375,44 +2400,18 @@
       "未运行 scripts/harmony_adapted.js：本项目无 Python/C++ 依赖，该脚本不适用。",
       "tests.test_cases 仅 25，脚本对 Rust 单元测试计数偏低；AGENTS.md 说明 cargo test 约有 320 个单元测试 + 18 个 e2e 测试。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application (CLI)",
-        "rationale": "仓库同时包含 Rust 原生二进制与 npm/Node 包装器，按终端用户启动的 CLI 应用归类而非库。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "runtime_download",
-        "rationale": "Chrome 浏览器二进制在 install/postinstall 时从远端下载，未在 Cargo/npm manifest 中声明。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "rust+nodejs",
-        "rationale": "核心可执行文件是 Rust，但分发入口是 npm 包和 Node 包装器；最终按主导生产代码语言选 rust。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "web_dashboard",
-        "rationale": "项目带 Next.js/React 本地监控仪表板，不是传统桌面 GUI，但属于用户可见的 Web 界面。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumption",
-        "kind": "gap",
-        "value": "browser_binary_availability",
-        "rationale": "capabilities.json 没有直接对应「Chrome/Chromium CDP 浏览器二进制」的条目，使用 electron/cef 行作为最接近的未知项。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:xcrun",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xcrun 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:safaridriver",
+        "class": "actionable",
+        "message": "unadaptable_api ua:safaridriver 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
@@ -2424,6 +2423,7 @@
         "message": "required_permission 读写存储（文件访问） 的 source_capability=filesystem 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

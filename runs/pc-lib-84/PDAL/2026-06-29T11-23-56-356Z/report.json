@@ -1406,8 +1406,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK 重编; arm64/x86_64; 自研内核, 无 Linux ABI; musl libc + POSIX 子集)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1416,7 +1415,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "PDAL 是 C++ 点云处理库，需经 OHOS NDK 重编适配鸿蒙。核心依赖中 GDAL/ZLIB/zstd/CURL/Eigen/libxml2/liblzma 已在鸿蒙 PC 预编译包中提供，大幅降低适配难度。但 PROJ 与 GeoTIFF 尚未鸿蒙化，需自行交叉编译。POSIX API 使用（dlopen/mmap/getenv）在 OHOS musl 环境下基本可用，但 dladdr（backtrace 功能）和部分 ioctl 可能有缺口。平台守卫代码量少（211 行），跨平台抽象良好，移植可行性较高。",
     "blockers": [
       {
@@ -1482,7 +1480,8 @@
         "required": true,
         "target_status": "available",
         "impact": "插件系统核心机制；不可用则整个插件架构失效",
-        "source": "harmony-pc-capabilities.json — OHOS NDK musl 提供 POSIX 子集，dlopen 可用"
+        "source": "harmony-pc-capabilities.json — OHOS NDK musl 提供 POSIX 子集，dlopen 可用",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_mmap",
@@ -1490,7 +1489,8 @@
         "required": true,
         "target_status": "available",
         "impact": "大文件 I/O 性能关键路径；不可用需回退 read/write",
-        "source": "OHOS NDK musl 支持 mmap"
+        "source": "OHOS NDK musl 支持 mmap",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cpp_runtime",
@@ -1498,7 +1498,8 @@
         "required": true,
         "target_status": "available",
         "impact": "PDAL 核心依赖 C++17 特性；不可用则无法编译",
-        "source": "OHOS NDK clang 支持 C++17"
+        "source": "OHOS NDK clang 支持 C++17",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1541,7 +1542,21 @@
       "在鸿蒙 PC 环境中运行单元测试验证功能完整"
     ],
     "notes": "评估按模型 A（C++ 库经 OHOS NDK 重编）。平台守卫代码量极少（211 行 / 128294 行生产代码 = 0.16%），跨平台抽象良好。关键风险点在 PROJ/GeoTIFF 两个未鸿蒙化依赖的移植——它们是纯 C 库且依赖链简单，移植难度低至中等。已鸿蒙化依赖（GDAL/ZLIB/zstd/CURL/libxml2/liblzma/Eigen）覆盖了大部分核心功能，显著降低了工作量。confidence 为 medium 因 PROJ/GeoTIFF 的鸿蒙可用性尚未实际验证。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1549,15 +1564,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library",
-        "rationale": "PDAL 既提供 C++ 共享库 libpdalcpp.so（被 API 调用），又提供 pdal CLI 命令行工具（被终端用户使用），兼具库与应用特征。但核心定位是点云数据处理库（被 Python 绑定等其它代码集成），CLI 仅是其入口之一，因此判为 library。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

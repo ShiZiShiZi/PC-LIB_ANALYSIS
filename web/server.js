@@ -589,6 +589,7 @@ function reportSummary(name, run, group) {
       subpath: (r.library && r.library.source_subpath) || null,
       analyzedAt: r.library && r.library.analyzed_at,
       portingClass, difficultyLevel, personDays, overall,
+      functionalViability: (ha && ha.functional_viability) || null,   // 快照口径（详情页才 caps live 回投）
     };
   } catch { return null; }
 }
@@ -1016,6 +1017,21 @@ function deriveAdaptationAssessment(report, ha, legacyPclass) {
   };
   return effective;
 }
+// functional_viability: target-side "运行前提是否满足" verdict (mirror of report_normalize.derive_functional_viability).
+// Orthogonal to porting_class/adaptation_assessment — worst-wins over required target_assumptions:
+// unavailable→blocked_external > unknown→unverified > partial→viable_with_work > (all available/none)→viable.
+const VIABILITY_RANK = { viable: 0, viable_with_work: 1, unverified: 2, blocked_external: 3 };
+const STATUS_TO_VIABILITY = { unavailable: 'blocked_external', unknown: 'unverified', partial: 'viable_with_work', available: 'viable' };
+function deriveFunctionalViability(ha) {
+  let worst = 'viable';
+  const ta = (ha && Array.isArray(ha.target_assumptions)) ? ha.target_assumptions : [];
+  for (const a of ta) {
+    if (!a || typeof a !== 'object' || !a.required) continue;
+    const v = STATUS_TO_VIABILITY[a.target_status] || 'viable';
+    if (VIABILITY_RANK[v] > VIABILITY_RANK[worst]) worst = v;
+  }
+  return worst;
+}
 // overall 是否可适配 verdict as a pure function of the 5-way effective_class (matches
 // deriveAdaptationAssessment) — for deriving it on raw/unnormalized reports (topology/summary).
 function overallForEffective(effectiveClass) {
@@ -1081,7 +1097,7 @@ const RANK_CONF = ['low', 'medium', 'high'];
 // v4: dim-9 refactor — feasibility/recommended_path removed; porting_class collapsed to 3 values;
 // unadaptable_apis[].functionality_class drives a derived adaptation_assessment {effective_class,
 // overall, core, platform_specific}; effort.level floor keyed by effective_class.
-const NORMALIZED_VERSION = 4;
+const NORMALIZED_VERSION = 5;
 const W_ACT = 'actionable';   // model self-review may FIX (with evidence) or DISMISS as false positive
 const W_INFO = 'info';        // deterministic audit note — never dismissible
 
@@ -1143,6 +1159,26 @@ function normalizeHarmony(report) {
   ha.effort = ha.effort && typeof ha.effort === 'object' ? ha.effort : {};
   const tag = (arr, p) => Array.isArray(arr) && arr.forEach((it, i) => { if (it && typeof it === 'object' && !it.id) it.id = `${p}:${i + 1}`; });
   tag(ha.target_assumptions, 'ta'); tag(ha.unadaptable_apis, 'ua'); tag(ha.blockers, 'bk');
+  // target_status_model: persist the model's authored target_status once per assumption (the *_model
+  // pattern) so the serve-time caps re-projection can overwrite target_status from live caps while
+  // staying re-derivable. Mirror of report_normalize.normalize_harmony.
+  if (Array.isArray(ha.target_assumptions))
+    for (const a of ha.target_assumptions) if (a && typeof a === 'object' && !('target_status_model' in a)) a.target_status_model = (a.target_status ?? null);
+  // confidence: a required + unknown target assumption deterministically caps confidence at medium.
+  // Persist the model value once for idempotent re-derivation; restore when the cap no longer applies.
+  if (!('confidence_model' in ha)) ha.confidence_model = (ha.confidence ?? null);
+  const reqUnknown = (Array.isArray(ha.target_assumptions) ? ha.target_assumptions : [])
+    .some((a) => a && typeof a === 'object' && a.required && a.target_status === 'unknown');
+  const confM = ha.confidence_model;
+  if (confM != null) ha.confidence = (reqUnknown && confM === 'high') ? 'medium' : confM;
+  const meta = (report && typeof report.meta === 'object' && report.meta) ? report.meta : null;
+  if (meta) {
+    if (!('confidence_overall_model' in meta)) meta.confidence_overall_model = (meta.confidence_overall ?? null);
+    const mc = meta.confidence_overall_model;
+    if (mc != null) meta.confidence_overall = (reqUnknown && mc === 'high') ? 'medium' : mc;
+  }
+  // functional_viability: target-side "运行前提是否满足" verdict, orthogonal to porting_class.
+  ha.functional_viability = deriveFunctionalViability(ha);
   // Two-dimensional (core vs platform-difference) assessment + 5-way effective_class. Needs the ua
   // ids assigned above; legacy default for functionality_class keys off the raw pick.
   const effective = deriveAdaptationAssessment(report, ha, base);
@@ -1223,7 +1259,10 @@ function validateHarmony(report) {
     const refed = [...blk, ...ua].some((x) => (x.caused_by || []).includes(a.id));
     if (!refed) w.push([`ta_unref:${a.id || a.capability || ''}`, W_ACT, `target_assumption ${a.id || a.capability || ''} 为 required+unavailable 但无对应 blocker/unadaptable_api`]);
   }
-  if (ta.some((a) => a && a.required && a.target_status === 'unknown') && ha.confidence === 'high')
+  const reqUnknown = ta.some((a) => a && a.required && a.target_status === 'unknown');
+  if (reqUnknown && ha.confidence_model === 'high')
+    w.push(['confidence_capped_unknown', W_INFO, '存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium']);
+  else if (reqUnknown && ha.confidence === 'high')
     w.push(['conf_high_unknown', W_ACT, '存在 required 且 unknown 的目标假设，confidence 不应为 high']);
   const perms = Array.isArray(ha.required_permissions) ? ha.required_permissions : [];
   for (const p of perms) if (p && p.harmony_status === 'unavailable' && !blk.length)
@@ -2534,6 +2573,34 @@ const server = http.createServer(async (req, res) => {
         if (active.length) rep.meta.harmony_warnings = active; else delete rep.meta.harmony_warnings;
         if (reviewed.length) rep.meta.harmony_warnings_reviewed = reviewed; else delete rep.meta.harmony_warnings_reviewed;
       }
+      // Serve-time caps re-projection — runs for EVERY report regardless of the version stamp (like
+      // the topology rollup). Overwrite each target_assumption.target_status from the LIVE caps (by
+      // capability_key; caps is the authoritative target-side source, the model's value kept in
+      // target_status_model), then re-derive functional_viability + the required+unknown confidence
+      // cap from the projected statuses. So curating a caps row refreshes every dependent report on
+      // read — no re-analysis. Graceful degrade: any caps failure serves the report un-reprojected.
+      try {
+        const ha = rep && rep.harmony_adaptation;
+        const ta = ha && Array.isArray(ha.target_assumptions) ? ha.target_assumptions : null;
+        if (ta && ta.length) {
+          const caps = harmonyCaps.load();
+          const statusById = new Map();
+          for (const s of (caps && Array.isArray(caps.sections) ? caps.sections : []))
+            for (const row of (s && Array.isArray(s.rows) ? s.rows : []))
+              if (row && row.id && row.status) statusById.set(row.id, row.status);
+          for (const a of ta) {
+            if (!a || typeof a !== 'object' || !a.capability_key || !statusById.has(a.capability_key)) continue;
+            if (!('target_status_model' in a)) a.target_status_model = (a.target_status ?? null);
+            a.target_status = statusById.get(a.capability_key);
+          }
+          ha.functional_viability = deriveFunctionalViability(ha);
+          const reqUnknown = ta.some((a) => a && a.required && a.target_status === 'unknown');
+          if (ha.confidence_model != null)
+            ha.confidence = (reqUnknown && ha.confidence_model === 'high') ? 'medium' : ha.confidence_model;
+          if (rep.meta && rep.meta.confidence_overall_model != null)
+            rep.meta.confidence_overall = (reqUnknown && rep.meta.confidence_overall_model === 'high') ? 'medium' : rep.meta.confidence_overall_model;
+        }
+      } catch (_) { /* caps unavailable → serve report as-is (no re-projection) */ }
       return send(res, 200, rep);
     }
 
@@ -2583,6 +2650,46 @@ const server = http.createServer(async (req, res) => {
       if (!body.id) return send(res, 400, { error: 'id required' });
       try { const row = harmonyCaps.patchRow(body.id, { status: body.status, source: body.source, note: body.note }); return send(res, 200, { row, caps: harmonyCaps.load() }); }
       catch (e) { return send(res, 400, { error: String(e.message || e) }); }
+    }
+    // Create-or-update a caps row (adding its section if absent) — promotes an unknown/caps_gap
+    // target assumption into a curated capability. Optional `bind` binds the originating report's
+    // assumption to the new row id (capability_key) + resolves its caps_gap observation, so that
+    // report refreshes via the serve-time re-projection with no re-analysis (D4). The one place the
+    // panel writes back into a report.json — a deliberate human-curation edit (re-analysis-safe:
+    // a fresh run self-binds against the now-present caps row).
+    if (req.method === 'POST' && pathname === '/api/harmony-caps/add-row') {
+      const body = await readBody(req);
+      if (!body.sectionId || !body.id) return send(res, 400, { error: 'sectionId and id required' });
+      try {
+        const { row, created } = harmonyCaps.upsertRow({
+          sectionId: body.sectionId, sectionTitle: body.sectionTitle, id: body.id,
+          capability: body.capability, status: body.status, source: body.source, note: body.note });
+        let bound = false;
+        const bind = body.bind;
+        if (bind && bind.name && bind.run && bind.ta_id) {
+          const file = path.join(runLibDir(bind.group, bind.name), bind.run, 'report.json');
+          if (file.startsWith(RUNS) && fs.existsSync(file)) {
+            const rep = JSON.parse(fs.readFileSync(file, 'utf8'));
+            const ha = rep && rep.harmony_adaptation;
+            const ta = ha && Array.isArray(ha.target_assumptions)
+              ? ha.target_assumptions.find((a) => a && a.id === bind.ta_id) : null;
+            if (ta) {
+              if (!('target_status_model' in ta)) ta.target_status_model = (ta.target_status ?? null);
+              ta.capability_key = body.id;
+              if (body.status) ta.target_status = body.status;
+              const gid = String(body.id).toLowerCase();
+              if (rep.meta && Array.isArray(rep.meta.observations) && gid.length >= 2)   // resolve the caps_gap proposal
+                rep.meta.observations = rep.meta.observations.filter(
+                  (o) => !(o && o.kind === 'caps_gap' && String(o.value || '').toLowerCase().includes(gid)));
+              const tmp = file + '.tmp';
+              fs.writeFileSync(tmp, JSON.stringify(rep, null, 2) + '\n');
+              fs.renameSync(tmp, file);
+              bound = true;
+            }
+          }
+        }
+        return send(res, 200, { row, created, bound, caps: harmonyCaps.load() });
+      } catch (e) { return send(res, 400, { error: String(e.message || e) }); }
     }
 
     if (req.method === 'GET' && pathname === '/api/resolve-repo') {
@@ -2660,7 +2767,7 @@ if (require.main === module) {
 } else {
   module.exports = { derivePortingClass, deriveDifficultyLevel, effortDays, normalizeHarmony,
     reconcilePortingClass, hasUnadaptableSignal, normalizeCodePartition,
-    deriveAdaptationAssessment, effectivePortingClass,
+    deriveAdaptationAssessment, deriveFunctionalViability, effectivePortingClass,
     validateHarmony, validateReport, computeWarnings, rollupAdaptation, buildDepTopology,
     deriveLicenseCategory, normalizeLicense, validateLicense, normalizeDim8,
     parseRepoUrl, canonicalRepoKey, normalizeCloneUrl };

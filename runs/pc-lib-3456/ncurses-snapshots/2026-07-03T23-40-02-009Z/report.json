@@ -1331,8 +1331,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC(库默认模型 A：经 OHOS NDK 交叉编译为 arm64/x86_64 .so; 自研内核，非 Linux ABI，musl libc + POSIX 子集)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1341,7 +1340,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "ncurses 为 C 终端 UI 库，核心逻辑(terminfo 解析、窗口管理、字符绘制)可经 OHOS NDK 重编复用。移植可行性取决于鸿蒙 PC 对 POSIX termios/ioctl 终端控制、/dev/tty /dev/pts 访问以及 terminfo 数据库路径的支持程度——这些目标事实目前尚未核实，因此置信度降至 medium。若目标终端子系统完整，则属全部可适配；否则部分 TUI 功能需降级或重写。",
     "blockers": [
       {
@@ -1414,7 +1412,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "终端模式(raw/cbreak/echo)切换依赖；不支持则核心 TUI 无法工作",
-        "source": "native_api.posix_termios"
+        "source": "native_api.posix_termios",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ioctl",
@@ -1422,7 +1421,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "窗口尺寸获取、终端刷新控制依赖；不支持则尺寸感知与部分控制失效",
-        "source": "native_api.posix_ioctl"
+        "source": "native_api.posix_ioctl",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:tty_dev",
@@ -1430,7 +1430,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "ncurses 通过 /dev/tty 打开控制终端；不支持则 initscr/newterm 失败",
-        "source": "runtime_surface.devices"
+        "source": "runtime_surface.devices",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:terminfo_subsystem",
@@ -1438,7 +1439,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "无 terminfo 数据库则无法解析终端能力，库失去可移植意义",
-        "source": "runtime_surface.filesystem"
+        "source": "runtime_surface.filesystem",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:signals",
@@ -1446,7 +1448,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "作业控制暂停/恢复、窗口变化重绘、sysmouse 信号依赖",
-        "source": "native_api.posix_signals"
+        "source": "native_api.posix_signals",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arch_x86_64",
@@ -1454,7 +1457,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅当需要 x86_64 构建时影响；arm64 已确认可用",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1506,7 +1510,21 @@
       "跑通 ncurses 自带测试程序与常见 TUI 示例，确认颜色、鼠标、窗口尺寸变化等功能"
     ],
     "notes": "评估按库模型 A(经 OHOS NDK 重编)。若鸿蒙 PC 的 POSIX 终端子集不支持 termios/ioctl，则核心功能将退回 needs_adaptation_partial 或需围绕鸿蒙终端/图形能力重写 TUI 层。当前多个目标能力为 unknown，置信度为 medium，结论随目标事实核实可上调/下调。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "ncurses",
@@ -1537,36 +1555,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.key",
-        "kind": "new_value",
-        "value": "terminal_ui",
-        "rationale": "ncurses 是字符终端 TUI 库，不依赖桌面 GUI 工具包。推荐场景集(gui/rendering_3d/media/hardware)无法准确刻画其鸿蒙适配重点，因此新增 terminal_ui 场景键，涵盖 curses/terminfo/termios 类库。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "gap",
-        "value": "terminal_utility_tools",
-        "rationale": "ncurses 除库本身外附带 tic/infocmp/tput/clear/tset 等命令行工具；当前 category 框架未提供'配套工具'的标准键，暂归入'多语言绑定与配套工具'。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "bsd_sysmouse -> system vs platform",
-        "rationale": "FreeBSD sysmouse 通过内核 ioctl(CONS_MOUSECTL) 访问，属于内核/设备级接口但依赖 POSIX ioctl 机制；归入 system/posix。"
-      },
-      {
-        "dimension": "library",
-        "field": "bindings",
-        "kind": "gap",
-        "value": "ada_binding_not_in_enum",
-        "rationale": "ncurses 提供 Ada95 绑定(Ada95/src/)，但 report_schema.json 的 bindings 枚举未包含 ada，只能以 'other' 指代，损失了具体语言信息。"
-      }
-    ],
+    "observations": [],
     "warnings": [
       "仓库规模较大(生产代码约 18.8 万行)，维度 1/6/7/8 基于代表性文件与 codegraph 广度采样，未逐行审计。",
       "鸿蒙 PC 对 POSIX termios/ioctl、/dev/tty、terminfo 数据库等关键目标能力的状态为 unknown，dim-9 置信度已下调至 medium。"
@@ -1574,7 +1563,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "ncurses 触及的核心鸿蒙适配场景是字符终端 TUI(非传统桌面 GUI)。它不依赖 3D 渲染、音视频或特定硬件；主要不确定性在于目标平台是否提供 POSIX termios/ioctl 兼容的终端子系统以及 terminfo 数据库。",

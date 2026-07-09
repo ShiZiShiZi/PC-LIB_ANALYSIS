@@ -2040,8 +2040,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK 原生层，musl libc + POSIX 子集，clang 交叉编译为 .so；arm64 / x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -2063,7 +2062,9 @@
         "category": "hardware",
         "evidence": [
           "plugins/pluginCUDA/plugin_cuda_utils.cxx:38"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nvencoder",
@@ -2077,7 +2078,9 @@
         "category": "hardware",
         "evidence": [
           "plugins/pluginCUDA/plugin_cuda_utils.cxx:23-25"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:v4l2ioctl",
@@ -2089,7 +2092,9 @@
         "category": "system",
         "evidence": [
           "tinyDAV/src/video/v4linux/tdav_producer_video_v4l2.c:116-120"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:directshow",
@@ -2103,7 +2108,9 @@
         "category": "platform",
         "evidence": [
           "plugins/pluginDirectShow/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wasapi",
@@ -2118,7 +2125,9 @@
         "evidence": [
           "plugins/pluginWASAPI/",
           "plugins/pluginWinMF/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2128,7 +2137,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA 为可选插件，禁用后视频编码回退为软件编码，核心信令功能不受影响",
-        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:windows_capture",
@@ -2136,7 +2146,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "仅在 Windows 上使用，鸿蒙上需用 @ohos.multimedia 或 ALSA (cmd-pkgs 已提供) 替代，核心功能不受影响",
-        "source": "harmony-pc-capabilities.json#media.audio_io + media.camera_capture"
+        "source": "harmony-pc-capabilities.json#media.audio_io + media.camera_capture",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:v4l2",
@@ -2144,7 +2155,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Linux V4L2 在鸿蒙上不可用，需用 @ohos.multimedia 摄像头 API 替代；核心信令功能不受影响",
-        "source": "harmony-pc-capabilities.json#media.camera_capture"
+        "source": "harmony-pc-capabilities.json#media.camera_capture",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:posix_subset",
@@ -2152,7 +2164,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "核心 SIP/RTP 信令栈依赖 BSD 套接字与 POSIX 线程，若 OHOS NDK 未完整支持则信令功能受阻断",
-        "source": "harmony-pc-capabilities.json（OHOS NDK musl + POSIX 子集，覆盖程度未核实）"
+        "source": "harmony-pc-capabilities.json（OHOS NDK musl + POSIX 子集，覆盖程度未核实）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2186,7 +2199,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_napi",
     "summary": "doubango 为大型 C/C++ 电信框架，核心 SIP/IMS 信令栈（tinySIP/tinySDP/tinyNET/tinySAK 等）仅依赖 BSD 套接字与标准 POSIX，经 OHOS NDK 交叉编译后预期可运行。多数可选编解码依赖（Opus/FFmpeg/OpenH264/VPX/Speex/GSM/OpenSSL/ALSA）已在鸿蒙 PC cmd-pkgs 预编译清单中可用——直接链接鸿蒙版即可，大幅降低工作量。但部分编解码库（libyuv 作为强制执行库、libsrtp）需自行交叉编译，音视频采集驱动（V4L2/DirectShow/WASAPI/WinMF）需替换为 @ohos.multimedia 或移除，CUDA GPU 加速不可用需回退到软件编码。整体核心信令功能可移植，音视频采集与硬件加速路径需替换或降级，故分级为 needs_adaptation_partial。",
     "blockers": [
       {
@@ -2351,7 +2363,27 @@
       "在鸿蒙上编译并运行核心 SIP 注册/呼叫端到端测试"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 交叉编译为原生 .so）。核心 SIP/RTP 信令栈为纯 ANSI-C + BSD 套接字，对 POSIX 子集要求较低（socket/select/poll/pthread/dlopen），预期 OHOS NDK 基本覆盖——但 OHOS NDK POSIX 子集的精确覆盖范围在 harmony-pc-capabilities 中标记为 unknown，因此 confidence 下调至 medium。若核实 POSIX 覆盖充足则 confidence 回升。编解码依赖大量可选（configure 的 --with-* 即 checker），即使全部不可用，核心 SIP 信令（注册/呼叫/IM/Presence）仍可工作——框架设计为「编解码按需挂载」。本评估已将已知可移植但工作量大的部分归入 key_tasks 与 compatible，将确知不可移植的部分（CUDA/Windows 采集驱动/V4L2 ioctl）列入了 unadaptable_apis 与 blockers。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda",
+          "ua:nvencoder",
+          "ua:v4l2ioctl",
+          "ua:directshow",
+          "ua:wasapi"
+        ]
+      }
+    }
   },
   "library": {
     "name": "doubango",
@@ -2377,47 +2409,39 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "library",
-        "rationale": "doubango 是一个电信框架/库（非终端用户直接启动的应用），提供 API 供 Boghe/IMSDroid/iDoubs 等客户端调用。尽管仓库内含 tinyDEMO 可执行演示，但其本质是框架使用示例，库本体以 libdoubango.so + bindings/ 导出符号为核心。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "G.729 源码直接内嵌于 g729a/g729b 目录；thirdparties/ 下按平台分组的预编译 .a/.so 库属于预打包依赖，此处用 'vendored' 涵盖。Speex 在 Licensing.md 标注为 mandatory 但 configure.ac 实际为 optional checker —— 口径上标为 vendored（源码通过 thirdparties/ 预编译库提供）。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "linux_v4l2",
-        "rationale": "V4L2 应归 system（内核 ioctl 接口）还是 platform（Linux 专有 POSIX 扩展）？V4L2 通过 ioctl+mmap 操作内核驱动，本质是系统层接口，但 POSIX 技能也 classify 为 platform+posix。此处按更严格口径归 system，因为涉及裸 ioctl 内核命令字。"
-      },
-      {
-        "dimension": "runtime_surface",
-        "field": "devices",
-        "kind": "gap",
-        "value": "audio_video_capture_devices",
-        "rationale": "框架通过插件架构支持多平台音视频采集 (ALSA/WASAPI/DirectShow/WinMF/V4L2/OpenSLES)，这些设备在不同 OS 上通过不同驱动层访问，runtime_surface.devices 用 detail 列举了各平台采集装置，但粒度较粗——更精细地拆为每种驱动一个条目或合并为一条开放选择。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_partial",
-        "rationale": "虽然多数编解码已鸿蒙化、核心信令可移植，但音视频采集驱动层（V4L2/DirectShow/WASAPI）和 CUDA 硬件加速不可替换——部分功能无法适配。这些不可适配的块是否为 '核心'？严格说若目标是纯信令场景（不涉及音视频），porting_class 可降为 needs_adaptation_full 甚至 recompile_only。此处按全能力口径保守定级，以防通信中需要音视频。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nvencoder",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nvencoder 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:v4l2ioctl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:v4l2ioctl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:directshow",
+        "class": "actionable",
+        "message": "unadaptable_api ua:directshow 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wasapi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wasapi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本框架为电信 IMS 信令与媒体引擎，核心触及音视频编解码与采集（media 场景）和 GPU 硬件加速（hardware 场景），不涉及桌面 GUI 或 3D 图形渲染。",

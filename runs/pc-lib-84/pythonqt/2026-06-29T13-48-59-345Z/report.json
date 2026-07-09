@@ -1006,8 +1006,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核、OHOS NDK/musl、arm64/x86_64；作为 C++ 库跑在已移植的 Python 运行时上）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1024,7 +1023,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt 是 PythonQt 的核心依赖；若不可用则整个库无法运行",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python",
@@ -1032,7 +1032,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python/C API 与嵌入式解释器是 PythonQt 的工作基础",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_file",
@@ -1040,11 +1041,11 @@
         "required": true,
         "target_status": "available",
         "impact": "仅影响 .pyc 缓存写入逻辑，缺失时可回退到 Qt QFile",
-        "source": "POSIX 子集 + OHOS NDK 文档"
+        "source": "POSIX 子集 + OHOS NDK 文档",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "PythonQt 是 C++ 核心 + Python 绑定的库，鸿蒙 PC 上 Python 与 Qt 均已移植，核心运行条件具备。移植主要工作是用 OHOS NDK 重新编译 C++ 库、调整 qmake/CMake 构建脚本、针对鸿蒙 Qt 版本重新生成包装代码，并裁剪不可用的可选 Qt 模块（如 WebKit、部分 Multimedia）。无特定硬件依赖，无无法适配的底层 API。",
     "blockers": [
       {
@@ -1124,7 +1125,21 @@
       "在鸿蒙 Python 上跑通 PythonQt 单元测试与示例"
     ],
     "notes": "按模型 A（库跑在已移植的 Python 运行时上）评估。虽然仓库代码量较大，但 generated_cpp_515 是自动生成的参考包装代码，实际手写代码集中在 src/（约 12k）和 generator/（约 30k）。核心库没有 Linux/Windows 专有系统调用，移植风险可控。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1132,29 +1147,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "binding_generator_library",
-        "rationale": "PythonQt 既是运行时绑定库，又自带代码生成器；现有 kind 推荐值未覆盖“附带绑定生成器的 C++ 库”这一形态，暂按 library 处理并在此记录。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored_fork",
-        "rationale": "generator/ 是对 Nokia QtScript generator 的修改版并内嵌于仓库，既有 vendored 也有 fork 性质，现有 acquisition 枚举没有精确对应项。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "cross_compile_with_regenerated_wrappers",
-        "rationale": "PythonQt 需要先为目标 Qt 版本重新生成 C++ 包装代码，再交叉编译；推荐路径同时包含生成器运行和交叉编译两步。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

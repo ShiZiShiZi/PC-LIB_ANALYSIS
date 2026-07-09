@@ -1719,8 +1719,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK + musl + clang；arm64 / x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1728,8 +1727,7 @@
       ],
       "level": "high"
     },
-    "confidence": "high",
-    "recommended_path": "recompile_napi",
+    "confidence": "medium",
     "summary": "Botan 是高度跨平台的 C++ 密码学库，核心代码为标准 C++20，不依赖任何特定操作系统。平台相关代码已通过 target_info.h 编译宏按 OS 分层隔离（POSIX/Win32/macOS），新增 OHOS 目标后现有的 POSIX (musl) 路径可复用绝大部分。5 个核心可选外部依赖（zlib/bzip2/lzma/sqlite3/boost）均在鸿蒙 PC cmd-pkgs 已提供预编译包（harmony_adapted=true）。唯一真正不可用的模块是 TPM v2.0（tpm2-tss 未移植）、Windows 证书存储（crypt32）与 macOS Keychain——均为可选模块，禁用不影响密码学核心功能。SIMD 优化（NEON 为主）在 ARM64 上自然可用。重点是新增 OHOS OS 目标、验证 musl POSIX 子集覆盖、处理部分 Linux 专有系统调用（prctl/getauxval），以及 OHOS NDK 交叉编译适配。",
     "blockers": [
       {
@@ -1820,7 +1818,9 @@
         "category": "hardware",
         "evidence": [
           "src/lib/prov/tpm2/tpm2_context.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1830,7 +1830,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若这些基础 POSIX 在 OHOS 上不可用则核心功能无法编译运行",
-        "source": "references/harmony-pc-capabilities.json（OHOS NDK 基于 musl libc，提供 POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json（OHOS NDK 基于 musl libc，提供 POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:dev_urandom",
@@ -1838,7 +1839,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 OHOS 不提供 /dev/urandom 或 getrandom 则系统 RNG 无熵源，必须改用 OHOS 特有随机数 API",
-        "source": "references/harmony-pc-capabilities.json（内核设备接口段未列出 /dev/urandom 状态）"
+        "source": "references/harmony-pc-capabilities.json（内核设备接口段未列出 /dev/urandom 状态）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:tpm2_tss",
@@ -1846,7 +1848,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "仅影响可选的 TPM v2.0 硬件模块，不影响核心密码功能",
-        "source": "harmony_adapted 脚本结果（cmd-pkgs 未收录 tpm2-tss）"
+        "source": "harmony_adapted 脚本结果（cmd-pkgs 未收录 tpm2-tss）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:arm64_neon",
@@ -1854,7 +1857,8 @@
         "required": false,
         "target_status": "available",
         "impact": "arm64 目标下 NEON 自然可用，无损性能；若不可用则回退到 C++ 纯软件实现",
-        "source": "references/harmony-pc-capabilities.json#arch（arm64 主力架构）"
+        "source": "references/harmony-pc-capabilities.json#arch（arm64 主力架构）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1914,6 +1918,22 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:tpm2"
+        ]
+      }
     }
   },
   "library": {
@@ -1939,23 +1959,8 @@
     "analyzed_at": "2026-07-04T15:47:53Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries",
-        "kind": "new_value",
-        "value": "advapi32.dll 动态加载用于 RtlGenRandom",
-        "rationale": "Windows 平台通过 LoadLibrary 动态加载 advapi32.dll 获取 RtlGenRandom 函数以兼容旧版 Windows——这是一个运行时动态加载系统库的典型模式"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "name",
-        "kind": "ambiguity",
-        "value": "CoreFoundation+Security 作为合称",
-        "rationale": "macOS Keychain 集成需要 CoreFoundation.framework 和 Security.framework 两个框架，在 info.txt 中声明为 frameworks:CoreFoundation,Security——技术上这是两个系统框架但功能上统一服务于证书存储访问，合并为一条"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1963,15 +1968,21 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
       },
       {
-        "code": "conf_high_unknown",
+        "code": "ua_func_class_defaulted:ua:tpm2",
         "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "message": "unadaptable_api ua:tpm2 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目是纯密码学库，不涉及 GUI、3D 渲染或媒体场景。唯一鸿蒙适配重点场景是硬件安全模块访问（TPM v2.0、PKCS#11 HSM），以及跨架构 SIMD 加速（x86 SSE/AVX、ARM NEON/SVE、RISC-V Vector 等）——均为基础密码学库能力，不影响核心移植。",

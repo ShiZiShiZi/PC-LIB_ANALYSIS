@@ -1153,8 +1153,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库默认跑在已移植的 Python 3.12 运行时上；原生 C 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1171,7 +1170,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 的 override/导入机制与构建脚本可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:glib_gi_stack",
@@ -1179,11 +1179,11 @@
         "required": true,
         "target_status": "partial",
         "impact": "核心 C 依赖需交叉编译；已有 glib/cairo/libffi/gtk 预编译包可参考",
-        "source": "harmony-pc-capabilities.json#runtimes + cmd-pkgs 清单"
+        "source": "harmony-pc-capabilities.json#runtimes + cmd-pkgs 清单",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime + cross_compile_native_deps",
     "summary": "PyGObject 是带 C 扩展的 Python 库，鸿蒙 Python 运行时已移植，因此纯 Python 部分无需改动；主要工作量在于把 GLib/GObject/GIO/gobject-introspection 及自身 C 扩展用 OHOS NDK 交叉编译。已鸿蒙化的 pycairo、libffi、cairo、gtk 可显著降低工作量。没有特定硬件或不可适配的平台 API。",
     "blockers": [
       {
@@ -1274,7 +1274,21 @@
       "在鸿蒙 Python 上运行 PyGObject 单元测试验证绑定功能"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时）。PyGObject 自身不直接实现 GUI/媒体/硬件，只是绑定层；最终 GTK/GStreamer 等应用能否运行还取决于这些被绑定库本身。虽然 glib-2.0/gobject-2.0/gio-2.0/girepository-2.0 按 pkg-config 名查询未命中 cmd-pkgs，但 glib umbrella 与 gtk 已鸿蒙化，说明该栈可在 OHOS NDK 上构建；gobject-introspection 需单独交叉编译。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1282,22 +1296,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "ambiguity",
-        "value": "pkg-config 名与 OpenHarmony 包名映射不一致导致假阴性",
-        "rationale": "glib-2.0/gobject-2.0/gio-2.0/girepository-2.0 在 cmd-pkgs 中未按此名命中，但 glib/cairo/libffi/gtk 已鸿蒙化，说明 GNOME 基础栈实际可构建。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "gobject_introspection_bindings",
-        "rationale": "PyGObject 的本质是 GI 绑定层，不属于 gui/media/hardware，但在依赖树中常作为 GTK GUI 应用的前置库，可作为一个新的场景维度记录。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

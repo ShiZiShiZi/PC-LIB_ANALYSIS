@@ -1151,7 +1151,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C 库经 OHOS NDK 交叉编译为 .so；musl libc + POSIX 子集；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1160,7 +1159,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "Nettle 为极度克制的纯 C 密码学库，生产代码仅依赖 C99 标准库与 GCC 编译器扩展，无任何 POSIX/Win32 特有 API。核心密码学算法均为纯计算，可直接用 OHOS NDK（clang + musl）交叉编译生成 libnettle.so / libhogweed.so。架构特定汇编优化（arm64/arm32/x86_64）在交叉编译时自然适配对应 CPU 目标；纯 C 回退路径保证所有算法在不支持的架构上也完整可用。唯一外部依赖 GMP（大数库）已在鸿蒙 C/C++ 预编译包中可用，mini-gmp 作为内置回退进一步降低依赖风险。整体工作量极低——仅需配置交叉编译工具链并验证功能正确性。",
     "blockers": [
       {
@@ -1202,7 +1200,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 PC 主推 arm64 架构，汇编优化路径可直接启用",
-        "source": "harmony-pc-capabilities.json#arch"
+        "source": "harmony-pc-capabilities.json#arch",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -1210,7 +1209,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "x86_64 也受 OHOS NDK 支持，但目标事实尚未核实；即使不支持，arm64 已满足需要",
-        "source": "harmony-pc-capabilities.json#arch"
+        "source": "harmony-pc-capabilities.json#arch",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_ndk",
@@ -1218,7 +1218,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Nettle 仅需 C99 stdlib 编译，OHOS NDK 提供 clang+musl 完全满足；该工具链是鸿蒙原生开发的事实基座",
-        "source": "社区事实：cmd-pkgs 中大量 C/C++ 软件包（zlib/openssl/gmp 等）已用 OHOS NDK 构建"
+        "source": "社区事实：cmd-pkgs 中大量 C/C++ 软件包（zlib/openssl/gmp 等）已用 OHOS NDK 构建",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1261,7 +1262,21 @@
       "生成 pkg-config .pc 文件供上层鸿蒙应用链接"
     ],
     "notes": "Nettle 是本分析中最易于移植的 C 库之一——其设计哲学「只做密码学计算、不碰 I/O/内存分配/平台」在此体现优势。无 POSIX、无系统调用、无动态加载、无外部命令调用，唯一的 OS 耦合是 fat 库的 getenv（仅用于调试，musl 支持）。整体评估置信 high——目标平台事实均已核实或社区验证。若目标需要作为 ArkTS 应用的 Node-API 插件暴露（模型 B），额外工作包括写 Node-API 包装层（约 2-5 人天），库本身仍无需改动。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "nettle",
@@ -1284,29 +1299,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "后量子密码",
-        "rationale": "Nettle 4.0 包含 ML-KEM (FIPS 203)、SLH-DSA (FIPS 205)、sntrup761 (NTRU Prime) 三种后量子密码算法。这是密码学领域的新类别，现有 skill 推荐分类中未覆盖此类专门的密码学方向。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "test_example_dirs",
-        "kind": "gap",
-        "value": "testsuite 被分类为 production",
-        "rationale": "metrics.py 按目录名 token 分类，testsuite/ 未匹配已知测试目录模式（如 test/tests/test），其 31049 行 C 测试代码被归类为 production。实际 testsuite/ 目录是 Nettle 的正规测试套件，包含所有算法的系统测试。脚本的 token 匹配应增加 'testsuite' 为已知测试目录标识。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored (mini-gmp)",
-        "rationale": "mini-gmp 虽 vendored 在仓库中（vendor from GNU MP Library），但它可视为 GMP 的替代实现而非独立第三方依赖——当 --enable-mini-gmp 时它替代系统 GMP。这种 '内置可选替代品' 的依赖形态在现有 skill 的 acquisition 推荐值中未独立描述。现有 'vendored' 可覆盖，但其 '可替代外部依赖' 的特殊语义值得在技能中提及。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1317,7 +1310,8 @@
         "message": "license.category(weak_copyleft) 与依据 SPDX(LGPL-3.0-or-later OR GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Nettle 是纯密码学计算库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定外设硬件。其唯一与硬件接近的是架构特定汇编优化（x86_64 AESNI/SHA-NI、ARM NEON/Crypto Extensions、PowerPC64、s390x、SPARC64），但每种优化均有纯 C 回退路径，不绑定特定硬件。",

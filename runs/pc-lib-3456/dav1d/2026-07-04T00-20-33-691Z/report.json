@@ -1049,7 +1049,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（arm64 为主力目标；OHOS NDK / musl + clang 交叉编译；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1058,7 +1057,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile_ohos_ndk",
     "summary": "dav1d 是纯 C99 实现的 AV1 解码库，核心算法与 ARM64 NEON 汇编路径均不绑定 Linux 专有接口；通过 OHOS NDK 交叉编译即可在鸿蒙 PC arm64 上运行。少量 Linux/glibc 专属逻辑（getauxval、pthread_getaffinity_np、__pthread_get_minstack 的 dlsym 绕转）已被 meson 功能探测与条件编译包裹，OHOS/musl 上会自动走回退路径，无需改代码。置信度设为 medium 是因为鸿蒙 PC 的通用视频编解码 C 库生态与 x86_64 架构覆盖情况尚未经社区完全核实。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1069,7 +1067,8 @@
         "required": true,
         "target_status": "available",
         "impact": "arm64 是鸿蒙 PC 主力架构，dav1d 的 ARM64 NEON/SVE 汇编优化路径可直接使用",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -1077,7 +1076,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若目标为 x86_64 鸿蒙 PC，需额外验证 nasm 交叉编译与 x86 汇编路径；当前按 arm64 主目标评估",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:video_codec",
@@ -1085,7 +1085,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "dav1d 属于此类库；核心重编路径可行，但三方通用视频编解码库在鸿蒙 PC 的整体生态尚未经社区充分核实",
-        "source": "harmony-pc-capabilities.json#media.video_codec"
+        "source": "harmony-pc-capabilities.json#media.video_codec",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1133,7 +1134,21 @@
       "如需以 ArkTS 应用形态暴露，增加 Node-API 封装层（不在核心库改造范围内）"
     ],
     "notes": "按模型 A（库经 OHOS NDK 重编为 .so，供其它鸿蒙应用/框架链接）评估。SDL2/libplacebo/Vulkan 等 GUI/GPU 依赖仅在可选示例 dav1dplay 中使用，核心库不依赖它们；如要完整移植示例播放器，可复用已在 cmd-pkgs 中已鸿蒙化的 SDL2/libplacebo，Vulkan 状态未知。x86_64 目标未核实，评估以 arm64 为准。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "dav1d",
@@ -1166,7 +1181,8 @@
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "dav1d 是媒体/视频解码核心库，不涉及 GUI、3D 渲染或专用硬件；其鸿蒙适配主要挑战在视频编解码这条能力线。",

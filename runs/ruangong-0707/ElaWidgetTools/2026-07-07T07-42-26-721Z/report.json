@@ -947,8 +947,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         54.3,
@@ -1021,7 +1020,9 @@
         "evidence": [
           "ElaWidgetTools/DeveloperComponents/ElaDxgi.cpp:31",
           "ElaWidgetTools/DeveloperComponents/ElaDxgi.h:38"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1031,7 +1032,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt5 鸿蒙版可用则核心 UI 组件可重编译复用；但需降级 Qt6→Qt5，部分 Qt6 专属 API 需适配",
-        "source": "references/harmony-pc-capabilities.json qt"
+        "source": "references/harmony-pc-capabilities.json qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:directx_unavailable",
@@ -1039,7 +1041,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "DXGI 屏幕截图功能（ElaDxgiManager/ElaDxgiScreen）无法移植，需替换为 @ohos.screenshot API 或移除此功能",
-        "source": "references/harmony-pc-capabilities.json graphics_3d——DirectX 为 Windows 专有"
+        "source": "references/harmony-pc-capabilities.json graphics_3d——DirectX 为 Windows 专有",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:window_management",
@@ -1047,7 +1050,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本库的 ElaWindow/ElaAppBar/ElaDockWidget 依赖无边框窗口和窗口材质特效（Mica/Acrylic/Blur），若鸿蒙 PC 不支持传统桌面多窗口环境则核心窗口管理功能需重写",
-        "source": "references/harmony-pc-capabilities.json wm/desktop_app"
+        "source": "references/harmony-pc-capabilities.json wm/desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:hidpi",
@@ -1055,7 +1059,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "本库通过 user32/SHCore 动态加载 GetDpiForWindow/GetDpiForMonitor 实现 DPI 感知，若鸿蒙 PC Qt5 已内置 DPI 支持则此部分可直接使用 Qt 原生",
-        "source": "references/harmony-pc-capabilities.json hidpi"
+        "source": "references/harmony-pc-capabilities.json hidpi",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1083,7 +1088,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "ElaWidgetTools 是基于 Qt Widget 的 FluentUI 组件库，核心 UI 组件（~16.5k LOC）可基于 Qt5 鸿蒙版通过 OHOS NDK 交叉编译复用，但需要大量适配工作：① Windows 专有的窗口管理代码（nativeEvent 处理 WM_* 消息、DWM 特效）约 17k LOC 需改写为 Qt 跨平台路径或鸿蒙窗口 API；② DXGI 屏幕截图功能（~326 LOC）依赖 D3D11/DXGI Desktop Duplication API 无法移植，需替换为 @ohos.screenshot 或移除；③ 需降级 Qt6→Qt5 以适配鸿蒙 Qt5 社区版。整体可行但工作量较大，主要难度在窗口管理层的重写。",
     "blockers": [
       {
@@ -1182,6 +1186,22 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:dxgi_desktop_duplication"
+        ]
+      }
     }
   },
   "library": {
@@ -1206,45 +1226,22 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library",
-        "rationale": "本项目虽含 ElaWidgetToolsExample 示例目录，但核心产出是 Qt Widget 组件库（CMake add_library SHARED/STATIC），使用者通过 find_package 集成，故判定为 library 而非 application"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "dwm",
-        "rationale": "DWM (Desktop Window Manager) API 是 Windows 桌面特效的核心接口（Mica/Acrylic/Blur），既非传统 Win32 user32/gdi32，也非 DirectX 图形渲染，独立为一类更准确"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "win32_dynamic",
-        "rationale": "本项目通过 LoadLibraryW/GetProcAddress 动态加载 dwmapi.dll/user32.dll/SHCore.dll/ntdll.dll 的函数——与静态链接的 Win32 API 不同，动态加载模式在鸿蒙适配时整体代码块可被 #ifdef 守卫跳过"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "D3D11 和 DXGI 为 Windows 系统库，通过 CMake target_link_libraries 直接链接，属系统预装"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:dxgi_desktop_duplication",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dxgi_desktop_duplication 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目核心场景为桌面 GUI（Qt Widget 组件库），并涉及 Windows 专有的 3D 图形栈（D3D11/DXGI 用于屏幕截图）和桌面窗口管理（DWM 特效）。无媒体编解码/播放场景，无特定硬件依赖（DXGI 屏幕截图依赖 GPU 但非特定型号）。",

@@ -669,7 +669,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（库，模型 A：经 OHOS NDK 交叉编译为本机 .so，供其它 C/C++ 库或经由 Node-API 的 ArkTS 应用链接调用；musl libc + POSIX 子集；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -678,7 +677,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libunistring 是纯 C Unicode 字符串处理库，核心为数据表驱动的 Unicode 算法，几乎不依赖平台特有 API。窗口 DLL 导出代码 (__declspec/inline asm) 受 #ifdef 守卫，在 OHOS NDK 编译路径下自动消失。唯一运行时依赖 libiconv 已被 OpenHarmony PC 社区预编译移植（cmd-pkgs 清单中），不计为阻碍。主要移植工作：用 OHOS NDK (ohos.toolchain.cmake / clang + musl) 交叉编译即可，gnulib 的可移植层会在 configure 时自动适配 OHOS 环境。整体可行性高、工作量低。",
     "blockers": [
       {
@@ -705,7 +703,8 @@
         "required": true,
         "target_status": "available",
         "impact": "必须——否则无法编译 C 代码",
-        "source": "references/harmony-pc-capabilities.json：鸿蒙 PC 原生层 OHOS NDK（musl libc + POSIX 子集，clang/CMake）"
+        "source": "references/harmony-pc-capabilities.json：鸿蒙 PC 原生层 OHOS NDK（musl libc + POSIX 子集，clang/CMake）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libiconv",
@@ -713,7 +712,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选——仅在非 glibc 系统上需要；鸿蒙 PC 上 libiconv 已被社区预编译移植，不会成为阻碍",
-        "source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)；libiconv 在 harmony_adapted 检测中返回 true"
+        "source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)；libiconv 在 harmony_adapted 检测中返回 true",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -749,7 +749,21 @@
       "将编译产物（.so + 头文件）集成到目标鸿蒙应用的构建中"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植运行时/被其它 native 代码链接）。libunistring 作为纯 C 算法库，通过 gnulib 的可移植层已在近 20 年间覆盖了大量 Unix/Windows 变体，OHOS musl 只是又一个 POSIX 子集变体——gnulib 的 autoconf 探测机制会如常适配。唯一注意点：gnulib 模块 relocatable-lib-lgpl 在运行时可能尝试读取 /proc/self/exe（Linux 专有，OHOS 无 /proc），但该路径有 no-op 回退，不影响核心功能。若目标是 ArkTS 沙箱应用（模型 B），则需通过 Node-API 桥接暴露 C API 给 ArkTS 层，额外工作量约 +2-4 人-天。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libunistring",
@@ -769,22 +783,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "compiler_extensions",
-        "rationale": "cdefs.h 中的编译器兼容宏（__attribute__, __declspec 等）横跨多种编译器，无法归入单一 platform。归为 category:standard / platform:portable 因为它们的本质是提供可移植的编译器抽象，而非绑定某平台。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "structure",
-        "kind": "ambiguity",
-        "value": "gnulib-submodule-library",
-        "rationale": "libunistring 是 gnulib 模块化构建的库——其 C 实现代码全部来自 gnulib 子模块（构建时复制），仓库本体只含头文件 + 补丁 + 构建系统。metrics.py 将 gnulib-tool（Perl 脚本，15K 行）计为首要语言，但库本身是纯 C。这种「源码大部分在依赖子模块中」的特殊结构，使代码量统计（35K Perl/build 代码 vs 实际 C 库代码）与常规库有显著差异。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -795,7 +794,8 @@
         "message": "license.category(weak_copyleft) 与依据 SPDX(LGPL-3.0-or-later OR GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯文本处理库，不涉及 GUI、3D 渲染、媒体编解码/播放或特定硬件访问。无鸿蒙适配重点场景。",

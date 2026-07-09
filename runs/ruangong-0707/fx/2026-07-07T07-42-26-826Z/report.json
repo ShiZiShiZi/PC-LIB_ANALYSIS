@@ -744,7 +744,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, Go 1.24+ 已移植)",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -780,12 +779,12 @@
         "required": true,
         "target_status": "available",
         "impact": "Go 已移植到鸿蒙 PC（harmony-pc-capabilities.json 确认 available），纯 Go 代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json → runtimes → go"
+        "source": "references/harmony-pc-capabilities.json → runtimes → go",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Fx 是纯 Go 依赖注入框架，无 CGO 依赖、无系统调用、无平台专有 API（仅信号常量通过 build tags 隔离）。Go 运行时已移植到鸿蒙 PC，Fx 可直接运行。唯一微小工作是确保鸿蒙平台有正确的 build tag 文件以定义 SIGINT/SIGTERM 常量——若鸿蒙被归入 Linux 类（使用 unix.SIGINT/SIGTERM），则完全零改动。",
     "blockers": [],
     "compatible": [
@@ -828,7 +827,21 @@
       "运行 Fx 测试套件验证（go test ./...）"
     ],
     "notes": "Fx 的三个运行时依赖（dig、multierr、x/sys）均为纯 Go 包，无 CGO，在已移植的 Go 运行时上可直接使用。x/sys/unix 在鸿蒙上需对应 GOOS 的实现——Go 官方对 ohos 的支持情况决定 x/sys/unix 是否开箱可用，若 GOOS=linux 则完全兼容。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "fx",
@@ -855,15 +868,7 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "framework",
-        "rationale": "Fx 既是库（被 API 调用）又是框架（控制应用启动/关闭/注入流程），取 framework 更准确"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cp_loc_coverage",
@@ -871,7 +876,8 @@
         "message": "代码分区桶 LOC 之和(5460)与生产代码(7771)偏差超过 15%（覆盖不足或重复计入）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Fx 是纯 Go 依赖注入框架，不涉及 GUI、3D 渲染、媒体或特定硬件场景。所有能力均为纯计算/逻辑，无平台特有设备交互。",

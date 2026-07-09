@@ -474,7 +474,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK / musl libc 原生层；arm64 / x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -483,7 +482,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库为纯 C/C++ DSP 代码，仅使用 C99 标准库（stdlib/string/stdint）和 libm。无平台特有 API、无系统调用、无 FFI、无动态加载、无外部依赖。唯一工作量是用 OHOS NDK（Clang + musl libc）重新编译生成 .so 共享库，即可被鸿蒙原生应用通过 Node-API 桥接调用。可选 ARMv5 GCC 汇编优化在鸿蒙 arm64 上不适用（OHOS NDK 用 Clang），需确认默认 C 路径编译无误。整体工作量极低。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -494,7 +492,8 @@
         "required": true,
         "target_status": "available",
         "impact": "该库全部依赖仅此一项——OHOS NDK 的 musl libc 默认包含这些，为已知事实，不构成阻碍",
-        "source": "HarmonyOS NDK 官方文档（musl libc 基础能力）"
+        "source": "HarmonyOS NDK 官方文档（musl libc 基础能力）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -522,7 +521,21 @@
       "在鸿蒙 PC 上运行 test/ 目录下的编解码测试验证功能正确性"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上，原生 .so 经 OHOS NDK 重编 + Node-API 暴露给 ArkTS）。libm 是 OHOS NDK 自带的 musl 一部分，无需额外适配。platform_adaptation 仅 4 行且位于原 ETSI typedef 备选路径（ORIGINAL_TYPEDEF_H 默认关闭），实际不编译；平台耦合度为零。无阻碍点、无不可适配 API。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "opencore-amr",
@@ -549,7 +562,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯软件 AMR 语音编解码库，触及媒体（media）场景——涉及音频编解码。不涉及 GUI 界面、3D 渲染、特定硬件依赖。",

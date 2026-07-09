@@ -1078,8 +1078,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Go 1.22+ 运行时上；自研内核，非 Linux ABI；arm64/x86_64）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         4.2,
@@ -1115,7 +1114,6 @@
     },
     "confidence": "medium",
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime + 适配 launcher 平台后端",
     "summary": "Rod 主体是纯 Go 标准库/CDP 协议封装，可在鸿蒙 Go 运行时上直接编译；核心适配点在于浏览器启动器 lib/launcher——需要为鸿蒙 PC 识别/下载或调用本地 Chromium 二进制、调整进程管理（GOOS 构建标签、syscall 调用）以及缓存目录。若目标环境能提供可运行的 CDP-capable 浏览器（Electron/Chromium 已声明 available），则整体可行，工作量可控。",
     "blockers": [
       {
@@ -1162,7 +1160,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rod 是 Go 库，运行时不可用则整体无法编译运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.go"
+        "source": "references/harmony-pc-capabilities.json#runtimes.go",
+        "target_status_model": "available"
       },
       {
         "id": "ta:chromium",
@@ -1170,7 +1169,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Rod 的核心功能依赖外部浏览器进程；Electron 虽 available，但独立 CDP 浏览器二进制可用性待核实",
-        "source": "references/harmony-pc-capabilities.json#gui.electron（available） 推断独立 Chromium 可能可用，但未见官方确认"
+        "source": "references/harmony-pc-capabilities.json#gui.electron（available） 推断独立 Chromium 可能可用，但未见官方确认",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1200,7 +1200,21 @@
       "跑通鸿蒙 PC 上的单元测试，重点验证 Browser.Connect、Launcher.Launch、Kill 流程"
     ],
     "notes": "评估按库模型 A（跑在已移植的 Go 运行时上）。Electron 已声明 available，为独立 Chromium 可用性提供了正面信号，但尚未查到官方 standalone Chromium 下载/预装信息，因此 confidence 为 medium。若实际环境中无可用浏览器二进制，结论将收紧为 hard 或 infeasible。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "rod",
@@ -1231,23 +1245,9 @@
       "仓库 .git 目录仍保留，commit 字段未能解析（浅克隆或缺失），已置 null。"
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "gap",
-        "value": "go ecosystem not in mirror",
-        "rationale": "scripts/harmony_adapted.js 仅支持 python/cpp 生态，无法判断 Go 模块是否已鸿蒙化；应扩展对 Go modules 的已移植检测或标记为不支持。"
-      },
-      {
-        "dimension": "code_partition",
-        "field": "class",
-        "kind": "ambiguity",
-        "value": "Go pure-Go modules vs reuse_direct",
-        "rationale": "Go 是编译型语言，但 skill 的 'reuse_direct' 定义偏向脚本/零改动运行；纯 Go 代码在鸿蒙已移植运行时上需重新编译但零源码改动，更接近 reuse_direct 还是 recompile_reuse 存在口径歧义。本报告按 '零源码改动' 归入 reuse_direct。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Rod 本身不直接涉及桌面 GUI 工具包、3D 渲染、媒体编解码或硬件设备访问。它通过 DevTools Protocol 远程控制浏览器，浏览器进程本身（Chromium）负责图形、媒体与网络，而 Rod 库只向浏览器发送指令并接收事件。",

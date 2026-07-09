@@ -459,8 +459,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -477,7 +476,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时已移植至鸿蒙 PC，本 Julia JLL 包可运行——但需底层 Cuba C 库（libcuba）也有鸿蒙版本或能重编",
-        "source": "references/harmony-pc-capabilities.json → runtimes → julia"
+        "source": "references/harmony-pc-capabilities.json → runtimes → julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libcuba_porting",
@@ -485,7 +485,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libcuba 是本包动态加载的核心预编译二进制——若无鸿蒙版 libcuba.so，本包无法运行；需用 OHOS NDK 重编 Cuba C 源码",
-        "source": "Cuba C 库源码 https://github.com/giordano/cuba.git ；鸿蒙适配状态未核实"
+        "source": "Cuba C 库源码 https://github.com/giordano/cuba.git ；鸿蒙适配状态未核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jll_artifact_mechanism",
@@ -493,11 +494,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本包依赖 Julia Artifacts 机制下载预编译二进制——若鸿蒙 Julia 不支持 artifact 下载或无对应 aarch64-linux-ohos artifact，需手动放置 libcuba",
-        "source": "Julia 标准库 Artifacts/Pkg 在鸿蒙 Julia 移植中的支持程度未核实"
+        "source": "Julia 标准库 Artifacts/Pkg 在鸿蒙 Julia 移植中的支持程度未核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "Julia 运行时已移植到鸿蒙 PC（1.10.6），本 Julia JLL 包装器代码本身跨平台可运行。核心阻碍是底层 Cuba C 库（libcuba）需要用 OHOS NDK 重新编译为鸿蒙版共享库，并需构建对应的 aarch64-linux-ohos artifact。Cuba 是纯数学计算 C 库，无平台 API 依赖，重编难度低。",
     "blockers": [
       {
@@ -559,7 +560,21 @@
       "测试 Julia JLL 包在鸿蒙 PC Julia 环境中能正常加载 libcuba"
     ],
     "notes": "关键不确定性：libcuba 在鸿蒙 PC 的可用性（ta:libcuba_porting）和 Julia Artifacts 机制在鸿蒙 Julia 的支持程度（ta:jll_artifact_mechanism）均为 unknown。Cuba 是纯计算 C 库，重编难度极低——只需 OHOS NDK + musl 环境即可；真正的阻碍在于 Yggdrasil/BinaryBuilder 构建管线是否已支持鸿蒙目标。若鸿蒙 Julia 不支持 artifact 自动下载，可手动放置二进制作为临时方案。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Cuba_jll.jl",
@@ -581,26 +596,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "gap",
-        "value": "other",
-        "rationale": "Julia 生态不在 schema 允许的 ecosystem 枚举（python/java/nodejs/cpp/rust/go/dotnet/other）中，归入 other。Julia 有独立包管理器和注册表生态，但当前 schema 未单独列出。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "new_value",
-        "value": "scientific_computing",
-        "rationale": "Cuba 库用于多维数值积分，属科学计算领域，推荐取值列表无 science/scientific_computing 条目，按实际命名。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本包为纯 Julia 数值计算库的 JLL 二进制包装器，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",

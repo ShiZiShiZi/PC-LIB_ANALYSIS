@@ -195,6 +195,9 @@ _PCLASS_LABELS = {"no_adaptation": "无需适配", "recompile_only": "仅交叉�
 # adaptation_assessment.overall — 是否可适配总判（派生，替代旧 feasibility）
 _OVERALL_LABELS = {"adaptable": "可适配", "adaptable_with_tailoring": "可适配（部分平台特性需裁剪）",
                    "core_blocked": "核心功能不完全可适配"}
+# functional_viability — 运行前提是否满足（目标侧派生轴，与 overall 正交）
+_VIABILITY_LABELS = {"viable": "前提齐备", "viable_with_work": "有条件可用",
+                     "blocked_external": "功能受阻·依赖外部前提", "unverified": "前提未核实"}
 
 
 # ── per-column value functions ───────────────────────────────────────────────
@@ -326,6 +329,11 @@ def _v_overall(name, r):
     return _OVERALL_LABELS.get(o, o or "")
 
 
+def _v_viability(name, r):
+    v = _g(r, "harmony_adaptation", "functional_viability", default="")
+    return _VIABILITY_LABELS.get(v, v or "")
+
+
 def _v_level(name, r):
     lv = _g(r, "harmony_adaptation", "effort", "level", default="")
     return _LEVEL_ZH.get(lv, lv or "")
@@ -372,8 +380,8 @@ GROUPS = [
     ]),
     ("云服务", [("厂商", _v_cloud_vendors), ("用途", _v_cloud_cats)]),
     ("鸿蒙适配评估", [
-        ("移植分级", _v_pclass), ("是否可适配", _v_overall), ("难度", _v_level),
-        ("工作量(人天)", _v_days), ("评估总结", _v_summary),
+        ("移植分级", _v_pclass), ("代码适配", _v_overall), ("运行前提", _v_viability),
+        ("难度", _v_level), ("工作量(人天)", _v_days), ("评估总结", _v_summary),
     ]),
 ]
 

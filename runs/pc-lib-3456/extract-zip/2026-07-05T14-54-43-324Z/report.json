@@ -896,7 +896,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24 运行时上；Rust 原生扩展经 OHOS NDK/musl 交叉编译为 .so；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -905,7 +904,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库为 Node.js 库，Rust 核心通过 N-API（napi-rs）编译为 .node 原生插件。鸿蒙 PC 已移植 Node.js 24 运行时（available）和 Rust 1.89+（有 ohos target），两个运行时都不构成阻碍。Rust 代码仅使用 std 标准库及少量 POSIX 条件分支（Unix 权限设置、符号链接创建），无硬件/GPU/外部命令/网络依赖。唯一工作量为使用 OHOS NDK + Rust ohos target 交叉编译 Rust 代码为 arm64/x86_64 .so，并重新绑定 N-API 层。整体可行，工作量低。",
     "blockers": [
       {
@@ -931,7 +929,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 24 已移植，JS 胶水代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:rust",
@@ -939,7 +938,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust 1.89+ 有 ohos target，核心 Rust 代码可交叉编译",
-        "source": "references/harmony-pc-capabilities.json#runtimes.rust"
+        "source": "references/harmony-pc-capabilities.json#runtimes.rust",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix",
@@ -947,7 +947,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 基于 musl libc，提供 POSIX 子集，本库所用文件 I/O 均为基础 POSIX 操作，预计可用",
-        "source": "references/harmony-pc-capabilities.json（OHOS NDK 性质推断）"
+        "source": "references/harmony-pc-capabilities.json（OHOS NDK 性质推断）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -955,7 +956,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "napi-rs 本身为跨平台框架，但 Node.js 24 的 N-API ABI 在鸿蒙上需验证与 Rust 绑定的兼容性；已有社区 napi-rs → OHOS 实践",
-        "source": "napi-rs 项目文档及社区经验"
+        "source": "napi-rs 项目文档及社区经验",
+        "target_status_model": "partial"
       }
     ],
     "compatible": [
@@ -989,7 +991,21 @@
       "同步更新 CI 构建矩阵以包含 OHOS 目标"
     ],
     "notes": "默认按模型 A（库跑在已移植的 Node.js 运行时上）评估。若目标是 ArkTS 沙箱应用（模型 B），则 N-API 桥接仍可用，但 Node 核心模块 path 需经 @ohos.* 重写，结论收紧为 medium。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "extract-zip",
@@ -1014,7 +1030,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯文件解压工具，不涉及 GUI、3D 渲染、媒体处理或特定硬件访问。所有适配重点场景均为否。",

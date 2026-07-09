@@ -2080,8 +2080,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 交叉编译，arm64/x86_64；默认按模型 A：库跑在已移植的运行时/原生层，非 ArkTS 沙箱应用）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -2090,7 +2089,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "ohos_ndk_cross_compile_with_inproc_backend",
     "summary": "sentry-native 核心事件/Scope/Envelope/JSON 逻辑高度可移植，且 HTTP 传输依赖的 curl 已鸿蒙化。真正的移植工作量在平台后端：crashpad/breakpad 未鸿蒙化且仅支持 Linux/Windows/macOS；Linux 代码路径重度依赖 /proc 伪文件系统，而 HarmonyOS 为自研内核，需新增平台分支；可选 Qt 集成已有鸿蒙版。推荐关闭 crashpad/breakpad/native 后端，使用 inproc 后端，并针对 HarmonyOS 重新实现模块发现、进程路径与系统信息获取。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -2100,7 +2098,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 核心编译与链接前提",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_signals",
@@ -2108,7 +2107,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "inproc 后端捕获崩溃依赖；缺失则崩溃捕获不可用",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:procfs",
@@ -2116,7 +2116,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "模块枚举、崩溃现场线程/映射信息、可执行路径获取均依赖 /proc；缺失需重写平台层",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ptrace",
@@ -2124,7 +2125,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅 native 后端远程栈展开需要；可改用 inproc 后端规避",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -2132,7 +2134,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "native/crashpad/breakpad 后端派生处理进程需要；可改用 inproc 后端规避",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet",
@@ -2140,7 +2143,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "无法联网则事件/崩溃无法上报",
-        "source": "references/harmony-pc-capabilities.json#permissions"
+        "source": "references/harmony-pc-capabilities.json#permissions",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:qt_harmony",
@@ -2148,7 +2152,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选 Qt 事件循环集成可直接链接社区 Qt 鸿蒙包",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -2299,7 +2304,21 @@
       "若启用 Qt 集成，链接社区 Qt 鸿蒙版并验证事件循环集成"
     ],
     "notes": "本评估按库模型 A（OHOS NDK 原生层）进行。存在多项 required+unknown 目标假设（POSIX 信号、/proc 等价能力、INTERNET 权限），因此整体置信度为 medium；若后续核实 /proc 或信号缺失，则可能升级为 needs_adaptation_partial 或调整工作量。Windows/macOS 专属代码通过条件编译隔离，不进入 HarmonyOS 构建。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "sentry-native",
@@ -2329,16 +2348,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.gui.present",
-        "kind": "ambiguity",
-        "value": "optional_qt_integration",
-        "rationale": "Qt 集成由 SENTRY_INTEGRATION_QT 选项控制且默认关闭，但生产代码中存在 src/integrations/sentry_integration_qt.cpp。判定为 present=true 但标注可选，以免遗漏该库的 Qt 事件循环绑定能力；若项目口径要求只统计默认构建能力，可改为 present=false。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "sentry-native 核心为无界面可观测性库，不触及 3D 渲染、媒体编解码或硬件设备；仅在开启可选 SENTRY_INTEGRATION_QT 时与 Qt 事件循环集成。",

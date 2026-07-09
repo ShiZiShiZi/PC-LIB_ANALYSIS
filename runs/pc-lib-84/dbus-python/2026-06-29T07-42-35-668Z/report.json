@@ -1028,7 +1028,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（已移植 Python 运行时口径）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -1037,7 +1036,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -1046,7 +1045,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 运行时是本库运行的前提；已确认可用。",
-        "source": "references/harmony-pc-capabilities.json#runtimes/python"
+        "source": "references/harmony-pc-capabilities.json#runtimes/python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:dbus_daemon",
@@ -1054,11 +1054,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若目标平台无 D-Bus 守护进程，则本库所有总线功能失效；但 OpenHarmony PC PyPI 镜像已提供 ohos 构建包，暗示运行时环境已具备或已被处理。",
-        "source": "OpenHarmony PC PyPI 镜像存在 dbus-python ohos wheel"
+        "source": "OpenHarmony PC PyPI 镜像存在 dbus-python ohos wheel",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "use_existing_ohos_wheel",
     "summary": "dbus-python 已在 OpenHarmony PC PyPI 镜像（pypi.cnb.cool/OpenHarmonyPCDeveloper）提供 ohos 构建包，因此在 HarmonyOS NEXT PC 上可直接通过 pip 安装使用，无需额外移植工作。若必须从源码构建，核心工作是将 C 扩展与依赖 libdbus、GLib 在 OHOS NDK 下重新编译；源码本身无 GUI、硬件或平台专有 API 阻塞点。",
     "blockers": [],
     "compatible": [
@@ -1090,37 +1090,37 @@
       "验证 Unix FD 传递在目标 D-Bus 实现中可用（DBUS_TYPE_UNIX_FD）。"
     ],
     "notes": "已核实 OpenHarmony PC PyPI 镜像存在 dbus-python 的 ohos wheel，因此本报告将 porting_class 定为 no_adaptation。若仅评估源码而未考虑该预构建包，则应为 needs_adaptation_full（依赖 libdbus/GLib 需 ohos 化，但功能均可适配）。置信度 high 基于 ohos wheel 已存在；target_assumptions 中 D-Bus 守护进程状态记为 unknown 以保留未核实事实。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer (manual single-session analysis)",
     "counter_tool": "cloc",
     "warnings": [],
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "is_dual_licensed",
-        "kind": "ambiguity",
-        "value": "mixed_licensing_subproject",
-        "rationale": "dbus-python 主体为 MIT，但 vendored 子项目 dbus-gmain 为 AFL-2.1 OR GPL-2.0-or-later，且单个构建辅助文件为 GPL-3.0-or-later WITH AutoconfArchiveException。当前 schema 的 is_dual_licensed 字段不足以表达“主体单一许可 + 子项目不同许可”的混合情形，建议在 notes 中补充说明。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "new_value",
-        "value": "use_existing_ohos_wheel",
-        "rationale": "当目标平台 PyPI 镜像已提供 ohos wheel 时，推荐路径可明确记为 use_existing_ohos_wheel；此时 porting_class 可视为 no_adaptation，因为消费者无需源码级改造。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

@@ -2714,8 +2714,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库模型 A：C++ 核心经 OHOS NDK/musl 重编为 .so；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -2724,7 +2723,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "MNN 作为 C++ 推理引擎库，核心 CPU 路径可在鸿蒙 PC 上通过 OHOS NDK 重新编译后运行；Python 绑定因 numpy 已鸿蒙化也可同步移植。但仓库包含大量可选 GPU/NPU 后端（CUDA、Metal、CoreML、NNAPI、QNN）这些平台专有或硬件专有实现无法在鸿蒙复现，只能裁剪；OpenCL/Vulkan 可用性尚待核实。因此默认 CPU 构建可完整适配，而全功能构建属于部分可适配。",
     "unadaptable_apis": [
       {
@@ -2739,7 +2737,9 @@
         "category": "hardware",
         "evidence": [
           "source/backend/cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nnapi",
@@ -2753,7 +2753,9 @@
         "category": "platform",
         "evidence": [
           "source/backend/nnapi/backend/NNAPISymbol.cpp:27"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:qnn",
@@ -2767,7 +2769,9 @@
         "category": "platform",
         "evidence": [
           "source/backend/qnn/backend/QNNUtils.cpp:62"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metal",
@@ -2781,7 +2785,9 @@
         "category": "platform",
         "evidence": [
           "source/backend/metal"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2791,7 +2797,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心重编的基础前提",
-        "source": "references/harmony-pc-capabilities.json#runtimes 与 arch"
+        "source": "references/harmony-pc-capabilities.json#runtimes 与 arch",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cuda",
@@ -2799,7 +2806,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA 后端不可用，必须裁剪或禁用",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:opencl",
@@ -2807,7 +2815,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若需 OpenCL 后端，需先在鸿蒙 PC 上核实 OpenCL 驱动可用性",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.opencl"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.opencl",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:vulkan",
@@ -2815,7 +2824,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若需 Vulkan 后端，需先在鸿蒙 PC 上核实 Vulkan 驱动可用性",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:nnapi",
@@ -2823,7 +2833,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "NNAPI 后端不可用，必须裁剪",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:qnn",
@@ -2831,7 +2842,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "QNN 后端不可用，必须裁剪",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:metal",
@@ -2839,7 +2851,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Metal 后端不可用，必须裁剪",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:cpudetect",
@@ -2847,7 +2860,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Linux 分支读取 /proc/cpuinfo，鸿蒙非 Linux，需新增 OHOS 分支或回退到通用检测",
-        "source": "source/backend/cpu/CPURuntime.cpp"
+        "source": "source/backend/cpu/CPURuntime.cpp",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -3008,7 +3022,26 @@
       "待鸿蒙 PC OpenCL/Vulkan 可用性核实后，再决定是否开启 GPU 后端"
     ],
     "notes": "评估基于默认 CPU 构建口径；若项目要求保留 CUDA/NNAPI/QNN 等后端，则整体结论收紧为 hard/infeasible。由于 OpenCL/Vulkan 在鸿蒙 PC 上的可用性未核实，confidence 为 medium。apps/ 目录内的 Android/iOS 示例应用未纳入库本体评估范围。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda",
+          "ua:nnapi",
+          "ua:qnn",
+          "ua:metal"
+        ]
+      }
+    }
   },
   "library": {
     "name": "MNN",
@@ -3040,37 +3073,31 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "production_scope",
-        "kind": "ambiguity",
-        "value": "apps/ 目录作为示例处理",
-        "rationale": "metrics.py 将 apps/ 标记为 production，但该目录主要是 Android/iOS 示例应用（MNN Chat、TaoAvatar 等）。本次分析将 apps/ 视为演示/示例，库本体能力聚焦 source/include/express/pymnn/tools；其平台相关 API 不入 native_api/harmony 结论。"
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build",
-        "rationale": "KleidiAI 与 oneDNN 通过 CMake ExternalProject_Add 在构建时下载源码并编译，既非 FetchContent 也非纯 vendored，用 download_build 描述最准确。"
+        "code": "ua_func_class_defaulted:ua:nnapi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nnapi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "arch_simd",
-        "rationale": "MNN 包含大量 ARM NEON/SME2 与 x86 SSE/AVX/AVX512 intrinsic 及手写汇编，作为独立的硬件/架构耦合组列出。"
+        "code": "ua_func_class_defaulted:ua:qnn",
+        "class": "actionable",
+        "message": "unadaptable_api ua:qnn 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_partial vs full",
-        "rationale": "默认 CPU-only 构建接近 needs_adaptation_full；但仓库作为整体包含 CUDA/NNAPI/QNN/Metal 等不可移植后端，故定为 needs_adaptation_partial 并列出 unadaptable_apis。若用户明确只移植 CPU 核心，可上调为 full。"
+        "code": "ua_func_class_defaulted:ua:metal",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   },
   "capability_profile": {
     "summary": "MNN 作为推理引擎库，核心触及 3D/GPU 计算与硬件加速器场景：通过 OpenCL/Vulkan/Metal 做 GPU 推理、CUDA 做 NVIDIA GPU 推理、NNAPI/CoreML/QNN 做 NPU 推理；同时 MNN-Audio 与 MNN-CV 涉及音视频前后处理。库本体不含 GUI，apps/ 下的 Android/iOS 示例应用不计入库能力。",

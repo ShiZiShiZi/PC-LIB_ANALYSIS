@@ -2546,8 +2546,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，ArkTS 应用层；C/C++ 应用默认走 NDK 交叉编译）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "confidence": "medium",
     "effort": {
       "person_days": [
@@ -2615,7 +2614,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt 可用是 GUI 模式的前提；Qt6 可能需要降级到 Qt5 或等待社区 Qt6 包",
-        "source": "references/harmony-pc-capabilities.json#qt"
+        "source": "references/harmony-pc-capabilities.json#qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl",
@@ -2624,7 +2624,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OpenGL 桌面完整特性与 GLU 扩展不完全等价，部分 3D 绘图功能需重写或软件回退",
-        "source": "references/harmony-pc-capabilities.json#opengl"
+        "source": "references/harmony-pc-capabilities.json#opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:audio_io",
@@ -2633,7 +2634,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "audioplayer/audiorecorder 功能在鸿蒙 PC 上能否工作取决于音频后端与权限模型；缺失时可降级禁用",
-        "source": "references/harmony-pc-capabilities.json#audio_io"
+        "source": "references/harmony-pc-capabilities.json#audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -2642,7 +2644,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 HAP 而不支持传统桌面 zip/installer 分发，则必须重新打包/签名，显著增加工作量",
-        "source": "references/harmony-pc-capabilities.json#desktop_app"
+        "source": "references/harmony-pc-capabilities.json#desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -2651,7 +2654,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "popen/popen2/system 等函数依赖进程创建；鸿蒙 PC 的沙箱/进程模型若受限，需改用 spawn 或受限执行",
-        "source": "references/harmony-pc-capabilities.json#spawn"
+        "source": "references/harmony-pc-capabilities.json#spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -2660,7 +2664,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Qt GUI 依赖系统提供桌面级多窗口环境；若鸿蒙 PC 当前形态不支持，则 GUI 模式受限或不可用",
-        "source": "references/harmony-pc-capabilities.json#wm"
+        "source": "references/harmony-pc-capabilities.json#wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:java_jdk",
@@ -2669,7 +2674,8 @@
         "required": false,
         "target_status": "available",
         "impact": "Java 接口为可选功能；JDK 已鸿蒙化意味着 JNI 代码可保留，但 libjvm 路径需适配",
-        "source": "references/harmony-pc-capabilities.json#runtimes/java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes/java_jdk",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -2750,7 +2756,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile_and_adapt",
     "summary": "GNU Octave 作为大型 C++/Fortran 桌面应用，在 HarmonyOS NEXT PC 上可移植但工作量大。核心数值引擎可随 OHOS NDK 交叉编译；Qt GUI 需使用社区 Qt 鸿蒙版本并验证窗口集成；OpenGL 图形需迁移到 OpenGL ES/ArkGraphics 或软件回退；POSIX fork/pipe/进程模型与桌面应用打包形态存在未知风险。无特定硬件/闭源导致的不可移植功能，整体属于「全部可适配」档，但 confidence 为 medium。",
     "blockers": [
       {
@@ -2877,7 +2882,21 @@
       "确认桌面应用打包与签名方式，完成 CLI 与 GUI 启动器在鸿蒙 PC 上的部署"
     ],
     "notes": "本评估基于「鸿蒙 PC 已移植 C/C++/Java 运行时」的默认口径；Octave 的 Fortran 77 代码需 OHOS NDK 提供 Fortran 编译器或改用 f2c。大量可选依赖（FLTK、gl2ps、ImageMagick、PortAudio、libsndfile 等）可随功能逐步启用，缺失时先降级禁用。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "octave",
@@ -2898,36 +2917,15 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "unknown_required",
-        "value": "desktop_app, spawn, wm",
-        "rationale": "Octave 作为传统桌面应用，其可移植性取决于鸿蒙 PC 是否支持桌面应用分发、子进程模型与多窗口环境；这些目标能力当前状态为 unknown，需人工/社区核实。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.gui",
-        "kind": "version_caveat",
-        "value": "qt6 vs qt5",
-        "rationale": "Octave 同时支持 Qt5 与 Qt6；harmony-pc-capabilities.json 显示 Qt 已可用，但 Qt6 在 cmd-pkgs 中未明确列出，若强制使用 Qt6 可能需要降级到 Qt5。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "tests.test_cases",
-        "kind": "undercount",
-        "value": "0",
-        "rationale": "metrics.py 基于正则匹配测试习惯用法，Octave 测试以 .m 文件和 Makefile 为主，未命中常见断言模式，导致 test_cases 显示为 0；实际测试文件 430 个。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "warnings": [
       "shape coerced: meta.observations[2].value integer→string"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Octave 触及桌面 GUI（Qt）、3D 图形（OpenGL）和媒体（音频/图像）三类鸿蒙适配重点场景。Qt 社区已有鸿蒙版本可用；OpenGL 桌面完整功能仅部分支持；音视频/图像处理依赖第三方库且底层后端待核实。",

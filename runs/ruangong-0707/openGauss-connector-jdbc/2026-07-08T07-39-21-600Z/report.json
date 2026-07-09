@@ -1043,8 +1043,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在已移植的 Java JDK 17/8 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10.2,
@@ -1096,7 +1095,8 @@
         "required": true,
         "target_status": "available",
         "impact": "驱动为 Java 字节码，必须依赖 JDK 运行；JDK 已可用则核心功能无阻碍",
-        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1112,7 +1112,6 @@
       }
     ],
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "openGauss JDBC 驱动主体为 Java 代码，鸿蒙 PC 已提供 Java 运行时，核心连接/SQL/SSL 能力可平滑运行。主要工作量在将运行时加载的外部原生库 gauss_cl_jni（Client Logic 客户端逻辑）移植到鸿蒙 OHOS NDK 上；若该库不可得，Client Logic 功能需降级或禁用。无 GUI/3D/媒体/硬件等重度阻碍场景。",
     "blockers": [
       {
@@ -1173,7 +1172,21 @@
       "更新打包/安装说明，明确随包分发的原生库路径"
     ],
     "notes": "评估按库模型 A（跑在已移植 Java 运行时）进行。gauss_cl_jni 不在本仓内，未列为 dependencies 条目；其在 native_api.dynamic_libraries 记录并作为主要阻塞点。因 ohos.permission.INTERNET 在 PC 形态可授予性待核实，confidence 下调至 medium。若 gauss_cl_jni 最终确认闭源且无移植路径，则应将其调整为 unadaptable 并升级 porting_class 为 needs_adaptation_partial。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "openGauss-connector-jdbc",
@@ -1204,7 +1217,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "openGauss JDBC 驱动为纯数据库连接库，核心能力是通过 JDBC/TCP 访问数据库；不涉及 GUI/桌面、3D 渲染、音视频媒体或特定硬件设备访问，主要依赖 Java SE 标准网络/安全 API 与可选 JNI 原生库。",

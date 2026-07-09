@@ -835,7 +835,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，支持 OHOS NDK 原生开发和 Node-API 桥接）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -853,11 +852,11 @@
         "required": false,
         "target_status": "available",
         "impact": "即使 N-API 不可用，纯 JS 实现也能正常运行，仅性能有所降低",
-        "source": "HarmonyOS PC 已支持 Node-API（N-API 兼容层）"
+        "source": "HarmonyOS PC 已支持 Node-API（N-API 兼容层）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "适配工作量极低。该库提供纯 JavaScript 和 C native addon 两套实现，纯 JS 版（lib/main.js 使用 Math.abs）可直接在 HarmonyOS 的 JavaScript 引擎上运行，无需任何修改。C 版 native addon（src/main.c）使用纯 C99 + N-API 宏，无任何平台特定 API，只需通过 OHOS NDK 重新编译即可。运行时依赖均为 @stdlib 内部包，纯 JS 包可直接使用。整体移植工作量约 0.5-1.5 人天。",
     "blockers": [],
     "compatible": [
@@ -896,7 +895,21 @@
       "打包时根据平台条件选择是否加载原生 addon（添加 harmonyos 平台判断）"
     ],
     "notes": "该库是纯数学计算函数，无任何操作系统/硬件/网络依赖。JavaScript 实现完全可移植，C 实现仅需重新编译。置信度高。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "math-base-special-absf",
@@ -917,7 +930,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及任何 GUI、3D 渲染、媒体处理或特定硬件场景。",

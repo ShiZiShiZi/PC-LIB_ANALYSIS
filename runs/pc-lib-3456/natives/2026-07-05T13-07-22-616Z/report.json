@@ -346,7 +346,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13.0 运行时上; 纯 JavaScript 库，无原生扩展; arm64/x86_64)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -355,7 +354,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "natives 是纯 JavaScript 的 Node.js 库，仅 128 行源码，无原生 C/C++ 扩展、无外部运行时依赖、无平台特有系统调用、无网络/文件系统/子进程操作。鸿蒙 PC 已移植 Node.js 24.13.0，该库可直接在其上运行，无需任何代码修改或重编译。唯一关注点是该库依赖 Node.js 内部未公开的 `process.binding()` API——若鸿蒙 Node.js 端口保留了该 API（或通过 `--expose-internals` 标志可用），则完全兼容；这在主社区 Node.js 中是标准行为，鸿蒙端口基于主社区 24.13.0 应同样支持。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -366,7 +364,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时不存在则库完全无法运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:process_binding",
@@ -374,7 +373,8 @@
         "required": true,
         "target_status": "available",
         "impact": "该 API 是库访问 Node.js 内置模块源码的唯一入口，不可用则库完全失效",
-        "source": "鸿蒙 Node.js 基于主社区 24.13.0，process.binding() 在 --expose-internals 下可用（主社区标准行为）"
+        "source": "鸿蒙 Node.js 基于主社区 24.13.0，process.binding() 在 --expose-internals 下可用（主社区标准行为）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -392,7 +392,21 @@
       "运行测试套件（tap test/*.js）确认功能完整"
     ],
     "notes": "该库的 README 明确警告其依赖 Node.js 内部未支持 API，不同 Node 版本可能行为不同。该限制是 Node.js 版本兼容性问题而非鸿蒙特有问题——鸿蒙 Node.js 24.13.0 基于主社区构建，process.binding() 在 --expose-internals 下可用（主社区标准）。此库本身仅 128 行，无任何编译/平台依赖，适配鸿蒙 PC 的工作量近乎零。评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "natives",
@@ -409,24 +423,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "gap",
-        "value": "此库无运行时依赖，仅 dev 依赖 tap，属「零外部依赖」纯 Node.js 内置库——该模式在 small-utility 型 npm 包中常见",
-        "rationale": "依赖清单几乎为空，purpose 字段对 dev 测试依赖信息量较低"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "process.binding() 调用同时涉及 vm/v8/module 等标准 Node.js API 和内部绑定机制，界限模糊。内部绑定本质上仍是 Node.js 运行时内部的 C++ 绑定层，但对该库的使用者来说，它们通过纯 JS 调用，不涉及编译或平台差异",
-        "rationale": "这些 API 是 Node.js 核心的一部分，归类为 node_core 标准 API，但 `process.binding()` 是未公开内部接口"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目（natives）是纯 Node.js 运行时内省库，仅使用 Node.js 核心 API（vm、v8、module 模块和 `process.binding()` 内部绑定），不涉及 GUI 界面、3D 渲染、音视频媒体处理或任何特定硬件设备。所有操作均在 Node.js 进程内完成。",

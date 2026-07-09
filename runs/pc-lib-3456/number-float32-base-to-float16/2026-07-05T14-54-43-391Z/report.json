@@ -1173,7 +1173,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 运行时上; 原生插件经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "confidence": "high",
     "effort": {
       "person_days": [
@@ -1182,7 +1181,6 @@
       ],
       "level": "low"
     },
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 JavaScript 数值转换库，鸿蒙 PC 已移植 Node.js 运行时，纯 JavaScript 部分（含主入口 lib/index.js 和 polyfill lib/polyfill.js）可直接运行，无需任何修改。C 原生插件（src/addon.c + src/main.c）仅使用 Node-API 和 C 标准库（stdint.h、string.h），无任何平台特有系统调用或外部依赖，可通过 OHOS NDK 交叉编译重新生成。整体移植难度极低，也可先跳过原生插件纯用 JS polyfill。",
     "target_assumptions": [
       {
@@ -1191,7 +1189,8 @@
         "target_status": "available",
         "impact": "JavaScript 部分直接运行，无需改动",
         "source": "harmony-pc-capabilities.json",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "Node-API (N-API) 在 OHOS NDK 中可用",
@@ -1199,7 +1198,8 @@
         "target_status": "available",
         "impact": "C 原生插件可经 OHOS NDK 交叉编译，无需修改源码",
         "source": "harmony-pc-capabilities.json",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       },
       {
         "capability": "C 标准库（stdint.h, string.h, stdbool.h, assert.h）在 OHOS NDK (musl) 中可用",
@@ -1207,7 +1207,8 @@
         "target_status": "available",
         "impact": "C 实现无需降级或替换，直接编译",
         "source": "harmony-pc-capabilities.json",
-        "id": "ta:3"
+        "id": "ta:3",
+        "target_status_model": "available"
       },
       {
         "capability": "Math.f16round 在鸿蒙 Node.js 中可用（ECMAScript 可选特性）",
@@ -1215,7 +1216,8 @@
         "target_status": "unknown",
         "impact": "若不可用，自动回退到 JS polyfill 路径，不影响功能",
         "source": "harmony-pc-capabilities.json",
-        "id": "ta:4"
+        "id": "ta:4",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -1274,7 +1276,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库自带纯 JS polyfill 回退路径，即使原生插件暂时不可用，所有功能均可正常工作。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/number-float32-base-to-float16",
@@ -1298,40 +1314,12 @@
   },
   "meta": {
     "schema_version": "1.0",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "value",
-        "value": "数值计算 / 科学计算",
-        "rationale": "该库是 stdlib 生态中的数值类型转换包，专注于 IEEE 754 浮点数精度降级转换"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem_uniformity",
-        "kind": "observation",
-        "value": "全部运行时依赖均为同一 @stdlib 作用域的内包，无第三方外部运行时依赖",
-        "rationale": "表明项目是 stdlib 单一仓库的分解原子包"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_independence",
-        "kind": "observation",
-        "value": "C 代码仅使用 C 标准库和 Node-API，完全跨平台，无任何 OS 专有 API",
-        "rationale": "极佳的可移植性——在 OHOS NDK 上无需修改即可编译"
-      },
-      {
-        "dimension": "runtime_environment",
-        "field": "external_interaction",
-        "kind": "observation",
-        "value": "该库无任何外部交互（无网络、文件、子进程、环境变量、设备或 GPU 调用）",
-        "rationale": "纯计算函数，无状态、无副作用"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "该库为纯数值计算库，不涉及 GUI、3D 渲染、媒体或硬件设备。所有逻辑均为标准 CPU 上的 IEEE 754 浮点数位操作，无任何外围设备或系统能力依赖。",

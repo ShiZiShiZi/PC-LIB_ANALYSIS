@@ -957,8 +957,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK native layer)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -981,7 +980,9 @@
         "evidence": [
           "dbus/dbus-glib.c:545",
           "dbus/dbus-glib.c:456"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -991,7 +992,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "无 D-Bus 守护进程则 libdbus 连接失败，dbus-glib 所有 IPC 功能不可用；需替换为鸿蒙 IPC 机制（SoftBus/分布式数据等）或移植 dbus-daemon",
-        "source": "鸿蒙 PC 使用自研 IPC 框架，不提供 D-Bus 守护进程"
+        "source": "鸿蒙 PC 使用自研 IPC 框架，不提供 D-Bus 守护进程",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:glib_ported",
@@ -999,7 +1001,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GLib 已在鸿蒙 PC cmd-pkgs 中提供预编译包，此依赖已满足",
-        "source": "references/harmony-pc-capabilities.json → cmd-pkgs"
+        "source": "references/harmony-pc-capabilities.json → cmd-pkgs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libdbus_ported",
@@ -1007,11 +1010,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libdbus 本身可编译（纯 C + POSIX），但无 dbus-daemon 时只能用于点对点连接，非总线模式",
-        "source": "需核实 libdbus 是否在 cmd-pkgs 中提供"
+        "source": "需核实 libdbus 是否在 cmd-pkgs 中提供",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "find_alternative",
     "summary": "dbus-glib 的核心价值在于对 D-Bus 总线的 GLib 封装，而鸿蒙 PC 不提供 D-Bus 守护进程，使得库的主体功能无法运行。推荐路径：1) 新项目直接使用 GDBus（GLib >= 2.26 内置）或鸿蒙原生 IPC；2) 遗留项目若必须用 dbus-glib，则需同时移植 dbus-daemon 及其配置/服务文件（工作量巨大且与鸿蒙安全模型可能冲突）；3) 评估是否可用鸿蒙 SoftBus/分布式能力替代 D-Bus IPC 层。",
     "blockers": [
       {
@@ -1062,7 +1065,23 @@
       "将 dbus-glib 的 GLib/GObject 类型映射层在 OHOS NDK 下交叉编译验证"
     ],
     "notes": "dbus-glib 已被官方弃用，推荐新项目使用 GDBus。在鸿蒙 PC 上，最大的阻碍不是库本身的编译问题（纯 C + POSIX 标准库即可），而是运行时对 D-Bus 守护进程的依赖。若只需点对点 D-Bus 连接（无总线），libdbus 本身可工作。libdbus 在鸿蒙 PC cmd-pkgs 中的可用性需核实，列入 target_assumptions。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:dbus_daemon"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1070,22 +1089,15 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "library (deprecated)",
-        "rationale": "dbus-glib 虽产出 dbus-binding-tool 可执行文件，但主体产物为 libdbus-glib-1 共享库，被其他应用链接使用，属于库；但官方已标记弃用，标注 deprecated 以区别于活跃维护的库"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "libdbus",
-        "rationale": "libdbus 是 D-Bus 的核心 C 客户端库，不属于 POSIX/C 标准库，也不属于 glib 类型，需要单独归类"
+        "code": "ua_func_class_defaulted:ua:dbus_daemon",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dbus_daemon 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

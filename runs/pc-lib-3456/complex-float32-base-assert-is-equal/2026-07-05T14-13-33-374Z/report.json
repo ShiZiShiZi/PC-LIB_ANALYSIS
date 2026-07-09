@@ -577,7 +577,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK / musl + POSIX 子集；Node.js 已移植（24.13.0）；arm64 / x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -586,7 +585,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库是 stdlib 的复数相等断言，纯 JavaScript 算法代码可直接运行在已移植的鸿蒙 Node.js 上，无需任何改写。C 原生 addon（src/main.c）仅使用 C99 标准库 <stdbool.h> 和 stdlib 内部头文件，无任何平台/系统/硬件 API 调用，只需经 OHOS NDK 重新编译即可。无外部命令、文件系统、网络或设备依赖。总体可行性高，工作量极小。",
     "blockers": [
       {
@@ -612,7 +610,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已确认可用（参考 harmony-pc-capabilities.json#runtimes.nodejs），JS 代码直接运行",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -646,7 +645,21 @@
       "在鸿蒙 Node.js 上加载该原生插件并运行完整测试套件"
     ],
     "notes": "按模型 A（库跑在已移植的 Node.js 运行时上）评估。C 原生 addon 为性能优化路径，JS 纯实现路径已足够使用；若 C 编译遇阻，库仍可降级为纯 JS 正常工作。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float32-base-assert-is-equal",
@@ -665,15 +678,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.json 将测试框架判定为 jest/mocha，但实际查看 test/test.js 发现使用 tape 测试框架（require('tape')）。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -684,7 +689,8 @@
         "message": "porting_class=recompile_only 但主生态为 nodejs（已移植运行时）且无原生调用面，疑似应为 no_adaptation"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数学计算库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件。",

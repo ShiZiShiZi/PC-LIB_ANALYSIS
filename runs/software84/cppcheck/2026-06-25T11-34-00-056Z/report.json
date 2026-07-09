@@ -1858,8 +1858,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1876,7 +1875,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 .hap ArkTS 应用，则需为 CLI 提供 ArkTS 封装/Ability 入口，GUI 需按 ArkUI 重写，工作量和形态会发生根本性变化。",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -1884,7 +1884,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若受限，addons（Python 插件）和 clang-tidy 集成功能将不可用，但核心静态分析仍可运行。",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:qt",
@@ -1892,7 +1893,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选 GUI 可基于社区 Qt 鸿蒙版编译。",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_subset",
@@ -1900,7 +1902,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若 POSIX fork 不可用，可回退到基于 std::async 的 ThreadExecutor。",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -1908,7 +1911,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅在目标为 x86_64 设备时需要。",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1923,7 +1927,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_ndk",
     "summary": "Cppcheck 核心为纯 C++ 静态分析引擎，平台相关代码已用宏隔离；移植思路为使用 OHOS NDK 重新编译 CLI 与 lib，可选 Qt GUI 链接社区 Qt 鸿蒙版。主要不确定点在于鸿蒙 PC 的应用交付形态（是否允许传统桌面 CLI）以及外部进程启动能力（影响 addons/clang-tidy）。",
     "blockers": [
       {
@@ -2013,7 +2016,21 @@
       "设计符合鸿蒙 PC 应用交付形态的启动/分发方案"
     ],
     "notes": "由于目标平台对桌面应用、外部进程启动、x86_64 等能力状态未知，整体置信度为 medium；一旦这些假设得到核实，置信度和工作量区间将收窄。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2021,29 +2038,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "cppcheck 是终端用户直接启动的 CLI/GUI 工具，不是被其他程序以 API 形式调用的库。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope/acquisition",
-        "kind": "new_value",
-        "value": "build_runtime dual-use Python",
-        "rationale": "Python 同时是构建期 matchcompiler 优化工具与运行期 addons 执行环境，单一依赖跨两种 scope。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "gap",
-        "value": "external_library_api",
-        "rationale": "PCRE 等第三方库 API 未在 native_api groups 中单独成组，已归入 dependencies 与 used_symbols。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

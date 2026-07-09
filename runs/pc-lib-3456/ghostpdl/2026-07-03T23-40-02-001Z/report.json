@@ -2727,8 +2727,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 C：以传统桌面/命令行应用形态打包启动；OHOS NDK + musl + POSIX 子集，arm64/x86_64）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -2737,7 +2736,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_ohos_desktop_cli",
     "summary": "GhostPDL 主体为跨平台 C 代码与标准库，核心文档渲染/转换功能可在鸿蒙 PC 上经 OHOS NDK 重新编译后运行；主要工作量来自未鸿蒙化的 vendored lcms2mt（需改用系统 lcms2 或自行移植）、确认鸿蒙对传统命令行应用形态的交付支持，以及禁用/替换可选的 X11/CUPS 后端。无特定硬件或不可适配的核心 API。",
     "blockers": [
       {
@@ -2830,7 +2828,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 代码经 NDK 交叉编译运行的基础",
-        "source": "references/harmony-pc-capabilities.json#runtimes (C/C++ via NDK)"
+        "source": "references/harmony-pc-capabilities.json#runtimes (C/C++ via NDK)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_app",
@@ -2838,7 +2837,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不支持该形态，则需改为 ArkTS + NAPI 封装，影响打包与交互方式",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:storage",
@@ -2846,7 +2846,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "CLI 输入输出、资源加载与缓存均依赖文件系统访问",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x11",
@@ -2854,7 +2855,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响可选的 X11 预览/显示设备，不影响文件输出",
-        "source": "references/harmony-pc-capabilities.json#gui"
+        "source": "references/harmony-pc-capabilities.json#gui",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cups_printing",
@@ -2862,7 +2864,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响可选的打印输出",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.printing"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.printing",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2913,7 +2916,21 @@
       "打包为鸿蒙应用（CLI 二进制或 .hap），处理资源文件与缓存目录"
     ],
     "notes": "评估按应用（模型 C）口径进行。GhostPDL 的 Windows 专用 API（注册表、COM、Win32 打印）和 X11/CUPS 代码均为条件编译或可选模块，在鸿蒙构建中可被裁剪，不构成核心阻塞。由于目标平台的桌面应用交付形态和存储权限模型仍是 unknown，整体置信度为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "ghostpdl",
@@ -2944,54 +2961,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "application vs library",
-        "rationale": "GhostPDL 既提供终端用户命令行产品（gs/gpcl6/gxps/gpdl），又提供可嵌入的 libgs/gsapi C 库。按 README 的产品定位与启动器/打包特征，本次将其判为 application；若下游仅使用 libgs，则 kind 可视为 library。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.key",
-        "kind": "new_value",
-        "value": "rendering_2d",
-        "rationale": "GhostPDL 的核心是 2D 页面描述语言渲染，而非 3D；现有推荐集（gui/rendering_3d/media/hardware）不能准确描述，故新增 rendering_2d 场景。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.key",
-        "kind": "new_value",
-        "value": "printing",
-        "rationale": "打印是 GhostPDL 的重要应用场景（CUPS/Win32 打印后端），但不在推荐场景中，故新增 printing 场景。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored_or_system_fallback",
-        "rationale": "GhostPDL 的 configure 对 freetype2、zlib、libpng、libjpeg 等依赖默认优先使用仓库内 vendored 源码，同时允许 --without-local-* 回退到系统库；acquisition 实际是 vendored 为主、system 为备选。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "gap",
-        "value": "system_c_runtime_libs",
-        "rationale": "libm、libdl、pthread 等属于 C/POSIX 运行时的一部分，并非普通第三方包；在 dependencies 中标记为 system 但缺乏更细分类。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "gap",
-        "value": "heavily_conditional_platform_code",
-        "rationale": "GhostPDL 的平台相关调用集中在 gp_unix.c/gp_mswin.c/gp_psync.c 等隔离文件中，且多被 HAVE_*/_WIN32/X11 等宏守卫；现有 platform_dependence 枚举 cross-platform/mixed 难以表达“大量条件平台代码但整体可裁剪”。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "GhostPDL 的核心是 CPU 2D 页面描述语言渲染，不依赖 3D/媒体/特定硬件；涉及的可选平台相关场景包括 X11 显示输出、CUPS/Win32 打印、SSE2 SIMD 加速。",

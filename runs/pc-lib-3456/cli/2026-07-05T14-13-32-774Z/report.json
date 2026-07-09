@@ -446,7 +446,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK / musl + POSIX 子集；架构 arm64/x86_64）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -455,7 +454,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "纯 JavaScript 命令行工具库，鸿蒙 PC 已移植 Node.js 24 运行时（references/harmony-pc-capabilities.json#nodejs status=available），所有核心功能（参数解析/输入输出/进程包装/进度条等）均通过 Node.js 标准库 API 实现，无原生扩展(N-API addon)、无平台条件编译、无外部命令调用。两个 npm 依赖（exit、glob）均为纯 JS 包，无原生编译。eval 为无需任何适配改动，可直接在鸿蒙 Node.js 上运行。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -466,7 +464,8 @@
         "required": true,
         "target_status": "available",
         "impact": "library 全部功能依赖",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -532,7 +531,21 @@
       "运行测试验证各模块功能正常"
     ],
     "notes": "按模型 A（库跑在已移植 Node.js 运行时上）评估。库的无原生扩展、无平台特有 API、无外部命令调用，结论为无需适配。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "one_liner": "一个用于快速构建命令行应用的 Node.js 工具包",
@@ -549,20 +562,13 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "ambiguity",
-        "value": "process.binding('natives')",
-        "rationale": "该库使用 process.binding('natives') 枚举所有 Node 原生模块并暴露为 cli.native，这是 Node.js 内部 API，不属于标准平台 API 类别。此类调用在 HarmonyOS 上需 Node 运行时支持。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯命令行/终端工具库，不涉及 GUI、3D 渲染、音视频媒体或任何特定硬件。",

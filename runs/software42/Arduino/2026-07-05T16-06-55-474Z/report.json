@@ -1637,8 +1637,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C — 整包桌面应用：跑在鸿蒙移植的 JDK 17 上，需 headful Swing/AWT 桌面环境 + 外部进程执行 + 串口/USB 设备访问；自研内核，无 Linux ABI；arm64/x86_64）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -1647,7 +1646,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "替换为 Arduino IDE 2.x（基于 Electron/Theia）的鸿蒙原生版，或为鸿蒙重写客户端（ArkUI 替代 Swing，OHOS NDK 重编 JNI 库与工具链）",
     "summary": "Arduino IDE 1.x 是 Java Swing 桌面应用，核心阻碍点有三：(1) 整个 GUI 基于 Swing/AWT——鸿蒙 PC JDK 是否提供 headful AWT/Swing 尚未核实（目标画像 unknown），若不提供则需用 ArkUI 完全重写界面层；(2) 两个 JNI 原生库（listSerialsj 串口枚举、astylej 代码格式化）需 OHOS NDK 交叉编译；(3) 严重依赖外部命令行工具链（arduino-builder、avr-gcc/arm-gcc、avrdude/bossac）——这些工具需逐一移植到 OHOS。此外 macOS EAWT/Windows 专有集成需移除或替换，串口/USB 访问依赖鸿蒙是否提供对应设备能力。建议改用 Arduino IDE 2.x（基于 Electron/Theia）作为鸿蒙适配基线，因其 UI 技术栈在鸿蒙 PC 可能更容易适配。",
     "blockers": [
       {
@@ -1752,7 +1750,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "IDE 全部 GUI 依赖——若不可用，整个应用无法以当前形态运行，需用 ArkUI 重写 UI 层",
-        "source": "harmony-pc-capabilities.json#gui:awt_headful + swing"
+        "source": "harmony-pc-capabilities.json#gui:awt_headful + swing",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -1760,7 +1759,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "IDE 使用 JFrame 多窗口（主窗口 + 监视器窗口 + 对话框 + 首选项窗口），需要桌面级窗口管理",
-        "source": "harmony-pc-capabilities.json#gui:wm"
+        "source": "harmony-pc-capabilities.json#gui:wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -1768,7 +1768,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "编译与上传流程必须执行外部命令行工具；若受限则整个编译/上传链路断裂",
-        "source": "harmony-pc-capabilities.json#process_security:spawn"
+        "source": "harmony-pc-capabilities.json#process_security:spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1776,7 +1777,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "当前分发形态为 zip/installer + 平台 launcher + 外部 JDK；鸿蒙 PC 是否支持此形态待核实",
-        "source": "harmony-pc-capabilities.json#app_delivery:desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery:desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:serial_usb",
@@ -1784,7 +1786,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Arduino IDE 的核心工作流——串口监视、固件上传——依赖串口访问；若不可用则 IDE 基本失去意义",
-        "source": "harmony-pc-capabilities.json#hardware:serial"
+        "source": "harmony-pc-capabilities.json#hardware:serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jni",
@@ -1792,7 +1795,8 @@
         "required": true,
         "target_status": "available",
         "impact": "listSerialsj、astylej JNI 库通过 System.load 加载；鸿蒙 JDK 17 支持 JNI，需原生库先 OHOS NDK 交叉编译",
-        "source": "harmony-pc-capabilities.json#runtimes:java (JDK 17 支持 JNI)"
+        "source": "harmony-pc-capabilities.json#runtimes:java (JDK 17 支持 JNI)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1817,7 +1821,21 @@
       "构建 OHOS 应用包——确认鸿蒙 PC 的分发模型（.hap 签名安装 vs zip 解压运行）并据此调整打包"
     ],
     "notes": "重要说明：(1) 此库为 Arduino IDE 1.x 旧版（已停维），官方已转向基于 Electron/Theia 的 2.x 版。若鸿蒙适配更建议以 2.x 为基线。(2) 评估按模型 C（整包桌面应用）。AWT/Swing 在鸿蒙 PC 的可用性为核心未知数——当前 portrait-class 为 needs_adaptation_partial 假设 AWT 不可用，若确认可用则升为 needs_adaptation_full、person_days 下调至 [20,40]。(3) Arduino IDE 的核心价值在于「编译+上传到 Arduino 开发板」——若鸿蒙 PC 用户无法连接物理 Arduino 板（串口/USB 受限），则移植后 IDE 失去主要用途，可能判 infeasible。(4) 未核实目标能力较多 → confidence 降至 medium；各关键假设的核实状态直接影响 porting_class 与 effort 区间。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Arduino",
@@ -1836,34 +1854,13 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "gap",
-        "value": "desktop_integration",
-        "rationale": "Arduino IDE 涉及桌面集成场景（原生文件浏览器打开、URL 通过系统浏览器打开、macOS Touch Bar）——这些是 applications 常见但不在推荐的 4 个基本 key(gui/rendering_3d/media/hardware) 中的场景，coin 了 desktop_integration key 收集。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "PO File 占比 56.75%",
-        "rationale": "翻译文件 (PO File) 行数远超 Java 源码行数 (101K vs 25K)，metrics 将 PO File 判为 primary language。实际项目核心语言是 Java。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "prebuilt_binary",
-        "rationale": "所有运行时依赖 JAR 均以 prebuilt_binary 形式随仓库 lib/ 目录分发（非系统/非远程/manifest 在线拉取），是 offline-bundled 应用常见模式。"
-      }
-    ],
+    "observations": [],
     "notes": "所有运行时依赖均为 bundled JAR（存放于 app/lib/ 与 arduino-core/lib/），不通过 Maven/Gradle 等包管理器在线拉取。构建由 Ant 驱动，编译期从 Arduino 服务器下载平台特定原生二进制（JNI 库 + 工具链）。",
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Arduino IDE 为 Java Swing 桌面应用，涉及 GUI（Swing/AWT + macOS 原生集成 + Touch Bar）、串口/USB 硬件（串口通信与板卡识别）；不涉及 3D 渲染与媒体处理。",

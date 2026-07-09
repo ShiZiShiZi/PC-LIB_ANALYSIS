@@ -848,7 +848,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 运行时上；原生 C addon 经 OHOS NDK/musl + clang 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -857,7 +856,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js 数值计算库，鸿蒙 PC 已移植 Node.js 运行时（available），纯 JavaScript 实现（lib/main.js）可直接运行，无需任何修改。C 原生 addon（经 Node-API 桥接）仅使用 C99 标准库与 Node-API，无任何操作系统或平台特有 API 调用，可用 OHOS NDK 重新编译。所有 @stdlib 依赖为 npm 包，在鸿蒙 Node.js 上正常安装即可。整体移植工作量极小。",
     "blockers": [
       {
@@ -883,7 +881,8 @@
         "required": true,
         "target_status": "available",
         "impact": "不阻碍。该库的纯 JavaScript 实现可直接运行于鸿蒙 Node.js。",
-        "source": "harmony-pc-capabilities.json → language_runtimes (Node.js: available)"
+        "source": "harmony-pc-capabilities.json → language_runtimes (Node.js: available)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -891,7 +890,8 @@
         "required": false,
         "target_status": "available",
         "impact": "不阻碍。N-API 是 Node.js 核心 API，随运行时提供，用于 C addon 桥接。",
-        "source": "Node-API 为 Node.js 内建稳定 API，鸿蒙 Node.js 保持兼容"
+        "source": "Node-API 为 Node.js 内建稳定 API，鸿蒙 Node.js 保持兼容",
+        "target_status_model": "available"
       },
       {
         "id": "ta:stdlib_deps",
@@ -899,7 +899,8 @@
         "required": true,
         "target_status": "available",
         "impact": "不阻碍。@stdlib 子包在 npm 上纯 JS 或含 C addon 均可安装。鸿蒙 Node.js 从 npm registry 安装即可。",
-        "source": "npm registry + 鸿蒙 Node.js 的 npm 兼容性"
+        "source": "npm registry + 鸿蒙 Node.js 的 npm 兼容性",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -934,7 +935,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。纯 JS 路径无需任何平台适配；C addon 若暂无法编译可跳过，不影响核心功能。@stdlib 子包从 npm 安装，不依赖系统级库。无平台分支代码（platform_adaptation=0, platform_branches=0）。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/number-float16-base-to-float32",
@@ -950,19 +965,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "na",
-        "value": "na",
-        "rationale": "极简库：仅一个核心函数（float16ToFloat32）加一个性能优化路径（C native addon），类别划分自然。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、媒体处理或特定硬件接口。无鸿蒙适配重点场景。",

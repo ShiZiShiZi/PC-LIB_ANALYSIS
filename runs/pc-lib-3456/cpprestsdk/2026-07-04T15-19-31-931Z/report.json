@@ -1467,7 +1467,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK C++ 原生库，经 OHOS NDK/musl 交叉编译为 .so；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         5,
@@ -1476,7 +1475,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "cpprestsdk 在 Linux/macOS 上已有一套完整的 POSIX 后端（Boost.ASIO + OpenSSL + pthread），该路径不依赖任何 Windows 专有 API。移植到鸿蒙 PC 只需用 OHOS NDK 交叉编译该 POSIX 后端，将 CMake 工具链指向 ohos.toolchain.cmake 即可。三大核心依赖（Boost/OpenSSL/zlib）已鸿蒙化可直接使用；vendored websocketpp 为 header-only 库随主库重编。唯一需微调的是 pplxlinux.cpp 中使用 syscall(SYS_gettid) 获取线程 ID（可选 pthread_self 回退）。Windows 分支（WinHTTP/HTTPSYS/Win32 file I/O）在 OHOS 编译时不会选中，无需处理。整体可行，中等置信度。",
     "blockers": [
       {
@@ -1529,7 +1527,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++11 是 cpprestsdk 的基础语言标准，不支持则无法编译",
-        "source": "OHOS NDK 文档；已移植的 C++ 库（Boost/OpenSSL）均需 C++11 或更高"
+        "source": "OHOS NDK 文档；已移植的 C++ 库（Boost/OpenSSL）均需 C++11 或更高",
+        "target_status_model": "available"
       },
       {
         "id": "ta:musl-posix",
@@ -1537,7 +1536,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Boost.ASIO 底层依 pthread + socket + fcntl/open 等 POSIX API；缺失则 HTTP 传输层无法工作",
-        "source": "musl libc 文档 + references/harmony-pc-capabilities.json；Boost 已鸿蒙化说明 POSIX 子集足够"
+        "source": "musl libc 文档 + references/harmony-pc-capabilities.json；Boost 已鸿蒙化说明 POSIX 子集足够",
+        "target_status_model": "available"
       },
       {
         "id": "ta:boost-harmony",
@@ -1545,7 +1545,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Boos.ASIO 是 POSIX 路径的 HTTP 传输/线程/定时器核心依赖",
-        "source": "scripts/harmony_adapted.js 确认；cmd-pkgs 预编译清单含 boost"
+        "source": "scripts/harmony_adapted.js 确认；cmd-pkgs 预编译清单含 boost",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openssl-harmony",
@@ -1553,7 +1554,8 @@
         "required": true,
         "target_status": "available",
         "impact": "HTTPS/WSS 加密通信依赖 OpenSSL",
-        "source": "scripts/harmony_adapted.js 确认；cmd-pkgs 预编译清单含 openssl"
+        "source": "scripts/harmony_adapted.js 确认；cmd-pkgs 预编译清单含 openssl",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1599,7 +1601,21 @@
       "验证 HTTP/HTTPS 客户端与服务器在鸿蒙网络栈下工作正常（DNS 解析、TCP、TLS 握手、代理等）"
     ],
     "notes": "评估按模型 A（C++ 原生库，经 OHOS NDK 交叉编译作为 .so 链接到鸿蒙应用）。Windows 分支（WinHTTP/HTTPSYS/Win32 file I/O/WinRT，共约 1076 行 #ifdef WIN32 代码）在 OHOS 编译时不会被选中，无需处理。三大依赖（Boost/OpenSSL/zlib）已鸿蒙化可直接复用。websocketpp 为 header-only vendored 库随主库重编。唯一 POSIX 微调点在 pplxlinux.cpp 的 SYS_gettid。整体工作量集中在 CMake 工具链配置与交叉编译验证。若目标为 ArkTS 应用需通过 Node-API 桥接则将 person_days 上调至 [12, 20]（额外工作：编写 N-API 绑定层暴露 C++ API 给 ArkTS）。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "cpprestsdk",
@@ -1626,24 +1642,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "apis",
-        "kind": "ambiguity",
-        "value": "win32_crypto group",
-        "rationale": "将 Windows Crypto API（BCryptGenRandom/CertOpenStore）单独分组为 win32_crypto，与通用 win32 组区分——它们通过 bcrypt.lib/crypt32.lib 链接，属密码学/证书子系统而非通用 Win32 API，分类上介于 platform 与 system 之间。归为 platform(windows) 更合适，因其是 Windows SDK 的用户态 API 而非内核接口。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "ambiguity",
-        "value": "Archived repo handling",
-        "rationale": "cpprestsdk README 醒目标注 ARCHIVED（已归档不再维护）。虽然已停止维护但代码完整、功能明确，仍正常归类。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯网络通信库（HTTP 客户端/服务器 + WebSocket + JSON + URI），不涉及 GUI 桌面界面、3D 图形渲染、音视频媒体处理或特定硬件（GPU/传感器/USB 等）。所有平台适配均限于网络传输层与文件 I/O，已有 POSIX 后端（Boost.ASIO）可跨平台复用。",

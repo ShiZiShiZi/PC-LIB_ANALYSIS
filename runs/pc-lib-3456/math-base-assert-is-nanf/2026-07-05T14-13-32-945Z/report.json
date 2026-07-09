@@ -667,7 +667,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24.13.0 运行时上；原生 N-API 插件经 OHOS NDK（musl libc + clang）重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -676,7 +675,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "@stdlib/math-base-assert-is-nanf 是一个极简的单精度 NaN 检测库，纯 JS 实现可直接运行在鸿蒙 Node.js 上；其 C 原生 N-API 插件仅使用 C99 标准库（<stdbool.h>、<stdint.h>）和无平台耦合的 N-API 宏，无任何 POSIX/Win32 专有 API 或系统调用。只需用 OHOS NDK 交叉编译 C 源码（src/is_nanf.c + src/addon.c）为 arm64/x86_64 .so 即可。整体工作量极小。",
     "target_assumptions": [
       {
@@ -685,7 +683,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 部分直接运行；N-API 插件可加载",
-        "source": "references/harmony-pc-capabilities.json — language_runtimes Node.js: available 24.13.0"
+        "source": "references/harmony-pc-capabilities.json — language_runtimes Node.js: available 24.13.0",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -693,7 +692,8 @@
         "required": true,
         "target_status": "available",
         "impact": "用于交叉编译 C 原生插件",
-        "source": "references/harmony-pc-capabilities.json — native_layer (OHOS NDK 为标准发布组件)"
+        "source": "references/harmony-pc-capabilities.json — native_layer (OHOS NDK 为标准发布组件)",
+        "target_status_model": "available"
       }
     ],
     "blockers": [
@@ -758,7 +758,21 @@
       "发布鸿蒙 npm 包或追加 ohos 架构入口"
     ],
     "notes": "按模型 A（库跑在已移植 Node.js 运行时上）评估。纯 JS 后备路径始终可用，即便 C 原生插件暂时未能编译，库的核心功能仍可通过 lib/main.js 提供。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "math-base-assert-is-nanf",
@@ -781,7 +795,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数值断言库，不涉及 GUI、3D 渲染、媒体处理或特定硬件场景。无鸿蒙适配重点场景触及。",

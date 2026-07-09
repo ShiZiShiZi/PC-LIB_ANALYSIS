@@ -1067,8 +1067,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：作为 Python 库运行在已移植的 CPython 运行时上；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1077,7 +1076,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "find_alternative / posix_backend_rewrite",
     "summary": "该库是 Windows 专有的 readline 兼容层，核心逻辑（行编辑、历史、模式）为纯 Python 且可移植，但控制台输入输出与剪贴板全部绑定 Win32 API。在 HarmonyOS PC 上，CPython 运行时已可用，但 Win32 Console/Clipboard API 无直接等价实现；若强行移植，需要为鸿蒙终端重写 console 与 clipboard 后端。更现实的方案是：在鸿蒙上直接使用 GNU readline 或系统自带的 readline 能力，无需移植 pyreadline3。",
     "blockers": [
       {
@@ -1170,7 +1168,9 @@
           "repos/pc-lib-84/pyreadline3/src/pyreadline3/console/console.py:221",
           "repos/pc-lib-84/pyreadline3/src/pyreadline3/console/console.py:544",
           "repos/pc-lib-84/pyreadline3/src/pyreadline3/console/console.py:388"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_clipboard",
@@ -1186,7 +1186,9 @@
           "repos/pc-lib-84/pyreadline3/src/pyreadline3/clipboard/win32_clipboard.py:56",
           "repos/pc-lib-84/pyreadline3/src/pyreadline3/clipboard/win32_clipboard.py:62",
           "repos/pc-lib-84/pyreadline3/src/pyreadline3/clipboard/win32_clipboard.py:69"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1196,7 +1198,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 逻辑可直接运行；ctypes.pythonapi 访问的 CPython C-API 符号大概率存在，但需 ABI 验证。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:win32_console",
@@ -1204,7 +1207,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "控制台驱动完全依赖 Win32 Console API；不可用则必须重写后端。",
-        "source": "native_api 推断 + references/harmony-pc-capabilities.json（无 Win32 支持项）"
+        "source": "native_api 推断 + references/harmony-pc-capabilities.json（无 Win32 支持项）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:win32_clipboard",
@@ -1212,7 +1216,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "剪贴板读写依赖 Win32 Clipboard API；不可用则需改用鸿蒙剪贴板能力或降级。",
-        "source": "native_api 推断 + references/harmony-pc-capabilities.json（无 Win32 支持项）"
+        "source": "native_api 推断 + references/harmony-pc-capabilities.json（无 Win32 支持项）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:posix_terminal",
@@ -1220,7 +1225,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若计划重写 console 后端，需要 POSIX 终端 API 或等价的鸿蒙终端能力；状态未核实影响重写方案确定性。",
-        "source": "references/harmony-pc-capabilities.json 未明确覆盖终端/TTY 能力"
+        "source": "references/harmony-pc-capabilities.json 未明确覆盖终端/TTY 能力",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_clipboard",
@@ -1228,7 +1234,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响复制粘贴功能是否可用；不可用时可回退到内部缓冲区。",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1260,7 +1267,24 @@
       "在鸿蒙 PC 上运行完整 pytest 套件验证功能"
     ],
     "notes": "本库本质是 Windows 专属兼容层；在 HarmonyOS PC（POSIX-like 环境）上，GNU readline 或系统 readline 模块大概率可直接工作，因此更推荐「寻找替代方案」而非移植 pyreadline3。评估置信度为 medium 主要因为鸿蒙终端/TTY API 与剪贴板能力在参考文件中未明确覆盖。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_console",
+          "ua:win32_clipboard"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1268,22 +1292,20 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "find_alternative / posix_backend_rewrite",
-        "rationale": "pyreadline3 是 Windows 专有 readline 兼容层；在 POSIX-like 的 HarmonyOS PC 上更现实的策略是换用 GNU readline，而非移植。现有推荐路径列表未覆盖这种「因平台生态差异建议寻找替代」的情形。"
+        "code": "ua_func_class_defaulted:ua:win32_console",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_console 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cpython_capi_via_ctypes",
-        "rationale": "库通过 ctypes.pythonapi 访问 CPython 内部 C-API 符号（PyOS_InputHook、PyOS_ReadlineFunctionPointer、PyMem_RawMalloc），既非普通 platform API 也非外部 ffi 依赖，使用 cpython_capi_via_ctypes 作为 API 家族名更精确。"
+        "code": "ua_func_class_defaulted:ua:win32_clipboard",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_clipboard 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

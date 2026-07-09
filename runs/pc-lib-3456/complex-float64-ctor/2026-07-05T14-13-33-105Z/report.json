@@ -747,7 +747,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK musl libc + POSIX 子集；arm64/x86_64；Node.js 24.13.0 已移植）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -756,7 +755,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "纯 JavaScript 复数构造函数库，主分发路径为纯 JS（lib/），可直接运行在已移植的鸿蒙 PC Node.js 24.13.0 上，无需任何修改。附带的 C 扩展（src/main.c）仅使用 C99 标准类型（stdint.h、complex.h），无平台特有 API、无系统调用、无外部依赖；若需编译为原生插件，经 OHOS NDK（musl clang）重新编译即可，零源码改动。无 runtime 平台分支、无 GUI/3D/媒体/硬件依赖、无云服务、无子进程或设备调用。总体移植工作量极低。",
     "blockers": [],
     "compatible": [
@@ -792,11 +790,26 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 代码直接运行，无阻碍",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       }
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。若目标为 ArkTS 沙箱应用（模型 B），则需将 JS 实现改写为 ArkTS，届时 effort 升至中档，但本例 JS 代码仅构造函数+字符串/JSON 序列化，改写工作量仍有限。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float64-ctor",
@@ -819,19 +832,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "nodejs",
-        "rationale": "项目有 package.json 且主分发为 Node.js 包，同时提供 C 原生绑定，多语言但主生态为 nodejs。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "复数类型构造库，不涉及 GUI、3D 渲染、媒体处理或硬件设备相关场景。",

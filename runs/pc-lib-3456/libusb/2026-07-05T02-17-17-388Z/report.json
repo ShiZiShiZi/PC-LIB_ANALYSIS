@@ -1719,8 +1719,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（经 OHOS NDK/musl 重编 C 库为 .so，提供 NDK 原生 USB API；arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1729,7 +1728,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libusb 为 C 语言 USB 设备访问库，需要在鸿蒙 PC 上实现一个新的操作系统后端（类似现有的 Linux/macOS/Windows 后端），调用鸿蒙 PC 的 USB HDI（硬件驱动接口）进行设备枚举、控制传输和批量/中断/等时传输。好消息：libusb 已在 OpenHarmony PC 官方 cmd-pkgs 预编译包列表中，说明已有社区/官方移植（至少基础 USB 设备通信可用）。本评估基于源代码分析该移植的可能规模与剩余阻碍，假设鸿蒙 PC USB 子系统提供了足够的 HDI 接口来映射 libusb 的 usbi_os_backend 合约。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1739,7 +1737,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libusb 的整个功能集依赖目标平台的 USB 子系统——若无完整的 USB HDI 或功能受限，libusb 将不可用或部分功能缺失",
-        "source": "references/harmony-pc-capabilities.json#usb_serial"
+        "source": "references/harmony-pc-capabilities.json#usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:usb_perms",
@@ -1747,7 +1746,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "即便 USB HDI 存在，若无用户空间访问权限（需特定 ACL/ohos.permission），libusb 同样无法正常工作",
-        "source": "references/harmony-pc-capabilities.json#permissions"
+        "source": "references/harmony-pc-capabilities.json#permissions",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1861,7 +1861,21 @@
       "审核是否需申请 ohos.permission.USB 类权限并在文档中说明"
     ],
     "notes": "libusb 已在 OpenHarmony PC 官方 cmd-pkgs 预编译包列表中（gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs），表明已有鸿蒙移植。本评估基于源代码分析该移植应涉及的工作规模。关键不确定性：鸿蒙 PC USB HDI 的完整性与设备访问权限模型——两者状态在 harmony-pc-capabilities.json 中均为 unknown，故 confidence 下调至 medium。若实际 USB HDI 完整且权限可获取（available），则工作量可降至 5-10 人-天（后端大部分已有现成移植代码），porting_class 保持 needs_adaptation_full。若 USB HDI 有显著缺口（无等时传输/批量传输受限），则某些 USB 设备类（音频/视频/大容量存储）的部分功能将无法适配——此时需加入 needs_adaptation_partial 并在 unadaptable_apis 中登记具体受限的 API。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libusb",
@@ -1884,48 +1898,13 @@
     "analyzed_at": "2026-07-05T02:34:52Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "count",
-        "kind": "gap",
-        "value": "minimal_system_only",
-        "rationale": "libusb 无任何外部第三方库依赖——所有依赖均为操作系统自带的系统库/框架（pthread/udev/IOKit/WinUSB/Security 等），这在 C/C++ 库中较为罕见，dependencies 块 listing 规模极小但合理。此类'零外部依赖'库的 count 含义与其他有大量包管理器依赖的库不同。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "ambiguity",
-        "value": "mixed",
-        "rationale": "libusb 核心是跨平台设计（通过后端抽象），但其大量 API 属于 platform 类别（Win32/POSIX/IOKit 等），仅是编译时条件选择。从某个具体平台的视角看，只有一个后端被编译进去；但从整个库的代码视角看，它包含了多个平台的平台特有 API。'mixed' 比 'cross-platform' 更准确反映了这种'多后端跨平台'模式。"
-      },
-      {
-        "dimension": "build_env",
-        "field": "build_system",
-        "kind": "new_value",
-        "value": "multi_build_system",
-        "rationale": "libusb 同时提供 GNU Autotools（主要）、MSVC 项目文件（msvc/）、Xcode 项目（Xcode/）三套构建系统，这在 C 库中并不多见但值得记录。autotools 是主构建通道（configure.ac + Makefile.am），MSVC（msvc/*.vcxproj）和 Xcode 项目是额外的平台特有构建辅助。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_full",
-        "rationale": "libusb 已在 OpenHarmony PC cmd-pkgs 列表中预编译——理论上适配工作已完成。但本报告按'若尚未移植需做多少工作'给出评估：libusb 底层 USB 通信完全依赖平台 USB 子系统，需要实现一个新的操作系统后端，工作量 10-25 人-天（中等，因后端接口清晰且已有 7 个参考实现）。与 recompile_only 的区别是：不可能仅重编就完成（HID API 完全不同），必须主动适配。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "harmony_status",
-        "kind": "gap",
-        "value": "unknown_usb",
-        "rationale": "harmony-pc-capabilities.json 中 USB/串口（usb_serial）的状态为 unknown——这是 libusb 适配评估中最关键的未知变量。USB 是所有三个视角（库/NDK/驱动）中唯一未核实的能力，建议优先在鸿蒙 PC 上验证 USB HDI 完整性和权限模型。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "USB 设备访问库，核心场景为硬件（USB）设备通信，完全不涉及 GUI、3D 渲染、媒体等场景。各平台 USB 子系统差异通过可插拔后端封装。",

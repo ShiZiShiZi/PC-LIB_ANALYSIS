@@ -1444,8 +1444,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, OHOS NDK, 无 Linux ABI)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -1462,7 +1461,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JIT 编译器核心依赖——若无此能力则整个 Reactor JIT 不可运行，必须切换到解释器或 AOT 模式",
-        "source": "references/harmony-pc-capabilities.json (无直接条目，OHOS NDK musl + POSIX 子集的 mmap 行为待核实)"
+        "source": "references/harmony-pc-capabilities.json (无直接条目，OHOS NDK musl + POSIX 子集的 mmap 行为待核实)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:vulkan_loader",
@@ -1470,7 +1470,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SwiftShader 以 ICD 驱动形态被加载——若鸿蒙 PC 无 Vulkan Loader 则需应用直接链接 SwiftShader",
-        "source": "references/harmony-pc-capabilities.json graphics_3d.vulkan (unknown)"
+        "source": "references/harmony-pc-capabilities.json graphics_3d.vulkan (unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_mmap",
@@ -1478,7 +1479,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "可执行内存分配依赖 mmap PROT_EXEC——若 musl 不支持 PROT_EXEC 则 JIT 不可运行",
-        "source": "references/harmony-pc-capabilities.json (无直接条目)"
+        "source": "references/harmony-pc-capabilities.json (无直接条目)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dlopen",
@@ -1486,7 +1488,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "WSI 动态加载 XCB/Wayland 库——若无 dlopen 可改为编译时链接；亦可用 Headless 模式绕过",
-        "source": "references/harmony-pc-capabilities.json (无直接条目)"
+        "source": "references/harmony-pc-capabilities.json (无直接条目)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_wsi",
@@ -1494,11 +1497,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若无桌面窗口系统可用，WSI 呈现功能不可用，但 Headless 模式仍可正常工作",
-        "source": "references/harmony-pc-capabilities.json gui.wm (unknown)"
+        "source": "references/harmony-pc-capabilities.json gui.wm (unknown)",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "SwiftShader 是纯 CPU 软件渲染库，核心逻辑不依赖 GPU 硬件，理论上可用 OHOS NDK 交叉编译。主要适配工作集中在：(1) JIT 可执行内存分配需确认 OHOS NDK musl 的 mmap PROT_EXEC 支持；(2) WSI 层需适配鸿蒙桌面窗口系统或使用 Headless 模式；(3) LLVM 作为内嵌 JIT 后端需在 OHOS NDK 下成功编译。由于多个关键目标能力状态为 unknown，置信度较低。",
     "blockers": [
       {
@@ -1607,7 +1610,21 @@
       "验证 Headless 模式下的 SPIR-V 着色器编译与执行正确性"
     ],
     "notes": "多个关键目标能力（可执行内存映射、Vulkan 支持、dlopen）在鸿蒙 PC 上的状态均为 unknown，导致整体置信度低。SwiftShader 的 Android 构建经验（NDK 编译 + __ANDROID__ 条件分支）说明项目已有跨平台适配传统，但鸿蒙的自研内核与 Android NDK 有本质差异。项目生产代码约 44 万行（含内嵌 LLVM），编译时间与二进制体积是实际考量因素。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1615,36 +1632,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "android",
-        "rationale": "Android 专有 API（__android_log_print、prctl PR_SET_VMA）不属于 POSIX 也不属于 Linux 通用，单独归类"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "fuchsia",
-        "rationale": "Fuchsia Zircon syscall API 是独立平台类别，不属于 POSIX/Win32"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "ambiguity",
-        "value": "rendering_3d",
-        "rationale": "SwiftShader 是 Vulkan 的软件提供方而非消费方——它提供 3D 渲染能力而非使用 3D 渲染。harmony_status 取值'unknown'反映的是'鸿蒙是否有 Vulkan 可用'，而非 SwiftShader 自身的渲染能力适配问题"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "cross_compile",
-        "rationale": "对于 C++ 库移植到鸿蒙，核心路径是 OHOS NDK 交叉编译而非 recompile_napi（后者暗示桥接至 ArkTS 层）"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   }
 }

@@ -1858,7 +1858,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -1867,7 +1866,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "ESLint 是纯 Node.js 工具，核心 lint/规则/配置逻辑均为 JavaScript，依赖的第三方包也均为 JS 包；鸿蒙 PC 已移植 Node.js，直接安装运行即可。仅有 --init/--inspect-config/--env-info 等旁路命令会调用 npm/npx，需目标环境具备 npm 生态，但不影响核心功能。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1878,7 +1876,8 @@
         "required": true,
         "target_status": "available",
         "impact": "ESLint 所有功能均依赖 Node.js，运行时已可用则无需代码级移植",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:npm_cli",
@@ -1886,7 +1885,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅 --init/--inspect-config/--env-info 等可选命令依赖；核心 lint 不依赖",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1922,7 +1922,21 @@
       "验证可选的 npm/npx 旁路命令（--init/--inspect-config/--env-info）在目标环境是否可用，必要时引导用户使用替代命令"
     ],
     "notes": "评估按模型 A（库/CLI 工具跑在已移植的 Node.js 运行时上）；tools/ 目录下的维护脚本未纳入运行时迁移阻碍。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1930,15 +1944,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "production_scope",
-        "kind": "gap",
-        "value": "tools/ 目录为构建/维护脚本",
-        "rationale": "metrics 脚本按目录名将 tools/ 判为 production，但该目录脚本（文档生成、fuzzer、check-emfile-handling 等）不参与 ESLint 运行时功能，本报告在 native_api / runtime_surface / harmony_adaptation 中按运行时库口径收敛，未将其平台判断分支（os.platform）作为迁移阻碍。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

@@ -1094,8 +1094,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1118,7 +1117,9 @@
         "evidence": [
           "loader/windows/icd_windows.c:223-276",
           "loader/windows/icd_windows_hkr.c:83-162"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:dxgk_dxgi",
@@ -1133,7 +1134,9 @@
         "evidence": [
           "loader/windows/icd_windows_dxgk.c:32-120",
           "loader/windows/icd_windows.c:280-314"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_apppackage",
@@ -1147,7 +1150,9 @@
         "category": "platform",
         "evidence": [
           "loader/windows/icd_windows_apppackage.c:36-123"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1157,7 +1162,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无 OpenCL 驱动实现，ICD 加载器可编译但无法发现任何驱动，功能完全不可用",
-        "source": "references/harmony-pc-capabilities.json → hardware_devices → opencl (status: unknown)"
+        "source": "references/harmony-pc-capabilities.json → hardware_devices → opencl (status: unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_fs",
@@ -1165,7 +1171,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 基于 musl，提供 POSIX 子集；opendir/readdir/stat 等属基本 POSIX 接口，应可用",
-        "source": "OHOS NDK 基于 musl libc"
+        "source": "OHOS NDK 基于 musl libc",
+        "target_status_model": "available"
       },
       {
         "id": "ta:dlopen",
@@ -1173,7 +1180,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 支持动态库加载，dlopen/dlsym 可用",
-        "source": "OHOS NDK musl libc"
+        "source": "OHOS NDK musl libc",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pthread",
@@ -1181,11 +1189,11 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 支持 pthread，pthread_once 可用",
-        "source": "OHOS NDK musl libc"
+        "source": "OHOS NDK musl libc",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "OpenCL ICD Loader 的核心逻辑（ICD 枚举、API 调度、层管理）与平台无关，只需适配平台特定的 ICD 发现机制。鸿蒙 PC 使用 OHOS NDK（musl + POSIX 子集），Linux 端代码路径（opendir/dlopen/pthread_once）可直接复用；需废弃 Windows 端代码路径（注册表/DXGK/DXGI/AppPackage），并新增鸿蒙特有的 ICD 发现方式（如扫描特定目录或使用鸿蒙驱动注册机制）。关键不确定性在于鸿蒙 PC 是否有 OpenCL 驱动实现——若无，加载器可编译但无实际功能。",
     "blockers": [
       {
@@ -1260,7 +1268,25 @@
       "使用 OHOS NDK 工具链进行交叉编译验证"
     ],
     "notes": "最大不确定性在于鸿蒙 PC 的 OpenCL 生态：ICD 加载器必须有 ICD 驱动才能发挥作用。若鸿蒙 PC GPU 驱动不支持 OpenCL，则此库的移植仅具技术可行性而无实际意义。此外，secure_getenv 为 glibc 扩展，OHOS NDK 的 musl libc 可能不支持，需回退到手动 geteuid/getuid 检查方案。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_registry",
+          "ua:dxgk_dxgi",
+          "ua:win32_apppackage"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1268,22 +1294,25 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "opencl_runtime_unknown",
-        "rationale": "鸿蒙 PC 上 OpenCL 驱动可用性未知（harmony-pc-capabilities.json 标记 unknown），这是此库移植价值的决定性因素"
+        "code": "ua_func_class_defaulted:ua:win32_registry",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_registry 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "dxgk",
-        "rationale": "DXGK（Display eXtensions Graphics Kernel）是 Windows 图形驱动栈的核心接口，不同于一般 Win32 API，建议作为独立类型"
+        "code": "ua_func_class_defaulted:ua:dxgk_dxgi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dxgk_dxgi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_apppackage",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_apppackage 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

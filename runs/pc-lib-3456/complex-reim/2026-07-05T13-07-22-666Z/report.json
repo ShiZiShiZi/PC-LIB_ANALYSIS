@@ -598,7 +598,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24 运行时上；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -607,7 +606,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为纯 JavaScript 数值计算原子组件——核心逻辑仅访问 Complex128 对象属性并封装为 Float64Array 返回，无原生扩展、无平台 API、无文件系统/网络/子进程依赖。鸿蒙 PC 已移植 Node.js 24 运行时，直接安装运行即可。独立 C 实现为可选 API（非 JS 包构建产物），如需在鸿蒙上使用 C API，经 OHOS NDK 重新编译即可（单独考虑）。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -618,7 +616,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已移植——纯 JS 包可直接跑，不下调置信度",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -642,7 +641,21 @@
       "在鸿蒙 Node.js 上 npm install @stdlib/complex-reim，跑通单元测试验证功能"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。该库为极简原子组件，无任何需要适配的点。独立的 C 实现 src/main.c 为可选 API，如需在鸿蒙上以 C 消费者调用，只需 OHOS NDK 交叉编译一个 .c 文件即可（不涉及任何平台 API 或第三方 C 依赖）。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-reim",
@@ -664,7 +677,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

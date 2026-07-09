@@ -1078,8 +1078,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，ArkTS 应用层）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1102,7 +1101,9 @@
         "evidence": [
           "src/com/jogamp/opencl/llb/impl/CLDynamicLibraryBundleInfo.java:116-117",
           "src/com/jogamp/opencl/CLPlatform.java:139"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1112,7 +1113,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JOCL 全部功能依赖 OpenCL 运行时；若鸿蒙 PC 无 OpenCL 支持则库完全无法使用",
-        "source": "references/harmony-pc-capabilities.json → hardware_devices → opencl: unknown"
+        "source": "references/harmony-pc-capabilities.json → hardware_devices → opencl: unknown",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jni_native",
@@ -1120,7 +1122,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 PC 已移植 JDK，JNI 机制可用；jocl 胶水库需用 OHOS NDK 交叉编译",
-        "source": "references/harmony-pc-capabilities.json → runtimes → java_jdk: available"
+        "source": "references/harmony-pc-capabilities.json → runtimes → java_jdk: available",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl_egl",
@@ -1128,11 +1131,11 @@
         "required": false,
         "target_status": "partial",
         "impact": "CL-GL 互操作为可选功能；鸿蒙有 OpenGL ES/EGL（partial），但完整覆盖与 OpenCL 共享支持待核实",
-        "source": "references/harmony-pc-capabilities.json → graphics_3d → opengl: partial, egl: partial"
+        "source": "references/harmony-pc-capabilities.json → graphics_3d → opengl: partial, egl: partial",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "JOCL 的鸿蒙适配可行性取决于 OpenCL 运行时在鸿蒙 PC 上的可用性——这是核心且无法替代的硬件依赖。若鸿蒙 PC GPU 驱动提供 OpenCL ICD，则仅需用 OHOS NDK 交叉编译 JNI 胶水库（libjocl.so）并重新打包；否则核心功能完全不可用。CL-GL 互操作为可选增强，依赖 OpenGL ES/EGL。置信度低因 OpenCL 在鸿蒙 PC 上的状态为 unknown。",
     "blockers": [
       {
@@ -1195,7 +1198,23 @@
       "重新打包 jocl.jar + jocl-natives-ohos-aarch64.jar"
     ],
     "notes": "核心风险：OpenCL 在鸿蒙 PC 上状态为 unknown。若鸿蒙 GPU 驱动不提供 OpenCL 运行时，JOCL 作为 OpenCL 绑定库将完全失去意义——这不是代码适配能解决的问题，而是硬件/驱动层面的缺失。置信度因 target_assumptions 中存在 required 且 status=unknown 的项而降为 low。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:opencl_runtime"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1203,22 +1222,15 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "opencl",
-        "rationale": "OpenCL API 族在推荐集中无对应项（已有 opengl/directx/arch_simd），但 OpenCL 是与 OpenGL 并列的 GPU API 族，需独立分类"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build",
-        "rationale": "GlueGen 和 JOGL 需要从 JogAmp 仓库同级检出并预编译——非 system（不在系统路径）、非 package_manager（无 Maven/Gradle）、非 vendored（不在本仓库内），是源码级同级依赖预编译"
+        "code": "ua_func_class_defaulted:ua:opencl_runtime",
+        "class": "actionable",
+        "message": "unadaptable_api ua:opencl_runtime 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

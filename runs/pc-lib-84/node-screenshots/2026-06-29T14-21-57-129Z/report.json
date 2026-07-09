@@ -825,8 +825,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -849,7 +848,9 @@
         "evidence": [
           "src/monitor.rs:136",
           "src/window.rs:148"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:coregraphics",
@@ -864,7 +865,9 @@
         "evidence": [
           "src/monitor.rs:136",
           "src/window.rs:24"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_gdi_capture",
@@ -878,7 +881,9 @@
         "category": "platform",
         "evidence": [
           "src/window.rs:148"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -888,7 +893,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则截图功能完全不可用，库的核心价值丧失",
-        "source": "references/harmony-pc-capabilities.json gui/desktop_integration 段"
+        "source": "references/harmony-pc-capabilities.json gui/desktop_integration 段",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:window_enum_api",
@@ -896,7 +902,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则 Window.all() 及窗口截图功能不可用",
-        "source": "references/harmony-pc-capabilities.json gui 段"
+        "source": "references/harmony-pc-capabilities.json gui 段",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:nodejs_napi",
@@ -904,7 +911,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已移植的 Node.js 支持 N-API，Rust napi-rs 编译的原生模块可加载",
-        "source": "references/harmony-pc-capabilities.json runtimes/nodejs"
+        "source": "references/harmony-pc-capabilities.json runtimes/nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:rust_ohos_target",
@@ -912,7 +920,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust 1.89+ 有 ohos target，可交叉编译原生代码",
-        "source": "references/harmony-pc-capabilities.json runtimes/rust"
+        "source": "references/harmony-pc-capabilities.json runtimes/rust",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -927,7 +936,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile + platform_backend_rewrite",
     "summary": "本库核心截图功能由 xcap 通过各平台专有 API 实现（macOS CoreGraphics / Windows Win32 GDI / Linux XCB），鸿蒙 PC 不使用上述任何窗口系统。适配需为 xcap 新增鸿蒙后端（利用 OHOS NDK 的窗口/显示管理 API 实现截图），并用 Rust ohos target 交叉编译。Node.js N-API 与 Rust 编译链已就绪，但鸿蒙截图 API 可用性未知——这是决定性前提。",
     "blockers": [
       {
@@ -1001,7 +1009,25 @@
       "处理鸿蒙权限申请（如需截图权限声明）"
     ],
     "notes": "index.js 已包含 process.platform === 'openharmony' 分支，说明项目作者已有鸿蒙适配意识。核心风险在于鸿蒙 PC 是否提供屏幕截图等价 API——若无可直达 infeasible。置信度 medium：因为截图 API 可用性未知（target_status=unknown）。图像编码/裁剪部分（占生产代码约 40%）可平滑移植。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:xcb_xrandr",
+          "ua:coregraphics",
+          "ua:win32_gdi_capture"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1009,29 +1035,25 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "MIT vs Apache-2.0",
-        "rationale": "package.json 声明 Apache-2.0，但 LICENSE 文件为 MIT。以 LICENSE 文件为准判为 MIT"
+        "code": "ua_func_class_defaulted:ua:xcb_xrandr",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xcb_xrandr 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "coregraphics",
-        "rationale": "macOS CoreGraphics 框架作为平台 API 类型，现有推荐集未列出，补充之"
+        "code": "ua_func_class_defaulted:ua:coregraphics",
+        "class": "actionable",
+        "message": "unadaptable_api ua:coregraphics 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "cross_compile + platform_backend_rewrite",
-        "rationale": "需交叉编译+重写平台后端的组合路径，现有推荐集未覆盖此组合场景"
+        "code": "ua_func_class_defaulted:ua:win32_gdi_capture",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_gdi_capture 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

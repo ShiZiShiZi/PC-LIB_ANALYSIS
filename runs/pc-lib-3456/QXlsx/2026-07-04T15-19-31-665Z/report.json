@@ -952,7 +952,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Qt 鸿蒙版作为运行时框架）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -970,11 +969,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "QXlsx 使用 Qt 私有 API QZipReader/QZipWriter（来自 GuiPrivate 模块）和 QTextDocument 进行 ZIP 压缩/解压和富文本处理。若鸿蒙 Qt 移植未包含 GuiPrivate 或其私有头文件，则需改用其他 ZIP 库（如 zlib/minizip）替代 ZIP 处理、自行实现富文本转换。这不影响核心 Excel 文件格式读写能力，但需适配。",
-        "source": "references/harmony-pc-capabilities.json：Qt 整体标为 available，但 GuiPrivate 子模块覆盖未单独核实"
+        "source": "references/harmony-pc-capabilities.json：Qt 整体标为 available，但 GuiPrivate 子模块覆盖未单独核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "QXlsx 是一个纯 C++/Qt 文件处理库，仅依赖 Qt Core 和 Gui 模块，无直接平台 API 调用、无硬件依赖。Qt 在鸿蒙 PC 侧已标记为 available，理论上通过 OHOS NDK 交叉编译 Qt + QXlsx 即可运行。唯一需关注的是 Qt GuiPrivate 私有模块（QZipReader/QZipWriter/QTextDocument）在鸿蒙 Qt 移植中是否提供——若未提供则需额外适配 ZIP 压缩和富文本处理，但这不是核心阻碍。整体适配难度低，主要工作量在于构建适配和验证。",
     "blockers": [],
     "compatible": [
@@ -1009,7 +1008,21 @@
       "处理可能遇到的 Qt 私有头文件路径差异和编译警告"
     ],
     "notes": "Qt 在鸿蒙 PC 侧整体标为 available（社区已提供），但 GuiPrivate 私有子模块（QZipReader/QZipWriter）的可用性未经核实——这是 target_assumptions 中的 unknown 项，若该模块缺失则需额外 ZIP 库适配，建议升级 confidence 至 high。库本身极简（单一 Qt 依赖、无平台 API），是 Qt 生态中最适合鸿蒙移植的类别之一。注意：仓库中 ShowConsole/TestExcel 等 16 个目录为示例应用，不作为移植范围考量——仅 QXlsx/ 目录的库代码需要适配。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "QXlsx",
@@ -1032,15 +1045,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "top_dirs",
-        "kind": "ambiguity",
-        "value": "example_dirs_misclassified",
-        "rationale": "metrics.py 将 ShowConsole/TestExcel/ExcelViewer/ExcelTableEditor/WebServer/FormulaDump/Pump/HelloWorld/HelloAndroid/ReadColor/chartsquestions/IssueTest/DateTime/LargeData/WhatType/csv 这 16 个目录标记为 production，但它们各自含独立 main.cpp 与 .pro/CMakeLists.txt，均为 QXlsx 库的使用示例/演示应用。真正的生产代码仅在 QXlsx/ 目录（14,264 行）。分析维度已据此收敛：dependencies/native_api/runtime_surface 仅覆盖 QXlsx/ 目录的库本体。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1051,7 +1056,8 @@
         "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "QXlsx 是一个纯文件处理库，不涉及 GUI 渲染、3D 图形、音视频媒体或特定硬件设备。它通过 Qt 框架使用 XML/ZIP/文件 I/O 等跨平台能力操作 Excel 文档。",

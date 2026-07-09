@@ -1571,8 +1571,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（应用模型 C：整包桌面应用；自研内核、无 Linux ABI；Node.js 已移植）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1589,7 +1588,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "桌面应用壳完全依赖 Electron；若鸿蒙 PC 不支持 Electron/Chromium，则当前桌面形态无法直接运行",
-        "source": "references/harmony-pc-capabilities.json#gui.electron"
+        "source": "references/harmony-pc-capabilities.json#gui.electron",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1597,7 +1597,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 Electron 打包产物能否在鸿蒙 PC 上分发与启动",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:node_runtime",
@@ -1605,7 +1606,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Appium 服务器与浏览器插件形态均运行在 Node.js 上；运行时已移植，不是阻碍",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:appium_on_harmony",
@@ -1613,7 +1615,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "插件形态需依赖 Appium 服务器；Appium 本身为 Node.js 应用，理论上可运行，但尚未核实",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1628,7 +1631,6 @@
         ]
       }
     ],
-    "recommended_path": "arkts_rewrite_or_plugin_fallback",
     "summary": "Appium Inspector 的核心功能为纯 Web/React + WebDriver 客户端，不依赖原生模块或平台专有 API，理论上可移植性较好。但作为桌面应用，其窗口/菜单/IPC/自动更新等壳层完全依赖 Electron/Chromium，而鸿蒙 PC 对 Electron 的支持状态尚未核实（unknown）。若 Electron 不可用，则当前桌面形态无法在鸿蒙上直接运行；可退化为 Appium 插件形态（依赖已移植的 Node.js 运行时）或重写桌面壳为 ArkUI/ArkWeb。",
     "blockers": [
       {
@@ -1722,7 +1724,21 @@
       "验证二十余家云测平台 HTTPS 端点在鸿蒙网络环境下的可达性"
     ],
     "notes": "评估按应用模型 C（整包桌面应用）进行。主要不确定性来自鸿蒙 PC 对 Electron/Chromium 的支持；该事实目前为 unknown，因此置信度降至 medium。若目标仅要求插件形态，则工作量与阻碍显著降低（porting_class 可回落至 needs_adaptation_full 或 recompile_only）。OpenHarmony PC 镜像当前未覆盖 npm 包，故未对 Node.js 依赖执行已鸿蒙化脚本。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1733,22 +1749,7 @@
       "OpenHarmony PC 镜像脚本（scripts/harmony_adapted.js）目前仅支持 python/cpp 生态，未覆盖 npm/nodejs 包，因此未对 Node.js 依赖执行已鸿蒙化查询。",
       "harmony-pc-capabilities.json 中 Electron/Chromium 桌面运行时与传统桌面应用交付形态均为 unknown，dim-9 结论依赖该未核实事实。"
     ],
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "jest/mocha vs vitest",
-        "rationale": "代码-metrics 脚本通过正则匹配将 vitest 测试误判为 jest/mocha；应结合 package.json 脚本确认真实框架为 vitest。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "arkts_rewrite_or_plugin_fallback",
-        "rationale": "Electron 应用在鸿蒙 PC 上无现成适配路径时，常见策略是保留 Web 核心并退化为插件形态或用 ArkWeb 重壳；现有推荐路径列表未明确覆盖该组合。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
@@ -1756,6 +1757,7 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

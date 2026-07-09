@@ -1388,8 +1388,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库默认走「跑在已移植 Python 运行时」模型 A；驱动为 Node.js，浏览器可执行文件需 OHOS 构建；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1406,7 +1405,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 封装层可直接运行在鸿蒙 Python 上",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:nodejs_runtime",
@@ -1414,7 +1414,8 @@
         "required": true,
         "target_status": "available",
         "impact": "驱动 JS 可运行；但需替换官方 Linux/mac/Windows 预编译 Node 二进制",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:browser_binaries",
@@ -1422,7 +1423,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本地 launch 功能依赖浏览器二进制；若缺失则只能使用 connect/connect_over_cdp 远程模式",
-        "source": "references/harmony-pc-capabilities.json#gui.electron / Chromium 可用性尚未核实"
+        "source": "references/harmony-pc-capabilities.json#gui.electron / Chromium 可用性尚未核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -1430,11 +1432,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Node 驱动由 asyncio.create_subprocess_exec 启动；如鸿蒙 PC 受限则整体无法运行",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime + replace bundled Node.js binary with HarmonyOS PC Node build; verify or provide OHOS browser executables; keep remote connect fallback",
     "summary": "playwright 是纯 Python 封装层，核心逻辑可在鸿蒙 Python 上直接运行；greenlet 已有 ohos wheel。真正的工作量在于：1) 替换构建脚本从 nodejs.org 下载的 Linux/mac/Windows Node.js 预编译二进制为鸿蒙 Node 构建；2) 确认或提供鸿蒙 PC 版 Chromium/Firefox/WebKit 浏览器可执行文件。由于浏览器二进制可用性尚未核实，本地 launch 路径存在不确定性，但 connect/connect_over_cdp 远程模式理论上可直接使用。整体可行但工作量中等偏高。",
     "blockers": [
       {
@@ -1536,7 +1538,21 @@
       "跑通核心单元测试并验证截图、视频、网络拦截等跨进程能力"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时，Node 驱动跑在已移植 Node.js 上）。由于鸿蒙 PC 浏览器二进制与进程派生能力均为 unknown，confidence 下调至 medium；未核实前不能假设本地 launch 一定可行。若目标为 ArkTS 沙箱应用（模型 B），Python 运行时不可用，整体需重写为 ArkTS/Node-API 方案，结论将变为 hard/infeasible。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1544,36 +1560,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "library (with console_script)",
-        "rationale": "README 与 pyproject.toml 明确将项目定位为 Python library，但也提供了 playwright 控制台脚本；按主要使用方式（被 import 调用）判为 library，CLI 作为辅助入口在 build_env 登记。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "prebuilt_binary_bundle",
-        "rationale": "Node.js 运行时二进制与 playwright-core JS 包通过 scripts/build_driver.py 下载并打包进 wheel，既不是普通 PyPI 依赖，也不是系统预装库；分别用 download_build（npm tarball）与 prebuilt_binary（node 二进制）描述。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenario_key",
-        "kind": "gap",
-        "value": "browser_automation_driver",
-        "rationale": "项目本身不直接包含 GUI/3D/媒体/硬件代码，浏览器相关的重能力全部委托给外部 Node 驱动与浏览器可执行文件；现有推荐场景键不能准确表达这种「依赖外部浏览器引擎」的适配重点。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blocker.category",
-        "kind": "new_value",
-        "value": "missing_ohos_browser_binaries",
-        "rationale": "本地 launch 依赖上游未提供 OHOS 版的浏览器可执行文件，这不是具体 API 调用，用现有 platform/system/hardware/ffi 分类无法表达，需要新增 category。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

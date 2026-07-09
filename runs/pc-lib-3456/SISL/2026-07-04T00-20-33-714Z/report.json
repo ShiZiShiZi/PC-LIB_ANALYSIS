@@ -714,7 +714,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 交叉编译为 .so；自研内核，无 Linux ABI；arm64/x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -723,7 +722,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_ndk",
     "summary": "SISL 核心库是纯 ANSI C 的 NURBS 计算几何引擎，仅依赖标准 C 运行时与系统数学库 libm，没有平台专有系统调用、硬件加速或云服务。使用鸿蒙 OHOS NDK 的 clang/musl 工具链直接交叉编译即可，预计工作量低。仓库内的 viewer/app 属于可选示例，不在 libsisl 核心迁移范围内。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -733,7 +731,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心算法仅使用 malloc/free、memcpy、sqrt 等标准 C 函数，NDK 已覆盖",
-        "source": "references/harmony-pc-capabilities.json intro（OHOS NDK musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json intro（OHOS NDK musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -741,7 +740,8 @@
         "required": true,
         "target_status": "available",
         "impact": "NDK 主力架构，libsisl 可正常编译",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -749,7 +749,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响是否同时产出 x86_64 产物，不影响核心功能",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -785,7 +786,21 @@
       "如需保留 viewer，单独评估 OpenGL/GLUT 替代方案；不影响核心库"
     ],
     "notes": "评估口径为库产品 libsisl（模型 A：跑在已移植的 C/C++ 原生层）。仓库中的 viewer/ 与 app/ 被视为可选示例/可视化工具，其 OpenGL/GLUT 依赖未纳入核心阻碍。协议为 AGPL-3.0-or-later，商业场景需注意 copyleft 或购买商业许可。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "SISL",
@@ -810,22 +825,7 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "production_scope",
-        "kind": "gap",
-        "value": "viewer/app 为可选示例/可视化工具",
-        "rationale": "metrics.py 按目录名将 viewer/、app/ 标记为 production，但 CMake 中三者均默认关闭（sisl_COMPILE_VIEWER/APPS/EXAMPLES 为 OFF），且 viewer 是独立的 OpenGL/GLUT 可视化程序，app/ 下是问题示例程序。本分析将 src/ + include/ 视为 libsisl 核心库，能力画像与鸿蒙评估以核心库为准。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "c_standard_api",
-        "kind": "new_value",
-        "value": "macro_wrapped_malloc/free/memcpy",
-        "rationale": "SISL 未直接调用 malloc/free/memcpy，而是通过 sislP.h 中 newarray/new0array/freearray/memcopy/memzero 宏封装；在 native_api 中按底层标准 C API 记录，并保留宏调用点作为证据。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cap_miss:rendering_3d",
@@ -833,7 +833,8 @@
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "核心 NURBS 计算库本身不触及 GUI、3D 渲染、媒体或特定硬件；仓库内的 viewer/ 与 app/ 属于可选可视化/示例程序，未纳入库核心能力画像。",

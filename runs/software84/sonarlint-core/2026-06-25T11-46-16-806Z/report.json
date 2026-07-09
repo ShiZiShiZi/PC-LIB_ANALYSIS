@@ -1706,8 +1706,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（Java 库运行在已移植 JDK 上；原生层 OHOS NDK/musl；架构 arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1716,7 +1715,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "SonarLint Core 为纯 Java 库，鸿蒙 PC 已移植 JDK，核心字节码与绝大多数纯 Java 依赖可直接运行。主要移植工作在于替换平台特定的外部命令调用（Windows where.exe、macOS path_helper、POSIX which）与 .lnk 快捷方式检测，使其在鸿蒙命令与 PATH 环境下可用；同时为 backend/cli 分发包替换或移除捆绑的 Temurin JRE。没有 GUI/3D/媒体/硬件等不可适配场景。",
     "blockers": [
       {
@@ -1843,7 +1841,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JDK 已移植，本库作为 Java 库可运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -1851,7 +1850,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若受限或不可用，则启动后端子进程、git blame、node 检测等功能受阻",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arch",
@@ -1859,7 +1859,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "arm64 已确认可用；x86_64 覆盖待核实",
-        "source": "references/harmony-pc-capabilities.json#arch"
+        "source": "references/harmony-pc-capabilities.json#arch",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [
@@ -1914,7 +1915,21 @@
       "文档化鸿蒙所需外部运行时（git、node、python）及其获取方式"
     ],
     "notes": "评估按模型 A（Java 库运行在鸿蒙已移植 JDK 上）。由于 process_security.spawn 目标状态为 unknown，整体置信度降至 medium；若后续核实该能力可用，则工作量和风险可进一步降低。无 GUI/3D/媒体/硬件场景，故无对应 blocker。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1922,29 +1937,7 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library_with_internal_cli",
-        "rationale": "仓库包含独立 backend CLI 入口（SonarLintServerCli.main）和发行包，但 README 与模块描述明确称其为“core library”，CLI 只是被 IDE 客户端启动的内部后端，因此 kind 判为 library 而非 application。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "java_process_spawning_as_platform_signal",
-        "rationale": "Java ProcessBuilder 本身是标准库 API，但本项目用它调用平台专有的命令（where.exe、path_helper、/usr/bin/which），因此将具体命令按 platform+windows/macos/posix 分类，而 ProcessBuilder.start 保留在 java_stdlib/standard。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "run_on_ported_runtime_with_subprocess_adaptation",
-        "rationale": "纯 Java 库在鸿蒙 JDK 上基本可直接运行，真正的适配点是外部命令与 PATH 查找，而非重编或 ArkTS 重写。现有 recommended_path 枚举未精确覆盖此情形，因此用 run_on_ported_runtime 并在 notes 中说明需改造子进程调用。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
@@ -1952,6 +1945,7 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

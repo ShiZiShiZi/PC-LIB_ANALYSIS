@@ -1759,8 +1759,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (OHOS NDK / musl libc, clang; 通过配置文件新增 ohos 平台目标; arm64/x86_64; 自研内核, 非 Linux ABI)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1769,7 +1768,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "铜锁/Tongsuo 为自包含的 C 语言密码学与安全通信库，无外部 C/C++ 运行时依赖，仅需 OHOS NDK (clang + musl) 重新编译。核心密码学算法（SM2/SM3/SM4/AES/RSA/SHA等）均为标准 C 实现，可无损移植。适配工作集中在：(1) 配置新增 OHOS 目标平台（Perl Configure + 编译器/架构检测），(2) 随机数熵源适配——Linux 的 getrandom 系统调用与 /dev/urandom 需换 OHOS 等效机制，(3) 安全内存（mlock/mprotect）与 fork 检测需条件编译降级，(4) 线程与 DSO 后端选择——OHOS musl 已提供 pthread/dlopen 可直接用，(5) 汇编加速模块——x86_64 AVX/AVX2 与 ARM NEON 按目标架构选择性复用，C 回退保证基本可用。无第三方库依赖、无 GUI、无特定硬件、无云端服务，所有阻碍均可通过编译选项降级或 OHOS 平替解决，整体可行。",
     "blockers": [
       {
@@ -1852,7 +1850,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若缺失则需大幅重写线程/动态加载/IO 层",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:clang",
@@ -1860,7 +1859,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若缺失则无法编译 C 代码",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:perl",
@@ -1868,7 +1868,8 @@
         "required": true,
         "target_status": "available",
         "impact": "构建系统依赖 Perl；OHOS 无原生 Perl 可在宿主交叉编译或在 OHOS 上安装",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1930,7 +1931,21 @@
       "可选：如需暴露给 ArkTS 应用，将关键 API 经 Node-API 封装为 .so 插件供 ArkTS 调用"
     ],
     "notes": "评估按模型 A（C/C++ 库，经 OHOS NDK 重编为 .so，由鸿蒙原生应用或 Node-API 包装调用）。铜锁的构建系统为 Perl-based Configure（非 CMake），首次适配需手动新增 OHOS 目标配置——这是最主要的适配工作量。代码中 1735 行平台适配代码（#ifdef _WIN32/__APPLE__/__linux__/POSIX）需新增 OHOS 条件分支，但所有平台 API 都可解决（musl 提供 POSIX 子集 + 个别编译降级）。无不可适配的底层 API，porting_class 定为 needs_adaptation_full。FIPS 自测试与商用密码检测认证模块在鸿蒙上需额外评估合规性，不计入本次工作量。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1950,7 +1965,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "铜锁/Tongsuo 为纯密码学与安全通信库，不涉及 GUI、3D 渲染或音视频媒体场景。代码中多架构汇编优化（SSE/AVX/NEON/SVE 等）属于 CPU SIMD 指令加速，并非特定硬件依赖——均有 C 语言回退实现。",

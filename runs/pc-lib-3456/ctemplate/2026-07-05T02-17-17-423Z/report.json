@@ -1058,7 +1058,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK clang + musl libc，POSIX 子集；经 OHOS NDK 交叉编译为 .so，arm64 主力 / x86_64 待核实；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1067,7 +1066,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "ctemplate 是一个纯 C++ 库，无第三方依赖（仅系统 pthread），无 GUI/网络/子进程/设备等平台耦合。唯一工作量是用 OHOS NDK (clang + musl) 交叉编译——ctemplate 使用的 POSIX API（pthread 锁、stat、getcwd、fopen）均属 musl 支持的标准 POSIX 子集，Windows 专有 CRITICAL_SECTION 路径由 _WIN32 守卫不会在 OHOS 编译。configure.ac 需适配为交叉编译模式（指定 OHOS 工具链 + 手动设置配置结果），之后 make 即可产出 libctemplate.so。字节序检测需根据 OHOS 头文件微调。整体低风险、可工程化。",
     "blockers": [
       {
@@ -1126,7 +1124,8 @@
         "required": true,
         "target_status": "available",
         "impact": "pthread 是 ctemplate 线程安全的核心依赖，OHOS musl 支持 pthread 读写锁即可编译并正常工作",
-        "source": "OHOS NDK 基于 musl libc，musl 完整支持 POSIX 线程 API (pthread_rwlock_init/wrlock/rdlock/unlock/destroy + pthread_mutex_*)"
+        "source": "OHOS NDK 基于 musl libc，musl 完整支持 POSIX 线程 API (pthread_rwlock_init/wrlock/rdlock/unlock/destroy + pthread_mutex_*)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_posix_io",
@@ -1134,7 +1133,8 @@
         "required": true,
         "target_status": "available",
         "impact": "ctemplate 的模板文件加载和缓存管理全部依赖这些标准 POSIX 文件 I/O API，musl 均支持",
-        "source": "musl libc 标准 POSIX 文件 I/O 支持"
+        "source": "musl libc 标准 POSIX 文件 I/O 支持",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1191,7 +1191,21 @@
       "可选：将库经 Node-API (napi) 暴露给 ArkTS 侧（若需在 ArkTS 应用中调用模板引擎）"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 交叉编译为 .so，供原生层或经 Node-API 调用）。ctemplate 是高质量自包含 C++ 库，仅依赖系统 pthread 和标准 POSIX 文件 I/O——两者在 OHOS NDK (musl libc) 均有支持。无 GUI/网络/子进程/设备访问/动态加载等平台重度耦合。代码中仅 ~121 行平台条件编译代码（platform_adaptation），且主要是 Windows 专有路径（DLL 导出宏和 CRITICAL_SECTION），OHOS 走 POSIX 路径即可。x86_64 架构状态为 unknown，建议先聚焦 arm64 主力架构；若最终需 x86_64 支持，交叉编译配置扩展即可。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1213,7 +1227,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "ctemplate 是一个纯文本模板引擎库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。scenarios 为空。",

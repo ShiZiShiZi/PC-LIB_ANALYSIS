@@ -1628,8 +1628,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核 + OHOS NDK 原生层 + GModule 动态加载）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -1651,7 +1650,9 @@
         "category": "system",
         "evidence": [
           "libbrasero-media/scsi-sg.c:124"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:scsi_cam_send_ccb",
@@ -1665,7 +1666,9 @@
         "category": "system",
         "evidence": [
           "libbrasero-media/scsi-cam.c:48"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:scsi_netbsd_scioccommand",
@@ -1679,7 +1682,9 @@
         "category": "system",
         "evidence": [
           "libbrasero-media/scsi-netbsd.c:44"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:scsi_solaris_uscsi",
@@ -1693,7 +1698,9 @@
         "category": "system",
         "evidence": [
           "libbrasero-media/scsi-uscsi.c:44"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:inotify_init",
@@ -1707,7 +1714,9 @@
         "category": "system",
         "evidence": [
           "libbrasero-burn/brasero-file-monitor.c:41,299"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1717,7 +1726,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "GTK 本体已鸿蒙化（cmd-pkgs: gtk/gtk3/gtk+），但需确认 GTK 在鸿蒙 PC 上的 display backend 可用（非 gdk-x11）。若没有 window backend，整个 GUI 界面不可渲染，app 无法使用",
-        "source": "references/harmony-pc-capabilities.json#gui.gtk (available via cmd-pkgs)"
+        "source": "references/harmony-pc-capabilities.json#gui.gtk (available via cmd-pkgs)",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:optical_drive",
@@ -1725,7 +1735,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Brasero 的核心功能——光驱检测、介质查询、刻录、擦除——均通过 SCSI ioctl 直接操控光驱设备。鸿蒙自研内核无 Linux SCSI Generic 子系统，无 /dev/sg* 设备节点。若无光驱硬件驱动层，整个刻录功能链无法工作。即便换用 libburnia 路径，libburn 也需要操作系统提供光驱设备访问接口。",
-        "source": "自行评估续：鸿蒙 PC 内核非 Linux，不含 SCSI 子系统；光驱在 PC 形态的硬件支持未见文档"
+        "source": "自行评估续：鸿蒙 PC 内核非 Linux，不含 SCSI 子系统；光驱在 PC 形态的硬件支持未见文档",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:x11_backend",
@@ -1733,7 +1744,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Brasero 编译时显式依赖 gdk-x11-3.0（pkg-config）。鸿蒙 PC 无 X11 服务器。需切换 GTK 的 display backend 为鸿蒙原生 backend（若 GTK 提供）或 ArkUI 嵌入方案。若 GTK 在鸿蒙上的 backend 可用，此点可解。",
-        "source": "configure.ac:227 (gdk-x11-3.0 硬依赖)"
+        "source": "configure.ac:227 (gdk-x11-3.0 硬依赖)",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:subprocess_spawn",
@@ -1741,7 +1753,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Brasero 的 cdrtools/cdrkit/cdrdao/growisofs 后端均通过子进程方式调用外部命令行工具。若不允许子进程执行，这些后端插件的功能将不可用。非必需——可使用 libburnia 库后端绕过。",
-        "source": "libbrasero-burn/burn-process.c:636 (g_spawn_async_with_pipes)"
+        "source": "libbrasero-burn/burn-process.c:636 (g_spawn_async_with_pipes)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app_delivery",
@@ -1749,7 +1762,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Brasero 是以传统 autotools ./configure && make && make install 分发的 GNOME 应用。在鸿蒙 PC 上需要明确：是采用 .hap 签名安装还是允许原生可执行文件安装运行——影响整个打包和分发策略。",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:device_file_access",
@@ -1757,7 +1771,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "光驱设备访问通过 open(\"/dev/sg0\") 等设备节点路径。若鸿蒙沙箱禁止应用访问 /dev 下的设备文件，所有 SCSI 通信均会被阻止。",
-        "source": "libbrasero-media/scsi-sg.c:182 (open 设备路径)"
+        "source": "libbrasero-media/scsi-sg.c:182 (open 设备路径)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:linux_inotify",
@@ -1765,7 +1780,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "inotify 是 Linux 内核专有 API，可选编译功能。可替换为 GFileMonitor（已集成 GIO）或鸿蒙文件观察 API，不影响核心光盘刻录功能。",
-        "source": "libbrasero-burn/brasero-file-monitor.c:41"
+        "source": "libbrasero-burn/brasero-file-monitor.c:41",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:gstreamer_codecs",
@@ -1773,11 +1789,11 @@
         "required": true,
         "target_status": "partial",
         "impact": "GStreamer 本体已鸿蒙化，但音频解码（ogg/flac/mp3）依赖各编解码器插件。若缺失关键编解码器，音频 CD 刻录功能受限。可降级为仅支持源格式的音频文件。",
-        "source": "configure.ac:156-162 (gstreamer 依赖)"
+        "source": "configure.ac:156-162 (gstreamer 依赖)",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "abandon",
     "summary": "Brasero 是一款深度绑定 Linux/Unix 桌面生态的光盘刻录应用。鸿蒙 PC 移植面临两个根本性障碍：(1) 光驱硬件通信层依赖四个平台特定的 SCSI 内核接口，鸿蒙自研内核均不提供——这是刻录功能的硬阻碍；(2) 大量 GNOME 桌面集成（gdk-x11、SM/ICE、libnotify、libcanberra、Nautilus 扩展、Tracker 搜索）在鸿蒙 PC 上无直接等价。即便 GTK 和 GStreamer 本体已鸿蒙化，图形后端切换和缺失的桌面集成立面仍需大量改造。更关键的是：鸿蒙 PC 若本身不支持光驱硬件（大概率如此），则此应用移植失去存在前提。推荐放弃整包移植，仅将其非刻录模块（ISO 镜像创建、工程管理）作为功能子集重构为鸿蒙原生应用。",
     "blockers": [
       {
@@ -1916,7 +1932,27 @@
       "决定分发形态：.hap 签名安装包或原生二进制安装"
     ],
     "notes": "置信度为 medium 的原因：(1) ta:desktop_app_delivery（传统桌面应用分发形态）和 ta:device_file_access（设备文件访问权限）两个必需前提的目标状态均为 unknown，鸿蒙 PC 桌面应用的交付和权限模型尚未有公开可信文档；(2) 光驱硬件在鸿蒙 PC 的存在前提完全未知——这是移植是否'有意义'的决定性前提；(3) GTK 在鸿蒙 PC 上的实际可用 backend 和功能完整度尚未充分测试。若上述前提中 desktop_app_delivery 和 device_file_access 不满足，可升级为 infeasible——传统 Linux 桌面应用在封闭沙箱环境中根本不能安装运行。libisofs 需单独适配（当前未鸿蒙化），libburn 虽已鸿蒙化但 libburn 能否在无 Linux SCSI 子系统的鸿蒙内核上发现和操控光驱仍是未知——libburn 本身也依赖操作系统提供设备文件或 IOKit/DirectSPTI 等平台的块设备通路。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:scsi_sg_ioctl",
+          "ua:scsi_cam_send_ccb",
+          "ua:scsi_netbsd_scioccommand",
+          "ua:scsi_solaris_uscsi",
+          "ua:inotify_init"
+        ]
+      }
+    }
   },
   "library": {
     "name": "brasero",
@@ -1936,40 +1972,39 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_cli_tool",
-        "rationale": "cdrtools/cdrkit/cdrdao/growisofs 等外部 CLI 工具不同于传统库依赖——它们通过 $PATH 查找并子进程调用，而非链接。现有 acquisition 推荐值中没有 express 此模式，建议增加 system_cli_tool 或类似词。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "scsi_linux_sg / scsi_freebsd_cam / scsi_netbsd_scsipi / scsi_solaris_uscsi",
-        "rationale": "这 4 个 SCSI 平台特定类型超出了推荐的 API family 枚举（win32/posix/…），但准确描述了 Brasero 的核心平台依赖。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "abandon",
-        "rationale": "对于依赖特定硬件（光驱）且内核 API 完全不可用的桌面应用，推荐整包放弃移植。这是 'abandon' 路径的典型适用场景：硬件前提不可满足、平台差距过大、改造成本远超重写。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "application",
-        "rationale": "Brasero 是典型的桌面应用（用户启动、GUI 界面、打包分发），但同时也耦合了 3 个库子项目（libbrasero-media/libbrasero-burn/libbrasero-utils）。kind=application 准确反映了它的性质，但库的存在说明它也有库的一面——这可能是 GNOME 应用的常见模式。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:scsi_sg_ioctl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:scsi_sg_ioctl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:scsi_cam_send_ccb",
+        "class": "actionable",
+        "message": "unadaptable_api ua:scsi_cam_send_ccb 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:scsi_netbsd_scioccommand",
+        "class": "actionable",
+        "message": "unadaptable_api ua:scsi_netbsd_scioccommand 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:scsi_solaris_uscsi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:scsi_solaris_uscsi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:inotify_init",
+        "class": "actionable",
+        "message": "unadaptable_api ua:inotify_init 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "Brasero 是一款基于 GTK+ 3 GUI 的光盘刻录桌面应用，触及 GUI（GTK+3/gdk-x11）和媒体（GStreamer 音视频解码）场景，核心硬件交互通过 SCSI 直接控制光驱设备。不涉及 3D 渲染。",

@@ -1130,8 +1130,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (经 OHOS NDK / musl libc 交叉编译; 自研内核, 非 Linux ABI; arm64/x86_64)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -1140,7 +1139,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libdwarf 为纯 C 库，已具备成熟的跨平台抽象层（POSIX/Windows 文件 I/O 均通过条件编译处理），核心 DWARF 解析逻辑完全可移植。所有平台特有的 POSIX API（mmap/open/lseek/close/getcwd）均可经 OHOS NDK musl 直接编译使用，mmap 支持可通过 HAVE_FULL_MMAP 编译宏独立禁用（退回到 malloc 路径）。两项可选依赖 zlib 和 libzstd 均已鸿蒙化。主要工作：新增 OHOS 构建目标、验证 OHOS NDK musl 下 mmap/sysconf/文件 I/O 行为、在 OHOS 上运行测试。总工作量低（3-6 人天）。",
     "blockers": [
       {
@@ -1184,7 +1182,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libdwarf 的文件读取和 debuglink 路径拼接依赖这些接口；musl 一般提供但需在 OHOS 实测验证",
-        "source": "OHOS NDK musl libc 文档（POSIX 子集）"
+        "source": "OHOS NDK musl libc 文档（POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:musl_mmap",
@@ -1192,7 +1191,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "mmap 为可选性能优化路径（HAVE_FULL_MMAP 守卫），不可用时可安全禁用并退回到 malloc；不是移植必需",
-        "source": "OHOS NDK musl libc 文档"
+        "source": "OHOS NDK musl libc 文档",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1230,7 +1230,21 @@
       "将 OHOS 构建目标与配套 CI 提交上游，使后续版本原生支持鸿蒙"
     ],
     "notes": "libdwarf 是跨平台 C 库，当前已良好支持 Linux/macOS/FreeBSD/Windows。鸿蒙 PC 借助 OHOS NDK 可低工作量移植：所有平台特有 API 均被编译宏（HAVE_FULL_MMAP/HAVE_UNISTD_H/_WIN32 等）守卫且已有回退路径。评估按模型 A（库经 OHOS NDK 生成 .so 供链接使用）进行。mmap target_status 为 unknown 但因它可选（BHILD_MMAP=OFF 即可禁用）而不影响 confidence；若 OHOS musl 实际支持 mmap，工作量还可更低。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libdwarf-code",
@@ -1251,22 +1265,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "object_format",
-        "rationale": "libdwarf 自行实现 ELF/Mach-O/PE 格式解析（纯内存字节解析，无外部依赖），不是标准库 API 也不是平台专有 API。归入 category: standard（可移植的纯逻辑代码），但与通用 C 标准库不同——它是库自身实现的格式解析器。建议 taxonomy 补充此分类。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "purpose",
-        "kind": "gap",
-        "value": "both optional; library works without them",
-        "rationale": "libdwarf 的两个依赖（zlib/libzstd）均为纯可选：无此依赖时库仍可正常编译使用，仅失去压缩 DWARF section 的读取能力。这是一种 'soft optional' 模式——scope: optional 已表达，但建议在 function_summary 中额外说明零外部依赖可用性。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1277,7 +1276,8 @@
         "message": "license.category(weak_copyleft) 与依据 SPDX(LGPL-2.1-only) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "libdwarf 是纯数据解析 C 库，离线读取磁盘上的目标文件以解析 DWARF 调试信息。不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。所有场景均 present:false。",

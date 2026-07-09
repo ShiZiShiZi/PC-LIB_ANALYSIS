@@ -717,7 +717,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层 + Node-API 桥接，ArkTS 应用层）",
     "summary": "纯数值计算库，JS 实现在已移植的 Node.js 上可直接运行；C 原生插件使用 C99 标准 + N-API（鸿蒙均支持），仅需针对 OHOS NDK 重新编译。无平台特性依赖，无阻塞点。",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "confidence": "high",
     "effort": {
@@ -727,7 +726,6 @@
       ],
       "level": "low"
     },
-    "recommended_path": "JS 实现无需适配即可在鸿蒙 PC 已移植的 Node.js 上运行。若需 C 原生插件性能优化，在鸿蒙 OHOS NDK 环境中通过 node-gyp 重新编译 C 源码即可，无需修改源代码。npm 依赖全部为纯 JS @stdlib 包，在已移植 Node.js 上可直接 npm install。",
     "target_assumptions": [
       {
         "capability": "Node.js 运行时（含 N-API/Node-API 支持）",
@@ -735,7 +733,8 @@
         "target_status": "available",
         "impact": "JS 实现和 npm 依赖均可直接运行",
         "source": "HarmonyOS PC 已移植的运行时列表（Python/Node.js/Java/Rust/Go/Julia 均已移植）",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "C99 编译器和 OHOS NDK",
@@ -743,7 +742,8 @@
         "target_status": "available",
         "impact": "C 原生扩展仅在需要性能优化时编译，非必须",
         "source": "OHOS NDK 支持 C99/C11 + Clang/LLVM",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       }
     ],
     "blockers": [],
@@ -785,7 +785,21 @@
       "运行现有测试套件（tape）验证计算正确性"
     ],
     "notes": "纯数学计算库，无 GUI/网络/文件/设备/权限需求。C 扩展是可选项，非核心功能依赖。评估基于 JS 主路径 + C 次路径均无阻塞点的判断。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-float32-base-scale",
@@ -802,17 +816,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "package_manager",
-        "rationale": "@stdlib 依赖通过 npm 安装，属于标准 package_manager 模式"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算函数，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备。",

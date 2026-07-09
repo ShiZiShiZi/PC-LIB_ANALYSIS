@@ -1860,8 +1860,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库默认模型 A：核心 C++ 库经 OHOS NDK 重编；Python/JS 绑定跑在已移植运行时；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1870,7 +1869,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi_or_drop_viewer",
     "summary": "MaterialX 核心数据模型与着色器生成器是纯算法/C++17 标准库代码，可通过 OHOS NDK 重编后运行；Python/JS 绑定可复用已移植的运行时。主要难点在于可选的 OpenGL/Metal 渲染后端与 Viewer/Graph Editor 桌面工具，它们深度依赖 Win32/X11/Cocoa/Metal 等桌面平台 API，在鸿蒙 PC 上无法直接复用，需要重写或裁剪。",
     "unadaptable_apis": [
       {
@@ -1885,7 +1883,9 @@
         ],
         "caused_by": [
           "ta:opengl_desktop"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:glxcontext",
@@ -1899,7 +1899,9 @@
         ],
         "caused_by": [
           "ta:opengl_desktop"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nscocoaopengl",
@@ -1914,7 +1916,9 @@
         ],
         "caused_by": [
           "ta:opengl_desktop"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metalbackend",
@@ -1929,7 +1933,9 @@
         ],
         "caused_by": [
           "ta:metal"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32window",
@@ -1943,7 +1949,9 @@
         ],
         "caused_by": [
           "ta:gui_desktop"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1953,7 +1961,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心库重编的基础",
-        "source": "references/harmony-pc-capabilities.json#runtimes（C++ 原生开发）"
+        "source": "references/harmony-pc-capabilities.json#runtimes（C++ 原生开发）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_subset",
@@ -1961,7 +1970,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "MaterialXFormat 的跨平台文件抽象可在鸿蒙 POSIX 子集上实现，但需验证具体函数可用性",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:python_js_runtime",
@@ -1969,7 +1979,8 @@
         "required": true,
         "target_status": "available",
         "impact": "PyMaterialX / JsMaterialX 绑定无需重写脚本层",
-        "source": "references/harmony-pc-capabilities.json#runtimes"
+        "source": "references/harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl_desktop",
@@ -1977,7 +1988,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "OpenGL 渲染验证模块需迁移到 OpenGL ES/EGL 或 ArkGraphics 3D；WGL/GLX/Cocoa 路径不可用",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:metal",
@@ -1985,7 +1997,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Metal 后端完全不可用，必须裁剪或重写",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:gui_desktop",
@@ -1993,7 +2006,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Viewer/Graph Editor 保留时需要鸿蒙桌面 GUI 支持；目前状态未核实，建议默认裁剪",
-        "source": "references/harmony-pc-capabilities.json#gui"
+        "source": "references/harmony-pc-capabilities.json#gui",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -2001,7 +2015,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "可选 OSL/MDL 验证功能依赖外部编译器，鸿蒙 PC 上外部命令可用性未核实",
-        "source": "references/harmony-pc-capabilities.json#process_security#spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security#spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2166,7 +2181,27 @@
       "验证可选 OpenImageIO/OpenColorIO 预编译包在鸿蒙 PC 上的链接与运行"
     ],
     "notes": "评估按库模型 A 进行：核心功能可移植，难点是可选桌面工具与硬件渲染后端。由于 NanoGUI/ImGui/GLFW 桌面窗口栈、外部进程调用、存储权限等目标事实尚未核实，整体置信度为 medium。若用户只使用核心着色器生成与文档 I/O，难度可降至 needs_adaptation_full（约 5-15 人天）；若坚持保留 Viewer/Graph Editor 则工作量显著增加。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:wglcontext",
+          "ua:glxcontext",
+          "ua:nscocoaopengl",
+          "ua:metalbackend",
+          "ua:win32window"
+        ]
+      }
+    }
   },
   "library": {
     "name": "MaterialX",
@@ -2201,51 +2236,41 @@
       "harmony_adapted.js lookup succeeded for C/C++ dependencies; only OpenImageIO and OpenColorIO were found in the OpenHarmony PC cmd-pkgs mirror."
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored_or_system",
-        "rationale": "PyBind11 既支持 find_package 使用系统包，也内嵌 vendored 回退；现有推荐值未覆盖这种双来源获取方式。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "external_sdk",
-        "rationale": "NVIDIA MDL SDK 是用户提供的闭源/预编译 SDK，不是 system 包也不是 fetchcontent；需要独立 acquisition 标签。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "external_source",
-        "rationale": "Slang RHI 通过用户提供的源码目录 add_subdirectory 集成，不是 submodule 也不是 FetchContent。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "std::system in optional render validators",
-        "rationale": "std::system 本身是标准库，但调用外部平台编译器可执行文件（oslc/mdlc）属于运行期外部命令依赖；将其放在 system/subprocess 组而非标准库组。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "rendering_3d_shader_generation_only",
-        "rationale": "MaterialX 的 3D 场景以着色器代码生成为主，不直接做 3D 渲染；现有 gui/rendering_3d/media/hardware 四键难以区分'生成着色器'与'运行 3D 渲染'。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:wglcontext",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wglcontext 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:glxcontext",
+        "class": "actionable",
+        "message": "unadaptable_api ua:glxcontext 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nscocoaopengl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nscocoaopengl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:metalbackend",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metalbackend 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32window",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32window 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:ohos.permission.READ_MEDIA / 读写存储",
         "class": "actionable",
         "message": "required_permission ohos.permission.READ_MEDIA / 读写存储 的 source_capability=filesystem 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "MaterialX 触及 GUI 桌面工具与 3D 渲染两大鸿蒙适配重点场景：核心库本身为数据模型/着色器生成，不直接依赖窗口或图形 API；但可选的 MaterialX Viewer（NanoGUI/OpenGL/Metal）和 Graph Editor（Dear ImGui/GLFW）以及 OpenGL/Metal 渲染后端均涉及桌面 GUI 与 3D 图形栈。无媒体编解码或特定不可替代硬件。",

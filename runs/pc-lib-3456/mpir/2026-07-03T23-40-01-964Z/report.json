@@ -1223,8 +1223,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（原生 C/C++ 库，OHOS NDK 交叉编译）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1241,7 +1240,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 标准库可用则核心内存管理、格式化 I/O 与浮点异常信号无需改动。",
-        "source": "references/harmony-pc-capabilities.json runtimes + OHOS NDK 基于 musl"
+        "source": "references/harmony-pc-capabilities.json runtimes + OHOS NDK 基于 musl",
+        "target_status_model": "available"
       },
       {
         "id": "ta:aarch64",
@@ -1249,7 +1249,8 @@
         "required": true,
         "target_status": "available",
         "impact": "MPIR 当前无 aarch64 汇编优化，需回退到通用 C 实现或新增 aarch64 汇编。",
-        "source": "references/harmony-pc-capabilities.json arch.arm64"
+        "source": "references/harmony-pc-capabilities.json arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:toolchain",
@@ -1257,11 +1258,11 @@
         "required": true,
         "target_status": "available",
         "impact": "autotools 构建系统需要替换为 OHOS NDK 工具链；m4 已在 cmd-pkgs 中可用。",
-        "source": "scripts/harmony_adapted.js 检测 m4 已适配 + OHOS NDK 默认带编译器"
+        "source": "scripts/harmony_adapted.js 检测 m4 已适配 + OHOS NDK 默认带编译器",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile_ohos_ndk",
     "summary": "MPIR 作为纯计算库，不依赖 GUI、网络、媒体或特定硬件，整体移植可行。主要工作是将 autotools 构建系统切换到 OHOS NDK 交叉工具链，并处理当前缺少 aarch64 汇编优化的问题：核心功能可依赖通用 C 实现直接运行，但若追求性能需为 aarch64 编写/移植 mpn limb 级汇编。Windows DLL 相关代码路径已通过条件编译隔离，不影响鸿蒙构建。",
     "blockers": [],
     "compatible": [
@@ -1299,7 +1300,21 @@
       "C++ 封装 mpirxx.h 与 .NET 绑定 mpir.net 不在本次原生库移植范围内，如需暴露给 ArkTS 可再封装 Node-API。"
     ],
     "notes": "当前置信度为 medium，原因包括：OHOS NDK 对 C 标准库与信号的完整兼容性尚未在 MPIR 上实测；aarch64 通用 C 实现的功能正确性需要测试验证；若用户要求完整汇编优化，工作量和不确定性会进一步上升。 tunes 目录下的计时工具使用了 POSIX mmap/getrusage/gettimeofday，它们仅用于性能调优，不影响库本体移植。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "mpir",
@@ -1330,30 +1345,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "MPIR 没有包管理器声明的外部依赖，所有构建/运行时依赖均来自系统工具链与 C 库，因此使用 system 描述 acquisition。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "arch_assembly",
-        "rationale": "将 CPU 特性检测、编译器内建与大量架构汇编实现统一归为 arch_assembly 组，便于表达硬件相关但非特定外设的移植工作。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "hardware:cpu_feature_detection",
-        "rationale": "MPIR 不涉及 GPU/USB/蓝牙等典型硬件，但涉及 CPU 特性检测与 SIMD/汇编优化，归入 hardware 场景并标记 specific_hardware=false。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "MPIR 是纯粹的数学计算库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件。其唯一与硬件相关的场景是 CPU 特性检测与架构优化汇编，这些可通过通用 C 实现或重新实现 aarch64 汇编来适配鸿蒙 PC。",

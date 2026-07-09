@@ -1081,8 +1081,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：库跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1091,7 +1090,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime + recompile_native_extension",
     "summary": "CFFI 主体为 Python 库，鸿蒙 PC 已移植 Python 运行时，纯 Python 部分可直接运行；核心工作量是将 C 扩展 _cffi_backend 及内嵌 libffi 用 OHOS NDK 交叉编译为鸿蒙 .so。关键依赖 libffi 已有官方鸿蒙预编译包，POSIX 动态加载/线程/内存映射接口在 musl 下基本可用，Windows 分支为条件编译、不会触发，因此整体可完整适配。",
     "blockers": [
       {
@@ -1145,7 +1143,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 库可直接运行在鸿蒙 Python 上，无需重写",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libffi",
@@ -1153,7 +1152,8 @@
         "required": true,
         "target_status": "available",
         "impact": "CFFI 核心依赖可直接链接鸿蒙版 libffi，无需自行完整移植",
-        "source": "scripts/harmony_adapted.js --ecosystem cpp --names libffi"
+        "source": "scripts/harmony_adapted.js --ecosystem cpp --names libffi",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1192,7 +1192,21 @@
       "评估 /proc/self/status PaX 检测在鸿蒙上的行为，必要时增加非 Linux 分支回退"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时）进行。libffi 已通过 cmd-pkgs 官方鸿蒙化，显著降低移植风险；若目标为 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，需改用 N-API 原生桥接并整体重写，结论会完全不同。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1201,6 +1215,7 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

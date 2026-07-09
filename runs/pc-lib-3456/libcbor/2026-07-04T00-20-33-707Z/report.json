@@ -907,7 +907,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK + musl libc；arm64/x86_64）。按库口径模型 A 评估：libcbor 作为 C 库，经 OHOS NDK 交叉编译为 .so/.a 后供其他应用/库链接。",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -917,7 +916,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libcbor 是纯 C99 算法库，仅依赖 C 标准库（内存、字符串、数学、格式化 I/O），无平台专有 API、无 GUI/媒体/硬件/网络/云依赖。CI 已覆盖 Linux、macOS、Windows、FreeBSD 及多种 ISA，代码本身跨平台性极强。移植到鸿蒙 PC 的主要工作是用 OHOS NDK 重新编译并跑通测试；核心代码无需改动。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -928,7 +926,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库所有运行时依赖均为标准 C 函数，NDK 支持则无需修改",
-        "source": "HarmonyOS PC 原生层基于 OHOS NDK（musl libc）"
+        "source": "HarmonyOS PC 原生层基于 OHOS NDK（musl libc）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -974,7 +973,21 @@
       "（可选）通过 Node-API 或 cffi 将 libcbor 封装为 ArkTS/JS/Python 可调用的接口"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植运行时的原生层上）。若目标是把 libcbor 包装为 ArkTS 应用组件，则在 NDK 重编后需额外 Node-API 绑定工作，但库本体仍无需改动。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libcbor",
@@ -1000,7 +1013,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "libcbor 是纯数据序列化/反序列化库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件访问。其鸿蒙适配重点仅在 C99 代码能否通过 OHOS NDK 编译及标准 C 库函数可用性。",

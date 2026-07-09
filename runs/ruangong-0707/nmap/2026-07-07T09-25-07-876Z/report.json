@@ -717,7 +717,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Go 1.24+ 运行时上；自研内核，无 Linux ABI；arm64/x86_64）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -744,7 +743,8 @@
         "required": true,
         "target_status": "available",
         "impact": "本库为纯 Go，运行时是其在鸿蒙 PC 运行的唯一前提；已确认可用。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.go"
+        "source": "references/harmony-pc-capabilities.json#runtimes.go",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -752,12 +752,12 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本库核心功能通过 shell-out 调用 nmap 二进制；若鸿蒙 PC 限制或不允许启动外部进程，则库无法工作。nmap 已出现在 OpenHarmony PC 预编译包清单中，侧面说明该能力大概率可用，但 caps 仍标记为待核实。",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "本库为纯 Go 封装，源码无需改动即可在鸿蒙 PC 已移植的 Go 运行时上运行。核心依赖 nmap 二进制已有 OpenHarmony PC 预编译包，不构成阻塞。唯一未核实的目标能力是启动外部进程，但 nmap 已入驻 cmd-pkgs 的事实显著降低了该风险。",
     "blockers": [],
     "compatible": [
@@ -783,7 +783,21 @@
       "在鸿蒙 PC Go 运行时上执行 `go test ./...` 验证同步/异步扫描、进度解析、接口列表解析等功能"
     ],
     "notes": "评估按模型 A（库跑在已移植的 Go 运行时上）。若目标是 ArkTS 沙箱应用（模型 B），本 Go 库无法直接被 ArkTS 调用，需通过 Node-API 封装或改用 @ohos.* 实现，届时结论将变为 needs_adaptation_full/hard。本维度未触发鸿蒙文档技能查询，因为库不涉及 GUI/3D/媒体/硬件场景，也不需要特定 ohos.permission 权限。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "nmap",
@@ -807,19 +821,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "locality",
-        "kind": "gap",
-        "value": "external_binary",
-        "rationale": "本库的核心依赖是外部 nmap 可执行文件（通过 os/exec 调用），而非 Go module 或 C 库。现有 locality 用 'system' 可归类，但依赖面板难以直观区分 '被链接/编译的库' 与 '被 shell-out 调用的 CLI 工具'，后者对鸿蒙化的意义更接近 runtime/tool 依赖。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为命令行/库形态的网络扫描封装，不触及 GUI、3D 渲染、音视频媒体或特定硬件设备。所有网络扫描能力均通过外部 nmap 子进程完成，自身代码仅涉及 Go 标准库与 XML 解析。",

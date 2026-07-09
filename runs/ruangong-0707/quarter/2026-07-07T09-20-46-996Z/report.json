@@ -950,8 +950,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 库经 OHOS NDK/musl 重新编译，arm64/x86_64；Qt 与 OpenGL 作为目标平台能力）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         27.6,
@@ -1008,7 +1007,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_ndk",
     "summary": "Quarter 是 C++ 胶水库，核心功能均可在鸿蒙落地：Qt 已有社区移植（Qt5），OpenGL 可走平替/验证 OpenGL ES 路径，Coin3D 为开源 C++ 库需先移植到 OHOS NDK。唯一实质阻碍是依赖 Coin3D 尚未确认已鸿蒙化；本库源码适配量小（约 2.9k 行），主要是 Qt 版本与 OpenGL 上下文细节。可选的 SpaceNavigator 可关闭或替换。",
     "blockers": [
       {
@@ -1066,7 +1064,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Quarter 是 Qt 库，无 Qt 则无法运行；社区已提供 Qt5 移植，Qt6 需降级",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl",
@@ -1074,7 +1073,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "Coin 渲染依赖 OpenGL；鸿蒙提供 OpenGL ES/EGL，桌面 OpenGL 完整覆盖待验证，可能影响部分渲染扩展或性能",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
@@ -1103,7 +1103,21 @@
       "若 Qt6 为强制依赖，评估降级到 Qt5 的工作量或等待 Qt6 鸿蒙移植"
     ],
     "notes": "评估按库模型 A（C++ 库经 OHOS NDK 重编）。置信度为 medium 是因为 Coin3D 的鸿蒙可用性尚未核实、OpenGL 支持为 partial。若 Coin3D 无法移植或 Qt6 为强制要求，工作量与难度会显著上升。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Quarter",
@@ -1129,23 +1143,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "metrics_primary_language_m4_vs_cpp",
-        "rationale": "code-metrics 将主要语言判定为 m4（autotools/configure 脚本行数最多），但库的实际实现语言与生态是 C++；function_summary 与 library.ecosystem 按 C++ 处理。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "spacenav",
-        "rationale": "推荐场景集（gui/rendering_3d/media/hardware）未显式列出 3D 鼠标/SpaceNavigator 这类可选 USB HID 输入设备；Quarter 通过可选 spacenav 库支持它，特记为 hardware 下新 kind。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Quarter 触及两个鸿蒙适配重点场景：GUI（Qt 窗口/OpenGL 集成）与 3D 渲染（OpenGL）。Qt 在鸿蒙 PC 已有社区移植（以 Qt5 为主），OpenGL/OpenGL ES 为部分支持，整体可适配但需依赖鸿蒙版 Qt 与 OpenGL ES 后端。可选的 SpaceNavigator 输入设备属于硬件设备，但为可选功能，不影响核心渲染。",

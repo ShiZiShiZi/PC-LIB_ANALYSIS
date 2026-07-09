@@ -1296,8 +1296,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Python 库运行在已移植的 Python 运行时上；原生扩展使用 OHOS NDK 针对 arm64/x86_64 重编；无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -1319,7 +1318,9 @@
         "category": "platform",
         "evidence": [
           "sources/pyside6/cmake/PySideHelpers.cmake:134-135"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1329,7 +1330,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 逻辑与 C-API 扩展可运行在鸿蒙 Python 上",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt",
@@ -1337,7 +1339,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 Qt 绑定可基于鸿蒙 Qt 后端重新编译",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl",
@@ -1345,7 +1348,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OpenGL/3D 模块仅部分可用，可能需要条件编译或降级",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:qtwebengine",
@@ -1353,7 +1357,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "WebEngine 相关绑定模块无法构建或运行",
-        "source": "推断：Chromium/QtWebEngine 未在 harmony-pc-capabilities.json 中标记为 available"
+        "source": "推断：Chromium/QtWebEngine 未在 harmony-pc-capabilities.json 中标记为 available",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:multimedia",
@@ -1361,7 +1366,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "QtMultimedia 等绑定功能需验证鸿蒙媒体后端",
-        "source": "references/harmony-pc-capabilities.json#media"
+        "source": "references/harmony-pc-capabilities.json#media",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:hardware",
@@ -1369,7 +1375,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "QtBluetooth/QtSerialPort/QtSensors 等可选模块可用性取决于鸿蒙设备与权限模型",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:permissions",
@@ -1377,7 +1384,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "使用 QtNetwork 与文件访问的应用需申请相应鸿蒙权限",
-        "source": "references/harmony-pc-capabilities.json#permissions"
+        "source": "references/harmony-pc-capabilities.json#permissions",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -1385,7 +1393,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若目标为 x86_64 PC 需确认支持；arm64 为已知主力架构",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1408,7 +1417,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile_with_harmony_qt",
     "summary": "PySide6 是纯 Python 包装 + 大型 C++ 原生扩展的混合库。鸿蒙 PC 已有 Python 运行时，且 Qt 被目标能力参考标记为 available，因此核心绑定可通过 OHOS NDK 交叉编译移植。但 QtWebEngine/Chromium 无鸿蒙后端，必须跳过；OpenGL/3D、多媒体、蓝牙/串口/传感器等可选场景依赖未核实的目标能力，整体判为部分可适配、工作量大。",
     "blockers": [
       {
@@ -1537,7 +1545,23 @@
       "在鸿蒙 Python 上跑通 PySide6 核心测试，确认 GIL、主线程删除、信号槽等机制正常"
     ],
     "notes": "评估按库口径（模型 A：跑在已移植的鸿蒙 Python 上）。OpenHarmony 官方镜像脚本未确认 Qt6/libclang 已鸿蒙化，但 references/harmony-pc-capabilities.json 将 Qt 标记为 available；本报告在 target_assumptions 中采用目标能力参考的 available，而 dependencies[].harmony_adapted 保留脚本返回的 false 以反映依赖镜像未命中。存在多个 required+unknown 目标假设，置信度下调为 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:qtwebengine"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1548,29 +1572,15 @@
       "OpenHarmony 镜像脚本 scripts/harmony_adapted.js 未确认 Qt6/libclang 已鸿蒙化，但 references/harmony-pc-capabilities.json 将 Qt 标记为 available；harmony_adaptation 采用目标能力参考的 available，dependencies[].harmony_adapted 保留脚本结果 false。",
       "示例/演示目录 examples/ 超过 17 万行代码，未将其平台相关用法纳入 native_api/dependencies/harmony_adaptation 结论。"
     ],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "gap",
-        "value": "大型 C++ 框架（Qt）的镜像匹配结果与目标能力参考不一致",
-        "rationale": "脚本对 'qt'/'qtbase'/'qt6' 均返回 false，但 capabilities 参考明确 Qt available。建议人工核实 cmd-pkgs 列表或改进名称归一化。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "networking",
-        "rationale": "QtNetwork 绑定使项目触及网络场景，需要 ohos.permission.INTERNET，推荐在能力画像中保留 networking 场景。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "web_engine",
-        "rationale": "QtWebEngine 是独立的可选模块，与通用 gui 场景差异大，单独标记可更准确反映 unavailable 的移植阻碍。"
+        "code": "ua_func_class_defaulted:ua:qtwebengine",
+        "class": "actionable",
+        "message": "unadaptable_api ua:qtwebengine 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

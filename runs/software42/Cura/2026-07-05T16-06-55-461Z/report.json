@@ -2041,8 +2041,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（应用模型 C：整包桌面应用需打包并启动运行。Python 3.12 运行时已移植，Qt6 已鸿蒙化，核心 Python 逻辑可直接跑；原生扩展需 OHOS NDK 重编；PyInstaller 打包路径需替换为鸿蒙应用打包格式。自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -2051,7 +2050,6 @@
       "level": "very_high"
     },
     "confidence": "low",
-    "recommended_path": "cross_compile",
     "summary": "Cura 为大型 Python PyQt6 桌面应用，鸿蒙 PC 已移植 Python 3.12 运行时且 Qt6 已在 cmd-pkgs 可用——GUI 框架不是阻碍。核心挑战：① OpenGL 3D 渲染管线需验证鸿蒙桌面 OpenGL 覆盖率（当前 partial）——shader 与纹理能力若不全则需降级/重写 rendering；② CuraEngine C++ 切片引擎需 OHOS NDK 交叉编译为鸿蒙原生可执行；③ 第三方 Python C 扩展（numpy/scipy/shapely/cffi 已有 OHOS wheel，pynest2d/pysavitar/dulcificum 等 UltiMaker 内部扩展需自行 OHOS NDK 重编）；④ 平台特定子进程（umount/system_profiler/diskutil）在鸿蒙不可用——可移除或替换为鸿蒙等价工具；⑤ PyInstaller 打包路径需用鸿蒙应用打包格式（.hap）替换。大量目标能力待核实（unknown）——置信度 low——但核心 GUI+切片路径均可适配，非 infeasible。",
     "blockers": [
       {
@@ -2179,7 +2177,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时已移植——纯 Python 部分可直接跑",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt6_gui",
@@ -2187,7 +2186,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt6 已鸿蒙化——Cura GUI 框架依赖",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl_desktop",
@@ -2195,7 +2195,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "Cura 3D 预览核心依赖——若扩展覆盖不全需降级 shader 或切换渲染后端",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:usb_serial",
@@ -2203,7 +2204,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "USB 直连打印为辅助功能，非核心——不可用时可降级",
-        "source": "harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:subprocess_spawn",
@@ -2211,7 +2213,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "CuraEngine 通过子进程调用——若鸿蒙沙箱限制子进程则需改为嵌入/API 调用",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app_delivery",
@@ -2219,7 +2222,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "应用如何打包并发布到鸿蒙 PC——待核实，可能需换 .hap 格式",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet_permission",
@@ -2227,7 +2231,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "云账户认证/云打印/Marketplace/Sentry 全依赖网络——需网络权限",
-        "source": "harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:storage_permission",
@@ -2235,7 +2240,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Cura 需读写用户目录中的配置/模型/G-code 文件",
-        "source": "harmony-pc-capabilities.json#permissions.perm_storage"
+        "source": "harmony-pc-capabilities.json#permissions.perm_storage",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2312,7 +2318,21 @@
       "在鸿蒙 PC 上跑通功能验证（模型导入→切片→G-code 导出→云打印）"
     ],
     "notes": "评估按应用模型 C（整包桌面应用）。置信度 low 因 8 项 target_assumptions 中 1 项 partial（OpenGL）、6 项 unknown——结论依赖多项未核实目标事实（子进程权限/应用交付格式/网络权限/存储权限/桌面窗口管理器等），但核心判断仍可支撑：Python 运行时+Qt6 均可用 → GUI 不阻塞；CuraEngine 纯计算可重编 → 切片核心不阻塞；OpenGL partial 是最大不确定性——验证后若 shader 全覆盖则从 partial 升 needs_adaptation_full；若严重缺扩展可考虑升级。pynest2d/pysavitar 等内部库源码都在 UltiMaker GitHub 开源，可自行 OHOS NDK 编译。USB 串口直连打印为非核心功能（主流用户用网络打印/云），缺时可降级。Sentinel 崩溃上报 SDK（sentry-sdk）为纯 Python，无 OHOS wheel 但可从 PyPI 源码安装。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Cura",
@@ -2336,40 +2356,12 @@
   },
   "meta": {
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "package_manager",
-        "rationale": "Conan 作为 C/C++/Python 统一包管理器，当前推荐 acquisition 值中无 Conan 专属值——package_manager 最接近但不够精确，未来可考虑增加 conan 专属取值。"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "ultimaker",
-        "rationale": "UltiMaker 是 3D 打印机厂商，自建云后端（账户/API/Digital Factory/Marketplace）——不在当前推荐厂商列表（Firebase/AWS/GCP/Azure 等）中，需 coin 新值。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "application",
-        "rationale": "Cura 虽有 cura API 模块（cura/API/）可被插件调用，但主体是对终端用户的桌面 GUI 应用——按 application 归类，其 API 模块仅为内部插件系统服务，非对外分发的独立库。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "gap",
-        "value": "human_input_3d",
-        "rationale": "当前 hardware scenario 只列了 gpu_compute/usb_serial/bluetooth/sensors——3D 空间鼠标等专业输入设备不在此列，需 coin 子类描述。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   },
   "capability_profile": {
     "summary": "Cura 是 PyQt6/QML 桌面 GUI 应用，涉及 GUI（Qt6）、3D 渲染（OpenGL shader 管线）、硬件设备访问（USB 串口打印机、3D 空间鼠标、GPU）。不涉及音视频媒体编解码。",

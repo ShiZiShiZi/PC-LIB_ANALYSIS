@@ -522,7 +522,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 运行时上；纯 JavaScript + WebAssembly 语法解析库；arm64/x86_64；自研内核）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -531,7 +530,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为纯 npm 包（@vscode/tree-sitter-wasm），发布内容为 JavaScript 包装代码与预编译的 WebAssembly（WASM）二进制文件。鸿蒙 PC 已移植 Node.js 运行时，WASM 作为 Web 标准在 Node.js 中已支持。库本身无原生扩展、无平台特定 API 调用、无外部命令依赖、无文件系统访问——所有平台交互仅限于构建期。发布产物可直接在鸿蒙 Node.js 环境中加载使用，无需任何适配工作。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -543,7 +541,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已在鸿蒙 PC 移植（available），库可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes"
+        "source": "references/harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -574,7 +573,21 @@
       "在鸿蒙 PC 上跑通基本语法解析功能验证"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。库自身为纯 JS+WASM，无原生扩展，porting_class=no_adaptation。所有 tree-sitter 语法解析器依赖（bash/css/go/java/javascript/php/python/regex/ruby/typescript 等）均为构建期 devDependency，不进入发布产物，不构成迁移阻碍。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "vscode-tree-sitter-wasm",
@@ -602,7 +615,8 @@
     ],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI、3D 渲染、媒体或特定硬件等鸿蒙适配重点场景。为纯计算型库（语法解析），运行于 JavaScript 运行时之上，无任何特殊硬件或图形能力需求。",

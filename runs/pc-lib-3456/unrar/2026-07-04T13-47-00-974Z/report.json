@@ -1230,8 +1230,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 交叉编译为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1240,7 +1239,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_ndk",
     "summary": "UnRAR 是 C++ 解压库，核心算法与文件 I/O 抽象层已按 #ifdef _WIN_ALL / _UNIX 分隔。在鸿蒙 PC 上采用 OHOS NDK 交叉编译即可获得 arm64/x86_64 原生 libunrar。主要工作量是验证 musl POSIX 子集对 getpwnam/getgrnam、lchown、symlink、flock、fallocate 等 API 的覆盖，必要时做条件编译降级；Windows 专用功能（NTFS ACL/备用流/重解析点、注册表、大页内存）在鸿蒙构建中自然被排除，不影响核心解压 API。",
     "blockers": [
       {
@@ -1303,7 +1301,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心、STL 与多线程池可正常编译链接",
-        "source": "harmony-pc-capabilities.json#runtimes（C++ 为 NDK 默认语言，pthread 由 musl 提供）"
+        "source": "harmony-pc-capabilities.json#runtimes（C++ 为 NDK 默认语言，pthread 由 musl 提供）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_user",
@@ -1311,7 +1310,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响 -ow 恢复文件所有者/组与符号链接所有者功能，非核心解压路径",
-        "source": "harmony-pc-capabilities.json#process_security/sandbox（权限模型待核实）"
+        "source": "harmony-pc-capabilities.json#process_security/sandbox（权限模型待核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_adv_io",
@@ -1319,7 +1319,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响文件锁与预分配优化，缺失时可安全降级",
-        "source": "POSIX 子集覆盖待核实"
+        "source": "POSIX 子集覆盖待核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:secure_random",
@@ -1327,7 +1328,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响密钥盐随机性；代码在 /dev/urandom 失败时会回退到时间种子",
-        "source": "harmony-pc-capabilities.json#permissions/perm_storage 与系统设备模型待核实"
+        "source": "harmony-pc-capabilities.json#permissions/perm_storage 与系统设备模型待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1368,7 +1370,21 @@
       "在鸿蒙 PC 上跑通 RAR4/RAR5 解压、加密归档、分卷、完整性校验等核心测试"
     ],
     "notes": "按库模型 A 评估；Windows 专用 CLI 功能（关机、UAC 提权、大页内存、注册表、NTFS 流/ACL）在鸿蒙构建中被条件编译自然排除，不影响 libunrar 核心 API。由于存在未核实的 POSIX 子集能力，confidence 取 medium；若实际编译验证后 musl 完整支持上述 API，则可升至 high 并将 porting_class 下调为 recompile_only。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "unrar",
@@ -1391,15 +1407,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "unrar_freeware",
-        "rationale": "UnRAR 使用自定义 freeware 协议（非 SPDX 标准），限制重新实现 RAR 算法。按 schema 闭轴最接近 commercial（源码可见非自由），但它并非商业 EULA，存在分类粒度不足。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1410,7 +1418,8 @@
         "message": "license.category(commercial) 与依据 SPDX(NOASSERTION) 派生的性质(undeclared) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "UnRAR 是纯粹的文件/控制台工具类库，不涉及 GUI、3D 渲染、媒体编解码、特定硬件或云服务。唯一的硬件相关信号是 CPU SIMD 加速（SSE/AVX2/NEON），属于 CPU ISA 层，归类到 native_api 的 arch_simd。",

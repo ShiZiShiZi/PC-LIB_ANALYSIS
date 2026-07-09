@@ -393,8 +393,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Go 运行时已移植）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3.2,
@@ -453,7 +452,8 @@
         "required": true,
         "target_status": "available",
         "impact": "stealth 库依赖 rod 框架操控 Chromium；若 Chromium 不可用则整个库无法运行",
-        "source": "references/harmony-pc-capabilities.json gui 段 electron 行：Electron/CEF (Chromium) 状态 available"
+        "source": "references/harmony-pc-capabilities.json gui 段 electron 行：Electron/CEF (Chromium) 状态 available",
+        "target_status_model": "available"
       },
       {
         "id": "ta:go_runtime",
@@ -461,7 +461,8 @@
         "required": true,
         "target_status": "available",
         "impact": "stealth 是 Go 库，需 Go 运行时编译和运行",
-        "source": "references/harmony-pc-capabilities.json runtimes 段 go 行：Go 1.24+/1.22 状态 available"
+        "source": "references/harmony-pc-capabilities.json runtimes 段 go 行：Go 1.24+/1.22 状态 available",
+        "target_status_model": "available"
       },
       {
         "id": "ta:subprocess_spawn",
@@ -469,7 +470,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "rod 的 launcher 需要启动 Chromium 子进程；若鸿蒙 PC 沙箱限制进程启动，则需适配 launcher 逻辑（如手动指定已运行的 Chrome DevTools Protocol 端口）",
-        "source": "references/harmony-pc-capabilities.json process_security 段 spawn 行：状态 unknown"
+        "source": "references/harmony-pc-capabilities.json process_security 段 spawn 行：状态 unknown",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -488,7 +490,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "stealth 是一个纯 Go 库，自身代码无平台依赖（51 行核心代码为跨平台 Go + JavaScript 常量），在已移植的 Go 运行时上即可编译运行。主要工作在于确认其唯一依赖 rod 在鸿蒙 PC 上的兼容性——rod 需要操控 Chromium 浏览器进程。Chromium/Electron 在鸿蒙 PC 上已有可用版本，但进程启动机制（rod launcher 自动查找和启动 Chromium）可能需要适配。若 launcher 无法在鸿蒙 PC 上自动启动 Chromium，可通过手动指定 CDP 端口的方式连接已运行的浏览器实例作为替代方案。",
     "blockers": [
       {
@@ -533,7 +534,21 @@
       "在鸿蒙 PC 上运行集成测试验证 stealth 注入脚本能绕过 bot 检测"
     ],
     "notes": "stealth 库代码体积极小（51 行核心 Go 代码），且无平台 API 依赖。实际适配工作量几乎全在依赖 rod 的兼容性验证上。rod 本身是一个较成熟的跨平台库，其核心通过 CDP（Chrome DevTools Protocol）与浏览器通信，这是基于 WebSocket 的协议，平台无关。主要风险点是 launcher 的进程启动机制。confidence 为 medium 是因为 subprocess_spawn 的目标状态为 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "go-rod/stealth",
@@ -562,7 +577,8 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "stealth 库本身不涉及 GUI/3D 渲染/媒体/硬件等鸿蒙适配重点场景。它是一个纯逻辑库，通过 rod 框架向 Chromium 浏览器注入 JavaScript 脚本来绕过 bot 检测，不直接操作任何硬件或图形栈。",

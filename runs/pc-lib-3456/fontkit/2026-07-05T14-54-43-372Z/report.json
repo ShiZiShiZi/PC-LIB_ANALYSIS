@@ -614,7 +614,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24.13.0 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -623,7 +622,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "fontkit 是纯 JavaScript 字体引擎库，跑在鸿蒙 PC 已移植的 Node.js 24.13.0 运行时上。所有运行时依赖均为纯 JS npm 包（无原生 C/C++ 扩展），无平台特有 API 调用、无外部命令、无设备访问、无网络请求。无任何代码修改即可在鸿蒙 PC Node.js 上运行。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -634,7 +632,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无此前提则整个库无法运行",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -661,7 +660,21 @@
       "运行 fontkit 单元测试验证功能完整性"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）评估。Node.js 24.13.0 已在 OpenHarmony PC 官方移植（harmony-pc-capabilities.json#nodejs）。fontkit 无原生扩展、无平台特有代码、不调用 child_process 或系统设备，移植成本为零。若目标是 ArkTS 沙箱应用（模型 B），则 Node.js 标准 API（如 fs、TextDecoder）不可直接使用，需用 @ohos.* 平替或重写字体文件读取层，难度将升至 medium。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -683,7 +696,8 @@
     "warnings": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目是字体处理 JavaScript 库，不涉及 GUI 窗口、3D 渲染、音视频媒体或特定硬件依赖。仅通过 Canvas API 提供字形渲染到 2D 图形上下文的功能（属于 2D 绘图，而非 GUI 桌面应用场景）。",

@@ -1631,8 +1631,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Python 库跑在已移植的 Python 3.12 运行时上；原生 C++/CUDA 扩展需经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1641,7 +1640,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime_with_native_extension_rebuild",
     "summary": "torchvision 是纯 Python + C++ 扩展库。Python 部分（模型、数据集、变换）可直接运行在已移植的鸿蒙 Python 与 PyTorch 上；主要工作量是将 torchvision._C/_C_stable/image/image_stable 四个 C++ 扩展用 OHOS NDK 重新编译，并链接鸿蒙已适配的 libjpeg/libpng/libwebp。所有 CUDA/MPS 加速路径均为可选，关闭后 CPU 路径可完整覆盖。x86_64 架构覆盖情况未核实，是主要置信度下调因素。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1651,7 +1649,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 层无需改动即可运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pytorch_python",
@@ -1659,7 +1658,8 @@
         "required": true,
         "target_status": "available",
         "impact": "torch、torchvision 核心 Python 依赖可直接安装",
-        "source": "dependencies[].harmony_adapted + references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "dependencies[].harmony_adapted + references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libtorch_ohos",
@@ -1667,7 +1667,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "C++ 扩展需要 LibTorch 的 OHOS 头文件与库；已移植的 torch Python 包通常意味着 C++ 库可用，但需验证",
-        "source": "由 torch Python 包已鸿蒙化推导"
+        "source": "由 torch Python 包已鸿蒙化推导",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:arm64",
@@ -1675,7 +1676,8 @@
         "required": true,
         "target_status": "available",
         "impact": "可生成 arm64 原生扩展",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -1683,7 +1685,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 当前主推 arm64、x86_64 覆盖未核实，则 x86 设备上可能无法提供预编译 wheel",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:codec_system_libs",
@@ -1691,7 +1694,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 图像扩展可链接这些库完成 JPEG/PNG/WebP 编解码",
-        "source": "dependencies[].harmony_adapted + references/harmony-pc-capabilities.json"
+        "source": "dependencies[].harmony_adapted + references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:no_cuda",
@@ -1699,7 +1703,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "强制关闭 WITH_CUDA，CUDA 算子与 nvjpeg 解码路径不可用；CPU 路径可完整替代",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [
@@ -1857,6 +1862,20 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
     }
   },
   "meta": {
@@ -1865,50 +1884,15 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "library",
-        "rationale": "torchvision 是被下游通过 import torchvision 调用的 PyPI 库，无终端用户启动入口，判定为 library。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_find_package_or_header_probe",
-        "rationale": "C++ 图像编解码库（libpng/libjpeg/libwebp）在 setup.py 中通过 libpng-config、头文件存在性、conda 前缀、homebrew 路径等多种启发式方式探测，并非简单的 find_package，现有推荐 acquisition 值无法精确描述。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries.mechanism",
-        "kind": "new_value",
-        "value": "torch.ops.load_library",
-        "rationale": "torchvision 使用 torch.ops.load_library 加载本仓构建的 .so/.dylib/.dll 扩展，与常见 dlopen/ctypes/N-API 机制不同。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "hardware.kind",
-        "kind": "new_value",
-        "value": "gpu_mps",
-        "rationale": "torchvision 的 MPS/Metal 使用属于 GPU 计算加速（算子后端），而非 3D 渲染，故归入 hardware 场景而非 rendering_3d。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "media.kind",
-        "kind": "new_value",
-        "value": "video_decode_stub",
-        "rationale": "torchvision.io.video 在开源版中仅导入内部 pytorch.vision.fb.io.video，实际未提供可用实现，应标记为 stub 而非完整视频编解码。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

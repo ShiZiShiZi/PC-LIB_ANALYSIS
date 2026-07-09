@@ -856,8 +856,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -879,7 +878,9 @@
         "category": "platform",
         "evidence": [
           "SLSSDK/Common/Communication/ServiceClientImpl.cs:394-427"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -889,7 +890,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙 PC 尚未有已移植的 .NET 运行时，此 SDK 的全部代码均为 C#/.NET，无法在没有 .NET 运行时的环境运行。若无 .NET 运行时则整体不可运行。",
-        "source": "references/harmony-pc-capabilities.json（runtimes 段无 dotnet/mono 条目）"
+        "source": "references/harmony-pc-capabilities.json（runtimes 段无 dotnet/mono 条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:zlib_native",
@@ -897,7 +899,8 @@
         "required": true,
         "target_status": "available",
         "impact": "zlibnet 托管包装器依赖原生 zlib DLL；鸿蒙 NDK 环境下有 zlib 可用，但需替换原生 DLL 并重新编译托管包装器",
-        "source": "references/harmony-pc-capabilities.json（cmd-pkgs 中有 zlib）"
+        "source": "references/harmony-pc-capabilities.json（cmd-pkgs 中有 zlib）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -911,7 +914,6 @@
         ]
       }
     ],
-    "recommended_path": "find_alternative",
     "summary": "本 SDK 为 .NET Framework 3.5/4.0 的 C# 库，依赖 HttpWebRequest 等 .NET BCL API 以及 zlibnet 原生 DLL。鸿蒙 PC 目前尚无已移植的 .NET 运行时（runtimes 段未列出 dotnet/mono），这是根本性阻碍——没有运行时则 C# 字节码无法执行。若未来 .NET 运行时移植到鸿蒙 PC，还需解决：(1) HttpWebRequest 在非 Windows 平台的行为差异（当前通过反射 hack 绕过头验证）；(2) zlibnet 原生 DLL 需替换为鸿蒙版 zlib。更现实的路径是寻找或开发基于鸿蒙原生技术栈（ArkTS + HTTP 客户端 + protobuf）的等价 SDK。",
     "blockers": [
       {
@@ -982,7 +984,23 @@
       "若无运行时：用 ArkTS + @ohos.net.http + protobuf 重写等价 SDK"
     ],
     "notes": "核心阻碍是 .NET 运行时在鸿蒙 PC 的缺失，此为 unknown 状态（capability 文件未列出 dotnet/mono），据规则不可据 unknown 臆断为可行，置信度下调为 low。若 .NET 运行时未来可用，其余适配工作量中等（主要是 HttpWebRequest 兼容性和 zlib 原生库替换）。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:webheadercollection_reflection"
+        ]
+      }
+    }
   },
   "library": {
     "name": "aliyun-log-csharp-sdk",
@@ -1007,33 +1025,19 @@
   },
   "meta": {
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "commercial",
-        "rationale": "License.txt 声明 'All rights reserved' 且未授予任何开源许可，但该 SDK 公开在 GitHub 上。严格按许可证文本判断为商业/专有（commercial），但实际分发方式可能暗示更宽松的意图——取严格口径。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "production_code_scope",
-        "kind": "gap",
-        "value": "SLSSDK_only",
-        "rationale": "metrics.json 的生产代码计数包含 3rdParties/（192700 行）和 doc/（9063 行），但这些分别是内嵌第三方库预编译产物和 API 文档 HTML，非本 SDK 自身代码。SDK 自身生产代码集中在 SLSSDK/（约 5651 行）。doc/ 应判为文档（非生产代码），SLSSDK35Test/SLSSDK40Test 应判为测试，LOGSDKSample 应判为示例——但脚本按目录名 token 未能正确分类。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime_unknown",
-        "rationale": "harmony-pc-capabilities.json 的 runtimes 段未列出 .NET/Mono 运行时，状态无法确认（既非 available 也非 unavailable），记为 unknown。此为 SDK 在鸿蒙 PC 可运行的根本前提，unknown 导致整体置信度降至 low。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:webheadercollection_reflection",
+        "class": "actionable",
+        "message": "unadaptable_api ua:webheadercollection_reflection 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目为纯网络通信 SDK，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其核心功能是 HTTP 客户端库，对宿主环境的要求仅为网络连通性。",

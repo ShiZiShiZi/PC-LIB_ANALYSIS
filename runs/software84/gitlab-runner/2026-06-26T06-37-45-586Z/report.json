@@ -1449,8 +1449,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 C：整包命令行应用；Go 1.24+ 已移植；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -1472,7 +1471,9 @@
         "category": "platform",
         "evidence": [
           "helpers/process/job_windows.go:86-164"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:winconsolectrl",
@@ -1486,7 +1487,9 @@
         "category": "platform",
         "evidence": [
           "helpers/process/killer_windows.go:60-111"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1496,7 +1499,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Go 二进制可交叉编译并在鸿蒙 PC 上运行，运行时不构成阻碍",
-        "source": "references/harmony-pc-capabilities.json#runtimes.go"
+        "source": "references/harmony-pc-capabilities.json#runtimes.go",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -1504,7 +1508,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Runner 所有执行器都依赖 os/exec 启动作业子进程；若鸿蒙受限则核心功能不可用",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_signals",
@@ -1512,7 +1517,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "Unix 版进程终止与优雅关闭依赖 POSIX 信号；部分信号或进程组语义缺失将影响作业生命周期管理",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn + POSIX 子集常识"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn + POSIX 子集常识",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:service_manager",
@@ -1520,7 +1526,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "service install/start/stop 子命令需要 OS 服务管理器支持；缺失时 Runner 仍可前台运行",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:docker_runtime",
@@ -1528,7 +1535,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Docker executor 依赖本地/远程 Docker daemon；鸿蒙无 Docker 则该执行器不可用",
-        "source": "运行时事实（非 harmony-pc-capabilities.json 直接条目）"
+        "source": "运行时事实（非 harmony-pc-capabilities.json 直接条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:kubernetes",
@@ -1536,7 +1544,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Kubernetes executor 依赖 K8s 集群；鸿蒙无 K8s 则该执行器不可用",
-        "source": "运行时事实"
+        "source": "运行时事实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:windows_api",
@@ -1544,7 +1553,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Windows 专有代码路径在鸿蒙上无法运行，需条件编译剔除或替换为鸿蒙等价机制",
-        "source": "harmony-pc-capabilities.json 无 Windows API 条目，鸿蒙为自研内核"
+        "source": "harmony-pc-capabilities.json 无 Windows API 条目，鸿蒙为自研内核",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:desktop_app",
@@ -1552,7 +1562,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 .hap 等沙箱应用形态，则 Runner 需重打包并申请相应权限",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1576,7 +1587,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile + executor_backend_porting + service_adapter",
     "summary": "GitLab Runner 作为 Go 命令行应用，核心逻辑可经 OHOS 交叉编译在鸿蒙 PC 上运行。但由于它是应用（模型 C），能否真正投入使用取决于鸿蒙是否允许自由启动外部进程、是否具备必要执行器后端（Docker/Kubernetes/Shell 解释器）以及系统服务集成形态。Windows 专有进程管理 API 在鸿蒙上无等价实现，属于不可适配部分；Docker/Kubernetes/VirtualBox/Parallels 执行器依赖对应外部运行时，若鸿蒙未提供则这些执行器不可用。整体判定为部分可适配，核心 Shell 执行器可能可用，但大量执行器后端与平台适配工作需要投入。",
     "blockers": [
       {
@@ -1684,7 +1694,24 @@
       "在鸿蒙 PC 上跑通核心单元测试与 Shell executor 集成测试"
     ],
     "notes": "评估按模型 C（整包命令行应用）进行。由于多个目标能力（spawn、service_manager、desktop_app、Docker/Kubernetes 后端）状态为 unknown，整体置信度为 medium；任何一项变为 unavailable 都可能导致 porting_class 上升为 infeasible 或需要大幅裁剪功能。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:winjobobject",
+          "ua:winconsolectrl"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1692,30 +1719,18 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "test_cases",
-        "kind": "gap",
-        "value": "go_testing_not_counted",
-        "rationale": "metrics.py 的测试用例正则无法识别 Go 标准库 testing.T 子测试，导致 test_cases=0；需改进计数器或手工修正。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "new_value",
-        "value": "docker_runtime / kubernetes",
-        "rationale": "对于命令行 DevOps 应用，执行器后端（Docker/Kubernetes/VM）是否可用是决定性目标能力，但 harmony-pc-capabilities.json 未直接列出，本次作为运行时事实假设处理。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "bash_procfs_string",
-        "rationale": "shells/bash.go:48-58 的 /proc 访问出现在生成的 Bash 脚本字符串中，非 Runner 进程直接读取；不计入 native_api 系统接口。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:winjobobject",
+        "class": "actionable",
+        "message": "unadaptable_api ua:winjobobject 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:winconsolectrl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:winconsolectrl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
@@ -1737,6 +1752,7 @@
         "message": "依赖/网络出现 azure 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

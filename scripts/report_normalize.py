@@ -46,7 +46,14 @@ import sys
 #     (no_adaptation/recompile_only/needs_adaptation); unadaptable_apis[].functionality_class
 #     (core/platform_specific) drives a derived adaptation_assessment {effective_class(5-way),
 #     overall(3-way), core, platform_specific}; effort.level floor keyed by effective_class.
-NORMALIZED_VERSION = 4
+# v5: functional_viability — a target-side "运行前提是否满足" verdict (viable / viable_with_work /
+#     blocked_external / unverified) DERIVED from target_assumptions[].target_status, ORTHOGONAL to
+#     the source-side porting_class (an unavailable external prerequisite surfaces WITHOUT clamping
+#     the code axis; an unknown required prerequisite is no longer silently green). target_status_model
+#     / confidence_model persisted (the *_model pattern) so the serve-time caps re-projection can
+#     overwrite target_status from live caps yet stay re-derivable; required+unknown deterministically
+#     caps confidence at medium (previously only warned).
+NORMALIZED_VERSION = 5
 
 # Warning classes. `actionable` = a heuristic recall/漏判 check the model's self-review
 # pass may FIX (amend the source dimension with evidence) or DISMISS as a false positive
@@ -392,6 +399,30 @@ def derive_adaptation_assessment(report, ha, legacy_pclass=None):
     return effective
 
 
+# ---- functional viability: target-side prerequisite verdict (orthogonal to porting_class) --
+# Answers "assuming the code is ported, are the TARGET-environment prerequisites met?" — derived
+# from target_assumptions[].target_status of the REQUIRED prerequisites, worst-wins. Distinct from
+# the source-side porting_class / adaptation_assessment: an external tool or capability that is
+# unavailable/unknown on the target surfaces here WITHOUT clamping the code axis (a shell-out
+# wrapper like nmap keeps porting_class=no_adaptation while functional_viability=blocked_external).
+_VIABILITY_RANK = {"viable": 0, "viable_with_work": 1, "unverified": 2, "blocked_external": 3}
+_STATUS_TO_VIABILITY = {"unavailable": "blocked_external", "unknown": "unverified",
+                        "partial": "viable_with_work", "available": "viable"}
+
+
+def derive_functional_viability(ha):
+    """worst-wins over required target_assumptions: unavailable→blocked_external >
+    unknown→unverified > partial→viable_with_work > (all available / none)→viable."""
+    worst = "viable"
+    for a in _list(ha.get("target_assumptions")):
+        if not isinstance(a, dict) or not a.get("required"):
+            continue
+        v = _STATUS_TO_VIABILITY.get(a.get("target_status"), "viable")
+        if _VIABILITY_RANK[v] > _VIABILITY_RANK[worst]:
+            worst = v
+    return worst
+
+
 # ---- difficulty level (5-tier) + effort person-days -----------------------
 _RANK_LEVEL = ["very_low", "low", "medium", "high", "very_high"]
 # floor keyed by the derived 5-way effective_class (NOT the 3-value porting_class).
@@ -521,6 +552,34 @@ def normalize_harmony(report):
     _tag(ha.get("unadaptable_apis"), "ua")
     _tag(ha.get("blockers"), "bk")
 
+    # target_status_model: persist the model's authored target_status once per assumption, so the
+    # serve-time caps re-projection (web/server.js) can overwrite target_status from the live caps
+    # while the original stays re-derivable (the *_model pattern, like porting_class_model).
+    for a in _list(ha.get("target_assumptions")):
+        if isinstance(a, dict) and "target_status_model" not in a:
+            a["target_status_model"] = a.get("target_status")
+
+    # confidence: a required + unknown target assumption deterministically caps confidence at medium
+    # (previously only warned via conf_high_unknown). Persist the model value once for idempotent
+    # re-derivation; restore it when the cap no longer applies.
+    if "confidence_model" not in ha:
+        ha["confidence_model"] = ha.get("confidence")
+    req_unknown = any(isinstance(a, dict) and a.get("required") and a.get("target_status") == "unknown"
+                      for a in _list(ha.get("target_assumptions")))
+    conf_m = ha.get("confidence_model")
+    if conf_m is not None:
+        ha["confidence"] = "medium" if (req_unknown and conf_m == "high") else conf_m
+    meta = report.get("meta") if isinstance(report, dict) else None
+    if isinstance(meta, dict):
+        if "confidence_overall_model" not in meta:
+            meta["confidence_overall_model"] = meta.get("confidence_overall")
+        mc = meta.get("confidence_overall_model")
+        if mc is not None:
+            meta["confidence_overall"] = "medium" if (req_unknown and mc == "high") else mc
+
+    # functional_viability: target-side "运行前提是否满足" verdict, orthogonal to porting_class.
+    ha["functional_viability"] = derive_functional_viability(ha)
+
     # Two-dimensional (core vs platform-difference) assessment + 5-way effective_class.
     # Needs the ua ids assigned above; legacy default for functionality_class keys off the raw pick.
     effective = derive_adaptation_assessment(report, ha, legacy_pclass=base)
@@ -616,7 +675,13 @@ def validate_harmony(report):
             if not refed:
                 w.append((f"ta_unref:{a.get('id') or a.get('capability') or ''}", W_ACT,
                           f"target_assumption {a.get('id') or a.get('capability') or ''} 为 required+unavailable 但无对应 blocker/unadaptable_api"))
-    if any(isinstance(a, dict) and a.get("required") and a.get("target_status") == "unknown" for a in ta) and ha.get("confidence") == "high":
+    req_unknown = any(isinstance(a, dict) and a.get("required") and a.get("target_status") == "unknown" for a in ta)
+    if req_unknown and ha.get("confidence_model") == "high":
+        # normalize deterministically capped a high confidence — leave an info audit trail.
+        w.append(("confidence_capped_unknown", W_INFO,
+                  "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"))
+    elif req_unknown and ha.get("confidence") == "high":
+        # safety net for an un-normalized read where the deterministic cap didn't run.
         w.append(("conf_high_unknown", W_ACT, "存在 required 且 unknown 的目标假设，confidence 不应为 high"))
     for p in _list(ha.get("required_permissions")):
         if isinstance(p, dict) and p.get("harmony_status") == "unavailable" and not blk:

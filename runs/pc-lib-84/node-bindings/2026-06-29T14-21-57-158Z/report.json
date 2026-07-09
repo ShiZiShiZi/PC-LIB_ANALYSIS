@@ -503,7 +503,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 运行时上；自研内核，无 Linux ABI；arm64/x86_64）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -513,7 +512,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为纯 JavaScript 库，仅使用 Node.js 核心模块（fs、path）和 V8 Error stack trace API，无原生扩展、无平台特有系统调用、无外部命令调用。鸿蒙 PC 已移植 Node.js 24，该库可直接运行于鸿蒙 Node.js 运行时上，无需任何适配工作。唯一运行时依赖 file-uri-to-path 同为纯 JavaScript 包，亦可直接运行。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -524,7 +522,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 运行时为该库运行的基础，已移植则库可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -541,7 +540,21 @@
       "在鸿蒙 Node.js 环境中 npm install bindings 并验证 require('bindings') 正常工作"
     ],
     "notes": "该库的 process.platform/process.arch 使用仅用于构建搜索路径字符串（如 compiled/0.8.2/darwin/x64/binding.node），不影响核心功能。在鸿蒙上 process.platform 将返回 'linux' 或对应的 OHOS 标识，搜索路径会自动适配。评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -550,6 +563,7 @@
     "confidence_overall": "high",
     "warnings": [],
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

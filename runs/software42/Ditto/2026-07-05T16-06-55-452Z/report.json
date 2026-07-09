@@ -1929,8 +1929,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 C：整包桌面应用；自研内核非 Linux ABI；ArkUI/ArkTS 应用层；OHOS NDK 原生层；arm64/x86_64)",
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         120,
@@ -1938,8 +1937,7 @@
       ],
       "level": "very_high"
     },
-    "confidence": "high",
-    "recommended_path": "arkts_rewrite",
+    "confidence": "medium",
     "summary": "Ditto 是 Windows 专属桌面应用，100% 绑定 MFC/Win32 技术栈——GUI 框架(MFC)、图形引擎(GDI+)、窗口系统(Win32)、OLE/COM 剪贴板、系统托盘(Shell_NotifyIcon)、全局热键(RegisterHotKey)、剪贴板查看器链(Clipboard Viewer Chain)、Windows 加密 API(CryptGenRandom)、UAC 权限管理等均为 Window s 平台特有且鸿蒙无等价。直接移植不可行，需要以 ArkUI 完全重写 GUI 层，用 @ohos.* 系统能力替换所有 Win32 平台接口，仅可复用业务逻辑（SQLite 存储、zlib 压缩、libpng、ChaiScript 脚本引擎、AES/SHA 加密等纯 C++ 模块）。",
     "target_assumptions": [
       {
@@ -1948,7 +1946,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "MFC/Win32 为 Windows 专属 GUI 框架，鸿蒙无任何等价——整个 GUI 层（主窗口、粘贴窗口、配置对话框、系统托盘）需用 ArkUI 重写。",
-        "source": "harmony-pc-capabilities.json#gui — 仅列出 Qt/GTK/Electron（均非 MFC）；Win32 GUI API 在鸿蒙上无对应"
+        "source": "harmony-pc-capabilities.json#gui — 仅列出 Qt/GTK/Electron（均非 MFC）；Win32 GUI API 在鸿蒙上无对应",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:gdiplus",
@@ -1956,7 +1955,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "GDI+ 为 Windows 独有图形 API，鸿蒙需用 ArkUI 的 Canvas/Skia 或 @ohos.graphics 替代——剪贴板缩略图渲染、主题绘制、格式化文本绘制需重写。",
-        "source": "harmony-pc-capabilities.json#graphics_3d — Skia partial，但不直接兼容 GDI+ API"
+        "source": "harmony-pc-capabilities.json#graphics_3d — Skia partial，但不直接兼容 GDI+ API",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ole_clipboard",
@@ -1964,7 +1964,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "OLE/COM 是 Windows 专属组件模型，鸿蒙无等价——剪贴板 OLE 数据传输（OleGetClipboard/OleSetClipboard）、COM 插件加载需全部换用鸿蒙剪贴板 API(@ohos.pasteboard)。",
-        "source": "harmony-pc-capabilities.json#desktop_integration — 剪贴板状态 unknown；OLE/COM 未列入"
+        "source": "harmony-pc-capabilities.json#desktop_integration — 剪贴板状态 unknown；OLE/COM 未列入",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:desktop_integration",
@@ -1972,7 +1973,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "系统托盘(Shell_NotifyIcon)、全局热键(RegisterHotKey)、剪贴板查看器链(SetClipboardViewer)、命名互斥体(CreateMutex)均为 Windows 系统服务，鸿蒙对应能力状态未知。如无等价则需降级——托盘→通知服务、热键→ArkUI 快捷方式、互斥体→@ohos.app.ability 能力。",
-        "source": "harmony-pc-capabilities.json#desktop_integration — tray/file_dialog/dnd_clipboard 均为 unknown"
+        "source": "harmony-pc-capabilities.json#desktop_integration — tray/file_dialog/dnd_clipboard 均为 unknown",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:winsock_tcp",
@@ -1980,7 +1982,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Winsock2 为 Windows socket API，鸿蒙有 @ohos.net.socket 可替代，但需确认桌面权限下 TCP socket 功能完整可用。",
-        "source": "harmony-pc-capabilities.json — @ohos.net 未专门列出"
+        "source": "harmony-pc-capabilities.json — @ohos.net 未专门列出",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:app_delivery",
@@ -1988,7 +1991,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙 PC 应用分发形态未知——能否以 HAP/安装包分发桌面工具？是否需要签名为 ArkTS ability？",
-        "source": "harmony-pc-capabilities.json#app_delivery — desktop_app / arkts_hap / signing 均为 unknown"
+        "source": "harmony-pc-capabilities.json#app_delivery — desktop_app / arkts_hap / signing 均为 unknown",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cpp_runtime",
@@ -1996,7 +2000,8 @@
         "required": true,
         "target_status": "available",
         "impact": "可移植的 C++ 业务逻辑（zlib、libpng、sqlite3、ChaiScript、TinyXML、AES/SHA 等）可通过 OHOS NDK 交叉编译。",
-        "source": "harmony-pc-capabilities.json — C/C++ toolchain 在 OHOS NDK 可用"
+        "source": "harmony-pc-capabilities.json — C/C++ toolchain 在 OHOS NDK 可用",
+        "target_status_model": "available"
       }
     ],
     "blockers": [
@@ -2113,7 +2118,9 @@
         "evidence": [
           "src/MainFrm.cpp:31 (IMPLEMENT_DYNAMIC(CMainFrame, CFrameWnd))",
           "src/QPasteWnd.cpp:1 (QPasteWnd 派生自 CWnd)"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:clipboard_win32",
@@ -2128,7 +2135,9 @@
         "evidence": [
           "src/Clip.cpp:101 (OpenClipboard)",
           "src/Clip.cpp:135 (GetClipboardData)"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:ole_dataobj",
@@ -2143,7 +2152,9 @@
         "evidence": [
           "src/Clip.cpp:36 (COleDataObjectEx)",
           "src/OleClipSource.cpp:42 (OleGetClipboard)"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:gdiplus_api",
@@ -2159,7 +2170,9 @@
           "src/CP_Main.cpp:50 (GdiplusStartup)",
           "src/QListCtrl.cpp:120 (Graphics::DrawImage)",
           "src/CGdiPlusBitmap.h:30 (Bitmap)"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:shell_notifyicon",
@@ -2174,7 +2187,9 @@
         "evidence": [
           "src/NTray.cpp:120 (Shell_NotifyIcon)",
           "src/SystemTray.cpp:35 (Shell_NotifyIcon)"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:registerhotkey",
@@ -2189,7 +2204,9 @@
         "evidence": [
           "src/HotKeys.cpp:55 (RegisterHotKey)",
           "src/MainFrm.cpp:280 (注册热键)"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [
@@ -2263,7 +2280,28 @@
       "适配文件系统路径（SHGetFolderPath → 鸿蒙 sandbox 路径 API）和配置存储（.ini / 注册表 → 鸿蒙首选项）"
     ],
     "notes": "评估按模型 C（整包桌面应用）。Ditto 深度绑定 Windows MFC/Win32 技术栈，直接移植不可行 (infeasible)。核心挑战：(1) 100% GUI 重写——MFC/Win32 → ArkUI，工作量巨大(>80 个窗口/控件)；(2) 剪贴板操作是应用核心功能，从 Win32 ClipBoard API + OLE/COM → @ohos.pasteboard 转换涉及大量格式兼容问题；(3) 桌面集成能力（系统托盘/全局热键/剪贴板监听）在鸿蒙上的对应功能多为 unknown 状态，需核实后确定替代方案。可复用部分约占代码量的 40-50%（纯 C++ 业务逻辑+算法+存储），但整体仍需大规模重写。confidence 为 high 因为 MFC/Win32 不可用是确定的；部分 target_assumptions 标为 unknown 不影响核心 in 可性判断。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:mfc_framework",
+          "ua:clipboard_win32",
+          "ua:ole_dataobj",
+          "ua:gdiplus_api",
+          "ua:shell_notifyicon",
+          "ua:registerhotkey"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "application",
@@ -2280,41 +2318,50 @@
     "analyzed_at": "2026-07-05T16:31:17Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "gap",
-        "value": "application",
-        "rationale": "Ditto 是 Windows 桌面应用（非库），不提供可调用的 public API 或包管理器分发。其插件系统和 IClip 接口虽是 SDK 但仍服务于应用生态。类 MFC 桌面应用在 cap 参考里仅有 Java/Electron GUI 段，无纯 Win32/MFC 行。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "gap",
-        "value": "platform",
-        "rationale": "Win32/MFC 桌面 GUI 应用的所有 platform 组都标记为 `platform: windows`，这是 MFC 应用的标准分类。capability_profile 以 `key: gui, kind: [win32, mfc]` 补充了 GUI 特定场景。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "大量 C++ 库以 vendored 方式内嵌（sqlite3mc 368K 行 amalgamation、ChaiScript header-only、TinyXML、httplib 单头文件），这是 Windows 遗留 C++ 项目的常见模式。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
+        "code": "ua_func_class_defaulted:ua:mfc_framework",
         "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "message": "unadaptable_api ua:mfc_framework 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:clipboard_win32",
+        "class": "actionable",
+        "message": "unadaptable_api ua:clipboard_win32 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:ole_dataobj",
+        "class": "actionable",
+        "message": "unadaptable_api ua:ole_dataobj 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:gdiplus_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gdiplus_api 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:shell_notifyicon",
+        "class": "actionable",
+        "message": "unadaptable_api ua:shell_notifyicon 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:registerhotkey",
+        "class": "actionable",
+        "message": "unadaptable_api ua:registerhotkey 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Ditto 是 Windows 原生 GUI 桌面应用，深度使用 MFC/Win32 窗口栈和 GDI+ 图形绘制，不涉及 3D 渲染、媒体编解码或特定硬件加速。",

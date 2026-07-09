@@ -2540,8 +2540,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库默认跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -2550,7 +2549,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime + OHOS NDK 重编 C++ 扩展；关闭 USE_CUDA 走 CPU 后端；liburing 磁盘 I/O 路径回退到同步/线程池实现；epoll socket pool 使用单连接 fallback 或替换为 poll。",
     "summary": "DGL 主体为 Python + C++ 扩展库。鸿蒙 PC 已移植 Python 与 PyTorch，纯 Python 逻辑和已适配依赖（numpy/scipy/pandas/psutil/torch）可直接复用。主要工作量在：1) 用 OHOS NDK 重编 libdgl、tensoradapter、dgl_sparse、graphbolt 等本仓原生模块；2) CUDA GPU 加速功能在鸿蒙无等价，必须降级为 CPU 路径；3) Linux 特有 io_uring/epoll 路径需条件编译回退；4) x86_64 目标支持状态尚未核实。",
     "unadaptable_apis": [
       {
@@ -2567,7 +2565,9 @@
           "src/runtime/cuda/cuda_common.h:9",
           "src/runtime/cuda/cuda_device_api.cc:33",
           "src/runtime/ndarray.cc:225"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:io_uring",
@@ -2582,7 +2582,9 @@
         "evidence": [
           "graphbolt/src/io_uring.cc:25",
           "graphbolt/src/cnumpy.cc:77"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2592,7 +2594,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 主体可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pytorch",
@@ -2600,7 +2603,8 @@
         "required": true,
         "target_status": "available",
         "impact": "tensoradapter、dgl_sparse、graphbolt 所依赖的 PyTorch C++ API 可复用",
-        "source": "harmony-pc-capabilities.json#runtimes.python + scripts/harmony_adapted.js"
+        "source": "harmony-pc-capabilities.json#runtimes.python + scripts/harmony_adapted.js",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cuda",
@@ -2608,7 +2612,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "不支持则 GPU 加速功能无法运行，必须降级为 CPU 路径",
-        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:io_uring",
@@ -2616,7 +2621,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "GraphBolt 磁盘特征读取的高性能路径不可用，需回退到同步/线程池实现",
-        "source": "代码中 HAVE_LIBRARY_LIBURING 仅 Linux 启用"
+        "source": "代码中 HAVE_LIBRARY_LIBURING 仅 Linux 启用",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:epoll",
@@ -2624,7 +2630,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "分布式 socket pool 多连接并发能力受限；当前代码有非 epoll 单连接 fallback",
-        "source": "src/rpc/network/socket_pool.cc"
+        "source": "src/rpc/network/socket_pool.cc",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:x86_64",
@@ -2632,7 +2639,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若目标设备为 x86_64 且鸿蒙 PC 未覆盖，则无法直接运行预编译产物",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_shm",
@@ -2640,7 +2648,8 @@
         "required": true,
         "target_status": "available",
         "impact": "跨进程共享图数据功能可保留",
-        "source": "OHOS NDK 基于 musl，musl 支持 POSIX shm"
+        "source": "OHOS NDK 基于 musl，musl 支持 POSIX shm",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -2812,7 +2821,24 @@
       "在鸿蒙 Python + PyTorch 上跑通核心单元测试，验证图操作、采样、分布式单机多进程路径"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。DGL 核心 CPU 功能可移植，但 GPU 加速与部分 Linux 特有 I/O/网络优化路径无法直接适配，因此 porting_class 为 needs_adaptation_partial。confidence 为 medium 主要因为 x86_64 支持状态及 OHOS NDK 对 epoll 的完整兼容度尚未核实。若目标为 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，结论将变为 infeasible 或需整体用 Node-API/C++ 重写。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda_ops",
+          "ua:io_uring"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2820,29 +2846,20 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "externalproject_build",
-        "rationale": "graphbolt 对 liburing 使用 CMake ExternalProject_Add 在构建时从本仓 third_party/liburing 源码编译并安装到构建目录，既非典型 fetchcontent 也非纯 vendored 链接。"
+        "code": "ua_func_class_defaulted:ua:cuda_ops",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda_ops 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_io_uring",
-        "rationale": "io_uring 作为 Linux 特有异步 I/O 机制，独立于 epoll，应单独成组以便 dim-9 识别为 Linux-only blocker。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_partial",
-        "rationale": "DGL 是库而非应用，CUDA 虽为重要特性但非唯一路径；CPU 路径完整可运行，因此未判 infeasible，而是按部分功能无法适配定级。"
+        "code": "ua_func_class_defaulted:ua:io_uring",
+        "class": "actionable",
+        "message": "unadaptable_api ua:io_uring 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

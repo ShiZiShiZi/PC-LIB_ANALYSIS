@@ -468,11 +468,9 @@
     "notes": "本包为 JLL 二进制封装包，不含构建系统；构建由上游 Yggdrasil（BinaryBuilder.jl）完成，本仓库仅包含运行时加载逻辑"
   },
   "harmony_adaptation": {
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "difficulty": "medium",
     "confidence": "medium",
-    "recommended_path": "为 HarmonyOS 平台（aarch64）交叉编译 libLerc 共享库，并构建对应的 LERC_jll.jl wrapper 文件",
     "target_assumptions": [
       {
         "capability": "Julia 运行时",
@@ -480,7 +478,8 @@
         "target_status": "unknown",
         "impact": "Julia 是否已移植到 HarmonyOS PC 是本包能否运行的前提",
         "source": "library.ecosystem=Julia",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "unknown"
       },
       {
         "capability": "dlopen 动态库加载",
@@ -488,7 +487,8 @@
         "target_status": "available",
         "impact": "鸿蒙 NDK 支持 dlopen，无阻碍",
         "source": "native_api.groups[ffi]",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       },
       {
         "capability": "LERC C++ 库编译（C++11 标准）",
@@ -496,7 +496,8 @@
         "target_status": "partial",
         "impact": "LERC 是纯 C++ 库，无特殊平台依赖，使用 OHOS NDK 的 clang 交叉编译器应可完成构建",
         "source": "dependencies[LERC]",
-        "id": "ta:3"
+        "id": "ta:3",
+        "target_status_model": "partial"
       },
       {
         "capability": "Julia Artifacts 下载机制",
@@ -504,7 +505,8 @@
         "target_status": "unknown",
         "impact": "需要鸿蒙平台的 LERC 预编译二进制能通过 Julia Artifacts 机制分发",
         "source": "dependencies[Artifacts]",
-        "id": "ta:4"
+        "id": "ta:4",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -540,7 +542,21 @@
     "meta": {
       "observations": []
     },
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "LERC_jll",
@@ -564,15 +580,7 @@
     "analyzer_version": "1.0",
     "model": "glm5.1",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "6",
-        "field": "dependencies[].acquisition",
-        "kind": "new_value",
-        "value": "prebuilt_binary",
-        "rationale": "JLL 包的核心依赖是预编译的平台二进制 artifact（通过 Artifacts.toml 下载），不属于 source build/vendored/package_manager 等常规分类"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -584,7 +592,8 @@
       "shape coerced: dependencies.dependencies[3].declared_in string→array",
       "shape coerced: meta.observations[0].dimension integer→string"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "scenarios": [

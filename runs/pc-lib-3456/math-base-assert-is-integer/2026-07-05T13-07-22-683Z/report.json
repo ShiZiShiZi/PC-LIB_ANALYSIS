@@ -787,7 +787,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上；C 原生 addon 经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -796,7 +795,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js 数学工具包，鸿蒙 PC 已移植 Node.js 24 运行时。纯 JS 实现（lib/main.js，基于 Math.floor）无需任何改动即可在鸿蒙 Node.js 上直接运行。C 原生 addon（lib/native.js → src/addon.c + src/main.c）为纯 N-API + C 标准库代码，不涉及任何平台特有 API，仅需用 OHOS NDK 重新编译 addon.node 即可。两个路径均完全可适配，整体可行。",
     "blockers": [
       {
@@ -841,7 +839,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时可用则纯 JS 直接跑、N-API addon 可编译加载；如不可用则必须重新实现。",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -875,7 +874,21 @@
       "在鸿蒙 Node.js 上跑通测试验证两个实现路径的功能完整"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。本库提供了纯 JS 实现和 C addon 两套路径：纯 JS 路径零改动即跑；C addon 路径仅需 OHOS NDK 交叉编译（纯 C 标准库 + N-API，无平台 API），所有依赖的 C 代码同理可编。鸿蒙 PC 的 Node.js 运行时已确认可用（Node 24.13.0），N-API 完整支持。无平台特有 API、无外部命令、无文件系统/设备访问。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "math-base-assert-is-integer",
@@ -903,7 +916,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为纯数学数值判断工具，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备场景。",

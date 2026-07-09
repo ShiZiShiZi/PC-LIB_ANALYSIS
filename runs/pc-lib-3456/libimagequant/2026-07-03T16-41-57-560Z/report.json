@@ -983,7 +983,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Rust 工具链上；经 OHOS NDK 交叉编译为 arm64/x86_64 .so；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -992,7 +991,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile",
     "summary": "libimagequant 是纯 Rust 图像量化库，鸿蒙 PC 已移植 Rust 1.89+ 工具链且支持 ohos target。核心代码仅使用 Rust 标准库（线程、哈希表、内存分配）与 libc 基础函数（malloc/free），无任何平台专有系统调用、无 GUI/3D/媒体/硬件依赖。适配仅需用 Rust ohos target 交叉编译 imagequant 和 imagequant-sys 两个 crate 即可。C/JNI/C# 绑定层均为本仓自构建产物，随主库一起重编。rayon 多线程依赖 Rust std::thread，在鸿蒙同样可用。整体工作量低。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1003,7 +1001,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust 工具链已有 ohos target（1.89+），交叉编译直接可用",
-        "source": "references/harmony-pc-capabilities.json#runtimes.rust"
+        "source": "references/harmony-pc-capabilities.json#runtimes.rust",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1049,7 +1048,21 @@
       "验证 Rust 单元测试在鸿蒙目标上通过（inline #[test]）"
     ],
     "notes": "平台适配统计为 0（无 C/C++ 编译宏守卫代码、无运行时平台分支），与结论一致。libc 依赖仅用 malloc/free/abort，在 OHOS NDK musl 中完整可用。JNI 绑定（Java）和 P/Invoke 绑定（C#）本身不增加适配工作量——它们只是调用本仓编译产物的薄层，宿主语言运行时（JDK/CLR）需在目标环境就位后才可用。rayon 线程依赖 Rust std::thread::available_parallelism，在 OHOS 可正常返回；RAYON_NUM_THREADS 环境变量同样有效。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libimagequant",
@@ -1079,32 +1092,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "c_compiler_macros",
-        "rationale": "C 头文件中的 MSVC __declspec 和 GCC __attribute__ 编译器特性宏，既非标准库、也非严格平台 API（跨编译器可移植），自创 c_compiler_macros 类型归类"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "csharp_pinvoke",
-        "rationale": "C# P/Invoke [DllImport] 绑定方式，可归入 ffi 类别但机制与 JNI/ctypes 不同，自创类型以区分"
-      },
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "rationale": "metrics.py 报告 test_files=0 / test_cases=0，但 lib.rs 和 ffi.rs 中有多个 #[test] 内联测试函数。这是因为测试代码嵌入生产源文件、cloc 无法区分。/test/ 目录为空，所有测试均为内联 Rust #[test]——这与传统 Java/Python 分离式测试结构不同，应手动将框架标注为 Rust built-in #[test]"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯计算型图像量化库，不涉及 GUI 界面、3D 图形渲染、音视频媒体编解码或特定硬件设备访问。核心算法（中值切分、K-Means、Floyd-Steinberg 抖动）完全在 CPU 上以标量计算完成，无 GPU/SIMD 加速路径。",

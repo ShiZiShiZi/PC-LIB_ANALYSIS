@@ -627,7 +627,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（已移植 Node.js 运行时，支持 N-API 原生插件桥接）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -645,11 +644,11 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 JavaScript 实现直接运行于已移植的 Node.js 运行时；N-API 原生插件可在 OHOS NDK 下重编译——此为鸿蒙 PC 的既定基线能力",
-        "source": "references/harmony-pc-capabilities.json 运行时段"
+        "source": "references/harmony-pc-capabilities.json 运行时段",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库的 JavaScript 实现（lib/main.js）仅使用 IEEE 754 标准数值运算（=== 比较、除法）和 stdlib 常量子包，完全独立于平台 API，可直接在已移植到鸿蒙 PC 的 Node.js 运行时上执行，无需任何代码修改。即便是 C 原生插件（N-API addon），也仅使用标准 C 库的 HUGE_VAL 宏，无平台专有调用，用 OHOS NDK 重编译即可，不构成阻碍。结论：零适配成本，可直接使用。",
     "blockers": [],
     "compatible": [
@@ -677,7 +676,21 @@
     ],
     "key_tasks": [],
     "notes": "该库可实现零修改直接使用（纯 JS 路径）。如需要 C 原生插件的性能优势，仅需用 OHOS NDK 交叉编译 node-gyp 工程，无代码修改。manifest.json 中声明的 -lm 链接也可直接对应 OHOS NDK 的 libm。依赖的两个同组织 stdlib-js 子包（@stdlib/constants-float64-ninf、@stdlib/utils-library-manifest）同样是纯数学常量/工具包，评估路径相同——直接运行。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/math-base-assert-is-negative-zero",
@@ -702,7 +715,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目是纯数值数学断言库，不涉及 GUI 界面、3D 图形渲染、音视频媒体处理或特定硬件设备访问。仅在 C 原生插件层面使用标准 C 数学库（libm），无特殊适配场景。",

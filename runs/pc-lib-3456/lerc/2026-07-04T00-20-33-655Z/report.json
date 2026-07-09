@@ -820,7 +820,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库默认模型 A：跑在已移植运行时上；C++ 核心经 OHOS NDK 重编；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -838,7 +837,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心仅依赖标准库，NDK 支持即可重编",
-        "source": "harmony-pc-capabilities.json 导言：OHOS NDK 提供 musl + clang + CMake 工具链"
+        "source": "harmony-pc-capabilities.json 导言：OHOS NDK 提供 musl + clang + CMake 工具链",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_runtime",
@@ -846,7 +846,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 绑定可直接运行在已移植 Python 上",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:numpy",
@@ -854,7 +855,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 绑定的唯一运行时第三方依赖 numpy 已鸿蒙化，可直接安装",
-        "source": "scripts/harmony_adapted.js --ecosystem python --names numpy"
+        "source": "scripts/harmony_adapted.js --ecosystem python --names numpy",
+        "target_status_model": "available"
       },
       {
         "id": "ta:nodejs",
@@ -862,11 +864,11 @@
         "required": false,
         "target_status": "available",
         "impact": "JS 绑定若需运行，依赖 Node/WASM 支持",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "LERC 是标准 C++17 算法库，无平台 API、无 GUI/媒体/硬件耦合，移植工作量低：C++ 核心用 OHOS NDK 重新编译即可；Python 绑定依赖的 numpy 已鸿蒙化；JS WASM 与 C# P/Invoke 绑定可随 C++ 核心重新构建。",
     "blockers": [],
     "compatible": [
@@ -901,7 +903,21 @@
       "跑通 C++ 与 Python 单元测试验证编解码正确性"
     ],
     "notes": "评估按模型 A（库跑在已移植运行时上）。平台适配信号极弱（C/C++ 平台宏仅 4 行），无 target_status=unknown 的必需假设，置信度高。若目标是将 LERC 作为 ArkTS 应用内部能力（模型 B），则需额外用 Node-API 封装 C API，工作量会升至 needs_adaptation_full。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "lerc",
@@ -934,7 +950,8 @@
     "warnings": [],
     "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯算法型栅格压缩库，不涉及 GUI、3D 渲染、音视频媒体处理或特定硬件访问；鸿蒙化评估无需考虑这些高成本场景。",

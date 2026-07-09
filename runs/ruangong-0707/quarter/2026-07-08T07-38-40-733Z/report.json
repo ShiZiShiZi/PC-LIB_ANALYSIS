@@ -965,8 +965,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（arm64/x86_64，自研内核，无 Linux ABI；C++ 库经 OHOS NDK/musl 重编为 .so；默认模型 A：库跑在鸿蒙已移植的运行时/NDK 上）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         29.4,
@@ -1051,7 +1050,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_ohos_ndk",
     "summary": "Quarter 本体小巧、平台耦合轻，核心 Qt/Coin/OpenGL 代码可随 OHOS NDK 与鸿蒙 Qt5 重编复用。主要工作量在让核心依赖 Coin 3D 能在鸿蒙上运行，并关闭可选的 X11/Spacenav 3D 鼠标支持。OpenGL ES 兼容性与 OHOS NDK C++ 工具链是主要假设；整体可移植，但需中等人天。",
     "blockers": [
       {
@@ -1136,7 +1134,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "C++ 库 Quarter 必须经 OHOS NDK 交叉编译为鸿蒙 .so 才能运行",
-        "source": "references/harmony-pc-capabilities.json 未单独列出 C++ NDK 工具链，属默认目标能力假设"
+        "source": "references/harmony-pc-capabilities.json 未单独列出 C++ NDK 工具链，属默认目标能力假设",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1172,7 +1171,21 @@
       "若需保留 3D 鼠标输入，调研鸿蒙 PC 输入子系统并设计 SpaceNavigator 的 OHOS 后端替代方案（可选、非核心）"
     ],
     "notes": "评估按模型 A（C++ 库经 OHOS NDK 重编为 .so 供鸿蒙应用链接）。核心结论依赖两个未完全核实事实：OHOS NDK C++ 工具链可用性（强假设）与 OpenGL ES 覆盖程度（partial）。SpaceNavigator 为可选功能，关闭后不影响库的核心 3D 渲染能力，因此不将其列为无法适配。代码分区中 recompile_reuse 桶包含大量构建脚本/文档，机械重编人天会被高估，实际源码级改动仅约 300 行。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Quarter",
@@ -1196,26 +1209,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "gap",
-        "value": "C++ / OHOS NDK toolchain",
-        "rationale": "references/harmony-pc-capabilities.json 未单独列出 C++ 原生/NDK 工具链可用性，而所有 C/C++ 库移植均依赖 OHOS NDK（clang + musl）。建议补一行目标能力以支撑后续分析。"
-      },
-      {
-        "dimension": "code_partition",
-        "field": "bucket",
-        "kind": "ambiguity",
-        "value": "build_scripts_and_docs_in_recompile_reuse",
-        "rationale": "Quarter 仓库生产 LOC 主体（约 42k）是 GNU Autotools/CMake 构建脚本、配置与文档，而非功能源码。code_partition 将其归入 recompile_reuse 会按默认速率产生较高重编人天，实际源码级改动仅约 300 行。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Quarter 核心涉及桌面 GUI（Qt）和 3D 渲染（OpenGL）两个鸿蒙适配重点场景；媒体处理不在范围内，SpaceNavigator 3D 鼠标属于可选特定硬件输入。",

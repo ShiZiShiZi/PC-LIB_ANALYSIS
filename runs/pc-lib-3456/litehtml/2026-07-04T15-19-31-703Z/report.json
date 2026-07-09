@@ -680,7 +680,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK: clang + musl + ohos.toolchain.cmake; arm64/x86_64; 自研内核; 生成 .so 供 Native 应用或 N-API 桥接使用）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -697,7 +696,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心库全面依赖 C++17 STL（std::string/vector/map/shared_ptr/variant/function 等），NDK 已支持 C++17 则直接可编译",
-        "source": "OHOS NDK 基于 clang/libc++ 且官方文档确认支持 C++14/17"
+        "source": "OHOS NDK 基于 clang/libc++ 且官方文档确认支持 C++14/17",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_c99",
@@ -705,10 +705,10 @@
         "required": true,
         "target_status": "available",
         "impact": "vendored 的 gumbo-parser 为纯 C99，依赖 memcpy/snprintf/malloc 等标准 C 库函数，musl libc 全部支持",
-        "source": "OHOS NDK 使用 musl libc，覆盖 C99/POSIX 子集"
+        "source": "OHOS NDK 使用 musl libc，覆盖 C99/POSIX 子集",
+        "target_status_model": "available"
       }
     ],
-    "recommended_path": "recompile_napi",
     "summary": "litehtml 是一个纯 C++17 算法库，核心功能仅依赖 C++ 标准库 (STL)，无任何平台特有系统调用、无动态库加载、无网络/文件/子进程访问。唯一平台差异是 os_types.h 中的 10 行 Windows MSVC 安全函数宏适配（_itoa_s/_snprintf_s vs POSIX snprintf）。vendored 的 gumbo-parser（C99 HTML 解析器）同样无外部依赖。整体移植只需用 OHOS NDK (ohos.toolchain.cmake + clang + musl) 交叉编译即可，无需任何代码修改（POSIX #else 分支直接兼容 musl），属于最简的 C++ 库鸿蒙化场景。",
     "blockers": [
       {
@@ -801,7 +801,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（库经 OHOS NDK 重新编译为 .so，供鸿蒙原生应用或 N-API 桥接使用）。核心库仅约 70K 行生产代码，无平台 API 依赖（platform_adaptation 仅 14 行 Windows snprintf 宏，编译宏而非系统调用），为最简档的 C++ 库鸿蒙化场景。containers/ 与 support/ 目录中的参考实现（cairo/gdiplus/pango/gtkmm4 依赖）不属于本库构建产物，不纳入阻碍评估——宿主应用需自行实现 document_container 回调接口来对接鸿蒙的图形栈。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "litehtml",
@@ -822,47 +836,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "ambiguity",
-        "value": "GUI/渲染引擎",
-        "rationale": "litehtml 是布局计算引擎，本身不绘制任何像素，但传统上被归类在 GUI/渲染领域。介于纯算法库与 GUI 库之间的模糊地带——它的输出是几何位置/样式而非像素，与真正的 GUI 工具包（Qt/GTK）有本质区别。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "vendored",
-        "rationale": "gumbo-parser 被内嵌在 src/gumbo/ 中通过 add_subdirectory 编译，属于 vendored 模式，现有推荐值覆盖此场景。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "platform_compat",
-        "rationale": "os_types.h 中的 10 行宏适配代码仅用于跨编译器兼容（MSVC snprintf vs POSIX snprintf），不涉及任何实际平台 API 调用。将其归类为 platform/windows 是基于保守的可移植性口径，实际上这些宏在任何有 snprintf 的 C 运行时上都可用。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "gap",
-        "value": "null",
-        "rationale": "litehtml 作为布局渲染引擎，输出位置/样式但不绘制，不直接依赖 GUI 工具包。但它的「目标场景」是 GUI HTML 视图——这是一个灰区：使用者必然需要对接图形栈来实现绘制，但库本身的代码不受此约束。dim-9 的 notes 已说明宿主需要实现绘制回调。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "recompile_napi",
-        "rationale": "litehtml 是 C++ 库，可走 recompile_napi（编译为 .so 后经 N-API 桥接给 ArkTS）或 cross_compile（直接供鸿蒙原生 C++ 应用链接）。recompile_napi 更保守通用，实际两条路径均可行。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "litehtml 是一个纯计算型 C++ 库（HTML/CSS 解析与布局计算），本身不涉及 GUI 工具包、3D 渲染、媒体编解码或特定硬件。其 containers/ 和 support/ 目录中的参考实现虽使用了 cairo/pango/gdiplus/gtkmm4 等平台库，但这些不是核心库的产物。从核心库角度看，无鸿蒙适配重点场景。",

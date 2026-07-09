@@ -1442,8 +1442,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，非 Linux ABI；默认按「跑在已移植语言运行时上」的库口径评估）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         14.9,
@@ -1510,7 +1509,8 @@
         "required": true,
         "target_status": "available",
         "impact": "uSockets 核心 TCP/UDP 网络 I/O 完全依赖 BSD socket API，缺失则整体不可用",
-        "source": "harmony-pc-capabilities.json#runtimes（Node/Python/Java 已移植 ⇒ 底层 socket 能力可用）+ OHOS NDK POSIX subset（musl libc）"
+        "source": "harmony-pc-capabilities.json#runtimes（Node/Python/Java 已移植 ⇒ 底层 socket 能力可用）+ OHOS NDK POSIX subset（musl libc）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libuv",
@@ -1518,7 +1518,8 @@
         "required": true,
         "target_status": "available",
         "impact": "推荐路径使用 libuv 避开 Linux epoll/macOS kqueue 的 OHOS 等价问题；缺失则需为 OHOS 新增 poll 后端",
-        "source": "dependencies.libuv（harmony_adapted:true，来自 OpenHarmony PC cmd-pkgs）"
+        "source": "dependencies.libuv（harmony_adapted:true，来自 OpenHarmony PC cmd-pkgs）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openssl",
@@ -1526,7 +1527,8 @@
         "required": true,
         "target_status": "available",
         "impact": "TLS/SSL 功能依赖 OpenSSL；若缺失只能禁用 SSL 或改用未适配的 BoringSSL/WolfSSL",
-        "source": "dependencies.OpenSSL（harmony_adapted:true，来自 OpenHarmony PC cmd-pkgs）"
+        "source": "dependencies.OpenSSL（harmony_adapted:true，来自 OpenHarmony PC cmd-pkgs）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1542,7 +1544,6 @@
       }
     ],
     "critical_dependencies": [],
-    "recommended_path": "recompile_with_libuv",
     "summary": "uSockets 是 C/C++ 原生网络库，核心依赖 POSIX socket API（OHOS NDK 可提供）与已鸿蒙化的 OpenSSL/libuv。推荐路径：默认启用 WITH_LIBUV=1、WITH_OPENSSL=1，使用 OHOS NDK 重编；为 libusockets.h/Makefile 增加 OHOS 平台分支，禁用 Linux 专属的 io_uring/epoll 默认路径。QUIC 功能依赖未鸿蒙化的 lsquic，要么一起移植，要么在 OHOS 首版中裁剪。整体可行，工作量中等，主要成本在平台后端适配与验证。",
     "blockers": [
       {
@@ -1629,7 +1630,21 @@
       "若最终封装为应用，申请 ohos.permission.INTERNET 权限并确认 PC 形态授予方式"
     ],
     "notes": "评估按库口径（模型 A）进行：C/C++ 原生库经 OHOS NDK 重编，不依赖 ArkTS 重写。POSIX socket 与已适配的 OpenSSL/libuv 使整体可行。置信度为 medium 主要因为 caps JSON 中 ohos.permission.INTERNET 的 PC 形态授予状态仍标记为 unknown；若目标不打包为 ArkTS/HAP 应用，原生库可能无需显式申请该权限。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "uSockets",
@@ -1650,34 +1665,13 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "category",
-        "kind": "novel",
-        "value": "cross-platform posix/win32 compatibility",
-        "rationale": "uSockets 的核心价值之一是封装 Windows/macOS/Linux/FreeBSD 的 socket 差异，因此能力分类中保留了跨平台兼容层。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "novel",
-        "value": "network",
-        "rationale": "uSockets 是底层网络库，超出推荐四场景（gui/rendering_3d/media/hardware），新增 network 场景以支持 required_permissions.source_capability 交叉引用。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "novel",
-        "value": "recompile_with_libuv",
-        "rationale": "鉴于 libuv 已有 OpenHarmony PC 预编译包，推荐路径采用 WITH_LIBUV=1 的 C 库重编方案，而非纯 NDK 重编或 Node-API 桥接。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "uSockets 是底层网络库，不涉及 GUI、3D 渲染、音视频媒体处理或特定硬件访问。它触及网络（socket/TLS/QUIC）场景，这是鸿蒙化核心关注点；其余重场景均无。",

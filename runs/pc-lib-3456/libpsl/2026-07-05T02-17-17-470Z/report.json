@@ -1272,7 +1272,6 @@
   "harmony_adaptation": {
     "summary": "libpsl 为纯 C 编写的域名处理库，核心逻辑使用标准 C 库与少量 POSIX API（stat/localtime_r/nl_langinfo），无平台特有系统调用、无 GUI/3D/媒体/硬件依赖、无第三方云服务。所有平台特定代码（Windows _WIN32/_MSC_VER、macOS libicucore）均受 #ifdef 守卫，不在 OHOS 上编译。所有 IDNA 运行时依赖为可选——可选择 libidn2+libunistring+libiconv（三者均已鸿蒙化）或使用内置 Punycode 回退（零外部依赖）。该库仅需用 OHOS NDK（musl+clang）交叉编译即可，无需源码修改，属「重编译即可」级别。",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "confidence": "high",
     "target_assumptions": [
       {
@@ -1281,7 +1280,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libpsl 所用的标准 C 与 POSIX 函数为 musl 已实现的 POSIX 子集，OHOS NDK 完全支持",
-        "source": "references/harmony-pc-capabilities.json — OHOS NDK 基于 musl，提供标准 C + POSIX 子集"
+        "source": "references/harmony-pc-capabilities.json — OHOS NDK 基于 musl，提供标准 C + POSIX 子集",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libidn2",
@@ -1289,11 +1289,11 @@
         "required": false,
         "target_status": "available",
         "impact": "可选依赖，已鸿蒙化（cmd-pkgs 预编译包），选用即可用；也可不选（--disable-runtime），使用内置 Punycode 回退",
-        "source": "cmd-pkgs 预编译清单（已鸿蒙化检测）"
+        "source": "cmd-pkgs 预编译清单（已鸿蒙化检测）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile_meson",
     "blockers": [],
     "unadaptable_apis": [],
     "effort": {
@@ -1304,7 +1304,21 @@
       "level": "low"
     },
     "notes": "libpsl 是结构简单的 C 库（生产代码约 1936 行 C），核心为纯算法（DAFSA 查找、Punycode 编码），无平台耦合。构建系统支持 Meson——在 OHOS 上使用 ohos.toolchain.cmake + meson builddir 即可交叉编译。Windows 特定代码（_WIN32/_MSC_VER 分支）已在编译时排除。推荐配置：--disable-runtime（零依赖，使用内置 Punycode，功能足够——仅影响非内置 PSL 数据中的国际化域名处理），或 --enable-runtime=libidn2（IDNA2008 完整支持，依赖已鸿蒙化的 libidn2+libunistring+libiconv）。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1328,7 +1342,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "libpsl 为纯计算型域名处理库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

@@ -3017,8 +3017,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 C——整包桌面应用；Qt6+C++ 桌面 GIS 应用，包含 QGIS Server 无头服务；走 OHOS NDK/musl 重编，目标架构 arm64/x86_64；鸿蒙 PC 自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -3027,7 +3026,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "QGIS 是大型 C++/Qt6 桌面 GIS 应用。鸿蒙 PC 已提供 Qt6（社区确认）且大量 C/C++ 基础依赖已鸿蒙化（GEOS/GDAL/ZLIB/Protobuf/Sqlite3/exiv2/GSL/SpatiaLite/ZSTD/Draco 等 13 个可用预编译包），大幅降低了底层移植工作量。核心障碍不在依赖链而在两方面：①鸿蒙 PC 桌面窗口环境的完整度——QGIS 深度依赖多窗口/docking/系统托盘/拖拽-剪贴板/原生文件对话框/打印/HiDPI 多显示器/字体输入法等桌面集成能力，这些能力在目标参考中均为 unknown；②项目体量巨大（1.2M+ C++ 生产代码，6504 个测试用例），即使全部技术可适配，工程工作量也在数十人天级。平台特有 API（Win32 版本检测/POSIX fork+pipe/procfs）均在条件编译下，且多为崩溃处理/调试用途，修改/降级工作量可控。3D 地图视图依赖 Qt3D/OpenGL，鸿蒙 GLES 为 partial 状态——可能需要降级渲染路径。判定为全部可适配（needs_adaptation_full）：技术上无核心不可移植障碍，但桌面环境未知使置信度受限。",
     "blockers": [
       {
@@ -3144,7 +3142,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt6 不可用则整个 GUI 无法运行——已确认可用",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop-wm",
@@ -3152,7 +3151,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则 QGIS 的完整桌面界面体验受损，可能需简化为单窗口模式",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop-integration",
@@ -3160,7 +3160,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "缺失则对应功能需用 Qt6 内置替代或降级——文件对话框/拖拽/剪贴板/打印可能用 Qt6 自带实现替代系统原生",
-        "source": "harmony-pc-capabilities.json#desktop_integration"
+        "source": "harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl",
@@ -3168,7 +3169,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "部分不支持则 3D 地图视图降级或禁用高级特效；2D 核心制图功能不受影响",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:opencl",
@@ -3176,7 +3178,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "不可用则栅格处理自动回退 CPU 路径，功能无损仅性能降低",
-        "source": "harmony-pc-capabilities.json#hardware_devices.opencl"
+        "source": "harmony-pc-capabilities.json#hardware_devices.opencl",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -3184,7 +3187,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "不可用则崩溃时无法调用 GDB/c++filt——仅影响调试体验；主功能不依赖子进程(除可选 GRASS 集成)",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:python-runtime",
@@ -3192,7 +3196,8 @@
         "required": true,
         "target_status": "available",
         "impact": "PyQGIS 插件/处理脚本系统依赖 Python；已确认可用",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop-app-delivery",
@@ -3200,7 +3205,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则需改为 ArkTS ability(.hap) 形态打包——这将大幅增加工作量",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -3269,7 +3275,21 @@
       "打包为鸿蒙应用分发格式，跑通 6500+ 单元测试并修复鸿蒙平台差异"
     ],
     "notes": "评估按模型 C（整包桌面应用）口径。关键未知数——鸿蒙 PC 桌面窗口环境的完整度——是决定 QGIS 能否以完整桌面体验运行的核心变量，也是 confidence 限制在 medium 的主因。若鸿蒙 PC 桌面环境（DWM+系统托盘+文件对话框+拖拽/剪贴板+打印）不支持传统 Qt6 Widgets 应用，则 QGIS 的迁移从 needs_adaptation_full→infeasible（需整机 ArkUI 重写 ~1.2M 行 UI 代码）。GRASS、Oracle、SAP HANA、SFCGAL 等可选 Provider 建议首期关闭。OpenCL 可选依赖已知有 CPU 回退路径，不影响功能性。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "QGIS",
@@ -3294,40 +3314,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "ambiguity",
-        "value": "gps_serial",
-        "rationale": "QGIS 通过 QtSerialPort+NMEA 解析支持 GPS 设备——当前归入 hardware/gps_serial，与 GUI/3D/硬件分类略有交叉；hardware 场景的 specific_hardware=false 因串口非特定硬件（可用户级替代），但与 GPU 加速并列需注意语义"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "other",
-        "rationale": "FLEX 和 BISON 是编译器/构建工具，ecosystem 取 other 而非其实现语言(C)；external/ 中有平台集成库 wintoast（Windows Toast 通知）仅 Windows 使用，属于平台专用 internal 依赖"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "qt6_gui",
-        "rationale": "Qt6 框架作为应用级 GUI 平台抽象，归 category=platform 但 platform=portable（Qt 本身跨平台），与传统 win32/posix 平台 API 不同，适合单列 type"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "gap",
-        "value": "GIS",
-        "rationale": "现有 skill 推荐的 domain 取值（networking/graphics/ML/crypto/data/GUI）不包含地理信息系统/空间数据，需要扩展"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "QGIS 是桌面 GIS 应用，触及四个鸿蒙适配重点场景：GUI（Qt6 Widgets 完整桌面界面）、3D 渲染（Qt 3D/OpenGL 3D 地图视图与 glTF 模型）、GPU 硬件加速（OpenCL 栅格并行处理）、以及 GPS/串口硬件设备（NMEA 解析与 QtSerialPort）。无媒体编解码与云服务依赖。",

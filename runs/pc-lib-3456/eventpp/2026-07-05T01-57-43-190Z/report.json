@@ -352,7 +352,6 @@
   },
   "harmony_adaptation": {
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": {
         "lo": 0.1,
@@ -362,7 +361,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "直接以 header-only 方式集成到 OHOS NDK 目标中，包含头文件后使用 OHOS NDK 的 C++ 工具链编译即可。无需修改任何源码。典型用法：add_subdirectory/FetchContent 引入；或通过鸿蒙 PC vcpkg/conan 安装已发布的 eventpp 包。",
     "blockers": [],
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -372,7 +370,8 @@
         "target_status": "available",
         "impact": "OHOS NDK 提供 C++ 标准库，覆盖 eventpp 使用的所有 C++11 标准设施",
         "source": "OHOS NDK 官方文档",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "std::mutex / std::atomic / std::condition_variable / std::thread",
@@ -380,12 +379,27 @@
         "target_status": "available",
         "impact": "这些是 C++11 标准库线程设施，已随 OHOS NDK 提供",
         "source": "OHOS NDK 官方文档",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
     "notes": "事件调度组件（callback 存储与分发、线程同步）不涉及任何图形、网络、文件系统或硬件能力，仅使用 CPU 和内存。C++11 标准库在 OHOS NDK 中已全部就绪。无需任何鸿蒙权限声明。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "eventpp",
@@ -405,26 +419,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "classification",
-        "value": "library",
-        "rationale": "Eventpp 是一个纯头文件 C++11 事件库，通过 #include 头文件使用，不提供终端用户启动入口"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_adaptation",
-        "kind": "absence",
-        "value": "none",
-        "rationale": "所有生产代码均使用 C++11 标准库，无 #ifdef 平台分支、无运行时平台判断、无 FFI/动态加载库"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "scenarios": [],

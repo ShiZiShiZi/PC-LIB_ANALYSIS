@@ -567,7 +567,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，Node.js 运行时已移植，支持 N-API / Node-API C 接口）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -585,7 +584,8 @@
         "required": true,
         "target_status": "available",
         "impact": "该库作为 C 预处理器宏，在预处理阶段展开为 N-API 调用。必须依赖 N-API 头文件可用性。Node.js 已被移植到 HarmonyOS（含 N-API），故不构成阻碍。",
-        "source": "references/harmony-pc-capabilities （默认假设：Node.js 运行时已移植）"
+        "source": "references/harmony-pc-capabilities （默认假设：Node.js 运行时已移植）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -593,11 +593,11 @@
         "required": false,
         "target_status": "available",
         "impact": "宏本身无需编译，但消费方需用 OHOS NDK 编译最终的原生插件。OHOS NDK 已包含标准 C 编译器。",
-        "source": "references/harmony-pc-capabilities （默认假设：OHOS NDK 可用）"
+        "source": "references/harmony-pc-capabilities （默认假设：OHOS NDK 可用）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "napi-macros 是纯 C 预处理器宏集合，仅封装 Node.js N-API / Node-API 标准 C 接口与 libuv 函数，无任何平台专有 API、系统调用或硬件依赖。在已假设 Node.js 运行时与 N-API 已被移植到 HarmonyOS NEXT PC 的前提下，该库无需任何代码修改即可在鸿蒙环境下使用。消费方开发者只需使用 HarmonyOS 下的 Node.js SDK 和 OHOS NDK 编译其原生模块，包含此头文件即可正常工作。",
     "blockers": [],
     "compatible": [
@@ -621,7 +621,21 @@
       "消费方开发者使用 HarmonyOS 提供的 Node.js SDK 和 node-gyp 编译原生模块即可"
     ],
     "notes": "评估基于默认假设：Node.js 运行时和 N-API 已被移植到 HarmonyOS NEXT PC。napi-macros 本身不产生任何运行时二进制产物，仅为编译期的头文件。评估置信度高。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "napi-macros",
@@ -641,7 +655,8 @@
     "observations": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "该库为纯 C 预处理器宏集合，不涉及 GUI、3D 渲染、媒体处理或特定硬件访问等鸿蒙适配重点场景。所有功能仅存在于编译预处理阶段。",

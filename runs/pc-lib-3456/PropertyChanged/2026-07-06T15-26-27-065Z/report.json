@@ -702,7 +702,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -711,7 +710,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -720,11 +719,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "PropertyChanged.Fody 是纯 .NET 托管代码库，所有功能依赖 .NET 运行时和 Mono.Cecil。若 .NET 运行时在鸿蒙 PC 不可用则整体不可运行",
-        "source": "references/harmony-pc-capabilities.md — .NET 运行时"
+        "source": "references/harmony-pc-capabilities.md — .NET 运行时",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "PropertyChanged.Fody 是纯 .NET 托管代码库，不调用任何平台专有 API、系统调用、硬件 API 或 FFI。其功能完全在 .NET 运行时和 Mono.Cecil 上实现。只要 .NET 运行时已在鸿蒙 PC 上移植，本库无需任何适配即可直接运行。",
     "blockers": [],
     "compatible": [
@@ -756,7 +755,21 @@
       "在鸿蒙 PC 的 .NET 环境下运行单元测试验证织入正确性"
     ],
     "notes": "本库是编译期工具，运行时零 IO/网络/设备依赖。唯一前提是 .NET 运行时可用。由于 .NET（含 dotnet SDK）的跨平台性质，若鸿蒙 PC 支持 .NET 运行时，则本库无需任何改动。关键不确定因素：鸿蒙 PC 是否已有 .NET 运行时移植。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "PropertyChanged",
@@ -780,16 +793,17 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "warnings": [],
-    "confidence_overall": "high",
+    "confidence_overall": "medium",
     "observations": [],
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "PropertyChanged.Fody 不涉及 GUI、3D 渲染、媒体或硬件场景。它是纯编译期 IL 织入工具，运行时无任何界面、图形、媒体或设备交互。",

@@ -613,7 +613,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; 原生 N-API 插件经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -622,7 +621,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 JavaScript + C 双实现的复数共轭计算微库，属于 stdlib 生态。鸿蒙 PC 已移植 Node.js 24，JS 纯实现部分可直接运行；C 原生 N-API 插件（src/addon.c + src/main.c）使用标准 C99，无任何平台特有 API（不依赖 Win32/POSIX/系统调用），只需经 OHOS NDK 重新编译为 .node 插件即可。总体工作量极小。",
     "blockers": [
       {
@@ -650,7 +648,8 @@
         "target_status": "available",
         "impact": "JS 纯实现可直接运行；C 插件需 OHOS NDK 重编",
         "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -683,7 +682,21 @@
       "确认依赖的 stdlib 子包（@stdlib/complex-float64-{ctor,real,imag}、@stdlib/math-base-napi-unary）均可从 npm 获取或已在鸿蒙镜像可用"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）；N-API 插件重编即可，C 代码无平台特有依赖。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -704,26 +717,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "mono_ecosystem",
-        "value": "nodejs",
-        "rationale": "所有运行时依赖均为 @stdlib 同名 npm scope 的子包，无跨生态依赖"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "no_platform_api",
-        "value": "cross-platform",
-        "rationale": "C 实现仅用标准 C 数值运算，无 POSIX/Win32 调用；JS 实现仅调用 stdlib 子包"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算微库，不涉及 GUI、3D 渲染、媒体或特定硬件。所有运算在 CPU 上执行标准 C 算术。",

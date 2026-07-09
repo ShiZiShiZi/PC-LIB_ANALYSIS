@@ -1677,8 +1677,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK/musl + POSIX 子集；arm64/x86_64）。本库按模型 A 评估：作为 C 库经 OHOS NDK 重编后供鸿蒙 PC 应用链接/通过 N-API 桥接调用。",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1687,7 +1686,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "SQLCipher 核心为 C 库，加密后端默认 OpenSSL 已在 OpenHarmony PC 预编译包中提供，zlib/readline/tcl 等可选依赖也已适配；POSIX 线程、动态加载、文件锁、内存映射等标准接口 OHOS NDK 大概率支持。主要不确定点在于 /proc 伪文件系统与 mlock 内存锁定在鸿蒙 PC 的可用性，但二者均为可选/可降级功能（已有失败回退逻辑），不会导致核心数据库加密不可用。整体可在鸿蒙 PC 上完成适配。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1697,7 +1695,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 库必须经 OHOS NDK 交叉编译才能生成鸿蒙 .so",
-        "source": "references/harmony-pc-capabilities.json 引言（OHOS NDK: musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json 引言（OHOS NDK: musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openssl",
@@ -1705,7 +1704,8 @@
         "required": true,
         "target_status": "available",
         "impact": "默认加密后端可用则无需重写加密路径",
-        "source": "scripts/harmony_adapted.js（openssl 在 cmd-pkgs 清单中）"
+        "source": "scripts/harmony_adapted.js（openssl 在 cmd-pkgs 清单中）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:procfs",
@@ -1713,7 +1713,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 advisory lock 诊断字符串；代码已优雅回退 SQLITE_ERROR_UNABLE，不影响核心功能",
-        "source": "references/harmony-pc-capabilities.json 无 /proc 条目"
+        "source": "references/harmony-pc-capabilities.json 无 /proc 条目",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:mlock",
@@ -1721,7 +1722,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响敏感内存防换出这一安全加固项；失败时库仅记录日志并继续运行",
-        "source": "references/harmony-pc-capabilities.json 无 mlock 条目"
+        "source": "references/harmony-pc-capabilities.json 无 mlock 条目",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -1729,7 +1731,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "arm64 已确认可用；若需 x86_64 则需额外验证",
-        "source": "references/harmony-pc-capabilities.json#arch"
+        "source": "references/harmony-pc-capabilities.json#arch",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1827,7 +1830,21 @@
       "可选：为 ArkTS/Node-API 场景编写 N-API 包装，使上层 JS/TS 应用可调用 SQLCipher"
     ],
     "notes": "评估按模型 A（C 库经 NDK 重编后链接使用）。若目标是 ArkTS 沙箱应用（模型 B），还需额外 N-API 桥接工作，person_days 会上升。confidence 为 medium 是因为 /proc、mlock、x86_64 三条目标事实未在 harmony-pc-capabilities.json 中明确核实。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "sqlcipher",
@@ -1856,30 +1873,9 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "bindings",
-        "kind": "ambiguity",
-        "value": "wasm_js_binding",
-        "rationale": "ext/wasm 提供 Emscripten/WASM 构建并产出 JS API，可在浏览器与 Node.js 中运行；它并非 Node-API 原生插件，是否计入 library.bindings 的 nodejs 项存在歧义。本报告将其纳入 bindings，但需在面板观察中确认。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "manual_ldflags",
-        "rationale": "SQLCipher 的加密后端（OpenSSL/libcrypto）不由 CMake/vcpkg/conan 声明，而是 README 与 Makefile 通过手动 LDFLAGS=-lcrypto 链接；现有 acquisition 推荐值中无对应项，这里使用 system 并在 source 中说明手动链接。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "posix_subset_details",
-        "rationale": "harmony-pc-capabilities.json 未逐条列出 pthread、dlopen、mmap、fcntl、mlock、/proc 等 POSIX 子能力，评估时只能记为 available/unknown 混合；建议补充 POSIX 子能力段以提升 C/C++ 库评估准确性。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "SQLCipher 是纯计算/数据安全类库，不涉及 GUI 桌面界面、3D 渲染、音视频媒体或特定硬件访问；核心依赖为文件系统、POSIX/Win32 平台 API 与加密后端。",

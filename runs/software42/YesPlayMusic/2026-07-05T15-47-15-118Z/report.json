@@ -1979,8 +1979,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（应用，模型 C — 整包桌面应用：Electron 桌面运行时 + Node.js 22，需桌面窗口环境与原生桌面集成能力）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1989,7 +1988,6 @@
       "level": "very_high"
     },
     "confidence": "low",
-    "recommended_path": "recompile_napi",
     "summary": "本应用为 Electron + Vue.js 桌面音乐播放器，核心是一个 SPA Web 前端加上 Electron 桌面壳。鸿蒙 PC 已移植 Node.js 运行时，但 Electron / Chromium 桌面框架在鸿蒙 PC 的可用性是关键未知数（目标侧标记 unknown）。若 Electron 可用，主要工作为：(1) 为 HarmonyOS 新增平台分支的桌面集成代码（系统托盘、全局快捷键、菜单，替代 Linux X11/MPRIS、macOS Touch Bar/Dock、Windows 托盘等平台特有实现）；(2) 用 OHOS NDK 重新编译 Rust N-API 原生插件 (@unblockneteasemusic/rust-napi)；(3) 适配自动更新机制。若 Electron 不可用，则需要整应用 ArkUI 重写，工作量极大。Google Analytics、Last.fm、Discord 等第三方云端服务依赖网络权限。因多个关键目标能力未核实，置信度为 low。",
     "target_assumptions": [
       {
@@ -1998,7 +1996,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Electron 是本应用的核心运行时框架——不可用则整个应用无法运行，须用 ArkUI 重写前端 + 鸿蒙原生实现所有桌面集成功能",
-        "source": "references/harmony-pc-capabilities.json#gui.electron"
+        "source": "references/harmony-pc-capabilities.json#gui.electron",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -2006,7 +2005,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Electron 需桌面窗口环境创建 BrowserWindow；无此能力则应用无法运行",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:tray",
@@ -2014,7 +2014,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "系统托盘（最小化到托盘）是本应用的关闭行为核心——不可用则为 minor 阻碍（可降级为退出或最小化到任务栏）",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.tray"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.tray",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:nodejs",
@@ -2022,7 +2023,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Electron 依赖 Node.js 主进程；鸿蒙已移植 Node.js 24.13.0，此前提已满足",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_app",
@@ -2030,7 +2032,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 Electron 打包产物 (dmg/nsis/AppImage) 能否替换为鸿蒙应用包格式",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "unadaptable_apis": [],
@@ -2178,6 +2181,20 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
     }
   },
   "library": {
@@ -2197,57 +2214,7 @@
   },
   "meta": {
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "ambiguity",
-        "value": "多媒体桌面应用 / 音乐播放器",
-        "rationale": "该项目兼具『多媒体播放器』（音乐播放）和『桌面应用客户端』（Electron 桌面集成）双重属性，领域归为多媒体桌面应用而非单一分类"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].type",
-        "kind": "new_value",
-        "value": "electron_main",
-        "rationale": "Electron 主进程 API 是 Node.js 桌面应用的独有平台面，与 node_core / win32 / posix 均不同，需自创 type 值区分。electron_main 涵盖 BrowserWindow/ipcMain/Tray/Menu/nativeImage/TouchBar/globalShortcut 等 Electron 特有 API"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].type",
-        "kind": "new_value",
-        "value": "electron_macos",
-        "rationale": "Electron 的 macOS 专属 API（Touch Bar、Dock 菜单）需单独列为 platform=macos 的组，以区别于跨平台 Electron API"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].type",
-        "kind": "new_value",
-        "value": "electron_linux_desktop",
-        "rationale": "Electron 的 Linux 专属桌面集成（MPRIS D-Bus、X11）需单独列为 platform=linux 的组"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].type",
-        "kind": "new_value",
-        "value": "web_audio",
-        "rationale": "Web Audio API（通过 howler.js 封装）是浏览器标准音频 API，非 Node.js 特有，需独立组别于 node_core"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "lastfm",
-        "rationale": "Last.fm 作为音乐 Scrobble 服务不属于常见云厂商推荐集（Firebase/AWS/GCP/Azure/阿里云等），但确为第三方云服务，需 coin 新值"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "discord",
-        "rationale": "Discord Rich Presence 虽不是传统云厂商，但属于第三方在线服务，需 coin 新 vendor 值"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2255,10 +2222,11 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   },
   "capability_profile": {
     "summary": "本应用基于 Electron 框架提供桌面 GUI，使用 Vue.js 构建前端界面，通过 howler.js（Web Audio API）和 plyr 实现音频/MV 播放。核心适配要点：Electron 桌面框架（含 Chromium 渲染、Native 窗口管理、系统托盘、全局快捷键、Touch Bar）以及 Linux 下的 MPRIS/DBus/X11 集成。无 3D 渲染或特定硬件依赖。",

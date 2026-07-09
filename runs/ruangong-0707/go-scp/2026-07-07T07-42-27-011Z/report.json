@@ -606,8 +606,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK + ArkTS 应用层)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -631,7 +630,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "go-scp 是纯 Go 实现的 SCP 文件传输库，唯一外部依赖是 golang.org/x/crypto/ssh。Go 运行时已移植到鸿蒙 PC（Go 1.22+），理论上只需交叉编译即可。但 crypto/ssh 包内部依赖 syscall 做进程控制（fork/exec/wait 等），需验证这些 syscall 在鸿蒙内核的可用性。若无问题则交叉编译即可，否则需少量适配。整体评估为 needs_adaptation_full（需改造但全部可适配），工作量主要在交叉编译环境搭建与测试验证。",
     "blockers": [
       {
@@ -700,7 +698,21 @@
       "验证文件权限/时间戳保留功能"
     ],
     "notes": "Go 运行时已鸿蒙化是该库可移植的关键前提。crypto/ssh 的 syscall 依赖是主要不确定因素，但 Go 运行时移植通常已包含 syscall 适配层，因此置信度为 high。auth.SshAgent 是唯一 POSIX 特有调用点，但它是可选认证方式（不影响核心传输功能）。porting_class 定为 needs_adaptation_full 而非 recompile_only 是因为需验证/可能适配 crypto/ssh 的 syscall 层。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "go-scp",
@@ -725,7 +737,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目是一个纯网络文件传输库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。唯一与平台相关的是 auth 子包中通过 Unix 域套接字连接 SSH Agent 的功能。",

@@ -1520,8 +1520,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型C：整包桌面应用——PDE IDE + 核心库 + 扩展库，需在鸿蒙 PC 上打包并启动运行；鸿蒙 JDK 17 已移植）（arm64/x86_64；自研内核，非 Linux ABI；原生层 OHOS NDK (musl + POSIX 子集)）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -1530,7 +1529,6 @@
       "level": "very_high"
     },
     "confidence": "low",
-    "recommended_path": "find_alternative",
     "summary": "Processing 是一款纯 Java 桌面 IDE 应用（PDE），完全基于 Swing/AWT 构建 GUI 并依赖 JOGL（OpenGL 绑定）实现硬件加速 2D/3D 渲染。鸿蒙 PC 已移植 JDK 17 运行时，但决定该应用能否运行的**关键目标能力 headful AWT/Swing 均为 unknown**——若鸿蒙 JDK 不带桌面 AWT 后端，则整个 IDE 前端需用 ArkUI 重写（工作量堪比新开发）；若 AWT 可用则仅需处理 JOGL（需 JOGL 新增 OHOS GLES 平台后端或迁移至 ArkGraphics 3D）、JNA 平台专有代码（替换为鸿蒙等效接口）、以及打包形态（从 Launch4j/appbundler/Shell 脚本改为鸿蒙 .hap 应用包）。核心库的 Java2D 软件渲染器（JAVA2D）和纯 Java 逻辑可复用。IO/Serial 扩展库为 Linux/ARM 平台专用、在鸿蒙上非核心需求。鉴于所有关键 GUI 能力均未核实，**评估置信度低**；结论高度依赖鸿蒙 JDK 对桌面 AWT/Swing 的支持决策。",
     "blockers": [
       {
@@ -1659,7 +1657,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 unavailable→PDE 整个 Swing/AWT GUI 无法运行，且核心库 PApplet 的窗口也依赖 AWT Frame/PSurfaceAWT——整个项目作为桌面应用不可移植（仅纯库代码可独立使用）。此能力是决定 PDE 能否移植的**核心前提**。",
-        "source": "references/harmony-pc-capabilities.json#gui.awt_headful"
+        "source": "references/harmony-pc-capabilities.json#gui.awt_headful",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:swing",
@@ -1667,7 +1666,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "PDE 的编辑器/菜单/对话框/工具栏全部基于 Swing。若无 Swing 支持→整个 IDE 前端不可用。",
-        "source": "references/harmony-pc-capabilities.json#gui.swing"
+        "source": "references/harmony-pc-capabilities.json#gui.swing",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:javafx",
@@ -1675,7 +1675,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "FX2D 为可选渲染器（仅在非 ARM 架构 JRE 含 JavaFX 时可用）。若不可用→回归 JAVA2D 或 P2D 渲染器，无核心功能损失。",
-        "source": "references/harmony-pc-capabilities.json#gui.javafx"
+        "source": "references/harmony-pc-capabilities.json#gui.javafx",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -1683,7 +1684,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "PDE 依赖多窗口 MDI 环境（代码编辑窗口、消息控制台、错误列表等均为独立 JFrame/Dialog）。若鸿蒙不支持传统桌面多窗口→整个 IDE 交互模型需重新设计。",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1691,7 +1693,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 PDE 能否直接打包为 .jar+脚本 分发至鸿蒙用户。若仅支持 .hap 签名安装→需重构整个打包/分发管线。",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl",
@@ -1699,7 +1702,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "P2D/P3D 为高级渲染选项（非 mandatory）——JAVA2D 软件渲染器可作为 fallback。但若需硬件加速则 OHOS GLES 的 JOGL 绑定需自行移植。",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:spawn",
@@ -1707,7 +1711,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "PDE 编译和运行用户草图需要用 ProcessBuilder 启动 javac/java 子进程。若受限→可改用嵌入式 JDT 编译 + 同进程类加载器运行（PDE 已内置 JDT，半数工作已就绪）。",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:file_dialog",
@@ -1715,7 +1720,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若 AWT 可用通常随之可用。若无→改用纯 Swing JFileChooser 与自定义实现（虽体验下降但可用）。",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.file_dialog"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.file_dialog",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dnd_clipboard",
@@ -1723,7 +1729,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若 AWT 可用通常随之可用。缺失影响代码编辑粘贴与文件拖拽，非阻断性。",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1779,7 +1786,21 @@
       "在鸿蒙 JDK 上运行 Processing 的 JUnit 测试套件验证 Java 逻辑兼容性"
     ],
     "notes": "评估置信度低（low）——因为本项目作为桌面应用移植的**核心前提能力（headful AWT/Swing、桌面窗口管理器、传统应用交付模型）在 harmony-pc-capabilities.json 中全部为 unknown**。person_days 区间 [40, 200] 的极大跨度反映了这一不确定性：下限（40天）假设 AWT/Swing 在鸿蒙 JDK 上可用且仅需适配平台专用代码与打包管线；上限（200天+）假设 AWT/Swing 不可用、需 ArkUI 重写整个 IDE 前端（≈ infeasible）。若 AWT/Swing 被确认 unavailable，建议直接转向 Processing 4 或 p5.js（浏览器/Web-based）作为鸿蒙上的替代方案——这比从零重写桌面 GUI 更经济。所需权限仅 INTERNET 一项（版本检查/文档下载），其余权限（文件存储/子进程/设备访问等）取决于鸿蒙 PC 的默认沙箱策略与桌面应用特权模型（均为 unknown）。processing.io NativeInterface 在非 Linux 平台已自动降级为仿真模式——该模式在 OHOS 上同样激活（系统属性 os.name != Linux），无需改动 IO 扩展库即不会暴露不支持的硬件 API。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "processing",
@@ -1806,36 +1827,7 @@
   },
   "meta": {
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "application（同时含库核心）",
-        "rationale": "Processing 项目包含 PDE IDE（application）和核心库 PApplet/PGraphics（library），两者共享同一仓库但由不同许可（GPL vs LGPL）与构建产物（pde.jar vs core.jar）分隔。将整体判定为 application（因为仓库顶层关注的是 PDE 的分发与打包，core 作为其依赖子项目），但 dim-9 评估需兼顾核心库可被独立重用于鸿蒙场景的可能性。"
-      },
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "GPL-2.0-or-later AND LGPL-2.1-or-later（仓库内不同模块不同协议）",
-        "rationale": "仓库作者在 license.txt 声明 core 为 LGPL 其余为 GPL，承认许可信息混乱待清理（issue #224）。包含 IBM Public License 1.0 全文但系历史遗留，不计入当前 SPDX。同时含 MIT 许可的第三方文件（jna/jogl/antlr 等预编译 jar 各自的许可）。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "prebuilt_binary",
-        "rationale": "所有第三方依赖均为预编译 jar/jnilib 文件随仓库发布（app/lib/、core/library/、java/mode/ 等目录），无 Manifest 声明版本号与来源 URL。这属于推荐取值之一（非新创词），但确为观察此仓库依赖管理模式的要点。"
-      },
-      {
-        "dimension": "build_env",
-        "field": "platforms",
-        "kind": "ambiguity",
-        "value": "Raspberry Pi (armv6hf/arm64) Linux 作为独立分发目标",
-        "rationale": "build.xml 包含 linux-arm32/linux-arm64 专用分支（Raspberry Pi），有独立 JRE 下载路径、分发文件名与架构后缀——虽为特殊 Linux 变体但构建行为与 x86 Linux 有显著差异（IO 扩展库启用/禁用、JRE 来源不同），需单列。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1851,7 +1843,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=runtime_surface 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   },
   "capability_profile": {
     "summary": "Processing PDE 是一款桌面 GUI 应用，深度触及以下鸿蒙适配重点场景：Swing/AWT GUI（IDE 主界面）、OpenGL/JOGL 3D 渲染（P2D/P3D 渲染器）、JavaFX 2D 渲染（FX2D）、以及可选的硬件 I/O（Raspberry Pi GPIO/串口）。所有 GUI/3D 场景均依赖目标平台提供的本机窗口与图形系统。",

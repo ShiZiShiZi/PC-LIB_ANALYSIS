@@ -1891,8 +1891,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上；N-API 原生 addon 经 OHOS NDK 重编；arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1901,7 +1900,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该 monorepo 为 30 个 Node.js npm 包的集合，其中 28 个纯 TypeScript 包可直接在鸿蒙 PC 已移植的 Node.js 24 运行时上运行；仅 native-machine-id 一个包包含 C++ N-API 原生 addon（通过 macOS IOKit/Linux /etc/machine-id/Windows 注册表读取机器 UUID），需为鸿蒙新增平台分支（用 OHOS 等价的机器标识机制）；get-os-info 等包需为鸿蒙增加 OS 信息采集分支；mongodb-runner 的子进程行为（spawn mongod/mongos）需确认鸿蒙 Node.js 的 child_process 可用性。整体无硬件/GPU/GUI 依赖，所有功能均可适配。",
     "blockers": [
       {
@@ -1985,7 +1983,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已确认鸿蒙 PC 有 Node.js 24 移植，纯 TS 包可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:node-napi",
@@ -1993,7 +1992,8 @@
         "required": true,
         "target_status": "available",
         "impact": "N-API 是 Node.js 核心的一部分，随 Node.js 移植而可用；native-machine-id 的 binding.cc 可经 OHOS NDK 编译为 .node addon",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs（N-API 随 Node.js 运行时附带）"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs（N-API 随 Node.js 运行时附带）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:child-process",
@@ -2001,7 +2001,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "mongodb-runner 依赖 child_process.spawn 启动 mongod/mongos；若鸿蒙受限则本地集成测试功能需调整，但库核心功能（连接管理、查询解析等）不受影响",
-        "source": "harmony-pc-capabilities.json（无明确 child_process 条目，默认推定 Node 核心模块随运行时可用，但对沙箱/权限环境下的子进程行为谨慎）"
+        "source": "harmony-pc-capabilities.json（无明确 child_process 条目，默认推定 Node 核心模块随运行时可用，但对沙箱/权限环境下的子进程行为谨慎）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2042,7 +2043,21 @@
       "在鸿蒙 Node.js 24 上跑通各包单元测试（mocha + chai + sinon，共 816 用例），验证纯 TS 包的兼容性"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。ta:child-process 的 target_status=unknown 是本评估最大不确定性——若鸿蒙 Node.js 支持 child_process 则整体难度再降，若沙箱禁止则需调整 mongodb-runner 的测试策略但核心连接/解析包不受影响。native-machine-id 的 C++ addon 是唯一需 OHOS NDK 重编的组件（仅 194 行 C++），工作量可控；回退方案为不做移植直接返回 undefined（上层 device-id 包已有 fallback 到 crypto.randomBytes，功能无损）。dl-center 和 sbom-tools 为 MongoDB 内部工具，对外部鸿蒙适配影响较小；全网 npm 纯 JS 依赖（lodash/debug/semver/yargs 等）均已在鸿蒙 Node.js 上可用。若目标为 ArkTS 沙箱应用（模型 B），则需将全部 30 个包改为 @ohos.* 接口重写，难度大幅上升（porting_class 升为 needs_adaptation_partial，person_days 跃升至 80+），不推荐此路径。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "devtools-shared",
@@ -2062,47 +2077,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "ambiguity",
-        "value": "开发者工具/数据库客户端基础设施",
-        "rationale": "该 monorepo 的本质是多个独立 npm 库的集合而非单一库，每个包有独立的功能域，整体归入'开发者工具基础设施'作为一个聚合域描述"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "new_value",
-        "value": "可选原生 C++ addon 依赖（optionalDependencies）的鸿蒙适配",
-        "rationale": "kerberos/mongodb-client-encryption/os-dns-native/resolve-mongodb-srv 均为 optionalDependencies，缺省时 devtools-connect 自动降级——这种 fail-safe 模式降低了鸿蒙适配的紧迫性，但需要确认纯 JS 回退路径的覆盖完整性"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "gap",
-        "value": "macos_iokit / win32_registry / linux_machine_id_files 均为平台特有 API 家族",
-        "rationale": "native-machine-id 的 C++ addon 通过三套完全不同的平台 API 获取机器标识（macOS IOKit、Windows 注册表、Linux 文件读取），展示了跨平台库处理平台差异的典型模式——鸿蒙需要新增第四套 OHOS 平台路径"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "ambiguity",
-        "value": "Node.js child_process 在鸿蒙的可用性未知",
-        "rationale": "harmony-pc-capabilities.json 未明确列出 child_process 的支持状态；虽然 Node 核心模块应随运行时可用，但鸿蒙沙箱模型可能限制子进程创建——这直接决定 mongodb-runner 能否在鸿蒙上'spawn mongod'，是 confidence=medium 的主要原因"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "snyk（安全扫描）作为云服务厂商",
-        "rationale": "snyk-policy 在 sbom-tools 中用于漏洞策略管理，Snyk 是独立的安全漏洞平台，vendor 分类为 snyk"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯基础库 Monorepo，不涉及 GUI 桌面界面、3D 图形渲染、音视频媒体处理或特定硬件设备依赖。各包功能集中在数据库连接、查询解析、服务器运维、机器标识采集、代理隧道等开发者工具领域，均为服务端/CLI 场景。",

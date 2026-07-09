@@ -1042,8 +1042,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK musl + POSIX 子集，arm64/x86_64；C/C++ 库经 OHOS NDK 重编后以 .so 形式被视频播放器集成）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1052,7 +1051,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libaribcaption 的核心字幕解码与位图渲染均为自包含算法，不依赖 GUI 工具包、3D 栈或专有硬件。CMake 在非 Windows/Apple/Android 平台默认启用 FreeType+Fontconfig 后端，而 FreeType 与 Fontconfig 均已进入 OpenHarmony PC cmd-pkgs 预编译包清单，故字形渲染路径可直接复用。主要工作量在于：验证 OHOS NDK 交叉编译、确保 SSE2 优化在 arm64 上走通用回退、处理 musl/POSIX 子集下的内存对齐与系统字体路径差异。Windows DirectWrite/COM/GDI 与 Apple CoreText 后端为条件编译，不会进入鸿蒙构建。",
     "blockers": [
       {
@@ -1120,7 +1118,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 库重编的基础",
-        "source": "harmony-pc-capabilities.json intro + 默认 cpp 库评估口径"
+        "source": "harmony-pc-capabilities.json intro + 默认 cpp 库评估口径",
+        "target_status_model": "available"
       },
       {
         "id": "ta:freetype",
@@ -1128,7 +1127,8 @@
         "required": true,
         "target_status": "available",
         "impact": "字形渲染后端核心依赖；若缺失则必须重写渲染路径",
-        "source": "dependencies.harmony_adapted (cmd-pkgs)"
+        "source": "dependencies.harmony_adapted (cmd-pkgs)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:fontconfig",
@@ -1136,7 +1136,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Linux 风格字体解析与回退匹配依赖",
-        "source": "dependencies.harmony_adapted (cmd-pkgs)"
+        "source": "dependencies.harmony_adapted (cmd-pkgs)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_memalign",
@@ -1144,7 +1145,8 @@
         "required": true,
         "target_status": "available",
         "impact": "对齐内存分配；缺失时库内有通用回退",
-        "source": "musl POSIX 兼容性一般事实"
+        "source": "musl POSIX 兼容性一般事实",
+        "target_status_model": "available"
       },
       {
         "id": "ta:font_ime",
@@ -1152,7 +1154,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "字幕渲染依赖系统字体；若系统字体模型与 Linux 差异大，需新增字体提供者",
-        "source": "harmony-pc-capabilities.json#desktop_integration.font_ime"
+        "source": "harmony-pc-capabilities.json#desktop_integration.font_ime",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1202,7 +1205,21 @@
       "在鸿蒙视频播放器样例中跑通解码→渲染→RGBA 图像输出链路"
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编后被上层应用集成）。Windows DirectWrite/COM/GDI、Apple CoreText/CoreGraphics 后端均为条件编译，不进入鸿蒙构建，因此不视为阻碍。font_ime 目标能力状态为 unknown，导致整体 confidence 为 medium；若实测鸿蒙字体访问顺畅，可下调工作量并提升 confidence。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libaribcaption",
@@ -1225,31 +1242,10 @@
     "analyzed_at": "2026-07-04T00:20:33.706Z",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.key",
-        "kind": "new_value",
-        "value": "rendering_2d",
-        "rationale": "libaribcaption 使用纯自研 Bitmap/Canvas 做 2D 位图渲染与 Alpha 混合，不属于 GUI 工具包也不属于 3D 图形栈，故新增 rendering_2d 场景键以更准确刻画适配重点。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "name",
-        "kind": "ambiguity",
-        "value": "Windows DirectWrite 后端以 DirectWrite 为依赖名聚合 dwrite/d2d1/windowscodecs/ole32；Apple 后端以 CoreText 聚合 CoreFoundation/CoreGraphics/CoreText",
-        "rationale": "这些 Windows/macOS 系统框架在 CMake 中分别作为整体后端启用，拆分为独立包会淹没依赖清单；当前粒度服务于鸿蒙适配评估（这些后端在鸿蒙不会启用）。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "font_ime",
-        "rationale": "harmony-pc-capabilities.json 中 desktop_integration.font_ime 状态为 unknown，但字幕渲染库严重依赖系统字体与 i18n；实测前应保持 medium confidence。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libaribcaption 是一个纯离线的字幕处理库：涉及 2D 位图渲染与 Alpha 混合，属于媒体/2D 图形场景；不依赖 GUI 工具包，不涉及 3D 或专用硬件。x86 SSE2 优化有通用回退路径，不绑定特定硬件。",

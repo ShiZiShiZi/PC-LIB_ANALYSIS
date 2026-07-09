@@ -1275,8 +1275,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（库，走模型 A：经 OHOS NDK (musl libc + POSIX 子集) 重编为 .so，arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -1285,7 +1284,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libunwind 是 C 系统级库，可经 OHOS NDK 重编。本地(同进程)调用栈回溯的核心（DWARF/ELF 解析、musl POSIX 内存映射与文件 I/O）可在 OHOS NDK 上重编后工作。但该库深度耦合操作系统底层接口：远程进程回溯依赖 ptrace（目标 unknown）、部分 OS 后端依赖 Linux /proc 伪文件系统、信号返回依赖架构特定 SYS_rt_sigreturn 系统调用——这些在鸿蒙自研内核上的可用性/等价值均未核实。已鸿蒙化的可选依赖 liblzma 与 zlib 可直接使用。架构特定内联汇编需逐个架构移植到 OHOS。整体本地 unwind 核心可适配，远程/ptrace/coredump 功能需验证或替换。",
     "blockers": [
       {
@@ -1404,7 +1402,9 @@
         "category": "system",
         "evidence": [
           "src/ia64/Gtables.c:396"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1414,7 +1414,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "该库远程进程回溯(Remote Unwinding)的 ptrace 后端完全依赖此能力；若鸿蒙内核不提供等价接口，则远程 unwind 不可用，库降级为仅本地 unwind",
-        "source": "references/harmony-pc-capabilities.json id=ptrace (status: unknown)"
+        "source": "references/harmony-pc-capabilities.json id=ptrace (status: unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:procfs_kernel",
@@ -1422,7 +1423,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libunwind 在 Linux/QNX/Solaris 上均通过 /proc 内核接口定位 ELF 映像与 unwind 表；若 OHOS 无等价接口，需替换为 OHOS 原生进程信息 API",
-        "source": "references/harmony-pc-capabilities.json（未覆盖该条目，推断为 unknown）"
+        "source": "references/harmony-pc-capabilities.json（未覆盖该条目，推断为 unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:kernel_abi",
@@ -1430,7 +1432,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libunwind 的架构特定信号返回(resume)代码直接使用内联汇编调用 SYS_rt_sigreturn（Linux 系统调用号），鸿蒙内核的系统调用接口可能完全不同；需确认等价机制或在架构层面适配",
-        "source": "references/harmony-pc-capabilities.json（未覆盖该条目，推断为 unknown）"
+        "source": "references/harmony-pc-capabilities.json（未覆盖该条目，推断为 unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:musl_posix",
@@ -1438,7 +1441,8 @@
         "required": true,
         "target_status": "available",
         "impact": "这些 API 在 musl 下有充分支持，本地 unwind 核心（内存映射缓冲区、ELF 映像读取、动态库枚举）可依赖之",
-        "source": "OHOS NDK (musl libc) 为标准能力"
+        "source": "OHOS NDK (musl libc) 为标准能力",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1484,7 +1488,23 @@
       "在 OHOS 上运行 regression test suite 验证本地 unwind 功能完整"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 重编为 .so）。三个关键目标能力（ptrace 调试接口、/proc 内核接口、信号返回系统调用 ABI）的状态均为 unknown，因此 confidence 下调为 medium。若 OHOS 内核不提供 ptrace 或 /proc 等价物，远程 unwind 功能将被降级或移除，但本地 unwind（同进​程调用栈回溯）核心可适配。liblzma 与 zlib 已确认在 OpenHarmony PC cmd-pkgs 预编译包中有鸿蒙版（harmony_adapted=true，lzma→xz、z→zlib），可直接复用。person_days 估算 [25,50]：核心改造包括新增 OHOS OS 后端、适配架构特定汇编、逐文件核对 POSIX 子集覆盖、验证本地 unwind 功能完整性。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:getunwind"
+        ]
+      }
+    }
   },
   "library": {
     "name": "libunwind",
@@ -1510,7 +1530,15 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:getunwind",
+        "class": "actionable",
+        "message": "unadaptable_api ua:getunwind 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "libunwind 是一个纯系统级 C 库，不涉及 GUI、3D 渲染、音视频媒体等鸿蒙适配重点场景。其核心能力（调用栈回溯、寄存器操作、ELF/DWARF 解析）为纯算法与标准 POSIX 内存/文件 I/O，无可视化界面。唯一值得关注的是「硬件」维度下的架构特定内联汇编——但这是编译期代码生成问题，非运行时硬件依赖。",

@@ -1656,8 +1656,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（整包桌面应用模型 C；JDK 17 字节码跑在已移植 Java 运行时上；OHOS NDK；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1666,7 +1665,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "gui_rewrite_or_compatibility_layer",
     "summary": "SoapUI 是 Java 桌面应用，核心 API 测试逻辑为纯 Java，可跑在鸿蒙已移植 JDK 上；但主 GUI 重度依赖 headful AWT/Swing 与 JavaFX WebView，鸿蒙 PC 对这两项的支持状态未核实。大量外部工具集成（WS-I、Axis/CXF/gSoap/HermesJMS 等）依赖平台二进制，鸿蒙上无对应可执行文件，相关功能需裁剪或替换。未发现 JNI 原生库加载，Java 运行时不构成阻碍。",
     "unadaptable_apis": [
       {
@@ -1678,7 +1676,9 @@
         "category": "platform",
         "evidence": [
           "soapui/src/main/java/com/eviware/soapui/support/Tools.java:244"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:xdgopen",
@@ -1689,7 +1689,9 @@
         "category": "platform",
         "evidence": [
           "soapui/src/main/java/com/eviware/soapui/support/Tools.java:248"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:webview",
@@ -1700,7 +1702,9 @@
         "category": "platform",
         "evidence": [
           "soapui/src/main/java/com/eviware/soapui/support/components/EnabledWebViewBasedBrowserComponent.java:84"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wsi_tool",
@@ -1711,7 +1715,9 @@
         "category": "platform",
         "evidence": [
           "soapui/src/main/java/com/eviware/soapui/impl/wsdl/actions/iface/tools/wsi/WSIAnalyzeAction.java:115"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:hermes",
@@ -1722,7 +1728,9 @@
         "category": "platform",
         "evidence": [
           "soapui/src/main/java/com/eviware/soapui/impl/wsdl/actions/project/StartHermesJMS.java:86"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:external_codegen",
@@ -1733,7 +1741,9 @@
         "category": "platform",
         "evidence": [
           "soapui/src/main/java/com/eviware/soapui/impl/wsdl/actions/iface/tools/support/ProcessToolRunner.java:95"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1743,7 +1753,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "主窗口、菜单、对话框、编辑器全部基于 Swing，不支持则应用无法启动",
-        "source": "references/harmony-pc-capabilities.json#awt_headful / #swing"
+        "source": "references/harmony-pc-capabilities.json#awt_headful / #swing",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:javafx",
@@ -1751,7 +1762,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "内嵌浏览器、SwaggerHub 导入对话框依赖 JavaFX WebView",
-        "source": "references/harmony-pc-capabilities.json#javafx"
+        "source": "references/harmony-pc-capabilities.json#javafx",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_integration",
@@ -1759,7 +1771,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响打开帮助链接、导出报告等辅助体验，非核心 API 测试功能",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:process_spawn",
@@ -1767,7 +1780,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "工具集成、WS-I 合规检查、HermesJMS 等依赖外部进程",
-        "source": "references/harmony-pc-capabilities.json#spawn"
+        "source": "references/harmony-pc-capabilities.json#spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1775,7 +1789,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 install4j/zip 分发包能否直接迁移或需重打包为鸿蒙应用包",
-        "source": "references/harmony-pc-capabilities.json#desktop_app"
+        "source": "references/harmony-pc-capabilities.json#desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jdk_add_opens",
@@ -1783,7 +1798,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "启动脚本依赖大量 --add-opens 以访问 JDK 内部模块",
-        "source": "references/harmony-pc-capabilities.json#add_opens"
+        "source": "references/harmony-pc-capabilities.json#add_opens",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1916,7 +1932,28 @@
       "重新打包为鸿蒙桌面应用形态"
     ],
     "notes": "本评估按整包桌面应用模型 C 进行；多项关键目标能力（AWT/Swing、JavaFX、外部进程、桌面应用分发、--add-opens）在 harmony-pc-capabilities.json 中状态为 unknown，因此置信度为 medium。若后续核实这些能力可用，难度可大幅下降。Java 运行时已移植不构成阻碍。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:desktop",
+          "ua:xdgopen",
+          "ua:webview",
+          "ua:wsi_tool",
+          "ua:hermes",
+          "ua:external_codegen"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1928,6 +1965,39 @@
       "function-summary 与 harmony_adaptation 中 GUI 相关结论依赖 harmony-pc-capabilities.json 中若干 unknown 目标事实（headful AWT/Swing、JavaFX），置信度已下调至 medium。"
     ],
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:desktop",
+        "class": "actionable",
+        "message": "unadaptable_api ua:desktop 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:xdgopen",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xdgopen 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:webview",
+        "class": "actionable",
+        "message": "unadaptable_api ua:webview 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wsi_tool",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wsi_tool 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:hermes",
+        "class": "actionable",
+        "message": "unadaptable_api ua:hermes 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:external_codegen",
+        "class": "actionable",
+        "message": "unadaptable_api ua:external_codegen 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   }
 }

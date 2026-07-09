@@ -1073,7 +1073,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核 + OHOS NDK 原生层，已移植语言运行时）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1091,7 +1090,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库核心依赖标准 C/POSIX API，NDK 支持即可直接编译运行",
-        "source": "references/harmony-pc-capabilities.json 引言：原生层 OHOS NDK（musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json 引言：原生层 OHOS NDK（musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_runtime",
@@ -1099,11 +1099,11 @@
         "required": false,
         "target_status": "available",
         "impact": "仅当需要 Python 绑定时才相关；Python 已在鸿蒙 PC 移植",
-        "source": "references/harmony-pc-capabilities.json runtimes.python"
+        "source": "references/harmony-pc-capabilities.json runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "libplist 是典型的跨平台 C/C++ 数据格式库，核心逻辑不依赖 Linux ABI、Win32 或特定硬件。将其移植到 HarmonyOS NEXT PC 的主要工作是在 OHOS NDK 下进行交叉编译，调整 autotools 构建配置并验证测试；功能层面基本无需重写。",
     "blockers": [],
     "compatible": [
@@ -1144,7 +1144,21 @@
       "如有需要，生成鸿蒙 PC 的 pkg-config 与共享库安装包"
     ],
     "notes": "未使用 GUI、网络、媒体、硬件相关 API，无 ohos.permission 需求。 effort 主要消耗在构建系统交叉编译适配与测试验证，而非代码重写。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libplist",
@@ -1170,26 +1184,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "test_cases",
-        "kind": "gap",
-        "value": "custom_main_tests",
-        "rationale": "metrics.py 统计 test_cases 为 0，但 test/ 目录下存在多个带 main 的 C/C++ 测试文件（plist_test.c、plist_test++.cpp 等），它们使用自定义 main 而非 pytest/gtest 等可识别框架，导致测试用例数无法被正则捕获。实际存在测试，但数量需人工清点。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "ambiguity",
-        "value": "fuzz_as_production",
-        "rationale": "cloc 将 fuzz/ 目录标为 production，但 fuzz 目标本质是 OSS-Fuzz 测试/质量保障代码，不属于库对外交付功能；本报告的解释性维度（native_api、dependencies、harmony_adaptation）已按生产代码口径排除 fuzz 专属逻辑。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "libplist 是纯数据序列化/反序列化库，不涉及 GUI、3D 渲染、媒体编解码、硬件设备访问等鸿蒙适配高敏感场景。",

@@ -1204,7 +1204,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24.13.0 运行时上; arm64/x86_64; 自研内核, 非 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -1213,7 +1212,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "undici 是纯 JavaScript/Node.js 库，零运行时第三方依赖，仅使用 Node.js 内置核心模块和预构建 WASM（内嵌的 llhttp HTTP 解析器）。鸿蒙 PC 已移植 Node.js 24.13.0 运行时，WebAssembly API 在鸿蒙 Node.js 上可用。库内仅有两个极小的平台分支（win32 连接超时、ppc64 WASM SIMD 禁用），均不阻塞鸿蒙运行。无需任何代码修改、无需重新编译，可直接在鸿蒙 Node.js 上运行。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1224,7 +1222,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时已移植，不受影响",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1261,7 +1260,21 @@
       "（可选）如需从 C 源码重新编译 WASM：用鸿蒙 clang/wasi-sdk 按 build/wasm.js 流程产出 llhttp.wasm / llhttp_simd.wasm"
     ],
     "notes": "undici 的预构建 .wasm 文件已随 npm 包分发（lib/llhttp/llhttp-wasm.js 含 Base64 编码的 WASM），无需在目标机器上编译。仅当需要从 C 源码（deps/llhttp/）重新产 WASM 时才需构建工具链（docker/clang/wasi-sdk），这在鸿蒙上可选。整体为零改动部署。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "undici",
@@ -1283,26 +1296,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "gap",
-        "value": null,
-        "rationale": "undici 零运行时依赖是罕见的库设计——通常 HTTP 客户端库至少依赖 TLS/加密库，但 undici 完全依赖 Node.js 内置模块。vendored llhttp C 源码（编译为 WASM）按 acquisition: vendored / locality: local 处理，不视为外部依赖。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": null,
-        "rationale": "Node.js 内置模块（net/tls/crypto/stream 等）在 Node.js 运行时可视为 'standard'（Node 运行时标准库）；若切换到非 Node.js 环境（如浏览器），则这些全部不可用。按默认模型 A（跑在鸿蒙 Node.js 上），标记为 standard/portable 是恰当的。模型 B（ArkTS 沙箱）下这些模块不可用，但本评估按模型 A 执行。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "undici 为纯网络通信库（HTTP/1.1 客户端），不涉及 GUI、3D 渲染、媒体处理或特定硬件。所有能力均为网络层协议实现与 Web API 封装，无鸿蒙适配重点场景。",

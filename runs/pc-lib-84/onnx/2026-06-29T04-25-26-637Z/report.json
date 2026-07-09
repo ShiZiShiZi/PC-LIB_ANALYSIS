@@ -1267,8 +1267,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Python 库跑在已移植的 Python 3.12 运行时上；C++ 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1277,7 +1276,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "ONNX 主体为 Python + C++17，核心逻辑高度可移植：纯 Python 部分可直接运行于鸿蒙 PC 已移植 Python；C++ 扩展（checker、shape inference、version converter 等）与 nanobind 绑定需用 OHOS NDK 重新编译。所有平台相关代码均已按 Win32/POSIX 分支守卫，非 Windows 平台走标准 POSIX 路径，并有 openat2 失败回退机制，无不可适配的核心功能。",
     "blockers": [
       {
@@ -1316,7 +1314,8 @@
         "required": true,
         "target_status": "available",
         "impact": "ONNX 为 Python 包，纯 Python 逻辑直接依赖 Python 运行时",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_posix",
@@ -1324,7 +1323,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 扩展与外部数据安全打开路径依赖 POSIX 子集",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1362,7 +1362,21 @@
       "可选：验证 check-model / check-node 控制台脚本在鸿蒙终端可正常调用"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。ONNX 不涉及 GUI/3D/媒体/硬件，无特定硬件阻塞点；Win32 专有 API 仅在 Windows 分支使用，不影响鸿蒙 POSIX 构建。typing_extensions 为纯 Python 包，虽未在鸿蒙镜像中列出，但可直接随 Python 运行。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1370,29 +1384,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "gap",
-        "value": "typing_extensions 未在鸿蒙 PyPI 镜像列出",
-        "rationale": "typing_extensions 为标准库 typing 的纯 Python 回填包，未出现在 OpenHarmony PC PyPI 镜像中，但可在已移植 Python 上直接运行，不属于迁移阻碍。当前 skill 未明确说明'未镜像的纯 Python 包'如何处理，建议在依赖分析口径中补充。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "compiler_extensions",
-        "rationale": "ONNX 使用 __builtin_mul_overflow、条件 __declspec/__attribute__ 符号可见性、#pragma GCC diagnostic 等编译器扩展。它们既不是标准库 API，也不是平台/系统 API，单列 compiler_extensions 组更清晰。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "test_example_dirs",
-        "kind": "gap",
-        "value": "onnx/test/ 与 onnx/backend/test/ 未被脚本识别为测试目录",
-        "rationale": "metrics.json 的 test_example_dirs 为空，但仓库明显包含 onnx/test/、onnx/backend/test/、onnx/fuzz/ 等测试目录。cloc 可能按文件内容分类，未按目录名识别。已在 tests.note 与生产代码结论中手工排除这些目录。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

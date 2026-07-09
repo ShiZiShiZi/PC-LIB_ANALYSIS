@@ -894,7 +894,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; 纯 JavaScript 无原生扩展; arm64/x86_64)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -903,7 +902,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "geotiff.js 是一个纯 JavaScript 库（无原生 C/C++ 扩展、无 N-API 插件、无 FFI 绑定），所有运行时依赖均为纯 JS npm 包。鸿蒙 PC 已移植 Node.js 24 运行时（available），该库的 Node.js 端核心模块（fs/http/https/url）和浏览器端 Web API（fetch/Worker/TypedArrays 等）在鸿蒙 Node.js 上均可直接使用。库不涉及 GUI、3D 渲染、媒体或特定硬件（capability_profile 四场景均为 false），无云服务依赖（cloud_services.present=false），`platform_adaptation` 与 `platform_branches` 均为 0。因此无需任何代码修改或重新编译即可直接在鸿蒙 PC 的 Node.js 运行时上使用，至多需运行测试套件做一次功能验证。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -914,7 +912,8 @@
         "required": true,
         "target_status": "available",
         "impact": "geotiff.js 依赖 Node.js 运行时（fs/http/https 核心模块 + ES Module 支持），鸿蒙 PC 已提供 Node.js 24.13.0 可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -960,7 +959,21 @@
       "可选的 npm run build 构建三种目标格式（ES Module / CommonJS / UMD 浏览器版）"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。库为纯 JS、无原生扩展、无平台分支、无 GUI/3D/媒体/硬件依赖，是鸿蒙 PC 上可移植性最优的一类项目。若目标为 ArkTS 沙箱应用（模型 B），则需将 Node 核心模块（fs/http/https）替换为 @ohos.file.fs/@ohos.net.http 等 ArkTS API，工作量约为中等（person_days 约 5-10），但库的纯数据处理核心逻辑（二进制解析、解压缩、元数据提取）可几乎不变。node_modules 依赖都是纯 JS，在 ArkTS 沙箱内也可通过 npm 安装使用（依赖无原生扩展）。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -980,19 +993,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "usage",
-        "kind": "gap",
-        "value": "parse-headers declared but not imported in src",
-        "rationale": "parse-headers (^2.0.2) is declared in package.json dependencies but no import statement found in production src/ files. The httputils.js module contains its own inline parseHeaders implementation. Likely historical dependency or used transitively through another package."
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯 JavaScript 的 (Geo)TIFF 图像数据格式解析库，不涉及 GUI 窗口/控件、3D 渲染、音视频编解码/播放或特定硬件（GPU/CUDA/串口/传感器等）场景。运行期仅通过 HTTP Range 请求或本地文件读取二进制数据，所有处理均为纯数据层操作（二进制解析、解压、类型转换），无渲染输出。",

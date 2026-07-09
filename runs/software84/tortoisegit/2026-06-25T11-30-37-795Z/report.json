@@ -1418,8 +1418,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK/musl，arm64/x86_64；按整包桌面应用/模型 C 评估）",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         120,
@@ -1427,7 +1426,7 @@
       ],
       "level": "very_high"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [
       {
         "id": "ua:icontext3",
@@ -1442,7 +1441,9 @@
         ],
         "caused_by": [
           "ta:explorer_shell_ext"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:comreg",
@@ -1457,7 +1458,9 @@
         ],
         "caused_by": [
           "ta:com_registration"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32reg",
@@ -1472,7 +1475,9 @@
         ],
         "caused_by": [
           "ta:windows_registry"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:gitexe",
@@ -1488,7 +1493,9 @@
         ],
         "caused_by": [
           "ta:win32_process_model"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:mfcgui",
@@ -1503,7 +1510,9 @@
         ],
         "caused_by": [
           "ta:mfc_gui"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1513,7 +1522,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "TortoiseGit 的核心交互方式即在资源管理器中提供右键菜单与图标覆层；鸿蒙无此机制则核心产品形态不复存在",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:com_registration",
@@ -1521,7 +1531,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Shell Extension 依赖 COM 注册到 Explorer；鸿蒙无 COM/注册表组件模型",
-        "source": "native_api 代码证据"
+        "source": "native_api 代码证据",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:windows_registry",
@@ -1529,7 +1540,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "大量配置、缓存路径、安装路径通过注册表读写；鸿蒙无注册表等价物",
-        "source": "native_api 代码证据"
+        "source": "native_api 代码证据",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:win32_process_model",
@@ -1537,7 +1549,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "CreateProcess 启动 git.exe/ssh.exe/bash.exe 是核心执行路径；鸿蒙需重写为 POSIX/鸿蒙原生进程模型与 Git 二进制",
-        "source": "runtime_surface 代码证据"
+        "source": "runtime_surface 代码证据",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:mfc_gui",
@@ -1545,7 +1558,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "全部对话框、列表控件、属性页均基于 MFC；鸿蒙无 MFC 实现",
-        "source": "native_api / build_env 代码证据"
+        "source": "native_api / build_env 代码证据",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:desktop_app_delivery",
@@ -1553,7 +1567,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "即使重写界面，TortoiseGit 作为非 ArkTS 原生 C++ 桌面应用能否在鸿蒙 PC 打包启动仍取决于目标交付形态",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1578,7 +1593,6 @@
         ]
       }
     ],
-    "recommended_path": "abandon_or_complete_reimplementation",
     "summary": "TortoiseGit 是 Windows 资源管理器外壳扩展形态的桌面应用，其价值主张（右键菜单、图标覆层、属性页）和实现层（MFC GUI、COM 注册、Windows 注册表、CreateProcess 启动 Windows 版 git.exe）均深度绑定 Windows。鸿蒙 PC 不存在对应的 Explorer 扩展机制与 COM/注册表模型，因此无法通过适配移植；只能在鸿蒙上重新设计并开发一款全新的 Git GUI 应用。",
     "blockers": [
       {
@@ -1708,7 +1722,27 @@
       "重写 MSI/WiX 安装与打包流程为鸿蒙应用包"
     ],
     "notes": "评估按模型 C（整包桌面应用）进行。TortoiseGit 并非普通跨平台库，而是 Windows 专有桌面集成应用；即便鸿蒙 PC 已移植 C++ 编译工具链，也无法挽救其产品形态。结论置信度高，因为 Windows-only 的证据充分且一致。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:icontext3",
+          "ua:comreg",
+          "ua:win32reg",
+          "ua:gitexe",
+          "ua:mfcgui"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1718,44 +1752,41 @@
       "本次浅克隆未执行 git submodule update --init，ext/ 下多个子模块目录为空；依赖清单基于 .gitmodules 与 vcxproj 中的 ProjectReference 推断。",
       "PO File 行数占比最高，主要为多语言翻译文件，不影响生产代码能力判断。"
     ],
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application-shell-extension",
-        "rationale": "TortoiseGit 不是普通桌面应用，而是 Windows Explorer Shell Extension，应单独标记其产品形态。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "msbuild_project_reference",
-        "rationale": "Visual Studio/MSBuild 项目通过 ProjectReference 链接 submodule/vendored 库，不同于 CMake 的 find_package/FetchContent。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "win32_shell",
-        "rationale": "需要单独区分 Windows Shell Extension API（IContextMenu/IShellIconOverlayIdentifier 等）与普通 win32 平台 API。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "abandon_or_complete_reimplementation",
-        "rationale": "对于 Windows-only 的 Explorer Shell Extension 应用，不存在渐进式适配路径，只能放弃或彻底重写。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
+        "code": "ua_func_class_defaulted:ua:icontext3",
         "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "message": "unadaptable_api ua:icontext3 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:comreg",
+        "class": "actionable",
+        "message": "unadaptable_api ua:comreg 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32reg",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32reg 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:gitexe",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gitexe 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:mfcgui",
+        "class": "actionable",
+        "message": "unadaptable_api ua:mfcgui 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

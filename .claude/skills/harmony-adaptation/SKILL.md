@@ -18,7 +18,9 @@ You reason over the already-filled blocks — `library.ecosystem`/`bindings`, `n
 `category`/`platform`, **以及 `native_api.dynamic_libraries`** —— 运行时经
 ctypes/dlopen/LoadLibrary/JNA 动态加载的库), `runtime_surface`
 (subprocess/filesystem/network/env/devices), `dependencies`, `build_env`, `capability_profile`, **以及
-dim-12 的 `code_partition`（生产代码按复用性分桶的 LOC 统计——工作量估算的量化底座）** —— and
+dim-12 的 `code_partition`（生产代码按复用性分桶的 LOC 统计——工作量估算的量化底座），以及
+`code_metrics` 的平台/架构机械信号（`platform_adaptation`/`platform_branches`/`arch_specific`——
+step 10 据其定 `person_days`，`arch_specific.by_arch.<arch>.simd_loc` 即 SIMD 使用行量）** —— and
 **reuse their `evidence`** (the same `file:line`).
 
 **"不重扫"的确切含义**（避免误伤 `unadaptable_apis[].public_entry`）：指**不重新*发现/推导* dim-6/7/8 已建立的特征事实**
@@ -239,8 +241,11 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
    构建工具链、及应用的 JDK 内部/attach/交付形态），**不要对这四类再从 native_api 重扫**（每条带来源维度 `evidence`）。
    `unadaptable` 类阻碍的粒度项在 step 7 `unadaptable_apis`——按 step 7「自底向上填写顺序」先填 ua、再回填本步 blocker 的 `manifests_as`：
    - `native_api`：每个 `category` 为 `platform`/`system` 的组（epoll/kqueue/win32/posix 差异、ioctl、syscall…）
-     → 候选阻碍；`hardware` 组（GPU/CUDA/OpenCL/SIMD）**已归 capability_profile 的 rendering_3d/hardware 场景**，
-     经 step 3 处理、此处不重判；`standard`/`portable`（STL、musl 支持的 POSIX、ArkTS 有对应的）通常不算或 `minor`。
+     → 候选阻碍；`hardware` 组的 **GPU/CUDA/OpenCL** 已归 capability_profile 的 rendering_3d/hardware 场景，
+     经 step 3 处理、此处不重判；**CPU 架构耦合（x86 SIMD/intrinsics、内联汇编）的场景状态见 capability_profile
+     `cpu_simd` 场景，但其 `arch_specific_asm` blocker 与 `person_days` 由 step 10 据 `code_metrics.arch_specific` 翻译产出**
+     （消费场景状态→翻译成 blocker/effort，与 GUI/媒体同一套，不算"重判"——**不要因为它挂在 capability_profile 就在本维度漏产 blocker**）；
+     `standard`/`portable`（STL、musl 支持的 POSIX、ArkTS 有对应的）通常不算或 `minor`。
    - `native_api.dynamic_libraries`（ctypes/dlopen/LoadLibrary/JNA 运行时加载的库）→
      **逐个**判其**自身**在鸿蒙 PC 上是否存在/可移植（看 `acquisition`/`source`：`system`
      平台库 vs `self_build` 包装器）。**属 GUI/图形/媒体/硬件能力的动态库（X11/XCB、libGL、libcudart、ffmpeg…）
@@ -343,11 +348,16 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
      再对照 `references/harmony-pc-capabilities.json` 判鸿蒙有无等价——有等价 → 仅 `person_days` 略增；**无等价**（如仅
      Windows 的注册表/COM、`/proc`、`fork`/信号路径）→ 记 `blocker`/`unadaptable_apis`（标 `functionality_class`）、`porting_class` 升 `needs_adaptation`，
      并把该能力登记到 `target_assumptions`。分支越多 → `person_days` 越高。
-   - `code_metrics.arch_specific`（**架构**：独立汇编文件 LOC 按 x86/arm/riscv 归类 + SIMD intrinsics 头 +
-     C/C++/Rust 内联汇编命中 + `samples`）——鸿蒙 PC 是 arm64/x86_64：**只有 x86 实现而无 arm/NEON/标量回退**的
-     汇编或 intrinsics 路径是硬适配点（补 NEON 或退标量 → `person_days` 上调、产 `blocker` category 如
-     `arch_specific_asm`），若该路径可关（构建开关/运行时探测降级）记 `partial`；已有 arm 对应实现（by_arch 里
-     arm 与 x86 并存）→ 只算重编验证量。`samples` 同样当 codegraph 追踪种子。三个信号都为空 → 平台/架构耦合轻。
+   - `code_metrics.arch_specific`（**架构**：`by_arch.<arch>.simd_loc`＝SIMD intrinsic 使用行数（含仅 transitive
+     include 的文件，头文件库里汇编 LOC 常为 0 但 simd_loc 才是真实工作量）+ 独立汇编文件 LOC 按 x86/arm/riscv 归类
+     + SIMD intrinsics 头 + C/C++/Rust 内联汇编命中 + `samples`）——鸿蒙 PC 是 arm64/x86_64：**x86 有 simd_loc/汇编
+     而 `by_arch` 无 arm 键**（无 NEON 对应路径）即 arm64 适配点——**产 `blocker` category `arch_specific_asm`、
+     `adaptability: partial`（补 NEON 或退标量），`porting_class` 经归一升 `needs_adaptation`**，`person_days` 计入
+     补 NEON 的量（`simd_loc ÷ 速率`）或标量退化的验证量。**⚠️即便已有标量回退能正确编译运行（构建开关/运行时探测
+     降级），仍产该 `partial` blocker——`partial` 指 blocker 的 `adaptability` 取值、不等于"不产 blocker/`recompile_only`"**
+     （呼应两维契约：capability_profile 的 `cpu_simd` 场景标 present 即须在此登记 blocker，`caused_by`/`source_capability`
+     回指场景 key、不重述）；已有 arm 对应实现（by_arch 里 arm 与 x86 并存）→ 只算重编验证量。`samples` 同样当 codegraph
+     追踪种子。三个信号都为空 → 平台/架构耦合轻。
 
 11. **填 `critical_dependencies[]`（迁移关键路径依赖，有序）** —— 从 `dependencies` 里挑出
    **不先移植它们整个迁移就无法推进**的依赖，按建议移植顺序排 `order`（1 起，越先做越关键）：

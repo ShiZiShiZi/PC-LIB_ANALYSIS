@@ -1108,7 +1108,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC：自研内核（无 Linux ABI），原生层 OHOS NDK（musl + POSIX 子集），Node.js 24.13.0 已移植，Node-API（N-API）兼容。按模型 A（库跑在已移植运行时上）评估。",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1117,7 +1116,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "classic-level 是 Node.js N-API 原生插件，鸿蒙 PC 已移植 Node.js 24 运行时，纯 JS 部分直接运行。三个 C/C++ 依赖中：LevelDB（1.20）和 Snappy 均已出现在 OpenHarmony PC 预编译包列表中（harmony_adapted: true），可通过 OHOS NDK 链接鸿蒙版；Node-API 由鸿蒙 Node.js 提供。binding.cc 本身无平台条件编译，#ifdef 平台代码仅在 LevelDB 内部端口层。核心工作仅是将 N-API 插件用 OHOS NDK 交叉编译、链接到鸿蒙预编译的 LevelDB/Snappy 库。无外部命令调用、无 GUI/媒体/硬件阻碍。",
     "target_assumptions": [
       {
@@ -1126,7 +1124,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时已移植，整个库的核心基础设施可用",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_leveldb",
@@ -1134,7 +1133,8 @@
         "required": true,
         "target_status": "available",
         "impact": "LevelDB 1.20 已在 OHOS C/C++ 预编译包列表中，直接链接鸿蒙版 .so 即可",
-        "source": "scripts/harmony_adapted.js 返回 adapted:true"
+        "source": "scripts/harmony_adapted.js 返回 adapted:true",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_snappy",
@@ -1142,7 +1142,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Snappy 已在 OHOS C/C++ 预编译包列表中，直接链接鸿蒙版 .so 即可",
-        "source": "scripts/harmony_adapted.js 返回 adapted:true"
+        "source": "scripts/harmony_adapted.js 返回 adapted:true",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1221,7 +1222,21 @@
       "更新 package.json 以发布鸿蒙预编译包"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时）。三个 C/C++ 依赖均已鸿蒙化（LevelDB、Snappy 在 cmd-pkgs 预编译列表，Node-API 由鸿蒙 Node.js 提供）。不存在需要 ohos.permission.* 的能力场景。全部功能和 API 均可适配。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "classic-level",
@@ -1242,19 +1257,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "napi-macros 归类为 build 但列在 runtime dependencies",
-        "rationale": "napi-macros 是编译期 C/C++ 宏头文件，运行时不需要；因 node-gyp 构建需要在 npm 的 'dependencies' 而非 'devDependencies' 中"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI、3D 渲染、媒体处理或特定硬件——纯计算型嵌入式数据存储库，仅依赖标准文件系统 I/O。",

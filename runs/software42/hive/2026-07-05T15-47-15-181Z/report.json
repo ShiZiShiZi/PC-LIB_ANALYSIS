@@ -2507,8 +2507,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 JDK 17 上；纯 Java 服务端应用——HiveServer2/MetaStore/LLAP 守护进程需完整运行；客户端使用 Beeline JDBC CLI；模型 C 整包应用口径——评估能否在鸿蒙 PC 上打包部署并作为服务启动运行)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -2517,7 +2516,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Apache Hive 为纯 Java 服务端数据仓库应用，鸿蒙 PC 已移植 JDK 17 运行时。核心引擎（HiveServer2、MetaStore、LLAP、Beeline）为纯 Java 代码，可在鸿蒙 JDK 上直接运行。主要适配工作集中在：1) 替换 JDK 内部 API（sun.misc.Unsafe 内存映射回收、sun.misc.Signal 信号处理、com.sun.management.UnixOperatingSystemMXBean 系统指标）为可移植替代或 degrade 路径；2) 处理 netty native epoll 传输——已有 Java NIO 回退；3) 验证 ProcessBuilder/Runtime.exec 子进程执行在鸿蒙权限模型下是否可用（impact 有限——主要用于本地 MapReduce 任务和用户自定义 Script 算子，生产部署通常走 YARN/Tez，无需本地 fork）；4) 外部可选项（AWS SDK 密钥管理）延续可用；5) Hadoop 生态依赖（HDFS 客户端、YARN 客户端、ZK 客户端）均为纯 Java 库，需验证其在鸿蒙 JDK 的兼容性（但 Hadoop 集群是远端部署，不要求鸿蒙本地跑 HDFS/YARN）。不涉及 GUI、不涉及 3D 渲染、不涉及媒体和特定硬件，capability_profile 全场景均为 absent。部分目标能力（add-opens 支持、spawn、sandbox）为 unknown，计入 target_assumptions 并下调 confidence 至 medium。",
     "blockers": [
       {
@@ -2611,7 +2609,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心前提——Hive 的全部 Java 字节码需 JDK 17 运行。鸿蒙已移植 JDK 17 → 基础可运行",
-        "source": "harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:add_opens",
@@ -2619,7 +2618,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Hive 生产代码依赖 sun.misc.Unsafe 和 sun.misc.Signal（反射访问），在 Java 17+ 需要 --add-opens 参数开放模块。若鸿蒙 JDK 不支持这些启动参数，相关功能无法替代，需改代码走标准 API",
-        "source": "harmony-pc-capabilities.json#jdk_internals.add_opens"
+        "source": "harmony-pc-capabilities.json#jdk_internals.add_opens",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -2627,7 +2627,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Hive 在本地模式（非 YARN 集群模式）和 ScriptOperator 中使用 Runtime.exec/ProcessBuilder。生产部署主要走 YARN，此能力非必须；但本地开发模式和自定义脚本算子会受影响",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jdk_management",
@@ -2635,7 +2636,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Hive 通过标准 java.lang.management API 采集 JVM 指标（MemoryMXBean、ThreadMXBean、OperatingSystemMXBean）。这些为标准 Java API 的一部分；若鸿蒙 JDK 支持标准 java.management，无需改动。仅 UnixOperatingSystemMXBean 为 com.sun 扩展（已在 blocker 中处理）",
-        "source": "harmony-pc-capabilities.json#jdk_internals.jdk_management"
+        "source": "harmony-pc-capabilities.json#jdk_internals.jdk_management",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:server_delivery",
@@ -2643,7 +2645,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Hive 需要作为后台守护进程启动（通过 bin/hiveserver2 shell 脚本启动 JVM）。若鸿蒙仅支持 ArkTS 能力（.hap 签名安装），Hive 当前分发形态不可用——需重写启动器为鸿蒙 service ability，打包为鸿蒙应用；这会导致 person_days 大幅上升",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2720,7 +2723,21 @@
       "开发鸿蒙适配启动脚本（替代 bin/hiveserver2 的 Shell 脚本），提供 systemd-compatible 或鸿蒙 ability 启动方式，将 Hive 打包为鸿蒙服务端应用"
     ],
     "notes": "Hive 是大型 Java 服务端应用（模型 C），走 run_on_ported_runtime 路径——鸿蒙 JDK 17 已移植，纯 Java 核心可直接运行。无 GUI、无 3D 渲染、无媒体、无特定硬件——capability_profile 全 absent，大幅降低适配复杂度。主要阻碍点在 JDK 内部 API（sun.misc.Unsafe/Cleaner/Signal）的使用——这些有 fallback 或替代方案，均为 قابل适应。Hive 生产部署通常连接远端 Hadoop 集群（HDFS/YARN/ZK），不要求鸿蒙本地跑 Hadoop——降低依赖难度。纯 Java JDBC 驱动（MySQL/Pg）无需移植。platform_adaptation 仅 6 行 Windows 代码（PHP Thrift 扩展）、platform_branches 为 0——平台耦合极低。confidence 降至 medium 因多项目标假设 unknown：add-opens 支持、spawn 权限、传统服务端应用部署形态——若其中任一项 unavailable 且无法规避，person_days 将显著上调。按模型 C（整包应用）评估——不使用 ArkTS 沙箱口径。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "ecosystem": "java",
@@ -2742,30 +2759,8 @@
     "analyzed_at": "2026-07-05T16:02:56Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "classification",
-        "value": "application",
-        "rationale": "Apache Hive 包含多个 CLI 入口（CliDriver/Beeline）、守护进程（HiveServer2/LLAP）、打包模块，是典型的数据仓库应用系统而非被调用库"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "observation",
-        "value": "provided_hadoop_ecosystem",
-        "rationale": "大量 Hadoop 生态依赖（hadoop-common/hdfs/mapreduce/yarn）scope 为 provided——运行时由 Hadoop 集群提供，不在 Hive 分发中捆绑"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "observation",
-        "value": "data_warehouse_application",
-        "rationale": "Hive 分为 CLI 工具（用户交互入口）、HiveServer2 服务（多客户端后端）、MetaStore（元数据目录）、LLAP 守护进程（交互式查询加速）、Beeline（JDBC CLI）等多个可独立运行的子系统——符合 application 特征。contrib/ 下包含示例 UDF/hplsql 示例等 demo 性质代码"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2776,7 +2771,8 @@
         "message": "required_permission ohos.permission.FILE_ACCESS 的 source_capability=runtime_surface 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Apache Hive 为纯 Java 大数据应用，不涉及本地 GUI 工具包、3D 渲染、媒体处理或特定硬件（GPU/FPGA 等）。核心场景为分布式存储访问（HDFS）、网络 RPC 服务（Thrift）、SQL 查询引擎。无 GUI 桌面界面——所有用户交互均通过 CLI（命令行）或 JDBC 进行。",

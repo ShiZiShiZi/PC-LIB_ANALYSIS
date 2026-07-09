@@ -2184,8 +2184,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 库模型 A：经 OHOS NDK/musl 重编为 .so；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -2194,7 +2193,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "POCO 是跨平台 C++ 系统/网络库，源码已按 Win32/POSIX 双后端拆分，核心逻辑（字符串、容器、JSON/XML、加密算法封装）可随 OHOS NDK 重编。主要工作量在于：① Linux 专用网络接口 ioctl(SIOCGIF*) 在鸿蒙自研内核上无等价命令字，NetworkInterface 模块需要重写为 @ohos.net.connection 或类似系统能力；② fork/execvp 子进程路径在鸿蒙 POSIX 子集中的可用性待核实，Process::launch 与 ServerApplication daemon 化需用 posix_spawn 或裁剪；③ 可选依赖 MySQL/PostgreSQL/ODBC/libhpdf 未在鸿蒙 cmd-pkgs 预编译清单中，启用这些组件需自行交叉编译。OpenSSL、zlib、pcre2、sqlite3、expat、libpng、apr、libssh 已有鸿蒙预编译包或内置实现，不构成阻碍。",
     "unadaptable_apis": [
       {
@@ -2211,7 +2209,9 @@
           "Foundation/src/Environment_UNIX.cpp:236",
           "Foundation/src/Environment_UNIX.cpp:257",
           "Net/src/NetworkInterface.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:fork_exec",
@@ -2227,7 +2227,9 @@
           "Foundation/src/Process_UNIX.cpp:266",
           "Foundation/src/Process_UNIX.cpp:321",
           "Util/src/ServerApplication.cpp:527"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2237,7 +2239,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 库移植的基础工具链",
-        "source": "harmony-pc-capabilities.json#runtimes（C++ 编译通过 NDK 提供）"
+        "source": "harmony-pc-capabilities.json#runtimes（C++ 编译通过 NDK 提供）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_socket",
@@ -2245,7 +2248,8 @@
         "required": true,
         "target_status": "available",
         "impact": "POCO Net 核心依赖",
-        "source": "harmony-pc-capabilities.json#process_security（musl POSIX 子集）"
+        "source": "harmony-pc-capabilities.json#process_security（musl POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_mmap",
@@ -2253,7 +2257,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "SharedMemory 组件依赖；缺失需改用文件映射或 ArkTS 侧 IPC",
-        "source": "harmony-pc-capabilities.json#process_security（POSIX 子集）"
+        "source": "harmony-pc-capabilities.json#process_security（POSIX 子集）",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:epoll",
@@ -2261,7 +2266,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "PollSet 高性能 I/O 多路复用依赖；缺失可回退 poll/select",
-        "source": "harmony-pc-capabilities.json#process_security（POSIX 子集）"
+        "source": "harmony-pc-capabilities.json#process_security（POSIX 子集）",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:posix_spawn",
@@ -2269,7 +2275,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Process::launch 与 ServerApplication daemon 化依赖；缺失则相关功能不可用",
-        "source": "harmony-pc-capabilities.json#process_security#spawn"
+        "source": "harmony-pc-capabilities.json#process_security#spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:linux_ioctl",
@@ -2277,7 +2284,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "NetworkInterface 模块需重写为鸿蒙网络能力接口",
-        "source": "harmony-pc-capabilities.json#process_security（自研内核无 Linux ABI）"
+        "source": "harmony-pc-capabilities.json#process_security（自研内核无 Linux ABI）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:lib_load",
@@ -2285,7 +2293,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SharedLibrary 组件跨平台动态加载依赖",
-        "source": "harmony-pc-capabilities.json#process_security（musl POSIX 子集）"
+        "source": "harmony-pc-capabilities.json#process_security（musl POSIX 子集）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -2394,7 +2403,24 @@
       "运行 Foundation/Net/Util/JSON/XML/Zip 核心测试，修复 musl/OHOS 下的编译与行为差异"
     ],
     "notes": "评估按 C++ 库默认模型 A（OHOS NDK 重编）。由于存在 required+unknown 的目标能力假设（fork/exec 支持）以及 Linux 专用 ioctl 明确不可用，confidence 下调至 medium。若目标是 ArkTS 沙箱应用（模型 B）或需要打包为桌面应用（模型 C），结论会完全不同，需额外评估 Node-API 桥接或应用交付形态。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:ioctl_siocsif",
+          "ua:fork_exec"
+        ]
+      }
+    }
   },
   "library": {
     "name": "poco",
@@ -2423,30 +2449,21 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library_with_util_executables",
-        "rationale": "POCO 主体是 C++ 库，但 Util 提供 Application/ServerApplication 框架、PageCompiler/PocoDoc 等可构建出可执行工具；按 agent 规则，入口/启动器归入 build_env，主体仍判 library。"
+        "code": "ua_func_class_defaulted:ua:ioctl_siocsif",
+        "class": "actionable",
+        "message": "unadaptable_api ua:ioctl_siocsif 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "bundled_optional_system",
-        "rationale": "POCO 对 sqlite3、zlib 等依赖同时支持 bundled 和 system（POCO_UNBUNDLED/POCO_SQLITE_UNBUNDLED），单一 acquisition 值不足以表达这种可切换的集成方式，已在 source 字段说明。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "gap",
-        "value": "linux_ioctl_in_posix_backend",
-        "rationale": "POCO 把 SIOCGIF* ioctl 放在 Environment_UNIX.cpp 中，文件命名上是 UNIX/POSIX 后端，实际使用了 Linux 专用 ioctl；按可移植性口径应归入 system+linux，但代码组织上容易误判为 posix。"
+        "code": "ua_func_class_defaulted:ua:fork_exec",
+        "class": "actionable",
+        "message": "unadaptable_api ua:fork_exec 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   },
   "capability_profile": {
     "summary": "POCO 是系统/网络基础库，不直接涉及桌面 GUI、3D 渲染、音视频媒体编解码或专属硬件。其核心场景是跨平台网络通信、数据访问、文件系统与进程抽象。",

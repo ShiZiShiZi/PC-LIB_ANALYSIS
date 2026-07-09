@@ -706,7 +706,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 运行时上；发布产物为纯 JS，无原生扩展；arm64/x86_64)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -715,7 +714,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库发布产物 lib/minizip-asm.min.js 为自包含纯 JavaScript UMD bundle（内含 Emscripten 运行时 + 编译后的 minizip/zlib asm.js 代码），可直接在鸿蒙 PC 已移植的 Node.js 运行时上运行，无需任何适配。源层面的 C++ 依赖（minizip、zlib）均已在 OpenHarmony PC 预编译包清单中（cmd-pkgs）标记为已鸿蒙化，且构建产物已在 asm.js 层内完成交叉编译——对终端用户来说，没有需要处理的平台相关编译目标。运行时完全在内存中操作 Buffer，不涉及网络/文件系统/子进程/设备访问，零阻碍点。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -726,7 +724,8 @@
         "required": true,
         "target_status": "available",
         "impact": "该库的唯一运行时依赖；不可用则完全无法运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -745,7 +744,21 @@
     ],
     "notes": "该库为自包含纯 JS bundle，运行时无原生扩展、无平台 API 调用、无外部命令——属于最轻量级移植场景；npm 包可直接安装运行于鸿蒙 Node.js，结论可靠、无需假设性推断",
     "required_permissions": [],
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -764,7 +777,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "该库为纯数据压缩/归档库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件接口，在鸿蒙 PC 适配评估中无重点场景需关注",

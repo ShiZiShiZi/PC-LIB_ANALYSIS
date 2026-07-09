@@ -884,7 +884,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核，非 Linux ABI；OHOS NDK + musl；arm64/x86_64；C++ 库按模型 A 经 NDK 交叉编译）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -894,7 +893,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "aliyun-oss-cpp-sdk 是纯 C++11 云存储 SDK，核心代码跨平台，平台相关分支已隔离为 Win32/POSIX 两套实现。核心依赖 libcurl、OpenSSL、tinyxml2、jsoncpp 均已在 OpenHarmony PC cmd-pkgs 中提供移植版本，因此移植工作主要是使用 OHOS NDK 交叉编译并链接这些鸿蒙化依赖，无需重写业务逻辑。唯一需要核实的目标是网络访问权限 ohos.permission.INTERNET 在鸿蒙 PC 的授予方式。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -904,7 +902,8 @@
         "required": true,
         "target_status": "available",
         "impact": "HTTP 传输与加密/签名功能可直接复用，无需替换",
-        "source": "dependencies[].harmony_adapted（cmd-pkgs 已包含 curl/openssl）"
+        "source": "dependencies[].harmony_adapted（cmd-pkgs 已包含 curl/openssl）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:tinyxml2_jsoncpp_available",
@@ -912,7 +911,8 @@
         "required": true,
         "target_status": "available",
         "impact": "XML/JSON 解析无需替换",
-        "source": "dependencies[].harmony_adapted（cmd-pkgs 已包含 tinyxml2/jsoncpp）"
+        "source": "dependencies[].harmony_adapted（cmd-pkgs 已包含 tinyxml2/jsoncpp）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_file_time_api",
@@ -920,7 +920,8 @@
         "required": true,
         "target_status": "available",
         "impact": "POSIX 分支下的路径创建、文件元信息读取、时间转换可正常工作",
-        "source": "代码中 POSIX 分支使用标准 POSIX API；musl 通常覆盖这些接口"
+        "source": "代码中 POSIX 分支使用标准 POSIX API；musl 通常覆盖这些接口",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_cmake",
@@ -928,7 +929,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SDK 可通过交叉编译产出 arm64/x86_64 .so",
-        "source": "references/harmony-pc-capabilities.json 引言与 NDK 描述"
+        "source": "references/harmony-pc-capabilities.json 引言与 NDK 描述",
+        "target_status_model": "available"
       },
       {
         "id": "ta:internet_permission",
@@ -936,7 +938,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若网络权限不可授予，则所有 OSS 云端调用均不可用",
-        "source": "references/harmony-pc-capabilities.json#permissions"
+        "source": "references/harmony-pc-capabilities.json#permissions",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -983,7 +986,21 @@
       "在鸿蒙 PC 上运行 SDK 单元测试，确认 HTTPS 请求、文件路径、断点续传正确"
     ],
     "notes": "评估按 C++ 库模型 A（经 OHOS NDK 交叉编译后链接到鸿蒙应用/服务），未按 ArkTS 应用模型 B 评估。所有核心依赖均已鸿蒙化，暂无无法适配的平台/硬件 API；置信度因 ohos.permission.INTERNET 的 PC 形态授予方式尚未核实而设为 medium。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "aliyun-oss-cpp-sdk",
@@ -1004,34 +1021,13 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "ambiguity",
-        "value": "ptest 目录被 cloc 标记为 production",
-        "rationale": "ptest 实际为性能测试可执行程序（含 main、使用 futures/threads），应归入 test；分析中已按测试代码排除其平台 API 与能力结论。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_or_vendored_prebuilt",
-        "rationale": "libcurl/OpenSSL 在 Linux/macOS 通过 find_package 使用系统库，在 Windows 使用仓库 third_party/lib 预编译 .lib，单一 acquisition 值难以精确描述这种平台相关混合来源。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "musl timegm 目标状态未在 capabilities 中明确",
-        "rationale": "POSIX 分支使用 timegm 将 UTC 时间结构转换为 Unix 时间戳；references/harmony-pc-capabilities.json 未单独列出该接口，当前基于 musl 通常提供 timegm 而假设 available，建议在 NDK 上实测确认。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯后端/命令行可用的云存储 SDK，未触及 GUI、3D 渲染、媒体编解码或特定硬件设备。鸿蒙适配重点在于网络连通、OpenSSL/libcurl 可移植性与 POSIX 文件/时间 API。",

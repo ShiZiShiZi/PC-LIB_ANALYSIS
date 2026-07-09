@@ -1028,8 +1028,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1046,7 +1045,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已移植 Node.js 可直接运行纯 JS/TS 代码",
-        "source": "references/harmony-pc-capabilities.json runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:browser_launch",
@@ -1054,7 +1054,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙 PC 上是否可通过命令行启动浏览器打开 URL 尚未核实；若不支持，OAuth 流程需改为手动复制 URL 方式",
-        "source": "references/harmony-pc-capabilities.json process_security.spawn + desktop_integration"
+        "source": "references/harmony-pc-capabilities.json process_security.spawn + desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:keychain_access",
@@ -1062,7 +1063,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "keytar 在鸿蒙 PC 上无法编译/运行时，回退到加密文件存储，不影响核心功能",
-        "source": "references/harmony-pc-capabilities.json process_security.sandbox"
+        "source": "references/harmony-pc-capabilities.json process_security.sandbox",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network_access",
@@ -1070,7 +1072,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需要 ohos.permission.INTERNET 权限；Google API 为公网 HTTPS 端点，鸿蒙 PC 网络连通性未核实",
-        "source": "references/harmony-pc-capabilities.json permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1085,7 +1088,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "本项目为纯 TypeScript/Node.js 应用，核心逻辑（Google API 调用、MCP 协议通信）在已移植的 Node.js 运行时上可直接运行。主要适配工作在三个方面：1) keytar 原生模块需要移植或替换（已有文件存储回退方案）；2) 浏览器启动功能需适配鸿蒙 PC 的浏览器启动方式或改用手动 URL 复制；3) 确保网络访问权限可用。jsdom 在 esbuild 打包时已标记为 external，需在鸿蒙环境可用。",
     "blockers": [
       {
@@ -1180,7 +1182,21 @@
       "验证 paths.ts 中 process.platform 在鸿蒙上的返回值（可能非 win32/darwin/linux），确保配置目录路径正确"
     ],
     "notes": "本项目为上游 Google 代码的 npm 包装分发包，核心源码来自 gemini-cli-extensions/workspace，仅 paths.ts 为自定义修改。Node.js 已移植至鸿蒙 PC（v24.13.0），纯 JS 依赖理论上可直接运行。主要不确定性在于：1) 鸿蒙 PC process.platform 返回值（影响配置路径和浏览器启动分支）；2) jsdom 在鸿蒙 Node.js 上的兼容性；3) 网络权限与 Google API 连通性。因存在多个 required 且 target_status=unknown 的假设，confidence 降为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1188,22 +1204,7 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "MIT vs Apache-2.0 dual declaration",
-        "rationale": "LICENSE 文件声明 MIT（Copyright Presto AI），源码头部声明 Apache-2.0（Copyright Google LLC），package.json 声明 Apache-2.0。这是上游代码（Google, Apache-2.0）被包装发布（Presto AI, MIT）的双许可场景，无法用单一 SPDX 标识表示，以 LICENSE 文件为准标记为 MIT。"
-      },
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "service",
-        "rationale": "本项目是一个 MCP 服务端程序，通过 stdio 通信为 AI 客户端提供工具接口。它不是传统意义上的库（被 API 调用）也不是终端用户直接启动的应用，而是一个协议服务。归入 service 最贴切。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "blocker_ref:bk:network_unknown:ta:network_unknown",
@@ -1216,6 +1217,7 @@
         "message": "依赖/网络出现 gcp 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

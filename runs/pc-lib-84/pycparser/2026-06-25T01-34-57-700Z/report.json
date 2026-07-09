@@ -560,7 +560,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；自研内核，无 Linux ABI；arm64/x86_64）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -569,7 +568,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "pycparser 是纯 Python 库，不依赖任何原生扩展或第三方包，仅调用 Python 标准库 io/subprocess 与外部 cpp 交互。鸿蒙 PC 已移植 Python 3.12 运行时，因此纯 Python 部分无需修改即可运行；外部 cpp 命令在鸿蒙开发环境下可由系统预处理器提供。整体无移植阻碍，仅需打包验证。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -580,7 +578,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 库可直接运行在鸿蒙 Python 上",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -588,7 +587,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅当用户使用 use_cpp=True 调用外部 cpp 时才需要；该功能可选，缺失时用户可先用 gcc -E 预处理再调用解析器",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -624,7 +624,21 @@
       "（可选）确认系统 PATH 中可用 cpp/clang/gcc -E，以验证 use_cpp=True 路径"
     ],
     "notes": "评估按模型 A（库跑在已移植的 Python 运行时上）。若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，pycparser 无法直接运行，需要以 Python 子进程或重写方式实现，结论将完全不同。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -633,6 +647,7 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

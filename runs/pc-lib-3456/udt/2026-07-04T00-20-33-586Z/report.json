@@ -1410,8 +1410,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK native 层，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1428,7 +1427,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 NDK 不支持标准 POSIX Socket，则核心 UDP 通道无法编译运行；默认假设其 POSIX 子集包含这些接口。",
-        "source": "references/harmony-pc-capabilities.json 未显式列出 POSIX Socket，但 OHOS NDK 文档声明支持 musl + POSIX 子集。"
+        "source": "references/harmony-pc-capabilities.json 未显式列出 POSIX Socket，但 OHOS NDK 文档声明支持 musl + POSIX 子集。",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:pthreads",
@@ -1436,7 +1436,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "UDT 并发模型依赖 pthread；若 NDK 阉割 pthread 条件变量/线程创建，则需重写同步层。",
-        "source": "references/harmony-pc-capabilities.json 未显式列出 pthread 支持，按 musl 目标常规能力推断。"
+        "source": "references/harmony-pc-capabilities.json 未显式列出 pthread 支持，按 musl 目标常规能力推断。",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:udp_buffer_opts",
@@ -1444,7 +1445,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "UDT 在默认分支使用这些选项设置 UDP 缓冲区与接收超时；若不支持需要新增 OHOS 适配分支。",
-        "source": "src/channel.cpp:146-179"
+        "source": "src/channel.cpp:146-179",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_network_perm",
@@ -1452,7 +1454,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "UDT 库及示例应用运行必须访问网络；若 PC 形态网络权限模型与移动端不同需额外确认。",
-        "source": "references/harmony-pc-capabilities.json permissions 段"
+        "source": "references/harmony-pc-capabilities.json permissions 段",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1467,7 +1470,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "UDT 是纯 C++ 网络库，无 GUI/媒体/硬件依赖，核心代码可通过 OHOS NDK 交叉编译。HarmonyOS 不在现有 #ifdef 矩阵中，会走默认 POSIX 分支；需验证默认分支在 OHOS 上的行为（UDP 缓冲区选项、非阻塞/超时语义）并可能新增 OHOS 平台宏或通用 POSIX 适配。",
     "blockers": [],
     "compatible": [
@@ -1514,7 +1516,21 @@
       "补充 ohos.permission.INTERNET 声明并测试网络连通性。"
     ],
     "notes": "当前未在代码中发现无法适配的 API；核心风险在于 OHOS NDK 对 POSIX Socket 与 pthread 的完整程度尚未在公开资料中核实，因此置信度设为 medium。app/test_util.h 被 cloc 误判为测试文件，实际为示例辅助头；README 已说明 app/ 为示例程序。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "udt",
@@ -1543,29 +1559,7 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "field": "test_classification",
-        "kind": "ambiguity",
-        "value": "app/test_util.h 被识别为测试文件",
-        "rationale": "metrics.py 按目录名与文件名 token 将 app/test_util.h 计为 13 行测试代码，但 README 明确 app/ 为示例程序；test_util.h 只是 RAII 初始化辅助头，没有测试断言。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "makefile_system_link",
-        "rationale": "UDT 无包管理清单，依赖通过 Makefile 的 -lpthread/-lm/-lsocket 直接链接系统库，属于 system 获取方式。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "gap",
-        "value": "arch_hardware_timer",
-        "rationale": "现有推荐 type 未包含内联汇编 rdtsc/itc 这类架构硬件定时器，本次使用 arch_hardware_timer 归类。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
@@ -1573,7 +1567,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network_transport 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "UDT 是纯网络协议库，不涉及 GUI、3D 渲染、音视频媒体编解码及特定硬件访问。其鸿蒙适配重点仅在网络 Socket 与线程原语的可用性。",

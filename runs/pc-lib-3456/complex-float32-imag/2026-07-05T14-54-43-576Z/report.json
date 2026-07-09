@@ -671,7 +671,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核 + OHOS NDK 原生层 + Node-API 桥）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -680,7 +679,7 @@
       ],
       "level": "low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -689,7 +688,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 实现层需 Node.js 运行时——鸿蒙已移植（24.13.0），不是阻碍",
-        "source": "references/harmony-pc-capabilities.json — runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json — runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -697,7 +697,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 原生代码需编译为 arm64——此为主力架构，已支持",
-        "source": "references/harmony-pc-capabilities.json — arch.arm64"
+        "source": "references/harmony-pc-capabilities.json — arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -705,7 +706,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 代码用纯 C99，需 OHOS NDK 编译（musl + POSIX 子集），无平台 API 调用——应无障碍",
-        "source": "references/harmony-pc-capabilities.json — intro 段"
+        "source": "references/harmony-pc-capabilities.json — intro 段",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -713,11 +715,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 stdlib 原生插件通过 N-API 构建，需确认鸿蒙 Node.js 对 N-API 的兼容性——推理认为应可用但未确认",
-        "source": "references/harmony-pc-capabilities.json — nodejs 移植说明未明确 N-API 覆盖程度"
+        "source": "references/harmony-pc-capabilities.json — nodejs 移植说明未明确 N-API 覆盖程度",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "纯数值计算微包，极其轻量。JS 实现（return z.im）可直接运行在已移植的 Node.js 上。C 原生实现使用纯 C99、零平台 API、零系统调用——用 OHOS NDK 交叉编译即可。总工作量极低——主要是搭建 OHOS NDK 交叉编译链与适配 @stdlib/utils-library-manifest 构建系统。无不可克服的阻碍。",
     "blockers": [
       {
@@ -769,7 +771,21 @@
       "运行原始 test suite 验证功能正确性"
     ],
     "notes": "N-API 兼容性是唯一已知 minor 不确定因素，但不影响整体评估置信度。该库本身及全部依赖均为纯 C99/纯 JS，无任何平台专有 API，移植风险极低。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float32-imag",
@@ -786,30 +802,8 @@
     "analyzed_at": "2026-07-05T15:14:39Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "nodejs vs cpp",
-        "rationale": "包分发是 npm（package.json），主语言 C 占大多数生产代码行（158 vs 38 JS）。选择 nodejs 因为包入口、使用方式、生态归属为 npm/Node.js 生态。若从实现语言角度应选 cpp。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "ambiguity",
-        "value": "benchmark POSIX 调用",
-        "rationale": "benchmark/c/benchmark.c 使用了 POSIX gettimeofday() 以及 sys/time.h、stdlib.h 等，但该文件属 benchmark（非生产代码），按生产范围规则排除。结论是 cross-platform。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "package_manager",
-        "rationale": "stdlib/utils-library-manifest 通过 manifest.json 配置编译，不典型 npm/native 插件。但仍归为 package_manager。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -820,12 +814,13 @@
         "message": "porting_class=recompile_only 但主生态为 nodejs（已移植运行时）且无原生调用面，疑似应为 no_adaptation"
       },
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及任何 GUI、3D 渲染、媒体处理或硬件访问场景。全部功能为提取单精度复数虚部的数学运算。",

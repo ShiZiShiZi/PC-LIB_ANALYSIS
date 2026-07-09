@@ -2328,8 +2328,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（按整包桌面应用模型 C 评估；自研内核、OHOS NDK、非 Linux ABI）",
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         999,
@@ -2338,7 +2337,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "abandon / 需以鸿蒙原生浏览器形态重新实现，无法通过简单移植 Firefox 完成",
     "summary": "gecko-dev 是 Mozilla Firefox 这一完整浏览器应用的源码，约 1500 万行生产代码，深度集成 Windows/macOS/Linux/Android 的原生 GUI、图形、媒体、安全沙箱、IPC 与设备能力。将其作为桌面应用移植到 HarmonyOS PC 相当于在自研内核、非 Linux ABI 且无传统桌面应用生态的平台上重写整个浏览器平台；即便部分基础库（GTK/GLib/FontConfig/Freetype/SQLite 等）已有鸿蒙预编译包，浏览器核心的窗口系统、图形渲染管线、媒体硬件解码、seccomp-bpf 沙箱、崩溃报告/更新/同步等运行期服务均无现成等价物，工作量与风险不可估量，判定为不可行。",
     "blockers": [
       {
@@ -2484,7 +2482,9 @@
         "caused_by": [
           "ta:opengl",
           "ta:vulkan"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:vaapi",
@@ -2498,7 +2498,9 @@
         ],
         "caused_by": [
           "ta:media"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:v4l2",
@@ -2512,7 +2514,9 @@
         ],
         "caused_by": [
           "ta:media"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:seccomp",
@@ -2527,7 +2531,9 @@
         "caused_by": [
           "ta:ptrace",
           "ta:spawn"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win_registry",
@@ -2541,7 +2547,9 @@
         ],
         "caused_by": [
           "ta:registry"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2551,7 +2559,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 HarmonyOS PC 仅支持 ArkTS .hap，则 Firefox 现有 C++ 主程序无法直接运行",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gui",
@@ -2559,7 +2568,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定浏览器 UI 与多窗口能力能否运行",
-        "source": "references/harmony-pc-capabilities.json#gui"
+        "source": "references/harmony-pc-capabilities.json#gui",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -2567,7 +2577,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Firefox 浏览器窗口与桌面集成依赖",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl",
@@ -2575,7 +2586,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OpenGL ES 部分可用，完整 OpenGL 覆盖与扩展待核实，影响渲染路径",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:vulkan",
@@ -2583,7 +2595,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "WebGPU/wgpu 与部分 GPU 加速路径依赖",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:media",
@@ -2591,7 +2604,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "需迁移到 @ohos.multimedia，Linux 媒体路径不可用",
-        "source": "references/harmony-pc-capabilities.json#media"
+        "source": "references/harmony-pc-capabilities.json#media",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ptrace",
@@ -2599,7 +2613,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "崩溃报告、沙箱与多进程模型关键依赖",
-        "source": "references/harmony-pc-capabilities.json#process_security.ptrace"
+        "source": "references/harmony-pc-capabilities.json#process_security.ptrace",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -2607,7 +2622,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "更新器、崩溃报告、ping sender 与多进程架构依赖",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:procfs",
@@ -2615,7 +2631,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "CPU/内存/GPU 信息获取与崩溃报告依赖",
-        "source": "native_api analysis"
+        "source": "native_api analysis",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:registry",
@@ -2623,7 +2640,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "仅 Windows 构建路径使用，移植时可移除或条件编译",
-        "source": "native_api analysis"
+        "source": "native_api analysis",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [
@@ -2688,7 +2706,27 @@
       "如需保留 Gecko 内核，需将平台抽象层（widget、gfx、media、ipc、 sandbox）全面替换为 @ohos.* 能力"
     ],
     "notes": "评估按模型 C（整包桌面应用）进行。Firefox 不是可被链接进其他程序的库，因此不适用「重编 + Node-API 暴露」的库口径。大量目标事实（桌面应用交付、GUI/窗口环境、Vulkan、ptrace/spawn、摄像头/麦克风/存储权限）仍为 unknown，本结论置信度因此为 medium；任一 unknown 事实向 unavailable 收敛都会进一步确认 infeasible。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:webrender",
+          "ua:vaapi",
+          "ua:v4l2",
+          "ua:seccomp",
+          "ua:win_registry"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2700,36 +2738,35 @@
       "codegraph 结构性查询在超大规模索引上多次超时，dims 1/7 部分依赖 grep/Read 进行采样。",
       "harmony_adapted 仅对少量 C/C++ 系统依赖做了抽样核对，未覆盖全部 vendored 子树。"
     ],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "cpp",
-        "rationale": "代码量最大为 C++/C，但 metrics 将 JavaScript 标为 primary（受测试文件影响）。Firefox 作为 C++ 核心的浏览器应用，function_summary 与 library.ecosystem 取 cpp。"
+        "code": "ua_func_class_defaulted:ua:webrender",
+        "class": "actionable",
+        "message": "unadaptable_api ua:webrender 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "Firefox 将 NSS、NSPR、SQLite、Skia、HarfBuzz、ANGLE、WebRender、libwebrtc 等大量第三方源码直接纳入仓库并随主工程编译，acquisition 用 vendored 描述。"
+        "code": "ua_func_class_defaulted:ua:vaapi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:vaapi 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "media_system",
-        "rationale": "V4L2/VAAPI 等音视频硬件接口属于平台媒体子系统，归入 platform+system 之间；此处单列 media_system 以便与 capability_profile.media 交叉引用。"
+        "code": "ua_func_class_defaulted:ua:v4l2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:v4l2 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "gap",
-        "value": "infeasible",
-        "rationale": "现有 5 档 porting_class 对浏览器这种完整桌面应用粒度仍显粗糙；建议面板展示时额外标注 'whole-platform application' 以说明不可移植性。"
+        "code": "ua_func_class_defaulted:ua:seccomp",
+        "class": "actionable",
+        "message": "unadaptable_api ua:seccomp 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win_registry",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win_registry 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

@@ -2740,8 +2740,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK musl + POSIX 子集；arm64/x86_64）。按库/框架口径评估：C/C++ 核心与插件经 OHOS NDK 重编，运行时通过已移植语言运行时或 N-API 桥接复用。",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -2750,7 +2749,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "GStreamer 核心框架（GstElement/GstPipeline/Registry/Bus/Clock）本身可移植：GLib 等核心依赖已在鸿蒙 C/C++ 预编译包中提供。真正工作量在于大量平台/硬件相关插件：Windows Direct3D/Win32、Apple CoreAudio/VideoToolbox/mach_time、Linux ALSA/PulseAudio/V4L2/OSS、以及 NVIDIA CUDA/Intel QSV/VA-API 等专有硬件加速路径。这些插件在鸿蒙 PC 上无直接等价或依赖不可移植硬件，需要按能力裁剪、替换为 @ohos.multimedia.* 后端，或作为可选插件禁用。整体属于「核心可跑、部分插件无法移植」的部分可适配档。",
     "unadaptable_apis": [
       {
@@ -2765,7 +2763,9 @@
         ],
         "caused_by": [
           "ta:gpu_compute_cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:qsv",
@@ -2779,7 +2779,9 @@
         ],
         "caused_by": [
           "ta:gpu_compute_cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:d3d",
@@ -2795,7 +2797,9 @@
         ],
         "caused_by": [
           "ta:rendering_3d"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32",
@@ -2810,7 +2814,9 @@
         ],
         "caused_by": [
           "ta:platform_win32"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:alsa",
@@ -2824,7 +2830,9 @@
         ],
         "caused_by": [
           "ta:audio_io"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:pulse",
@@ -2838,7 +2846,9 @@
         ],
         "caused_by": [
           "ta:audio_io"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:v4l2",
@@ -2852,7 +2862,9 @@
         ],
         "caused_by": [
           "ta:camera_capture"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:oss",
@@ -2867,7 +2879,9 @@
         ],
         "caused_by": [
           "ta:audio_io"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:coreaudio",
@@ -2883,7 +2897,9 @@
         "caused_by": [
           "ta:audio_io",
           "ta:video_codec"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:vaapi",
@@ -2897,7 +2913,9 @@
         ],
         "caused_by": [
           "ta:gpu_compute_cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2907,7 +2925,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 核心与插件重编的前提",
-        "source": "references/harmony-pc-capabilities.json#runtimes"
+        "source": "references/harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_threads",
@@ -2915,7 +2934,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "GStreamer 核心线程/时钟机制依赖；大部分可用，但 pthread_condattr_setclock 等特性可能受限",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:futex",
@@ -2923,7 +2943,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GstSystemClock 高性能等待路径直接使用 futex；若不可用需回退到 pthread_cond",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:rendering_3d",
@@ -2931,7 +2952,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "影响 OpenGL/GLES sink 与 GL 插件；缺失时可禁用 GL 路径",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:gpu_compute_cuda",
@@ -2939,7 +2961,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "相关硬解/硬编插件无法移植，需禁用或改用软编解码",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_media",
@@ -2947,7 +2970,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Linux ALSA/PulseAudio/OSS 插件需替换为鸿蒙媒体后端",
-        "source": "references/harmony-pc-capabilities.json#media"
+        "source": "references/harmony-pc-capabilities.json#media",
+        "target_status_model": "available"
       },
       {
         "id": "ta:camera_capture",
@@ -2955,7 +2979,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "V4L2 摄像头源插件需迁移；若不可行则禁用摄像头功能",
-        "source": "references/harmony-pc-capabilities.json#media"
+        "source": "references/harmony-pc-capabilities.json#media",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audio_io",
@@ -2963,7 +2988,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "现有 Linux 音频 sink/src 插件无法直接运行，需重写为 @ohos.multimedia.audio 后端",
-        "source": "references/harmony-pc-capabilities.json#media"
+        "source": "references/harmony-pc-capabilities.json#media",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:platform_win32",
@@ -2971,7 +2997,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Windows 专属分支在鸿蒙构建中自然不参与编译，不阻塞核心",
-        "source": "references/harmony-pc-capabilities.json#gui"
+        "source": "references/harmony-pc-capabilities.json#gui",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:subprocess",
@@ -2979,7 +3006,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若沙箱禁止 spawn，需将 scanner 改为 in-process 或静态注册插件",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:windowing",
@@ -2987,7 +3015,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响视频 sink/overlay；缺失时可用无窗口模式或软渲染",
-        "source": "references/harmony-pc-capabilities.json#gui"
+        "source": "references/harmony-pc-capabilities.json#gui",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -3247,7 +3276,32 @@
       "跑通 gst-launch-1.0 filesrc ! decodebin ! audiosink 等核心 pipeline 单元测试"
     ],
     "notes": "评估按库/框架口径（模型 A/B）：GStreamer 不是终端用户应用，鸿蒙化目标通常是「核心库 + 部分插件可运行」。由于项目体量巨大（近 300 万行生产代码、大量插件），实际 person_days 取决于裁剪范围——若只保留核心 + 文件/网络/FFmpeg 插件，工作量可收敛到中低区间；若追求全插件移植，则进入高/极高区间。confidence=medium 源于 futex/camera/subprocess/窗口环境 等目标能力尚未核实。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda",
+          "ua:qsv",
+          "ua:d3d",
+          "ua:win32",
+          "ua:alsa",
+          "ua:pulse",
+          "ua:v4l2",
+          "ua:oss",
+          "ua:coreaudio",
+          "ua:vaapi"
+        ]
+      }
+    }
   },
   "library": {
     "name": "gstreamer",
@@ -3287,44 +3341,58 @@
       "harmony_adapted 对 gobject/gmodule/gio 设为 true 是基于它们与 glib 同属一个源码包且 glib 已在鸿蒙 cmd-pkgs 清单中"
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "new_value",
-        "value": "framework",
-        "rationale": "GStreamer 是流媒体框架，既不是单一库也不是终端应用；'framework' 比 'library' 更能反映其被应用组装使用的定位"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "subproject_or_system",
-        "rationale": "Meson monorepo 中大量依赖通过 subproject 或系统 pkg-config 二选一提供，现有推荐值 system/fetchcontent/submodule 均不能完全描述"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "dependencies.gobject/gmodule/gio",
-        "kind": "ambiguity",
-        "value": "glib family split in pkg-config but single source",
-        "rationale": "gobject-2.0/gmodule-2.0/gio-2.0 与 glib-2.0 来自同一源码包，harmony_adapted.js 按名查询仅 glib 命中；dim-9 评估时若严格按脚本结果会把核心依赖误判为未适配"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "device_pseudo_fs",
-        "rationale": "GStreamer 通过 /dev/dsp、/proc/self/exe、/dev/urandom 等伪文件接口访问设备/内核信息，作为一类 API 家族记录"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "recompile_napi_with_selective_disable",
-        "rationale": "GStreamer 这类大型插件化框架的鸿蒙化路径应是「核心重编 + 大量平台/硬件插件裁剪禁用」，而非全量重写"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:qsv",
+        "class": "actionable",
+        "message": "unadaptable_api ua:qsv 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:d3d",
+        "class": "actionable",
+        "message": "unadaptable_api ua:d3d 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:alsa",
+        "class": "actionable",
+        "message": "unadaptable_api ua:alsa 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:pulse",
+        "class": "actionable",
+        "message": "unadaptable_api ua:pulse 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:v4l2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:v4l2 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:oss",
+        "class": "actionable",
+        "message": "unadaptable_api ua:oss 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:coreaudio",
+        "class": "actionable",
+        "message": "unadaptable_api ua:coreaudio 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:vaapi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:vaapi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "blocker_ref:bk:apple_media:ta:video_codec",
         "class": "actionable",
@@ -3336,7 +3404,8 @@
         "message": "unadaptable_api ua:coreaudio 的 caused_by ta:video_codec 不存在"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "GStreamer 是典型的多媒体框架，核心触及媒体（音视频编解码/采集/播放/传输）场景；插件层大量涉及 GUI 窗口集成、3D/GPU 渲染与各类硬件加速/设备访问。鸿蒙化评估需重点关注：媒体 pipeline 能否迁移到 @ohos.multimedia、GPU/窗口后端在鸿蒙 PC 的可用性、以及 V4L2/ALSA/PulseAudio 等平台音视频 IO 的替代。",

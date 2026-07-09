@@ -1145,8 +1145,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 原生库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1155,7 +1154,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "abandon_or_replace_runtime",
     "summary": "OpenVR SDK 本身是可移植的 C++11 薄层封装，POSIX 分支下的 dlopen、stat、getenv 等均可在 OHOS NDK/musl 上编译通过；但该库的全部功能都依赖运行期动态加载 SteamVR 的 vrclient 库。SteamVR 是 Valve 专有闭源运行时，目前无鸿蒙 PC 版本，也缺乏对应的 PC VR 头显/手柄生态。因此，把 OpenVR SDK 移植到鸿蒙 PC 在核心功能层面不可行；若要在鸿蒙上支持 VR，应转向 OpenXR 等开放标准或等待 SteamVR 官方支持鸿蒙。",
     "unadaptable_apis": [
       {
@@ -1171,7 +1169,9 @@
         "evidence": [
           "src/openvr_api_public.cpp:140-155",
           "src/openvr_api_public.cpp:56-79"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1181,7 +1181,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库本体为 C++11 代码，可通过 OHOS NDK 交叉编译为鸿蒙 .so",
-        "source": "references/harmony-pc-capabilities.json 前言：OHOS NDK（musl + POSIX 子集）+ clang/CMake"
+        "source": "references/harmony-pc-capabilities.json 前言：OHOS NDK（musl + POSIX 子集）+ clang/CMake",
+        "target_status_model": "available"
       },
       {
         "id": "ta:steamvr",
@@ -1189,7 +1190,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "OpenVR 所有对外接口最终都路由到 SteamVR 运行时；无运行时则 VR_InitInternal/VR_GetGenericInterface 等核心入口无法工作",
-        "source": "references/harmony-pc-capabilities.json 未列出 SteamVR；结合 SteamVR 为 Valve 专有闭源运行时"
+        "source": "references/harmony-pc-capabilities.json 未列出 SteamVR；结合 SteamVR 为 Valve 专有闭源运行时",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1254,7 +1256,23 @@
       "在 OHOS NDK 上验证 vrcore POSIX 分支可编译（仅代码层可行性验证）"
     ],
     "notes": "评估按 C++ 原生库模型 A（跑在已移植语言运行时/NDK 上）。核心库代码本身可在鸿蒙 NDK 上编译，但功能不可行。存在 required+unknown 目标假设（SteamVR 未在 harmony-pc-capabilities.json 列出），置信度下调至 medium；结合 SteamVR 为 Valve 专有闭源软件且目前无鸿蒙版本，实际上属于 unavailable，只是未在官方能力表中显式确认。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:vrclient"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "openvr",
@@ -1279,27 +1297,20 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "vr_hmd / vr_controller / tracking",
-        "rationale": "OpenVR 的硬件场景不是通用 GPU/USB/蓝牙，而是专用 VR 头显、手柄与空间定位；现有推荐集（gpu_cuda/opencl/usb_serial/bluetooth/camera/sensor/npu/fpga）无法准确描述，因此新增 vr_* 类 key。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "abandon_or_replace_runtime",
-        "rationale": "OpenVR 因依赖专有 SteamVR 运行时导致核心不可行，传统 recompile_napi/cross_compile 路径不适用；推荐路径应为放弃或转向替代运行时/标准。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:vrclient",
+        "class": "actionable",
+        "message": "unadaptable_api ua:vrclient 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "OpenVR SDK 核心库本身不创建桌面窗口，但设计目标就是支撑 VR 渲染与硬件访问：它定义了 DirectX/OpenGL/Vulkan/Metal 纹理提交类型（由上层渲染引擎填充），并通过 vrclient 运行时把调用转发给 SteamVR 以驱动 VR 头显、手柄等专用设备。因此核心触及 3D 渲染 API 表面和专用 VR 硬件两个场景。",

@@ -969,7 +969,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，无 Linux ABI；OHOS NDK/musl + POSIX 子集；arm64（主力）/ x86_64；库默认路径：经 OHOS NDK 交叉编译为 .so，供链接到其他鸿蒙原生应用；usbredirhost 依赖 libusb-1.0，其鸿蒙可用性决定内核库的可移植性）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -978,7 +977,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "usbredir 的核心协议库（usbredirparser）为纯 C 标准库实现，无任何外部依赖，经 OHOS NDK clang+musl 交叉编译即可在鸿蒙 PC 上直接使用。主机端库（usbredirhost）依赖 libusb-1.0 的 USB 设备访问抽象——libusb 为成熟跨平台库（支持 Linux/usbfs、macOS/IOKit、Windows/WinUSB 等多种后端），有能力移植到鸿蒙的 USB 宿主栈；但当前鸿蒙 PC 的 USB 设备访问能力在目标事实表中为 unknown（待核实）。若 libusb 不可用，需用 @ohos.usb 系统 API 重写 usbredirhost 的设备交互层（约 2600 行核心逻辑），工作量升到 15-25 人-天。平台适配代码极少（仅 6 行 WIN32 条件编译），无 POSIX 独占系统调用、无外部命令 shell-out、无 /proc//sys 伪文件操作。",
     "blockers": [
       {
@@ -1036,7 +1034,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 不提供用户态 USB 设备访问接口，usbredirhost 核心功能（USB 设备重定向）无法工作——需用 @ohos.usb 系统 API 重写设备交互层，或依赖 libusb 社区完成鸿蒙后端的移植",
-        "source": "references/harmony-pc-capabilities.json#usb_serial"
+        "source": "references/harmony-pc-capabilities.json#usb_serial",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1080,7 +1079,21 @@
       "在鸿蒙 PC 上验证库与目标应用（如鸿蒙版 QEMU/SPICE 虚拟化套件）的集成"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 编译为 .so，供鸿蒙原生应用链接）。usbredirect 工具非核心（GLib/GIO 可选依赖），不影响库的移植结论。libusb 的鸿蒙可用性为关键未知项（`target_assumptions[0].target_status: unknown`），因此 `confidence` 下调为 medium。core 平台适配数据仅 `code_metrics.platform_adaptation.total: 6`（全部为 WIN32），无 POSIX 独占 API、无 fork/syscall/ioctl/ /proc 等不兼容体系调用，极大降低移植复杂度。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "usbredir",
@@ -1104,7 +1117,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目（USB 设备重定向协议库）不涉及 GUI 界面、3D 渲染或媒体处理，仅触及硬件设备场景——通过 libusb 访问物理 USB 设备，属通用外设访问，非特定不可替代硬件。",

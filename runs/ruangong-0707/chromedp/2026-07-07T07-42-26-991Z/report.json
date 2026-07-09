@@ -864,8 +864,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         2.3,
@@ -924,7 +923,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Go 运行时已在鸿蒙 PC 移植，chromedp 纯 Go 代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json — 语言运行时段"
+        "source": "references/harmony-pc-capabilities.json — 语言运行时段",
+        "target_status_model": "available"
       },
       {
         "id": "ta:chrome_browser",
@@ -932,7 +932,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "chromedp 核心功能依赖 Chrome 浏览器进程。若无可用浏览器，库将无法运行",
-        "source": "references/harmony-pc-capabilities.json — 应用交付形态"
+        "source": "references/harmony-pc-capabilities.json — 应用交付形态",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:subprocess",
@@ -940,7 +941,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "ExecAllocator 模式需要启动 Chrome 子进程；若鸿蒙限制子进程创建则只能使用 RemoteAllocator 模式",
-        "source": "references/harmony-pc-capabilities.json — 进程/安全模型"
+        "source": "references/harmony-pc-capabilities.json — 进程/安全模型",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:websocket",
@@ -948,7 +950,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Go net/http 和 net 包提供的 WebSocket 客户端功能在鸿蒙 Go 运行时上应可直接使用",
-        "source": "references/harmony-pc-capabilities.json — 网络栈"
+        "source": "references/harmony-pc-capabilities.json — 网络栈",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -985,7 +988,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "chromedp 是纯 Go 实现的浏览器自动化库，绝大部分代码使用 Go 标准库跨平台 API，在鸿蒙 PC 已移植 Go 运行时的前提下可直接编译运行。主要适配工作为：1) 替换 Linux 特有的 syscall.SysProcAttr.Pdeathsig（22 行）；2) 确保目标环境有可用的 Chrome/Chromium 浏览器；3) 验证所有依赖在鸿蒙 Go 运行时上的兼容性。核心风险在于 Chrome 浏览器在鸿蒙 PC 上的可用性——若无本地浏览器，只能使用 RemoteAllocator 模式连接远程浏览器实例。",
     "blockers": [
       {
@@ -1063,7 +1065,21 @@
       "如无本地浏览器，文档化 RemoteAllocator 模式的使用方式"
     ],
     "notes": "置信度为 medium 主要因为 Chrome 浏览器在鸿蒙 PC 上的可用性为 unknown。若浏览器可用，实际工作量偏向低区间（3-5 人天）；若不可用且只能用远程模式，则需额外文档和适配工作。Go 运行时已在鸿蒙 PC 移植，这是最大的利好因素——纯 Go 代码无需重编译适配即可运行。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "chromedp",
@@ -1089,7 +1105,8 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "chromedp 不涉及 GUI 桌面界面、3D 渲染、音视频媒体或特定硬件设备。它是一个纯 Go 库，通过 WebSocket 协议远程控制浏览器，自身不包含任何图形/媒体/硬件相关代码。",

@@ -101,7 +101,33 @@ function patchRow(id, patch) {
   return row;
 }
 
-module.exports = { load, save, render, sync, patchRow, CAPS_JSON, CAPS_MD };
+// Tier3 helper (server/panel): create-or-update a row in a section, ADDING the section if absent,
+// then re-render. Promotes an unknown/caps_gap target assumption into a curated capability row so a
+// later serve-time caps re-projection can bind to it. Distinct from patchRow (which requires the row
+// to exist). Returns {section, row, created}.
+function upsertRow(payload) {
+  const p = payload || {};
+  if (!p.sectionId || !p.id) throw new Error('upsertRow requires sectionId and id');
+  const data = load();
+  data.sections = Array.isArray(data.sections) ? data.sections : [];
+  let sec = data.sections.find((s) => s && s.id === p.sectionId);
+  if (!sec) { sec = { id: p.sectionId, title: p.sectionTitle || p.sectionId, rows: [] }; data.sections.push(sec); }
+  else if (p.sectionTitle && !sec.title) sec.title = p.sectionTitle;
+  sec.rows = Array.isArray(sec.rows) ? sec.rows : [];
+  let row = sec.rows.find((x) => x && x.id === p.id);
+  const created = !row;
+  if (!row) { row = { id: p.id, capability: '', status: 'unknown', source: null, checked_at: null, note: '', check: null }; sec.rows.push(row); }
+  if (p.capability != null) row.capability = p.capability;
+  if (p.status != null) row.status = p.status;
+  if (p.source !== undefined) row.source = p.source;
+  if (p.note !== undefined) row.note = p.note;
+  row.checked_at = new Date().toISOString().slice(0, 10);
+  save(data);
+  render(data);
+  return { section: sec.id, row, created };
+}
+
+module.exports = { load, save, render, sync, patchRow, upsertRow, CAPS_JSON, CAPS_MD };
 
 if (require.main === module) {
   const cmd = process.argv[2] || 'render';

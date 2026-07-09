@@ -672,7 +672,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK musl + POSIX 子集；arm64/x86_64；Node.js 24.13.0 已移植运行时可用）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -681,7 +680,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js 生态的数学子包，鸿蒙 PC 已移植 Node.js 24.13.0 运行时（harmony-pc-capabilities.json#nodejs → available）。纯 JavaScript 实现（lib/main.js）可直接在鸿蒙 Node.js 上运行，无需改动。C 原生插件（src/addon.c、src/main.c）仅使用标准 C99 和 stdlib 内部头文件（无 POSIX/平台专有 API），只需用 OHOS NDK 重新编译为 .node 即可。所有运行时依赖均为 stdlib 内部子包，npm 可正确解析。总体移植工作量极低，2–5 人·天。",
     "blockers": [
       {
@@ -708,7 +706,8 @@
         "required": true,
         "target_status": "available",
         "impact": "满足则 JS 代码和 N-API 原生插件均可运行；为 available 时不是阻碍",
-        "source": "harmony-pc-capabilities.json#nodejs"
+        "source": "harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -742,7 +741,21 @@
       "确认 @stdlib/* 依赖包在 npm 上可正常安装解析"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。若目标为 ArkTS 沙箱应用（模型 B），则需额外将 C 实现通过 Node-API 暴露给 ArkTS，纯 JS 部分亦需确认模块系统兼容性，总工作量略有上升。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -766,7 +779,8 @@
     "observations": [],
     "warnings": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "该项目是纯数学运算库，不涉及任何鸿蒙适配重点场景（GUI、3D 渲染、媒体、特定硬件）。",

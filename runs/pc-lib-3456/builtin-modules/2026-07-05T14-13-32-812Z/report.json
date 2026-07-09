@@ -267,7 +267,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（运行在已移植的鸿蒙 Node.js 24 运行时上；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -276,7 +275,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "本库为纯 JavaScript/JSON 的 Node.js 包，鸿蒙 PC 已移植 Node.js 运行时，因此可直接运行于鸿蒙 Node.js 上。无原生扩展、无 C 依赖、无平台特有 API 调用、无外部命令、无云端依赖。唯一的打包工作是确保 builtin-modules.json 随 npm 包正常分发即可。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -287,7 +285,8 @@
         "required": true,
         "target_status": "available",
         "impact": "本库完全依赖 Node.js 运行时，运行时已移植则开箱即用；无额外阻碍",
-        "source": "harmony-pc-capabilities.json 语言运行时段"
+        "source": "harmony-pc-capabilities.json 语言运行时段",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -320,7 +319,21 @@
       "运行测试确认模块列表与鸿蒙 Node.js 的内置模块一致"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。本库的生产代码仅 3 个文件，无任何平台耦合，是最低难度的移植场景。make.js（构建脚本）虽使用 child_process 等 Node 核心模块，但那是开发期工具，不影响运行时。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "builtin-modules",
@@ -342,7 +355,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI 桌面界面、3D 渲染、音视频媒体或特定硬件。作为纯数据/工具库，运行在 Node.js 运行时层面，无任何图形化或设备相关场景。",

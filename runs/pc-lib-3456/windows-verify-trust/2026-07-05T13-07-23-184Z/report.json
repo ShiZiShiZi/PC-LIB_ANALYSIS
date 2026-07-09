@@ -610,8 +610,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上；N-API 原生插件需 OHOS NDK 重编）",
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         0,
@@ -620,7 +619,6 @@
       "level": "very_high"
     },
     "confidence": "high",
-    "recommended_path": "abandon",
     "summary": "该库的全部核心功能（DLL 加载、路径获取、Authenticode 签名验证）均通过 Win32 API 实现，无任何平台无关逻辑。WinVerifyTrust 是 Windows 独有的代码签名验证基础设施（依赖 wintrust.dll/crypt32.dll），在鸿蒙 PC 上无等价能力——既没有 Windows DLL 的概念，也没有等同的签名校验 API。库的 3 个公共接口（isLibExist、getLibPath、verifyTrust）全部路由到不可适配的 Win32 API。Node.js JS 包装层（index.js）仅是薄调用桥，本身无独立业务逻辑。移植该库到非 Windows 平台意味着整体重写所有功能，且目标平台无对应基础设施支撑，不存在有意义的移植路径。",
     "blockers": [
       {
@@ -686,7 +684,9 @@
           "src/cpp/main.cpp:42-47",
           "src/cpp/main.cpp:29"
         ],
-        "caused_by": []
+        "caused_by": [],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:getlibpath",
@@ -699,7 +699,9 @@
           "src/cpp/main.cpp:50-61",
           "src/cpp/main.cpp:35"
         ],
-        "caused_by": []
+        "caused_by": [],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:verifytrust",
@@ -712,7 +714,9 @@
           "src/cpp/main.cpp:64-114",
           "src/cpp/main.cpp:100"
         ],
-        "caused_by": []
+        "caused_by": [],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [],
@@ -728,7 +732,25 @@
     ],
     "key_tasks": [],
     "notes": "该库定位为 Windows 平台专用的 DLL 签名校验工具，其全部价值锚定在 WinVerifyTrust Authenticode 验证能力上——换平台后功能完全无意义。移植 = 重写一个完全不同功能的新库。评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上），但即便 Node.js 可用，C++ 原生插件调用链的 100% Win32 依赖使得不存在实际移植路径。不适用模型 B。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:islibexist",
+          "ua:getlibpath",
+          "ua:verifytrust"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "windows-verify-trust",
@@ -747,7 +769,25 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:islibexist",
+        "class": "actionable",
+        "message": "unadaptable_api ua:islibexist 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:getlibpath",
+        "class": "actionable",
+        "message": "unadaptable_api ua:getlibpath 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:verifytrust",
+        "class": "actionable",
+        "message": "unadaptable_api ua:verifytrust 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目为纯 Win32 API 签名校验库，不涉及 GUI、3D 渲染、媒体处理或特定硬件设备等鸿蒙适配重点场景。核心功能（WinVerifyTrust 数字签名验证）是 Windows 平台独有的代码签名基础设施，在非 Windows 平台上无对应概念。",

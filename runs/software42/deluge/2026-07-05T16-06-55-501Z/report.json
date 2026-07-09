@@ -1746,8 +1746,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK + musl POSIX 子集；arm64 / x86_64；Python 3.12 运行时已移植；走模型 C：整包桌面应用，评估能否在鸿蒙 PC 上打包并启动运行）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1756,7 +1755,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Deluge 为 Python 桌面应用，鸿蒙 PC 已移植 Python 3.12 运行时。核心守护进程 (deluged) 依赖 libtorrent (C++ BitTorrent 引擎)，需经 OHOS NDK 交叉编译；Web UI 与 Console UI 纯 Python 可直接运行；GTK 桌面界面依赖 GTK3（鸿蒙 cmd-pkgs 已有预编译包）但 PyGObject/Pycairo/librsvg Python 绑定需在鸿蒙上重新编译；部分平台相关代码（subprocess 调用系统工具、Windows ctypes 环境变量操作）需适配替换。整体可行但工作量大，建议优先交付 Web UI 路径。",
     "target_assumptions": [
       {
@@ -1765,7 +1763,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 运行时已确认移植，Deluge 纯 Python 代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json runtimes.python"
+        "source": "references/harmony-pc-capabilities.json runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:gtk3",
@@ -1773,7 +1772,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK 3 已有鸿蒙预编译包，GTK UI 路径具备基础条件",
-        "source": "references/harmony-pc-capabilities.json gui.gtk"
+        "source": "references/harmony-pc-capabilities.json gui.gtk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_multi_window",
@@ -1781,7 +1781,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GTK UI 依赖桌面多窗口环境运行；不支持则 GTK UI 无法运行，但 Web UI 路径不受影响",
-        "source": "references/harmony-pc-capabilities.json gui.wm"
+        "source": "references/harmony-pc-capabilities.json gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:system_tray",
@@ -1789,7 +1790,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "系统托盘为可选功能（最小化到托盘），不支持可降级为普通窗口最小化",
-        "source": "references/harmony-pc-capabilities.json desktop_integration.tray"
+        "source": "references/harmony-pc-capabilities.json desktop_integration.tray",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:file_dialog",
@@ -1797,7 +1799,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "添加种子时使用 GTK 文件选择器；可用 Web UI 的上传替代",
-        "source": "references/harmony-pc-capabilities.json desktop_integration.file_dialog"
+        "source": "references/harmony-pc-capabilities.json desktop_integration.file_dialog",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dnd_clipboard",
@@ -1805,7 +1808,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "GTK UI 支持拖放添加种子链接；不影响 Web/Console UI 路径",
-        "source": "references/harmony-pc-capabilities.json desktop_integration.dnd_clipboard"
+        "source": "references/harmony-pc-capabilities.json desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:subprocess_spawn",
@@ -1813,7 +1817,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "应用依赖 subprocess 打开文件/文件夹/浏览器；不支持则需替换为 @ohos 等价能力",
-        "source": "references/harmony-pc-capabilities.json process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app_delivery",
@@ -1821,7 +1826,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Deluge 目前通过 PyPI wheel 分发，鸿蒙 PC 上需要确定分发/启动方式（是否支持 console_scripts / .desktop 启动器）",
-        "source": "references/harmony-pc-capabilities.json app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network_permission",
@@ -1829,7 +1835,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "BitTorrent 客户端必须联网；权限模型未知则无法确定能否在受限环境中运行",
-        "source": "references/harmony-pc-capabilities.json permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "unadaptable_apis": [],
@@ -2036,7 +2043,21 @@
       "运行核心测试套件（排除 GTK 标记的测试）验证功能完整性"
     ],
     "notes": "评估按模型 C（整包桌面应用）。Python 运行时已移植（available），纯 Python 代码可运行。核心阻碍为 libtorrent 的 OHOS NDK 交叉编译（C++ 库，约 15 万行 C++，Boost 依赖，移植工作量估 5-12 人天）。多项目标能力为 unknown：桌面多窗口环境、子进程/外部命令执行、应用分发形态——这些 unknown 项使 confidence 下调至 medium；若鸿蒙 PC 不支持传统桌面应用形态（仅 .hap），则需单独创建鸿蒙壳包。优先推荐 Web UI 路径交付：Web UI 不依赖 GTK/桌面集成/系统托盘/D-Bus，纯 Python+JS 即可运行，是风险最低、工作量最小的适配路径。Console UI 同样可纯 Python 运行。若仅交付 Web UI + daemon，person_days 可降至 [12, 25]。pywin32/windows-curses 等 Windows 专属依赖在鸿蒙上不需要、不计入阻碍。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "deluge",
@@ -2057,33 +2078,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "ambiguity",
-        "value": "multiple unknown target capabilities for desktop application delivery on Harmony PC",
-        "rationale": "鸿蒙 PC 的桌面多窗口环境、子进程执行、应用分发形态（pip vs .hap）、网络权限模型等均为 unknown——这些对模型 C（整包桌面应用）的判定至关重要但当前无确认事实，故 confidence 下调至 medium。建议优先走 Web UI 路径降低不确定性。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "GTK UI 可能部分功能不可用（系统托盘、D-Bus 文件管理集成）但核心功能可通过 Web UI 实现",
-        "rationale": "Deluge 有三种 UI（GTK/Web/Console），Web UI 与 Console UI 纯 Python 可运行，GTK UI 的部分桌面集成功能（系统托盘、D-Bus 文件管理器）需要鸿蒙桌面环境支持。整体判定为 needs_adaptation_full（全部可适配），但若只接受 Web UI 交付，难度更低。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "subprocess",
-        "kind": "new_value",
-        "value": "os.startfile (Windows-specific subprocess wrapper)",
-        "rationale": "os.startfile 是 Windows 专属 API，在 POSIX 系统上不存在。Deluge 使用 platform.system() 分支检测后在 Windows 上调用 os.startfile、macOS/Linux 上用 subprocess.Popen + 对应命令。鸿蒙上此类平台分支需相应适配。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目作为 GTK 3 桌面应用，触及 GUI 场景（GTK 3 + PyGObject + Cairo 绘图 + 系统托盘）；不涉及 3D 渲染、媒体编解码、特定硬件设备。",

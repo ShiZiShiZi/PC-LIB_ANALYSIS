@@ -1096,7 +1096,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK clang + musl libc；arm64/x86_64）。按 C/C++ 库默认口径评估：不依赖已移植语言运行时，直接以 OHOS NDK 交叉编译为鸿蒙原生 .so。",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1114,7 +1113,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 库无已移植运行时之说，原生编译必须依赖 OHOS NDK；缺失则无法生成鸿蒙 .so",
-        "source": "references/harmony-pc-capabilities.json 导言 + skill 默认口径"
+        "source": "references/harmony-pc-capabilities.json 导言 + skill 默认口径",
+        "target_status_model": "available"
       },
       {
         "id": "ta:perm_internet",
@@ -1122,7 +1122,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本 SDK 核心功能依赖 HTTPS 访问七牛云服务端点；若 PC 形态不授予网络权限则整体不可用",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1137,7 +1138,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "本库为纯 C 网络 SDK，无 GUI/3D/媒体/硬件依赖；核心代码使用标准 C 与通用 POSIX API（pthread、open/pread/close、gettimeofday、realpath），并有清晰的 Windows 条件分支。运行时依赖 curl、openssl 已在 OpenHarmony PC cmd-pkgs 中提供鸿蒙预编译包；cJSON/hashmap/b64 为仓库内嵌源码，随库一起用 NDK 交叉编译即可。主要不确定因素是鸿蒙 PC 形态对 ohos.permission.INTERNET 的授予方式，需在目标环境实测确认。",
     "blockers": [],
     "compatible": [
@@ -1176,7 +1176,21 @@
       "在鸿蒙 PC 上运行单元测试，验证 HTTPS 上传/下载/断点续传功能"
     ],
     "notes": "评估按 C/C++ 库「NDK 交叉编译」口径；若目标是将该库封装为 ArkTS 应用（模型 B），则需额外编写 Node-API 桥接层，工作量与 person_days 会显著增加。当前置信度为 medium， solely 因为 ohos.permission.INTERNET 在 PC 形态的授予方式尚未核实。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "c-sdk",
@@ -1201,20 +1215,13 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "qiniu_cloud",
-        "rationale": "七牛云（Qiniu）对象存储 SDK 的云端厂商不在 skill 推荐厂商列表（google_firebase/aws/gcp/azure/alibaba_cloud/tencent_cloud/huawei_cloud/supabase/sentry）中，需要新增厂商值来准确描述。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯网络/云存储 SDK，不涉及 GUI 桌面界面、3D 渲染、音视频媒体处理，也不依赖 GPU、USB、串口、蓝牙等特定硬件。",

@@ -1708,8 +1708,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接——无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1732,7 +1731,9 @@
         "evidence": [
           "server/mpm/worker/worker.c:1354",
           "server/mpm/prefork/prefork.c:742"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:setuid",
@@ -1746,7 +1747,9 @@
         "category": "platform",
         "evidence": [
           "modules/arch/unix/mod_unixd.c:182"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:sigaction",
@@ -1761,7 +1764,9 @@
         "evidence": [
           "server/mpm_unix.c:1060",
           "os/unix/unixd.c:555"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1771,7 +1776,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "MPM 多进程架构、权限降级、信号驱动的优雅重启均依赖此——若受限则需重写进程管理",
-        "source": "references/harmony-pc-capabilities.json process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network_listen",
@@ -1779,7 +1785,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "HTTP 服务器核心功能——若需要 ohos.permission.INTERNET 且受限，则整体不可运行",
-        "source": "references/harmony-pc-capabilities.json permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json permissions.perm_internet",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1787,7 +1794,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "httpd 作为系统服务运行，不适用 ArkTS/.hap 模型——若只支持 .hap 形态则需完全重新打包",
-        "source": "references/harmony-pc-capabilities.json app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1801,7 +1809,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "httpd 是一个高度依赖 POSIX 进程模型（fork/signal/shared memory/setuid）的大型 C 语言网络服务器应用。鸿蒙 PC 的 OHOS NDK 提供 musl + POSIX 子集，fork/sigaction 等基础调用理论上可用，但 MPM 多进程架构深度依赖的信号驱动优雅重启、setuid 权限降级、跨进程共享内存记分板等机制，在鸿蒙沙箱/权限模型下的行为尚未核实。核心挑战不在 API 缺失，而在进程管理模型的差异。推荐路径：用 OHOS NDK 交叉编译，先以简单 MPM（单进程或线程模型）跑通，再逐步适配 event MPM。",
     "blockers": [
       {
@@ -1895,7 +1902,25 @@
       "确认守护进程/系统服务形态在鸿蒙 PC 上的部署方式"
     ],
     "notes": "httpd 是一个 ~21.5 万行 C 生产代码的成熟大型项目，其 MPM 架构是最大的适配难点。鸿蒙 NDK 的 POSIX 子集理论上覆盖了大部分基础 API，但进程管理模型的差异是根本性挑战。所有 target_assumptions 均为 unknown，整体置信度为 low——需逐一核实鸿蒙 PC 的进程/网络/服务能力。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:fork",
+          "ua:setuid",
+          "ua:sigaction"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1903,15 +1928,25 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "httpd 是终端用户启动运行的 Web 服务器守护进程，具有入口点（httpd main）、系统服务集成和进程管理，属于应用而非库"
+        "code": "ua_func_class_defaulted:ua:fork",
+        "class": "actionable",
+        "message": "unadaptable_api ua:fork 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:setuid",
+        "class": "actionable",
+        "message": "unadaptable_api ua:setuid 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:sigaction",
+        "class": "actionable",
+        "message": "unadaptable_api ua:sigaction 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

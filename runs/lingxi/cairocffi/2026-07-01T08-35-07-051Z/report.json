@@ -818,7 +818,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；C 库经 CFFI 运行时加载；原生层 OHOS NDK/musl；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -827,7 +826,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "cairocffi 是纯 Python 绑定库，核心工作量为确保运行时能加载 libcairo、glib、gdk-pixbuf 等 C 库。OpenHarmony PC 已提供 Python 运行时，且 cmd-pkgs 已包含 cairo、gdk-pixbuf、glib 预编译包，因此主要工作是验证动态库路径与加载；可选的 XCB 后端依赖 xcffib 未确认已鸿蒙化，但不影响核心功能。",
     "blockers": [
       {
@@ -854,7 +852,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 绑定层可直接在鸿蒙 Python 上运行，无需改写。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -898,7 +897,21 @@
       "运行 cairocffi 测试套件验证核心功能"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时上）。核心 cairo、gdk-pixbuf、glib 已在 OpenHarmony PC 预编译包中提供；可选的 xcffib 与 libgdk 未确认已鸿蒙化，但不影响核心功能。无 GUI/3D/媒体/特定硬件场景。gobject 与 glib 同源，通常随 glib 一起提供。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -906,22 +919,7 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "cffi_dlopen_system",
-        "rationale": "Python CFFI 运行时通过 dlopen 加载的系统动态库（如 cairo、gdk-pixbuf）按 native_api.dynamic_libraries 记录，不归入 dependencies，避免与 manifest 声明的 Python 包重复。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "gap",
-        "value": "image_decode",
-        "rationale": "cairocffi.pixbuf 涉及图像格式解码，但 media 场景定义聚焦音视频编解码/播放/采集，2D 图像解码不构成 dim-9 主要移植阻碍，故未单独开场景。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cap_miss:rendering_3d",
@@ -929,6 +927,7 @@
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

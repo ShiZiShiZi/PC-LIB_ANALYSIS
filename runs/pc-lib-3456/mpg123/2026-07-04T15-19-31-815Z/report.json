@@ -1945,8 +1945,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 A: OHOS NDK 重编译 C 库 + musl POSIX 子集; arm64 主力架构, x86_64 待核实; 自研内核非 Linux ABI; 可选通过 Node-API 封装成 N-API addon 供 ArkTS 调用)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1955,7 +1954,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "mpg123 核心解码器为纯 C99，ARM64 NEON64 汇编优化已完备，经 OHOS NDK 重编译后可在鸿蒙 PC arm64 直接运行(已收录于 OpenHarmony PC cmd-pkgs 预编译包)。主要适配工作在: ① 音频输出后端需新增鸿蒙 @ohos.multimedia.audio 或 OHAudio 模块; ② fork 音频缓冲模式需改换为线程实现(鸿蒙 musl fork 可能受限); ③ 网络流媒体模块需验证 POSIX socket 在 OHOS NDK 的覆盖; ④ CPUID 运行时检测需适配鸿蒙。所有阻碍均有可替代方案,无不可适配的核心 API。",
     "blockers": [
       {
@@ -2060,7 +2058,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "影响缓冲、网络流媒体、动态模块加载等功能的可用性，详见各 blocker 的 remediation 中降级方案; 不阻塞核心解码",
-        "source": "harmony-pc-capabilities.json (无明确 POSIX 子集清单，综合参照)"
+        "source": "harmony-pc-capabilities.json (无明确 POSIX 子集清单，综合参照)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audioio",
@@ -2068,7 +2067,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libout123 需新音频后端 (dummy 先占位，核心解码不受影响)",
-        "source": "harmony-pc-capabilities.json#media.audio_io"
+        "source": "harmony-pc-capabilities.json#media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_mpg123",
@@ -2076,7 +2076,8 @@
         "required": false,
         "target_status": "available",
         "impact": "社区已验证可移植，降低不确定性",
-        "source": "harmony_adapted=true (OpenHarmony PC C/C++ 预编译包 gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+        "source": "harmony_adapted=true (OpenHarmony PC C/C++ 预编译包 gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -2142,7 +2143,21 @@
       }
     ],
     "notes": "mpg123 已在 OpenHarmony PC C/C++ 预编译包收录(cmd-pkgs)，表明社区已验证基本的 OHOS NDK 编译通过。但该收录可能仅为 libmpg123 核心解码库(无音频输出/网络模块)——上述评估按完整适配口径，给出了各可选模块的适配方案。核心解码库仅需 libm(C99+OHOS NDK)→work:libmpg123 可直接重编通过(porting_class 近似 recompile_only);完整适配含音频输出/缓冲/网络需额外工作→overall needs_adaptation_full。置信度 medium 是因为多个 OHOS NDK POSIX 子集覆盖细节未核实(fork限制/dlopen可用性/音频 API 选型);目标端音频 I/O 能力标记为 unknown 也加深不确定性。若仅评估 libmpg123 解码库(不含 libout123),porting_class 应为 recompile_only,effort:[2,4] person_days。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -2167,19 +2182,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "classification_ambiguity",
-        "value": "library",
-        "rationale": "mpg123 delivers both a CLI player application AND installable libraries (libmpg123/libout123/libsyn123). The libraries are widely consumed by other programs via linking. Classified as library since the public API and package distribution model prioritize library usage over application usage."
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "mpg123 是纯音频解码库+播放器，涉及媒体音频场景和 CPU 硬件 SIMD 优化，不涉及 GUI 窗口系统、3D 渲染或云服务。",

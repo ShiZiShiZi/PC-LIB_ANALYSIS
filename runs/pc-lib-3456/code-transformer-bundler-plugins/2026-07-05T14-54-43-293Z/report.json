@@ -495,7 +495,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；Node.js 24.13.0 运行时已移植，纯 JS/TS 直接运行；arm64 主力 + x86_64 待核实）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -504,7 +503,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "纯 TypeScript/JavaScript npm 库，无原生扩展、无 C/C++ 依赖、无平台特定 API、无 FFI/动态库、无云服务、无 GUI/硬件/媒体场景。鸿蒙 PC 已移植 Node.js 运行时，本库可直接运行无需修改。唯一建议：在鸿蒙 PC 的 Node.js 上跑通其单元测试验证。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -515,7 +513,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 JS/TS 库唯一依赖——运行时可用则整体可行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -565,7 +564,21 @@
       "发布为 npm 包时无须特殊处理；若打包为鸿蒙 aplikasi 分发包则按 standard Node.js 流程操作"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。若目标为 ArkTS 沙箱应用（模型 B），Node 核心模块不可用、需用 @ohos.* 替代——但本库是构建时插件，在 ArkTS 沙箱内无直接用途，不适用模型 B。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -587,26 +600,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "license_files",
-        "kind": "missing",
-        "value": "no LICENSE file",
-        "rationale": "仓库无 LICENSE 文件，但 package.json 声明 MIT 许可。置信度降至 medium。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "used_symbols",
-        "kind": "distribution_mode",
-        "value": "es-module-lexer.initSync 为 WebAssembly 初始化",
-        "rationale": "es-module-lexer.initSync 实际初始化的是一个 WebAssembly 模块，非普通 JS 符号。纯 JS 库的一个边缘情况。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯构建时 JavaScript 代码变换插件库，不涉及 GUI、3D 渲染、媒体处理或特定硬件。运行于构建流程中，无桌面界面、无图形渲染管线、无音视频编解码、无硬件依赖。",

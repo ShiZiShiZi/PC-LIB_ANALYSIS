@@ -767,8 +767,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -785,7 +784,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 Rust 运行时不可用，则整个库无法运行；若可用但缺少线程/同步/文件系统部分支持，则 Executor/Scheduler 功能受限",
-        "source": "references/harmony-pc-capabilities.json — Rust 运行时段"
+        "source": "references/harmony-pc-capabilities.json — Rust 运行时段",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:crossbeam_ohos",
@@ -793,7 +793,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "crossbeam 是 Executor 的核心依赖（通道与工作窃取队列），若无法编译则需替换并发原语实现",
-        "source": "dependencies — crossbeam"
+        "source": "dependencies — crossbeam",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:notify_ohos",
@@ -801,11 +802,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "notify 为可选功能依赖（文件监视），若不可用则相关功能需禁用或替换实现",
-        "source": "dependencies — notify"
+        "source": "dependencies — notify",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "ZRX 是纯 Rust 库，不涉及平台特有 API、GUI、硬件或 FFI。主要移植工作在于确保 Rust 工具链与关键依赖（crossbeam）能在 HarmonyOS NDK 目标上编译通过。若 Rust 运行时已移植到鸿蒙 PC，则仅需交叉编译即可；否则需等待或协助 Rust 运行时移植。",
     "blockers": [
       {
@@ -870,7 +871,21 @@
       "补充测试用例以确保移植后功能正确性"
     ],
     "notes": "项目当前处于早期开发阶段（v0.0.x），无测试用例，API 可能变动。Rust 运行时在鸿蒙 PC 上的状态为 unknown 是影响置信度的主要因素——若已移植则 porting_class 可降为 recompile_only，工作量大幅降低。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "zrx",
@@ -893,17 +908,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "used_symbols",
-        "kind": "gap",
-        "value": "partial_empty",
-        "rationale": "file-id、notify、walkdir、thiserror、tracing 在 workspace 依赖中声明但当前 crate 未直接引用，used_symbols 暂为空；实际使用需运行时确认或未来版本补全"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "ZRX 为纯计算库，不涉及 GUI、3D 渲染、媒体或硬件设备场景。",

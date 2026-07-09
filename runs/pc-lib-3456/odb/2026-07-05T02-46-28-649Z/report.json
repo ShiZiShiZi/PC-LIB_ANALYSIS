@@ -1297,8 +1297,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK 工具链，clang + musl libc，arm64 / x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         12,
@@ -1307,7 +1306,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "ODB 是一个 C++ ORM 库——其 ODB 编译器（GCC 插件）运行在构建宿主机上，不发布到目标平台，因此编译器的 GCC 专有性不构成目标端移植阻碍。真正需要移植到鸿蒙 PC 的是运行时库（libodb 及各数据库后端 libodb-*）。这些运行时库以 C++11 标准库为主、平台耦合代码量有限（约 427 行 #ifdef 守卫的 Windows/macOS/Linux 分支代码），经 OHOS NDK 交叉编译后在鸿蒙上运行理论可行。主要工作量：① 适应 OHOS NDK 的 clang/musl 环境（替换 __gnu_cxx 扩展、调整 #ifdef 平台分支）；② 逐个数据库后端确认其 C 客户端库（libsqlite3/libmysqlclient/libpq）在鸿蒙上的可用性或自行交叉编译；③ Oracle OCI 和 MS SQL Server ODBC 后端因依赖专有 SDK 且平台耦合较深（Windows ODBC 类型），鸿蒙移植可能需要放弃或寻求替代方案——但这些后端是可选的，不影响核心功能。整体全部所用功能均可适配，无不可替代的平台/硬件 API 障碍。",
     "blockers": [
       {
@@ -1382,7 +1380,8 @@
         "required": true,
         "target_status": "available",
         "impact": "ODB 运行时库全部基于 C++11——若 OHOS NDK 不支持 C++11 则无法编译",
-        "source": "OHOS NDK 文档——标准支持 C++11/14/17"
+        "source": "OHOS NDK 文档——标准支持 C++11/14/17",
+        "target_status_model": "available"
       },
       {
         "id": "ta:musl_pthread",
@@ -1390,7 +1389,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libodb 在 C++11 线程模型下使用 std::mutex / std::thread，依赖底层 pthread；若 musl 的 pthread 实现有缺陷则无法正常编译运行",
-        "source": "OHOS musl libc 文档"
+        "source": "OHOS musl libc 文档",
+        "target_status_model": "available"
       },
       {
         "id": "ta:db_sqlite_ohos",
@@ -1398,7 +1398,8 @@
         "required": false,
         "target_status": "available",
         "impact": "libodb-sqlite 后端依赖 libsqlite3——若 SQLite 已在鸿蒙 cmd-pkgs 预编译源中（或易于 OHOS NDK 交叉编译），则该后端移植可行",
-        "source": "OpenHarmonyPCDeveloper/cmd-pkgs (SQLite 是基础库，大概率已移植)"
+        "source": "OpenHarmonyPCDeveloper/cmd-pkgs (SQLite 是基础库，大概率已移植)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:db_mysql_ohos",
@@ -1406,7 +1407,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "libodb-mysql 后端需要 libmysqlclient——若鸿蒙上无预编译包则需要 OHOS NDK 交叉编译 MySQL 客户端库，工作量中等；若不可行则可放弃 MySQL 后端（可选依赖）",
-        "source": "待核实——cmd-pkgs 源中检查 MySQL/MariaDB 客户端库支持"
+        "source": "待核实——cmd-pkgs 源中检查 MySQL/MariaDB 客户端库支持",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:db_pgsql_ohos",
@@ -1414,7 +1416,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "libodb-pgsql 后端需要 libpq——若鸿蒙上无预编译包则需交叉编译；若不可行则可放弃 PostgreSQL 后端",
-        "source": "待核实——cmd-pkgs 源中检查 PostgreSQL 客户端库支持"
+        "source": "待核实——cmd-pkgs 源中检查 PostgreSQL 客户端库支持",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1454,7 +1457,21 @@
       "在鸿蒙 PC 上编译并运行 odb-tests 验证 libodb + 选定数据库后端的正确性"
     ],
     "notes": "评估基于模型 A（C++ 库经 OHOS NDK 交叉编译，运行在鸿蒙原生层）。ODB 的 GCC 插件编译器是唯一的 GCC 专有依赖，但该工具仅运行在构建宿主机上——类似 bison/flex 等代码生成器，对目标平台无影响。运行时库的核心代码（libodb）为纯净 C++11 + STL，平台兼容性好；数据库后端中 SQLite 后端移植最易（单文件 C 库），MySQL/PostgreSQL 后端需确认其 C 客户端库在鸿蒙的可用性（标记为 unknown，下调 confidence 到 medium），Oracle/MS SQL Server 后端建议放弃。所有适配工作均可完成，无需放弃核心 ORM 功能。本仓 odb-tests 和 odb-examples 被 metrics 脚本误分类为 production——实际为测试和示例代码，porting_class 基于生产目录（odb/libodb/libodb-*/libodb-boost/libodb-qt）判定。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "odb",
@@ -1476,50 +1493,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "top_dirs",
-        "kind": "gap",
-        "value": "odb-tests + odb-examples 误分类为 production",
-        "rationale": "metrics.py 脚本将 odb-tests（43,319 行）和 odb-examples（6,057 行）归类为 production 代码。这两个目录的名称包含 'tests' 和 'examples'，且内容确为测试驱动和示例应用——README 和各 manifest 均将其声明为 tests/examples 依赖。classifier 按目录名 token 匹配仅检测到 8 个 C++ 测试文件和 0 个示例文件，大面积代码被漏判。分析时已将这两个目录作为 test/example 排除生产口径——native_api、dependencies、harmony_adaptation 的结论不包含仅存在于这些目录的 API/依赖。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "package_manager",
-        "rationale": "libstudxml、libcutl、libstud-optional 和 cli 通过 build2 包管理器从 cppget.org 或 codesynthesis.com 获取——这是 build2 生态的原生包管理器，类似 Maven/npm 的拉取机制。build2 不是传统意义上的 package_manager（不是 pip/npm/maven 这种全球注册表），但运行时获取机制确实是通过 bpkg 拉取并构建。此处用 package_manager 作为最贴近的现有取值"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries",
-        "kind": "gap",
-        "value": "ODB 运行时库不使用 dlopen/LoadLibrary 动态加载",
-        "rationale": "遍历了所有生产目录的 C++ 源文件——ODB 采用静态/动态链接（通过 manifest 声明 depends），无需运行时动态加载数据库客户端库。dlopen/LoadLibrary 模式确实不存在。这是 C++ 库常见的直接链接模式——由链接器在构建时解析符号，而非运行时按需加载。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "db_client_apis 归属 category: standard",
-        "rationale": "SQLite/MySQL/PostgreSQL 的 C 客户端 API 本应归为 platform（各数据库有自己的系统级 C 库）或 standard（它们是公开 API 但非语言标准库）。此处选 standard + portable——这些 API 在主流 POSIX 和 Windows 上均可通过各自的 port/包安装使用，属于'平台无关的公开标准接口'而非专有 OS API。唯一例外是 MS SQL Server ODBC（已在 win32_odbc 组另列）。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "ambiguity",
-        "value": "MySQL/PostgreSQL 客户端库在鸿蒙 PC 的可用性标记为 unknown",
-        "rationale": "libmysqlclient 和 libpq 是常见的开源 C 库——理论上 OHOS NDK 可交叉编译（它们本身是 POSIX 兼容的），但 authoritative 来源 harmony-pc-capabilities.json 未涉及数据库客户端库——cmd-pkgs 列表中是否包含这些包需联网核实。现已标记 unknown（下调 confidence 到 medium），stamp 脚本或人工核实后会更新。"
-      },
-      {
-        "dimension": "build_env",
-        "field": "build_system",
-        "kind": "new_value",
-        "value": "build2（非 CMake/Makefile 等主流系统）",
-        "rationale": "build2 是 Code Synthesis 自研的 C++ 构建与包管理一体化工具。它支持交叉编译和 toolchain 配置——但 OHOS NDK 需要专门的 ohos.toolchain.cmake（CMake 生态）。build2 是否能直接生成 OHOS 目标可能需通过手动配置 compiler/linker flags 实现（build2 的 config.cc 机制支持覆盖编译器），或改为直接用 CMake 包装构建。这不属于 acquisition 的新值，而是构建系统的适配性考量。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1530,7 +1504,8 @@
         "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "ODB 为纯数据库 ORM 框架，不涉及 GUI 桌面界面、3D 图形渲染、音视频媒体处理、或特定硬件设备访问。libodb-qt 提供的是 Qt Core 类型（QDate/QDateTime/QUuid/QByteArray 等）而非 QWidget 控件的 traits 特化——这些是 Qt 基础数据类型，不涉及窗口系统或 GUI 工具包；libodb-boost 同理仅处理 Boost 容器/智能指针类型。整体为纯计算/数据处理类库，所有适配场景均不涉及。",

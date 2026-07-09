@@ -1093,7 +1093,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (OHOS NDK + musl libc 重编 C 库; arm64; 自研内核, 无 Linux ABI)",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1103,7 +1102,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "NLopt 核心为自包含 C 库，无外部第三方库依赖。所有优化算法均为纯数值计算，不涉及 GUI/3D/媒体/硬件。平台适配量极小——仅 timer.c（gettimeofday/GetSystemTimeAsFileTime 三个分支）和 qsort_r 参数顺序需适配 musl 的 POSIX 子集（累计约 40 行条件编译代码）。核心算法（约 41K 行数学计算代码）为平台无关的纯 C89，直接通过 OHOS NDK/clang 重编即可。可选 SWIG 绑定（Python/Java/Guile）需 SWIG 工具链支持。整体为典型的 'recompile_only' 场景。",
     "blockers": [
       {
@@ -1170,7 +1168,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "核心算法不依赖这些 API（仅在 timer.c 和随机种子生成中用到）；缺失时回退到 clock() 和 time(NULL) 仍可运行，不影响核心优化功能",
-        "source": "references/harmony-pc-capabilities.json: OHOS NDK 基于 musl，POSIX 子集覆盖度未详情列明"
+        "source": "references/harmony-pc-capabilities.json: OHOS NDK 基于 musl，POSIX 子集覆盖度未详情列明",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arm64",
@@ -1178,7 +1177,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 C 代码无架构特定指令，arm64 直接编译；是鸿蒙 PC 主力架构",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1213,7 +1213,21 @@
       "在鸿蒙 PC 上运行 C 测试集 (ctest) 验证数值正确性"
     ],
     "notes": "评估按模型 A（C 库经 OHOS NDK 重编）。metric 显示平台适配代码量极小（共 40 行条件编译代码），且所有平台路径都有 C 标准库回退。可选 SWIG 绑定为构建期工具链依赖，关闭后不影响核心库移植。person_days [3,6] 涵盖：OHOS NDK 工具链配置 (1d) + 编译验证与 CMake 适配 (1-2d) + 测试 (1-2d) + 缓冲。若不需要 SWIG 绑定则偏下限 [3,4]。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "nlopt",
@@ -1240,22 +1254,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "(MIT OR LGPL-2.1-or-later)",
-        "rationale": "COPYING 声明了两种许可模式——不含 luksan 时全库 MIT，含 luksan 时整库 LGPL-2.1-or-later。luksan 子目录中另有 4 个 ACM 版权子程序（PBUN/PNEW/PVAR/PSEN）限制为「仅个人使用、禁止再分发」，与 LGPL 不一致，实际用户需评估此兼容性。标准 SPDX 表达式可能无法完全表达这一嵌套限制。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "compiler_ext",
-        "rationale": "编译器扩展（__thread/__declspec/__attribute__）既非标准 C 库也非 POSIX，作为独立 group 归类为 standard+portable，因为 OHOS NDK clang 支持这些扩展。目前 skill 推荐清单无此类型，建议纳入。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1266,7 +1265,8 @@
         "message": "license.category(permissive) 与依据 SPDX((MIT OR LGPL-2.1-or-later)) 派生的性质(weak_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、媒体处理或特定硬件依赖。所有优化算法均为自包含的数学浮点计算。",

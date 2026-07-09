@@ -1823,8 +1823,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK native 层，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1841,7 +1840,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 ArkTS .hap 而不支持传统桌面可执行程序，则需将 CLI 重打包为 hap/命令行工具形态，显著改变交付与启动方式。",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -1849,7 +1849,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响可选 Qt GUI；CLI 版本无需此能力。即使 Qt 库已移植，传统多窗口、文件对话框、托盘等桌面集成仍需验证。",
-        "source": "references/harmony-pc-capabilities.json#gui.wm / desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#gui.wm / desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -1857,7 +1858,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 Python addons 插件执行；禁用插件或使用原生实现后，核心静态分析不受影响。",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:unix_signal",
@@ -1865,7 +1867,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响崩溃时的堆栈打印；可通过编译选项 NO_UNIX_SIGNAL_HANDLING / NO_UNIX_BACKTRACE_SUPPORT 关闭。",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1889,7 +1892,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile_ndk",
     "summary": "Cppcheck 的核心 CLI 静态分析引擎以 C++11 标准代码为主，可在 OHOS NDK 上交叉编译运行。移植重点是裁剪或替换平台相关代码：默认 Linux 下的 ProcessExecutor（fork/pipe/waitpid/prctl）可改用 ThreadExecutor（std::thread），并关闭 Unix 信号/backtrace；Windows 专用的 SEH/Dbghelp 在鸿蒙构建中自然不参与。可选 Qt GUI 可利用已移植的社区 Qt 重编，但桌面窗口管理器、文件对话框等集成能力需人工验证。整体无不可适配的核心 API，属于需要构建与平台适配工作的可移植应用。",
     "blockers": [
       {
@@ -1971,7 +1973,21 @@
       "根据鸿蒙 PC 应用交付要求，将 cppcheck CLI 打包为可执行程序或 hap 形态。"
     ],
     "notes": "置信度为 medium，因为 app_delivery.desktop_app 与 gui.wm 等目标事实仍为 unknown；若仅以 CLI 为目标且确认传统桌面应用可运行，置信度可提升至 high。默认 Linux 构建中的 fork/prctl/sigaction/backtrace 均非核心功能，可通过编译选项关闭，因此不列为不可适配 API。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "cppcheck",
@@ -1997,36 +2013,7 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "application vs tool",
-        "rationale": "Cppcheck 同时提供可链接的核心库（cppcheck-core）与终端用户直接运行的 CLI/GUI，按「终端用户启动运行」口径判定为 application；若后续需要评估库形态，可单独分析 lib。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "Cppcheck 将 tinyxml2/simplecpp/picojson 以源码形式放在 externals/ 并直接 add_subdirectory，属于典型的 vendored 获取方式。"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "present",
-        "kind": "gap",
-        "value": "community_upload_not_cloud_vendor",
-        "rationale": "存在 donate-cpu.py 向 Cppcheck 社区服务器上传结果的行为，以及 GUI 版本检查 HTTP GET，但这些均不属于 Firebase/AWS/阿里云等第三方商业云服务，故记为 present:false。"
-      },
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "gap",
-        "value": "custom_register_test",
-        "rationale": "metrics.py 通过正则启发式检测到 Boost.Test/Catch2/googletest/pytest 等习语，但仓库实际使用自定义 REGISTER_TEST 宏驱动测试；无外部 gtest/catch2 依赖。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "perm_dangling_cap:读写存储（文件访问）",
@@ -2034,7 +2021,8 @@
         "message": "required_permission 读写存储（文件访问） 的 source_capability=file_access 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Cppcheck 的核心是命令行静态分析工具，主要触及 GUI（可选 Qt6）这一鸿蒙适配重点场景；不涉及 3D 渲染、媒体编解码、硬件设备访问等能力。",

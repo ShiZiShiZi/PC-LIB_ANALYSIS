@@ -1394,8 +1394,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库模型 A：C/C++ 库经 OHOS NDK/musl 交叉编译为 .so 后链接使用；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1404,7 +1403,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_with_ohos_backend",
     "summary": "libdispatch 核心是可移植的 C 并发框架，但事件循环与部分平台原语当前按 Linux(epoll/eventfd/timerfd/futex)、macOS(kqueue/Mach) 与 Windows(IOCP) 三分支实现。在 HarmonyOS PC 上需新增 OHOS 事件后端并验证 POSIX 线程/锁子集；无 GUI/媒体/硬件依赖，也没有不可移植的核心功能。由于官方能力表未明确 OHOS NDK 对 epoll/eventfd/futex 等的支持状态，当前置信度为 medium。",
     "blockers": [
       {
@@ -1464,7 +1462,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "线程池、TSD、worker 线程创建均依赖 pthreads；若缺失则无法运行",
-        "source": "references/harmony-pc-capabilities.json（未列出 pthread 支持状态）"
+        "source": "references/harmony-pc-capabilities.json（未列出 pthread 支持状态）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_semaphores",
@@ -1472,7 +1471,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "信号量与锁回退路径依赖；缺失时需额外实现基于 OHOS 的同步原语",
-        "source": "references/harmony-pc-capabilities.json（未列出 POSIX sem/mutex 支持状态）"
+        "source": "references/harmony-pc-capabilities.json（未列出 POSIX sem/mutex 支持状态）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_event_loop",
@@ -1480,7 +1480,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "事件循环后端必须能工作；缺失时需要完整实现新的 OHOS 后端",
-        "source": "references/harmony-pc-capabilities.json（未列出 epoll/eventfd/timerfd/futex 支持状态）"
+        "source": "references/harmony-pc-capabilities.json（未列出 epoll/eventfd/timerfd/futex 支持状态）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:swift_runtime",
@@ -1488,7 +1489,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Swift 绑定需要 Swift 运行时；核心 C 库不依赖",
-        "source": "references/harmony-pc-capabilities.json（未列出 Swift 运行时）"
+        "source": "references/harmony-pc-capabilities.json（未列出 Swift 运行时）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1533,7 +1535,21 @@
       "在 OHOS 模拟器/设备上跑通 tests 目录单元测试"
     ],
     "notes": "评估按库模型 A（C/C++ 库经 OHOS NDK 重编链接）；若目标包含 Swift overlay，则需额外确认 HarmonyOS PC 上 Swift 运行时的可用性。当前 confidence=medium 源于官方能力表未明确 OHOS NDK 对 epoll/eventfd/futex 等接口的支持；若实测这些 Linux 兼容接口可用，工作量可大幅下降。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "swift-corelibs-libdispatch",
@@ -1566,30 +1582,9 @@
       "codegraph 初查时 path 参数未命中，改为指定 projectPath 后成功索引"
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "bindings",
-        "kind": "gap",
-        "value": "swift",
-        "rationale": "report_schema.json 的 library.bindings 枚举未包含 swift；libdispatch 实际提供 Swift 绑定，但只能按 schema 填 other，并在说明中保留 Swift 信息。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "swift_runtime",
-        "rationale": "harmony-pc-capabilities.json 的 runtimes 段未列出 Swift 运行时；libdispatch 可选 Swift overlay 的评估缺少目标事实源，只能标记为 required=false + unknown。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "macos_kevent",
-        "rationale": "现有推荐分类只有 win32/posix/linux；本库 macOS 后端同时包含 kqueue 与 Mach IPC，合并为 macos_kevent 便于表达 Darwin 专有语义。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为底层并发框架，不触及 GUI、3D 渲染、媒体编解码或特定硬件设备访问；核心移植挑战在于线程/事件后端与 POSIX 子集适配。",

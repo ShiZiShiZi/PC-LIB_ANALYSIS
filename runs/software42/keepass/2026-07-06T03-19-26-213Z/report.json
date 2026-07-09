@@ -745,10 +745,8 @@
     }
   },
   "harmony_adaptation": {
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
-    "confidence": "high",
-    "recommended_path": "该插件深度绑定 Windows 生态：作为 KeePass（Windows 桌面应用）的 DLL 插件运行，依赖 MFC/ATL GUI 框架、Win32 注册表 API、MSVC 专有编译器扩展。KeePass 宿主本身尚未移植到鸿蒙，即使重写 GUI 部分，插件也无法在没有宿主的环境中运行。建议：若需要在鸿蒙上实现 Oubliette 格式的密码导入功能，应从头实现一个独立的鸿蒙原生工具（解析 Oubliette 文件格式 + Crypto++ 解密逻辑可复用），而非移植此插件。",
+    "porting_class": "needs_adaptation",
+    "confidence": "medium",
     "effort": {
       "person_days": [
         90,
@@ -781,7 +779,8 @@
         "target_status": "unavailable",
         "impact": "该插件的全部功能依赖于 KeePass 应用程序提供的插件 API（KP_Call/KP_Query、CPwManager 数据库操作等）。KeePass 是 Windows 原生应用，在鸿蒙 PC 上不可用。即使将插件代码移植到鸿蒙，也没有宿主可以加载和调用它。",
         "source": "runtime_environment",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "unavailable"
       },
       {
         "capability": "MFC/ATL GUI 框架",
@@ -789,7 +788,8 @@
         "target_status": "unavailable",
         "impact": "密码输入对话框使用 MFC CDialog/DDX，消息提示使用 Win32 MessageBox，文件选择使用 KeePass WinGUI 封装。这些 GUI API 在鸿蒙上完全不可用，需要用 ArkUI 或其他鸿蒙原生框架重写。",
         "source": "native_api",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "unavailable"
       },
       {
         "capability": "Windows 注册表访问",
@@ -797,7 +797,8 @@
         "target_status": "unavailable",
         "impact": "插件读取 HKLM 注册表获取 Oubliette 安装路径。此为可选功能（仅用于读取分类名称映射），可在移植时移除或使用硬编码路径替代。",
         "source": "native_api",
-        "id": "ta:3"
+        "id": "ta:3",
+        "target_status_model": "unavailable"
       },
       {
         "capability": "MSVC C++ 编译器",
@@ -805,7 +806,8 @@
         "target_status": "partial",
         "impact": "代码使用了 MSVC 专有扩展（_T()/TCHAR、_countof、_gmtime64_s、_tcscpy_s 等安全 CRT、#pragma pack）。这些在鸿蒙 NDK（Clang/LLVM）下需要替换为可移植等价实现。部分已在代码中有可移植替代（如 _countof 对应宏 OI_ARRAY_LENGTH）。",
         "source": "build_env",
-        "id": "ta:4"
+        "id": "ta:4",
+        "target_status_model": "partial"
       },
       {
         "capability": "Crypto++ 加密库",
@@ -813,7 +815,8 @@
         "target_status": "unknown",
         "impact": "核心解密逻辑依赖 Crypto++（Blowfish、IDEA、SHA-1）。鸿蒙上 Crypto++ 的可用性待确认——该库是跨平台 C++ 库，理论上可在鸿蒙 NDK 下编译，但需实际验证。若不可用，需要寻找鸿蒙原生加密库替代。",
         "source": "dependencies",
-        "id": "ta:5"
+        "id": "ta:5",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -894,7 +897,9 @@
           "trunk/Plugins/OublietteImport/Source/PlugIn.cpp:86-166 (KeePluginCall)",
           "trunk/Plugins/OublietteImport/Source/PlugIn.cpp:197-310 (ImportOublietteFile 使用 CPwManager, KP_Call, KP_Query)"
         ],
-        "id": "ua:1"
+        "id": "ua:1",
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "api": "CDialog / MessageBox / CWnd (MFC GUI)",
@@ -906,12 +911,31 @@
           "trunk/Plugins/OublietteImport/Source/PasswordDialog.cpp:28-31 (CDialog + DDX)",
           "trunk/Plugins/OublietteImport/Source/PlugIn.cpp:109-115 (MessageBox)"
         ],
-        "id": "ua:2"
+        "id": "ua:2",
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [],
     "notes": "该插件的核心价值——Oubliette 文件格式解析（OublietteFile.cpp，约 340 行）和 Crypto++ 解密逻辑——是纯 C++ 标准代码，没有平台依赖，理论上可被复用到鸿蒙原生工具中。但作为 KeePass 插件整体移植到鸿蒙是不可行的，因为：1) KeePass 宿主不存在；2) MFC GUI 不可用。工作量估计假设了从头实现一个鸿蒙原生导入工具（复用文件解析逻辑，新建 ArkUI 交互层）的场景。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:1",
+          "ua:2"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "OublietteImport",
@@ -932,56 +956,23 @@
     "commit": null
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "classification",
-        "value": "plugin",
-        "rationale": "该对象是 KeePass 密码管理器的导入插件（Windows DLL），不是独立的库或应用。'plugin' 作为一个库的子类型，在 schema 中是开放取值。"
-      },
-      {
-        "dimension": "library",
-        "field": "source_url",
-        "kind": "gap",
-        "value": "SVN monorepo subpath",
-        "rationale": "该仓库是 KeePass SVN 主仓库的稀疏检出（trunk/Plugins/），source_url 指向仓库根 URL（svn.code.sf.net/p/keepass/code），source_subpath 为 trunk/Plugins/OublietteImport。这是 SVN 非标准检出方式，commit hash 不可得。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "summary",
-        "kind": "note",
-        "value": "两个插件变体共存于 trunk",
-        "rationale": "trunk 下同时包含 OublietteImport（旧 KeePass API）和 OublietteImportPFK（新版 Plugin Framework API）两个变体，发布标签中有 1.14（旧版）和 1.15-PFK（新版）两个独立版本线。分析以 trunk/ 下全部生产代码为范围。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "KeePass SDK",
-        "kind": "classification",
-        "value": "monorepo internal dependency",
-        "rationale": "KeePass SDK（KeePassLibCpp、WinGUI、PluginFramework）是同一个 SVN 仓库内的同级模块，通过相对路径 include 引用。这是 monorepo 内部依赖，不是外部三方库，但已在 dependencies 中体现。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "classification",
-        "value": "windows-only",
-        "rationale": "全部生产代码依赖 Win32/MFC/ATL/MSVC 专有 API。所有 include 路径和 API 调用均为 Windows 专属。无任何 POSIX 或跨平台条件编译。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "classification",
-        "value": "infeasible",
-        "rationale": "插件是 Windows 原生 KeePass 的 DLL 扩展。KeePass 宿主本身尚未移植到鸿蒙，MFC GUI 在鸿蒙上完全不可用。虽然核心 Oubliette 文件格式解析逻辑（约 340 行纯 C++）可复用到独立工具中，但以插件形式移植不可行。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:1",
+        "class": "actionable",
+        "message": "unadaptable_api ua:1 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:2 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "blocker_ref:blk_keepass_host:target_keepass_host",
         "class": "actionable",
@@ -1013,12 +1004,13 @@
         "message": "target_assumption ta:2 为 required+unavailable 但无对应 blocker/unadaptable_api"
       },
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "scenarios": [

@@ -585,9 +585,7 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 运行时上；JS 纯实现无需修改直接运行；原生 C addon 需经 OHOS NDK 重编）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 stdlib 体系下的一个极简断言函数包，核心为一行 JavaScript 代码（SameValueZero 算法）。鸿蒙 PC 已移植 Node.js 运行时，JS 纯实现版本无需任何修改即可直接运行。其可选的原生 C addon（N-API 插件）非常小（仅一个函数，比较两个 double），仅依赖标准 C 与 N-API，无平台特定系统调用；如需原生性能优化，用 OHOS NDK 重新编译即可。整体迁移难度极低，基本零工作量。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -598,7 +596,8 @@
         "required": true,
         "target_status": "available",
         "impact": "不阻碍——Node.js 是已移植的运行时",
-        "source": "references/harmony-pc-capabilities.json（语言运行时段）"
+        "source": "references/harmony-pc-capabilities.json（语言运行时段）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -606,7 +605,8 @@
         "required": false,
         "target_status": "available",
         "impact": "不阻碍——N-API 是 Node.js 核心 ABI 稳定接口，鸿蒙 Node.js 同样支持；该依赖非必需（JS 纯实现备选）",
-        "source": "references/harmony-pc-capabilities.json（语言运行时段）"
+        "source": "references/harmony-pc-capabilities.json（语言运行时段）",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -641,6 +641,20 @@
     "porting_class_model": "no_adaptation",
     "effort": {
       "level": "very_low"
+    },
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
     }
   },
   "library": {
@@ -658,20 +672,13 @@
     "analyzed_at": "2026-07-05T15:00:41Z"
   },
   "meta": {
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "none",
-        "value": "",
-        "rationale": "项目极小（仅一个断言函数），能力分类已覆盖其全部功能。"
-      }
-    ],
+    "observations": [],
     "confidence_overall": "high",
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数值计算断言函数，不涉及 GUI、3D 渲染、媒体或特定硬件。",

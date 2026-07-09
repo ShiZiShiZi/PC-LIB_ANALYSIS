@@ -1636,8 +1636,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（原生 C/C++ 库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1654,7 +1653,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心库重编的基础工具链； HarmonyOS PC 原生层即 OHOS NDK",
-        "source": "references/harmony-pc-capabilities.json  intro"
+        "source": "references/harmony-pc-capabilities.json  intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_sockets",
@@ -1662,7 +1662,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "libmongoc 网络核心依赖；musl 基本支持，但沙箱/权限模型可能带来行为差异",
-        "source": "references/harmony-pc-capabilities.json#process_security.sandbox"
+        "source": "references/harmony-pc-capabilities.json#process_security.sandbox",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:posix_shm",
@@ -1670,7 +1671,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "仅影响可选性能计数器；缺失时可禁用 SHM_COUNTERS 使用 malloc 回退",
-        "source": "references/harmony-pc-capabilities.json#process_security.sandbox"
+        "source": "references/harmony-pc-capabilities.json#process_security.sandbox",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:internet_perm",
@@ -1678,7 +1680,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "MongoDB 连接与 AWS/Azure/GCP 云认证均需要网络访问",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1695,7 +1698,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_napi",
     "summary": "mongo-c-driver 是标准 C 网络数据库客户端库，核心功能（BSON、MongoDB 命令、连接池、TLS）可经 OHOS NDK 重编；OpenSSL/zlib/zstd/snappy/utf8proc 已有官方鸿蒙预编译包。主要工作量在于验证 POSIX socket 行为、处理可选共享内存计数器，以及决定可选功能（SASL/Kerberos、客户端字段级加密）是关闭还是单独移植其未鸿蒙化依赖。",
     "blockers": [
       {
@@ -1796,7 +1798,21 @@
       "跑通单元测试，重点验证 TLS、压缩、云认证（AWS/Azure/GCP）路径"
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编后链接到鸿蒙 PC 应用）。无 GUI/3D/媒体/特定硬件场景。POSIX socket 与共享内存的支持状态对结论影响较大，因此 confidence 取 medium；待目标事实进一步核实后可上调。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "mongo-c-driver",
@@ -1826,30 +1842,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "in_tree",
-        "rationale": "libbson 与 libmongoc 为同一仓库内的子项目，既不是外部 vendored 也不是 submodule，现有 acquisition 推荐值（vendored/submodule/fetchcontent 等）不能准确描述这种同仓内置依赖关系。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "win32_sysinfo",
-        "rationale": "mongo-c-driver 为获取真实 Windows OS 版本，通过 GetModuleHandleW+GetProcAddress 动态解析 ntdll 中的 RtlGetVersion，属于 Windows 平台信息获取 API 族。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "posix_sockets / posix_shm",
-        "rationale": "harmony-pc-capabilities.json 未明确列出 POSIX socket 与 POSIX 共享内存条目的 available/partial 状态，dim-9 只能据 musl/OHOS NDK 一般能力推断为 partial，存在不确定性。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯网络数据库客户端库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件访问。",

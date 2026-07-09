@@ -1306,8 +1306,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK + musl POSIX 子集；arm64/x86_64；C/C++ 库经交叉编译为 .so 使用）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1316,7 +1315,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile_ohos_ndk",
     "summary": "LibRaw 是典型的高内聚、低平台耦合的 C/C++ 计算库：核心算法仅依赖 C/C++ 标准库与条件编译的 POSIX/Windows 文件 I/O，无 GUI、无硬件加速、无网络、无动态加载。其主要移植工作是将 autotools 构建切换到 OHOS NDK 交叉编译链，并确保可选依赖（libjpeg、zlib、lcms2）使用鸿蒙预编译包。OpenMP 为可选性能特性，如鸿蒙侧不支持可直接关闭。该库已被 OpenHarmony PC cmd-pkgs 收录，说明已有可行移植路径。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1326,7 +1324,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库本体需经 NDK 交叉编译为鸿蒙 .so",
-        "source": "harmony-pc-capabilities.json#runtimes 无 C++ 运行时条目，但 OHOS NDK 原生支持 C/C++"
+        "source": "harmony-pc-capabilities.json#runtimes 无 C++ 运行时条目，但 OHOS NDK 原生支持 C/C++",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_file_io",
@@ -1334,7 +1333,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "库的数据流实现走 POSIX 分支；musl/OHOS POSIX 子集基本覆盖，仅需验证 64 位大文件偏移与少量宏",
-        "source": "harmony-pc-capabilities.json 说明 OHOS NDK 基于 musl POSIX 子集"
+        "source": "harmony-pc-capabilities.json 说明 OHOS NDK 基于 musl POSIX 子集",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:optional_deps",
@@ -1342,7 +1342,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选依赖已有鸿蒙预编译包，可直接链接使用；缺失时库会降级编译（NO_JPEG/NO_LCMS）",
-        "source": "scripts/harmony_adapted.js 查询结果"
+        "source": "scripts/harmony_adapted.js 查询结果",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openmp",
@@ -1350,7 +1351,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若鸿蒙 NDK 不支持 OpenMP，可关闭 --enable-openmp 以单线程或 pthread 替代，功能保持可用",
-        "source": "harmony-pc-capabilities.json 未列出 OpenMP"
+        "source": "harmony-pc-capabilities.json 未列出 OpenMP",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1430,7 +1432,21 @@
       "在鸿蒙 PC 上跑通样本 RAW 文件的打开、解码、元数据提取流程"
     ],
     "notes": "本评估默认按库模型 A（C/C++ 库经 OHOS NDK 重编后供其他程序链接）处理。LibRaw 本身已被 OpenHarmony PC cmd-pkgs 收录为 libraw，说明已有现成移植实践；若直接复用该预编译包，实际工作量可降至验证与集成。Windows 特有数据流实现（CreateFileMapping 等）在鸿蒙路径下不会编译，不构成本体阻碍。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "LibRaw",
@@ -1457,30 +1473,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "LibRaw 的 autotools 构建通过 AC_CHECK_LIB/pkg-config 检测系统预装的 libjpeg/zlib/lcms2；无 FetchContent/vendored/package_manager 等获取方式，因此大量依赖的 acquisition 取 system。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "openmp",
-        "rationale": "OpenMP 是跨平台编译器扩展/标准规范，不属于传统标准库，也不完全等同于平台 API；本次将其归入 standard 组（平台 portable），并单独列出。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "new_value",
-        "value": "needs_adaptation_full",
-        "rationale": "LibRaw 虽已被 OpenHarmony PC cmd-pkgs 收录，但源代码存在条件编译的 POSIX/Windows 平台分支与可选 OpenMP，且为 C++ 原生库，因此判为 needs_adaptation_full（全部可适配、无 unadaptable_apis）而非 recompile_only。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "LibRaw 是纯计算型图像解码库，不涉及 GUI 窗口、3D 图形渲染、音视频播放/采集或特定硬件（GPU/USB/串口/传感器）。其工作完全围绕文件读取、内存中 RAW 解码与元数据解析。",

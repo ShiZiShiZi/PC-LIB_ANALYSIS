@@ -1786,8 +1786,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (OHOS NDK: clang + musl libc + POSIX 子集; 自研内核, 非 Linux ABI; 需经 cross_compile 或 recompile_napi 将 ACE/TAO 编译为 .so 供鸿蒙原生/ArkTS 应用链接; arm64/x86_64)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1796,7 +1795,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "ACE 是跨平台 C++ 网络中间件框架，其设计目标正是通过 OS 抽象层屏蔽不同平台差异——为它新增一个平台（如 HarmonyOS PC / musl）是 ACE 几十年来最擅长的事。核心工作：① 基于现有 config-posix.h + config-linux-common.h 创建 config-ohos.h 平台配置，用 OHOS NDK (clang + musl) 交叉编译，逐个解决 POSIX 子集缺口（epoll/fork/SysV IPC/部分 ioctl 等）——这些 ACE 已有充分的条件编译与降级路径；② 适配构建系统（传统 GNU Make → OHOS NDK 的 ohos.toolchain.cmake 交叉编译工具链）；③ 可选 GUI Reactor 模块 (FlReactor/FoxReactor/TkReactor) 可放弃，核心网络/并发/CORBA 功能预期全部可适配。ACE 自身就是移植层——一旦移植成功，所有依赖 ACE 的上层应用将自动获得鸿蒙兼容性。",
     "blockers": [
       {
@@ -1886,7 +1884,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "ACE 的 POSIX 后端 (config-posix.h) 依赖这些 API；若核心 socket/thread 不可用则 ACE 完全无法编译；若仅部分缺失 (fork/epoll/ioctl) 可通过 ACE 的条件编译降级",
-        "source": "references/harmony-pc-capabilities.json — OHOS NDK (musl + POSIX 子集)，具体支持度未逐项列出"
+        "source": "references/harmony-pc-capabilities.json — OHOS NDK (musl + POSIX 子集)，具体支持度未逐项列出",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_epoll",
@@ -1894,7 +1893,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Dev_Poll_Reactor 基于 epoll，若不可用可改用 Select_Reactor 或 TP_Reactor——ACE 已有多种 Reactor 后端，核心功能不受影响",
-        "source": "references/harmony-pc-capabilities.json — 未提及"
+        "source": "references/harmony-pc-capabilities.json — 未提及",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_fork",
@@ -1902,7 +1902,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "ACE Process_Manager 的部分路径使用 fork；若不可用，已有 spawn/CreateProcess 替代路径，用 ACE_HAS_LACKS_FORK 宏禁用 fork 路径即可",
-        "source": "references/harmony-pc-capabilities.json — 未提及"
+        "source": "references/harmony-pc-capabilities.json — 未提及",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:optional_gui_deps",
@@ -1910,7 +1911,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "仅影响可选 GUI Reactor 模块——不编译这些模块即可，不影响核心 ACE 网络/并发功能和 TAO CORBA 功能",
-        "source": "references/harmony-pc-capabilities.json — 未列出 FLTK/FOX/Tk；Qt 已 available"
+        "source": "references/harmony-pc-capabilities.json — 未列出 FLTK/FOX/Tk；Qt 已 available",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:openssl_zlib",
@@ -1918,7 +1920,8 @@
         "required": false,
         "target_status": "available",
         "impact": "均已记录在 OpenHarmony PC C/C++ 预编译包中——ACE_SSL 和 TAO ZIOP 压缩可正常适配",
-        "source": "scripts/harmony_adapted.js (cmd-pkgs)"
+        "source": "scripts/harmony_adapted.js (cmd-pkgs)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1984,7 +1987,21 @@
       "文档化 OHOS 平台的构建步骤与已知限制"
     ],
     "notes": "评估按模型 A（C++ 库经 OHOS NDK 交叉编译为 .so 供鸿蒙原生应用/N-API 链接）。ACE 自身就是平台移植框架——新增 OHOS 平台配置是 ACE 有几十年历史、对 20+ 平台做过的事，总体可控。主要风险在 OHOS NDK POSIX 子集的完整性（epoll/fork/ioctl 等支持未知数），但这些可通过 ACE 已有的条件编译与降级路径解决。confidence=medium 因多条 `target_assumptions` 中 `required:true` 且 `target_status:unknown`（OHOS NDK POSIX 子集具体 API 覆盖未逐项核实）。若 OHOS NDK 提供完整的 socket/pthread/mmap/dlopen 支持，则可下调至 `person_days:[12,25]`；若大量核心 POSIX API 缺失或受限，则难度上升但 ACE 仍可通过广泛的条件编译与替代路径保持可用。平台适配信号：`platform_adaptation.total=1216` (Windows 999/posix 181/macOS 36)，表明约 1216 行平台守卫代码需在 OHOS 路径新增对应的条件编译分支。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "ACE_TAO",
@@ -2009,43 +2026,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "CORBA ORB 核心",
-        "rationale": "CORBA ORB 中间件在推荐的分类体系中无直接对应（非通用网络库、非 RPC 框架），作为独立的大类归入 "
-      },
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "gap",
-        "value": "DOC Software License",
-        "rationale": "DOC Software License 是 Douglas C. Schmidt 自订的宽松许可证，类似 BSD 但包含商标保护条款。非标准 SPDX 许可证，SPDX 列表中无对应标识。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "mpc_generated",
-        "rationale": "ACE/TAO 不使用 CMake/vcpkg/conan 等主流包管理器，而是通过 MPC (Make Project Creator) 生成平台特定 Makefile 后，依赖通过 find_package 或手动指定头文件/库路径集成——本质仍为 system 获取，但机制独特。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "rtos_specific",
-        "rationale": "ACE 支持的 RTOS (VxWorks/QNX/MQX/Integrity/LynxOS) 各有独特的系统 API（如 MQX 的 _io_ioctl）。这些 API 属于 platform 类别但难以归类到 win32/posix/linux_specific 中——需引入 rtos_specific 类型。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_full",
-        "rationale": "ACE 作为 OS 抽象框架，为它新增平台是预期行为而非意外改造。recompile_only 不能反映「需创建 config-ohos.h 并解决 POSIX 子集缺口」的工作量；needs_adaptation_partial 暗示有不可适配的功能，但 ACE 核心无真正不可适配的 API——故归 needs_adaptation_full（全部可适配）。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2056,7 +2037,8 @@
         "message": "license.category(permissive) 与依据 SPDX(NOASSERTION) 派生的性质(undeclared) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "ACE/TAO 核心为网络中间件库，不涉及 3D 渲染、媒体编解码或特定硬件。仅通过可选 GUI Reactor 集成模块 (FlReactor/FoxReactor/QtReactor/TkReactor) 触及桌面 GUI 框架，均为可选编译模块。核心网络通信与 CORBA 不依赖云端服务——全部为点对点/本地部署的分布式对象调用。",

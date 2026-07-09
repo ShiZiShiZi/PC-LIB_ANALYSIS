@@ -488,6 +488,8 @@
               "properties": {
                 "adaptable": {"type": "boolean", "description": "平台差异功能是否全部可适配（无不可适配点）"},
                 "unadaptable": {"type": "array", "items": {"type": "string"}, "description": "平台差异功能中不可适配点的 unadaptable_apis[].id 列表"}}}}},
+        "functional_viability": {"type": "string", "enum": ["viable", "viable_with_work", "blocked_external", "unverified"],
+          "description": "★派生字段（scripts/report_normalize.py 组装时据 target_assumptions[].target_status 确定性算出、web/server.js serve-time 按 live caps 回投后重算；模型无需填）。与源侧 porting_class/adaptation_assessment 正交的「运行前提是否满足」目标侧总判：viable=前提齐备；viable_with_work=有 partial 前提需处理；blocked_external=有 required 前提在目标不可用（如 shell-out 库依赖的外部二进制），此时代码轴仍可为 no_adaptation（代码无需改，功能受阻于外部前提）；unverified=有 required 前提未核实(unknown)。worst-wins：blocked_external>unverified>viable_with_work>viable。面板/xlsx 与 adaptation_assessment.overall 两轴并列展示。"},
         "effort": {"type": "object",
           "description": "工作量与难度。模型只估 person_days（区间）；level 由 server 按固定 rubric 从 (adaptation_assessment.effective_class 下限 × person_days 上界分桶) 取高确定性派生——模型无需自填、填了也以派生为准。这样难度与移植分级自洽且 person_days 可跨依赖树数值聚合。",
           "properties": {
@@ -506,7 +508,9 @@
                   "person_days": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
                   "basis": {"type": "string", "description": "中文：估算依据，引用 code_partition 桶（如「needs_adaptation 桶 3.2k LOC，主要为 src/win32」）或 arch_specific/blockers"}}}}}},
         "confidence": {"type": "string", "enum": ["high", "medium", "low"],
-          "description": "★闭轴：本评估的置信度。存在 required 且 target_status=unknown 的 target_assumptions 时至多 medium；沿依赖树取 min 传播（rollupConfidence）。"},
+          "description": "★闭轴：本评估的置信度。存在 required 且 target_status=unknown 的 target_assumptions 时归一确定性下调至至多 medium（原值存 confidence_model）；沿依赖树取 min 传播（rollupConfidence）。"},
+        "confidence_model": {"type": ["string", "null"],
+          "description": "归一前模型给出的 confidence 原值（单次记录、供 required+unknown 下调后仍可再派生/复原）。"},
         "unadaptable_apis": {"type": "array", "items": {
           "type": "object",
           "required": ["api"],
@@ -531,7 +535,9 @@
             "capability_key": {"type": ["string", "null"], "description": "命中的 references/harmony-pc-capabilities.json 目标能力行 id（如 x86_64/jdk_attach/dotnet）——读 caps JSON 对上号就填，供面板跨报告聚合每行「被 N 分析需要」的研究优先级；caps 无对应行则留 null 并另记一条 meta.observations{dimension:harmony_caps,kind:caps_gap} 提案补行。"},
             "required": {"type": "boolean", "description": "该能力是否为本项目可移植的必需前提"},
             "target_status": {"type": "string", "enum": ["available", "partial", "unavailable", "unknown"],
-              "description": "目标平台对该能力的支持状态，取自 references/harmony-pc-capabilities.md"},
+              "description": "目标平台对该能力的支持状态。组装时取自模型判断；serve-time 若本项有 capability_key 命中 caps 行，则按 live caps 状态回投覆盖（caps 权威，原模型值存 target_status_model）。"},
+            "target_status_model": {"type": "string", "enum": ["available", "partial", "unavailable", "unknown"],
+              "description": "归一前模型给出的 target_status 原值（单次记录，供 serve-time caps 回投后仍可溯源）。"},
             "impact": {"type": "string", "description": "中文：该目标事实如何影响结论（如「不支持则整体不可运行」）"},
             "source": {"type": "string", "description": "事实来源，通常 references/harmony-pc-capabilities.md 的对应条目"}}},
           "description": "结论所依赖的目标平台能力假设（来自 references/harmony-pc-capabilities.md 的匹配）。target_status=unknown 的项表示结论依赖未核实事实——应同时下调 meta.confidence_overall 并在 notes 说明，不得据 unknown 臆断为可行。库通常为空或仅运行时一条。"},

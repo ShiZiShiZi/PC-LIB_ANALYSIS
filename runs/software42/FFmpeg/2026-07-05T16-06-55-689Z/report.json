@@ -2856,8 +2856,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK 原生编译，musl + POSIX 子集，自研内核，非 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -2880,7 +2879,9 @@
         "evidence": [
           "libavutil/hwcontext_cuda.c:210",
           "libavutil/hwcontext_cuda.c:350"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metal",
@@ -2895,7 +2896,9 @@
         "evidence": [
           "libavutil/hwcontext_videotoolbox.c:42",
           "libavfilter/vf_metal.c:120"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:vt",
@@ -2910,7 +2913,9 @@
         "evidence": [
           "libavcodec/videotoolboxenc.c:300",
           "libavcodec/videotoolbox.c:800"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:d3d11va",
@@ -2925,7 +2930,9 @@
         "evidence": [
           "libavutil/hwcontext_d3d11va.c:59",
           "libavutil/hwcontext_d3d11va.h:56"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:dxva2",
@@ -2939,7 +2946,9 @@
         "category": "hardware",
         "evidence": [
           "libavutil/hwcontext_dxva2.c:549"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2949,7 +2958,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 I/O 与线程模型的基础；若缺失则整体不可运行",
-        "source": "OHOS NDK（musl libc + POSIX 子集）"
+        "source": "OHOS NDK（musl libc + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:neon_simd",
@@ -2957,7 +2967,8 @@
         "required": true,
         "target_status": "available",
         "impact": "性能关键路径（DCT/ME/色彩转换）——无 SIMD 则性能退化 5-10x 但功能不阻塞",
-        "source": "鸿蒙 PC aarch64 主力架构 + OHOS NDK 编译器支持 NEON intrinsics"
+        "source": "鸿蒙 PC aarch64 主力架构 + OHOS NDK 编译器支持 NEON intrinsics",
+        "target_status_model": "available"
       },
       {
         "id": "ta:codec_deps",
@@ -2965,7 +2976,8 @@
         "required": false,
         "target_status": "available",
         "impact": "12 个核心库已有鸿蒙版本，可正常链接使用；缺失的 libx265/libmp3lame/bzlib 等可选禁用",
-        "source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+        "source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:vulkan",
@@ -2973,7 +2985,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响 GPU 加速编解码/滤镜的性能，但软件回退路径完整可选",
-        "source": "references/harmony-pc-capabilities.json graphics_3d/vulkan"
+        "source": "references/harmony-pc-capabilities.json graphics_3d/vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64_arch",
@@ -2981,7 +2994,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅在目标为 x86_64 鸿蒙 PC 时才需此假设；aarch64 用 NEON 路径不依赖。",
-        "source": "references/harmony-pc-capabilities.json arch/x86_64"
+        "source": "references/harmony-pc-capabilities.json arch/x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_audio",
@@ -2989,7 +3003,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "如需音频采集/播放功能则需此接口；仅编解码/转码不需要",
-        "source": "references/harmony-pc-capabilities.json media/audio_io"
+        "source": "references/harmony-pc-capabilities.json media/audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gpu_unavailable",
@@ -2997,7 +3012,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "这些 GPU 后端本身平台专有，鸿蒙上不可用也不影响核心功能——configure --disable-cuda --disable-metal --disable-videotoolbox --disable-d3d11va --disable-dxva2 即可排除",
-        "source": "平台专有硬件 API，跨平台编译时自动排除"
+        "source": "平台专有硬件 API，跨平台编译时自动排除",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [
@@ -3031,7 +3047,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "FFmpeg 整体可移植，推荐 OHOS NDK 交叉编译路径。核心软件编解码/格式处理/过滤链/色彩转换/重采样管线为纯 C 代码，依赖 POSIX C99 与 pthread 等 NDK 已提供的基础 API，重编即可工作。12 个关键外部编解码库已在鸿蒙 cmd-pkgs 提供预编译包（zlib/x264/vpx/opus/aom/dav1d 等），可直接链接。GPU 硬件加速（CUDA/Metal/D3D11VA/DXVA2/VideoToolbox）均为平台专有且可选——configure --disable 即可排除，软件回退路径完整无损。设备采集（ALSA/PulseAudio/V4L2/dshow/AVFoundation）需要时为鸿蒙 @ohos.multimedia 编写新后端（非阻塞，采集非核心流程）。aarch64 NEON SIMD 路径可直接复用。整体工作量中高，主要集中在构建系统适配、依赖集成验证与大规模回归测试。",
     "blockers": [
       {
@@ -3215,7 +3230,27 @@
       "（可选）验证 Vulkan 后端在鸿蒙 PC 上的可用性，若可用则保留"
     ],
     "notes": "评估置信度为 medium，主要不确定因素：① Vulkan 在鸿蒙 PC 上的可用性（Vulkan Video 扩展是否支持）；② 鸿蒙 PC 是否支持 x86_64 架构（目前主力为 aarch64）；③ 音频/摄像头采集 API 的具体形态与权限模型；④ 部分可选编解码依赖（libx265/libmp3lame/libass/gnutls/libsrt 等）未在 cmd-pkgs 提供，暂时需禁用。以上均不影响核心软件管线——FFmpeg 的内置编解码器（FFV1/FLAC/PCM/MPEG-4 等数百种）完全不依赖外部库。工作量估计 30-60 人天基于 1.55M 行代码规模与 ~50 个外部可选依赖的集成验证需求；若只做最小可运行构建（禁用所有外部库 + 禁用硬件加速 + 禁用设备采集），估计可降至 15-30 人天。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda",
+          "ua:metal",
+          "ua:vt",
+          "ua:d3d11va",
+          "ua:dxva2"
+        ]
+      }
+    }
   },
   "library": {
     "name": "FFmpeg",
@@ -3243,68 +3278,44 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library",
-        "rationale": "FFmpeg 同时是库（libav* 为第三方链接使用）和 CLI 工具集（ffmpeg/ffplay/ffprobe 为终端用户直接运行）。选 library 因为核心分发物是共享库，命令行工具构建于库之上；application 分类也有道理（终端用户通过 CLI 启动）。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "FFmpeg 所有外部库均为系统级 pkg-config 探测，acquisition 统一为 system；无 package_manager/vendored/submodule 等。这是 C/C++ Autotools 生态的典型模式。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "optional",
-        "rationale": "FFmpeg 几乎所有外部依赖都是可选的（configure --disable-xxx），仅约 5-10 个为必需（如 zlib 等压缩库可内建回退）。此处 scope 统一标 optional 但实际是 wide-spectrum optional（有些几乎必需，有些很少用）。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "arch_simd",
-        "rationale": "x86 SSE/AVX 与 ARM NEON 汇编/intrinsics 构成代码量庞大的 platform 耦合层（~400 个汇编文件，15 万行+）；归入 hardware 类别的 arch_simd 组，与 GPU API 并列但不可互换——NEON 在 aarch64 鸿蒙上可直接复用。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries",
-        "kind": "new_value",
-        "value": "多平台 GPU 驱动 dlopen 加载",
-        "rationale": "FFmpeg 通过 dlopen/LoadLibrary 在运行时加载 10+ 个不同平台的 GPU 后端库（libcuda.so/vulkan-1.dll/d3d11.dll/d3d12.dll/d3d9.dll/dxgi.dll/libmediandk.so/amfrt64.dll），每个都被可选加载（失败不崩溃）。这是音视频领域的 unique 模式——一个库动态适配所有可能的 GPU 后端。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "notes",
-        "kind": "ambiguity",
-        "value": "鸿蒙应用口径 vs 库口径",
-        "rationale": "如以应用（application）口径评估——关注 ffmpeg/ffplay CLI 工具的鸿蒙桌面运行——则需额外考虑 SDL2 显示、stdin/stdout 交互、HAF 应用打包等。本评估以库（library）口径（模型 A/B：重编 + 链接）为主，同时兼顾 CLI 工具。两者 worker_path 近似但关注面略异。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "harmony_status",
-        "kind": "ambiguity",
-        "value": "media partial",
-        "rationale": "媒体场景 harmany_status 取 partial：核心软件编解码完全可移植（已有 dep 鸿蒙包），但设备采集/播放后端（ALSA/V4L2/dshow/AVFoundation）不可用。从纯转码用途看是 available，从全功能看是 partial——取中值。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:metal",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:vt",
+        "class": "actionable",
+        "message": "unadaptable_api ua:vt 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:d3d11va",
+        "class": "actionable",
+        "message": "unadaptable_api ua:d3d11va 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:dxva2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dxva2 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "cap_miss:rendering_3d",
         "class": "actionable",
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "FFmpeg 核心触及两大鸿蒙适配重点场景：媒体（编解码/流媒体/格式处理）和硬件加速（多平台 GPU 编解码/计算）。无 GUI 依赖，无 3D 渲染需求。GPU 硬件加速均为可选编译功能，核心软件管线完整独立。",

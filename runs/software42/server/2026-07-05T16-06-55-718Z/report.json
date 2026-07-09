@@ -3212,8 +3212,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核，非 Linux ABI；原生层 OHOS NDK/musl libc + POSIX 子集；架构 arm64/x86_64）—— MariaDB 服务器应用整体移植，目标为在鸿蒙 PC 上编译并作为守护进程运行，提供完整 SQL 数据库服务",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -3222,7 +3221,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "MariaDB Server 为大规模 C/C++ 服务端应用（200 万+ 行生产代码），已有成熟的 POSIX/Win32 平台抽象层（mysys/vio/tpool），可通过 OHOS NDK 交叉编译为目标架构。主要工作量集中在：① 7,828 行平台条件编译代码的鸿蒙分支新增（文件 I/O、线程池、网络、内存映射、信号处理等底层适配），② epoll/kqueue/io_uring 等 Linux 特有 I/O 多路复用的 OHOS 等价实现，③ systemd 守护进程集成替换为鸿蒙服务管理，④ fork/信号/syscall 等 POSIX 缺口逐项核对并条件编译降级，⑤ 二十余存储引擎/插件的逐一编译与平台适配。所有用到的核心功能均有对应替代路径，无不可替代的硬件依赖或专有平台 API——部分可选功能（S3 云存储、io_uring 异步 I/O、systemd 集成）可在首版禁用以降低初始移植范围。",
     "blockers": [
       {
@@ -3366,7 +3364,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "MariaDB 核心依赖近百个 POSIX API；多数 musl 已支持，但部分（epoll/signal/prctl/syscall/fork）可能存在缺口——缺口部分已有条件编译回退，须逐项确认",
-        "source": "references/harmony-pc-capabilities.json（目标画像未逐条列出 POSIX 子集覆盖；鸿蒙 PC 官方 NDK 文档待核实）"
+        "source": "references/harmony-pc-capabilities.json（目标画像未逐条列出 POSIX 子集覆盖；鸿蒙 PC 官方 NDK 文档待核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network",
@@ -3374,7 +3373,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "MariaDB 核心网络层（客户端连接、复制流、Galera 集群通信）全部依赖标准 POSIX socket API——musl 通常提供完整 socket 实现，但需确认鸿蒙是否在 PC 形态提供无限制网络访问",
-        "source": "references/harmony-pc-capabilities.json（权限段：ohos.permission.INTERNET 状态 unknown）"
+        "source": "references/harmony-pc-capabilities.json（权限段：ohos.permission.INTERNET 状态 unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:filesystem",
@@ -3382,7 +3382,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "数据库持久化依赖于完整文件 I/O——POSIX open/pread/pwrite/fsync/fdatasync/fallocate/stat 等；鸿蒙文件系统权限模型（读写存储 permission）需确认不限制数据库目录的随机读写",
-        "source": "references/harmony-pc-capabilities.json（权限段：读写存储状态 unknown）"
+        "source": "references/harmony-pc-capabilities.json（权限段：读写存储状态 unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:thread_model",
@@ -3390,7 +3391,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "OHOS NDK musl 提供 pthread 实现，但需确认鸿蒙是否对线程数/栈大小/CPU 亲和性设置有限制",
-        "source": "references/harmony-pc-capabilities.json（未列出线程模型限制）"
+        "source": "references/harmony-pc-capabilities.json（未列出线程模型限制）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:server_daemon",
@@ -3398,7 +3400,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙 PC 是否支持传统 Unix 守护进程模式（还是必须用 ArkTS ability/HAP 包裹）待核实——这影响整体部署形态；若只支持 HAP 则需 ArkTS service ability 包装",
-        "source": "references/harmony-pc-capabilities.json（进程/安全模型段：spawn/sandbox 状态 unknown；应用交付段：desktop_app 状态 unknown）"
+        "source": "references/harmony-pc-capabilities.json（进程/安全模型段：spawn/sandbox 状态 unknown；应用交付段：desktop_app 状态 unknown）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -3470,7 +3473,21 @@
       "准备鸿蒙平台的安装/部署文档与 system service 配置文件"
     ],
     "notes": "评估按模型 C（整包服务器应用移植到鸿蒙 PC）。关键不确定性：① OHOS NDK musl POSIX 子集覆盖范围未逐条核实——近百个 POSIX API 中部分可能受限（epoll/signal/fork/syscall/prctl 等），但因 MariaDB 已有 Windows/BSD 多平台回退路径，整体仍可适配（partial→adaptable）；② 网络栈与文件系统的权限模型在鸿蒙 PC 形态尚不明确——若 TCP 监听或文件随机读写受限则需调整；③ 鸿蒙 PC 是否支持传统多线程守护进程模式待核实——若仅支持 ArkTS HAP 包装则部署形态需调整。对 ③ 个 required+unknown 假设，本评估 confidence 下调至 medium——待上述目标事实核实后可重新判定。libmarias3 提供 S3 云存储访问，若鸿蒙侧网络/文件系统就绪则可复现。已鸿蒙化的第三方库（zlib/pcre2/rocksdb/duckdb/jemalloc）显著降低构建工作量。wolfssl（bundled + submodule）须自行编译——可换用 cmd-pkgs 已提供的 OpenSSL。初始移植范围建议为核心 server + InnoDB/Aria/MyISAM 引擎 + 基本客户端工具（~80% 业务价值），存储引擎按需逐步移植。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "MariaDB Server",
@@ -3497,54 +3514,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "多存储引擎架构",
-        "rationale": "MariaDB 的可插拔存储引擎架构是数据库领域特有分类——20+ 引擎（InnoDB/RocksDB/ColumnStore/Spider/Connect/DuckDB等）不属于通用软件分类，需单独成类方能准确描述其能力"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build",
-        "rationale": "pcre2 和 libfmt 通过 CMake ExternalProject_Add 从 GitHub releases 下载源码并在构建时编译为静态库，不是 fetchcontent（cmake FetchContent）也不是 submodule（git submodule），属于 download-and-build-in-build-tree 模式"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "name",
-        "kind": "ambiguity",
-        "value": "wolfssl vs OpenSSL",
-        "rationale": "MariaDB 默认使用 bundled wolfssl（submodule），但也支持系统 OpenSSL（find_package(OpenSSL)）——两者为二选一的 TLS 后端，语义上是同一可选依赖的两个互斥实现，但各自有独立的包名/源码仓/版本"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups.type",
-        "kind": "new_value",
-        "value": "cpu_arch",
-        "rationale": "SIMD 指令优化（SSE/AVX/NEON/CRC32/popcount）并非 GPU 硬件加速，而是 CPU 架构指令集优化——这些有便携的软件回退，应归类为 hardware 但标 specific_hardware=false 以区别于 CUDA/FPGA 等特定硬件依赖"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries",
-        "kind": "gap",
-        "value": "ntdll.dll / kernel32.dll (Windows NT 内核 API)",
-        "rationale": "MariaDB 运行时通过 GetProcAddress 动态获取 NtFlushBuffersFileEx/NtSetInformationFile/SetThreadDescription 等未文档化 Windows NT 内核 API——这是操作系统内核层的动态绑定，既非 self_build 也非传统 system lib，属于高度平台耦合的优化路径"
-      },
-      {
-        "dimension": "runtime_surface",
-        "field": "services",
-        "kind": "new_value",
-        "value": "S3 云存储后端 (libmarias3)",
-        "rationale": "Aria 存储引擎通过 libmarias3 直接调用 AWS S3 API，这是一种介于传统文件 I/O 与网络服务的混合形态——数据不在本地文件系统而在远程对象存储，应同时在 runtime_surface.filesystem 和 services 两处登记"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "MariaDB 为服务器端数据库系统，不涉及桌面 GUI、3D 渲染或音视频媒体处理。生产代码使用了 CPU SIMD 指令优化（SSE/AVX2/ARM NEON/CRC32 硬件加速）并依赖 /dev/urandom 熵源，均有跨平台通用回退路径，无非特定硬件依赖。",

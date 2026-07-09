@@ -2136,8 +2136,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Java 库跑在已移植 JDK 17/8 运行时上；原生 JNI 库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -2159,7 +2158,9 @@
         ],
         "caused_by": [
           "ta:win32"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cgl",
@@ -2173,7 +2174,9 @@
         ],
         "caused_by": [
           "ta:macos"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:gbm",
@@ -2188,7 +2191,9 @@
         ],
         "caused_by": [
           "ta:drm_gbm"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cuda_cg",
@@ -2202,7 +2207,9 @@
         ],
         "caused_by": [
           "ta:cuda_cg"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:oculusvr",
@@ -2217,7 +2224,9 @@
         ],
         "caused_by": [
           "ta:oculusvr"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2227,7 +2236,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 Java 代码可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl",
@@ -2235,7 +2245,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "核心渲染功能依赖；桌面 OpenGL 完整度受限，需优先使用 GLES/EGL",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:egl",
@@ -2243,7 +2254,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "GLES/EGL 后端依赖",
-        "source": "harmony-pc-capabilities.json#graphics_3d.egl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:desktop_wm",
@@ -2251,7 +2263,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "NEWT/AWT/Swing/SWT 窗口集成需要底层显示后端；若鸿蒙 PC 无 X 服务器则 X11 后端无法运行",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:headful_awt",
@@ -2259,7 +2272,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "AWT/Swing 集成依赖 headful JDK；如不可用可禁用该集成",
-        "source": "harmony-pc-capabilities.json#gui.awt_headful"
+        "source": "harmony-pc-capabilities.json#gui.awt_headful",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:swt",
@@ -2267,7 +2281,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "SWT 集成为可选，可禁用",
-        "source": "harmony-pc-capabilities.json#gui.swt"
+        "source": "harmony-pc-capabilities.json#gui.swt",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:javafx",
@@ -2275,7 +2290,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "JavaFX 集成为可选，可禁用",
-        "source": "harmony-pc-capabilities.json#gui.javafx"
+        "source": "harmony-pc-capabilities.json#gui.javafx",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:drm_gbm",
@@ -2283,7 +2299,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "Linux DRM/GBM 后端依赖 libgbm，鸿蒙上不可直接复用",
-        "source": "native_api drm_gbm group"
+        "source": "native_api drm_gbm group",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ffmpeg",
@@ -2291,7 +2308,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选视频播放功能；OpenHarmony PC cmd-pkgs 已提供预编译包，可降低移植成本（仍需验证版本 ABI 匹配）",
-        "source": "scripts/harmony_adapted.js"
+        "source": "scripts/harmony_adapted.js",
+        "target_status_model": "available"
       },
       {
         "id": "ta:joal_openal",
@@ -2299,7 +2317,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "可选 JOAL 音频功能",
-        "source": "harmony-pc-capabilities.json#media.audio_io"
+        "source": "harmony-pc-capabilities.json#media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cuda_cg",
@@ -2307,7 +2326,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "可选 Cg 着色器功能不可移植，可裁剪",
-        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:oculusvr",
@@ -2315,7 +2335,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "可选 VR 功能依赖特定硬件，可裁剪",
-        "source": "make/build-common.xml"
+        "source": "make/build-common.xml",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:win32",
@@ -2323,7 +2344,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Windows 后端代码在鸿蒙上不可用；构建时排除即可",
-        "source": "native_api win32 group"
+        "source": "native_api win32 group",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:macos",
@@ -2331,11 +2353,11 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "macOS 后端代码在鸿蒙上不可用；构建时排除即可",
-        "source": "native_api macos_cocoa group"
+        "source": "native_api macos_cocoa group",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_and_add_ohos_backend",
     "summary": "JOGL 主体是 Java 库，在鸿蒙已移植 JDK 上可跑；但必须用 OHOS NDK 重编全部 JNI 原生库（jogl_desktop/mobile、nativewindow_*、newt_*）。核心图形路径可优先采用 OpenGL ES/EGL 后端以匹配鸿蒙 3D 栈；桌面 OpenGL、Win32、macOS、X11（若鸿蒙无 X 服务器）、GBM、Cg、OculusVR 等平台相关或可选功能无法直接移植，需要裁剪或重写；FFmpeg 已在 OpenHarmony PC 提供预编译包，可降低媒体路径成本。整体判定为部分可适配。",
     "blockers": [
       {
@@ -2483,7 +2505,27 @@
       "更新 Ant 构建脚本与 native jar 打包逻辑以支持 ohos 平台"
     ],
     "notes": "存在多个 unknown 目标假设（桌面窗口/GUI/FFmpeg/OpenAL），置信度为 medium；若鸿蒙 PC 不支持桌面应用形态或 headful JDK，则需整体改为 ArkTS/ArkUI 方案，结论将大幅收紧。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:wgl",
+          "ua:cgl",
+          "ua:gbm",
+          "ua:cuda_cg",
+          "ua:oculusvr"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2495,29 +2537,35 @@
       "metrics.json 将 src/demos 全部归为 example；JOGL 的 demos 目录确实为示例代码，已排除在平台 API/依赖结论外",
       "gluegen/joal 源码树未随本次 checkout 提供，依赖信息来自构建脚本与 Maven stub"
     ],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "sibling_source_build",
-        "rationale": "gluegen/joal 不是通过包管理器安装，而是期望与 jogl 同级的源码树或 Maven 快照；现有推荐 acquisition 值没有精确描述这种“兄弟源码构建”方式"
+        "code": "ua_func_class_defaulted:ua:wgl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wgl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "egl",
-        "rationale": "EGL 是 Khronos 跨平台显示接口，但在鸿蒙评估中更接近 platform，因为它依赖底层显示系统与窗口表面"
+        "code": "ua_func_class_defaulted:ua:cgl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cgl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "vr_hardware",
-        "rationale": "可选 OculusVR 模块属于特定硬件场景，但可裁剪；未单独设 present 场景，仅在 summary 中说明"
+        "code": "ua_func_class_defaulted:ua:gbm",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gbm 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cuda_cg",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda_cg 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:oculusvr",
+        "class": "actionable",
+        "message": "unadaptable_api ua:oculusvr 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

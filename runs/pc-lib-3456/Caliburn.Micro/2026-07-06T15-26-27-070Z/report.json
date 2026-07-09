@@ -1037,8 +1037,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层）",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         120,
@@ -1061,7 +1060,9 @@
         "evidence": [
           "src/Caliburn.Micro.Platform/Platforms/net46-netcore/WindowManager.cs:58",
           "src/Caliburn.Micro.Platform/XamlPlatformProvider.cs:36"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:uwp_winrt",
@@ -1076,7 +1077,9 @@
         "evidence": [
           "src/Caliburn.Micro.Platform/XamlPlatformProvider.cs:32",
           "src/Caliburn.Micro.Platform/Platforms/uap/FrameAdapter.cs:417"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:winui3",
@@ -1090,7 +1093,9 @@
         "category": "platform",
         "evidence": [
           "src/Caliburn.Micro.Platform/XamlPlatformProvider.cs:34"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1100,7 +1105,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 .NET 运行时未移植到鸿蒙 PC，整个库无法运行；.NET Standard 2.0 的 Core 包虽然平台无关，但需要 CLR 才能执行",
-        "source": "references/harmony-pc-capabilities.json — 无 dotnet/CLR 条目"
+        "source": "references/harmony-pc-capabilities.json — 无 dotnet/CLR 条目",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dotnet_runtime_xaml",
@@ -1108,11 +1114,11 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Caliburn.Micro 的核心价值在于 XAML 平台的 MVVM 绑定，所有平台适配层都绑定特定 XAML 框架——无 XAML 框架则框架无法工作",
-        "source": "references/harmony-pc-capabilities.json — GUI 段无 .NET/XAML 条目；Avalonia 理论上可交叉编译到新平台但需后端支持"
+        "source": "references/harmony-pc-capabilities.json — GUI 段无 .NET/XAML 条目；Avalonia 理论上可交叉编译到新平台但需后端支持",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "abandon",
     "summary": "Caliburn.Micro 是一个深度绑定 XAML 平台（WPF/UWP/WinUI 3/Avalonia/MAUI/Xamarin.Forms）的 MVVM 框架。其核心功能——ViewModel 绑定、Action 路由、窗口管理、导航——全部通过各 XAML 平台专有的 DependencyProperty、Dispatcher、Window、Frame 等类型实现。鸿蒙 PC 目前无 .NET 运行时，更无任何 XAML UI 框架。即使未来 .NET 运行时被移植，Caliburn.Micro 的每个平台适配层都需要对应的 XAML 框架存在才能工作。Core 包（netstandard2.0）虽然是纯 .NET 的，但它只提供 Screen/Conductor/EventAggregator/SimpleContainer 等非 UI 基础设施，不包含绑定和窗口管理——这些才是框架的核心价值。唯一的潜在路径是 Avalonia（它有自己的跨平台渲染后端），但 Avalonia 目前不支持鸿蒙 PC 后端，需要社区先行移植 Avalonia 本身。",
     "blockers": [
       {
@@ -1171,7 +1177,25 @@
       "Caliburn.Micro.Core 包无需修改即可在移植后的 .NET 运行时上运行"
     ],
     "notes": "置信度为 low，因为 (1) .NET 运行时在鸿蒙 PC 的可用性为 unknown，(2) 即使运行时可用，XAML 框架的缺失也是结构性阻碍。Avalonia 是最有希望的路径——它是一个跨平台 XAML 框架，已支持 Windows/Linux/macOS，理论上可以添加鸿蒙渲染后端，但这本身是一个大型工程。如果不依赖 Avalonia 路径，仅使用 Core 包的纯逻辑部分，则只需 .NET 运行时即可，但 Caliburn.Micro 失去了其核心 UI 绑定价值。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "low",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:wpf_xaml_stack",
+          "ua:uwp_winrt",
+          "ua:winui3"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Caliburn.Micro",
@@ -1203,16 +1227,26 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "framework",
-        "rationale": "Caliburn.Micro 是一个 MVVM 应用框架而非单纯的库——它提供 Bootstrapper/应用生命周期托管，用户在其之上构建应用；比 library 更主动但不像 application 被终端用户直接运行"
+        "code": "ua_func_class_defaulted:ua:wpf_xaml_stack",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wpf_xaml_stack 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:uwp_winrt",
+        "class": "actionable",
+        "message": "unadaptable_api ua:uwp_winrt 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:winui3",
+        "class": "actionable",
+        "message": "unadaptable_api ua:winui3 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   },
   "capability_profile": {
     "summary": "Caliburn.Micro 是一个 XAML 平台 MVVM 框架，涉及 GUI 桌面界面场景（通过 WPF/UWP/WinUI/Avalonia/MAUI/Xamarin.Forms 的窗口、Dispatcher、导航框架）。不涉及 3D 渲染、媒体或特定硬件。",

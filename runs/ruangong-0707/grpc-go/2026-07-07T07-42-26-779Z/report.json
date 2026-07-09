@@ -1881,8 +1881,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK musl + POSIX 子集，非 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1899,7 +1898,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Go 运行时不可用则整体无法运行",
-        "source": "references/harmony-pc-capabilities.json runtimes.go"
+        "source": "references/harmony-pc-capabilities.json runtimes.go",
+        "target_status_model": "available"
       },
       {
         "id": "ta:net_http2",
@@ -1907,7 +1907,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "HTTP/2 传输层不可用则 gRPC 完全无法工作",
-        "source": "Go 标准库在目标平台的网络栈实现"
+        "source": "Go 标准库在目标平台的网络栈实现",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:tls_crypto",
@@ -1915,7 +1916,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "TLS 握手失败则安全通信完全不可用",
-        "source": "Go 标准库在目标平台的 TLS 实现"
+        "source": "Go 标准库在目标平台的 TLS 实现",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dns_resolver",
@@ -1923,7 +1925,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "DNS 解析失败则 gRPC 名称解析不可用",
-        "source": "Go 标准库在目标平台的 DNS 实现"
+        "source": "Go 标准库在目标平台的 DNS 实现",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:syscall_setsockopt",
@@ -1931,7 +1934,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "不可用时 TCP 用户超时功能退化为 no-op，不影响核心 RPC 功能",
-        "source": "internal/syscall/syscall_linux.go"
+        "source": "internal/syscall/syscall_linux.go",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:unix_getsockopt",
@@ -1939,7 +1943,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "不可用时 channelz 诊断功能退化，不影响核心 RPC",
-        "source": "internal/channelz/syscall_linux.go"
+        "source": "internal/channelz/syscall_linux.go",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:unix_clock_gettime",
@@ -1947,7 +1952,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "不可用时性能分析功能退化，不影响核心 RPC",
-        "source": "internal/syscall/syscall_linux.go"
+        "source": "internal/syscall/syscall_linux.go",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1982,7 +1988,6 @@
         "refs": []
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "grpc-go 作为纯 Go 库，核心功能完全基于 Go 标准库和 golang.org/x 扩展包，无 CGO 依赖。Go 1.24+ 已移植到鸿蒙 PC，因此 grpc-go 理论上可直接运行在鸿蒙的 Go 运行时上。主要适配工作涉及：1) Linux 特有的 syscall（TCP_USER_TIMEOUT、Getrusage、ClockGettime）需确认在鸿蒙 OHOS NDK musl/POSIX 子集上的可用性，不可用时退化为 no-op（已有非 Linux 回退模式）；2) Go net 标准库的网络栈和 TLS 实现需确认在鸿蒙上完整可用；3) DNS 解析器需验证兼容性。总体可行性较高，核心 RPC 功能应可直接工作，部分高级功能（TCP 超时控制、channelz 诊断、性能分析）可能退化。",
     "blockers": [
       {
@@ -2054,7 +2059,21 @@
       "验证 GCP 相关功能（credentials/google、gcp/observability）在非 GCP 环境下的优雅降级"
     ],
     "notes": "confidence 降为 medium 因多个 Go 标准库组件（net/http2、crypto/tls、DNS 解析器）在鸿蒙 PC 上的可用性尚未验证。grpc-go 核心功能（RPC 调用、流式通信、负载均衡、服务发现）为纯 Go 标准库代码，在 Go 运行时可用时应无障碍。Linux 特有功能（TCP_USER_TIMEOUT、Getrusage、ClockGettime）在非 Linux 平台已有完善的 no-op 回退机制，即使鸿蒙不支持这些 syscall，核心 RPC 功能也不受影响。ALTS 认证为 Google 专有协议，依赖 Google 基础设施，非 GCP 环境本就不可用。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "grpc-go",
@@ -2081,16 +2100,9 @@
     "counter_tool": "cloc",
     "generated_at": "2026-07-07T07:42:26.779Z",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_full",
-        "rationale": "grpc-go 的 Linux 特有 syscall 均已有 no-op 回退，核心功能理论上可直接运行。但多个 Go 标准库组件在鸿蒙上未验证，保守选择 needs_adaptation_full；若验证通过可降为 recompile_only"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "grpc-go 不涉及 GUI、3D 渲染、媒体或特定硬件场景。它是一个纯网络通信库，核心功能为 TCP/HTTP2 网络传输与 RPC 协议处理，无鸿蒙适配重点场景。",

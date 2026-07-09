@@ -630,7 +630,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24.13 运行时上; N-API 原生插件经 OHOS NDK（clang + musl）重编; arm64/x86_64; 自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -647,11 +646,11 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 24.13 已在鸿蒙 PC 移植，无影响。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "该库是 stdlib 的纯数值判断子包，核心逻辑在纯 JavaScript 中实现（1/x 与正无穷比较），另附一个可选 C N-API 原生加速插件。鸿蒙 PC 已移植 Node.js 24.13，纯 JS 部分无需改动即可运行。唯一的移植工作是重新编译 N-API 原生插件：C 代码仅使用 C99 标准库（math.h 的 HUGE_VAL、assert.h 的 assert）和 Node.js N-API，无任何平台特有 API 或外部命令调用，用 OHOS NDK 重新编译即可。整体可行性高，工作量极小。",
     "blockers": [
       {
@@ -717,7 +716,21 @@
       "可选：为鸿蒙环境精简平台支持列表（package.json os 字段仅保留 linux/darwin/win32 的 OHOS 等价架构）"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。若目标为 ArkTS 沙箱应用（模型 B），则 Node.js 运行时及 N-API 均不可用，纯 JS 路径需改写为 ArkTS（涉及 1/x===Infinity 的数值比较逻辑在 ArkTS 中直接等价），原生 C 路径需改为 Node-API 桥接——但此场景非常不现实，本库通常只作为另一 npm 包的间接依赖被调用。已移植运行时上 N-API 是标准能力，因此无未知假设。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "math-base-assert-is-positive-zero",
@@ -737,19 +750,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.json 报告测试框架为 'jest/mocha'（静态词法匹配），实际测试文件（test/test.js:23，test/test.native.js:24）使用 require('tape')，框架为 tape。该误判不影响用例计数；框架名已由 metrics 脚本给出，本处仅记录以便反哺。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数学计算库，不涉及图形界面、3D 渲染、音视频媒体或特定硬件设备。",

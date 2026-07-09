@@ -1617,8 +1617,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（应用模型 C：整包桌面应用；原生层 OHOS NDK musl + POSIX 子集；arm64/x86_64）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -1627,7 +1626,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "repackage_qt_ohos",
     "summary": "MediaInfo 是 C++ 桌面应用，核心功能（CLI 元数据展示、Qt GUI）有望经 OHOS NDK 重编 MediaInfoLib/ZenLib 后运行在鸿蒙 PC；但项目内含多套平台专有前端（wxWidgets/VCL/UWP/Cocoa/Android/iOS）和 Windows 原生集成（Shell 扩展、注册表、WebView2），这些无法在鸿蒙复现。建议以 Qt 前端为鸿蒙 PC 目标，弃用其他前端与 Windows 集成。",
     "unadaptable_apis": [
       {
@@ -1642,7 +1640,9 @@
         ],
         "caused_by": [
           "ta:desktop_app"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_registry",
@@ -1657,7 +1657,9 @@
         ],
         "caused_by": [
           "ta:desktop_app"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:uwp_packagemanager",
@@ -1671,7 +1673,9 @@
         ],
         "caused_by": [
           "ta:desktop_app"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_vfw_acm",
@@ -1685,7 +1689,9 @@
         ],
         "caused_by": [
           "ta:desktop_app"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:webview2",
@@ -1700,7 +1706,9 @@
         ],
         "caused_by": [
           "ta:desktop_app"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cocoa_appkit",
@@ -1714,7 +1722,9 @@
         ],
         "caused_by": [
           "ta:desktop_app"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:vcl",
@@ -1728,7 +1738,9 @@
         ],
         "caused_by": [
           "ta:desktop_app"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1738,7 +1750,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt 是鸿蒙 PC 上最可行的 GUI 前端路径；若不可用则需整体重写界面",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_wm",
@@ -1746,7 +1759,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "MediaInfo Qt GUI 依赖多窗口、菜单、工具栏；若鸿蒙 PC 无桌面级窗口环境则 Qt 前端亦不可行",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:file_dialog",
@@ -1754,7 +1768,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "打开媒体文件必须使用文件选择对话框",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.file_dialog"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.file_dialog",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dnd_clipboard",
@@ -1762,7 +1777,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "MediaInfo 支持拖拽文件打开；缺失时可通过菜单降级",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1770,7 +1786,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定应用是否可按传统桌面形态打包分发，而非必须重写为 ArkTS .hap",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:storage",
@@ -1778,7 +1795,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "应用需读取用户媒体文件才能分析元数据",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet",
@@ -1786,7 +1804,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "版本检查与打开官网需要网络；缺失时可禁用该功能",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1997,7 +2016,29 @@
       "验证 CLI 在鸿蒙 PC 终端的运行并补充测试"
     ],
     "notes": "评估按应用模型 C（整包桌面应用）进行。Qt 在鸿蒙 PC 目标能力表中标记为 available，但 cmd-pkgs 镜像未列出 Qt，实际需自行/community 获取鸿蒙 Qt 构建。大量 target_assumptions（桌面窗口、文件对话框、权限模型、应用交付形态）仍为 unknown，故 confidence 降至 medium；若这些能力核实后不可用，可行性可能进一步收紧为 infeasible。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_shell_com",
+          "ua:win32_registry",
+          "ua:uwp_packagemanager",
+          "ua:win32_vfw_acm",
+          "ua:webview2",
+          "ua:cocoa_appkit",
+          "ua:vcl"
+        ]
+      }
+    }
   },
   "library": {
     "name": "MediaInfo",
@@ -2018,40 +2059,49 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "primary_language",
-        "kind": "ambiguity",
-        "value": "metrics_primary_is_csv",
-        "rationale": "metrics.py 将 Source/Resource/Translations 下的 CSV 语言文件识别为最大代码量，导致 primary language 为 CSV；实际生产逻辑语言为 C++。已在 function_summary 与 notes 中说明。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.key",
-        "kind": "new_value",
-        "value": "media_metadata",
-        "rationale": "MediaInfo 不执行音视频播放/采集/编解码，而是读取并展示媒体元数据；标准 media 场景下新增 kind 'media_metadata' 以准确描述其媒体相关度。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "repackage_qt_ohos",
-        "rationale": "对于多前端桌面应用，推荐路径为以 Qt 前端作为鸿蒙 PC 目标并重新打包，而非重编所有前端或整体 ArkTS 重写。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "gap",
-        "value": "qt_not_in_cmd_pkgs",
-        "rationale": "references/harmony-pc-capabilities.json 标记 Qt 为 available，但 scripts/harmony_adapted.js 的 cmd-pkgs 查询未返回 Qt；两者口径不一致，dim-9 以 capabilities 目标事实为准，dependencies[].harmony_adapted 按脚本结果保留 false。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:win32_shell_com",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_shell_com 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_registry",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_registry 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:uwp_packagemanager",
+        "class": "actionable",
+        "message": "unadaptable_api ua:uwp_packagemanager 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_vfw_acm",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_vfw_acm 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:webview2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:webview2 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cocoa_appkit",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cocoa_appkit 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:vcl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:vcl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目为桌面 GUI 应用，核心场景是 GUI 与媒体元数据展示；不涉及 3D 渲染或特定硬件加速，也不依赖第三方云服务。",

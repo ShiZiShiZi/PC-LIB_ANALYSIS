@@ -2379,8 +2379,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；Go 运行时已移植；arm64/x86_64；应用走模型 C——整包桌面/服务应用）",
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         180,
@@ -2389,7 +2388,6 @@
       "level": "very_high"
     },
     "confidence": "high",
-    "recommended_path": "abandon",
     "summary": "Moby（Docker Engine）是 Linux 容器引擎守护进程，其核心功能（容器生命周期管理、网络隔离、存储驱动）深度依赖 Linux 内核特性（namespace、cgroup、seccomp、netlink、iptables、OverlayFS/Btrfs 等）。这些是 Linux 内核接口，在鸿蒙自研内核上不存在等价实现。移植 Moby 本质上是「在鸿蒙内核上实现一套 Linux 容器兼容层」的**内核级工程**，远超应用层适配范畴，不存在「重编/改 API/桥接」这类常规迁移路径。建议路径：放弃直接迁移 Moby；替代方案为使用鸿蒙原生应用沙箱部署容器化应用，或通过鸿蒙虚拟机运行完整 Linux 客户系统。Windows 版（HCS 容器）同理不适用——HCS 是 Windows 内核 API，鸿蒙同样没有。",
     "target_assumptions": [
       {
@@ -2398,7 +2396,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "容器生命周期管理（创建/启动/隔离）的核心依赖，缺失则 Moby 完全不可运行",
-        "source": "harmony-pc-capabilities.json——鸿蒙为自研内核，不实现 Linux ABI"
+        "source": "harmony-pc-capabilities.json——鸿蒙为自研内核，不实现 Linux ABI",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:overlayfs",
@@ -2406,7 +2405,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "容器镜像分层存储与写时复制的核心依赖，缺失则无法构建/运行容器文件系统",
-        "source": "harmony-pc-capabilities.json——鸿蒙内核不提供这些 Linux 特有 FS"
+        "source": "harmony-pc-capabilities.json——鸿蒙内核不提供这些 Linux 特有 FS",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:iptables_nftables",
@@ -2414,7 +2414,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "容器网络端口映射、Swarm 负载均衡依赖 Linux netfilter 框架",
-        "source": "harmony-pc-capabilities.json——鸿蒙不使用 Linux 网络栈"
+        "source": "harmony-pc-capabilities.json——鸿蒙不使用 Linux 网络栈",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:systemd",
@@ -2422,7 +2423,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "systemd 集成非核心路径可裁剪，但 cgroup 层次管理仍依赖内核支持",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:go_runtime",
@@ -2430,7 +2432,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Go 运行时已移植，Moby 的 Go 代码可编译——但编译出来的二进制仍需 Linux 内核 API 才能运行",
-        "source": "harmony-pc-capabilities.json#runtimes.go"
+        "source": "harmony-pc-capabilities.json#runtimes.go",
+        "target_status_model": "available"
       }
     ],
     "unadaptable_apis": [
@@ -2446,7 +2449,9 @@
         "category": "system",
         "evidence": [
           "daemon/internal/unshare/unshare_linux.go:15"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:setns",
@@ -2461,7 +2466,9 @@
         "evidence": [
           "daemon/start_linux.go:33",
           "daemon/oci_linux.go:253"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:mount",
@@ -2476,7 +2483,9 @@
         "evidence": [
           "daemon/graphdriver/overlay2/mount.go:20",
           "daemon/oci_linux.go:180"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:netlink",
@@ -2491,7 +2500,9 @@
         "evidence": [
           "daemon/libnetwork/osl/namespace_linux.go:60",
           "daemon/libnetwork/osl/interface_linux.go:100"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cgroup",
@@ -2506,7 +2517,9 @@
         "evidence": [
           "daemon/oci_linux.go:78",
           "daemon/pkg/oci/defaults.go:90"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:seccomp",
@@ -2520,7 +2533,9 @@
         "category": "system",
         "evidence": [
           "daemon/seccomp_linux.go:50"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:procfs",
@@ -2535,7 +2550,9 @@
         "evidence": [
           "pkg/meminfo/meminfo_linux.go:14",
           "daemon/oci_linux.go:253"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "blockers": [
@@ -2657,7 +2674,29 @@
     ],
     "required_permissions": [],
     "notes": "Moby 是 Docker 容器引擎的开源上游，其本质是 Linux 容器运行时编排器。移植到鸿蒙 PC 的根本障碍不在 Go 语言/代码层面（Go 运行时已移植），而在于其**运行时行为依赖 Linux 内核 API**（namespace/cgroup/seccomp/netlink/OverlayFS/iptables），这些在鸿蒙自研内核上不存在。这不是「重编/改 API/桥接」能解决的问题，而是「需要目标内核实现一套 Linux 容器原语」的内核级工程。Go 运行时（harmony-pc-capabilities 已确认 available）仅保证编译通过——生成的二进制在鸿蒙上执行仍会因内核 API 缺失而失败。评估基于模型 C（整包服务应用）口径，confidence=high（Linux 内核 API 缺失的事实明确）。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:unshare",
+          "ua:setns",
+          "ua:mount",
+          "ua:netlink",
+          "ua:cgroup",
+          "ua:seccomp",
+          "ua:procfs"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "moby",
@@ -2682,54 +2721,54 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application (container engine daemon)",
-        "rationale": "Moby 是容器引擎守护进程（dockerd），属于 application 而非 library——它被终端用户/系统管理员作为服务启动运行，产出可执行二进制而非被 import 的库。根 go.mod 明确标注 'produces binaries only'。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored（go.mod replace 指令）",
-        "rationale": "api/ 和 client/ 子模块通过 go.mod replace 指向仓库本地目录，与常规 vendored（源码复制）略有不同——是 Go workspace 本地模块替换，本质仍是 local 依赖。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_sys_unix",
-        "rationale": "golang.org/x/sys/unix 包覆盖了 Linux/POSIX 特有系统调用包装（mount、unshare、setns、epoll 等），是 Go 生态中平台 API 的标准表达方式。与传统的 C 头文件 #include 模式不同但语义等价。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_procfs_sysfs_cgroup",
-        "rationale": "大量伪文件系统 (/proc/*、/sys/fs/cgroup/*) 的读写是 Linux 内核查询/控制的标准接口，在 Go 中通过 os.Open/Read/Write 文件系统操作实现——不是独立的 API 族而是文件系统接口，但仍属系统级交互。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "abandon",
-        "rationale": "Docker Engine 这种情况不适合任何常规适配路径（recompile_napi/arkts_rewrite/find_alternative）——核心依赖 Linux 内核 API，这些是内核级特性，非应用层可改造。abandon 表明直接迁移不可行，替代方案是换部署模型（VM 内运行 / 鸿蒙原生沙箱）。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:unshare",
+        "class": "actionable",
+        "message": "unadaptable_api ua:unshare 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:setns",
+        "class": "actionable",
+        "message": "unadaptable_api ua:setns 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:mount",
+        "class": "actionable",
+        "message": "unadaptable_api ua:mount 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:netlink",
+        "class": "actionable",
+        "message": "unadaptable_api ua:netlink 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cgroup",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cgroup 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:seccomp",
+        "class": "actionable",
+        "message": "unadaptable_api ua:seccomp 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:procfs",
+        "class": "actionable",
+        "message": "unadaptable_api ua:procfs 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "cloud_no_internet",
         "class": "actionable",
         "message": "cloud_services 涉及云端但 dim-9 未登记 ohos.permission.INTERNET（可能漏登记）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Moby（Docker Engine）是 headless 容器引擎守护进程，无 GUI 界面、无 3D 渲染、无音视频媒体处理。其主要依赖为 Linux 内核级功能（namespace、cgroup、seccomp、netlink）与操作系统文件系统能力，并通过可选日志驱动间接涉及云端服务（AWS CloudWatch、GCP Cloud Logging）。",

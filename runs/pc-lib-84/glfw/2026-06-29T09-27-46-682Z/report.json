@@ -1493,8 +1493,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1517,7 +1516,9 @@
         "evidence": [
           "src/win32_window.c:1384",
           "src/win32_window.c:552"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cocoa_window_api",
@@ -1532,7 +1533,9 @@
         "evidence": [
           "src/cocoa_window.m:854",
           "src/cocoa_window.m:563"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11_protocol",
@@ -1547,7 +1550,9 @@
         "evidence": [
           "src/x11_init.c:1292",
           "src/x11_window.c:609"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wayland_protocol",
@@ -1562,7 +1567,9 @@
         "evidence": [
           "src/wl_init.c:537",
           "src/wl_window.c:1194"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:evdev_ioctl",
@@ -1576,7 +1583,9 @@
         "category": "system",
         "evidence": [
           "src/linux_joystick.c:117-218"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1586,7 +1595,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GLFW 的全部窗口/显示器/输入功能依赖窗口系统后端。若无等价窗口 API，则无法创建窗口、接收事件、管理显示器——整体不可运行",
-        "source": "references/harmony-pc-capabilities.json → gui.wm"
+        "source": "references/harmony-pc-capabilities.json → gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_vulkan_surface",
@@ -1594,7 +1604,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OpenGL ES + EGL 已部分可用；Vulkan 可用性未知。若无法将渲染表面绑定到窗口，则 OpenGL/Vulkan 上下文无法在窗口中渲染",
-        "source": "references/harmony-pc-capabilities.json → graphics_3d.opengl / graphics_3d.vulkan"
+        "source": "references/harmony-pc-capabilities.json → graphics_3d.opengl / graphics_3d.vulkan",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:linux_input_subsystem",
@@ -1602,7 +1613,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "游戏手柄功能为可选；若鸿蒙无等价输入子系统，游戏手柄 API 不可用但不影响核心窗口/上下文功能",
-        "source": "references/harmony-pc-capabilities.json → hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json → hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_thread",
@@ -1610,11 +1622,11 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 提供 musl + POSIX 子集，pthread 基本操作预期可用",
-        "source": "references/harmony-pc-capabilities.json intro: OHOS NDK（musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json intro: OHOS NDK（musl + POSIX 子集）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "new_backend",
     "summary": "GLFW 的核心价值是跨平台窗口系统抽象，但其现有的四个后端（Win32/Cocoa/X11/Wayland）全部依赖鸿蒙不具备的平台专有 API。移植 GLFW 到鸿蒙需要编写一个全新的鸿蒙后端（类似现有后端的体量和复杂度），利用鸿蒙的窗口系统 API（形态未知）创建窗口和渲染表面。同时需确认鸿蒙 PC 上 OpenGL ES/Vulkan 与窗口表面的绑定方式。总体而言，移植可行但工作量大且高度依赖鸿蒙 PC 窗口系统 API 的开放程度。",
     "blockers": [
       {
@@ -1724,7 +1736,27 @@
       "测试与调优：窗口创建、全屏切换、光标管理、剪贴板、拖放等桌面功能"
     ],
     "notes": "置信度为 low，因为鸿蒙 PC 的窗口系统 API 形态（C API / C++ API / 仅 ArkTS / 完全不开放）属于关键未知项。若鸿蒙不提供 C/C++ 级别的原生窗口创建 API，则 GLFW 无法作为原生库移植——只能放弃或寻求 ArkTS 层的替代方案。platform_adaptation 宏计数仅 179 行是因为 GLFW 使用文件级条件编译（每个后端独立 .c/.m 文件），而非函数内 #ifdef，实际平台相关代码远大于此数值。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_window_api",
+          "ua:cocoa_window_api",
+          "ua:x11_protocol",
+          "ua:wayland_protocol",
+          "ua:evdev_ioctl"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1732,29 +1764,35 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "platform_framework",
-        "rationale": "macOS Cocoa/IOKit/CoreFoundation 框架通过 -framework 链接，属于平台框架（Platform Framework），但为简洁归入 system"
+        "code": "ua_func_class_defaulted:ua:win32_window_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_window_api 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "new_backend",
-        "rationale": "GLFW 的移植路径不是重编译或桥接，而是为鸿蒙编写一个全新的平台后端（类似现有 win32/x11/wayland 后端），现有推荐值无法精确描述"
+        "code": "ua_func_class_defaulted:ua:cocoa_window_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cocoa_window_api 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_evdev",
-        "rationale": "Linux evdev 输入子系统（ioctl + /dev/input）不属于标准 POSIX 也不属于 X11/Wayland 窗口系统，是一个独立的系统级 API 族"
+        "code": "ua_func_class_defaulted:ua:x11_protocol",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_protocol 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wayland_protocol",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wayland_protocol 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:evdev_ioctl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:evdev_ioctl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

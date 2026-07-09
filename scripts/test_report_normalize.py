@@ -256,6 +256,75 @@ finally:
     rn.effort_rates = _orig_rates
 
 
+# ── Fixture K: functional_viability — target-side prerequisite verdict derived from
+#    target_assumptions[].target_status (REQUIRED only), worst-wins, ORTHOGONAL to porting_class.
+def _fv(tas, eco="go", pc="no_adaptation"):
+    rep = {
+        "code_metrics": {"production": {"code": 500}},
+        "code_partition": {"buckets": [{"class": "reuse_direct", "loc": 500}]},
+        "harmony_adaptation": {"porting_class": pc, "effort": {"person_days": [0, 2]},
+                               "blockers": [], "unadaptable_apis": [], "target_assumptions": tas},
+        "library": {"ecosystem": eco},
+    }
+    return norm(rep)["harmony_adaptation"]
+
+
+k1 = _fv([{"capability": "rt", "required": True, "target_status": "available"}])
+check("K1.viable", k1.get("functional_viability"), "viable")
+check("K1.porting_class_untouched", k1.get("porting_class"), "no_adaptation")
+k2 = _fv([{"capability": "x", "required": True, "target_status": "partial"},
+          {"capability": "y", "required": True, "target_status": "available"}])
+check("K2.viable_with_work", k2.get("functional_viability"), "viable_with_work")
+k3 = _fv([{"capability": "x", "required": True, "target_status": "partial"},
+          {"capability": "y", "required": True, "target_status": "unknown"}])
+check("K3.unverified(>partial)", k3.get("functional_viability"), "unverified")
+k4 = _fv([{"capability": "nmap", "required": True, "target_status": "unavailable"},
+          {"capability": "y", "required": True, "target_status": "unknown"}])
+check("K4.blocked_external(>unknown)", k4.get("functional_viability"), "blocked_external")
+check("K4.porting_class_untouched", k4.get("porting_class"), "no_adaptation")   # code axis unmoved
+check("K4.overall_untouched", (k4.get("adaptation_assessment") or {}).get("overall"), "adaptable")
+check("K4.target_status_model", k4["target_assumptions"][0].get("target_status_model"), "unavailable")
+k5 = _fv([{"capability": "opt", "required": False, "target_status": "unavailable"},
+          {"capability": "y", "required": True, "target_status": "available"}])
+check("K5.optional_unavailable_ignored", k5.get("functional_viability"), "viable")
+check("K6.empty_ta", _fv([]).get("functional_viability"), "viable")
+
+# ── Fixture L: required+unknown deterministically caps confidence high→medium (was only warned);
+#    confidence_model preserves the original; idempotent; emits an INFO audit warning.
+L = {
+    "code_metrics": {"production": {"code": 500}},
+    "code_partition": {"buckets": [{"class": "reuse_direct", "loc": 500}]},
+    "harmony_adaptation": {"porting_class": "no_adaptation", "confidence": "high",
+                           "effort": {"person_days": [0, 2]}, "blockers": [], "unadaptable_apis": [],
+                           "target_assumptions": [{"capability": "x", "required": True, "target_status": "unknown"}]},
+    "library": {"ecosystem": "go"},
+    "meta": {"confidence_overall": "high"},
+}
+lr = norm(L)
+la = lr["harmony_adaptation"]
+check("L.confidence_capped", la.get("confidence"), "medium")
+check("L.confidence_model", la.get("confidence_model"), "high")
+check("L.meta_capped", lr["meta"].get("confidence_overall"), "medium")
+check("L.fv_unverified", la.get("functional_viability"), "unverified")
+l_codes = [x.get("code") for x in (lr["meta"].get("harmony_warnings") or [])]
+check("L.capped_warning", "confidence_capped_unknown" in l_codes, True)
+check("L.capped_warning_is_info",
+      next((x.get("class") for x in lr["meta"]["harmony_warnings"] if x.get("code") == "confidence_capped_unknown"), None), "info")
+l2 = norm(lr)["harmony_adaptation"]
+check("L.idempotent_confidence", l2.get("confidence"), "medium")
+check("L.idempotent_model", l2.get("confidence_model"), "high")
+
+# ── Fixture L2: high confidence but NO required+unknown → confidence stays high (no false cap, restore path).
+L2 = copy.deepcopy(L)
+L2["harmony_adaptation"]["target_assumptions"] = [{"capability": "x", "required": True, "target_status": "available"}]
+l2r = norm(L2)
+check("L2.high_kept", l2r["harmony_adaptation"].get("confidence"), "high")
+check("L2.meta_high_kept", l2r["meta"].get("confidence_overall"), "high")
+check("L2.fv_viable", l2r["harmony_adaptation"].get("functional_viability"), "viable")
+l2_codes = [x.get("code") for x in (l2r["meta"].get("harmony_warnings") or [])]
+check("L2.no_capped_warning", "confidence_capped_unknown" in l2_codes, False)
+
+
 if _FAILS:
     print("FAIL:")
     for f in _FAILS:

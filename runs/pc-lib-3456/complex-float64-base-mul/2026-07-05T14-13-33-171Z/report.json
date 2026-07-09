@@ -709,7 +709,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核；非 Linux ABI；OHOS NDK musl + POSIX 子集；arm64/x86_64；Node.js 24.13.0 已移植），按模型 A（库跑在已移植的 Node.js 运行时空上）评估",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -718,7 +717,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "纯 JS 实现在鸿蒙 PC 已移植的 Node.js 上零改动直接运行；可选的 C 原生 addon 仅需 OHOS NDK 重新编译（代码为纯算术，无平台 API 依赖）。所有运行时依赖均为 @stdlib 纯 JS 子包，无系统/平台耦合。整体移植可行性极高。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -729,7 +727,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 逻辑直接运行的基础，已提供不影响",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -763,7 +762,21 @@
       "确认 @stdlib/* 各纯 JS 依赖在鸿蒙 Node.js 上正常安装"
     ],
     "notes": "按模型 A（跑在鸿蒙已移植的 Node.js 运行时空上）评估。默认入口为纯 JS 实现（lib/index.js → lib/main.js），无需原生 addon 即可工作。可选的 N-API addon 代码纯算术无平台依赖，重编工作量忽略不计。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-float64-base-mul",
@@ -783,7 +796,8 @@
     "confidence_overall": "high",
     "warnings": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI/3D 渲染/多媒体/硬件设备场景，所有依赖均为纯 JS 算法子包。",

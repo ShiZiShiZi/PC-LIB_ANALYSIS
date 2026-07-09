@@ -1509,7 +1509,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核，非 Linux ABI；OHOS NDK clang+musl 工具链，arm64/x86_64；库经 OHOS NDK 重编为 .so)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -1518,7 +1517,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "HiGHS 核心库为纯 C++11/STL 数学计算代码，平台耦合极低（code_metrics.platform_adaptation 总计仅 274 行条件编译守卫代码）。唯一平台特有 API 为跨平台动态库加载抽象层（Win32 LoadLibraryA / POSIX dlopen），已在 OHOS NDK musl 的 POSIX 子集中可用。CUDA GPU 加速路径为可选且默认关闭，移植时保持 CPU 路径即可。需要的工作仅为：用 OHOS NDK 工具链（ohos.toolchain.cmake）配置 CMake 交叉编译，关闭 CUPDLP_GPU/HIPO 等可选特性，验证 musl + clang 下编译通过与功能正确。zlib 压缩 I/O 依赖已鸿蒙化，可直接使用。",
     "blockers": [
       {
@@ -1578,7 +1576,8 @@
         "required": true,
         "target_status": "available",
         "impact": "这是 C++ 库在 OHOS 上重编译的唯一前提——满足即仅需交叉编译。",
-        "source": "harmony-pc-capabilities.json / OHOS NDK 文档"
+        "source": "harmony-pc-capabilities.json / OHOS NDK 文档",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_zlib",
@@ -1586,7 +1585,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选——压缩 I/O 功能在鸿蒙上直接可用。",
-        "source": "harmony_adapted 脚本查询结果 (cmd-pkgs)"
+        "source": "harmony_adapted 脚本查询结果 (cmd-pkgs)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1633,7 +1633,21 @@
       "编译 HiGHS 库 highs/ + 核心可执行文件 app/，在鸿蒙 PC 上跑通 .mps/.lp 格式基础求解测试"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 交叉编译为 .so）。HiGHS 核心库为纯数值计算，平台耦合极低：code_metrics.platform_adaptation.total = 274 行（分散在 18 个文件），均为条件编译守卫。无 fork/mmap/ioctl/socket/注册表等系统级 API 调用；无外部命令 shell-out；无 /proc /sys 访问。唯一的平台相关 API（dlopen/LoadLibrary）有跨平台抽象层，OHOS musl 支持 POSIX dlfcn.h 路径。check/ 目录含 105 个测试实例文件（.mps/.lp，被 cloc 误判为 MUMPS 语言），不影响库本体的移植判断。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "HiGHS",
@@ -1658,26 +1672,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "field": "languages",
-        "kind": "gap",
-        "value": "cloc MUMPS misclassification",
-        "rationale": "cloc 将 check/instances/ 下的 105 个 .mps/.lp 数学规划测试实例文件（共 141,714 行）误判为 MUMPS 语言并标记为 production。这些实为测试数据（LP/MIP benchmark 实例），非源码文件。实际生产主力语言仍为 C++（~115K行）+ C/C++ Headers（~55K行），合计约 170K 行生产代码。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "ambiguity",
-        "value": "check/ classified as production but contains test code",
-        "rationale": "check/ 目录（163K 行）按 cloc 归类为 production，但包含大量 Test*.cpp 测试文件与 instances/ 测试数据。这可能高报了 生产代码量。不过这些 Test*.cpp 本质上是应用库 API 的结构化功能测试（非单元测试框架），其内部调用的 API 仍是生产代码路径的一部分，对 native_api 分析无实质影响。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "HiGHS 是纯数学优化计算库，无 GUI/3D渲染/多媒体场景。唯一涉及的鸿蒙适配重点场景是可选的 NVIDIA CUDA GPU 加速（默认关闭），属特定硬件依赖。",

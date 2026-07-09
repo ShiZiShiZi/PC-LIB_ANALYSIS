@@ -1446,7 +1446,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，无 Linux ABI；原生层 OHOS NDK musl + POSIX 子集；arm64/x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -1455,7 +1454,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile",
     "summary": "Lightning CSS 为纯 Rust 库（Rust 运行时在鸿蒙 PC 已移植，status=available, 1.89+, 有 ohos target），核心 CSS 解析/转换/压缩逻辑不依赖平台特有系统调用。唯一工作量是将 Rust crate 用 ohos target 交叉编译，验证 napi-rs（Node.js N-API 绑定层）在 ohos target 下的兼容性。jemallocator 条件编译和 wasm32 目标与鸿蒙 PC 移植无关。整体为仅需重新编译的可移植库。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1466,7 +1464,8 @@
         "target_status": "available",
         "impact": "直接可用，无阻碍",
         "source": "harmony-pc-capabilities.json#runtimes.rust",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "napi-rs（napi crate）在 ohos target 可用性",
@@ -1474,7 +1473,8 @@
         "target_status": "unknown",
         "impact": "仅影响 Node.js N-API 绑定层；若不支持，Node.js 绑定不可用，但 Rust 核心库和 CLI 仍可编译使用",
         "source": "推理：napi crate 为跨平台 Rust 库，理论上在 ohos target 可编译，但需验证",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1512,7 +1512,21 @@
       "在 OHOS 设备上跑通 CLI 和 Rust 单元测试验证功能完整性"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Rust 运行时上）。Rust 1.89+ 已合入 ohos target，交叉编译链可用。jemallocator（macOS 专用、条件编译）和 wasm32 target 不阻塞 OHOS 移植。napi crate 与 napi-rs 生态尚无明确的 OHOS 支持文档，但其底层仅使用标准 FFI，理论上可编译，若不可行则 N-API 绑定层需要适配。核心库与 CLI 无此顾虑。平台分支信号：cfg(target_os) 仅 2 处（macOS jemallocator），无运行时平台分支。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "lightningcss",
@@ -1538,7 +1552,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 CSS 处理库，不涉及 GUI 窗口、3D 渲染、音视频媒体或特定硬件。",

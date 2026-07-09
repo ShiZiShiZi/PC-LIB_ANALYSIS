@@ -712,8 +712,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层）",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         999,
@@ -736,7 +735,9 @@
         "evidence": [
           "src/AutoMapper/Execution/ProxyGenerator.cs:1",
           "src/AutoMapper/Execution/ProxyGenerator.cs:17"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -746,11 +747,11 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "AutoMapper 是纯 .NET 托管库，没有 .NET 运行时则完全无法运行。鸿蒙 PC 已移植的运行时包括 Python/Node.js/Java/Rust/Go/Julia，但不含 .NET/CoreCLR。这是决定性阻碍——整个库的代码都是 C# 托管代码，无法在无运行时的平台上执行。",
-        "source": "references/harmony-pc-capabilities.json runtimes 段——无 dotnet 条目"
+        "source": "references/harmony-pc-capabilities.json runtimes 段——无 dotnet 条目",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "abandon",
     "summary": "AutoMapper 是纯 C#/.NET 托管库，其运行完全依赖 .NET 运行时（CoreCLR）。鸿蒙 PC 目前没有移植 .NET 运行时，因此该库在鸿蒙 PC 上完全无法运行。即使未来移植了 .NET 运行时，System.Reflection.Emit（ProxyGenerator 的核心依赖）在受限运行环境（如 Blazor WASM）中也会遇到 PlatformNotSupportedException——说明该功能本身在非标准 .NET 环境中就有兼容性风险。此外，RPL-1.5 强传染许可证也会对鸿蒙生态的集成造成法律约束。建议寻找其他语言生态的等价对象映射方案。",
     "blockers": [
       {
@@ -797,7 +798,23 @@
       "处理 RPL-1.5 许可证合规问题"
     ],
     "notes": "核心结论置信度为 high：.NET 运行时在鸿蒙 PC 上不可用是确定性事实（非 unknown），由此直接推导出 infeasible。即使未来 .NET 运行时被移植，仍需验证 System.Reflection.Emit 的可用性——该 API 在 Blazor WASM 等 .NET 子集环境中会抛出 PlatformNotSupportedException（代码中已有 catch 处理：LicenseAccessor.cs:98），说明非标准 .NET 环境对 Emit 的支持并不保证。RPL-1.5 许可证是次要阻碍，可通过商业许可解决。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:system_reflection_emit"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "AutoMapper",
@@ -823,7 +840,15 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:system_reflection_emit",
+        "class": "actionable",
+        "message": "unadaptable_api ua:system_reflection_emit 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "AutoMapper 是纯计算库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。它仅依赖 .NET 运行时的标准 BCL 功能（反射、表达式树、Emit）和 Microsoft 扩展库，无平台特有硬件或图形依赖。",

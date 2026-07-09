@@ -1049,11 +1049,9 @@
     "notes": "构建需 macOS SDK，且 CMakeLists.txt 因 if (UNIX AND APPLE) 守卫，非 macOS 平台编译直接跳过"
   },
   "harmony_adaptation": {
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "porting_path": "模型 C（桌面应用适配）",
-    "recommended_path": "将整个原生实现替换为 HarmonyOS NEXT OHOS NDK + Node-API 方案：保持 JavaScript API 签名不变（getAuthStatus/askFor*），将底层 macOS 框架调用逐一替换为 @ohos.security 和 @ohos.abilityAccessCtrl 等系统能力 API。由于该库本质是 macOS 权限管理的一次性映射，鸿蒙侧需要为每种权限类型建立对应的鸿蒙权限名称和目标能力（ohos.permission.*）映射表。",
-    "confidence": "high",
+    "confidence": "medium",
     "effort": {
       "person_days": {
         "lo": 15,
@@ -1068,7 +1066,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node-API (N-API) 已被 HarmonyOS NEXT 支持作为原生模块桥接方案，无阻碍",
-        "source": "鸿蒙已知事实：Node-API 在 HarmonyOS NEXT 中可用"
+        "source": "鸿蒙已知事实：Node-API 在 HarmonyOS NEXT 中可用",
+        "target_status_model": "available"
       },
       {
         "id": "ta-02",
@@ -1076,7 +1075,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 NEXT 提供 abilityAccessCtrl 模块用于运行时权限查询和请求，可替代 macOS TCC",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta-03",
@@ -1084,7 +1084,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙提供 ohos.permission.CAMERA / MICROPHONE 声明式权限 + 运行时权限接口",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta-04",
@@ -1092,7 +1093,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙是否有 CalendarReminderKit（日历提醒 Kit）？需要核实能否提供与 macOS EKEventStore 功能等价的接口",
-        "source": "dim-7 发现 macOS 使用 EventKit.framework"
+        "source": "dim-7 发现 macOS 使用 EventKit.framework",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta-05",
@@ -1100,7 +1102,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需要核实 Contacts Kit 的运行时授权接口是否与 macOS CNContactStore 功能等价",
-        "source": "dim-7 发现 macOS 使用 Contacts.framework"
+        "source": "dim-7 发现 macOS 使用 Contacts.framework",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta-06",
@@ -1108,7 +1111,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙提供 ohos.permission.LOCATION + geoLocationManager API",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta-07",
@@ -1116,7 +1120,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需要核实鸿蒙是否提供类似 AXIsProcessTrusted 的接口判断无障碍服务启用状态",
-        "source": "dim-7 发现 macOS 使用 AXIsProcessTrusted"
+        "source": "dim-7 发现 macOS 使用 AXIsProcessTrusted",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta-08",
@@ -1124,7 +1129,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需要核实鸿蒙是否有 screenCapture / screenRecording 的运行时权限接口",
-        "source": "dim-7 发现 macOS 使用 CGRequestScreenCaptureAccess"
+        "source": "dim-7 发现 macOS 使用 CGRequestScreenCaptureAccess",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta-09",
@@ -1132,7 +1138,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需要核实鸿蒙 NEXT 蓝牙相关权限的管理接口",
-        "source": "dim-7 发现 macOS 使用 CoreBluetooth.framework"
+        "source": "dim-7 发现 macOS 使用 CoreBluetooth.framework",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta-10",
@@ -1140,7 +1147,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "macOS 全磁盘访问（Full Disk Access）是 TCC 特有的概念；鸿蒙文件沙箱模型可能完全不同，需确认等效方案",
-        "source": "dim-7 发现 macOS 通过检查受保护文件判断 FDA 状态"
+        "source": "dim-7 发现 macOS 通过检查受保护文件判断 FDA 状态",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -1227,7 +1235,21 @@
         "TA-04~TA-10 共 6 项目标能力状态为 unknown，需人工核实后才能将 confidence 提升至 high"
       ]
     },
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@nut-tree/node-mac-permissions",
@@ -1246,37 +1268,8 @@
     "analyzed_at": "2026-07-05T15:21:58Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "classification",
-        "value": "library",
-        "rationale": "npm 包 + main: index.js + exports 函数供其他代码 import，非独立可执行应用"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "vocabulary",
-        "value": "系统权限管理",
-        "rationale": "macOS TCC 权限查询与请求的统一封装是该库的核心价值主张"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].category",
-        "kind": "classification",
-        "value": "platform",
-        "rationale": "所有 12 个 macOS 框架均属于平台特有 API，无跨平台抽象"
-      },
-      {
-        "dimension": "build_env",
-        "field": "build_system",
-        "kind": "standard_value",
-        "value": "cmake-js",
-        "rationale": "替代 node-gyp 的 Node.js 原生模块构建工具，使用 CMake 而非 gyp"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1302,9 +1295,9 @@
         "message": "blocker blk-03 的引用 CMakeLists.txt:1-56 不存在（悬空引用）"
       },
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       },
       {
         "code": "perm_dangling_cap:ohos.permission.CAMERA",
@@ -1322,7 +1315,8 @@
         "message": "required_permission ohos.permission.LOCATION 的 source_capability=hardware 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "该库不直接涉及 GUI 渲染、3D 图形、媒体编解码或特定硬件驱动——它是一个纯权限管理接口层，仅通过 macOS 系统框架查询和请求摄像头、麦克风等设备的访问授权，不执行任何实际的捕获或媒体处理。",

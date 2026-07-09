@@ -805,8 +805,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在已移植的 Python 3.12 运行时上；原生扩展/绑定经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -815,7 +814,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime + rebuild_cairocffi_against_ohos_cairo",
     "summary": "CairoSVG 主体为纯 Python，可直接运行于鸿蒙 PC 已移植的 Python 运行时。唯一移植工作量在其运行时依赖 cairocffi——该包通过 cffi 绑定系统 libcairo，而 libcairo C 库已在 OpenHarmony PC cmd-pkgs 提供预编译包，但 cairocffi 的 Python 包尚未出现在鸿蒙 PyPI 镜像。需要以 OHOS 工具链重新生成/编译 cairocffi 的 cffi 绑定，使其链接 OHOS 版 libcairo。无 GUI/3D/媒体/硬件场景，无不可适配 API。",
     "blockers": [
       {
@@ -862,7 +860,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库主体为纯 Python，必须运行在已移植的 Python 上",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cairo",
@@ -870,7 +869,8 @@
         "required": true,
         "target_status": "available",
         "impact": "所有矢量渲染依赖 Cairo；C 库已在 cmd-pkgs 提供预编译包",
-        "source": "scripts/harmony_adapted.js 查询 cmd-pkgs：cairo 已适配"
+        "source": "scripts/harmony_adapted.js 查询 cmd-pkgs：cairo 已适配",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -908,7 +908,21 @@
       "确认 url.py 中 os.name 判断在鸿蒙 Python 下行为符合预期"
     ],
     "notes": "评估按模型 A（库跑在已移植的 Python 运行时上）。核心功能无不可适配点；主要工作量是重新构建 cairocffi 绑定。metrics.json 将 test_non_regression/ 目录大量 SVG/PNG/字体测试资源计为 production code，实际属于测试数据，真正生产代码约 2800 行 Python（cairosvg/）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -918,22 +932,8 @@
     "warnings": [
       "metrics.json 将 test_non_regression 目录整体计为 production code（约 52000 行 SVG/PNG/字体等回归测试资源），真正可发布的生产代码仅为 cairosvg/ 下约 2800 行 Python。"
     ],
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "rendering_2d",
-        "rationale": "CairoSVG 是纯 2D 矢量渲染库，不涉及 GUI/3D/媒体/硬件。推荐场景 key 集合可增加 rendering_2d/cairo_2d/vector_graphics 以覆盖此类库。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "gap",
-        "value": "test_non_regression",
-        "rationale": "目录名为 test_non_regression 但 metrics.py 按 token 分类将其判为 production；需要人工补判为 test 资源目录。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

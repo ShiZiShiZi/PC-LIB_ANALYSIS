@@ -108,10 +108,11 @@ def test_arch_specific():
     c_simd = (
         "#include <immintrin.h>\n"          # x86 intrinsics header → hit
         "#include <stdio.h>\n"               # not an intrinsics header
-        "void f() {\n"
+        "void f(float *p) {\n"
         "  __asm__ volatile(\"cpuid\");\n"   # inline asm → hit (x86 via line hint)
-        "  // __asm__ in a comment\n"        # comment → NOT counted
-        "  const char *s = \"__asm__\";\n"   # string → NOT counted
+        "  __m256 v = _mm256_loadu_ps(p);\n"  # SIMD intrinsic usage → x86 simd_loc
+        "  // __asm__ and _mm512_add in a comment\n"  # comment → NOT counted
+        "  const char *s = \"__asm__ _mm256_x\";\n"   # string → NOT counted
         "}\n"
     )
     rs = (
@@ -123,6 +124,9 @@ def test_arch_specific():
     files = [
         ("src/simd.c", "C", "production", c_simd),
         ("src/lib.rs", "Rust", "production", rs),
+        # SIMD intrinsic usage with NO #include of its own (header pulled transitively)
+        ("src/kernel_avx.c", "C", "production", "void k(float *p){ __m512 a = _mm512_loadu_ps(p); }\n"),
+        ("src/vecops.c", "C", "production", "void q(float *p){ float32x4_t a = vld1q_f32(p); }\n"),
         ("arch/x86/memcpy.S", "Assembly", "production", "mov rax, rbx\nret\n"),
         ("arch/neon/blit.s", "Assembly", "production", "ret\n"),
         ("tests/opt.s", "Assembly", "test", "nop\n"),   # test → excluded
@@ -141,6 +145,12 @@ def test_arch_specific():
     check("intrinsics header recorded", a["intrinsics_headers"] == ["immintrin.h"])
     check("test asm file excluded", all(f["file"] != "tests/opt.s" for f in a["asm_files"]))
     check("total == asm-file LOC sum", a["total"] == x86_asm_loc + arm_asm_loc)
+    check("x86 simd_loc counts intrinsic usage (call site + transitive-include file)",
+          x86.get("simd_loc") == 2)
+    check("arm simd_loc counts NEON intrinsic usage", arm.get("simd_loc") == 1)
+    check("simd_total == sum of per-arch simd_loc", a["simd_total"] == 3)
+    check("transitive-include file flagged as SIMD without its own #include",
+          any(s["file"] == "src/kernel_avx.c" and s["kind"] == "simd" for s in a["samples"]))
 
 
 if __name__ == "__main__":

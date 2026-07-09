@@ -625,7 +625,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK + ported Node.js runtime)",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -643,11 +642,11 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 是 vm2 唯一所需的运行时；已移植到鸿蒙 PC（24.13.0）即可直接 npm install 运行，无需任何适配",
-        "source": "references/harmony-pc-capabilities.json runtimes/nodejs (available)"
+        "source": "references/harmony-pc-capabilities.json runtimes/nodejs (available)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "vm2 是纯 JavaScript 库，仅依赖 Node.js 运行时与两个纯 JS npm 包（acorn、acorn-walk），不含任何原生 C/C++ 扩展或平台特有 API。Node.js 已确认移植到 HarmonyOS NEXT PC（24.13.0），因此 vm2 可在鸿蒙 PC 上通过 npm install 直接安装使用，无需任何代码改造或重新编译。两个运行时依赖（acorn、acorn-walk）同样为纯 JS npm 包，随 vm2 安装时自动拉取即可运行。CLI 入口点（bin/vm2）同样为纯 JS 脚本，无需修改。",
     "blockers": [],
     "compatible": [
@@ -682,7 +681,21 @@
       "运行现有 mocha 测试套件确认全部 453 个测试用例通过"
     ],
     "notes": "评估置信度高——所有前提在 harmony-pc-capabilities.json 中均有已核实状态。vm2 本身不涉及 GUI/3D/媒体/硬件/云服务，是最简的纯计算型库，属于鸿蒙移植难度最低的类别。注意：vm2 的安全沙箱能力依赖于 V8 JavaScript 引擎的隔离语义（Proxy、WeakMap、vm.createContext 等），这些在鸿蒙 PC Node.js 移植中应已保证——若移植的 Node.js 中这些 API 行为有差异，需针对性验证。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "vm2",
@@ -703,33 +716,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "运行时安全防御机制",
-        "rationale": "vm2 的安全防御层（Array 物种中和、Promise 物种重置、危险符号过滤、宿主对象保护）是其核心能力之一，抽象层次高于标准的沙箱隔离，需单独归为一个能力类别以体现其安全纵深"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "nodejs_core",
-        "rationale": "现有 type 取值（win32/posix/cpp_stl等）不足以描述「Node.js 内置标准模块的 JavaScript 接口」这一层级——它不同于裸 POSIX/Win32 系统调用，也不同于语言标准库，是 Node.js 运行时特有的 API 层"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "run_on_ported_runtime",
-        "rationale": "对于 pure JS lib 这种「运行时已移植、库只是 npm install」的场景，现有推荐路径缺直接匹配——recompile_napi/cross_compile/arkts_rewrite/wrap_ffi/find_alternative/abandon 都不对；需要明确表达「无适配工作、纯依赖移植运行时即可跑」"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 JavaScript 计算/安全沙箱库，不涉及桌面 GUI、3D 图形渲染、音视频媒体处理或特定硬件设备依赖。仅消费 Node.js 标准运行时的 JavaScript 与文件系统 API。",

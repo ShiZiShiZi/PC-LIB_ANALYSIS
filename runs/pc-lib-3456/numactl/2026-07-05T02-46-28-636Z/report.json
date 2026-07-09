@@ -1322,8 +1322,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (经 OHOS NDK/musl 重编为 .so；arm64/x86_64；自研内核，无 Linux ABI，不能执行 Linux 系统调用)",
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1332,7 +1331,6 @@
       "level": "very_high"
     },
     "confidence": "high",
-    "recommended_path": "abandon",
     "summary": "numactl 是 Linux NUMA 内核子系统的用户态接口库，所有核心功能（内存策略设置、页面迁移、CPU 亲和性绑定、NUMA 拓扑查询）均通过 Linux 特有的系统调用（mbind/set_mempolicy/get_mempolicy/migrate_pages/move_pages 等）和 Linux 特有的 /proc、/sys 伪文件系统实现。鸿蒙 PC 自研内核不提供 Linux ABI，这些系统调用和内核接口不存在且无等价物，整个库**无法移植**——它不是『有部分功能需改造』的问题，而是『它的全部功能都由 Linux 内核提供、换一个内核就失去了存在意义』。若鸿蒙 PC 内核未来提供 NUMA API（当前未知），则需要从零实现一套全新的 NUMA 用户态库来对接它，而非在本库基础上适配。",
     "blockers": [
       {
@@ -1470,7 +1468,9 @@
         "evidence": [
           "syscall.c:231-236",
           "libnuma.c:326"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:set_mempolicy",
@@ -1485,7 +1485,9 @@
         "evidence": [
           "syscall.c:238-244",
           "libnuma.c:314"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:get_mempolicy",
@@ -1500,7 +1502,9 @@
         "evidence": [
           "syscall.c:223-229",
           "libnuma.c:320"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:migrate_pages",
@@ -1515,7 +1519,9 @@
         "evidence": [
           "syscall.c:246-255",
           "libnuma.c:1909"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:move_pages",
@@ -1530,7 +1536,9 @@
         "evidence": [
           "syscall.c:257-261",
           "libnuma.c:1916"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:procfs_status",
@@ -1544,7 +1552,9 @@
         "category": "system",
         "evidence": [
           "libnuma.c:402-453"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:sysfs_node",
@@ -1560,7 +1570,9 @@
           "libnuma.c:371",
           "libnuma.c:1478",
           "distance.c:59"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:netlink_route",
@@ -1574,7 +1586,9 @@
         "category": "system",
         "evidence": [
           "rtnetlink.c:66-74"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:syscall6_asm",
@@ -1588,7 +1602,9 @@
         "category": "hardware",
         "evidence": [
           "syscall.c:168-217"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:syscall_numbers",
@@ -1602,7 +1618,9 @@
         "category": "hardware",
         "evidence": [
           "syscall.c:33-139"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1612,7 +1630,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "libnuma 全部核心功能（内存策略、页面迁移、CPU 亲和性）均通过这些系统调用实现——不存在即核心不可用，整体不可移植",
-        "source": "harmony-pc-capabilities.json —— 鸿蒙自研内核无 Linux 系统调用接口，OHOS NDK 仅提供 musl POSIX 子集"
+        "source": "harmony-pc-capabilities.json —— 鸿蒙自研内核无 Linux 系统调用接口，OHOS NDK 仅提供 musl POSIX 子集",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:linux_kernel_fs",
@@ -1620,7 +1639,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "libnuma 所有 NUMA 拓扑发现（节点数、CPU 拓扑、距离矩阵、内存信息）均依赖读取 /proc 和 /sys——不存在即无法获取任何拓扑信息",
-        "source": "harmony-pc-capabilities.json —— 鸿蒙自研内核不提供 Linux /proc、/sys 伪文件系统"
+        "source": "harmony-pc-capabilities.json —— 鸿蒙自研内核不提供 Linux /proc、/sys 伪文件系统",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:posix_subset",
@@ -1628,7 +1648,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 numactl --shm 选项（SysV 共享内存），非核心库功能——可改写为 POSIX shm_open 或移除",
-        "source": "harmony-pc-capabilities.json —— musl 对 SysV IPC 的支持需核实"
+        "source": "harmony-pc-capabilities.json —— musl 对 SysV IPC 的支持需核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1656,7 +1677,32 @@
       "移除 glibc 专有扩展——symver 符号版本控制、改用 musl 兼容的初始化路径"
     ],
     "notes": "numactl（libnuma）是 Linux NUMA 子系统的用户态接口——它不是『用到一些 Linux API』的通用库，而是『它就是 Linux NUMA API』。其全部功能由 Linux 内核系统调用提供，换一个内核即失去所有功能基础。移植到鸿蒙 PC 需要鸿蒙内核首先提供等价 NUMA 能力，然后从零开发新的用户态库——本代码库中仅 bitmask 操作和命令行解析可复用，其余代码（约 80% 生产代码量）需完全重写。若目标是在鸿蒙 PC 上获得 NUMA 感知能力，建议等待鸿蒙内核 NUMA API 成熟后从零开发——本库的分析与评估可作为设计参考。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:mbind",
+          "ua:set_mempolicy",
+          "ua:get_mempolicy",
+          "ua:migrate_pages",
+          "ua:move_pages",
+          "ua:procfs_status",
+          "ua:sysfs_node",
+          "ua:netlink_route",
+          "ua:syscall6_asm",
+          "ua:syscall_numbers"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "numactl",
@@ -1679,45 +1725,67 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "split-license (LGPL-2.1-only for lib, GPL-2.0-only for CLI tools)",
-        "rationale": "项目并非双许可（dual-license）而是不同组件不同许可——库为 LGPL-2.1（弱传染），CLI 工具为 GPL-2.0（强传染）。SPDX 表达式中无标准 split-license 表示法，用 LGPL-2.1-only AND GPL-2.0-only 近似，但 AND 语义是'同时遵守两者'而非'不同组件不同协议'。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library (同时包含 CLI 工具)",
-        "rationale": "numactl 仓库包含共享库 libnuma（编程 API）和多个独立 CLI 工具（numactl/numastat/memhog/migratepages/migspeed）。主产物是共享库，因此归为 library，但 entry_points 中也列了所有 CLI 入口点。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "libatomic as 'other' ecosystem",
-        "rationale": "libatomic 是 GCC 提供的原子操作支持库，它本身是 C 库但通常作为工具链的一部分、不是独立的第三方依赖。归入 'other' 生态以区别于普通 C 库依赖。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "unadaptable_apis",
-        "kind": "new_value",
-        "value": "Library IS a Linux kernel subsystem wrapper",
-        "rationale": "numactl 不同于'使用一些 Linux API 的库'——它是 Linux NUMA 子系统的用户态接口定义本身。这类库在非 Linux 内核上的移植不是'改造'而是'不存在可改造的代码'——整个库就是对 Linux syscall 的薄封装。这构成一类特殊的不可移植情形。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:mbind",
+        "class": "actionable",
+        "message": "unadaptable_api ua:mbind 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:set_mempolicy",
+        "class": "actionable",
+        "message": "unadaptable_api ua:set_mempolicy 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:get_mempolicy",
+        "class": "actionable",
+        "message": "unadaptable_api ua:get_mempolicy 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:migrate_pages",
+        "class": "actionable",
+        "message": "unadaptable_api ua:migrate_pages 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:move_pages",
+        "class": "actionable",
+        "message": "unadaptable_api ua:move_pages 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:procfs_status",
+        "class": "actionable",
+        "message": "unadaptable_api ua:procfs_status 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:sysfs_node",
+        "class": "actionable",
+        "message": "unadaptable_api ua:sysfs_node 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:netlink_route",
+        "class": "actionable",
+        "message": "unadaptable_api ua:netlink_route 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:syscall6_asm",
+        "class": "actionable",
+        "message": "unadaptable_api ua:syscall6_asm 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:syscall_numbers",
+        "class": "actionable",
+        "message": "unadaptable_api ua:syscall_numbers 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "license_category_mismatch",
         "class": "actionable",
         "message": "license.category(weak_copyleft) 与依据 SPDX(LGPL-2.1-only AND GPL-2.0-only) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "numactl 是纯系统级库，不涉及 GUI、3D 渲染、媒体或特定硬件。其全部功能围绕 Linux 内核 NUMA 子系统，通过 Linux 系统调用和 /proc、/sys 伪文件系统实现。无鸿蒙适配重点场景。",

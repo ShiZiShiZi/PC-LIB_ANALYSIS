@@ -1990,8 +1990,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库模型 A：经 OHOS NDK/musl 交叉编译为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -2000,7 +1999,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile_ohos",
     "summary": "APR 2.0 是纯 C 跨平台运行时抽象库，无 GUI/3D/媒体/特定硬件依赖，核心移植路径是用 OHOS NDK 新增/复用 POSIX 后端并交叉编译。主要工作量在于：① 添加鸿蒙平台检测与构建分支；② 处理 OHOS POSIX 子集缺口（fork/exec、信号、rlimit、SysV IPC 等）；③ 未鸿蒙化的可选驱动（PostgreSQL/ODBC/LDAP）默认禁用或单独移植；④ 跑通测试验证。OpenSSL、expat、libxml2、SQLite3、libuuid 已有 OpenHarmony PC 预编译包，可直接使用。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -2010,7 +2008,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "若 POSIX 子集覆盖不足，文件/网络/线程等核心功能需额外条件编译或降级",
-        "source": "references/harmony-pc-capabilities.json#runtimes / POSIX 子集说明"
+        "source": "references/harmony-pc-capabilities.json#runtimes / POSIX 子集说明",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:pthread",
@@ -2018,7 +2017,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "pthread 是 APR 线程与进程互斥后端的核心；若缺失需重写线程模型",
-        "source": "references/harmony-pc-capabilities.json（未单独列出 pthread，默认随 C 运行时）"
+        "source": "references/harmony-pc-capabilities.json（未单独列出 pthread，默认随 C 运行时）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:process_model",
@@ -2026,7 +2026,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "apr_proc_create、信号处理、子进程监控直接依赖；若受限需改用 posix_spawn 或裁剪功能",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:mmap_devices",
@@ -2034,7 +2035,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "内存池 guard page、共享内存、UUID/随机数熵源依赖这些接口",
-        "source": "native_api 调用点与 references/harmony-pc-capabilities.json"
+        "source": "native_api 调用点与 references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:socket_ipv6",
@@ -2042,7 +2044,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "网络 IO 模块核心依赖",
-        "source": "references/harmony-pc-capabilities.json#network（未显式列出，属 POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json#network（未显式列出，属 POSIX 子集）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dlopen",
@@ -2050,7 +2053,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "APR DSO 模块加载能力依赖",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2171,7 +2175,21 @@
       "若需 PostgreSQL/ODBC/LDAP 驱动，单独评估移植或禁用"
     ],
     "notes": "评估基于库模型 A（C 库经 OHOS NDK 交叉编译）。因鸿蒙 PC 部分 POSIX/进程能力在 harmony-pc-capabilities.json 中标记为 unknown，confidence 设为 medium；实际可行性高度依赖 OHOS NDK 对 POSIX 子集的具体实现。无 GUI/3D/媒体/硬件场景，故无相关 blocker。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "aliases": [
@@ -2196,36 +2214,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "category",
-        "kind": "new_value",
-        "value": "portable_runtime",
-        "rationale": "APR 不是某一垂直领域（networking/graphics/crypto）库，而是跨平台运行时抽象，分类时使用 'system / portable runtime' 作为 domain。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "system_interfaces",
-        "rationale": "将 /dev/zero、/dev/random、/dev/null 等内核伪文件接口归入 system 类别，按 family 形式命名而非 bare path。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "cross_compile_ohos",
-        "rationale": "APR 是纯 C 库，推荐路径不是 recompile_napi（多用于给 ArkTS 暴露 Node-API），而是直接用 OHOS NDK 交叉编译出 .so。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "system_find_package",
-        "rationale": "C/C++ 系统库通过 CMake find_package 或 autotools AC_CHECK_LIB/AC_SEARCH_LIBS 获取，当前推荐 acquisition 值中 'system' 已覆盖，但 'find_package' 与 'pkg-config' 细分场景未显式列出。"
-      }
-    ],
+    "observations": [],
     "warnings": [
       "code-metrics 脚本将测试框架误判为 'googletest'；APR 实际使用自研 ABTS（Apache Binary Test System，见 test/abts.c），未使用 googletest。"
     ],
@@ -2239,7 +2228,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network_io 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "APR 是底层系统运行时库，不涉及 GUI 桌面界面、3D 渲染、音视频媒体或特定硬件设备访问。其鸿蒙适配重点在于 POSIX 子集覆盖与系统调用替代，而非场景化能力重写。",

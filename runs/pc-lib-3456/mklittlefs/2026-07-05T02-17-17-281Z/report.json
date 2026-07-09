@@ -672,7 +672,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (CLI 应用，经 OHOS NDK 交叉编译为原生二进制; musl libc 提供 POSIX 子集; arm64/x86_64; 自研内核, 非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -680,8 +679,7 @@
       ],
       "level": "low"
     },
-    "confidence": "high",
-    "recommended_path": "recompile_native",
+    "confidence": "medium",
     "summary": "mklittlefs 是一个单文件 C++ CLI 工具，所有依赖均为标准 API（C 标准库、C++ STL、POSIX 目录操作），均属于 musl libc 与 OHOS NDK 支持范围。核心依赖 littlefs 为纯 C 嵌入式文件系统库，无平台耦合。唯一的平台条件编译为 mkdir 的 _WIN32 分支，OHOS 上走 POSIX 路径无需修改。整体仅需经 OHOS NDK（clang + musl）重编为原生二进制即可运行。",
     "blockers": [
       {
@@ -706,7 +704,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "所有 POSIX API 均依赖 musl libc —— musl 声称支持 POSIX 2008，但鸿蒙 PC 的 OHOS NDK musl 子集是否完整覆盖 dirent.h/sys/stat.h/unistd.h 需核实",
-        "source": "harmony-pc-capabilities.json (未单独列 POSIX/C 标准库支持状态)"
+        "source": "harmony-pc-capabilities.json (未单独列 POSIX/C 标准库支持状态)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cxx_std",
@@ -714,7 +713,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "OHOS NDK 的 libc++ 应支持 C++11 及以上，但需确认鸿蒙 NDK 版本完整覆盖所用 STL 组件",
-        "source": "harmony-pc-capabilities.json (未单独列 C++ 标准库支持状态)"
+        "source": "harmony-pc-capabilities.json (未单独列 C++ 标准库支持状态)",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -762,7 +762,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 C（CLI 应用，经 OHOS NDK 编译为原生二进制）。POSIX 目录操作（opendir/readdir/stat/mkdir）均为 musl libc 声称支持的 POSIX 标准 API，但 harmony-pc-capabilities.json 未单独列出 C 标准库/POSIX 子集覆盖率，两项 target_assumptions 均为 unknown 状态。若 OHOS NDK musl 确认覆盖这些 API（大概率），则实际无任何代码修改需求，纯重编即可。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "cli",
@@ -778,19 +792,20 @@
     "analyzed_at": "2026-07-05T02:17:17.281Z"
   },
   "meta": {
-    "confidence_overall": "high",
+    "confidence_overall": "medium",
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯命令行工具，不涉及 GUI、3D 渲染、媒体处理或特定硬件，仅通过 C 标准库和 POSIX API 读写本地文件系统。",

@@ -1553,8 +1553,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI；评估按库模型 A：跑在已移植运行时/原生层）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1563,7 +1562,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi_with_binding_strip",
     "summary": "DevIL 核心 IL/ILU 是纯 C/C++ 图像处理逻辑，可在鸿蒙 NDK 上重编；多数常用编解码依赖已有鸿蒙预编译包。阻碍集中在 ILUT 子库的平台相关后端：Win32 GDI/剪贴板/打印/WinINet、X11/XShm、DirectX 在鸿蒙无等价实现，必须裁剪；OpenGL 路径可部分迁移到 EGL/GLES，但 wgl/glX 扩展加载、GLU 等需重写。若上层应用仅使用 IL/ILU，则实际阻碍大幅减少。",
     "blockers": [
       {
@@ -1683,7 +1681,9 @@
         "category": "platform",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_win32.cpp:81 CreateCompatibleBitmap"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_clipboard",
@@ -1697,7 +1697,9 @@
         "category": "platform",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_win32.cpp:578 OpenClipboard"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_print",
@@ -1711,7 +1713,9 @@
         "category": "platform",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_win32.cpp:729 PrintDlg"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_resource",
@@ -1725,7 +1729,9 @@
         "category": "platform",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_win32.cpp:757 LoadResource"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wininet",
@@ -1739,7 +1745,9 @@
         "category": "platform",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_win32.cpp:780 InternetOpen"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11",
@@ -1753,7 +1761,9 @@
         "category": "platform",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_x11.cpp:197 XCreateImage"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11_shm",
@@ -1767,7 +1777,9 @@
         "category": "system",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_x11.cpp:301 shmget"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:directx8",
@@ -1781,7 +1793,9 @@
         "category": "hardware",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_directx.cpp:191 ilutD3D8Texture"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:directx9",
@@ -1795,7 +1809,9 @@
         "category": "hardware",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_directx9.cpp:371 ilutD3D9Texture"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:directx10",
@@ -1809,7 +1825,9 @@
         "category": "hardware",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_directx10.cpp:182 ilutD3D10Texture"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:directxm",
@@ -1823,7 +1841,9 @@
         "category": "hardware",
         "evidence": [
           "DevIL/src-ILUT/src/ilut_directxm.cpp:202 ilutD3DmTexture"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1833,7 +1853,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 IL/ILU 可在鸿蒙 NDK 上交叉编译",
-        "source": "harmony-pc-capabilities.json#runtimes（C/C++ NDK 已可用）"
+        "source": "harmony-pc-capabilities.json#runtimes（C/C++ NDK 已可用）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:codecs",
@@ -1841,7 +1862,8 @@
         "required": true,
         "target_status": "available",
         "impact": "PNG/JPEG/TIFF/JP2/色彩管理等功能可直接使用鸿蒙预编译包，无需自行移植",
-        "source": "scripts/harmony_adapted.js"
+        "source": "scripts/harmony_adapted.js",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl",
@@ -1849,7 +1871,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OpenGL ES/EGL 可用，但完整桌面 OpenGL 扩展与 wgl/glX 加载机制需重写",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:native_display",
@@ -1857,7 +1880,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Win32/X11 相关 ILUT 功能无法直接移植，必须裁剪或重写",
-        "source": "harmony-pc-capabilities.json#gui"
+        "source": "harmony-pc-capabilities.json#gui",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:desktop_clipboard_print",
@@ -1865,7 +1889,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 不提供等价能力，相关 Win32 功能需裁剪",
-        "source": "harmony-pc-capabilities.json#desktop_integration"
+        "source": "harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1913,7 +1938,33 @@
       "在鸿蒙 PC 上跑通 IL/ILU 单元测试，验证图像格式读写正确性"
     ],
     "notes": "评估按库模型 A（C/C++ 库经 NDK 重编后供其他应用链接）。若上层应用仅调用 IL/ILU（不碰 ILUT），则实际阻碍退化为少量可选依赖，porting_class 可降至 needs_adaptation_full。置信度评为 medium，因为鸿蒙 PC 桌面集成（剪贴板/打印）与 x86_64 覆盖情况仍为 unknown。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_gdi",
+          "ua:win32_clipboard",
+          "ua:win32_print",
+          "ua:win32_resource",
+          "ua:wininet",
+          "ua:x11",
+          "ua:x11_shm",
+          "ua:directx8",
+          "ua:directx9",
+          "ua:directx10",
+          "ua:directxm"
+        ]
+      }
+    }
   },
   "library": {
     "name": "DevIL",
@@ -1944,41 +1995,75 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "bindings",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "DevIL 除 Python、.NET 外还提供 Delphi/Pascal、Visual Basic、Fortran、Mathematica、Lua、Allegro 等绑定，schema 枚举未覆盖，统一记为 other 并在 notes 说明。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_sysv_ipc",
-        "rationale": "ilut_x11.cpp 使用 System V 共享内存（shmget/shmat/shmctl）支持 XShm，适合单独列为 posix_sysv_ipc 组。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "recompile_napi_with_binding_strip",
-        "rationale": "DevIL 核心可重编，但 ILUT 的 Win32/X11/DirectX 绑定必须裁剪，因此用 'recompile_napi_with_binding_strip' 描述该混合路径。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
+        "code": "ua_func_class_defaulted:ua:win32_gdi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_gdi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_clipboard",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_clipboard 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_print",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_print 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_resource",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_resource 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wininet",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wininet 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:x11",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:x11_shm",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_shm 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:directx8",
+        "class": "actionable",
+        "message": "unadaptable_api ua:directx8 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:directx9",
+        "class": "actionable",
+        "message": "unadaptable_api ua:directx9 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:directx10",
+        "class": "actionable",
+        "message": "unadaptable_api ua:directx10 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:directxm",
+        "class": "actionable",
+        "message": "unadaptable_api ua:directxm 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "DevIL 核心为图像处理库，本身不直接提供桌面 GUI；但 ILUT 子库包含大量平台相关的显示/图形绑定，涉及 Win32 GDI/剪贴板/打印、X11、OpenGL、DirectX 等场景。OpenGL 路径在鸿蒙 PC 上可部分适配，Win32/X11/DirectX 路径则无可行等价。",

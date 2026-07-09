@@ -903,7 +903,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层 + Node-API 桥接，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -914,7 +913,6 @@
     },
     "confidence": "high",
     "summary": "此库是纯 C 语言 Node-API 插件基础设施——提供宏与实现代码，将二元数值函数包装为 N-API 模块。鸿蒙 PC 已移植 Node.js 24.13.0（含 N-API），且 OHOS NDK 提供 C99 交叉编译能力。所有 API 调用均为标准 Node-API 函数（napi_*）和 C 标准库，无平台专有 API。适配路径明确：用 OHOS NDK 交叉编译器通过 node-gyp 重新编译即可。",
-    "recommended_path": "cross_compile",
     "compatible": [
       {
         "aspect": "Node-API 接口",
@@ -955,7 +953,21 @@
       "运行测试套件验证编译产物可用性"
     ],
     "notes": "默认口径：HarmonyOS PC with already-ported Node.js runtime。npm 依赖（@stdlib 包）同为 C N-API 插件，同样 route 到 recompile_only。无 unknown target_assumptions，置信度高。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/math-base-napi-binary",
@@ -969,19 +981,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "nodejs",
-        "rationale": "该仓库同时包含 C 代码（N-API 原生插件）和 JavaScript 代码，但 npm 包时以 Node.js 运行时为目标，故 ecosystem 选 nodejs。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "此库为纯数值计算基础设施，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。",

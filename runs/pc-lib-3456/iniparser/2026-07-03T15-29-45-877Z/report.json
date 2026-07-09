@@ -631,7 +631,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK 交叉编译为 arm64/x86_64 .so/.a；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -644,7 +643,6 @@
     "unadaptable_apis": [],
     "target_assumptions": [],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "iniparser 是纯 C 标准库实现，无任何平台专有 API、系统调用或硬件访问；迁移工作仅是用 OHOS NDK 重新编译为鸿蒙原生动态/静态库。编译通过后可被 C/C++ 应用直接链接，也可经 Node-API/JNI 暴露给 ArkTS/Java 应用。",
     "blockers": [],
     "compatible": [
@@ -681,7 +679,21 @@
       "运行现有 CTest 单元测试验证功能一致性（BUILD_TESTING=ON 会拉取 Unity）"
     ],
     "notes": "评估按库模型 A（跑在已移植运行时或直接作为原生库使用）。库本体不依赖 GUI/窗口/进程/交付形态等未核实能力，故置信度为高。测试框架 Unity 在 BUILD_TESTING 时通过 FetchContent 从远程拉取，属于测试构建依赖，不影响生产库迁移。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "iniparser",
@@ -709,7 +721,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "iniparser 是纯 C 标准库实现的 INI 配置解析器，生产代码不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",

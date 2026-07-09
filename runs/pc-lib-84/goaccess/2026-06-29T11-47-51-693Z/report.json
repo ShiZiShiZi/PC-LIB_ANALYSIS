@@ -1306,8 +1306,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK native layer, musl + POSIX subset)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1329,7 +1328,9 @@
         "category": "platform",
         "evidence": [
           "src/websocket.c:2333"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1339,7 +1340,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 提供 musl libc，包含 pthread 支持；线程功能可直接使用",
-        "source": "references/harmony-pc-capabilities.md — OHOS NDK musl POSIX 子集"
+        "source": "references/harmony-pc-capabilities.md — OHOS NDK musl POSIX 子集",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_ipc",
@@ -1347,7 +1349,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "WebSocket 服务器使用 mkfifo 和 Unix 域套接字进行进程间通信；若鸿蒙不支持命名管道，需替换为 Unix 域套接字等替代方案",
-        "source": "references/harmony-pc-capabilities.md — 进程/安全模型段未明确 POSIX IPC 支持"
+        "source": "references/harmony-pc-capabilities.md — 进程/安全模型段未明确 POSIX IPC 支持",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ncurses",
@@ -1355,7 +1358,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "TUI 模式依赖 ncurses；若不可用，仍可使用 HTML 输出模式（无 ncurses 依赖），功能不损失",
-        "source": "references/harmony-pc-capabilities.md — 桌面 GUI 段未提及 ncurses/终端模拟器"
+        "source": "references/harmony-pc-capabilities.md — 桌面 GUI 段未提及 ncurses/终端模拟器",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:terminal_emulator",
@@ -1363,7 +1367,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "TUI 模式需要终端模拟器来运行 ncurses 程序；HTML 输出模式不需要",
-        "source": "references/harmony-pc-capabilities.md — 桌面集成段"
+        "source": "references/harmony-pc-capabilities.md — 桌面集成段",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:openssl_ohos",
@@ -1371,7 +1376,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "WebSocket TLS 和 JWT 认证为可选功能；若无 OpenSSL，TLS 功能不可用但核心分析功能不受影响",
-        "source": "references/harmony-pc-capabilities.md — 未明确 OpenSSL 移植状态"
+        "source": "references/harmony-pc-capabilities.md — 未明确 OpenSSL 移植状态",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1379,7 +1385,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GoAccess 是 CLI 应用，需以原生二进制形式在终端或命令行启动；若鸿蒙 PC 仅支持 ArkTS .hap 应用模型，则需重新打包或提供兼容层",
-        "source": "references/harmony-pc-capabilities.md — 应用交付模型段"
+        "source": "references/harmony-pc-capabilities.md — 应用交付模型段",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1394,7 +1401,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "GoAccess 核心是纯 C 写的日志分析应用，主要依赖 POSIX API（pthread/socket/mmap/poll/signal）和可选的 ncurses/OpenSSL/zlib/GeoIP。用 OHOS NDK 交叉编译是最直接的适配路径。核心日志解析和 HTML 输出功能与 POSIX 兼容性高，预计可顺利编译。主要工作在于：1）验证 mkfifo 等 POSIX IPC 在 OHOS NDK musl 中的可用性并做替代；2）ncurses TUI 模式需终端模拟器环境，若不可用可退化为纯 HTML 输出模式；3）可选依赖（OpenSSL/zlib/GeoIP）需确认鸿蒙移植状态或自行编译。",
     "blockers": [
       {
@@ -1500,6 +1506,22 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:mkfifo"
+        ]
+      }
     }
   },
   "meta": {
@@ -1508,36 +1530,20 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "GoAccess 是终端用户启动运行的 CLI 应用（含 TUI 界面和 HTML 输出），不是被 API 调用的库，按模型 C（整包应用）口径处理"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "GoAccess 所有依赖通过 autoconf AC_CHECK_LIB 在系统级检测，无包管理器或 FetchContent 机制，system 最准确描述此获取方式"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "ncurses",
-        "rationale": "ncurses 是独立于 POSIX 和 Win32 的终端 UI API 族，需单独归类以准确反映其对 TUI 模式的影响"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:mkfifo",
+        "class": "actionable",
+        "message": "unadaptable_api ua:mkfifo 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

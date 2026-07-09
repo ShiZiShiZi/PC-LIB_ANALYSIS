@@ -777,8 +777,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, 无 Linux ABI; OHOS NDK musl + POSIX 子集; arm64/x86_64; 库跑在已移植 Node.js 24 运行时上)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -787,7 +786,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "Koffi 是 Node.js 原生 N-API 插件（C++ + 手写汇编），鸿蒙 PC 已移植 Node.js 24 运行时，因此 JS 层可正常使用。主要移植工作在原生层：(1) 手写汇编跳板代码需要为鸿蒙的 OHOS NDK 编译环境适配，尤其是 ARM64 AAPCS 和 x86_64 System V ABI 在 musl/clang 下的行为需逐一验证；(2) dlopen/dlsym 在 OHOS NDK musl 环境下可用但需确认符号可见性与 RTLD 标志支持范围；(3) Win32 专有代码（LoadLibrary/SEH）在鸿蒙上不需要但需条件编译裁剪；(4) mmap(MAP_STACK)/pthread 等在 OHOS POSIX 子集中的支持程度需逐项确认。核心 FFI 功能可适配但工作量大，不涉及不可替代的硬件/专有 API。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -797,7 +795,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已移植 Node.js 支持 N-API 插件，Koffi 的 JS 层与 N-API 桥接可直接使用",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_dlopen",
@@ -805,7 +804,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OHOS NDK musl 支持 dlopen/dlsym 基本功能，但 RTLD_GLOBAL/RTLD_DEEPBIND 等扩展标志可能受限或行为不同",
-        "source": "OHOS NDK musl libc 提供 POSIX 子集"
+        "source": "OHOS NDK musl libc 提供 POSIX 子集",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ohos_mmap",
@@ -813,7 +813,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Koffi 异步调用依赖 mmap 分配栈空间和 pthread 创建工作线程；若 OHOS musl 不完全支持这些标志则需替代方案",
-        "source": "需核实 OHOS NDK musl 对 mmap 标志与 pthread 的完整支持度"
+        "source": "需核实 OHOS NDK musl 对 mmap 标志与 pthread 的完整支持度",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_clang_asm",
@@ -821,7 +822,8 @@
         "required": true,
         "target_status": "available",
         "impact": "clang 支持内联汇编，Koffi 的手写汇编跳板可编译，但需验证汇编代码在 musl/clang 下的 ABI 行为一致性",
-        "source": "OHOS NDK 使用 clang 工具链"
+        "source": "OHOS NDK 使用 clang 工具链",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -920,7 +922,21 @@
       "在鸿蒙 Node.js 上运行 Koffi 测试套件验证功能完整性"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。Koffi 的核心难点是手写汇编——调用约定桥接代码需要与目标平台的 C ABI 精确匹配，这是移植工作量最大的部分。该库不依赖特定硬件或不可替代的 API，所有平台专有代码都有条件编译守卫，理论上可全部适配，但需要逐架构的 ABI 验证工作。若目标是 ArkTS 沙箱应用（模型 B），则 Node.js 运行时不可用于应用层，需要改走 N-API 桥接到 ArkTS 的路径，工作量更大。克隆仓库为前端仓库（仅含 README/LICENSE），实际源码位于 Codeberg 单仓 https://codeberg.org/Koromix/rygel/ 的 src/koffi 目录，本报告基于官方文档、npm 包元数据、CHANGELOG 及贡献指南分析，未直接读取 C++/汇编源码——置信度受此影响评为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -931,29 +947,8 @@
       "克隆仓库为前端仓库（仅含 README.md/LICENSE.txt/.github/FUNDING.yml/.identity.json），实际 Koffi 源码位于 Codeberg 单仓 https://codeberg.org/Koromix/rygel/ 的 src/koffi 目录。code-metrics 仅统计前端仓库的 4 个文件/63 行代码，远低于实际项目规模。本报告基于官方文档、npm 注册表元数据、CHANGELOG 及贡献指南进行分析，native_api 的 evidence 引用为推断来源而非直接读取的 file:line。",
       "code_metrics 的 language/code 体积数据仅反映前端仓库（Markdown 37 行 + Text 18 行 + JSON 5 行 + YAML 3 行），不代表实际 Koffi 项目（C++/ASM/JS 约 28.7 MB 解压后 npm 包）。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "nodejs",
-        "rationale": "Koffi 是 Node.js 原生插件，核心语言为 C++ + 汇编，但分发生态和消费方式是 npm/Node.js，故归为 nodejs 生态而非 cpp"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "arch_simd",
-        "rationale": "Koffi 使用手写汇编实现 C 调用约定桥接（非 SIMD 指令，而是 ABI 跳板代码），推荐分类 arch_simd 不完全匹配（'架构特定代码'更准确），但闭轴中无更贴切选项，选用最接近的"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_full",
-        "rationale": "Koffi 需大量适配工作（汇编重验证、POSIX 子集缺口），但所有功能理论上均可在鸿蒙适配、无不可替代 API——归为 needs_adaptation_full（全部可适配）而非 needs_adaptation_partial（部分不可适配）。person_days 区间偏高（15–40）反映汇编验证工作量，但 porting_class 仍为 full 因 unadaptable_apis 为空"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

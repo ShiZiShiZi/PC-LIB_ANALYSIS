@@ -2212,11 +2212,9 @@
     "notes": "支持 7+ 平台（Windows/macOS x86_64+arm64/Linux x86_64+aarch64/FreeBSD/Haiku）；支持 GCC/Clang/MSVC/MinGW 编译器；CMake 特性开关控制功能模块（WITH_X11/WITH_ASAN/WITH_CCACHE/KPXC_FEATURE_*）。"
   },
   "harmony_adaptation": {
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "confidence": "low",
     "summary": "KeePassXC 是 Qt6 C++ 桌面应用——模型 C（整包桌面应用）。Qt6 鸿蒙版已由社区提供（harmony-pc-capabilities: available），核心 GUI 框架可复用。但应用深度集成了三平台原生 API（X11/XCB/XTest/DBus/AppKit/Win32），这些鸿蒙均不存在，需全部用 @ohos.* 系统能力替代。快速解锁的生物认证（Touch ID/Windows Hello/Polkit）无等价物，YubiKey USB/PCSC 硬件支持存疑，桌面集成能力（托盘/快捷键/剪贴板/防截屏）目标状态大多 unknown。",
-    "recommended_path": "创建 OHOS 平台后端（替换原 X11/AppKit/Win32 OSUtils 实现），用 OHOS NDK + 鸿蒙 Qt6 重编，@ohos 系统能力替代 freedesktop Portal/X11/AppKit API",
     "target_assumptions": [
       {
         "id": "ta:qt6_ohos",
@@ -2224,7 +2222,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 GUI 可复用，不需用 ArkUI 重写",
-        "source": "harmony-pc-capabilities: qt (status: available)"
+        "source": "harmony-pc-capabilities: qt (status: available)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_wm",
@@ -2232,7 +2231,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不可用 → 需用 ArkUI 或其他方式重建窗口管理，影响极大",
-        "source": "harmony-pc-capabilities: wm/tray/file_dialog/dnd_clipboard (全部 unknown)"
+        "source": "harmony-pc-capabilities: wm/tray/file_dialog/dnd_clipboard (全部 unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_desktop_app",
@@ -2240,7 +2240,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若仅支持 HAP → 需将 C++ 应用封装为 ability",
-        "source": "harmony-pc-capabilities: desktop_app (unknown)"
+        "source": "harmony-pc-capabilities: desktop_app (unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_x86_64",
@@ -2248,7 +2249,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若仅 arm64 → 需交叉编译但可行",
-        "source": "harmony-pc-capabilities: x86_64 (unknown)"
+        "source": "harmony-pc-capabilities: x86_64 (unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_usb",
@@ -2256,7 +2258,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不可用 → YubiKey 挑战-响应认证功能无法移植",
-        "source": "harmony-pc-capabilities: usb_serial (unknown)"
+        "source": "harmony-pc-capabilities: usb_serial (unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_biometric",
@@ -2264,7 +2267,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "快速解锁功能需鸿蒙生物认证 API 重写",
-        "source": "harmony-pc-capabilities: 权限模型段无生物认证条目"
+        "source": "harmony-pc-capabilities: 权限模型段无生物认证条目",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_internet",
@@ -2272,7 +2276,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "更新检查/HIBP 查询/图标下载依赖网络",
-        "source": "harmony-pc-capabilities: perm_internet (unknown)"
+        "source": "harmony-pc-capabilities: perm_internet (unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_storage",
@@ -2280,7 +2285,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "KDBX 数据库文件读写/配置持久化依赖",
-        "source": "harmony-pc-capabilities: perm_storage (unknown)"
+        "source": "harmony-pc-capabilities: perm_storage (unknown)",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -2418,7 +2424,9 @@
         "evidence": [
           "src/autotype/xcb/AutoTypeXCB.cpp",
           "src/gui/osutils/nixutils/NixUtils.cpp:333-335"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cocoa_appkit",
@@ -2433,7 +2441,9 @@
         "evidence": [
           "src/gui/osutils/macutils/AppKitImpl.mm:36-342",
           "src/autotype/mac/AutoTypeMac.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_os",
@@ -2448,7 +2458,9 @@
         "evidence": [
           "src/gui/osutils/winutils/WinUtils.cpp:63-64",
           "src/gui/osutils/winutils/WinUtils.cpp:181"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:portal_dbus",
@@ -2463,7 +2475,9 @@
         "evidence": [
           "src/gui/osutils/nixutils/NixUtils.cpp:84-97",
           "src/gui/osutils/nixutils/GlobalShortcutsPortal.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:touchid",
@@ -2478,7 +2492,9 @@
         "evidence": [
           "src/quickunlock/TouchID.mm:87-228",
           "src/quickunlock/TouchID.mm:356-381"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:windowshello",
@@ -2492,7 +2508,9 @@
         ],
         "evidence": [
           "src/quickunlock/WindowsHello.cpp:69-98"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:polkit_keyutils",
@@ -2506,7 +2524,9 @@
         ],
         "evidence": [
           "src/quickunlock/Polkit.cpp:31-33"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:procfs",
@@ -2520,7 +2540,9 @@
         ],
         "evidence": [
           "src/gui/osutils/nixutils/NixUtils.cpp:460-490"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [
@@ -2615,7 +2637,30 @@
       "level": "very_high"
     },
     "notes": "confidence = low 因关键目标能力未核实过多（桌面窗口管理器/应用交付/多架构/USB/文件/网络权限均 unknown）。若鸿蒙 PC 不具备桌面窗口环境，porting_class 升级为 infeasible。Qt6 已鸿蒙化是关键利好——避免整个 UI 用 ArkUI 重写。纯本地核心逻辑（加密 KDBX 读写/TOTP/SSH Agent/Secret Service/密码生成/导入导出）可无改动复用。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:x11_autotype",
+          "ua:cocoa_appkit",
+          "ua:win32_os",
+          "ua:portal_dbus",
+          "ua:touchid",
+          "ua:windowshello",
+          "ua:polkit_keyutils",
+          "ua:procfs"
+        ]
+      }
+    }
   },
   "library": {
     "name": "keepassxc",
@@ -2641,30 +2686,51 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "desktop_integration",
-        "rationale": "KeePassXC 作为桌面应用深度依赖系统托盘/全局快捷键/剪贴板/防截屏/启动项等桌面集成能力——这些不属于单独 gui/rendering_3d/media/hardwre 中的任一场景，建议新增 desktop_integration 作为推荐场景 key"
+        "code": "ua_func_class_defaulted:ua:x11_autotype",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_autotype 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "biometric_auth",
-        "rationale": "快速解锁依赖 Touch ID/Windows Hello/Polkit——三类平台专有生物认证方案，鸿蒙适配是重度阻碍，建议新增 biometric_auth 场景 key"
+        "code": "ua_func_class_defaulted:ua:cocoa_appkit",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cocoa_appkit 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "cloud_services",
-        "field": "services.vendor",
-        "kind": "new_value",
-        "value": "hibp",
-        "rationale": "Have I Been Pwned 是知名密码泄露检测服务（Troy Hunt 维护），虽非云平台厂商但属于独立的第三方安全 API 端点"
+        "code": "ua_func_class_defaulted:ua:win32_os",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_os 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:portal_dbus",
+        "class": "actionable",
+        "message": "unadaptable_api ua:portal_dbus 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:touchid",
+        "class": "actionable",
+        "message": "unadaptable_api ua:touchid 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:windowshello",
+        "class": "actionable",
+        "message": "unadaptable_api ua:windowshello 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:polkit_keyutils",
+        "class": "actionable",
+        "message": "unadaptable_api ua:polkit_keyutils 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:procfs",
+        "class": "actionable",
+        "message": "unadaptable_api ua:procfs 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   },
   "capability_profile": {
     "summary": "KeePassXC 是 Qt6 桌面应用，主要涉及 GUI（Qt6 Widgets/Svg）和硬件交互（YubiKey USB/智能卡 PCSC）。不涉及 3D 渲染、音视频媒体，但深度依赖三平台原生窗口系统（X11/Wayland/AppKit/Win32）和桌面集成能力（系统托盘/全局快捷键/剪贴板/辅助功能）。",

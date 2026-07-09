@@ -2078,7 +2078,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 原生库经 OHOS NDK/musl 交叉编译；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -2096,7 +2095,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 库需经 OHOS NDK 交叉编译为 .so；目标平台已提供该能力",
-        "source": "references/harmony-pc-capabilities.json 引言"
+        "source": "references/harmony-pc-capabilities.json 引言",
+        "target_status_model": "available"
       },
       {
         "id": "ta:boost_regex",
@@ -2104,7 +2104,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心语法高亮依赖正则表达式；Boost 已在 OpenHarmony PC cmd-pkgs 提供",
-        "source": "scripts/harmony_adapted.js 查询结果"
+        "source": "scripts/harmony_adapted.js 查询结果",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ctags_optional",
@@ -2112,11 +2113,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "非核心功能；缺失时仅交叉引用生成不可用",
-        "source": "lib/srchilite/ctagsmanager.cpp:35-46"
+        "source": "lib/srchilite/ctagsmanager.cpp:35-46",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "GNU Source-highlight 是纯文本/语法高亮 C++ 库，无 GUI、3D、媒体或硬件依赖。核心逻辑依赖 C++ STL 与 Boost.Regex，文件/目录访问使用标准 POSIX 接口；Boost 已在鸿蒙 PC 官方源提供预编译包。只需使用 OHOS NDK 重新编译本库及 vendored gnulib 即可运行。Windows 专用分支在鸿蒙下不会被启用，不构成阻碍。",
     "blockers": [],
     "compatible": [
@@ -2155,7 +2156,21 @@
       "可选：验证 --gen-references 功能在鸿蒙 ctags 可用时的行为"
     ],
     "notes": "评估按 C++ 库模型 A（经 OHOS NDK 重编后作为原生库/可执行文件运行）。代码中 platform_adaptation 显示 591 行 Windows 守卫代码、33 行 macOS 守卫代码，但 POSIX 路径是主路径且已被 Linux 长期使用，鸿蒙下默认走 POSIX 路径即可。无运行时平台判断分支（platform_branches 为 0），平台耦合轻。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "GNU Source-highlight",
@@ -2179,34 +2194,13 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "library",
-        "rationale": "GNU Source-highlight 同时提供 libsource-highlight C++ 库与多个 CLI 前端；因存在公开 API、pkg-config 与共享库版本，按 library 归类，application 特定的入口/打包信息归入 build_env。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_tool",
-        "rationale": "flex/bison/gengetopt/ctags/help2man/doublecpp 并非库依赖，而是构建期或可选运行期系统工具；沿用 dependencies 结构但 locality=system、scope=build/optional，并用 ecosystem=other 以符合“ecosystem 仅语言”的闭轴要求。"
-      },
-      {
-        "dimension": "tests",
-        "field": "test_cases",
-        "kind": "gap",
-        "value": "language_sample_outputs",
-        "rationale": "metrics.json 显示 288 个 test files 主要来自 tests/ 目录，其中大量为语言高亮预期输出（HTML/CSS/各类语言源文件）而非可执行的单元测试用例；code-metrics 仅识别出 2 个显式测试用例（jest/mocha、pytest/unittest 模式），模型在 tests.notes 中补充说明。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "GNU Source-highlight 是纯文本处理/语法高亮库，不涉及 GUI 窗口、3D 渲染、音视频媒体或特定硬件设备。鸿蒙化时不存在 GUI/媒体/硬件类重大阻碍。",

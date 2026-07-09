@@ -2095,8 +2095,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（库按模型A：经OHOS NDK/musl交叉编译C++库产物(.so)，跑在鸿蒙原生层；Python绑定跑在已移植的鸿蒙Python 3.12运行时上；arm64/x86_64；自研内核，非Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         14,
@@ -2105,7 +2104,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "OpenImageIO 是C++17图像I/O库，核心路径：用OHOS NDK(clang+musl)交叉编译libOpenImageIO/libOpenImageIO_Util/libtexture及所有内嵌格式插件为.so，然后编译Python绑定的pybind11扩展。关键工作量在于(1)为32个C/C++依赖中约一半未鸿蒙化的库做交叉编译（含Required的OpenEXR），(2)在OS抽象层sysutil.cpp/filesystem.cpp/plugin.cpp中新增OHOS平台分支适配POSIX子集缺口，(3)iv Qt/OpenGL查看器暂可disable(USE_QT=OFF)。已鸿蒙化的依赖(zlib/libjpeg-turbo/libpng/freetype/FFmpeg/Imath等约15个)可直接用鸿蒙预编译包，显著降低依赖构建负担。纯算法核心(ImageBuf/ImageBufAlgo)与格式插件逻辑无平台耦合，可直接复用。",
     "target_assumptions": [
       {
@@ -2114,7 +2112,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++库交叉编译的基础——已有OHOS NDK，可编译.so",
-        "source": "harmony-pc-capabilities.json#runtimes"
+        "source": "harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_runtime",
@@ -2122,7 +2121,8 @@
         "required": false,
         "target_status": "available",
         "impact": "非必须（C++库可直接用），但Python绑定依赖它运行",
-        "source": "harmony-pc-capabilities.json#python"
+        "source": "harmony-pc-capabilities.json#python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt",
@@ -2130,7 +2130,8 @@
         "required": false,
         "target_status": "available",
         "impact": "iv查看器依赖Qt6/5；社区已有移植版(cmd-pkgs)；如不需iv可disable(USE_QT=OFF)",
-        "source": "harmony-pc-capabilities.json#qt"
+        "source": "harmony-pc-capabilities.json#qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl",
@@ -2138,7 +2139,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "iv查看器用OpenGL显示图像(glTexImage2D/glDrawPixels基本路径)；partial状态下基本GL操作大概率可用但不保证全部扩展",
-        "source": "harmony-pc-capabilities.json#opengl"
+        "source": "harmony-pc-capabilities.json#opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:arm64",
@@ -2146,7 +2148,8 @@
         "required": true,
         "target_status": "available",
         "impact": "主力架构，OIIO已有ARM NEON SIMD路径",
-        "source": "harmony-pc-capabilities.json#arm64"
+        "source": "harmony-pc-capabilities.json#arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -2154,7 +2157,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "待核实覆盖情况；OIIO在x86_64下测试充分（SSE/AVX SIMD），但鸿蒙PC的x86_64覆盖未知",
-        "source": "harmony-pc-capabilities.json#x86_64"
+        "source": "harmony-pc-capabilities.json#x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -2340,7 +2344,21 @@
       "在鸿蒙PC上跑通OIIO测试套件（至少核心imageio/imagebufalgo测试）验证功能完整"
     ],
     "notes": "评估按模型A（C++库经OHOS NDK交叉编译为.so，Python绑定跑在鸿蒙Python运行时上）。置信度medium因为(1)OpenEXR等约15个依赖需自行交叉编译，虽每个单独可编译但总体工作量有不确定性；(2)x86_64架构在鸿蒙PC的覆盖状态unknown。iv查看器（Qt+OpenGL）建议首版disable（USE_QT=OFF），仅交付库和命令行工具，后续再评估Qt鸿蒙版的iv可行性。平台守卫代码量中等（932行，主要Win32/POSIX/BSD分支），OHOS大概率复用POSIX/Linux路径改动量小。R3DSDK（RED专有SDK）默认关闭且无鸿蒙版，无需处理。DICOM/OpenVDB/Ptex等长尾可选格式格式可首轮skip。person_days[14,25]对应中工作量，上限考虑全部可选依赖交叉编译+完整测试的时间。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "OpenImageIO",
@@ -2365,37 +2383,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "vendored",
-        "rationale": "pugixml在OIIO中默认vendored但保留了USE_EXTERNAL_PUGIXML选项切换到系统库。acquisition标注为vendored/locality=local（默认），但严格说是dual-mode（本地方案+可选系统）。建议panel在dep展示时支撑这种'default-vendored, optionally-system'标注。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "gap",
-        "rationale": "对于C++库经OHOS NDK交叉编译（库自有.so产品）、Python绑定跑在鸿蒙Python上（模型A路径）的场景，recommended_path取值recompile_napi不够精确——N-API是JS/Node桥。此场景更准确的是cross_compile_native（交叉编译原生.so），但当前推荐词表无此值。暂用recompile_napi（作为'重新编译native产物'含义的近似）"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "rationale": "OpenImageIO包含7个命令行工具（oiiotool/iinfo/iv等）和Python绑定，主要交付物是libOpenImageIO/libOpenImageIO_Util两个库。既是库附带CLI工具，kind定为library。iv(Qt/OpenGL)为可选的图形化查看器，如独立评估iv本身可判为application，但整体项目性质为library"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "harmony_status",
-        "kind": "ambiguity",
-        "rationale": "harmony-pc-capabilities.json标记Qt为available(cmd-pkgs)，但harmony_adapted.js脚本未找到qt/qt5/qt6/qtbase等name变体。cmd-pkgs清单里的Qt预编译包可能以不同命名形式存在（如qt5-qtbase、libqt6等）。本次人工校验后采用capabilities.json的available结论，并在meta.observations记录脚本与capabilities的差异"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目核心为图像I/O库，自身不涉及GUI（iv查看器是可选的Qt/OpenGL构件），涉及3D渲染（iv用OpenGL显示图像）、媒体（FFmpeg格式插件读取视频帧）、以及CPU SIMD硬件加速。无特定硬件依赖。",

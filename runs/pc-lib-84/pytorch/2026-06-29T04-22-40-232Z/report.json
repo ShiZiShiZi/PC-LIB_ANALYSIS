@@ -2038,8 +2038,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Python 运行时已移植；原生 C/C++ 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -2048,7 +2047,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile_ohos",
     "summary": "PyTorch 的 Python 层可直接跑在鸿蒙已移植的 Python 3.12 运行时上，但庞大的 C++/CUDA 原生后端必须经 OHOS NDK 交叉编译。CUDA/ROCm/Metal 等专有 GPU 后端在鸿蒙 PC 无等价实现，必须关闭；CPU 核心、autograd、torch.nn 与部分编译器路径可适配，但 POSIX fork、Linux perf_event、/proc 诊断、Win32 分支、MPI/Gloo/NCCL 分布式栈均需条件编译或重写。整体可行但工作量极高，且 GPU 训练/推理功能将不可用。",
     "blockers": [
       {
@@ -2217,7 +2215,9 @@
         "evidence": [
           "aten/src/ATen/cuda/CUDADevice.h:6",
           "torch/csrc/cuda/shared/cudart.cpp:2"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cudnn",
@@ -2232,7 +2232,9 @@
         "evidence": [
           "aten/src/ATen/cudnn/cudnn-wrapper.h:3",
           "torch/csrc/cuda/shared/cudnn.cpp:15"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nccl",
@@ -2247,7 +2249,9 @@
         "evidence": [
           "torch/csrc/cuda/nccl.cpp:12",
           "torch/csrc/distributed/c10d/NCCLUtils.hpp:15"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:rocm_hip",
@@ -2259,7 +2263,9 @@
         "evidence": [
           "cmake/public/LoadHIP.cmake",
           "torch/csrc/hip/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metal_mps",
@@ -2271,7 +2277,9 @@
         "evidence": [
           "aten/src/ATen/mps/MPSDevice.h:13",
           "aten/src/ATen/native/mps/OperationUtils.h:33"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2281,7 +2289,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 层可直接运行，无需重写",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cuda",
@@ -2289,7 +2298,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "GPU 训练/推理功能无法移植，必须关闭 CUDA 后端",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_ndk",
@@ -2297,7 +2307,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "决定 C++ 后端能否编译及哪些 POSIX API 需降级",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:openmp",
@@ -2305,7 +2316,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不可用，需降级为 NATIVE 线程池",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:blas",
@@ -2313,7 +2325,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "影响 CPU 矩阵运算性能与能否编译",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2371,7 +2384,27 @@
       "在鸿蒙 Python 上跑通核心单测，建立 CI 流水线"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时上）。因存在 required+unknown 的目标假设（OpenMP、BLAS、OHOS NDK C++20/POSIX 子集完整度），置信度下调至 medium。若目标是 ArkTS 沙箱应用（模型 B），则整个 Python 运行时不可用，结论将变为 infeasible。GPU 功能（CUDA/ROCm/Metal）明确无法移植，必须关闭。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda_runtime",
+          "ua:cudnn",
+          "ua:nccl",
+          "ua:rocm_hip",
+          "ua:metal_mps"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2383,29 +2416,35 @@
       "部分 GPU/分布式后端为可选组件，实际移植工作量取决于最终关闭的功能集合。",
       "鸿蒙 PC 上 OHOS NDK 对 C++20、OpenMP、BLAS、POSIX fork/perf_event 的支持程度尚未全部核实，影响最终 person_days 区间。"
     ],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "submodule_checkout",
-        "rationale": "nccl 未在 .gitmodules 中静态列出，而是通过 cmake/External/nccl.cmake 在构建时 checkout，应记录为 submodule + 远程。"
+        "code": "ua_func_class_defaulted:ua:cuda_runtime",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda_runtime 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "rocm_hip",
-        "rationale": "PyTorch 对 AMD GPU 有独立 HIP 后端，与 CUDA 共用大量代码但仍是独立 API 家族，建议作为 hardware 下的独立 type。"
+        "code": "ua_func_class_defaulted:ua:cudnn",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cudnn 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "cross_compile_ohos",
-        "rationale": "对 PyTorch 这类既有 Python 运行时层又有庞大 C++ 后端的库，'cross_compile_ohos' 比 'recompile_napi' 更贴切，因为 Python 包直接跑在已移植运行时上，只需用 OHOS toolchain 重编原生扩展。"
+        "code": "ua_func_class_defaulted:ua:nccl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nccl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:rocm_hip",
+        "class": "actionable",
+        "message": "unadaptable_api ua:rocm_hip 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:metal_mps",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal_mps 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

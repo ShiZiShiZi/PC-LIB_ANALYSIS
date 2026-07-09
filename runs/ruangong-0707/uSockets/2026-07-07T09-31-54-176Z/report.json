@@ -1385,8 +1385,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 原生库走 OHOS NDK/musl 重编，arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         6.1,
@@ -1437,7 +1436,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 TCP/UDP 功能依赖；缺失则整个库无法运行",
-        "source": "harmony-pc-capabilities.json#runtimes + OHOS NDK musl POSIX 子集说明"
+        "source": "harmony-pc-capabilities.json#runtimes + OHOS NDK musl POSIX 子集说明",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libuv_ohos",
@@ -1445,7 +1445,8 @@
         "required": true,
         "target_status": "available",
         "impact": "默认 epoll 后端在鸿蒙上不确定，迁移使用 libuv 后端作为跨平台事件循环",
-        "source": "scripts/harmony_adapted.js（libuv: adapted）"
+        "source": "scripts/harmony_adapted.js（libuv: adapted）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openssl_ohos",
@@ -1453,7 +1454,8 @@
         "required": true,
         "target_status": "available",
         "impact": "TLS 功能依赖；缺失则需换 BoringSSL/WolfSSL 自编译",
-        "source": "scripts/harmony_adapted.js（openssl: adapted）"
+        "source": "scripts/harmony_adapted.js（openssl: adapted）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:linux_socket_extensions",
@@ -1461,7 +1463,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "缺失时 UDP 批量收发与发送优化回退到兼容性实现，性能下降但功能可用",
-        "source": "native_api 中 src/bsd.c 的条件分支；文档未明确覆盖"
+        "source": "native_api 中 src/bsd.c 的条件分支；文档未明确覆盖",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1477,7 +1480,6 @@
       }
     ],
     "critical_dependencies": [],
-    "recommended_path": "recompile_ndk",
     "summary": "uSockets 是 C 原生网络库，核心使用 POSIX socket 原语；迁移至鸿蒙 PC 时，推荐用 OHOS NDK 重编并显式选择 libuv 后端（WITH_LIBUV=1）与 OpenSSL 后端（WITH_OPENSSL=1），关闭 Linux 专属的 io_uring（WITH_IO_URING=0）与未鸿蒙化的 lsquic（WITH_QUIC=0）。libuv 与 OpenSSL 均已在 cmd-pkgs 提供鸿蒙预编译包，核心功能无需重写源码。置信度为 medium，主要因为部分 Linux socket 扩展在 musl POSIX 子集中的可用性尚未在文档中逐项核实。",
     "blockers": [
       {
@@ -1579,7 +1581,21 @@
     "porting_class_model": "recompile_only",
     "porting_class_adjusted": {
       "from": "recompile_only",
-      "to": "needs_adaptation_full"
+      "to": "needs_adaptation"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
     }
   },
   "library": {
@@ -1611,44 +1627,16 @@
       "harmony_adaptation.confidence 设为 medium：ohos.permission.INTERNET 在鸿蒙 PC 形态的授予方式及个别 Linux socket 扩展（sendmmsg/recvmmsg/accept4）在 OHOS NDK 的可用性尚未逐项核实。"
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "networking",
-        "rationale": "uSockets 是纯粹网络库，不触及 GUI/3D/媒体/硬件；推荐场景集未覆盖'networking'，但网络 I/O 是鸿蒙适配的关键场景，故新增。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "recompile_ndk",
-        "rationale": "C 原生库直接经 OHOS NDK 重编即可，不需要 Node-API 暴露给 ArkTS（与技能示例 'recompile_napi' 区分）。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "new_value",
-        "value": "linux_specific_backend",
-        "rationale": "io_uring 是 Linux 专属后端类别，不同于一般 posix_subset_gap，单独标记。"
-      },
-      {
-        "dimension": "code_partition",
-        "field": "bucket_allocation",
-        "kind": "ambiguity",
-        "value": "src/ 目录包含 bsd.c 等平台分支，但按整体目录归入 recompile_reuse",
-        "rationale": "src/ 目录 2212 行中平台相关代码已被 #ifdef 隔离且有回退路径；无法按子目录拆分（dir_loc 只到 src/），故按整体目录归类。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 recompile_only，但代码分区(dim-12)存在需适配模块（非零源码改动），已按\"不矛盾\"校正为 needs_adaptation_full"
+        "message": "porting_class 模型原判 recompile_only，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "uSockets 是底层网络库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件；核心触及的是网络 I/O 场景，该场景在鸿蒙上有 @ohos.net.socket 等能力可用，但事件循环后端需要适配。",

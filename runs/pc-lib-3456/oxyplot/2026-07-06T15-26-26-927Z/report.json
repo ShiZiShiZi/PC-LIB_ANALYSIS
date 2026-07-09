@@ -774,8 +774,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，ArkTS 应用层）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -795,7 +794,9 @@
         "category": "platform",
         "evidence": [
           "Source/OxyPlot.Wpf/XpsExporter.cs:116"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:gdiplus",
@@ -807,7 +808,9 @@
         "category": "platform",
         "evidence": [
           "Source/OxyPlot.WindowsForms/GraphicsRenderContext.cs:18"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -817,7 +820,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 无 .NET 运行时，则整个库不可运行；需验证是否可交叉编译或通过其他方式运行 .NET 字节码",
-        "source": "references/harmony-pc-capabilities.json runtimes 段（无 .NET 条目）"
+        "source": "references/harmony-pc-capabilities.json runtimes 段（无 .NET 条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:skia_native",
@@ -825,11 +829,11 @@
         "required": true,
         "target_status": "partial",
         "impact": "SkiaSharp 依赖 libskia 原生库；鸿蒙 ArkUI 绘制基于 Skia（partial），但三方库直接链接 Skia 的覆盖需验证",
-        "source": "references/harmony-pc-capabilities.json graphics_3d 段 skia_2d"
+        "source": "references/harmony-pc-capabilities.json graphics_3d 段 skia_2d",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "OxyPlot 核心库（OxyPlot.Core）是纯托管 C# 代码，面向 .NET Standard 2.0，不依赖任何平台 API——这是最容易适配的部分。关键是鸿蒙 PC 需要可运行 .NET 字节码的运行时（目前状态 unknown）。假设 .NET 运行时可获得，核心库及其 SkiaSharp/ImageSharp 跨平台渲染后端可直接运行或仅需重编译；WPF 和 Windows Forms 渲染后端为 Windows 专有，不可移植但可替换——已有 SkiaSharp 和 ImageSharp 后端作为跨平台替代。PDFsharp 后端（仅 .NET Framework 4.6.2）不可移植，但 SkiaSharp 已提供 PDF 导出。主要工作在于：1) 确保 .NET 运行时可用；2) 验证 SkiaSharp 原生库在鸿蒙 PC 上可正常加载；3) 为鸿蒙 GUI 框架编写新的 PlotView 宿主控件（适配 IPlotView 接口）。",
     "blockers": [
       {
@@ -936,6 +940,23 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:xps_print",
+          "ua:gdiplus"
+        ]
+      }
     }
   },
   "library": {
@@ -961,22 +982,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "build_env",
-        "field": "runtime_version",
-        "kind": "gap",
-        "value": "dotnet",
-        "rationale": "harmony-pc-capabilities.json 的 runtimes 段无 .NET 条目，无法确认鸿蒙 PC 是否支持 .NET 运行时——这是整个评估的关键不确定性"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "tests",
-        "kind": "ambiguity",
-        "value": "test_dirs_misclassified",
-        "rationale": "cloc 将 OxyPlot.Tests/OxyPlot.SkiaSharp.Tests/OxyPlot.Wpf.Tests 等目录分类为 production（metrics 显示 test_files:0），因为目录名 token '.Tests' 未被脚本正确识别；实际上这些是 NUnit 测试项目，应属 test 类别"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -984,10 +990,21 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:xps_print",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xps_print 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:gdiplus",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gdiplus 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "OxyPlot 是数据可视化绘图库，涉及 GUI 桌面界面场景（WPF/WinForms 渲染后端为 Windows 专有 GUI 框架）和 2D 图形渲染（SkiaSharp 后端间接使用 Skia 原生库）。不涉及 3D 渲染、媒体或特定硬件。",

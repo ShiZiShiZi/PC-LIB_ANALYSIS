@@ -2003,8 +2003,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (模型 C：整包桌面应用移植；自研内核，OHOS NDK 原生层，arm64/x86_64)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -2013,7 +2012,6 @@
       "level": "very_high"
     },
     "confidence": "low",
-    "recommended_path": "arkts_rewrite",
     "summary": "OBS Studio 是重度平台耦合的桌面直播应用，核心功能依赖 Qt6 GUI、OpenGL/D3D11/Metal 渲染、多平台音视频捕获、以及 NVIDIA/AMD/Intel 硬件编码。鸿蒙 PC 上 Qt6 已有社区版（partial），OpenGL ES/EGL 为 partial，但 X11/Wayland/PulseAudio/ALSA 等桌面音视频栈在鸿蒙上不可用，需用 @ohos.* API 重写；CUDA/NVENC/AMF/QSV 硬件编码完全不可用。整体判断：部分功能可适配（软件编码路径、Qt6 GUI），但屏幕/音频捕获与硬件编码等核心功能需大量重写或不可用。",
     "blockers": [
       {
@@ -2124,7 +2122,9 @@
         ],
         "caused_by": [
           "ta:desktop_wm"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:xcomposite",
@@ -2138,7 +2138,9 @@
         ],
         "caused_by": [
           "ta:desktop_wm"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:pipewire_screencast",
@@ -2152,7 +2154,9 @@
         ],
         "caused_by": [
           "ta:desktop_wm"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cuLaunchKernel",
@@ -2163,7 +2167,9 @@
         "category": "hardware",
         "evidence": [
           "plugins/obs-nvenc/cuda-helpers.c:19"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:amf_encode",
@@ -2174,7 +2180,9 @@
         "category": "hardware",
         "evidence": [
           "plugins/obs-ffmpeg/texture-amf.cpp:2762"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nvenc_encode",
@@ -2185,7 +2193,9 @@
         "category": "hardware",
         "evidence": [
           "plugins/obs-nvenc/nvenc-helpers.c:105"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2195,7 +2205,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则屏幕捕获功能无法运行，OBS 核心功能缺失",
-        "source": "harmony-pc-capabilities.json#wm"
+        "source": "harmony-pc-capabilities.json#wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audio_io",
@@ -2203,7 +2214,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则音频捕获/监听无法运行",
-        "source": "harmony-pc-capabilities.json#audio_io"
+        "source": "harmony-pc-capabilities.json#audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -2211,7 +2223,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则需重新打包为鸿蒙应用格式",
-        "source": "harmony-pc-capabilities.json#desktop_app"
+        "source": "harmony-pc-capabilities.json#desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_full",
@@ -2219,7 +2232,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "OBS OpenGL 后端依赖完整 OpenGL，仅有 GLES 可能功能受限",
-        "source": "harmony-pc-capabilities.json#opengl"
+        "source": "harmony-pc-capabilities.json#opengl",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [
@@ -2288,7 +2302,28 @@
       "申请必要权限（CAMERA/MICROPHONE/INTERNET）"
     ],
     "notes": "评估按模型 C（整包桌面应用移植）。多个核心目标能力（桌面窗口管理器/音频 I/O/应用交付形态）状态为 unknown，因此 confidence 下调为 low。CUDA/NVENC/AMF/QSV 为不可适配硬件 API，相关 GPU 编码功能确认无法移植，但软件编码路径仍可用。Qt6 与 FFmpeg 已有鸿蒙化版本，降低了一定工作量。platform_adaptation 显示 4160 行平台守卫代码，表明平台耦合度极高。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cgdisplaystream",
+          "ua:xcomposite",
+          "ua:pipewire_screencast",
+          "ua:cuLaunchKernel",
+          "ua:amf_encode",
+          "ua:nvenc_encode"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2296,29 +2331,40 @@
     "counter_tool": "cloc",
     "confidence_overall": "low",
     "warnings": [],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "OBS Studio 是终端用户启动的桌面直播软件，不是被 API 调用的库；kind 判为 application，dim-9 走模型 C"
+        "code": "ua_func_class_defaulted:ua:cgdisplaystream",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cgdisplaystream 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "pipewire",
-        "rationale": "PipeWire 屏幕捕获 API 作为一个独立的平台特有 API 家族出现，未在推荐清单中"
+        "code": "ua_func_class_defaulted:ua:xcomposite",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xcomposite 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "arkts_rewrite",
-        "rationale": "作为桌面应用走模型 C，核心功能（屏幕/音频捕获）需用 @ohos.* API 重写，而非简单重编"
+        "code": "ua_func_class_defaulted:ua:pipewire_screencast",
+        "class": "actionable",
+        "message": "unadaptable_api ua:pipewire_screencast 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cuLaunchKernel",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuLaunchKernel 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:amf_encode",
+        "class": "actionable",
+        "message": "unadaptable_api ua:amf_encode 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nvenc_encode",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nvenc_encode 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

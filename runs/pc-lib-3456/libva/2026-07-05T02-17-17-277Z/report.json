@@ -1725,8 +1725,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (OHOS NDK + musl libc + POSIX 子集; 自研内核, 非 Linux ABI; arm64/x86_64; 库模式走模型 A——经 OHOS NDK 重编译为 .so, 对接鸿蒙原生图形/显示接口替代 DRM/X11/Wayland/Win32 后端)",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1735,7 +1734,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libva 是 GPU 硬件加速视频编解码中间件，核心 API 与编解码参数结构是可移植的纯 C 代码，但关键阻碍在于其显示后端（DRM/X11/Wayland/Win32）深度依赖平台特定的内核接口与窗口系统，这些在鸿蒙自研内核上无直接对应。适配路径：保留核心编解码 API 框架、vtable 分发、配置解析与驱动加载机制（这些均为可移植逻辑），为鸿蒙创建新的 OHOS 后端，使用 OH_NativeWindow/EGL/NativeBuffer 等鸿蒙原生图形 API 替代 DRM libdrm 和 X11/Wayland 显示层。部分 GLX/OpenGL 互操作功能需依赖鸿蒙 EGL/GLES 能力（partial），整体可移植但工作量大。",
     "blockers": [
       {
@@ -1857,7 +1855,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "缺少 GPU 驱动接口则 libva 无法与 GPU 通信——核心编解码硬件加速能力完全不可用，libva 失去存在意义",
-        "source": "harmony-pc-capabilities.json 未明确覆盖；需核实鸿蒙 Native API 中是否存在 OH_NativeBuffer/图形驱动接口"
+        "source": "harmony-pc-capabilities.json 未明确覆盖；需核实鸿蒙 Native API 中是否存在 OH_NativeBuffer/图形驱动接口",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:display_server",
@@ -1865,7 +1864,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libva 的显示后端（用于创建 VA Display 上下文、分配表面缓冲区）需对接显示系统；若鸿蒙无对应接口则需额外适配层",
-        "source": "harmony-pc-capabilities.json 桌面窗口管理器 / 显示服务 状态为 unknown"
+        "source": "harmony-pc-capabilities.json 桌面窗口管理器 / 显示服务 状态为 unknown",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:egl_support",
@@ -1873,7 +1873,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "GLX/VA-GL 互操作功能的替代方案依赖 EGL；若 EGL image sharing 不可用，可暂时禁用 GL 互操作，不影响核心编解码",
-        "source": "harmony-pc-capabilities.json graphics_3d.egl = partial"
+        "source": "harmony-pc-capabilities.json graphics_3d.egl = partial",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
@@ -1923,7 +1924,21 @@
       "在鸿蒙 PC 上与至少一款已移植的 VA 驱动（如 intel-media-driver 鸿蒙版）联调验证编解码流水线"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 重编译运行在鸿蒙原生层）。核心不确定性来自 target_assumptions 中 2 项 required + unknown 的目标能力（GPU 驱动接口、显示服务器/合成器），导致 confidence 下调至 medium——若鸿蒙 PC 不提供 GPU 驱动框架，libva 核心不可移植。平台适配信号：code_metrics.platform_adaptation 显示 37 行 windows 守卫 + 2 行 linux 守卫（总量 39 行，占比极低），但有大量平台专有 API 通过条件编译分散在各个后端文件中（每个后端文件数百行）。libdrm、x11、xext 已鸿蒙化（有 OHOS 预编译包），但 DRM/X11 后端本身仍需重写——已鸿蒙化的底层库可能意味着鸿蒙已有兼容层的初步支持，这是积极信号。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libva",
@@ -1941,40 +1956,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system (find_package / pkg-config expected pre-installed)",
-        "rationale": "libva 的所有依赖均为 system 类型——通过 meson dependency()/find_package 或 configure.ac PKG_CHECK_MODULES 查找系统预装库，无远端下载、无子模块、无 vendored 源码。这是 C/C++ Linux 库的典型模式。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "x11_dri2_dri3",
-        "rationale": "DRI2/DRI3 是 Linux 图形栈中 GPU 直接渲染的关键协议，既不属于标准 X11 XLib 也不属于纯 libdrm——它是 X 服务器与 GPU 之间的直通路径，值得独立成组"
-      },
-      {
-        "dimension": "native_api",
-        "field": "apis",
-        "kind": "ambiguity",
-        "value": "dlopen vs LoadLibrary in compat_win32.h",
-        "rationale": "compat_win32.h 将 dlopen/dlclose/dlsym 内联映射为 LoadLibrary/FreeLibrary/GetProcAddress，代码中使用统一 dlopen 接口。在 native_api 中，platform=posix 的 dlopen 组和 platform=windows 的 Win32 组分别记录了实际系统调用，compat 层的映射视为实现细节。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers",
-        "kind": "gap",
-        "value": "GPU 驱动接口能力 unknown",
-        "rationale": "harmony-pc-capabilities.json 的 hardware_devices 段覆盖了 CUDA/OpenCL/USB/蓝牙等，但没有覆盖 GPU 图形驱动框架（DRM 等价物）——这是评估 libva 这类 GPU 中间件可移植性的最关键事实，建议新增一行 'gpu_driver_framework' 供后续兑现"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libva 是硬件视频编解码与处理库，核心涉及媒体（视频编解码/后处理）与硬件（GPU/DRM）两大场景；另通过 GLX 后端与 OpenGL 3D 图形栈交叉。不涉及 GUI 界面本身——它是被媒体框架与多媒体应用调用的底层 API 库。",

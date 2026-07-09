@@ -651,7 +651,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (库模型 A：跑在已移植的 .NET 运行时上; arm64/x86_64; 自研内核, 无 Linux ABI)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         1,
@@ -660,7 +659,6 @@
       "level": "low"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "WebSocket4Net 是纯托管 C# 库，仅使用 .NET BCL 标准 API（网络、密码学、管道 I/O），无平台特有 API、无原生扩展、无动态加载库、无 GUI/3D/媒体/硬件依赖。鸿蒙 PC 若已移植 .NET 运行时，则本库可直接运行，无需代码修改。核心依赖 SuperSocket.Client 和 SuperSocket.WebSocket 亦为纯托管 .NET 库，在 .NET 运行时可用时同样可直接运行。置信度降为 medium，因为鸿蒙 PC 的 .NET 运行时可用性尚未在目标能力参考中核实。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -671,7 +669,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 无 .NET 运行时，则本库及所有依赖均无法运行",
-        "source": "references/harmony-pc-capabilities.json (runtimes 段未列出 .NET)"
+        "source": "references/harmony-pc-capabilities.json (runtimes 段未列出 .NET)",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -692,7 +691,21 @@
       "验证 SuperSocket.Client/SuperSocket.WebSocket 依赖在鸿蒙 .NET 运行时上的功能完整性（TCP 连接、TLS/SSL、WebSocket 握手）"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植运行时上）。本库为纯托管 .NET 库，无原生扩展/平台耦合，若 .NET 运行时在鸿蒙 PC 可用则实质上无需适配（porting_class: no_adaptation）。但 harmony-pc-capabilities.json 的 runtimes 段未列出 .NET 运行时，其可用性为 unknown——因此 confidence 降为 medium。若鸿蒙 PC 确实不提供 .NET 运行时，则需通过 ArkTS + Node-API 重写（模型 B），工作量将大幅上升。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "WebSocket4Net",
@@ -713,22 +726,15 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": ".NET runtime availability on HarmonyOS PC is unknown",
-        "rationale": "harmony-pc-capabilities.json runtimes 段未列出 .NET 运行时，无法确认鸿蒙 PC 是否已移植 .NET 6+；这是纯托管 .NET 库能否运行的唯一前置条件，列为 unknown 并下调 confidence"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "warnings": [
       "shape coerced: license.evidence array→string"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "WebSocket4Net 是纯网络通信库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

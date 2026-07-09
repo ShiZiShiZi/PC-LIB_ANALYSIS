@@ -1974,8 +1974,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库默认按模型 A：经 OHOS NDK 交叉编译为 arm64/x86_64 .so；自研内核，无 Linux ABI；核心库不依赖 ArkTS/ArkUI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1984,7 +1983,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile：使用 OHOS NDK（clang + musl + ohos.toolchain.cmake）交叉编译 C++ 核心库与依赖；可选 GPU/GUI 应用默认关闭或替换为 OpenGL ES/EGL + Qt6（ocioview）；若需暴露给 ArkTS 再用 Node-API 封装。",
     "summary": "OpenColorIO 是纯 C++ 色彩管理核心库，依赖 mostly 已鸿蒙化的通用 C++ 库（expat/yaml-cpp/Imath/ZLIB/minizip-ng/lcms2/OpenImageIO）。核心功能可通过 OHOS NDK 交叉编译在 arm64 上运行；主要工作量来自为可选 GPU/GUI 应用（OpenGL/DirectX/Metal/Vulkan/GLUT/Win32/Cocoa/Qt）做能力裁剪或替换，以及验证 musl POSIX 子集对少量平台抽象的支持。若只移植核心库（OCIO_BUILD_APPS=OFF、OCIO_BUILD_GPU_TESTS=OFF），工作量可降至 3–6 人天。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1994,7 +1992,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "核心库与全部 C++ 依赖交叉编译的前提；OHOS NDK 存在但未在 capabilities 表中单列，需实际验证。",
-        "source": "harmony-pc-capabilities.json#arch / 鸿蒙 PC 原生层常识"
+        "source": "harmony-pc-capabilities.json#arch / 鸿蒙 PC 原生层常识",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arm64",
@@ -2002,7 +2001,8 @@
         "required": true,
         "target_status": "available",
         "impact": "主力目标架构，可直接编译运行。",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -2010,7 +2010,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若需 x86_64 目标，需额外验证 OHOS PC 覆盖度与 x86 SIMD/CPUID 分支。",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_env",
@@ -2018,7 +2019,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "核心库的平台抽象层使用这些 POSIX API；musl 通常支持，但 OHOS POSIX 子集可能有细微缺口，需验证。",
-        "source": "native_api / runtime_surface 分析"
+        "source": "native_api / runtime_surface 分析",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:opengl_gles",
@@ -2026,7 +2028,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "ociodisplay/ocioconvert 的 OpenGL 路径可尝试迁移到 GLES/EGL；桌面完整 OpenGL 覆盖度未核实。",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl / .egl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl / .egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:qt6",
@@ -2034,7 +2037,8 @@
         "required": false,
         "target_status": "available",
         "impact": "ocioview 已基于 PySide6/Qt6，社区已提供鸿蒙 Qt，GUI 业务逻辑可复用。",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -2155,7 +2159,21 @@
       "在鸿蒙 PC 上跑通核心单元测试与 Python 绑定测试"
     ],
     "notes": "默认按库模型 A 评估（核心库经 NDK 交叉编译）。若目标是 ArkTS 沙箱应用（模型 B），需在 C++ 库外再包 Node-API，且 Python/Java 绑定不可用，工作量和难度会显著增加。若只移植核心库（关闭 apps/GPU tests），porting_class 可降至 recompile_only，person_days 约 3–6。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "OpenColorIO",
@@ -2187,30 +2205,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build",
-        "rationale": "OpenColorIO 对 expat/yaml-cpp/pystring/Imath/ZLIB/minizip-ng/lcms2/OpenEXR/pybind11 等均使用 find_package 优先、缺省时 ExternalProject_Add 从 GitHub 下载源码构建的方式，介于 fetchcontent 与 download_build 之间；实际行为更接近 download_build（ExternalProject git），故采用此值。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "ohos_ndk_cpp",
-        "rationale": "harmony-pc-capabilities.json 未单独列出 C/C++ OHOS NDK 工具链能力，但它是 C++ 库移植的事实前提；本次评估将其作为 required+unknown 假设并因此下调 confidence_overall。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "ambiguity",
-        "value": "gui_glut_vs_qt6",
-        "rationale": "仓库同时包含旧式 GLUT/Win32/Cocoa 窗口应用与基于 Qt6/PySide6 的 ocioview；前者在鸿蒙不可用，后者社区已适配 Qt6，因此 gui 场景整体判为 partial 并分路径处理。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "OpenColorIO 核心库本身是纯计算/图形色彩管理库，但仓库附带可选的 GPU 渲染辅助（OpenGL/DirectX/Metal/Vulkan）和一个基于 Qt6/PyOpenGL/pygfx 的配置可视化编辑器 ocioview，因此触及 GUI 与 3D 渲染场景；不涉及音视频媒体或专用硬件（如 CUDA/NPU）。",

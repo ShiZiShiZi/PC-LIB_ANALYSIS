@@ -979,7 +979,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 A：C 库经 OHOS NDK/musl 交叉编译为 .so；Python 绑定在已移植的 Python 3.12 上重建；arm64/x86_64；自研内核，非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -988,7 +987,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "TRE 是一个高度可移植的纯 C 正则表达式库，核心 libtre 仅使用 ANSI C 标准库和可选的 POSIX wchar/wctype 宽字符函数，无平台特有系统调用。OHOS NDK（clang + musl）完全覆盖 TRE 所需的全部 API（malloc/free/memcpy 等 C 标准库，以及 wchar/wctype 等 musl POSIX 子集）。唯一的非标准用法 alloca() 被 clang 原生支持（__builtin_alloca）。agrep 命令行工具额外使用的 POSIX I/O（open/read/close/stat）和 getopt 同样在 musl 中可用。Python 绑定仅需 OHOS NDK 编译 tre-python.c 并链接 libtre。无阻碍点，整体仅需交叉编译与测试。",
     "target_assumptions": [
       {
@@ -997,7 +995,8 @@
         "required": true,
         "target_status": "available",
         "impact": "TRE 的所有 API 依赖均在此范围内；若 musl 缺失某个 wchar 函数可 configure --disable-wchar 退化为 8-bit 模式",
-        "source": "harmony-pc-capabilities.json intro (OHOS NDK musl + POSIX 子集)"
+        "source": "harmony-pc-capabilities.json intro (OHOS NDK musl + POSIX 子集)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_runtime",
@@ -1005,7 +1004,8 @@
         "required": false,
         "target_status": "available",
         "impact": "Python 绑定为可选组件；核心 C 库不依赖 Python",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1053,7 +1053,21 @@
       "运行 TRE 自带的回归测试 (make check) 验证鸿蒙平台正确性"
     ],
     "notes": "TRE 是适配难度最低的 C 库类型：纯计算逻辑 + 标准 C/POSIX API，无平台专有调用、无动态库加载、无外部命令、无硬件依赖。platform_adaptation 机械信号仅 3 行 Windows #ifdef（lib/tre-parse.c:199 的 iswprint 补丁，属 trivia）。agrep 工具额外需要的 getopt_long 在 musl 中已提供。唯一注意点：configure 阶段的 wchar/wctype 检测宏需在 OHOS NDK 环境下验证通过；若 musl 有微小差异可加宏适配，亦可直接禁用 wchar 用 8-bit 模式保底。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "tre",
@@ -1078,7 +1092,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "TRE 是一个纯文本正则表达式匹配库，不涉及 GUI/桌面界面、3D 渲染、媒体（音视频编解码）或特定硬件访问（GPU/摄像头/传感器等）。核心功能为自包含 C 算法实现，对外接 C 标准库和可选 POSIX 宽字符设施。",

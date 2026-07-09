@@ -644,7 +644,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层 + 已移植 Node.js 运行时，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -662,7 +661,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JavaScript 实现可直接运行，无需改动",
-        "source": "references/harmony-pc-capabilities.json — 已移植运行时段"
+        "source": "references/harmony-pc-capabilities.json — 已移植运行时段",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -670,11 +670,11 @@
         "required": true,
         "target_status": "available",
         "impact": "C 源码可通过交叉编译为目标架构对象文件",
-        "source": "references/harmony-pc-capabilities.json — NDK 工具链段"
+        "source": "references/harmony-pc-capabilities.json — NDK 工具链段",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "该库由纯 JavaScript 核心逻辑和少量 C 辅助实现组成。JavaScript 部分可直接运行在已移植到鸿蒙 PC 的 Node.js 运行时上，无需任何修改。C 部分（src/main.c）仅依赖 C99 标准库（<stdbool.h>）和 stdlib 内部头文件，无任何平台特有 API——通过 OHOS NDK 交叉编译即可。预计 1-3 人天完成适配，难度很低。",
     "blockers": [],
     "compatible": [
@@ -700,7 +700,21 @@
       "在鸿蒙模拟器/真机上运行单元测试确认结果一致"
     ],
     "notes": "无平台判断、无文件 I/O、无网络通信、无 GPU 调用。SameValueZero 算法是纯数值比较，无精度/平台相关问题。置信度高。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-float32-base-assert-is-same-value-zero",
@@ -727,7 +741,8 @@
     "observations": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算工具函数，不涉及 GUI、3D 渲染、媒体处理或任何特定硬件。属于纯计算类库，无鸿蒙适配重点场景的触碰。",

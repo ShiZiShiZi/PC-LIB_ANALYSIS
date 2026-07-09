@@ -1117,8 +1117,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1142,7 +1141,9 @@
           "libevdev/libevdev.c:398-517",
           "libevdev/libevdev.c:1708",
           "libevdev/libevdev.c:1887"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:uinput-ioctl",
@@ -1156,7 +1157,9 @@
         "category": "system",
         "evidence": [
           "libevdev/libevdev-uinput.c:55-443"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:dev-input",
@@ -1170,7 +1173,9 @@
         "category": "platform",
         "evidence": [
           "libevdev/libevdev.h:126"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:dev-uinput",
@@ -1184,7 +1189,9 @@
         "category": "platform",
         "evidence": [
           "libevdev/libevdev-uinput.c:382"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:sysfs-input",
@@ -1198,7 +1205,9 @@
         "category": "platform",
         "evidence": [
           "libevdev/libevdev-uinput.c:230"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1208,7 +1217,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "libevdev 的全部核心功能依赖 evdev 子系统，不支持则库完全不可用",
-        "source": "harmony-pc-capabilities.json — 鸿蒙 PC 使用自研内核，不提供 Linux evdev ABI"
+        "source": "harmony-pc-capabilities.json — 鸿蒙 PC 使用自研内核，不提供 Linux evdev ABI",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:uinput-module",
@@ -1216,11 +1226,11 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "libevdev-uinput 的虚拟设备创建功能完全依赖 uinput，不支持则该子模块不可用",
-        "source": "harmony-pc-capabilities.json — 鸿蒙 PC 无 Linux uinput 模块"
+        "source": "harmony-pc-capabilities.json — 鸿蒙 PC 无 Linux uinput 模块",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "abandon",
     "summary": "libevdev 是 Linux 内核 evdev/uinput 子系统的直接封装，其 API 设计与 Linux 输入设备模型深度耦合。鸿蒙 PC 使用自研内核，不提供 Linux evdev/uinput ABI，因此 libevdev 无法在鸿蒙 PC 上编译运行。适配方案不是重写库本身，而是使用鸿蒙原生输入 API（@ohos.multimodalInput）重新实现上层应用所需的输入功能。对需要 libevdev 的应用/库（如 libinput），需在鸿蒙上用鸿蒙输入 API 替换整个 evdev 输入栈。",
     "blockers": [
       {
@@ -1274,7 +1284,27 @@
       "libevdev-events / libevdev-tweak-device 等调试工具需用鸿蒙 API 重写"
     ],
     "notes": "libevdev 是 Linux 输入栈的基石库，位于内核 evdev 驱动与用户空间输入处理程序之间。其存在价值在于封装 Linux 特有的 evdev ioctl，这使得它在非 Linux 平台上没有意义。鸿蒙 PC 的输入架构完全不同，不存在 evdev 子系统。此评估为高置信度：evdev/uinput 的不可用是确定事实。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:evdev-ioctl",
+          "ua:uinput-ioctl",
+          "ua:dev-input",
+          "ua:dev-uinput",
+          "ua:sysfs-input"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1282,29 +1312,35 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_evdev_ioctl",
-        "rationale": "evdev ioctl 是 Linux 内核输入子系统的专有 API 族，不同于通用 posix 或 syscall 分类，需单独归类以准确反映平台依赖"
+        "code": "ua_func_class_defaulted:ua:evdev-ioctl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:evdev-ioctl 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_uinput_ioctl",
-        "rationale": "uinput ioctl 是 Linux 内核虚拟输入设备子系统的专有 API 族，与 evdev ioctl 分属不同子系统"
+        "code": "ua_func_class_defaulted:ua:uinput-ioctl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:uinput-ioctl 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_sysfs",
-        "rationale": "/sys 文件系统访问是 Linux 特有的设备发现机制，区别于通用 POSIX 文件 I/O"
+        "code": "ua_func_class_defaulted:ua:dev-input",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dev-input 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:dev-uinput",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dev-uinput 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:sysfs-input",
+        "class": "actionable",
+        "message": "unadaptable_api ua:sysfs-input 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

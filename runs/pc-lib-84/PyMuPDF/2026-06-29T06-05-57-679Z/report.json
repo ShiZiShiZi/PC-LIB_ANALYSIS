@@ -1430,8 +1430,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植 Python 3.12 运行时上；原生扩展与 MuPDF 经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1440,7 +1439,6 @@
       "level": "high"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "PyMuPDF 主体是纯 Python API 封装，可在鸿蒙已移植 Python 上直接运行；真正工作量在于用 OHOS NDK 交叉编译 MuPDF C/C++ 引擎并重新生成 SWIG 绑定。OCR 自动发现 Tesseract 语言数据依赖外部系统命令，在鸿蒙上可能不可用，但可通过显式传入 tessdata 路径绕过；apply_pages 的 fork 并发路径可用 multiprocessing 替代。OpenHarmony PC PyPI 镜像已有 pymupdf 官方 ohos wheel，说明该路径已被社区验证。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1450,7 +1448,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 封装层可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ndk",
@@ -1458,7 +1457,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "原生扩展与 MuPDF 共享库需用 OHOS NDK 在 arm64/x86_64 上重编；musl POSIX 子集基本够用，但需验证少数编译选项与系统调用",
-        "source": "references/harmony-pc-capabilities.json intro + setup.py 构建脚本"
+        "source": "references/harmony-pc-capabilities.json intro + setup.py 构建脚本",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:tesseract",
@@ -1466,7 +1466,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 OCR 自动语言数据发现；显式设置 TESSDATA_PREFIX 或关闭 Tesseract 构建可绕过",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn 等未知"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn 等未知",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1552,7 +1553,21 @@
       "在鸿蒙 Python 上跑通 pytest 单元测试"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时上）。OpenHarmony PC PyPI 镜像已有 pymupdf 的 ohos wheel，意味着该移植路径已被社区走通，实际工作量可能偏向构建脚本适配而非代码重写。x86_64 在鸿蒙 PC 上的覆盖情况仍标记为 unknown，但 arm64 已 available。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1563,36 +1578,8 @@
       "scripts/ 目录为构建/发布/测试脚本，不是库运行时代码，已排除在 native_api/runtime_surface 证据之外。"
     ],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "top_dirs classification",
-        "kind": "gap",
-        "value": "docs/ counted as production",
-        "rationale": "docs/ 主要是 reStructuredText 文档与 .po 翻译文件，不是库代码；metrics 脚本按目录名将其判为 production，导致 production LOC 被显著放大。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other for system binary",
-        "rationale": "Tesseract OCR 是外部系统二进制（及语言数据），不是 Python/C++ 包；使用 ecosystem=other + scope=optional + locality=system 描述。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "python_c_api as standard",
-        "rationale": "PyMuPDF 的 C 扩展大量使用 CPython API；将其归入 standard/portable，因为鸿蒙 PC 已移植 CPython 运行时。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "root already has official ohos wheel",
-        "rationale": "OpenHarmony PC PyPI 镜像已有 pymupdf 的 ohos wheel，说明项目已被移植；本次仍按源码需交叉编译 MuDF + 适配平台分支评估，给出 needs_adaptation_full。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

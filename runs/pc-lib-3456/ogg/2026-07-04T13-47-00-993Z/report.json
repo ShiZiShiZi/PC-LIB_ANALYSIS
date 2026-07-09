@@ -708,7 +708,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK 重编为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -717,7 +716,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "use_ohos_prebuilt",
     "summary": "libogg 是纯 C 容器格式库，无第三方依赖、无 OS 特有系统调用、无 GUI/媒体/硬件耦合；代码仅依赖 ISO C 标准库与 POSIX 子集支持。经查询，OpenHarmony PC cmd-pkgs 镜像已提供 libogg 预编译包，因此鸿蒙化工作量极低——可直接使用社区预编译产物或从同一份源码经 OHOS NDK 重新编译。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -728,7 +726,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 标准库与 POSIX 子集是 libogg 唯一依赖；已验证 libogg 可在该环境下编译运行",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libogg_prebuilt",
@@ -736,7 +735,8 @@
         "required": false,
         "target_status": "available",
         "impact": "存在预编译包时可直接集成，无需自行交叉编译",
-        "source": "web/harmony-mirror.js isAdapted('cpp','ogg')"
+        "source": "web/harmony-mirror.js isAdapted('cpp','ogg')",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -771,7 +771,21 @@
       "运行位级自测与 framing 自测确认功能完整（CMake BUILD_TESTING 或 automake make check）"
     ],
     "notes": "评估按库默认口径（模型 A：跑在已移植运行时/经 NDK 重编）。libogg 已出现在 OpenHarmony PC C/C++ 预编译包列表（gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs）中，因此推荐直接使用预编译产物；若需定制版本，源码移植风险同样极低。无 GUI、无媒体硬件 I/O、无云服务，无需申请额外鸿蒙权限。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "ogg",
@@ -802,7 +816,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "libogg 是纯容器格式库，只处理 Ogg 页面/包的封装与解封装，不直接涉及 GUI、3D 渲染、音视频硬件 I/O 或特定硬件。它属于多媒体基础设施，但本身不触碰媒体管线或窗口系统。",

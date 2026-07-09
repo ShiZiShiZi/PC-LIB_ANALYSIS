@@ -431,7 +431,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24.13.0 运行时上；纯 JS 无原生扩展；arm64/x86_64）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -440,7 +439,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "loader-utils 是纯 JavaScript 库，无运行时第三方依赖，仅使用 Node.js 标准内置模块（path、crypto、Buffer）与 WebAssembly API。鸿蒙 PC 已移植 Node.js 24.13.0，该库可直接 npm install 运行，无需任何代码改动。WASM 模块以内联 base64 嵌入源码，Node.js 的 WebAssembly 支持与平台无关，无需重编。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -451,7 +449,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时是库正常运行的唯一外部前提",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -484,7 +483,21 @@
       "在鸿蒙 Node.js 上运行 npm install && npm test 验证功能完整"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。纯 JS 无原生扩展、无平台 API、无外部依赖——是适配难度最低的类别。若目标为 ArkTS 沙箱应用（模型 B），则 Node 核心模块不可用需 @ohos.* 重写，难度大幅上升；但该库的典型使用场景为 webpack loader 的辅助工具（运行在 Node.js 构建环境），模型 A 即满足需求。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "loader-utils",
@@ -503,7 +516,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯 JavaScript 构建工具辅助库，不涉及 GUI 界面、3D 渲染、媒体处理或特定硬件设备。所有功能均为内存中的字符串/路径处理与哈希计算，无鸿蒙适配重点场景。",

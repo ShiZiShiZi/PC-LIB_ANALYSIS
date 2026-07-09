@@ -1398,8 +1398,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK / musl + POSIX 子集；arm64 / x86_64）。本库按模型 A 评估：作为 C++ 库经 OHOS NDK 重编为 .so，可再经 Node-API 暴露给 ArkTS；Python 绑定跑在已移植的鸿蒙 Python 运行时上。",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1408,7 +1407,6 @@
       "level": "high"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "OpenEXR 是跨平台 C++ 图像 I/O 库，核心代码高度可移植：文件 I/O 与线程同步已封装为 Win32/POSIX 双后端，OHOS 可直接走 POSIX 后端；SIMD 已含 ARM NEON 路径；生产依赖 Imath 与 libdeflate 已有官方鸿蒙预编译包。主要工作量在于用 OHOS NDK 交叉编译整个库（含 vendored 的 OpenJPH/HT 编解码），并验证 POSIX 信号量、FPU 异常回退等分支在 musl/OHOS 下的行为。Python 绑定因 pybind11 为头文件库、numpy 已有 ohos wheel，移植路径清晰。无 GUI/3D/云/特定硬件，无可彻底阻断移植的 API。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1418,7 +1416,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库的核心交付形态；目标可用，不构成阻断",
-        "source": "references/harmony-pc-capabilities.json intro（原生层 OHOS NDK）"
+        "source": "references/harmony-pc-capabilities.json intro（原生层 OHOS NDK）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_threads",
@@ -1426,7 +1425,8 @@
         "required": true,
         "target_status": "available",
         "impact": "IlmThread 与 OpenEXRCore 的并发基础；musl 支持",
-        "source": "references/harmony-pc-capabilities.json intro（musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json intro（musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_semaphores",
@@ -1434,7 +1434,8 @@
         "required": true,
         "target_status": "available",
         "impact": "IlmThread Semaphore 默认实现；如 OHOS 子集缺失可回退到 PosixCompat 实现",
-        "source": "references/harmony-pc-capabilities.json intro（musl + POSIX 子集） + 仓库内 IlmThreadSemaphorePosixCompat.cpp"
+        "source": "references/harmony-pc-capabilities.json intro（musl + POSIX 子集） + 仓库内 IlmThreadSemaphorePosixCompat.cpp",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_fileio",
@@ -1442,7 +1443,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OpenEXRCore 默认文件后端；musl 支持",
-        "source": "references/harmony-pc-capabilities.json intro（musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json intro（musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm_neon",
@@ -1450,7 +1452,8 @@
         "required": false,
         "target_status": "available",
         "impact": "arm64 上可启用 NEON 加速路径；x86_64 OHOS 上则走 SSE/AVX 路径",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices arm64 (aarch64)"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices arm64 (aarch64)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1573,7 +1576,21 @@
       "构建并验证 Python 绑定在鸿蒙 Python 3.12 上的功能"
     ],
     "notes": "评估按模型 A（C++ 库经 OHOS NDK 重编）。OpenEXR 没有 GUI、3D 渲染、云端服务或特定硬件依赖，核心可移植性良好。若目标场景是 ArkTS 沙箱应用（模型 B），则需在 NDK 层之上再包 Node-API 桥，工作量和 person_days 会进一步增加。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "OpenEXR",
@@ -1603,44 +1620,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].kind",
-        "kind": "new_value",
-        "value": "image_codec",
-        "rationale": "OpenEXR 是图像编解码库，推荐集里的 media kind（video_decode/audio_capture/ffmpeg/gstreamer/codec）偏音视频，用 image_codec 更精确描述 EXR 图像 codec 场景。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].kind",
-        "kind": "new_value",
-        "value": "cpu_simd",
-        "rationale": "硬件场景推荐集只有 gpu_cuda/opencl/usb_serial/bluetooth/camera/sensor/npu/fpga，OpenEXR 的硬件依赖是通用 CPU SIMD（SSE/AVX/NEON），无特定硬件，因此新增 cpu_simd。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].type",
-        "kind": "new_value",
-        "value": "fpu_control",
-        "rationale": "IexMathFpu 使用 x87 FPU 控制寄存器与 ucontext 实现浮点异常处理，自成一类平台相关 API，有别于通用的 posix/win32 组。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].type",
-        "kind": "new_value",
-        "value": "arch_simd",
-        "rationale": "OpenEXR 大量使用 x86 SSE/AVX 与 ARM NEON intrinsics 及内联汇编做编解码加速，单列 arch_simd 便于表达硬件可移植性。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "new_value",
-        "value": "posix_subset_gap",
-        "rationale": "OHOS NDK 基于 musl 提供 POSIX 子集，OpenEXR 的 POSIX 信号量/FPU 控制等接口可能部分缺失或行为有异，用 posix_subset_gap 描述此类子集缺口。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "OpenEXR 是纯图像 I/O 与编解码库，不涉及 GUI、3D 渲染或特定硬件。其触及的鸿蒙适配重点场景为媒体（EXR 图像编解码）与通用硬件加速（x86 SIMD / ARM NEON）。",

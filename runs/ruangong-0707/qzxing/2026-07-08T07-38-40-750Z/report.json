@@ -1011,8 +1011,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（arm64/x86_64，OHOS NDK + Qt5 鸿蒙版；C++ 库通过 OHOS NDK 重编/链接，非 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "porting_class_model": "needs_adaptation_full",
     "effort": {
       "person_days": [
@@ -1089,7 +1088,8 @@
         "required": true,
         "target_status": "available",
         "impact": "QZXing 核心依赖 QImage/QObject；Qt5 可用是核心可编译的前提",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt5_multimedia",
@@ -1098,7 +1098,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响可选的 QZXingFilter 实时扫码功能；若不可用可在构建时关闭 QZXING_MULTIMEDIA",
-        "source": "references/harmony-pc-capabilities.json#media.camera_capture"
+        "source": "references/harmony-pc-capabilities.json#media.camera_capture",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1137,7 +1138,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_ohos_qt",
     "summary": "QZXing 是 C++/Qt 库，核心功能为纯图像/条码算法，可通过 OHOS NDK 配合 Qt5 鸿蒙版重新编译。主要适配点：① 排除/替换 Windows-only 的 win_iconv 兼容层；② 确认或关闭可选的 Qt Multimedia 实时滤镜；③ 验证 Qt5 鸿蒙版 Core/Gui 可用。无专有硬件或无法迁移的 API，整体可行但工作量中到高。",
     "blockers": [
       {
@@ -1239,7 +1239,21 @@
       "评估 QZXING_MULTIMEDIA 实时滤镜：关闭或改用鸿蒙 Camera Kit",
       "运行条码解码/编码测试验证功能完整"
     ],
-    "notes": "评估按 C++ 库模型 A（经 OHOS NDK 重编）进行；Qt5 可用性以 harmony-pc-capabilities.json 为准，但官方 cmd-pkgs 未列出 Qt5，需社区版本确认。摄像头实时滤镜为可选功能，不构成核心阻塞。"
+    "notes": "评估按 C++ 库模型 A（经 OHOS NDK 重编）进行；Qt5 可用性以 harmony-pc-capabilities.json 为准，但官方 cmd-pkgs 未列出 Qt5，需社区版本确认。摄像头实时滤镜为可选功能，不构成核心阻塞。",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "QZXing",
@@ -1262,29 +1276,15 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_win_dll",
-        "rationale": "Windows-only 运行时系统 DLL（mlang.dll）无法归入现有 acquisition 推荐值，实际应标记为 system 并说明是 Windows 系统组件"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "media_camera_qt",
-        "rationale": "QZXing 的摄像头实时滤镜是通过 Qt Multimedia 实现的视频帧处理，归入 media 场景的 camera_capture 子类"
-      }
-    ],
+    "observations": [],
     "warnings": [
       "Qt5 未在 OpenHarmony PC 官方 cmd-pkgs 中列出，但 harmony-pc-capabilities.json 标记 Qt5 为 available；实际移植需以社区 Qt5 鸿蒙版为准。"
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "QZXing 主要触及 GUI（Qt5/6）与媒体（摄像头实时滤镜）两类鸿蒙适配重点场景；不涉及 3D 渲染或专用硬件。",

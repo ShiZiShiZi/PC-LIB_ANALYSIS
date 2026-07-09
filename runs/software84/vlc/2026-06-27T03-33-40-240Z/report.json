@@ -3209,8 +3209,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（整包桌面应用口径；自研内核，OHOS NDK musl/POSIX 子集，arm64/x86_64）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -3219,7 +3218,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "qt_ohos_rebuild",
     "summary": "VLC 作为完整桌面应用移植鸿蒙 PC 属于极复杂工程：Qt6 界面层有社区鸿蒙版可用，但桌面集成（文件对话框、系统托盘、拖拽、多窗口）能力未核实；核心媒体引擎依赖 FFmpeg 生态与大量平台音频/视频输出后端（ALSA/PulseAudio/PipeWire/WASAPI/X11/Wayland/Direct3D），在鸿蒙上无直接等价，需大量模块重写或改用 @ohos.multimedia；光学介质、硬件解码等模块将不可用或需替换。整体可行但工作量巨大，需分阶段落地。",
     "unadaptable_apis": [
       {
@@ -3231,7 +3229,9 @@
         "category": "platform",
         "evidence": [
           "modules/audio_output/alsa.c"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:pulse",
@@ -3242,7 +3242,9 @@
         "category": "platform",
         "evidence": [
           "modules/audio_output/pulse.c"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:pipewire",
@@ -3253,7 +3255,9 @@
         "category": "platform",
         "evidence": [
           "modules/audio_output/pipewire.c"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wasapi",
@@ -3264,7 +3268,9 @@
         "category": "platform",
         "evidence": [
           "modules/audio_output/wasapi.c"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11",
@@ -3276,7 +3282,9 @@
         "evidence": [
           "modules/video_output/xcb/",
           "modules/video_output/glx.c"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wayland",
@@ -3287,7 +3295,9 @@
         "category": "platform",
         "evidence": [
           "modules/video_output/wayland/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:d3d",
@@ -3299,7 +3309,9 @@
         "evidence": [
           "modules/video_output/win32/meson.build:12",
           "modules/hw/d3d11/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:vaapi",
@@ -3310,7 +3322,9 @@
         "category": "hardware",
         "evidence": [
           "modules/hw/vaapi/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:vdpau",
@@ -3321,7 +3335,9 @@
         "category": "hardware",
         "evidence": [
           "modules/hw/vdpau/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nvdec",
@@ -3332,7 +3348,9 @@
         "category": "hardware",
         "evidence": [
           "modules/hw/nvdec/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:procfs",
@@ -3344,7 +3362,9 @@
         "evidence": [
           "src/linux/dirs.c:38",
           "src/linux/cpu.c:104"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_registry",
@@ -3355,7 +3375,9 @@
         "category": "platform",
         "evidence": [
           "src/win32/netconf.c:66"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -3365,7 +3387,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt 为 VLC 主界面依赖；available 表示界面层有移植基础",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_wm",
@@ -3373,7 +3396,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则 VLC 多窗口、停靠、画中画等桌面交互无法正常运行",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_integration",
@@ -3381,7 +3405,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "VLC 桌面集成体验依赖这些子能力；缺失需重写相关模块",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_es",
@@ -3389,7 +3414,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "视频渲染迁移到 GLES/EGL 的基础；partial 表示部分扩展/版本待核实",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ffmpeg",
@@ -3397,7 +3423,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "VLC 编解码核心依赖 FFmpeg；unknown 表示需额外验证或替换为 @ohos.multimedia",
-        "source": "references/harmony-pc-capabilities.json#media.video_codec"
+        "source": "references/harmony-pc-capabilities.json#media.video_codec",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audio_io",
@@ -3405,7 +3432,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则音频输出需重写为 @ohos.multimedia.audio",
-        "source": "references/harmony-pc-capabilities.json#media.audio_io"
+        "source": "references/harmony-pc-capabilities.json#media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_multimedia",
@@ -3413,7 +3441,8 @@
         "required": true,
         "target_status": "available",
         "impact": "可作为 FFmpeg/平台后端的替代路径",
-        "source": "references/harmony-pc-capabilities.json#media.ohos_multimedia"
+        "source": "references/harmony-pc-capabilities.json#media.ohos_multimedia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_app",
@@ -3421,7 +3450,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 ArkTS HAP，则原生 Qt/C++ 应用需重新打包或重写",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -3429,7 +3459,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若仅 arm64 则 x86_64 分发受限",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -3437,7 +3468,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "rootwrap 等辅助进程受限时需改为库内实现",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -3657,7 +3689,34 @@
       "申请 INTERNET、存储、麦克风、摄像头等鸿蒙权限，适配沙箱文件访问模型"
     ],
     "notes": "评估按 HarmonyOS PC 桌面应用口径（模型 C）进行。Qt6 目标能力状态为 available 是积极信号，但大量桌面集成、音频 I/O、视频编解码生态目标状态为 unknown，导致整体置信度降至 medium。若最终目标仅为将 libVLC 作为库移植供 ArkTS 应用调用（模型 B），则需额外通过 Node-API 封装，工作量与约束更严苛。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:alsa",
+          "ua:pulse",
+          "ua:pipewire",
+          "ua:wasapi",
+          "ua:x11",
+          "ua:wayland",
+          "ua:d3d",
+          "ua:vaapi",
+          "ua:vdpau",
+          "ua:nvdec",
+          "ua:procfs",
+          "ua:win32_registry"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -3668,36 +3727,70 @@
       "仓库为 shallow clone，未包含完整 git 历史；bindings/ 目录在当前 shallow checkout 中不存在（README 提到的 C++/Python/C# 绑定位于独立仓库）。",
       "harmony_adapted.js 对 Qt6 的精确包名未返回已适配结果，但 references/harmony-pc-capabilities.json 中 Qt 能力状态为 available；dim-9 评估以目标能力文件为准。"
     ],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application_with_embeddable_engine",
-        "rationale": "VLC 既是终端用户启动的播放器（application），也对外提供 libVLC 引擎；报告按 application 定级，但 categories 同时体现引擎能力。"
+        "code": "ua_func_class_defaulted:ua:alsa",
+        "class": "actionable",
+        "message": "unadaptable_api ua:alsa 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "contrib_build_system",
-        "rationale": "VLC 通过 extras/tools 与 contrib/ 构建系统为缺失依赖自动下载源码并构建，介于 vendored 与 download_build 之间，现有 acquisition 词表未完全覆盖。"
+        "code": "ua_func_class_defaulted:ua:pulse",
+        "class": "actionable",
+        "message": "unadaptable_api ua:pulse 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "audio_output_as_platform",
-        "rationale": "ALSA/PulseAudio/WASAPI 等音频后端既是平台 API（换平台即没有），也可视为硬件/设备访问；本报告统一归为 platform。"
+        "code": "ua_func_class_defaulted:ua:pipewire",
+        "class": "actionable",
+        "message": "unadaptable_api ua:pipewire 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "qt_ohos_rebuild",
-        "rationale": "对于 Qt 桌面应用移植鸿蒙，推荐路径为基于 Qt 鸿蒙版重编并重写平台后端，现有 recommended_path 推荐值未直接覆盖。"
+        "code": "ua_func_class_defaulted:ua:wasapi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wasapi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:x11",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wayland",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wayland 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:d3d",
+        "class": "actionable",
+        "message": "unadaptable_api ua:d3d 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:vaapi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:vaapi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:vdpau",
+        "class": "actionable",
+        "message": "unadaptable_api ua:vdpau 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nvdec",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nvdec 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:procfs",
+        "class": "actionable",
+        "message": "unadaptable_api ua:procfs 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_registry",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_registry 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

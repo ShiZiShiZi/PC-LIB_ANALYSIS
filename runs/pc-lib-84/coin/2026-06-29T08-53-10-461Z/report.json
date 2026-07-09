@@ -1758,8 +1758,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, OHOS NDK native 层, Node-API bridge)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1781,7 +1780,9 @@
         "category": "platform",
         "evidence": [
           "src/glue/gl_glx.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wgl",
@@ -1795,7 +1796,9 @@
         "category": "platform",
         "evidence": [
           "src/glue/gl_wgl.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1805,7 +1808,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "鸿蒙提供 OpenGL ES/EGL（partial），Coin 依赖完整桌面 OpenGL（含 GLU、累积缓冲区、显示列表等）。OpenGL ES 缺少的特性需逐一适配或降级处理。",
-        "source": "references/harmony-pc-capabilities.json → graphics_3d → opengl (partial), egl (partial)"
+        "source": "references/harmony-pc-capabilities.json → graphics_3d → opengl (partial), egl (partial)",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:posix_dl",
@@ -1813,7 +1817,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 提供 musl libc，包含 dlopen/dlsym，Coin 的运行时动态链接机制可直接使用。",
-        "source": "references/harmony-pc-capabilities.json → runtimes → C++ (通过 OHOS NDK)"
+        "source": "references/harmony-pc-capabilities.json → runtimes → C++ (通过 OHOS NDK)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_threads",
@@ -1821,7 +1826,8 @@
         "required": false,
         "target_status": "available",
         "impact": "OHOS NDK 提供 pthread 支持，Coin 的线程层可直接使用。线程安全为可选功能。",
-        "source": "OHOS NDK musl pthread"
+        "source": "OHOS NDK musl pthread",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openal",
@@ -1829,11 +1835,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "OpenAL 在鸿蒙 PC 可用性未知。音频为可选功能，不可用时可禁用。",
-        "source": "references/harmony-pc-capabilities.json → media → audio_io (unknown)"
+        "source": "references/harmony-pc-capabilities.json → media → audio_io (unknown)",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "Coin 可通过 OHOS NDK 交叉编译移植到鸿蒙 PC，但需要大量适配工作。核心挑战是将 GLX/WGL/CGL 窗口系统集成替换为 EGL，并将完整 OpenGL 调用降级为 OpenGL ES 等价实现。场景图核心逻辑、节点系统、文件 I/O 等纯逻辑层可保持不变。建议路径为：1) 用 OHOS NDK 交叉编译；2) 重写 glue 层，将 GLX/WGL 替换为 EGL；3) 逐一处理 OpenGL→OpenGL ES 的差异（显示列表→VBO、glBegin/glEnd→顶点数组等）；4) 可选依赖（OpenAL/SpiderMonkey）可暂时禁用。",
     "blockers": [
       {
@@ -1934,6 +1940,23 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:glx",
+          "ua:wgl"
+        ]
+      }
     }
   },
   "meta": {
@@ -1942,29 +1965,25 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cgl",
-        "rationale": "macOS CGL (Core OpenGL) 是 macOS 专有的底层 OpenGL 接口，Coin 在 glue 层有完整封装，与 glx/wgl/egl 并列但现有推荐集未收录"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "agl",
-        "rationale": "AGL (Apple Graphics Library) 是旧版 macOS 的 OpenGL 窗口绑定接口，Coin 有遗留支持"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:glx",
+        "class": "actionable",
+        "message": "unadaptable_api ua:glx 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wgl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wgl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

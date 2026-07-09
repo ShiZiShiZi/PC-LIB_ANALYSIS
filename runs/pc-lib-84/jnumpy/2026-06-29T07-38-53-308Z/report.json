@@ -1265,8 +1265,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在已移植的 Python 3.12 / Julia 1.10 运行时上；原生扩展经 OHOS NDK/musl；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1283,7 +1282,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 侧 ctypes 加载 libpython 与 Julia C API 依赖 CPython；已确认移植",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:julia_runtime",
@@ -1291,7 +1291,8 @@
         "required": true,
         "target_status": "available",
         "impact": "init_libjulia 动态加载 libjulia；Julia 1.10.6 已确认移植",
-        "source": "harmony-pc-capabilities.json#runtimes.julia"
+        "source": "harmony-pc-capabilities.json#runtimes.julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -1299,11 +1300,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "init_libjulia 通过 subprocess.run 启动 julia 查询绑定目录与 sysimage；若受限则核心初始化失败",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "JNumPy 是 Python + Julia 双运行时桥接库。Python 与 Julia 运行时在鸿蒙 PC 均已确认可用，因此运行时本身不是阻碍；主要工作量在于验证动态加载 libpython/libjulia、补全 experimental_fast_init 的平台路径分支，并确认子进程 spawn 行为。无明确不可适配的底层 API，整体可适配。",
     "blockers": [
       {
@@ -1371,7 +1372,21 @@
       "运行单元测试验证 Python-Julia 双向转换与 NumPy 数组共享"
     ],
     "notes": "结论按模型 A（库跑在已移植的 Python/Julia 运行时上）评估。两个运行时均已确认 available，因此不判 infeasible。但核心初始化依赖 subprocess.spawn（目标状态 unknown），故置信度降至 medium。若目标是 ArkTS 沙箱应用（模型 B），则 Python/Julia 运行时不可用，需整体重写，结论将完全不同。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1379,36 +1394,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "gap",
-        "value": "julia",
-        "rationale": "dependencies[].ecosystem 推荐取值未包含 julia，但该仓包含 Julia 包依赖，暂用 julia 以便分组。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "runtime_builtin",
-        "rationale": "Julia 标准库依赖（Libdl/LinearAlgebra/SHA 等）随 Julia 运行时一并提供，非独立下载，现有 recommended acquisition 值无法准确描述。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "python_c_api_as_ffi",
-        "rationale": "Python C API 既属于 CPython 运行时，也是 Python↔Julia FFI 的实质互操作接口；按互操作桥口径归入 ffi。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "language_runtime_bridge",
-        "rationale": "本项目核心为 Python-Julia 运行时桥接，不在 gui/rendering_3d/media/hardware 推荐场景内，但属于鸿蒙适配需关注的能力（依赖两个已移植运行时）。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

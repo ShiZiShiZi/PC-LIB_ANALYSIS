@@ -565,7 +565,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层 + ArkTS 应用层）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -574,7 +573,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -583,11 +582,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 无 .NET 运行时，则纯托管 .NET 库无法直接运行；但当前已知鸿蒙 PC 已移植 Python/Node.js/Java/Rust/Go/Julia，.NET 运行时尚未见官方确认",
-        "source": "references/harmony-pc-capabilities.json runtimes 段未列出 .NET"
+        "source": "references/harmony-pc-capabilities.json runtimes 段未列出 .NET",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Autofac 是纯托管 .NET IoC 容器库，无原生代码、无平台专有 API、无 GUI/网络/硬件依赖。只要鸿蒙 PC 上有可用的 .NET 运行时，即可直接运行而无需任何代码修改。唯一前提是 .NET 运行时在鸿蒙 PC 上的可用性，目前尚未确认。",
     "blockers": [],
     "compatible": [
@@ -618,7 +617,21 @@
       "若 .NET 运行时可用，直接通过 NuGet 包引用即可使用，无需源码修改"
     ],
     "notes": "本评估将 porting_class 判定为 no_adaptation 的前提是 .NET 运行时在鸿蒙 PC 可用。若 .NET 运行时不可用，则需考虑：(1) 通过 Wine/兼容层运行、(2) 用 .NET NativeAOT 编译为原生二进制、(3) 等待社区移植 .NET 运行时。由于 harmony-pc-capabilities.json 的 runtimes 段未列出 .NET，此为不确定因素，但鉴于鸿蒙 PC 已移植多种主流语言运行时，.NET 移植的可能性较高。confidence 维持 high 因为库本身零适配成本。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Autofac",
@@ -638,19 +651,20 @@
     "analyzed_at": "2026-07-06T16:14:24Z"
   },
   "meta": {
-    "confidence_overall": "high",
+    "confidence_overall": "medium",
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Autofac 是纯 IoC/DI 容器库，不涉及 GUI 界面、3D 渲染、媒体处理或特定硬件，所有功能均在托管 .NET 运行时内完成。",

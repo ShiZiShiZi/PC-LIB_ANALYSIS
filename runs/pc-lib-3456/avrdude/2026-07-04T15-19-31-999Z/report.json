@@ -1962,8 +1962,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核，非 Linux ABI；原生层 OHOS NDK (musl + POSIX 子集)；arm64/x86_64；应用按模型 C——整包编译部署为鸿蒙命令行工具）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1972,7 +1971,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "AVRDUDE 是 C 语言编写的命令行工具，需经 OHOS NDK 重编译。核心功能（USB/串口编程器通信）依赖 libusb/libusb-1.0/libhidapi/libftdi/libserialport 等 C 库——其中 libusb、libhidapi、libserialport、libgpiod 已有鸿蒙 cmd-pkgs 预编译包，大幅降低适配成本。但 Linux 特有的 GPIO（sysfs/gpiod）、SPI（spidev）、并行口（ppdev）等子功能在鸿蒙无等价接口，部分 API 无法适配（见 unadaptable_apis），好在这些均为可选功能，禁用后不影响核心 USB/串口编程能力。此外，鸿蒙 PC 上的 USB/串口设备访问权限与驱动模型尚未核实（见 target_assumptions），若鸿蒙不支持用户空间 USB 设备访问，整个工具将不可行。Python GUI（adgui.py）依赖 PySide6/Qt，Qt 已鸿蒙化，修复路径清晰。",
     "blockers": [
       {
@@ -2083,7 +2081,9 @@
           "src/linuxgpio.c:75",
           "src/linuxgpio.c:92",
           "src/linuxgpio.c:109"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:linuxspi",
@@ -2098,7 +2098,9 @@
         "evidence": [
           "src/linuxspi.c:52-54",
           "src/linuxspi.c:93"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:parport",
@@ -2114,7 +2116,9 @@
           "src/par.c:28-36",
           "src/ppi.c:30-35",
           "src/ppi.c:70-89"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2124,7 +2128,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "USB/串口设备访问能力是 AVRDUDE 核心功能的前提——若鸿蒙不支持用户空间 USB/串口访问，整个工具不可行。",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_sysfs_gpio",
@@ -2132,7 +2137,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Linux GPIO BitBang 编程器无法使用（可选功能，不影响核心 USB/串口编程）",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_spidev",
@@ -2140,7 +2146,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Linux SPI 直接编程器无法使用（可选功能，不影响核心 USB/串口编程）",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_parport",
@@ -2148,7 +2155,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "并行口编程器无法使用（可选功能，默认已禁用，不影响核心功能）",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_python_pyside",
@@ -2156,7 +2164,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若不可用则禁用 GUI（演示性质，非核心功能）；Qt 本身已鸿蒙化但 PySide 需单独核实",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_posix_termios",
@@ -2164,7 +2173,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "串口编程器通讯依赖 termios API；若 musl 未提供或受限则需用鸿蒙专有串口接口替代",
-        "source": "OHOS NDK musl libc POSIX 子集文档（待核实）"
+        "source": "OHOS NDK musl libc POSIX 子集文档（待核实）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2230,7 +2240,25 @@
       "在鸿蒙 PC 上跑通 test-avrdude dryrun 测试套件验证功能完整"
     ],
     "notes": "评估置信度为 medium，因为鸿蒙 PC 的 USB/串口设备用户空间访问能力、OHOS NDK termios 覆盖度等关键目标事实均为 unknown——若鸿蒙不支持用户空间 USB 设备访问，则该工具整体不可移植（infeasible）。Linux 特有功能（GPIO sysfs/libgpiod/spidev/parport）为可选特性，禁用以降低适配面。Python GUI 为演示性质，也属可选。注意：AVRDUDE 是 GPL-2.0-or-later 协议，鸿蒙化后的二进制分发需开源对应源码。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:linuxgpio_sysfs",
+          "ua:linuxspi",
+          "ua:parport"
+        ]
+      }
+    }
   },
   "library": {
     "name": "avrdude",
@@ -2254,26 +2282,29 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "tool",
-        "rationale": "AVRDUDE 既是供终端用户使用的命令行工具，也提供一个 libavrdude 库 + Python 绑定供其他应用调用。与典型的纯库或纯桌面应用不同，它兼有'面向终端用户的 CLI 应用'与'可被嵌入的 C/Python 库'两种形态。判定为 tool 优先体现其主要用途。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_gpio/linux_spi/macos_iokit/posix_parallel",
-        "rationale": "嵌入式烧录工具特有的 Linux 内核驱动用户空间接口（sysfs GPIO、spidev、ppdev）与 macOS IOKit 串口扩展不在常见 API 分类里，作为专用平台硬件接口单独列出。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:linuxgpio_sysfs",
+        "class": "actionable",
+        "message": "unadaptable_api ua:linuxgpio_sysfs 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:linuxspi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:linuxspi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:parport",
+        "class": "actionable",
+        "message": "unadaptable_api ua:parport 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目是嵌入式微控制器烧录工具，涉及硬件设备（USB/串口/GPIO/SPI/并行口）的底层访问，以及基于 Qt/PySide6 的 Python GUI 界面。不涉及 3D 渲染和媒体处理。",

@@ -726,7 +726,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI）— 采用模型 A：库跑在已移植的鸿蒙 Node.js 24 运行时上，原生 C 扩展经 OHOS NDK 重编（arm64 / x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -735,7 +734,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库是一个极小的 Node.js N-API 原生插件，仅提供一个 C 函数（封装 napi_create_int32）和一个 C 宏。鸿蒙 PC 已移植 Node.js 24（含 N-API 稳定 ABI），JS/TS 层可直接运行。唯一的移植工作是：将 C 源码（main.c + addon.c）采用 OHOS NDK（ohos.toolchain.cmake + clang + musl）交叉编译为 arm64 / x86_64 的 .node 扩展。代码不依赖任何平台特定 API、Win32/POSIX 系统调用、设备或外部命令，预期工作量极小。",
     "blockers": [
       {
@@ -775,7 +773,8 @@
         "required": true,
         "target_status": "available",
         "impact": "否→无法运行任何 JS/TS 代码",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi_abi",
@@ -783,7 +782,8 @@
         "required": true,
         "target_status": "available",
         "impact": "N-API 是 Node.js 内置组件，Node.js 可用时 N-API 自动可用",
-        "source": "Node.js 核心文档 — napi 是 Node.js 的官方 ABI"
+        "source": "Node.js 核心文档 — napi 是 Node.js 的官方 ABI",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -791,7 +791,8 @@
         "required": true,
         "target_status": "available",
         "impact": "否→C 源码无法重新编译",
-        "source": "OpenHarmonyPCDeveloper/docs — NDK 已发布"
+        "source": "OpenHarmonyPCDeveloper/docs — NDK 已发布",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -827,7 +828,21 @@
       "验证上游 npm 依赖的头文件宏在 NDK 环境下可正常引用"
     ],
     "notes": "按模型 A（库跑在鸿蒙 Node.js 运行时上）评估；若目标为 ArkTS 沙箱应用（模型 B），则需额外用 Node-API 桥接，工作量大增但当前无此需求。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "napi-create-int32",
@@ -847,26 +862,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "clarity",
-        "value": "library",
-        "rationale": "该包为 stdlib 生态系统中的 npm 包，提供 C API 头文件和宏，本身不可直接启动运行，按库分类。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "export",
-        "kind": "unusual",
-        "value": "JS 入口仅导出一个字符串（头文件路径）而非函数",
-        "rationale": "lib/index.js 导出的是 path.resolve() 得到的路径字符串，而非可调用的 JS API——这在纯 JS 库中较罕见，原因是该包的设计意图是作为其他 C 插件的构建时依赖。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯计算工具库，不涉及 GUI、3D 渲染、媒体或特定硬件。",

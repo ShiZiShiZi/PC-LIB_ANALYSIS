@@ -820,9 +820,7 @@
   },
   "harmony_adaptation": {
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "effort": {
       "person_days": [
         18,
@@ -857,7 +855,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心前提——纯 Java 驱动需 JDK 运行时",
-        "source": "references/harmony-pc-capabilities.json#java_jdk"
+        "source": "references/harmony-pc-capabilities.json#java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:jmx",
@@ -865,7 +864,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "JMX 监控功能可能不可用，但非核心功能",
-        "source": "references/harmony-pc-capabilities.json#jdk_management"
+        "source": "references/harmony-pc-capabilities.json#jdk_management",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:javax_naming",
@@ -873,7 +873,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "DataSource JNDI 注册与 DNS SRV 查询依赖 JNDI，不可用则受限但核心 JDBC 不受影响",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:javax_security_sasl",
@@ -881,7 +882,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Kerberos 和 LDAP SASL 认证依赖 JDK 安全模块，不可用则这些认证方式受限，但原生密码/SHA-256 认证不依赖",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:javax_crypto_ssl",
@@ -889,7 +891,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SSL/TLS 加密连接是核心功能；鸿蒙 JDK 应包含这些标准模块",
-        "source": "references/harmony-pc-capabilities.json#java_jdk"
+        "source": "references/harmony-pc-capabilities.json#java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:process_spawn",
@@ -897,7 +900,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "ServerController 使用 Runtime.exec() 管理 MySQL 进程，非核心功能",
-        "source": "references/harmony-pc-capabilities.json#spawn"
+        "source": "references/harmony-pc-capabilities.json#spawn",
+        "target_status_model": "unknown"
       }
     ],
     "notes": "MySQL Connector/J 是纯 Java 实现的 JDBC Type 4 驱动，不包含任何原生代码（无 JNI、无 C/C++ 扩展、无动态库加载）。鸿蒙 PC 已移植 JDK 运行时，因此该库可直接在已移植的 JDK 上运行，无需重新编译或适配。所有使用的 Java API（java.net、javax.net.ssl、javax.crypto、java.sql、javax.sql 等）都是 Java SE 标准库的一部分。少数可选依赖（JMX、JNDI、SASL/Kerberos、OCI SDK、OpenTelemetry、SLF4J）即使不可用也不影响核心 JDBC 功能。NamedPipeSocketFactory（Windows 命名管道）在非 Windows 平台上不使用。典型的 'run_on_ported_runtime' 案例。",
@@ -913,7 +917,21 @@
       }
     ],
     "critical_dependencies": [],
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "mysql-connector-j",
@@ -946,7 +964,8 @@
     "warnings": [
       "shape coerced: harmony_adaptation.required_permissions[0].evidence string→array"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "MySQL Connector/J 不涉及 GUI、3D 渲染、媒体处理或硬件设备访问，为纯网络/数据库驱动库",

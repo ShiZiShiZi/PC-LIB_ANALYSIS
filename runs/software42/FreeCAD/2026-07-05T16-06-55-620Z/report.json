@@ -2558,8 +2558,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C——整包桌面应用：终端用户启动运行的 GUI 应用。Qt 经 OHOS NDK 重编译、鸿蒙 PC 桌面环境运行；Python 3.12 已移植；arm64 主力；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         80,
@@ -2568,7 +2567,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "FreeCAD 为 C++/Qt 桌面 CAD 应用，鸿蒙 PC 已有 Qt（cmd-pkgs 证实可用）与 Python（3.12 已移植）运行时，核心可行路径为：用 OHOS NDK 交叉编译 C++ 核心与所有依赖（OpenCASCADE、Boost、VTK、Coin3D 等），复用鸿蒙版 Qt6，将 Coin3D 的 OpenGL 调用适配到 OpenGL ES/EGL。主要不确定性在于鸿蒙 PC 桌面窗口环境——Qt MDI 多窗口/docking/文件对话框/剪贴板等能否完整运行、以及桌面应用如何打包分发——此两项若不可用则整体不可行。因涉及总约 680 万行生产代码的巨量工程，预期工作量极高。",
     "target_assumptions": [
       {
@@ -2577,7 +2575,8 @@
         "required": true,
         "target_status": "available",
         "impact": "FreeCAD GUI 层完全依赖 Qt；若不可用则整体无法迁移",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python",
@@ -2585,7 +2584,8 @@
         "required": true,
         "target_status": "available",
         "impact": "FreeCAD 的脚本/宏系统与 30+ 工作台中大量 Python 代码依赖嵌入式 Python 解释器",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl",
@@ -2593,7 +2593,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "3D 视口渲染核心依赖 OpenGL——若仅 ES 子集可用则需将 GLU tessellation 和桌面 GL 调用适配到 ES/EGL，是重度适配点",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:wm",
@@ -2601,7 +2602,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Qt 应用需桌面环境提供窗口创建、多窗口管理、docking 支持——若鸿蒙 PC 无传统桌面环境则 Qt GUI 无法运行",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:docking",
@@ -2609,7 +2611,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FreeCAD 的 MDI 界面大量使用可停靠面板(dockable panels)和拆分视图",
-        "source": "harmony-pc-capabilities.json#desktop_integration.docking"
+        "source": "harmony-pc-capabilities.json#desktop_integration.docking",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:file_dialog",
@@ -2617,7 +2620,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "CAD 应用的文件打开/保存/导出密集依赖原生文件对话框",
-        "source": "harmony-pc-capabilities.json#desktop_integration.file_dialog"
+        "source": "harmony-pc-capabilities.json#desktop_integration.file_dialog",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dnd_clipboard",
@@ -2625,7 +2629,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "CAD 操作的复制粘贴与拖拽依赖剪贴板/DnD 集成",
-        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -2633,7 +2638,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FreeCAD 当前以独立桌面应用分发；若鸿蒙 PC 仅支持 ArkTS HAP 则需整体重打包为鸿蒙应用包",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -2641,7 +2647,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "FreeCAD 主力平台含 x86_64——如鸿蒙 PC 仅 arm64 则需 arm64 编译适配（arm64 已 confirmed available）",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -2722,7 +2729,9 @@
         "evidence": [
           "src/Base/StackWalker.cpp:365"
         ],
-        "caused_by": []
+        "caused_by": [],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:glu_tess",
@@ -2736,7 +2745,9 @@
         ],
         "caused_by": [
           "ta:opengl"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [
@@ -2792,6 +2803,23 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:dbghelp",
+          "ua:glu_tess"
+        ]
+      }
     }
   },
   "library": {
@@ -2821,45 +2849,27 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "FreeCAD 是面向终端用户的桌面 CAD 软件，有入口 main()、GUI 主窗口、打包分发机制——明确是 application 而非 library"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "LibPack（Windows 预编译依赖包）",
-        "rationale": "FreeCAD 在 Windows 上提供 LibPack 获取预编译依赖——这是一种介于 package_manager 和 download_build 之间的混合获取方式，列为 system 是因为它作为 find_package 的替代路径"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "vendored deps as runtime",
-        "rationale": "大量 3rdParty/ 内的 vendored 依赖（Coin3D、Pivy、SalomeSMESH、Clipper2、GSL 等）在源码树内但实际是独立的第三方库——按 locality:local + scope:runtime 归类，因为它们在 FreeCAD 运行时以库形态存在"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "macos_cocoa",
-        "rationale": "FreeCAD 的 3Dconnexion 驱动在 macOS 上通过 Cocoa CFRunLoop 获取事件——这是一种平台特有 API 家族，不完全是 'posix' 范畴"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:dbghelp",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dbghelp 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:glu_tess",
+        "class": "actionable",
+        "message": "unadaptable_api ua:glu_tess 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "FreeCAD 作为桌面 CAD 应用，触及 GUI、3D 实时渲染和专用硬件输入设备三大鸿蒙适配重点场景。GUI 基于 Qt6/Qt5 框架，3D 渲染基于 OpenGL/Coin3D 场景图，硬件输入为 3Dconnexion 空间鼠标。无音视频媒体处理场景。",

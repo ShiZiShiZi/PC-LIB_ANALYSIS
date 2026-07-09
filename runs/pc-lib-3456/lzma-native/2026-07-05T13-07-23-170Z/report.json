@@ -988,7 +988,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (默认模型 A：跑在已移植的 Node.js 24 运行时上；N-API 原生插件经 OHOS NDK 重编；arm64/x86_64；自研内核，非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -997,7 +996,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库为 Node.js 原生插件，鸿蒙 PC 已移植 Node.js 24 运行时，JavaScript 包装层可直接运行。唯一工作量在于 C++ N-API 原生插件需用 OHOS NDK 交叉编译（约 1200 行生产 C++ 代码，仅用标准 C++ STL/N-API/portable liblzma API），且底层依赖 liblzma 已在鸿蒙 PC 官方源适配，可直接链接已适配版本，无需自编译。无平台特有 API、无 GUI/3D/媒体/硬件耦合、无云端服务，编译通过即可运行。",
     "blockers": [
       {
@@ -1059,7 +1057,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时已移植，JavaScript 包装层可直接运行",
-        "source": "harmony-pc-capabilities.json#nodejs"
+        "source": "harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos-ndk",
@@ -1067,7 +1066,8 @@
         "required": true,
         "target_status": "available",
         "impact": "N-API 原生插件编译所必需",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:lzma-adapted",
@@ -1075,7 +1075,8 @@
         "required": true,
         "target_status": "available",
         "impact": "底层压缩库已开箱可用，核心算法无需移植",
-        "source": "OpenHarmony PC C/C++ 预编译包 (cmd-pkgs)；scripts/harmony_adapted.js 确认"
+        "source": "OpenHarmony PC C/C++ 预编译包 (cmd-pkgs)；scripts/harmony_adapted.js 确认",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1112,7 +1113,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。底层 liblzma (xz 5.2.3) 已适配鸿蒙 PC（cmd-pkgs 确认），blocker 主要来自构建系统适配而非代码改造。代码无平台特有 API、无 GUI/3D/媒体/硬件耦合、无云端服务——仅 C++ 工具链配置。若目标是 ArkTS 沙箱应用（模型 B），则需将整个功能重写为 ArkTS + N-API 调用 liblzma 的 native 模块，person_days 升至 [15,25]、porting_class 升为 needs_adaptation_full。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1133,7 +1148,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数据压缩库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

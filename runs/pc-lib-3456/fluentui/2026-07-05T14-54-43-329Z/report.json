@@ -1449,7 +1449,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC Web 运行环境（浏览器/WebView 下的标准 Web API 兼容性）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -1458,7 +1457,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Fluent UI Web 是纯浏览器端 Web UI 组件库，全部代码为 TypeScript/JavaScript，仅使用标准 Web 平台 API（DOM/CSSOM/Event/Observer 等），无任何原生扩展（N-API/C addon）、无 FFI/ctypes 调用、无操作系统级平台 API、无外部命令依赖、无设备访问。所有 npm 依赖也是纯 JS/TS 包。在鸿蒙 PC 上，该库可直接在系统浏览器或 WebView 中运行，无需任何适配修改。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1469,7 +1467,8 @@
         "target_status": "available",
         "impact": "不阻碍 — 鸿蒙 PC 系统浏览器（基于 Chromium 内核）完全支持所有标准 Web API",
         "source": "harmony-pc-capabilities.json (WebView/browser 是系统标准组件)",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1517,7 +1516,21 @@
     ],
     "notes": "Fluent UI Web 是纯前端 UI 组件库，运行在 Web 浏览器中，不依赖任何 HarmonyOS 原生 API。评估按模型 A（库跑在鸿蒙已移植的运行时/浏览器环境上）。publish 到 npm 后，鸿蒙 Node.js 24 可正常安装。若目标是嵌入鸿蒙原生应用的 WebView 中运行，同样可直接使用。",
     "required_permissions": [],
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Fluent UI Web",
@@ -1544,31 +1557,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library",
-        "rationale": "Fluent UI 是一个 Web UI 组件库，通过 npm 分发供其他应用集成。虽然它包含 apps/ 目录（示例/性能测试），但核心是可分发 UI 组件。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "categories",
-        "kind": "ambiguity",
-        "value": "standard (all)",
-        "rationale": "该库所有 'native' API 均为标准 Web 平台 API（DOM/CSSOM/Event），不涉及操作系统级平台调用。按分类均归为 standard。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "value",
-        "value": "no_adaptation",
-        "rationale": "纯 Web 前端库，依赖仅限标准 Web API，在鸿蒙 PC 浏览器中可直接运行，零适配工作。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Fluent UI 是 Web UI 组件库，仅涉及浏览器端 GUI（DOM/CSS）。无 3D 渲染、音视频媒体处理、特定硬件依赖。",

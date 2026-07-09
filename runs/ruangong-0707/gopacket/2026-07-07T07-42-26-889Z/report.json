@@ -1271,8 +1271,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         11.7,
@@ -1329,7 +1328,9 @@
         "evidence": [
           "bsdbpf/bsd_bpf_sniffer.go:118",
           "bsdbpf/bsd_bpf_sniffer.go:170"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:afpacket_mmap",
@@ -1344,7 +1345,9 @@
         "evidence": [
           "afpacket/afpacket.go:205",
           "afpacket/afpacket.go:222"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:pfring",
@@ -1359,7 +1362,9 @@
         "evidence": [
           "pfring/pfring.go:101",
           "pfring/pfring.go:153"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1369,7 +1374,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Go 代码可直接运行，无需重编译",
-        "source": "references/harmony-pc-capabilities.json runtimes.go"
+        "source": "references/harmony-pc-capabilities.json runtimes.go",
+        "target_status_model": "available"
       },
       {
         "id": "ta:raw_socket",
@@ -1377,7 +1383,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "抓包后端的核心依赖——鸿蒙若无等价原始套接字接口，则在线抓包功能不可用，只能使用离线文件读写",
-        "source": "references/harmony-pc-capabilities.json process_security"
+        "source": "references/harmony-pc-capabilities.json process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libpcap",
@@ -1385,7 +1392,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "pcap 子包依赖 libpcap——若鸿蒙无 libpcap，pcap 子包不可用但核心解码和 pcapgo 离线读写不受影响",
-        "source": "references/harmony-pc-capabilities.json runtimes.go"
+        "source": "references/harmony-pc-capabilities.json runtimes.go",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1414,7 +1422,6 @@
         ]
       }
     ],
-    "recommended_path": "find_alternative",
     "summary": "gopacket 的核心价值在于协议解码（94% 生产代码为纯 Go，可直接在鸿蒙 Go 运行时运行），但抓包后端（afpacket/pfring/bsdbpf/pcap）深度依赖 Linux/BSD/Windows 专有内核接口，鸿蒙无等价实现。推荐路径：保留核心解码和 pcapgo 离线读写（直接可用），对在线抓包功能寻找鸿蒙等价原始套接字接口或实现新的 PacketDataSource 适配层。",
     "blockers": [
       {
@@ -1540,6 +1547,24 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:bsdbpf",
+          "ua:afpacket_mmap",
+          "ua:pfring"
+        ]
+      }
     }
   },
   "library": {
@@ -1573,48 +1598,27 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_af_packet",
-        "rationale": "AF_PACKET 为 Linux 专有原始套接字协议族，不同于通用 POSIX 套接字，单列为 type 更精确"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_netlink",
-        "rationale": "Linux netlink 套接字为 Linux 专有内核通信机制，不同于通用 POSIX"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "bsd_bpf",
-        "rationale": "BSD BPF 为 BSD 系列专有数据包捕获接口，不同于 Linux BPF"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cgo_libpcap",
-        "rationale": "CGo 调用 libpcap C 库，与直接 syscall 动态加载(wpcap.dll)不同，需区分 FFI 机制"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cgo_libpfring",
-        "rationale": "CGo 调用 libpfring C 库，与 libpcap 不同为可选高性能后端"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:bsdbpf",
+        "class": "actionable",
+        "message": "unadaptable_api ua:bsdbpf 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:afpacket_mmap",
+        "class": "actionable",
+        "message": "unadaptable_api ua:afpacket_mmap 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:pfring",
+        "class": "actionable",
+        "message": "unadaptable_api ua:pfring 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
@@ -1622,7 +1626,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=hardware 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "gopacket 不涉及 GUI、3D 渲染、媒体编解码或特定硬件场景。其硬件相关能力集中在网络数据包捕获，需要原始套接字和内核数据包捕获接口（AF_PACKET/BPF），属于网络设备访问而非 GPU/媒体/传感器等鸿蒙适配重点场景。",

@@ -1856,8 +1856,7 @@
   "harmony_adaptation": {
     "summary": "mDNSResponder 以 C 实现，核心协议引擎 (mDNSCore) 为平台无关代码。鸿蒙 PC 迁移需新建 OHOS NDK 平台抽象层(mDNSOHOS)替代 mDNSPosix/mDNSWindows，替换 POSIX socket API、接口监控 (netlink/ioctl)、事件循环 (select/kqueue)、守护进程化 (daemon) 与信号处理为 OHOS 等效机制。mbedtls 已有鸿蒙移植，可直接使用。核心风险在于 UDP 组播支持和守护进程后台运行在鸿蒙 PC 上的可用性尚未核实。",
     "target": "HarmonyOS NEXT PC (OHOS NDK 原生层，musl POSIX 子集)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1873,7 +1872,8 @@
         "required": true,
         "target_status": "partial",
         "source": "OHOS NDK 基于 musl，提供 POSIX socket 子集；组播成员管理 (IP_ADD_MEMBERSHIP) 是否完整支持待核实",
-        "impact": "若源端口 5353 UDP 组播收发不可用，则 mDNS 协议核心不可运行，整体迁移不可行"
+        "impact": "若源端口 5353 UDP 组播收发不可用，则 mDNS 协议核心不可运行，整体迁移不可行",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:udp_multicast",
@@ -1881,7 +1881,8 @@
         "required": true,
         "target_status": "unknown",
         "source": "references/harmony-pc-capabilities.json（无专门条目——组播能力是网络权限/能力模型的子项）",
-        "impact": "mDNS 的核心传输机制。若不支持则需替代传输方案或放弃，整体 infeasible。"
+        "impact": "mDNS 的核心传输机制。若不支持则需替代传输方案或放弃，整体 infeasible。",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:daemon_background",
@@ -1889,7 +1890,8 @@
         "required": true,
         "target_status": "unknown",
         "source": "references/harmony-pc-capabilities.json——进程/安全模型 section，spawn 条目",
-        "impact": "mDNSResponder 需要作为系统守护进程持续运行。若鸿蒙 PC 仅支持前台 ability 模型，则 daemon 模式不可行，需重设计为 ArkTS service ability。"
+        "impact": "mDNSResponder 需要作为系统守护进程持续运行。若鸿蒙 PC 仅支持前台 ability 模型，则 daemon 模式不可行，需重设计为 ArkTS service ability。",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:uds_ipc",
@@ -1897,7 +1899,8 @@
         "required": true,
         "target_status": "unknown",
         "source": "references/harmony-pc-capabilities.json（无专门条目）",
-        "impact": "libdns_sd 客户端库通过 /var/run/mdnsd UDS 与守护进程 IPC。若无等效机制需改用其他 IPC（如 OHOS 提供的 IPC 框架）——工作量增加。"
+        "impact": "libdns_sd 客户端库通过 /var/run/mdnsd UDS 与守护进程 IPC。若无等效机制需改用其他 IPC（如 OHOS 提供的 IPC 框架）——工作量增加。",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network_monitor",
@@ -1905,7 +1908,8 @@
         "required": true,
         "target_status": "unknown",
         "source": "references/harmony-pc-capabilities.json（无专门条目）",
-        "impact": "mDNSResponder 需要感知网络接口变更以更新 .local 服务注册。需 OHOS 等效机制替代 netlink/ioctl/GetAdaptersAddresses——若不可用则服务发现响应需刷新间隔变长，功能降级但非阻断。"
+        "impact": "mDNSResponder 需要感知网络接口变更以更新 .local 服务注册。需 OHOS 等效机制替代 netlink/ioctl/GetAdaptersAddresses——若不可用则服务发现响应需刷新间隔变长，功能降级但非阻断。",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:mbedtls",
@@ -1913,7 +1917,8 @@
         "required": false,
         "target_status": "unknown",
         "source": "references/harmony-pc-capabilities.json——待 cmd-pkgs 核对",
-        "impact": "TLS 加密为可选功能。若无 mbedtls 鸿蒙版可禁 TLS (tls=no) 编译无加密版本，不影响核心 mDNS 功能。"
+        "impact": "TLS 加密为可选功能。若无 mbedtls 鸿蒙版可禁 TLS (tls=no) 编译无加密版本，不影响核心 mDNS 功能。",
+        "target_status_model": "unknown"
       }
     ],
     "unadaptable_apis": [],
@@ -1938,7 +1943,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "blockers": [
       {
         "id": "bk:platform_abstraction",
@@ -2047,7 +2051,21 @@
       "功能验证——mDNS 服务注册/浏览/解析、SRP 协议、DNSSD 发现代理端到端测试"
     ],
     "notes": "confidence=medium 原因：多项核心能力（UDP 组播、后台守护进程、UDS IPC）在鸿蒙 PC 的可用性均为 unknown——这些决定了迁移基础路径是否可行。若组播不可用则 infeasible；若仅守护进程模型受限则 effort 偏高但可通过 ArkTS shell 绕过。建议在投入改造前优先验证组播与进程模型两项。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "mDNSResponder",
@@ -2079,23 +2097,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system (无包管理器)",
-        "rationale": "mDNSResponder 没有使用任何包管理器（无 CMake/Conan/vcpkg/pip/npm 依赖声明），所有依赖均为系统预装（mbedtls/libbsd 通过 -l 链接；bison/flex 通过命令行工具调用）。依赖清单极短（仅 5 条），体现了 Apple 最小化外部依赖的设计哲学。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library 但含守护进程与 CLI 工具",
-        "rationale": "mDNSResponder 的主体是库（libdns_sd + dns_sd.h API），但同时提供守护进程二进制（mdnsd）和 CLI 工具（dns-sd），边界介于 library 与 service 之间。按 '主要分发形式 = 库' 判定为 library——第三方集成的是 API 而非守护进程命令行。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯网络协议与 DNS 服务发现库/守护进程，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。核心关注点为 POSIX/Windows 网络 socket API 的鸿蒙 NDK 等效替代。",

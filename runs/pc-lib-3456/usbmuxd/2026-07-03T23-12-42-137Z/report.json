@@ -1366,8 +1366,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（整包桌面/系统应用口径：作为原生后台服务/守护进程运行）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -1376,7 +1375,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "ohos_native_service_rewrite",
     "summary": "usbmuxd 是深度绑定 Linux/Unix 系统守护进程模型的 C 应用：核心 Apple USB MUX 协议引擎可随 libusb 一起迁移，但 systemd/udev 自动激活、/var 固定系统路径、/proc、fork/setsid/setuid 等传统 Unix 机制在鸿蒙 PC 上无直接对应或状态未核实，需要按 OHOS 后台服务模型重写启动、激活与权限部分；libimobiledevice 栈目前未鸿蒙化，也需先行移植。",
     "blockers": [
       {
@@ -1477,7 +1475,9 @@
         ],
         "caused_by": [
           "ta:procfs"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1487,7 +1487,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不支持，核心 USB 通信无法工作，整个应用不可运行",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_daemon",
@@ -1495,7 +1496,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则无法按现有生命周期与权限模型运行，需整体改写为 OHOS 服务/ability",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:unix_socket",
@@ -1503,7 +1505,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "客户端-守护进程本地通信依赖 Unix 域 socket；若不支持需改用 OHOS IPC",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:system_service",
@@ -1511,7 +1514,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定应用能否以守护进程形式交付，而非仅作为前台 ArkTS 应用",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:procfs",
@@ -1519,7 +1523,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "仅影响日志中进程名显示，可移除",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [
@@ -1567,7 +1572,23 @@
       "调整 /var/run/usbmuxd、/var/lib/lockdown 等固定系统路径到鸿蒙允许的应用/服务数据目录"
     ],
     "notes": "评估按整包应用（模型 C）口径：usbmuxd 不是普通 ArkTS 应用，而是需要系统级 USB 权限和后台常驻的守护进程，目标平台对这类形态的支持情况（desktop_app / system_service / USB 权限）多数为 unknown，故置信度为 medium；若鸿蒙 PC 不支持传统后台服务形态，则核心交付路径需重新设计。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:procfs"
+        ]
+      }
+    }
   },
   "library": {
     "name": "usbmuxd",
@@ -1588,55 +1609,20 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "gap",
-        "value": "application/system_daemon",
-        "rationale": "usbmuxd 是带 main、daemonize、systemd/udev 激活的系统守护进程，不是被调用的库；当前 kind 枚举推荐值未显式包含 'system_daemon'，但实际应按 application 处理。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "libusb",
-        "rationale": "硬件/USB 访问通过 libusb API 完成，无法简单归入 win32/posix/syscall 等既有家族，故新增 libusb 作为 hardware 类型。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].kind",
-        "kind": "new_value",
-        "value": "usb_device_access",
-        "rationale": "推荐 kind 列表侧重 usb_serial/bluetooth/camera 等，而 usbmuxd 的核心场景是与 Apple iOS 设备进行 USB 协议级通信，更接近 usb_device_access。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "ohos_native_service_rewrite",
-        "rationale": "对于守护进程类应用，移植路径不是简单的重编或 Node-API 桥接，而是改写为 OHOS 系统服务/ability 并替换 Linux 激活与权限模型。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "new_value",
-        "value": "linux_system_integration",
-        "rationale": "udev/systemd 激活、/var 固定路径等 Linux 系统集成点无法直接映射到鸿蒙，需要独立分类。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "new_value",
-        "value": "posix_daemon_model",
-        "rationale": "fork/setsid/setuid/initgroups 等 Unix 守护进程原语在鸿蒙 PC 支持状态未核实，需单独标记。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:procfs",
+        "class": "actionable",
+        "message": "unadaptable_api ua:procfs 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI、3D 渲染或媒体；核心触及的鸿蒙适配重点场景是 USB 硬件/设备访问，用于与 Apple iOS 设备通信。",

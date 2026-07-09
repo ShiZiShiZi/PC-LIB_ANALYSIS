@@ -2180,8 +2180,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 原生库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -2198,7 +2197,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK 已作为预编译包存在，说明整体可移植；本版本源码移植可复用社区 patches/经验。",
-        "source": "references/harmony-pc-capabilities.json#gui.gtk"
+        "source": "references/harmony-pc-capabilities.json#gui.gtk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:c-cpp-ndc",
@@ -2206,7 +2206,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK 为 C 库，核心算法、GObject、CSS 引擎等标准 C 逻辑可经 NDK 重编。",
-        "source": "references/harmony-pc-capabilities.json#runtimes 与 intro"
+        "source": "references/harmony-pc-capabilities.json#runtimes 与 intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -2214,7 +2215,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK 已支持多种架构，arm64 为主力目标。",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -2222,7 +2224,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若需 x86_64 版本，需额外验证 OHOS 工具链覆盖。",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl-egl",
@@ -2230,7 +2233,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "GtkGLArea 与 OpenGL 集成依赖 GLES/EGL；完整 OpenGL/GLX 路径不可用，需限制为 ES 路径或改用 ArkGraphics 3D。",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl / .egl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl / .egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:desktop-integration",
@@ -2238,7 +2242,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "GTK 作为库本身可在无桌面环境下编译，但其实际价值依赖上层应用能否在鸿蒙桌面窗口环境中运行；状态未知使最终应用级体验不确定。",
-        "source": "references/harmony-pc-capabilities.json#gui.wm / #desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#gui.wm / #desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -2246,11 +2251,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "gtk-launch、URI 打开、LPR 打印等功能依赖外部进程启动；若鸿蒙 PC 受限，这些可选功能需裁剪。",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "GTK 3 是 GUI 工具包库，鸿蒙 PC 上已有 GTK 预编译包，说明整体可移植。移植此源码需：1）使用 OHOS NDK 交叉编译核心 C 库；2）替换或新增 HarmonyOS 显示后端（X11/Wayland/Win32/Quartz 均不直接可用）；3）将 OpenGL 路径收敛到 OpenGL ES/EGL 或改用 ArkGraphics 3D；4）核心依赖（glib/cairo/pango/atk/epoxy 等）大多已有鸿蒙预编译包，可降低工作量。无特定硬件依赖，不存在绝对不可适配的 API。",
     "blockers": [
       {
@@ -2362,7 +2367,21 @@
       "在鸿蒙 PC 上运行 GTK 测试套件与 demo 验证功能完整性"
     ],
     "notes": "评估按 C/C++ 库模型 A（经 OHOS NDK 重编为原生 .so）。目标能力表中 GTK 已 available，因此整体可行，但本版本源码仍含大量 X11/Wayland/Win32/Quartz 平台后端代码，移植工作量主要集中在新增/替换显示后端与 OpenGL 路径收敛。x86_64、桌面窗口管理器、外部进程启动等目标事实未核实，使 confidence 为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2373,36 +2392,8 @@
       "metrics.py 将 testsuite/ 目录大部分代码判为 production；该目录实际为 GTK 回归测试套件，平台 API 结论已排除 tests/demos/examples。",
       "harmony_adapted.js 对 gobject/gmodule/gio-unix/cairo-gobject/pangocairo/pangoft2 等子包返回未适配，但它们通常随 glib/cairo/pango 主包一起构建，实际可用性需结合主包判断。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "category",
-        "kind": "new_value",
-        "value": "gui_toolkit",
-        "rationale": "GTK 属于典型的 GUI 工具包库，能力分类围绕窗口抽象、控件、主题、输入、OpenGL、辅助功能、应用框架展开，现有推荐分类未直接给出“GUI 工具包”这一综合类别。"
-      },
-      {
-        "dimension": "code-metrics",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "testsuite_as_production",
-        "rationale": "脚本按目录名 token 将 testsuite/ 判为 production，但该目录实际为 GTK 回归测试集合，含大量独立可执行测试；本次分析已将其平台 API 排除，但 LOC 分类仍保留脚本原始输出。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "platform_backend_directory_isolation",
-        "rationale": "GTK 的平台差异主要通过 gdk/x11、gdk/wayland、gdk/win32、gdk/quartz 目录隔离，而非同一文件内大量 #ifdef；platform_adaptation 机械计数因此低估实际平台耦合度。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "reuse_existing_port",
-        "rationale": "目标能力表显示 GTK 已在 OpenHarmony PC cmd-pkgs 中 available，因此实际移植路径可优先复用/参考社区现有 patches，而非从零重写后端。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

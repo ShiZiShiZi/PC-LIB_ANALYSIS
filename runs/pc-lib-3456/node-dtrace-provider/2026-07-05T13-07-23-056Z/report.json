@@ -829,8 +829,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC — 模型 A（库跑在已移植的 Node.js 24.13.0 运行时上；原生 DTrace 扩展仅在 DTrace 平台可用，非 DTrace 平台自动降级为空操作桩）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         0,
@@ -839,7 +838,6 @@
       "level": "high"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js 库，鸿蒙 PC 已移植 Node.js 运行时。库本身设计为跨平台兼容：在 DTrace 平台（macOS/Solaris/FreeBSD）编译原生扩展提供完整功能，在非 DTrace 平台（Linux/Windows）自动降级为空操作桩（stub）。鸿蒙 PC 无 DTrace 内核支持，属于非 DTrace 平台，该库会走已有的 stub 降级路径，与 Linux/Windows 行为一致——JS 层 wrapper 在加载 .node 失败后自动使用 DTraceProviderStub，无需任何代码修改。验证工作量仅需在鸿蒙 Node.js 上执行 npm install（会因无 DTrace 头文件而编译失败→fallback 成功）并确认 `require('dtrace-provider')` 正常返回 stub。",
     "blockers": [
       {
@@ -871,7 +869,9 @@
         "evidence": [
           "src/dtrace_provider.h:8（#include <sys/dtrace.h>）",
           "src/dtrace_provider.cc:71（usdt_create_provider 调用点）"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -881,7 +881,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 层代码与 stub 降级路径可直接运行，无需修改",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -912,7 +913,23 @@
     "porting_class_model": "no_adaptation",
     "porting_class_adjusted": {
       "from": "no_adaptation",
-      "to": "needs_adaptation_partial"
+      "to": "needs_adaptation"
+    },
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:dtrace_doe"
+        ]
+      }
     }
   },
   "library": {
@@ -943,10 +960,16 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 no_adaptation，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 no_adaptation，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:dtrace_doe",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dtrace_doe 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为 Node.js DTrace 探针原生扩展，属于可观测性/动态追踪领域，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",

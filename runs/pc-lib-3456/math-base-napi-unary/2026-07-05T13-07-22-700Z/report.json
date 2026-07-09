@@ -815,7 +815,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13 运行时上; 原生 N-API 插件经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 无 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -824,7 +823,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库是 Node.js N-API 原生插件基础设施，鸿蒙 PC 已移植 Node.js 24.13 运行时，JS 装饰层可直接运行。唯一工作量在其 C 源码（约 700 行、18 个文件）需经 OHOS NDK 工具链重新编译为 .so；C 层仅使用 Node-API (napi_*) 标准 API 和 C99 标准库（assert/stdint/stdbool），无任何 POSIX/Win32 平台系统调用、无编译宏平台适配代码、无外部动态链接库，适配工作仅限工具链切换，无需源码修改。",
     "blockers": [
       {
@@ -851,7 +849,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 包裹层与 N-API 模块加载均依赖 Node.js 运行时；已确认鸿蒙 PC 提供 Node.js 24.13。",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -888,7 +887,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）；C 层零平台 API 耦合使重编工作量很小；全部 7 个运行时依赖同为 @stdlib/* N-API 包，需一并重编但总体难度可控。若目标为 ArkTS 沙箱应用（模型 B），则 Node.js 运行时不可用，需改用 ArkTS 原生实现桥接逻辑——工作量显著上升、结论需收紧。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "one_liner": "C APIs for registering Node-API modules exporting interfaces for invoking unary numerical functions.",
@@ -909,7 +922,8 @@
     "observations": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数值计算桥接基础设施，不涉及 GUI、3D 渲染、媒体采集/编解码或任何特定硬件设备。所有场景均为未命中。",

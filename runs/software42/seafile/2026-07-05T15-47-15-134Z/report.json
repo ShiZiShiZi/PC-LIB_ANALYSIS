@@ -2386,8 +2386,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型A：库经 OHOS NDK/musl 重编为 .so，核心引擎运行在原生层；Python 绑定跑在已移植的 Python 3.12 运行时上；arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -2396,7 +2395,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "Seafile 同步引擎核心是 C 语言库，在三大桌面平台有完整的编译支持和条件编译适配。大部分依赖已在 OpenHarmony PC 官方源中提供预编译包（glib、libevent、libcurl、openssl、zlib、sqlite3、jansson、libwebsockets、argon2 等省去自行移植——最大减负）。主要工作集中在三项：(1) 新增鸿蒙文件系统监控后端替代 inotify/FSEvents/ReadDirectoryChangesW；(2) 移植 libsearpc（Seafile 自研 RPC 框架，约 3K 行 C + Python 绑定）；(3) 为 OHOS 平台新增 #ifdef 分支，适配 procfs 依赖和 POSIX 子集差异。platform_adaptation（3650 行平台守卫代码）信号中等偏上，但逻辑清晰——纯 CPU 计算（加密/CDC/哈希）不需要改，网络 I/O 通过 GLib/libevent/libcurl 跨平台抽象层基本可直用。不涉及 GUI/3D/媒体/特定硬件，无云端 SDK，核心功能可全部适配。非 libsearpc 的依赖中 gnutls 仅作可选加密替代（默认不用），bpwrapper 是可选崩溃上报（默认不编译），均不阻塞主功能。",
     "blockers": [
       {
@@ -2511,7 +2509,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无可用的文件系统监听 API，实时同步监视能力将降级为定时轮询（功能退步但非完全不可用）。若存在（如 musl inotify 兼容层或 OHOS 自有 API）则可完整实现。",
-        "source": "harmony-pc-capabilities.json（未独立条目——需核实 OHOS NDK 的文件系统 API 能力）"
+        "source": "harmony-pc-capabilities.json（未独立条目——需核实 OHOS NDK 的文件系统 API 能力）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_procfs",
@@ -2519,7 +2518,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响已有实例检测这一辅助功能；可通过文件锁替代，不影响核心同步能力",
-        "source": "harmony-pc-capabilities.json（未独立条目）"
+        "source": "harmony-pc-capabilities.json（未独立条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_posix_subset",
@@ -2527,7 +2527,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "pthread 和 BSD sockets 在 OHOS NDK 通常可用——这是基本要求；sendfile 可能缺失但有通用回退；symlink 若不可用需条件编译。核心同步路径不依赖 sendfile/symlink",
-        "source": "harmony-pc-capabilities.json#runtimes (OHOS NDK/musl)"
+        "source": "harmony-pc-capabilities.json#runtimes (OHOS NDK/musl)",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ohos_glib",
@@ -2535,7 +2536,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GLib 是本库的核心抽象层——文件 I/O、线程、事件循环、数据结构全部基于 GLib。已鸿蒙化意味着跨平台抽象层直接可用，大量 #ifdef 分支无需关心。",
-        "source": "harmony_adapted 脚本确认：glib = true (OpenHarmony PC cmd-pkgs)"
+        "source": "harmony_adapted 脚本确认：glib = true (OpenHarmony PC cmd-pkgs)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -2612,7 +2614,21 @@
       "运行现有 Python 单元测试（tests/ 目录，含 31 个测试用例）验证核心功能正确性"
     ],
     "notes": "评估按模型 A（库跑在原生层 + Python 绑定跑在鸿蒙 Python 3.12 上）。若目标是 ArkTS 沙箱应用（模型 B），则需额外将 C 引擎通过 Node-API 暴露给 ArkTS、并重写 seaf-cli 的 Python 逻辑为 ArkTS——工作量大幅上升（person_days 约 [40,60]），且 file-monitor 等系统能力需走 @ohos.* 替代。当前评估中 target_assumptions 有 2 条 required+unknown（ta:ohos_fs_watch、ta:ohos_posix_subset），因此 confidence 下调至 medium——文件系统监听 API 与 POSIX 子集覆盖度直接影响适配工作量上下界。libsearpc 作为 Seafile 同组织维护的轻量库，移植确定性较高。GnuTLS 和 bpwrapper 均为可选（默认不使用），不阻塞主功能。platform_adaptation 3650 行平台守卫代码量中等——主要是三套文件系统监控后端和 Win32 文件操作分支，核心逻辑（common/ 层）几乎无平台差异。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "seafile",
@@ -2638,43 +2654,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "glib_platform",
-        "rationale": "GLib 作为跨平台抽象层大量使用（g_thread_create、g_rename、g_stat、g_dir_open 等），这些 API 本质上是包装了底层 POSIX/Win32 的跨平台接口，但调用点非常密集——归类为独立的 glib_platform 组以区别于直接 syscall，便于 dim-9 识别「可通过 GLib 移植」的信号"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "procfs",
-        "rationale": "读取 /proc/PID/exe 是 Linux 专有的内核伪文件接口，非标准 POSIX——按 skill 指导归类为 system 类别、type=procfs（以具体节点标注），与 sysfs 等同类"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library (daemon engine)",
-        "rationale": "Seafile 同步引擎既有 libseafile 库（供 seafile-client 链接）又有独立运行的守护进程（seaf-daemon）。按主体判断为 library——其主要消费方式是通过 API 调用（RPC 接口），守护进程是调用此 API 的可执行程序"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "pkg-config + AC_CHECK_LIB (autotools system dep)",
-        "rationale": "autotools 项目的依赖获取方式既非 vendored 也非 package_manager——是传统的 pkg-config 查找（pkg_check_modules）+ autoconf AC_CHECK_LIB 链接检测，用户需预装。现有 acquisition 取值 system 覆盖了这种情形，但 source 字段需以中文明确指出「系统(pkg-config find_package，需预装)」来区分 vcpkg/conan 等现代方式"
-      },
-      {
-        "dimension": "runtime_surface",
-        "field": "services",
-        "kind": "new_value",
-        "value": "searpc 命名管道 RPC 服务",
-        "rationale": "seaf-daemon 在本地监听 Unix 域套接字/命名管道作为 RPC 服务端——这是典型的 library（库）提供的 daemon 化本地服务。与 application 的 JMX/attach 等不同，但同属 services 清单"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2685,7 +2665,8 @@
         "message": "required_permission 读写文件系统 的 source_capability=gui 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目是纯后台守护进程/库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件场景。唯一的平台适配焦点是文件系统监控——需要为鸿蒙 PC 新增对应的 OHOS 文件系统事件监听后端。",

@@ -730,8 +730,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上，模型 A；N-API 原生插件经 OHOS NDK/musl 重编；arm64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -740,7 +739,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "rewrite_native_layer",
     "summary": "该库为 Node.js N-API 原生插件，鸿蒙 PC 已移植 Node.js 运行时，JS 层与 N-API/ThreadSafeCallback 基础设施可复用。唯一实质工作是其 C++ 原生层依赖 Windows 专有 WLAN API（WlanOpenHandle/WlanRegisterNotification），在鸿蒙上需用 HarmonyOS NDK WiFi 接口重写原生监听逻辑。项目体量很小（生产 C++ 约 373 行），重写量可控，但需确认鸿蒙 NDK 是否暴露 WiFi 状态监听的原生接口（此点未核实，下调置信度为 medium）。",
     "blockers": [
       {
@@ -783,7 +781,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无等效原生接口，则原生层无法监听 WiFi 事件，需换用 ArkTS @ohos.wifiManager 经 N-API 桥接（增加适配工作量与复杂度）",
-        "source": "未在 harmony-pc-capabilities.json 中找到对应条目，鸿蒙 WiFi NDK 能力待核实"
+        "source": "未在 harmony-pc-capabilities.json 中找到对应条目，鸿蒙 WiFi NDK 能力待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -819,7 +818,21 @@
       "在鸿蒙 PC 上跑通 WiFi 状态变化事件监听的功能验证"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。该库目前为 Windows 专有，无任何跨平台后备（无 Linux/POSIX/macOS 分支），因此平台的确定性适配工作本质上是从零写鸿蒙原生层。体量小（生产 C++ 373 行）使得重写量可控。关键风险是鸿蒙 NDK 是否暴露 WiFi 状态监听的原生 C 接口——若原生层不可用，则需走 ArkTS @ohos.wifiManager 经 Node-API 桥接（增加复杂度，person_days 取区间上界）。依赖 bindings 与 node-addon-api 均为纯 JS/头文件，不经 OHOS 官方源适配也能直接在鸿蒙 Node.js 上运行，不构成阻碍。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "network-interface",
@@ -840,33 +853,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "license_files",
-        "kind": "gap",
-        "value": "无独立 LICENSE 文件",
-        "rationale": "仓库无顶层 LICENSE 文件，许可证信息仅来自 package.json 的 \"license\" 字段与 README 末尾声明。这在 npm 生态中常见但非最佳实践。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "ambiguity",
-        "value": "windows-only",
-        "rationale": "该库仅支持 Windows 平台，源代码无条件包含 windows.h/wlanapi.h/winsock2.h，无 #ifdef 条件编译分支。binding.gyp 虽含 macOS xcode_settings 配置但实为模板残留，非 macOS 平台无法编译。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "鸿蒙 PC NDK WiFi 监听原生接口",
-        "rationale": "harmony-pc-capabilities.json 无 WiFi/网络监听 NDK 原生接口的能力条目，该类系统能力的鸿蒙 NDK 暴露程度未核实。对网络类库的鸿蒙适配评估是常见盲区，建议补充硬件/网络设备段。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯网络状态监听库，不涉及 GUI 界面、3D 渲染、音视频媒体编解码或特定硬件设备。唯一触碰的系统资源是 Windows WLAN API（wlanapi.dll），属于操作系统提供的标准无线网络服务接口，非直接硬件操作。",

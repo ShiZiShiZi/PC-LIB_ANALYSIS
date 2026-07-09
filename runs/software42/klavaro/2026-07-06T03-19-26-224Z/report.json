@@ -1056,8 +1056,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核，非 Linux ABI；OHOS NDK musl + POSIX 子集；arm64/x86_64；GTK+3 已有鸿蒙移植）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1066,7 +1065,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "Klavaro 是一款基于 GTK+3 的 C 语言桌面应用。走模型 C（整包桌面应用）：GTK+3 在鸿蒙 PC 已有官方 cmd-pkgs 移植，可直接作为目标工具包——核心 GUI 层无需重写。主要工作为：（1）用 OHOS NDK 交叉编译全部源码与依赖（GTK/Pango/Cairo/libcurl 已有鸿蒙版，GtkDatabox 需单独移植）；（2）验证桌面窗口环境下的 GTK 多窗口、字体/IME、剪贴板等集成子能力；（3）确保 XDG 配置/数据目录的文件访问权限合规；（4）确认在线排行榜的 HTTPS 网络访问权限；（5）Espeak 语音合成可关闭降级，非阻碍。整体可行，但桌面集成子能力（窗口管理器、字体/IME、HiDPI、剪贴板）均为 unknown 状态——若缺失任一关键项将增加工作量或改变 porting_class。",
     "blockers": [
       {
@@ -1155,7 +1153,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK 已有鸿蒙移植→核心 GUI 可直接复用，无需重写为 ArkUI",
-        "source": "harmony-pc-capabilities.json#gui.gtk"
+        "source": "harmony-pc-capabilities.json#gui.gtk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:wm",
@@ -1163,7 +1162,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GTK 多窗口管理依赖底层窗口服务——若不存在则应用无法启动 GUI",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:font_ime",
@@ -1171,7 +1171,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Pango 的字体渲染与输入法（IME）对盲打训练应用至关重要——若 Pango IME 在鸿蒙 PC 不工作则无法输入多语言文本",
-        "source": "harmony-pc-capabilities.json#desktop_integration.font_ime"
+        "source": "harmony-pc-capabilities.json#desktop_integration.font_ime",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dnd_clipboard",
@@ -1179,7 +1180,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "自定义训练文本的粘贴功能依赖剪贴板——缺失时手动输入降级不受影响",
-        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1187,7 +1189,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定交付形态——若不支持则需重新打包为鸿蒙 .hap，涉及 ArkTS 封装层",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1257,7 +1260,21 @@
       "全面测试各训练模块（基础/适应性/速度/流畅度）在各键盘布局与语言下的正确性"
     ],
     "notes": "评估按模型 C（整包桌面应用）：GTK+3 已有鸿蒙移植（cmd-pkgs 确认），故核心 GUI 无需用 ArkUI 重写——这与基于 Java Swing 或 Qt 的桌面应用不同（那些工具包的状态多为 unknown）。主要风险不在代码层而在集成层——窗口管理器、字体/IME、剪贴板、HiDPI、应用交付形态等均为 unknown，置信度因此下调至 medium。若关键集成能力（如窗口管理器或 IME）实际缺失则 workload 可能升至 30-40 person_days 或 porting_class 升至 needs_adaptation_partial。Espeak 语音合成和在线排行榜均为可选功能，可降级关闭以降低首次移植范围。应用生产代码约 9K 行 C，规模可控。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "klavaro",
@@ -1280,7 +1297,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "该桌面应用主要涉及 GUI 场景（GTK+3 工具包），不涉及 3D 渲染、媒体编解码或特定硬件设备。ESpeak 语音合成属于辅助性音频输出，非核心媒体能力。",

@@ -1423,7 +1423,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 A — CLI 应用跑在已移植的 Python 3.12 运行时上；纯 Python，无原生扩展；arm64/x86_64；自研内核无 Linux ABI)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -1432,7 +1431,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "pip 是纯 Python CLI 应用，鸿蒙 PC 已移植 Python 3.12 运行时，pip 自身可直接运行无需改动。其全部依赖（requests/urllib3/rich/resolvelib 等）均 vendored 内嵌，无需外部安装。唯一可选外部依赖 keyring 按需可选。子进程调用（VCS、构建后端、编辑器）由鸿蒙 Python 生态工具链提供。glibc 版本检测（os.confstr/ctypes）有健壮回退，不影响核心功能。整体零适配工作。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1443,7 +1441,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 3.12 已移植 → pip 可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1470,7 +1469,21 @@
     ],
     "required_permissions": [],
     "notes": "pip 为纯 Python CLI 应用，评估按模型 A（跑在鸿蒙已移植的 Python 3.12 运行时上）。glibc 版本检测函数（os.confstr/ctypes.CDLL）在 musl 环境下会优雅失败（返回 None），不影响核心功能。子进程执行的外部命令（git/rustc/编辑器等）的可用性是鸿蒙 Python 生态系统的问题，不能归为 pip 自身的适配阻碍。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "application",
@@ -1491,7 +1504,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "pip 为纯 Python CLI 包管理工具，不涉及 GUI、3D 渲染、媒体、特定硬件等鸿蒙适配重点场景。",

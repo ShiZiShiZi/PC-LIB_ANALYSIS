@@ -805,8 +805,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -826,7 +825,9 @@
         "category": "platform",
         "evidence": [
           "src/log4qt/systemlogappender.cpp:126-136"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_console",
@@ -837,7 +838,9 @@
         "category": "platform",
         "evidence": [
           "src/log4qt/colorconsoleappender.cpp:88-206"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:outputdebugstring",
@@ -848,7 +851,9 @@
         "category": "platform",
         "evidence": [
           "src/log4qt/wdcappender.cpp:58"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:posix_syslog",
@@ -859,7 +864,9 @@
         "category": "platform",
         "evidence": [
           "src/log4qt/systemlogappender.cpp:156-160"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -869,7 +876,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt6 已有鸿蒙版，Log4Qt 可基于 Qt 鸿蒙版编译链接；若 Qt 鸿蒙版缺少某些模块则对应功能需禁用",
-        "source": "references/harmony-pc-capabilities.json gui.qt"
+        "source": "references/harmony-pc-capabilities.json gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:hilog",
@@ -877,11 +885,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "SystemLogAppender 在 POSIX 路径使用 syslog；鸿蒙若不提供 syslog 需适配为 hilog 或禁用该 Appender",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "Log4Qt 核心是纯 Qt C++ 日志库，依赖 Qt 跨平台 API，可通过 OHOS NDK + Qt 鸿蒙版交叉编译移植。Windows 专有 Appender（WDCAppender、ColorConsoleAppender）不会在鸿蒙上编译，需跳过或提供空桩。POSIX syslog 路径需确认鸿蒙 NDK 是否提供 syslog，否则需适配为 hilog。主要工作量在于：1) 基于 Qt 鸿蒙版重新编译；2) 适配 SystemLogAppender 的 POSIX 路径；3) 跳过 Windows 专有代码。",
     "blockers": [
       {
@@ -958,6 +966,25 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_eventlog",
+          "ua:win32_console",
+          "ua:outputdebugstring",
+          "ua:posix_syslog"
+        ]
+      }
     }
   },
   "meta": {
@@ -971,7 +998,27 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_eventlog",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_eventlog 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_console",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_console 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:outputdebugstring",
+        "class": "actionable",
+        "message": "unadaptable_api ua:outputdebugstring 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:posix_syslog",
+        "class": "actionable",
+        "message": "unadaptable_api ua:posix_syslog 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
         "code": "cap_miss:gui",
@@ -979,6 +1026,7 @@
         "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

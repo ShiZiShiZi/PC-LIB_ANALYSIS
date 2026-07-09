@@ -1340,7 +1340,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (C/C++ 原生库经 OHOS NDK (clang + musl) 交叉编译为 .so；非 Windows 路径使用 POSIX 标准 C I/O + 单线程模式 _7ZIP_ST；Java/C# 绑定各自跑在鸿蒙已移植的 JDK 17/独立编译上；arm64/x86_64)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         4,
@@ -1349,7 +1348,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "LZMA SDK 的 C 核心在非 Windows 路径仅依赖标准 C 库（malloc/free/fopen/fread/fwrite/fclose/memcpy/fseek）和编译器内置函数，这些全在 OHOS NDK 的 musl POSIX 子集内。_7ZIP_ST 构建模式下多线程代码被条件编译排除，单线程路径可直接用 OHOS NDK 交叉编译。内联汇编 CPUID 检测有 MSVC intrin.h 与软件回退路径。Java 与 C# 绑定为纯托管实现，分别运行于鸿蒙 JDK 17 / .NET 独立编译，无需修改。若需多线程支持，则为 Threads.h 实现 POSIX 后端（pthread），增加约 3–5 人日。整体可行。",
     "blockers": [
       {
@@ -1434,7 +1432,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 核心的非 Windows 文件 I/O 与内存管理路径依赖这些 API；OHOS NDK musl 提供完整标准 C 库，无需额外适配。",
-        "source": "OHOS NDK 文档 — musl libc"
+        "source": "OHOS NDK 文档 — musl libc",
+        "target_status_model": "available"
       },
       {
         "id": "ta:clang_compiler",
@@ -1442,7 +1441,8 @@
         "required": true,
         "target_status": "available",
         "impact": "CpuArch.h 中的字节序转换与 CPUID 指令使用的编译器内置；clang 完整支持，非 MSVC 路径无需改动。",
-        "source": "OHOS NDK 文档 — clang"
+        "source": "OHOS NDK 文档 — clang",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64_x86_64",
@@ -1450,7 +1450,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "arm64 确定支持；x86_64 待核实。若仅 arm64 可用，x86_64 汇编优化（AES-NI CRC 等）不可用，但纯 C 回退路径仍可运行。",
-        "source": "harmony-pc-capabilities.json#arch"
+        "source": "harmony-pc-capabilities.json#arch",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:java_runtime",
@@ -1458,7 +1459,8 @@
         "required": false,
         "target_status": "available",
         "impact": "Java 绑定为纯 Java 实现，只需标准 JDK 类库（java.io.*），鸿蒙 JDK 17 直接运行。",
-        "source": "harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1528,7 +1530,21 @@
       "按需编译 Java/C# 绑定到鸿蒙 JDK 17 / .NET（仅当鸿蒙侧需要这些语言绑定时）"
     ],
     "notes": "评估按库分析（模型 A：C/C++ 原生库经 OHOS NDK 编译为 .so，Java/C# 绑定跑在已移植运行时上）。多线程支持为可选：_7ZIP_ST 单线程模式已足够多数嵌入场景（Linux makefile.gcc 默认如此）；若需多线程压缩加速，为 Threads.h 实现 pthread 后端增加约 3–5 人日。汇编优化（CRC/AES/x86 SIMD）有纯 C 回退路径，非 x86 架构自动降级，功能无损仅性能略有差异。platform_adaptation 信号（2,088 行 Windows 守卫代码）全部在 _WIN32 分支内，非 Windows 编译自动排除，不增加鸿蒙适配复杂度。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "LZMA-SDK",
@@ -1556,38 +1572,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "Unlicense",
-        "rationale": "LZMA SDK 明确声明放置在公有领域 (public domain)，但 SPDX 无 'public domain' 标识。最贴近的 SPDX 标识是 Unlicense（公有领域放弃），但两者法律文本不完全相同。另一个候选是 LicenseRef-PD。选用 Unlicense 作为最接近的宽松协议表示。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "self_contained",
-        "rationale": "LZMA SDK 是完全自包含的库，无任何外部依赖。dependencies.dependencies 为空数组，与现有的 acquisition 取值体系（system/vendored/fetchcontent 等）不存在冲突——但 '自包含无依赖' 这种场景值得记录，因为很多底层 C 库都有类似特征。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "msvc_extensions / gcc_clang_builtins",
-        "rationale": "编译器特有扩展（MSVC __declspec/__forceinline/SHE、GCC/Clang __builtin_*、#pragma intrinsic）是 'standard' 还是 'platform' 的边界模糊。它们不是操作系统平台差别而是编译器差别，多数有跨编译器回退，归入 'standard' 更合理——但 MSVC SEH __try/__except 严格是 Windows/MSVC 专有。当前归为两个组分别处理：MSVC 扩展组 + GCC/Clang 内置组。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers",
-        "kind": "gap",
-        "value": "win32_api",
-        "rationale": "Win32 多线程 API 封装（Threads.h/Threads.c）在非 Windows 平台通过 _7ZIP_ST 宏整体禁用。这种'整个模块有条件地不存在'的模式，blocker 的 severity 取 major（因为功能缺失——多线程），但 adaptability 取 adaptable（因有清晰的 POSIX 替代方案 pthread）。这种组合在当前 blocker 评估体系里可能需要更明确的指引。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "LZMA SDK 为纯计算型压缩库，不涉及 GUI、3D 渲染、媒体或特定硬件设备。唯一的硬件交互是运行时 x86 CPU 特性检测（CPUID 指令查 AES-NI），有纯 C 软件回退路径，不构成特定硬件依赖。",

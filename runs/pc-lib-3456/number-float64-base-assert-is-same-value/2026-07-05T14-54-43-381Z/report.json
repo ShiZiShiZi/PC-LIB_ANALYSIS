@@ -726,7 +726,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；Node.js 24 运行时已移植；原生扩展需经 OHOS NDK（musl libc + POSIX 子集）重编；arm64 / x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -735,7 +734,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 stdlib 数值断言子包，提供纯 JavaScript（lib/main.js）和 N-API C 原生插件（src/addon.c + src/main.c）两种实现。鸿蒙 PC Node.js 运行时已移植（available），纯 JS 路径零改动直接运行。C 原生插件仅使用 C99 标准库和 Node-API 标准接口，无平台特有 API 或系统调用，仅需用 OHOS NDK 重新编译即可。依赖的 4 个 @stdlib/napi-* 运行时包（N-API 参数/导出宏）同为纯 JS + N-API 跨平台包，需同步重编。整体评估为只需重编译，工作量极低。",
     "blockers": [
       {
@@ -775,7 +773,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 JS 代码可直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi_availability",
@@ -783,7 +782,8 @@
         "required": true,
         "target_status": "available",
         "impact": "原生插件可通过 N-API 桥接运行",
-        "source": "Node.js 标准能力（N-API 是 Node.js 内置 API，运行时已移植即可用）"
+        "source": "Node.js 标准能力（N-API 是 Node.js 内置 API，运行时已移植即可用）",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -809,7 +809,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。如果目标是 ArkTS 沙箱应用（模型 B），则 Node 核心模块不在 ArkCompiler 中可用，需将核心算法用 ArkTS 重写——但该库功能极简（一个纯函数 10 行），重写工作量也很小。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -828,33 +842,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "note",
-        "value": "单函数库，只有一个公共导出 isSameValue(a, b) 和一个 N-API C 原生实现，功能高度聚合",
-        "rationale": "该库是 @stdlib 的可分解单功能子包，仅暴露一个函数 + 一个 C addon，只需两个分类即可覆盖"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "value_used",
-        "value": "package_manager",
-        "rationale": "npm registry 包，标准 Node.js 包管理器依赖获取方式"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "note",
-        "value": "N-API 是跨平台 FFI 桥接，不是平台特有 API，归为 ffi/portable",
-        "rationale": "N-API 是 Node.js 原生跨平台 API，不受鸿蒙/操作系统差异影响"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不触及 GUI、3D 渲染、媒体、特定硬件等鸿蒙适配重点场景。",

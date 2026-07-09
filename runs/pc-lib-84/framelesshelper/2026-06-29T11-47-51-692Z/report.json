@@ -1102,8 +1102,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1126,7 +1125,9 @@
         "evidence": [
           "src/core/utils_win.cpp:99,1197",
           "src/core/utils_win.cpp:133,142"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:xcb_protocol",
@@ -1141,7 +1142,9 @@
         "evidence": [
           "src/core/platformsupport_linux.cpp:61-91",
           "src/core/utils_linux.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_wndproc",
@@ -1156,7 +1159,9 @@
         "evidence": [
           "src/core/framelesshelper_win.cpp",
           "src/core/utils_win.cpp:112-122"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win_registry",
@@ -1170,7 +1175,9 @@
         "category": "system",
         "evidence": [
           "src/core/registrykey.cpp"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1180,7 +1187,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt 已有鸿蒙版——该库的 Qt 跨平台代码路径（framelesshelper_qt.cpp）可直接编译运行",
-        "source": "references/harmony-pc-capabilities.json gui.qt"
+        "source": "references/harmony-pc-capabilities.json gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:wm",
@@ -1188,7 +1196,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "库的核心功能（无边框窗口、系统拖拽/缩放、Mica/Acrylic 材质）均依赖平台窗口管理器。若鸿蒙 PC 不提供传统桌面多窗口环境，大部分功能不可用",
-        "source": "references/harmony-pc-capabilities.json gui.wm"
+        "source": "references/harmony-pc-capabilities.json gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:hidpi",
@@ -1196,11 +1205,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "库实现了大量 DPI 感知逻辑，若鸿蒙 PC 不支持 HiDPI，该部分代码可安全降级",
-        "source": "references/harmony-pc-capabilities.json desktop_integration.hidpi"
+        "source": "references/harmony-pc-capabilities.json desktop_integration.hidpi",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "find_alternative",
     "summary": "FramelessHelper 的 Qt 跨平台路径（FramelessHelperQt，通过 Qt 事件系统实现无边框窗口）可直接编译运行于鸿蒙 Qt，但 Windows 原生实现（DWM/Win32/注册表）和 Linux 原生实现（XCB/GTK）在鸿蒙不可用。推荐路径：仅使用 Qt 跨平台路径 + 鸿蒙平台适配层；或者迁移到后继项目 QWindowKit（设计更现代，可能更容易适配）。",
     "blockers": [
       {
@@ -1297,7 +1306,26 @@
       "考虑迁移到后继项目 QWindowKit（可能更易适配新平台）"
     ],
     "notes": "置信度为 low：核心依赖的鸿蒙 PC 窗口管理器能力（gui.wm）为 unknown，直接决定本库是否可移植。若鸿蒙 PC 提供传统桌面窗口环境，Qt 跨平台路径可覆盖约 60% 功能；若不支持，则核心功能不可用。该库已被官方弃用（推荐 QWindowKit），长期维护价值较低。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:dwm_api",
+          "ua:xcb_protocol",
+          "ua:win32_wndproc",
+          "ua:win_registry"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1305,29 +1333,30 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "dynamic_load",
-        "rationale": "Windows 系统 DLL（user32/dwmapi/uxtheme/ntdll/d2d1）和 Linux 运行时库（libxcb/libgtk-3）通过 SysApiLoader 动态加载而非 find_package 或链接，不属于 system（find_package）也不属于 package_manager"
+        "code": "ua_func_class_defaulted:ua:dwm_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dwm_api 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "win32_registry",
-        "rationale": "Windows 注册表 API（RegOpenKeyExW 等）属于系统配置层，不同于一般 Win32 窗口管理 API，单独归类更清晰"
+        "code": "ua_func_class_defaulted:ua:xcb_protocol",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xcb_protocol 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "x11_xcb",
-        "rationale": "XCB 是 X11 协议的 C 语言绑定，不同于一般 POSIX API，需单独归类"
+        "code": "ua_func_class_defaulted:ua:win32_wndproc",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_wndproc 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win_registry",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win_registry 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

@@ -908,7 +908,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK / musl libc + POSIX 子集；arm64 / x86_64）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -918,7 +917,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "nlohmann/json 是 header-only 纯 C++ 模板库，仅依赖 C++ 标准库（STL），无外部依赖、无平台特有系统调用、无动态库加载。在鸿蒙 PC 上适配极为简单：直接作为头文件包含进 OHOS NDK 项目编译即可，零代码改动。库中的少量条件编译仅用于编译器/平台名称的元信息检测，不影响功能，鸿蒙 NDK 编译器（clang）可直接通过。整体可行性很高，无阻碍点。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -929,7 +927,8 @@
         "required": true,
         "target_status": "available",
         "impact": "本库所有功能均依赖 C++ STL（string/vector/map/algorithm 等），NDK 提供即可无缝运行",
-        "source": "harmony-pc-capabilities.json 未列出，但 OHOS NDK 基于 clang+musl，标配 libc++，C++ STL 通常完整"
+        "source": "harmony-pc-capabilities.json 未列出，但 OHOS NDK 基于 clang+musl，标配 libc++，C++ STL 通常完整",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -963,7 +962,21 @@
       "若需要 C++20 std::format 特性，确认 OHOS NDK 的 libc++ 版本支持（可选，非必须）"
     ],
     "notes": "该库为 header-only、零外部依赖、纯 STL 实现，适配难度极低。平台依赖仅限编译期预定义宏检测（返回平台/编译器名称字符串的 meta() 函数），不影响核心 JSON 功能。C++11 即可用，OHOS NDK（clang + musl）完全兼容。即使 OHOS NDK 的 libc++ 不提供 C++17 std::string_view / std::optional 或 C++20 std::format，库会自动降级到 C++11 实现，无功能损失。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "json",
@@ -991,7 +1004,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为纯 C++ 头文件的 JSON 数据处理库，不涉及 GUI/3D 渲染/媒体/硬件等鸿蒙适配重点场景。",

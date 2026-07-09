@@ -481,14 +481,13 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
         15
       ],
-      "level": "high"
+      "level": "medium"
     },
     "confidence": "low",
     "unadaptable_apis": [],
@@ -499,7 +498,8 @@
         "required": true,
         "target_status": "available",
         "impact": "本包为纯 Julia JLL 包装代码，可在已移植的 Julia 运行时上运行",
-        "source": "references/harmony-pc-capabilities.json runtimes.julia"
+        "source": "references/harmony-pc-capabilities.json runtimes.julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:serial_port_access",
@@ -507,7 +507,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "被包装的 libserialport C 库依赖 POSIX termios（Linux/macOS）或 Win32 COM API 进行串口操作；鸿蒙 PC 的串口设备访问机制与权限模型未核实，直接影响底层 C 库的可用性",
-        "source": "references/harmony-pc-capabilities.json hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libserialport_rebuild",
@@ -515,7 +516,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libserialport 需要用 OHOS NDK 重新编译以获得 aarch64-ohos 版本；其源码依赖 termios 等 POSIX 串口 API，OHOS NDK 的 musl + POSIX 子集是否完整覆盖 termios 待核实",
-        "source": "references/harmony-pc-capabilities.json runtimes + NDK POSIX 子集"
+        "source": "references/harmony-pc-capabilities.json runtimes + NDK POSIX 子集",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -529,7 +531,6 @@
         ]
       }
     ],
-    "recommended_path": "rebuild_ohos_artifact",
     "summary": "本 Julia JLL 包装包的 Julia 层代码可无修改运行在已移植的鸿蒙 Julia 运行时上，关键阻碍在于被包装的 libserialport C 库：需要（1）用 OHOS NDK 重新编译该 C 库、（2）鸿蒙 PC 内核提供串口设备访问机制（termios 等效 API）、（3）串口设备权限可授予。三者均为 unknown 状态，需逐项核实。",
     "blockers": [
       {
@@ -594,7 +595,21 @@
       "添加 src/wrappers/aarch64-ohos.jl wrapper 文件"
     ],
     "notes": "本评估置信度为 low，因 3 项关键目标能力假设中有 2 项状态为 unknown（串口设备访问、libserialport 在 OHOS NDK 可编译性）。Julia 运行时已确认 available，包装层代码跨平台。若鸿蒙 PC 支持 termios 或提供等效串口 API，则 porting_class 可升级为 needs_adaptation_full；若完全不支持串口，则核心功能不可用。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libserialport_jll",
@@ -619,23 +634,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia 生态无预定义枚举值（python/java/nodejs/cpp/rust/go/dotnet），归入 other"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "prebuilt_binary",
-        "rationale": "JLL 包通过 Artifacts.toml 下载预编译二进制 tarball（非 package_manager 从注册表拉取源码包），区别于 vendored（源码拷入仓库）和 package_manager"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   },
   "capability_profile": {
     "summary": "本项目涉及串口硬件设备访问场景（通过被包装的 libserialport C 库），不涉及 GUI、3D 渲染或媒体场景。",

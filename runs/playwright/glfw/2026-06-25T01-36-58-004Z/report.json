@@ -2243,8 +2243,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（默认按 C/C++ 库模型 A 评估：经 OHOS NDK 重编为原生 .so；若作为 ArkTS 应用后端则需模型 B Node-API 桥接）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -2261,7 +2260,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GLFW 的核心是封装平台窗口系统；若鸿蒙 PC OHOS NDK 未提供等价 native window/input API，则必须新增平台后端，否则核心功能无法落地。",
-        "source": "references/harmony-pc-capabilities.json 未明确覆盖 OHOS NDK native window/input API"
+        "source": "references/harmony-pc-capabilities.json 未明确覆盖 OHOS NDK native window/input API",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gpu_graphics",
@@ -2269,7 +2269,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GLFW 需要 EGL/Vulkan surface 与显示输出；若鸿蒙 PC 无对应 GPU 驱动或扩展则渲染路径不可用。",
-        "source": "references/harmony-pc-capabilities.json 未明确 GPU/图形 API"
+        "source": "references/harmony-pc-capabilities.json 未明确 GPU/图形 API",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_wm",
@@ -2277,7 +2278,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "传统多窗口桌面环境决定 GLFW 窗口能否在鸿蒙 PC 上正常创建与管理。",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_ndk",
@@ -2285,10 +2287,10 @@
         "required": true,
         "target_status": "available",
         "impact": "库需要经 OHOS NDK 交叉编译为 arm64/x86_64 .so。",
-        "source": "references/harmony-pc-capabilities.json intro / arch.arm64"
+        "source": "references/harmony-pc-capabilities.json intro / arch.arm64",
+        "target_status_model": "available"
       }
     ],
-    "recommended_path": "implement_harmony_backend",
     "summary": "GLFW 是 C99 平台抽象库，无语言运行时阻碍，理论上可经 OHOS NDK 重编。但它没有现成鸿蒙窗口后端，必须新增 _GLFW_HARMONY 平台实现，把窗口/输入/显示器/图形 surface 映射到鸿蒙原生能力。工作量集中在平台后端与图形 surface 对接；若鸿蒙 PC 未暴露相应 native API，则结论会退化为 infeasible 或需整包重写为 ArkUI 应用。",
     "blockers": [
       {
@@ -2367,7 +2369,21 @@
       "跑通 GLFW tests/ 验证跨平台行为一致"
     ],
     "notes": "评估按模型 A（C/C++ 库跑在鸿蒙已移植运行时的宿主进程中）进行。由于鸿蒙 PC 的 native window/input API 与 GPU 驱动状态在 capabilities 中为 unknown，整体置信度下调为 medium；若后续确认这些能力可用，则 person_days 可降至中档，若确认不可用则 porting_class 需调整为 infeasible 或按模型 B/C 整包重写。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2375,15 +2391,7 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "implement_harmony_backend",
-        "rationale": "GLFW 这类跨平台窗口抽象库需要为鸿蒙新增完整平台后端，简单 recompile_napi 不足以描述其迁移路径。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cap_miss:rendering_3d",
@@ -2391,6 +2399,7 @@
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

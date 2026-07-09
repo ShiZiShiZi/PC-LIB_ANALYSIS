@@ -1096,8 +1096,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 核心经 OHOS NDK/musl 重编为 .so；BD-J 子系统运行在鸿蒙 JDK 上；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1114,7 +1113,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "BD-J 菜单是 libbluray 的重要组成部分；JDK 字节码可运行，但 BD-J 自定义 AWT 类加载器行为与 sun.awt 相关桩类需实测验证",
-        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:libudfread_ohos",
@@ -1122,7 +1122,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libudfread 是读取 UDF 光盘文件系统的必需依赖；当前未在 cmd-pkgs 找到预编译包，需自行交叉编译",
-        "source": "dependencies.libudfread.harmony_adapted=false"
+        "source": "dependencies.libudfread.harmony_adapted=false",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_subset",
@@ -1130,7 +1131,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "C 核心依赖这些 POSIX API；musl/OHOS 基本支持，但 getfsstat 等挂载枚举可能缺失或需替换",
-        "source": "references/harmony-pc-capabilities.json 默认口径 + native_api.posix"
+        "source": "references/harmony-pc-capabilities.json 默认口径 + native_api.posix",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [
@@ -1154,7 +1156,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_with_ndk_and_port_bdj",
     "summary": "libbluray 是 C 核心 + 内嵌 Java BD-J 运行时的混合库。鸿蒙化主线：用 OHOS NDK 交叉编译 C 核心与 JNI native 方法，连同 libudfread 一起编译；用鸿蒙 JDK 重新编译 BD-J JAR；freetype2/fontconfig/libxml2 已有 cmd-pkgs 预编译包可直接复用。无特定硬件依赖，无不可适配的平台 API，所有功能（包括 BD-J 菜单）都有适配路径，但工作量较大且需验证 JDK 上 BD-J 的类加载器行为。",
     "blockers": [
       {
@@ -1264,7 +1265,21 @@
       "（可选）移植 libaacs/libbdplus 以支持商业加密盘"
     ],
     "notes": "按库口径（模型 A）评估：C 核心重编 + BD-J 运行在鸿蒙 JDK 上。平台相关代码（Win32、Darwin 专有框架、macOS vfork）在鸿蒙上走 POSIX/Linux 分支即可。platform_adaptation 仅 362 行（Windows/macOS 守卫），平台耦合较轻。因 libudfread 未确认已鸿蒙化且 BD-J JDK 行为需实测，置信度为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libbluray",
@@ -1292,37 +1307,9 @@
       "contrib/libudfread submodule 在当前 checkout 中为空目录，构建时会依赖 Meson subproject/系统包回退。"
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "bdj_menu_overlay",
-        "rationale": "libbluray 的 GUI 场景不是传统桌面 GUI 工具包，而是 Blu-ray Disc Java 菜单的自定义 AWT/overlay 渲染，现有 gui kind 推荐集未覆盖。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "custom_awt",
-        "rationale": "BD-J 子系统实现了自己的 java.awt 命名空间类（BDToolkit/BDGraphics），与 Qt/GTK/Swing 等推荐 kind 不同。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "recompile_with_ndk_and_port_bdj",
-        "rationale": "libbluray 是 C 库 + 内嵌 Java BD-J 运行时的混合体，单一 recompile_napi 或 run_on_ported_runtime 不足以描述，需要组合路径。"
-      },
-      {
-        "dimension": "code-metrics",
-        "field": "tests.test_cases",
-        "kind": "gap",
-        "value": "0",
-        "rationale": "metrics.py 按文件名 token 将 devtools/examples 中的 *_test.c 识别为测试文件，但仓库实际没有可识别的单元测试框架（无 JUnit/assert 等），test_cases 为 0。建议改进测试文件判定逻辑或允许模型覆盖。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libbluray 核心触及媒体（Blu-ray 播放列表/流解复用/字幕叠加）与 BD-J 菜单图形场景，但不依赖桌面 GUI 工具包或 3D/特定硬件。BD-J 图形层由库自身实现并渲染为位图叠加，不依赖宿主 headful AWT。",

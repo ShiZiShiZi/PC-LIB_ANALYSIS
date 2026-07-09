@@ -1077,7 +1077,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核 + ArkTS 应用层 + OHOS NDK 原生层 + Node-API 桥接；无 Linux ABI）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -1095,7 +1094,8 @@
         "required": true,
         "target_status": "available",
         "impact": "postject 的 npm 包在此运行时上执行，不可用则整体不可运行",
-        "source": "CLAUDE.md 默认口径：Python/Node.js/Java/Rust/Go/Julia 已移植"
+        "source": "CLAUDE.md 默认口径：Python/Node.js/Java/Rust/Go/Julia 已移植",
+        "target_status_model": "available"
       },
       {
         "id": "ta:wasm",
@@ -1103,7 +1103,8 @@
         "required": true,
         "target_status": "available",
         "impact": "WASM 编译的 C++ 核心依赖此能力执行二进制解析与修改",
-        "source": "Node.js on HarmonyOS 应包含 V8 引擎（V8 是跨平台 WASM 运行时）"
+        "source": "Node.js on HarmonyOS 应包含 V8 引擎（V8 是跨平台 WASM 运行时）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:elf_ohos",
@@ -1111,7 +1112,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响消费者使用 postject-api.h C 头文件做运行时资源查找；npm 包本身不受影响。OHOS NDK 基于 musl libc，dl_iterate_phdr 是 musl 支持的 Linux 扩展，预期可用但未核实。",
-        "source": "postject-api.h:12-15,47,135-152（__linux__ 条件编译块）"
+        "source": "postject-api.h:12-15,47,135-152（__linux__ 条件编译块）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1125,7 +1127,6 @@
         ]
       }
     ],
-    "recommended_path": "no_adaptation",
     "summary": "postject 的 npm 包以纯 JavaScript + WebAssembly 形式运行于 Node.js，不依赖任何 OS 平台 API——Node.js on HarmonyOS PC 即可直接运行，零修改。C/C++ 头文件 postject-api.h 供消费者编译时使用，其 Linux ELF 代码路径使用标准 POSIX/ELF API（如 dl_iterate_phdr、ElfW 类型），预期可在 OHOS NDK 中编译使用，但需实际验证。整体适配无需开发工作。",
     "blockers": [],
     "compatible": [
@@ -1151,7 +1152,21 @@
       "确认 OHOS ELF 格式的结构与标准 Linux ELF 一致（PT_NOTE 段、program header 布局等）"
     ],
     "notes": "postject 核心注入功能完全运行在 WASM 沙箱中，对宿主 OS 无平台依赖。唯一的平台相关代码是 postject-api.h 的运行时查找实现——但该头文件是消费者选项而非 postject 核心组成部分。由于 Node.js 和 V8 WASM 已移植，适配置信度高。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "postject",
@@ -1177,16 +1192,9 @@
       "postject-api.h 的 Linux ELF 代码路径使用 dl_iterate_phdr——该 API 非 POSIX 标准但被主流 *nix (glibc/musl) 普遍支持；OHOS NDK 基于 musl，预期可用但未实际验证。"
     ],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "new_value",
-        "value": "no_adaptation",
-        "rationale": "npm 包运行时零原生代码（JS+WASM）；WASM 内的 C++/LIEF 逻辑在 WASM 沙箱中运行、不依赖 OS 平台 API，符合 no_adaptation 定义。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "postject 是纯二进制文件处理工具，不涉及 GUI/3D 渲染/媒体处理/特定硬件——所有场景均不触及。",

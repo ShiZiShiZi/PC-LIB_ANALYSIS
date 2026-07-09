@@ -325,7 +325,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 A：跑在已移植的 Node.js 24 运行时上；纯 JS 库，无原生扩展）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -334,7 +333,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "safer-buffer 是纯 JavaScript 库，仅依赖 Node.js 内置 buffer 和 process 模块，无原生扩展、无 C 依赖、无平台特有 API。鸿蒙 PC 已移植 Node.js 24 运行时，该库可直接运行，无需任何适配工作。唯一用到 Node 内部 API 的地方（process.binding('buffer')）已有 try/catch 兜底，在 process.binding 不可用时优雅降级，不影响核心功能。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -345,7 +343,8 @@
         "required": true,
         "target_status": "available",
         "impact": "该库依赖 Node.js 的 buffer 和 process 核心模块，已移植的 Node.js 24 提供全部必需 API",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -371,7 +370,21 @@
       "确认 npm publish 到鸿蒙 PC 的 PyPI/OHPM 等注册表（如需分发）"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库为 npm 生态广泛依赖的基础 polyfill（周下载量超千万），其对旧 Node.js 版本的安全兼容性价值在鸿蒙 Node.js 24 上线后递减——鸿蒙 Node 24 原生已具备 Buffer.alloc/from，故该库在新平台上主要是提供 API 一致性（仍有从旧代码库迁移来的代码可能依赖它）。无论哪种用途，无需任何改动即可运行。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "safer-buffer",
@@ -386,19 +399,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "test_files",
-        "kind": "gap",
-        "value": "tests.js 被 code-metrics 脚本分类为 production",
-        "rationale": "tests.js（406 行）明确使用 tape 测试框架且仅包含测试逻辑，但 metrics 脚本将其归入 production 而非 test。原因是该文件在仓库根目录且无常见的 __tests__/test/ 目录包裹，脚本按目录 token 分类时漏判。metrics.json 的 test_files/test_cases 均为 0，实际测试文件数应为 1。已按指令保留脚本的计数值（\"Keep the script's line/test numbers verbatim\"），在此记录供审视。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 JavaScript polyfill 库，不涉及 GUI、3D 渲染、媒体或硬件场景——仅包装 Node.js 内置 Buffer API。",

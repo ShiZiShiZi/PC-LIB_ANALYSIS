@@ -991,7 +991,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，Go 运行时已移植 1.22/1.24+）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1027,12 +1026,12 @@
         "required": true,
         "target_status": "available",
         "impact": "Go 运行时已移植且可用，纯 Go 代码可直接编译运行；若运行时缺失或不完整则整体不可运行",
-        "source": "references/harmony-pc-capabilities.json runtimes.go 段：status=available"
+        "source": "references/harmony-pc-capabilities.json runtimes.go 段：status=available",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
     "critical_dependencies": [],
-    "recommended_path": "cross_compile",
     "summary": "本项目为纯 Go 实现的 Protocol Buffers 库，无 CGO、无平台专有 API 调用。Go 运行时已在鸿蒙 PC 上移植并可用（1.22/1.24+），因此只需交叉编译或直接在鸿蒙 PC 上用 Go 编译器编译即可。unsafe.Pointer 的使用完全在 Go 语言规范范围内，所有主流平台上的 Go 编译器均保证其语义一致。核心工作量在于编译验证和运行测试套件。",
     "blockers": [],
     "compatible": [
@@ -1068,7 +1067,21 @@
       "确认 GOPROTODEBUG 环境变量在鸿蒙 PC 上的行为一致"
     ],
     "notes": "Go 运行时在鸿蒙 PC 的状态为 available（见 harmony-pc-capabilities.json），这是本评估高置信度的核心依据。本项目无任何平台专有 API 依赖（platform_adaptation=0、platform_branches=0、arch_specific=0），因此适配工作量极低。两个外部依赖（golang/protobuf、google/go-cmp）均为可选/测试用途，即使未移植也不影响核心功能。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "protobuf-go",
@@ -1105,7 +1118,8 @@
         "message": "porting_class=recompile_only 但主生态为 go（已移植运行时）且无原生调用面，疑似应为 no_adaptation"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数据序列化/反序列化库及代码生成器，不涉及 GUI、3D 渲染、媒体处理或特定硬件设备。",

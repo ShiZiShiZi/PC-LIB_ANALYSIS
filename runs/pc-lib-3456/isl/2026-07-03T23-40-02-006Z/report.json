@@ -885,7 +885,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -903,7 +902,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 核心库交叉编译必需，已确认可用",
-        "source": "references/harmony-pc-capabilities.json#runtimes 及 OHOS NDK 文档"
+        "source": "references/harmony-pc-capabilities.json#runtimes 及 OHOS NDK 文档",
+        "target_status_model": "available"
       },
       {
         "id": "ta:gmp_cmdpkgs",
@@ -911,7 +911,8 @@
         "required": true,
         "target_status": "available",
         "impact": "默认大整数后端无需自行交叉编译，可直接链接鸿蒙版",
-        "source": "scripts/harmony_adapted.js 查询结果"
+        "source": "scripts/harmony_adapted.js 查询结果",
+        "target_status_model": "available"
       },
       {
         "id": "ta:imath_cmdpkgs",
@@ -919,7 +920,8 @@
         "required": false,
         "target_status": "available",
         "impact": "使用 --with-int=imath 时可避免 LGPL 依赖，预编译包已可用",
-        "source": "scripts/harmony_adapted.js 查询结果"
+        "source": "scripts/harmony_adapted.js 查询结果",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_ported",
@@ -927,11 +929,11 @@
         "required": false,
         "target_status": "available",
         "impact": "Python 绑定（ctypes 加载 libisl）可在鸿蒙 Python 上直接运行，只要 libisl 已重编",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_ohos",
     "summary": "isl 为纯计算型 C 库，核心代码仅依赖 ISO C 标准库与 GMP/imath 大整数接口，无 GUI、网络、进程或硬件耦合。GMP 与 imath 均已在 OpenHarmony PC 预编译包(cmd-pkgs)中提供，因此只需使用 OHOS NDK 交叉编译 libisl 即可。Python 绑定通过 ctypes 运行时加载本库产物，在已移植的鸿蒙 Python 上无需改动。整体适配工作量低。",
     "blockers": [],
     "compatible": [
@@ -976,7 +978,21 @@
       "运行核心单元测试（isl_test、isl_test_int 等）验证功能完整"
     ],
     "notes": "评估按库模型 A（C/C++ 库经 OHOS NDK 重编后链接使用）。由于所有运行时依赖均已鸿蒙化且库本身无平台耦合，未识别到 unadaptable API。若需通过 Node-API 暴露给 ArkTS 应用，可在重编后额外增加一层 napi 封装，工作量小幅增加。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "isl",
@@ -1000,26 +1016,12 @@
   "meta": {
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "recompile_ohos",
-        "rationale": "对于纯 C/C++ 库且目标是作为原生库在鸿蒙 PC 上链接使用（不一定通过 Node-API 暴露给 ArkTS），'recompile_ohos' 比 'recompile_napi' 更准确；现有推荐值未覆盖这种'直接重编为 OHOS 原生 .so' 的路径。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "ambiguity",
-        "value": "test_inputs classified as production",
-        "rationale": "metrics.json 将 test_inputs/ 目录（测试用输入数据/期望输出）统计为 production code（6281 行）。该目录实质是测试夹具，不影响库平台 API/依赖结论；本次 dim 6/7/8 已按生产代码口径收敛，未把测试数据中的用法写入迁移阻碍。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "isl 是纯计算型多面体数学库，不涉及 GUI、3D 渲染、媒体编解码或硬件设备访问；核心工作负载为整数集合/关系运算、线性规划与 AST 生成，全部可在标准 CPU 上完成。",

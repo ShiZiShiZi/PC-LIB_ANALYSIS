@@ -604,8 +604,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK；arm64/x86_64）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -614,7 +613,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "MQTTnet 是纯 .NET 托管库，无 P/Invoke、无平台特有 API、无原生扩展，仅使用 .NET BCL 标准 API（System.Net.Sockets、System.Net.WebSockets、System.Net.Security 等）。若鸿蒙 PC 提供 .NET 运行时（.NET 8+），则该库可零改动直接运行。当前鸿蒙 PC 已移植运行时列表中未包含 .NET，其可用性为 unknown——这是唯一决定性因素。若 .NET 运行时不可用，需考虑替代路径（如通过 GraalVM Native Image 编译为原生，或用 Go/Rust 重写核心协议栈）。",
     "blockers": [
       {
@@ -641,7 +639,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不可用则 MQTTnet 整体无法运行——它是纯托管库，依赖 .NET 运行时执行",
-        "source": "references/harmony-pc-capabilities.json runtimes 段未列出 .NET/dotnet"
+        "source": "references/harmony-pc-capabilities.json runtimes 段未列出 .NET/dotnet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -670,7 +669,21 @@
       "若 .NET 不可用且无短期移植计划：评估用 Go (paho.golang) 或 Rust (rumqtt) 重写 MQTT 协议栈作为替代方案"
     ],
     "notes": "评估按模型 A（库跑在已移植运行时上），但 .NET 运行时在鸿蒙 PC 上的可用性为 unknown，因此 confidence 下调至 medium。若 .NET 运行时确认 available，则 porting_class 降为 no_adaptation、person_days 降为 [0,2]；若确认 unavailable 且无 Native AOT 路径，则升级为 infeasible。库本体零平台耦合，关键变量完全在运行时是否可得。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "MQTTnet",
@@ -691,19 +704,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "framework_reference",
-        "rationale": "ASP.NET Core 通过 FrameworkReference 引用共享框架而非 PackageReference，既非 system（find_package）也非 package_manager（NuGet 包），现有推荐取值无匹配，自造 framework_reference 表示「引用 .NET SDK 共享框架」"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯网络通信库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

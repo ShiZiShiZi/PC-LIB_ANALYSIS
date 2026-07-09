@@ -1946,8 +1946,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         90,
@@ -1970,7 +1969,9 @@
         "evidence": [
           "video/out/hwdec/hwdec_cuda.c:260",
           "video/out/hwdec/hwdec_cuda_vk.c:314"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:vaapi",
@@ -1984,7 +1985,9 @@
         "category": "platform",
         "evidence": [
           "video/filter/vf_vavpp.c:366"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:drm_kms",
@@ -1997,7 +2000,9 @@
         "evidence": [
           "video/out/drm_common.c:909",
           "video/out/drm_common.c:337"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:alsa_pulse",
@@ -2012,7 +2017,9 @@
         "evidence": [
           "audio/out/ao_alsa.c",
           "audio/out/ao_pulse.c"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11_wayland",
@@ -2027,7 +2034,9 @@
         "evidence": [
           "video/out/x11_common.c:706",
           "video/out/wayland_common.c:4501"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2037,7 +2046,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FFmpeg 是 mpv 核心依赖（6 个库），不可用则 mpv 无法运行",
-        "source": "harmony-pc-capabilities.json media.video_codec"
+        "source": "harmony-pc-capabilities.json media.video_codec",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libplacebo",
@@ -2045,7 +2055,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libplacebo 是 GPU 渲染核心，不可用则 vo_gpu_next 无法运行",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_egl",
@@ -2053,7 +2064,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "partial→仅 GLES 子集，完整 OpenGL 功能可能受限",
-        "source": "harmony-pc-capabilities.json graphics_3d.opengl/egl"
+        "source": "harmony-pc-capabilities.json graphics_3d.opengl/egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:vulkan",
@@ -2061,7 +2073,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若 Vulkan 不可用，仅能依赖 OpenGL ES 后端",
-        "source": "harmony-pc-capabilities.json graphics_3d.vulkan"
+        "source": "harmony-pc-capabilities.json graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audio_io",
@@ -2069,7 +2082,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "音频输出为应用必需功能，需鸿蒙提供等价 API 或走 @ohos.multimedia.audio",
-        "source": "harmony-pc-capabilities.json media.audio_io"
+        "source": "harmony-pc-capabilities.json media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -2077,7 +2091,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "mpv 作为桌面应用需要窗口系统来显示视频，不可用则无法作为桌面应用运行",
-        "source": "harmony-pc-capabilities.json gui.wm"
+        "source": "harmony-pc-capabilities.json gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gpu_cuda",
@@ -2085,7 +2100,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA 不可用，NVIDIA 硬件加速功能不可移植（可选功能，不影响核心播放）",
-        "source": "harmony-pc-capabilities.json hardware_devices.gpu_compute_cuda"
+        "source": "harmony-pc-capabilities.json hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:video_codec",
@@ -2093,7 +2109,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "mpv 核心功能依赖 FFmpeg，无 FFmpeg 则无法解码任何媒体",
-        "source": "harmony-pc-capabilities.json media.video_codec"
+        "source": "harmony-pc-capabilities.json media.video_codec",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -2101,7 +2118,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 ArkTS .hap 形态，则 C 原生应用需重打包或重写",
-        "source": "harmony-pc-capabilities.json app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2125,7 +2143,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "mpv 作为重度依赖 FFmpeg/GPU 渲染/桌面窗口系统的 C 原生媒体播放器应用，移植到鸿蒙 PC 面临多重阻碍：核心 FFmpeg 依赖的鸿蒙可用性未核实、窗口系统（Wayland/X11/Win32）需替换为鸿蒙窗口 API、音频 I/O 后端需改写走 @ohos.multimedia.audio、Linux 特有硬件加速（VAAPI/DRM/CUDA）需放弃。推荐路径：用 OHOS NDK 交叉编译 mpv 核心 + 编写鸿蒙窗口/音频适配层 + 依赖鸿蒙版 FFmpeg（若可用）。",
     "blockers": [
       {
@@ -2287,7 +2304,27 @@
       "探索鸿蒙 NDK 媒体 API 替代硬件加速（VAAPI/CUDA）"
     ],
     "notes": "置信度低：多个核心 target_assumptions 为 unknown（FFmpeg 可用性、桌面窗口系统、应用交付形态、音频 I/O）。若 FFmpeg 不可用或桌面窗口系统不存在，整体可行性将降为 infeasible。CUDA/nvdec 硬件加速确认不可用（unavailable），但为可选功能不影响核心播放。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda_hwaccel",
+          "ua:vaapi",
+          "ua:drm_kms",
+          "ua:alsa_pulse",
+          "ua:x11_wayland"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2295,43 +2332,35 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "wayland",
-        "rationale": "Wayland 协议族（wl_compositor/xdg_wm_base 等）构成独立 API 族，既非 POSIX 亦非 X11"
+        "code": "ua_func_class_defaulted:ua:cuda_hwaccel",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda_hwaccel 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "drm",
-        "rationale": "Linux DRM/KMS 为内核级显示管理接口，独立于 POSIX 标准 API"
+        "code": "ua_func_class_defaulted:ua:vaapi",
+        "class": "actionable",
+        "message": "unadaptable_api ua:vaapi 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "vaapi",
-        "rationale": "VAAPI 为 Linux 视频加速专有 API，不同于通用 OpenGL/Vulkan"
+        "code": "ua_func_class_defaulted:ua:drm_kms",
+        "class": "actionable",
+        "message": "unadaptable_api ua:drm_kms 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cuda",
-        "rationale": "CUDA 为 NVIDIA 专有 GPU 计算接口，需单独分类"
+        "code": "ua_func_class_defaulted:ua:alsa_pulse",
+        "class": "actionable",
+        "message": "unadaptable_api ua:alsa_pulse 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "mpv 既是终端用户启动的 CLI 媒体播放器应用，也提供 libmpv 嵌入库；主形态为应用"
+        "code": "ua_func_class_defaulted:ua:x11_wayland",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_wayland 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

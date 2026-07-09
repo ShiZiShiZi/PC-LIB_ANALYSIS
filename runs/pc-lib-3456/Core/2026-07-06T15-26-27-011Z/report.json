@@ -785,8 +785,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，无 Linux ABI）",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         90,
@@ -809,7 +808,9 @@
         "evidence": [
           "src/Castle.Core/DynamicProxy/ModuleScope.cs:330",
           "src/Castle.Core/DynamicProxy/ProxyGenerator.cs:32"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:eventlog",
@@ -823,7 +824,9 @@
         "category": "platform",
         "evidence": [
           "src/Castle.Services.Logging.EventLogIntegration/DiagnosticsLogger.cs"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -833,11 +836,11 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Castle Core 是 .NET 托管代码库，全部功能依赖 .NET CLR 运行；鸿蒙 PC 未移植 .NET 运行时，库无法运行",
-        "source": "references/harmony-pc-capabilities.json runtimes 段无 .NET/dotnet 条目"
+        "source": "references/harmony-pc-capabilities.json runtimes 段无 .NET/dotnet 条目",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "abandon",
     "summary": "Castle Core 是 .NET 生态库，核心功能（DynamicProxy、DictionaryAdapter、日志门面）全部依赖 .NET CLR 运行时和 System.Reflection.Emit。鸿蒙 PC 目前未移植 .NET 运行时（harmony-pc-capabilities.json 的 runtimes 段无 .NET/dotnet 条目），因此整个库无法在鸿蒙 PC 上运行。除非 .NET 运行时被移植到鸿蒙 PC，否则无可行适配路径。",
     "blockers": [
       {
@@ -870,7 +873,24 @@
       "条件编译的 AppDomain/Configuration/Serialization 特性需按鸿蒙 .NET 目标裁剪"
     ],
     "notes": "本评估置信度为 low：.NET 运行时在鸿蒙 PC 的移植状态为 unknown（capabilities 参考文件未列出），但鉴于目前公开信息中无 .NET 移植到鸿蒙 PC 的记录，按 unavailable 处理。若未来 .NET 运行时被移植，Castle Core 的纯托管代码核心（DynamicProxy/DictionaryAdapter/日志门面）可能可直接运行，但 Reflection.Emit 的运行时代码生成能力需确认；EventLog 集成需移除或替换。NativeAOT 路径可能导致 DynamicProxy 功能不可用（因其依赖运行时类型生成）。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "low",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:reflection_emit",
+          "ua:eventlog"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Castle Core",
@@ -897,19 +917,24 @@
   },
   "meta": {
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime_unavailable",
-        "rationale": "harmony-pc-capabilities.json 的 runtimes 段仅列出 Node.js/Python/Java/Rust/Go/Julia，无 .NET/dotnet/Mono 条目；.NET 运行时在鸿蒙 PC 的移植状态完全未知，但按 unavailable 处理导致 Castle Core 整体判为 infeasible"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:reflection_emit",
+        "class": "actionable",
+        "message": "unadaptable_api ua:reflection_emit 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:eventlog",
+        "class": "actionable",
+        "message": "unadaptable_api ua:eventlog 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "Castle Core 不涉及 GUI、3D 渲染、媒体或特定硬件场景，是纯计算/基础设施库。",

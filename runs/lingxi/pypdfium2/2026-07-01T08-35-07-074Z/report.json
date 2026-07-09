@@ -1387,8 +1387,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Python 已移植）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1405,7 +1404,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 已移植，纯 Python 代码可直接运行；这是库类项目默认口径。",
-        "source": "references/harmony-pc-capabilities.json runtimes/python"
+        "source": "references/harmony-pc-capabilities.json runtimes/python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_pdfium",
@@ -1413,7 +1413,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "PDFium 是 C++ 核心，必须在鸿蒙上获得 libpdfium.so；若 OHOS NDK 不支持 Chromium/PDFium 的编译工具链或依赖库，则无法运行。",
-        "source": "references/harmony-pc-capabilities.json arch/arm64 + 模型推断"
+        "source": "references/harmony-pc-capabilities.json arch/arm64 + 模型推断",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ctypes",
@@ -1421,7 +1422,8 @@
         "required": true,
         "target_status": "available",
         "impact": "pypdfium2 完全依赖 ctypes 做 FFI；若鸿蒙 Python 的 ctypes 不完整则核心功能失效。",
-        "source": "Python 已移植的默认假设"
+        "source": "Python 已移植的默认假设",
+        "target_status_model": "available"
       },
       {
         "id": "ta:file_storage",
@@ -1429,7 +1431,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "PDF 输入输出依赖文件系统访问；鸿蒙 PC 权限模型若受限需申请 ohos.permission 读写存储。",
-        "source": "references/harmony-pc-capabilities.json permissions/perm_storage"
+        "source": "references/harmony-pc-capabilities.json permissions/perm_storage",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network_download",
@@ -1437,7 +1440,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "默认安装路径会下载 pdfium-binaries；鸿蒙上若无法联网需改为 sourcebuild 或预置 .so。",
-        "source": "模型推断"
+        "source": "模型推断",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1452,24 +1456,30 @@
       }
     ],
     "blockers": [],
-    "recommended_path": "在鸿蒙 PC 上使用 OHOS NDK 交叉编译 PDFium（关闭 V8/XFA 以减小复杂度），生成 libpdfium.so；调整 setupsrc/base.py 中的平台检测逻辑以识别 ohos 目标；将预编译的 ohos-arm64 二进制放入数据目录或提供 sourcebuild 路径；验证 ctypes 加载与符号解析；可选依赖 Pillow/NumPy/opencv 需确认鸿蒙 PyPI 镜像是否提供对应 ohos wheel。",
     "notes": "核心障碍不是平台专有 API 不可适配，而是 PDFium 这一大型 C++ 引擎能否在 OHOS NDK 上成功编译。PDFium 内部依赖的 freetype/icu/lcms2/libjpeg/openjpeg/libpng/libtiff/zlib/harfbuzz 等库大多为标准 C/C++ 库，理论上可移植，但工具链（gn/ninja、clang、musl 兼容性）和构建配置需要专门适配。由于 'OHOS NDK 能否编译 PDFium' 目前为 unknown，置信度评为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "agent": "pc-lib-analyzer (single-session)",
     "model": "kimi-k2.7",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].key",
-        "kind": "new_value",
-        "value": "document_rendering",
-        "rationale": "pypdfium2 核心场景是 PDF 文档的 2D 渲染与处理，不属于 gui/rendering_3d/media/hardware 推荐键，故新增 document_rendering 作为自定义场景键。"
-      }
-    ],
+    "observations": [],
     "confidence_overall": "medium",
     "notes": "分析基于已检出的源码与预构建 codegraph 索引；未实际执行构建。",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

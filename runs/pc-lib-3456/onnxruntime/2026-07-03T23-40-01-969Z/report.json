@@ -3015,8 +3015,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 库经 OHOS NDK/musl 交叉编译为 .so；arm64 为主力架构；Python/Node/Java 运行时已移植；无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -3025,7 +3024,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "ONNX Runtime 是跨平台 C++ 库，核心 CPU-only 路径可通过 OHOS NDK 交叉编译并在鸿蒙 PC 上作为 .so 运行；Python/Node/Java 等语言运行时已移植，绑定层可复用。但大量可选 Execution Provider 依赖专有硬件/平台 API（CUDA、TensorRT、DirectML、CoreML、QNN/SNPE 等），在鸿蒙 PC 上无对应实现，属于无法移植的功能，必须关闭或替换为 CPU/XNNPACK 路径。POSIX 子集（pthread、mmap、dlopen）总体可用，但部分亲和性/系统调用（SYS_gettid、pthread_setaffinity_np、sysctl）需要条件编译降级。由于仓库规模巨大且平台分支繁多，工作量高。",
     "unadaptable_apis": [
       {
@@ -3041,7 +3039,9 @@
         ],
         "caused_by": [
           "ta:cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:tensorrt",
@@ -3056,7 +3056,9 @@
         ],
         "caused_by": [
           "ta:tensorrt"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:directml",
@@ -3071,7 +3073,9 @@
         ],
         "caused_by": [
           "ta:directml"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:coreml",
@@ -3086,7 +3090,9 @@
         ],
         "caused_by": [
           "ta:coreml"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:qnn",
@@ -3101,7 +3107,9 @@
         ],
         "caused_by": [
           "ta:qnn"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -3111,7 +3119,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心交叉编译的基础；可用则核心可重编",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -3119,7 +3128,8 @@
         "required": true,
         "target_status": "available",
         "impact": "ORT 官方支持 arm64，MLAS/NEON/XNNPACK 路径可复用",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_subset",
@@ -3127,7 +3137,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "核心文件/内存映射/动态库加载可工作；SYS_gettid、pthread_setaffinity_np、sysctl 等可能缺失或受限，需要条件编译降级",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:cuda",
@@ -3135,7 +3146,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA EP 不可用；CPU/XNNPACK 路径替代",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:tensorrt",
@@ -3143,7 +3155,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "TensorRT EP 不可用",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:directml",
@@ -3151,7 +3164,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "DirectML EP 不可用",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:coreml",
@@ -3159,7 +3173,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CoreML EP 不可用",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:qnn",
@@ -3167,7 +3182,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "QNN/SNPE EP 不可用",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:npu_compute",
@@ -3175,7 +3191,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若存在，可开发新的鸿蒙 EP 替代 CUDA/OpenVINO；当前 unknown，不影响 CPU-only 路径",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -3183,7 +3200,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若需 x86_64 版本，待核实工具链与测试覆盖",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -3365,7 +3383,27 @@
       "在鸿蒙 PC 上运行单元测试，重点验证线程池、文件映射、动态库加载、环境变量读取"
     ],
     "notes": "评估按库模型 A（C++ 核心经 OHOS NDK 重编，语言绑定跑在已移植运行时）。由于目标平台能力表中 x86_64、本地 NPU/GPU 通用计算、部分 POSIX 子集细节为 unknown，confidence 设为 medium；若后续确认 OHOS 完整支持 pthread_setaffinity_np 等调用且提供 NPU 加速，可下调 person_days 并升级 confidence。仓库规模（239 万生产 LOC）与大量条件编译分支是主要工作量来源，而非核心算法移植难度。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda",
+          "ua:tensorrt",
+          "ua:directml",
+          "ua:coreml",
+          "ua:qnn"
+        ]
+      }
+    }
   },
   "library": {
     "name": "onnxruntime",
@@ -3399,40 +3437,39 @@
     "warnings": [
       "codegraph MCP 可用，但部分查询使用了已被 CLI 拒绝的 flag（-j/--maxDepth），已回退到 MCP 工具与 grep/Read。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "library_with_multiple_language_bindings",
-        "rationale": "ONNX Runtime 是 C++ 核心库，但同时分发 Python/C#/Java/JS/Rust 绑定；kind 仍按库处理，bindings 字段表达多语言生态。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "fetchcontent_with_find_package_fallback",
-        "rationale": "ONNX Runtime 大量使用自定义 onnxruntime_fetchcontent_declare(... FIND_PACKAGE_ARGS ...) 模式：优先 FetchContent，找不到时回退 find_package/vcpkg， acquisition 单一取值难以精确描述，归为 fetchcontent 并备注。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "gpu_compute_graphics_api_boundary",
-        "rationale": "WebGPU/DirectML 既是图形 API 也是通用计算 API；在 native_api 中按 hardware/graphics_api 列出，capability_profile 中不将其视为 rendering_3d（非 3D 渲染），而归为 hardware。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "recompile_napi_with_ep_subset",
-        "rationale": "对于 ONNX Runtime 这类大型 C++ 库，默认路径是 OHOS NDK 重编 + 关闭不可移植 EP 子集 + 保留 CPU/XNNPACK；与简单 recompile_only 不同，因为需要大量 EP/平台宏裁剪。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:tensorrt",
+        "class": "actionable",
+        "message": "unadaptable_api ua:tensorrt 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:directml",
+        "class": "actionable",
+        "message": "unadaptable_api ua:directml 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:coreml",
+        "class": "actionable",
+        "message": "unadaptable_api ua:coreml 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:qnn",
+        "class": "actionable",
+        "message": "unadaptable_api ua:qnn 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "ONNX Runtime 是底层机器学习推理/训练库，本身不涉及桌面 GUI、3D 渲染或音视频媒体处理。其核心鸿蒙适配重点在于「硬件/加速器」场景：CPU SIMD 路径、可选的 GPU/NPU/专用 AI 加速器 EP，以及运行时动态库加载模式。",

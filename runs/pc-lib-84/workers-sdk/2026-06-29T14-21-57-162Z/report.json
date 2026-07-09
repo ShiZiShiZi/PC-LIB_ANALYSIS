@@ -739,8 +739,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层，Node-API 桥接）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -757,7 +756,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植到鸿蒙 PC，核心模块可用，TypeScript/JS 代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json nodejs 行"
+        "source": "references/harmony-pc-capabilities.json nodejs 行",
+        "target_status_model": "available"
       },
       {
         "id": "ta:native_npm_bins",
@@ -765,7 +765,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "workerd 和 esbuild 是核心依赖，若无鸿蒙 PC 原生二进制则无法运行",
-        "source": "references/harmony-pc-capabilities.json npm 原生包段"
+        "source": "references/harmony-pc-capabilities.json npm 原生包段",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:subprocess_spawn",
@@ -773,7 +774,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "wrangler 大量依赖子进程启动 workerd、git 等工具；若鸿蒙 PC 限制子进程创建则核心功能受阻",
-        "source": "推测：鸿蒙 PC Node.js 是否支持 child_process 取决于内核与安全策略"
+        "source": "推测：鸿蒙 PC Node.js 是否支持 child_process 取决于内核与安全策略",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network_bind",
@@ -781,7 +783,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "dev 模式需要绑定本地端口提供开发服务器；若鸿蒙 PC 限制端口绑定则 dev 功能不可用",
-        "source": "推测：鸿蒙 PC 安全模型可能限制非沙箱应用的端口绑定"
+        "source": "推测：鸿蒙 PC 安全模型可能限制非沙箱应用的端口绑定",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -795,7 +798,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime + native_rebuild",
     "summary": "Workers SDK 的 TypeScript 代码可运行在鸿蒙 PC 已移植的 Node.js 上，但核心依赖 workerd（C++ Workers 运行时）和 esbuild（Go 打包器）需要为鸿蒙 PC 重新编译原生二进制。主要工作量在：(1) workerd 的 OHOS NDK 编译适配；(2) esbuild 的 Go 交叉编译；(3) 44 处 process.platform 平台分支的鸿蒙兼容处理；(4) sharp/libvips 等图像处理依赖的移植或替代。",
     "blockers": [
       {
@@ -921,7 +923,21 @@
       "端到端测试 wrangler dev/deploy 工作流"
     ],
     "notes": "置信度为 medium，主要因为 4 项 target_assumptions 中有 2 项 status=unknown（原生 npm 二进制可用性、子进程创建能力）。若鸿蒙 PC Node.js 完整支持 child_process 且 workerd/esbuild 可成功编译，则可行性可升至 high。本项目的核心挑战不在 JS 代码本身，而在 C++/Go 原生依赖的移植。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -929,30 +945,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "cli",
-        "rationale": "本项目是终端用户直接运行的开发工具集（Wrangler CLI 等），既非传统库也非桌面应用，更准确归类为 CLI 工具"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "package_manager",
-        "rationale": "npm/pnpm 是 Node.js 生态的标准包管理方式，但 workerd/esbuild/sharp 含平台特定原生二进制需特殊处理"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "platform_branch",
-        "rationale": "process.platform 运行时平台判断分支在 Node.js 项目中是特有的平台适配模式，不同于 C/C++ 的编译宏守卫"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "languages": {
     "primary": "TypeScript",

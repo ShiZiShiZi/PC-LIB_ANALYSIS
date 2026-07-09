@@ -775,7 +775,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 库经 OHOS NDK/musl 重新编译后供其他原生代码链接；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         4,
@@ -784,7 +783,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "libE57Format 是纯 C++14 数据格式库，无 GUI/3D/媒体/硬件/网络耦合。除 Xerces-C++ 这一个外部 XML 解析依赖需要随 OHOS NDK 交叉编译外，其余代码（标准库算法、CRCpp 头文件库、POSIX 文件 I/O 抽象）均可直接通过 OHOS 工具链重编。Windows 专用分支在鸿蒙构建中不会启用，不影响可移植性。",
     "blockers": [
       {
@@ -815,7 +813,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "C++ 库移植的前提；若工具链缺失则无法编译",
-        "source": "references/harmony-pc-capabilities.json 未显式列出 C++ 原生工具链状态"
+        "source": "references/harmony-pc-capabilities.json 未显式列出 C++ 原生工具链状态",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_posix",
@@ -823,7 +822,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "CheckedFile 的 POSIX 分支依赖这些接口；缺失或行为不一致会导致文件读写失败",
-        "source": "references/harmony-pc-capabilities.json 未显式列出 POSIX 文件 I/O 状态"
+        "source": "references/harmony-pc-capabilities.json 未显式列出 POSIX 文件 I/O 状态",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -859,7 +859,21 @@
       "如目标为 ArkTS 应用，额外编写 Node-API 桥接层暴露 Reader/Writer 接口"
     ],
     "notes": "评估按模型 A（C++ 库经 OHOS NDK 重编后被其他原生代码链接）。目标状态未在 capabilities 中显式核实 C++ 工具链与 POSIX 文件 I/O，因此置信度为 medium；若核实后二者 available，可上调至 high、person_days 向区间下限收敛。本库不涉及 GUI/3D 渲染/媒体/硬件/云服务，无 ohos.permission 需求。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libE57Format",
@@ -884,27 +898,13 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "missing_ohos_cpp_posix_in_caps",
-        "rationale": "references/harmony-pc-capabilities.json 已列出 Python/Node/Java/Rust/Go 等运行时为 available，但未显式给出 C++ 原生工具链 / musl / POSIX 文件 I/O 的状态；导致 C++ 库移植只能以 unknown 假设处理、置信度下调。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "cmake_find_package_threads_not_linked",
-        "rationale": "CMakeLists.txt 调用 find_package(Threads REQUIRED) 但 target_link_libraries 未链接 Threads::Threads，生产代码亦无 std::thread 用法；该依赖更接近构建配置而非真实运行时依赖，因此记为 scope:build。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libE57Format 是纯数据格式 I/O 库，核心功能是读写 E57 点云/图像文件。它本身不实现 GUI、3D 渲染、音视频编解码，也不直接访问 GPU、摄像头、串口等特定硬件。",

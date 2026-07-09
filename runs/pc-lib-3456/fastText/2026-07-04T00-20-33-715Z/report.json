@@ -974,7 +974,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 核心经 OHOS NDK/musl 交叉编译；Python 绑定跑在已移植 Python 3.12；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -991,7 +990,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心、CLI 与 Python 扩展均可编译",
-        "source": "harmony-pc-capabilities.json#runtimes 及 NDK toolchain"
+        "source": "harmony-pc-capabilities.json#runtimes 及 NDK toolchain",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_runtime",
@@ -999,7 +999,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 绑定无需重写，直接重编 fasttext_pybind",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pthread",
@@ -1007,7 +1008,8 @@
         "required": true,
         "target_status": "available",
         "impact": "训练多线程与自动调优计时器可用",
-        "source": "OHOS NDK musl POSIX 子集"
+        "source": "OHOS NDK musl POSIX 子集",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_memalign",
@@ -1015,7 +1017,8 @@
         "required": true,
         "target_status": "available",
         "impact": "非 Windows 内存对齐路径可用",
-        "source": "musl libc"
+        "source": "musl libc",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_simd",
@@ -1023,7 +1026,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "仅影响性能，ARM 上有标量回退",
-        "source": "native_api arch_simd"
+        "source": "native_api arch_simd",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:internet",
@@ -1031,7 +1035,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "可选 download_model 工具下载预训练模型需网络",
-        "source": "harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1045,7 +1050,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_napi / run_on_ported_runtime",
     "summary": "fastText 是纯计算型 C++ 库，核心仅依赖 C++17 标准库与 pthread，平台相关代码被编译宏完全守卫；用 OHOS NDK 交叉编译即可在鸿蒙 PC 运行。Python 绑定依赖的 numpy/scipy 已有鸿蒙 PyPI 构建，pybind11 为头文件库可随扩展一起编译。可选 x86 SIMD 在 ARM 上自动回退，不影响功能。",
     "blockers": [],
     "compatible": [
@@ -1082,7 +1086,21 @@
       "如需 download_model，申请 INTERNET 权限并测试 dl.fbaipublicfiles.com 可达性"
     ],
     "notes": "按模型 A（库/CLI 经 NDK 重编，Python 绑定跑在已移植 Python）评估。生产代码中无 GUI/3D/媒体/特定硬件，唯一性能相关平台代码是条件编译的 x86 SIMD，有完整标量回退。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "fastText",
@@ -1108,41 +1126,13 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library",
-        "rationale": "fastText 同时提供 C++ 库、CLI 与 Python 绑定；按主要分发形态判为 library，应用口径（模型 C）不适用。"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "facebook",
-        "rationale": "fasttext.util.download_model 使用 dl.fbaipublicfiles.com（Facebook 研究数据 CDN），不在推荐厂商清单中。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "x86_simd under hardware",
-        "rationale": "fastText 用 AVX/SSE intrinsics 做矩阵行平均加速，属于 CPU 架构相关硬件场景，但非外部特定硬件。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "gap",
-        "value": "website docs counted as production",
-        "rationale": "metrics.py 将 website/（Docusaurus 文档站点）标记为 production；这是文档/网站代码，不纳入库核心能力分析。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯计算型 NLP 库，不涉及 GUI、3D 渲染或媒体；仅生产代码中包含可选的 x86 SIMD 加速路径。",

@@ -971,7 +971,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK clang + musl，arm64/x86_64；核心库作为 C/C++ .so 编译或经 Node-API 暴露给 ArkTS）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -981,7 +980,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libde265 是纯 C/C++ 算法库，核心逻辑为标准 C/C++，线程使用 std::thread/pthread，内存分配使用 posix_memalign/alloca 等 POSIX 常规接口，均可被 OHOS NDK 的 musl 支持。无 GUI、无特定硬件、无云端依赖，因此主要是用 OHOS NDK 重新编译并验证正确性；在 arm64 上 x86 SIMD 路径不会启用，将回退到标量实现。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -991,7 +989,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心库依赖 C/C++ 编译和 POSIX 线程/内存接口；NDK 可用是移植前提",
-        "source": "harmony-pc-capabilities.json 引言"
+        "source": "harmony-pc-capabilities.json 引言",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -999,7 +998,8 @@
         "required": true,
         "target_status": "available",
         "impact": "在 arm64 上可编译运行；x86 SIMD 路径不启用，使用标量回退",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -1007,7 +1007,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若目标为 x86_64 PC，需额外核实鸿蒙 PC 对该架构的覆盖情况",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1045,7 +1046,21 @@
       "如需给 ArkTS 应用使用，编写 Node-API 封装层暴露 de265 解码 API"
     ],
     "notes": "本评估聚焦核心库 libde265；dec265/enc265/sherlock265 等示例程序默认可单独关闭，不构成移植阻碍。SDL2 已有官方鸿蒙预编译包，Qt5 尚未在 OpenHarmony PC 镜像中确认；但二者均非库核心依赖。x86_64 目标架构在鸿蒙 PC 上的覆盖情况尚未核实，建议优先以 arm64 为目标。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libde265",
@@ -1070,29 +1085,7 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "example_programs",
-        "rationale": "README 与目录结构显示 dec265/enc265/sherlock265 为示例程序，但 metrics 因目录名将其计入 production；分析时将其视为非核心库能力，避免把示例工具的平台依赖（Qt/SDL）误判为库本身依赖。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "source_include_only",
-        "rationale": "libvideogfx 未在 CMake 中显式 find_package，而是通过源码直接 #include 使用；现有 acquisition 词表（system/fetchcontent/vendored 等）未能精确描述这种“仅头文件包含、依赖系统预装”的集成方式。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "alloca_classification",
-        "rationale": "alloca 既非标准 C/C++ 也非严格 POSIX，但几乎所有 Linux/Windows 工具链都支持；本报告将其归入 posix_memory 平台组，若未来词表增加 compiler_extension 或 nonstandard_runtime 类别会更准确。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cap_miss:gui",
@@ -1100,7 +1093,8 @@
         "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "libde265 本身是一个纯视频编解码库，核心生产代码不涉及 GUI、3D 渲染或特定硬件；它触及的鸿蒙适配重点场景只有“媒体/视频解码”。",

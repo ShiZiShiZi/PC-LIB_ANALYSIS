@@ -1729,8 +1729,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK 原生层，C/C++ 经 clang + musl libc 重编为 .so；鸿蒙自研内核，非 Linux ABI；arm64/x86_64）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1739,7 +1738,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "elfutils 为 Linux/GNU 耦合的 C 库+工具集。核心 ELF/DWARF 解析库（libelf、libdw、libdwelf、libasm）基于标准 POSIX 文件 I/O（mmap/open/read/write），可经 OHOS NDK 交叉编译后直接运行。但 libdwfl 的进程级调试功能（/proc 伪文件系统访问、ptrace 调试接口、openat2 系统调用、process_vm_readv）和 eu-stacktrace 工具（perf_event 内核子系统）深度依赖 Linux 内核特性，鸿蒙自研内核无这些接口的等价实现，需针对 OHOS 平台重写或禁用这些能力。debuginfod 子系统的 HTTP 服务器/客户端依赖可选，其核心逻辑（build-id 索引、HTTP 通信）为跨平台 C/C++ 代码可移植。整体核心功能（离线 ELF 文件处理与 DWARF 解析）可移植；进程级和内核级调试功能需重新设计。",
     "blockers": [
       {
@@ -1851,7 +1849,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libdwfl 的进程级调试信息关联功能（对运行中进程的模块加载、符号地址查找、栈回溯）是 elfutils 的核心价值之一；若鸿蒙无等效接口，这些功能不可用，但不影响离线 ELF/DWARF 处理。",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ptrace",
@@ -1859,7 +1858,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libdwfl 运行中进程附加和寄存器获取依赖此能力；无等价接口则该路径不可用。",
-        "source": "harmony-pc-capabilities.json#process_security.ptrace"
+        "source": "harmony-pc-capabilities.json#process_security.ptrace",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:perf_event",
@@ -1867,7 +1867,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 eu-stacktrace 工具（可选），不影响核心库。",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gnu_extensions",
@@ -1875,7 +1876,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "这些 GNU 扩展非 POSIX 标准，OHOS musl 大概率不包含；但其实现相对自包含，可移植到 OHOS 上。",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:toolchain",
@@ -1883,7 +1885,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "大部分 __attribute__ 扩展 clang 均支持；TLS（__thread）和 C11 stdatomic.h 需确认 OHOS NDK 的 musl 工具链包含。若无，需替换实现。",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -1963,7 +1966,21 @@
       }
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 重编为 .so）。elfutils 是 GNU/Linux 生态的核心组件，其设计紧密耦合于 Linux 内核 API（/proc/ptrace/perf_event）。核心 ELF/DWARF 解析库（libelf/libdw）的可移植性良好，但进程级调试功能和内核级模块信息获取高度依赖 Linux 特有接口——这些在自研内核的鸿蒙上需要全新实现或禁用。confidence 设为 medium 因为 multiple required target_assumptions 为 unknown（/proc 等价接口、ptrace 等价接口、GNU 扩展可用性）。若鸿蒙提供等效调试/进程检视框架，porting_class 不变（全可适配），person_days 下行可收窄；若完全无等效接口，进程级功能不可移植但离线 ELF/DWARF 仍可用（needs_adaptation_partial→仅离线模式）。debuginfod 的可选依赖（libcurl/sqlite3/libarchive/openssl/json-c/libmicrohttpd）多数为跨平台 C 库且部分已在鸿蒙 cmd-pkgs 清单中（可查 harmony-mirror），并非阻碍。platform_adaptation 计数 444 行 Linux-only 守卫代码，为 C/C++ 库中偏低水平（多数是 #ifdef __linux__ 包裹的进程级功能代码而非分散的平台分支）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "elfutils",
@@ -1985,7 +2002,8 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为系统工具库/工具集（ELF/DWARF），不涉及 GUI、3D 渲染、多媒体或特定硬件依赖。核心为 C 语言实现的 ELF 文件解析/生成和 DWARF 调试信息读取逻辑，属于纯计算+文件 I/O 类系统工具。",

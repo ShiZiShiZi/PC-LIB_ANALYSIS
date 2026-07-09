@@ -21,7 +21,9 @@ A focused lens that answers **"这个项目的生产代码里，有多少行能�
 **这是综合维度，不要重扫源码。** 复用本次分析**已算出**的：
 - `code_metrics.dir_loc` —— **每个桶模块的 LOC 必须引用这里的机械数字**（这是对账底数）；
 - `code_metrics.platform_adaptation`（C/C++ 平台编译宏包裹行）/ `platform_branches`（运行时平台
-  分支 + samples）/ `arch_specific`（汇编/SIMD/内联汇编 + samples）—— 哪些目录有平台/架构耦合；
+  分支 + samples）/ `arch_specific`（`by_arch.<arch>.simd_loc`＝SIMD intrinsic 使用行数、汇编 LOC、
+  内联汇编 + samples）—— 哪些目录有平台/架构耦合；**`simd_loc` 给 SIMD 模块的行量**（对头文件库尤要，
+  汇编 LOC 常为 0 但 simd_loc 才是真实工作量）；
 - `native_api.groups[].apis[].evidence`（file:line 调用点）—— 平台/系统/硬件 API 落在哪些目录；
 - `capability_profile.scenarios[].via/evidence` —— GUI/3D/媒体/硬件层在哪些模块；
 - `dependencies[].declared_in` / `library.ecosystem`/`bindings` —— 原生扩展/绑定层的位置。
@@ -98,7 +100,10 @@ A focused lens that answers **"这个项目的生产代码里，有多少行能�
    实现把该功能重建出来？**
    - **能 → `needs_adaptation`**：典型平台抽象层（多后端加 OHOS 后端；epoll/kqueue/io_uring→鸿蒙 I/O 多路复用/poll 回退）、
      GUI 层（对应 capability_profile gui 场景，ArkUI 重写也归此桶、reason 注明重写）、Win32/POSIX 差异换 @ohos、DirectX/Metal→
-     鸿蒙图形栈、运行时平台分支密集模块、x86-only asm/intrinsics（补 NEON/标量回退）。**"没有 drop-in 等价"≠ 无法适配。**
+     鸿蒙图形栈、运行时平台分支密集模块、**x86-only SIMD/asm intrinsics**（`arch_specific.by_arch.x86.simd_loc>0`
+     且无 arm 键——补 NEON 或退标量；桶 LOC 引用该模块的 `dir_loc`、以 `simd_loc` 佐证脏度。**即便已有标量回退、
+     ARM64 能正确编译运行，仍归 `needs_adaptation`**：达到性能对等需补 NEON，标量降级本身也是一项适配决策——
+     **不因"回退存在"就降为 `recompile_reuse`**）。**"没有 drop-in 等价"≠ 无法适配。**
    - **不能 → `unadaptable`（从严）**：CUDA/专有 GPU、闭源二进制/无源码预编译 agent、专有内核特性/驱动、绑定特定硬件无替代
      （与 capability_profile 的 `unavailable`/`specific_hardware`、dim-9 `unadaptable_apis` 对应）。
    - **条件编译的守卫行数 ≠ 桶 LOC**——桶按模块整体归属，编译宏行数只是"该模块脏"的信号。

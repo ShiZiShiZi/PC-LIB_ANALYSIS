@@ -796,7 +796,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13.0 运行时上; N-API 原生插件经 OHOS NDK/musl 重编为 .node; arm64/x86_64; 自研内核, 无 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -805,7 +804,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "ref-napi 为 Node.js N-API 原生插件库，鸿蒙 PC 已移植 Node.js 24.13.0（含完整 N-API 支持），纯 JavaScript 部分（lib/ref.js）可直接在鸿蒙 Node.js 上运行。唯一工作量在于其 C++ 原生部分（src/binding.cc，约 462 行），需用 OHOS NDK 交叉编译为鸿蒙平台 .node 二进制。C++ 代码仅使用标准 C/C++ 库（stdlib/string/errno/inttypes/C++11 STL）与 N-API（跨平台 ABI 稳定接口），零平台特有 API 调用——Windows 条件编译块仅有 6 行编译器兼容宏（__alignof__/_snprintf_s/_strtoi64），无 Win32 API 调用。无需代码改动，仅需配置 OHOS toolchain 交叉编译。依赖均为纯 npm 包（debug/node-addon-api/node-gyp-build/get-symbol-from-current-process-h），鸿蒙 Node.js 可直接安装运行。整体可行，工作量低。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -816,7 +814,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 PC 已移植 Node.js 24.13.0，N-API 为 Node.js 内置跨平台 ABI 接口，ref-napi 的 JS 部分可直接运行、N-API 原生接口无需适配",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_cross",
@@ -824,7 +823,8 @@
         "required": true,
         "target_status": "available",
         "impact": "用于将 binding.cc 交叉编译为 arm64/x86_64 .node 二进制；musl 覆盖所用全部 C/C++ 标准库，无需额外补丁",
-        "source": "harmony-pc-capabilities.json intro: OHOS NDK (musl + POSIX 子集)"
+        "source": "harmony-pc-capabilities.json intro: OHOS NDK (musl + POSIX 子集)",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -859,7 +859,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。C++ 层仅用标准 C/C++ 库与 N-API，无平台特有 API（Win32/POSIX/Cocoa），无外部动态库依赖，无 shell-out，无 /proc|/sys 访问。Windows 条件编译块（6 行代码，src/binding.cc:8-20）仅为 MSVC 编译器兼容宏重定义——这些宏在 clang/musl 下走 #else 路径（inttypes.h），不产生额外适配工作。platform_adaptation 机械计数显示仅 Windows 6 行守卫代码，进一步印证低平台耦合度。get-symbol-from-current-process-h 在 N-API >= 6 时不需动态符号查找（鸿蒙 Node.js 24.13.0 满足），走直接调用路径。若目标为 ArkTS 沙箱应用（模型 B），则本库需完全重写为 ArkTS——不在本次评估范围。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "ref-napi",
@@ -874,26 +888,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "classification",
-        "value": "library",
-        "rationale": "ref-napi 为 npm 可安装包，通过 public API（lib/ref.js 导出符号 + N-API 原生方法）被其它 Node.js 代码以 API 调用方式使用（典型消费者为 node-ffi-napi），非终端用户直接启动的应用。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "gap",
-        "value": "cross-platform",
-        "rationale": "C++ 层仅 6 行 Windows 编译器兼容宏重定义（#ifdef _WIN32 内的 #define），不涉及任何平台特有系统 API 调用；macOS/Linux 无独立条件编译分支。库的整体平台耦合度极低。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为 Node.js 内存操作/FFI 基础库，纯 Buffer 读写与指针操作，不涉及 GUI、3D 渲染、媒体或特定硬件场景——无鸿蒙适配重点场景需要标注。",

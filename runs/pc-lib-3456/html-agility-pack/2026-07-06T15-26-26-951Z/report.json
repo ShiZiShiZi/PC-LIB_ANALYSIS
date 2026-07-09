@@ -640,7 +640,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, 无 Linux ABI; 原生层 OHOS NDK; arm64/x86_64)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -649,7 +648,6 @@
       "level": "very_low"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "HtmlAgilityPack 是纯 C# 托管库，无原生扩展、无平台特有 API、无动态库加载，全部依赖 .NET BCL 标准库（System.IO/System.Net/System.Xml/System.Text）。只要鸿蒙 PC 提供 .NET 运行时（.NET 8.0+ 或 Mono），本库即可直接运行，无需任何代码改动。当前 harmony-pc-capabilities.json 未列出 .NET 运行时的移植状态，因此结论置信度为 medium。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -660,7 +658,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无 .NET 运行时则库无法运行；本库为纯托管 C# 代码，不涉及原生扩展，运行时可用即可直接执行",
-        "source": "references/harmony-pc-capabilities.json (runtimes 段未列出 .NET)"
+        "source": "references/harmony-pc-capabilities.json (runtimes 段未列出 .NET)",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -701,7 +700,21 @@
       "在鸿蒙 .NET 运行时上运行本库的单元测试验证功能完整"
     ],
     "notes": "评估按模型 A（库跑在已移植运行时上）。本库为纯托管 C# 代码，无原生扩展/平台特有 API/FFI/动态库加载，porting_class 判为 no_adaptation。但 harmony-pc-capabilities.json 的 runtimes 段未列出 .NET 运行时移植状态，此为 required+unknown 的目标假设，因此 confidence 下调至 medium。若鸿蒙 PC 确实提供 .NET 运行时，本库可直接运行、零改动。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "HtmlAgilityPack",
@@ -726,17 +739,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime",
-        "rationale": "harmony-pc-capabilities.json 的 runtimes 段未列出 .NET 运行时移植状态，对 .NET 生态库的评估造成 required+unknown 的目标假设，导致 confidence 被迫下调。建议补充 .NET/Mono 在鸿蒙 PC 的移植状态。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯 .NET 托管 HTML 解析库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

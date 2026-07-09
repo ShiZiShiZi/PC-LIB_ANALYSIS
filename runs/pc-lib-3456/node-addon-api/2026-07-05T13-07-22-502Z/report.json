@@ -825,7 +825,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：库跑在已移植的 Node.js 24 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -834,7 +833,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "node-addon-api 是纯 header-only C++ 库，所有实现仅依赖 C++ STL 和 Node-API C 函数。鸿蒙 PC 已移植 Node.js 24（含完整 N-API 支持），运行时与 FFI 桥接层均可用。本库本身无需代码改造——唯一工作量是确保原生插件的构建系统（node-gyp/gyp）能针对 OHOS NDK 工具链配置正确的编译器（OHOS 使用 clang，与 Linux/macOS 同路径）和链接参数。平台适配代码量极低（仅 3 行 MSVC 条件编译行，OHOS 走 clang/GCC 分支自动匹配）。无平台专有 API、无外部命令、无硬件依赖。",
     "blockers": [
       {
@@ -860,7 +858,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时与 N-API 若不可用，则整个库完全无法工作——所有 napi_* 底层调用均依赖 Node.js 运行时提供的 C API",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs (available)"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs (available)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -894,7 +893,21 @@
       "对接 node-gyp 上游 / node-addon-api 社区，推动 OHOS 目标成为正式的 CI 支持平台"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。本库为零依赖 header-only 库，无 GUI/3D/媒体/硬件场景，无云端服务，无平台专有系统调用。唯一工作是构建系统适配——node-gyp 的 OS 条件分支需新增 OHOS 条目（OHOS 使用 clang，基本走现有 Clang/GCC 路径，改动量极小）。若目标是 ArkTS 沙箱应用（模型 B）且需将原生 addon 暴露给 ArkTS，则额外需要 Node-API 桥接配置——但该工作属于使用本库的 addon 项目而非本库本身。platform_adaptation 仅 3 行（均为 MSVC 版本检测，OHOS clang 不命中），平台耦合极轻。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "node-addon-api",
@@ -919,7 +932,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库是 header-only C++ 包装层，不涉及 GUI、3D 渲染、音视频媒体或特定硬件场景。所有功能均为 Node-API 桥接层的数据类型包装和异步任务管理，属于纯计算/桥接类库。",

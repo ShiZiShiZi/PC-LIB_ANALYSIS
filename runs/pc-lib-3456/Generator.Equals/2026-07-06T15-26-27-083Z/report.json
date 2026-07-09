@@ -518,7 +518,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层 + OHOS NDK 原生层）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -527,7 +526,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -536,11 +535,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "此库本身为编译时源码生成器，运行时组件仅依赖 .NET Standard 2.0 BCL。若鸿蒙 PC 有兼容的 .NET 运行时（如 .NET for OHOS），则本库无需任何修改即可使用；若无，则消费项目无法在鸿蒙上运行，但这不是本库本身的阻碍。",
-        "source": "references/harmony-pc-capabilities.json — .NET 运行时支持状态未知"
+        "source": "references/harmony-pc-capabilities.json — .NET 运行时支持状态未知",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Generator.Equals 是纯 .NET 托管库，运行时组件目标为 .NET Standard 2.0，仅使用标准 BCL API（IEquatable、IEqualityComparer、Attribute、HashCode），无任何平台专有调用、原生 FFI 或系统依赖。源码生成器在编译时运行，不参与运行时。若鸿蒙 PC 具备 .NET 运行时（.NET 5+ 或 Mono），则本库可直接运行，无需任何适配工作。",
     "blockers": [],
     "compatible": [
@@ -564,7 +563,21 @@
       "若使用 .NET for OHOS 编译消费项目，Generator.Equals 作为 NuGet 包直接引用即可"
     ],
     "notes": "本库的核心价值在于编译时代码生成，生成的 C# 源码与平台完全无关。唯一的前提条件是消费项目需运行在支持 .NET Standard 2.0 的运行时上。鸿蒙 PC 上 .NET 运行时的支持状态目前为 unknown，但这不影响本库本身的可移植性评估——一旦运行时可用，本库即开箱即用。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Generator.Equals",
@@ -588,16 +601,17 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "warnings": [],
-    "confidence_overall": "high",
+    "confidence_overall": "medium",
     "observations": [],
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Generator.Equals 是纯编译时源码生成器和 .NET Standard 2.0 运行时库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

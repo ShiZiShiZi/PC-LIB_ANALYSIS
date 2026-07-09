@@ -891,7 +891,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -909,11 +908,11 @@
         "required": true,
         "target_status": "available",
         "impact": "库为纯 Python，核心功能完全依赖 Python 运行时",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "python-control 是纯 Python 库，且其所有核心依赖（numpy、scipy、matplotlib）以及常用可选依赖（slycot、pandas）均已在 OpenHarmony PC PyPI 镜像提供 ohos 包，因此在鸿蒙 PC Python 运行时上可直接安装运行，无需改造。",
     "blockers": [],
     "compatible": [
@@ -949,7 +948,21 @@
       "如需使用 passivity 模块，需确认 cvxopt 是否已适配或选择跳过该可选模块"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时上）。唯一未在 OpenHarmony PC 镜像中适配的可选依赖是 cvxopt，仅影响 control.passivity 模块；其余核心与可选功能在鸿蒙 PC 上可直接运行。若目标是 ArkTS 沙箱应用（模型 B），则需重写为 ArkTS/Node-API，结论将完全不同。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -957,36 +970,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenario",
-        "kind": "new_value",
-        "value": "plotting_2d",
-        "rationale": "python-control 使用 matplotlib 绘制 Bode/Nyquist 等二维控制图，但 matplotlib 不是 GUI 工具包/窗口栈；推荐场景键（gui/rendering_3d/media/hardware）无法精确覆盖此 2D 绘图场景，故 capability_profile 未将其标为 gui，而记录为待反哺的新场景。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "undeclared-optional-runtime-dep",
-        "rationale": "pandas 在 control/timeresp.py:686 与 control/frdata.py:937 中被运行时可选导入并用于生成 DataFrame，但 pyproject.toml 未声明该依赖；按生产代码实际用法应列为 optional，manifest 缺失导致 scope 归类存在歧义。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "gap",
-        "value": "optional-native-dep-not-adapted",
-        "rationale": "cvxopt 未在 OpenHarmony PC 镜像适配，但仅影响可选的 passivity 模块；现有 no_adaptation/recompile_only/needs_adaptation_* 五档难以表达'核心无需改造、个别可选功能受限'的细微差别。"
-      },
-      {
-        "dimension": "code-metrics",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "benchmarks-marked-production",
-        "rationale": "metrics.py 按目录名将 benchmarks/ 标记为 production（307 行），但该目录为性能基准脚本，并非库运行时 API 的一部分；功能摘要与依赖/平台分析已以 control/ 包为主体收敛。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

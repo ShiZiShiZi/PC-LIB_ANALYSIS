@@ -1209,7 +1209,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（库走模型 A：经 OHOS NDK/musl 交叉编译 C++ 库为 .so，供鸿蒙原生程序或 Node-API 桥接调用；架构 arm64/x86_64；自研内核，非 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1219,7 +1218,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "ActiveMQ-CPP 是精心设计为跨平台的 C++ 库——底层通过 APR 抽象了 POSIX/Win32 差异，仅 decaf 层的少量平台专属 API（Win32 时间/加密、macOS sysctl、POSIX sched/signal）受 #ifdef 守卫且备有多平台替代。核心运行时依赖 APR、OpenSSL 和 libuuid 均已适配鸿蒙 PC（cmd-pkgs 预编译清单），仅 APR-Util 尚未适配但自身为轻量工具库（可一并重编）。整体工作量集中在「用 OHOS NDK 交叉编译 + 验证 musl POSIX 子集兼容性」，无需源代码级适配或 API 改写。",
     "blockers": [
       {
@@ -1288,7 +1286,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "decal 层的 unix 平台后端依赖这些标准 POSIX API；大部分 musl 已支持，部分边缘功能（如 pthread_timedjoin_np）可能缺失但程序可条件编译回退",
-        "source": "harmony-pc-capabilities.json — OHOS NDK 基于 musl libc，提供 POSIX 子集（非完整 Linux ABI）"
+        "source": "harmony-pc-capabilities.json — OHOS NDK 基于 musl libc，提供 POSIX 子集（非完整 Linux ABI）",
+        "target_status_model": "partial"
       }
     ],
     "compatible": [
@@ -1338,7 +1337,21 @@
       }
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 交叉编译供鸿蒙原生程序调用）。库的设计核心即是跨平台可移植：APR 已鸿蒙化解决了底层抽象、OpenSSL/libuuid 已就绪、Win32 分支编译时自动排除。唯一的轻量工作：APR-Util 交叉编译（可参照 APR 的鸿蒙构建）和 musl POSIX 子集验证。person_days 区间 [3,7] 反映低不确定性——依赖栈已基本鸿蒙化、平台适配代码量小（编译宏守卫 227 行）、无障碍性 API。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "activemq-cpp",
@@ -1369,7 +1382,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=无（网络通信是库基本功能，非 capability_profile 场景驱动） 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯后端消息中间件客户端库，不涉及 GUI/3D 渲染/媒体/特定硬件场景。",

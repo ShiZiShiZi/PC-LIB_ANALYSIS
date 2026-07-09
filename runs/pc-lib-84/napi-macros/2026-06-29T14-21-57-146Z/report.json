@@ -579,7 +579,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24 运行时上；原生插件经 OHOS NDK 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -588,7 +587,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "napi-macros 是纯 C 预处理器宏头文件库，自身无需任何修改即可在鸿蒙 PC 上使用。使用者编写 N-API 原生插件时引用此头文件，只需确保其 N-API 原生插件经 OHOS NDK 重新编译即可。本库无平台特有 API、无运行时依赖、无系统调用，完全跨平台。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -599,7 +597,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植至鸿蒙 PC，N-API 原生插件可经 OHOS NDK 重编运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libuv_in_node",
@@ -607,7 +606,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libuv 随 Node.js 一同移植，NAPI_UV_THROWS/NAPI_EXPORT_UV_ERROR_MAP 宏可正常工作",
-        "source": "Node.js 内置，随运行时提供"
+        "source": "Node.js 内置，随运行时提供",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -626,7 +626,21 @@
       "在鸿蒙 Node.js 环境下运行使用者的测试验证功能完整"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。本库自身零改动即可使用；实际工作量在使用者侧（其原生插件需重编）。若目标是 ArkTS 沙箱应用（模型 B），则 N-API 仍可用于 ArkTS↔C/C++ 桥接（鸿蒙 Node-API），本库宏依然适用，但部分宏（如 NAPI_RUN_SCRIPT）需确认 ArkTS 环境兼容性。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -634,15 +648,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "new_value",
-        "value": "native_bindings",
-        "rationale": "本库核心功能是提供 N-API FFI 桥接宏，帮助 C 代码与 Node.js 互操作，推荐集中无完全匹配（networking/graphics/ML/crypto/data/GUI 均不适用），自造 native_bindings 表示原生绑定/互操作桥接领域"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

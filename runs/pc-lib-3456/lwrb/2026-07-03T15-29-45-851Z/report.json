@@ -688,7 +688,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK / musl + POSIX 子集；arm64/x86_64）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -706,11 +705,11 @@
         "required": true,
         "target_status": "available",
         "impact": "库本体仅使用 C11/musl 标准头与原子操作，NDK 支持即可直接重编",
-        "source": "references/harmony-pc-capabilities.json 引言（原生层 OHOS NDK / musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json 引言（原生层 OHOS NDK / musl + POSIX 子集）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "LwRB 是纯 C11 数据结构库，无平台专有 API、无外部依赖、无硬件绑定。移植到鸿蒙 PC 只需使用 OHOS NDK 重新编译源码为 arm64/x86_64 目标；核心算法与接口无需修改，亦不存在不可适配的功能。",
     "blockers": [],
     "compatible": [
@@ -743,7 +742,21 @@
       "在鸿蒙 PC 目标上运行单元测试，验证原子操作、边界条件与内存拷贝行为一致"
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编后链接使用）。若目标为 ArkTS 应用，可在 NDK 层直接链接本库，或通过 Node-API 做薄封装暴露给 ArkTS；无论哪种方式，库本体代码均无需改动。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "lwrb",
@@ -770,7 +783,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "LwRB 是纯内存数据结构库，不涉及 GUI、3D 渲染、媒体处理或特定硬件访问，因此没有鸿蒙适配重点场景。",

@@ -1123,8 +1123,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK native layer + Node-API bridge, no Linux ABI)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1141,7 +1140,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JDK 已移植到鸿蒙 PC，Java 字节码可直接运行——Jansi 的 Java 层代码无需修改即可运行",
-        "source": "references/harmony-pc-capabilities.json runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:jni_native",
@@ -1149,7 +1149,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙 PC 的 JDK 是否支持 System.load 加载 .so 原生库——若不支持则 JNI 桥接无法工作，需重写为纯 Java 或使用 Node-API 替代",
-        "source": "references/harmony-pc-capabilities.json jdk_internals"
+        "source": "references/harmony-pc-capabilities.json jdk_internals",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_terminal",
@@ -1157,11 +1158,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "OHOS NDK 基于 musl + POSIX 子集，isatty/ioctl 等终端 API 是否可用决定 C 原生层能否直接重编译——若不可用则需找鸿蒙等价 API 或降级为纯 Java",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "Jansi 的 Java 层代码（ANSI 转义码解析、Ansi 构建器、AnsiOutputStream 等）可直接在鸿蒙 PC 的 JDK 上运行。核心挑战在于 JNI 原生层——需为鸿蒙 PC (arm64) 重新编译 C 代码，前提是 OHOS NDK 提供 POSIX 终端 API（isatty/ioctl/tcgetattr/ttyname/openpty）。若鸿蒙 PC 的终端环境支持这些 API，则只需交叉编译即可；若不支持，则需重写终端检测逻辑。Windows 专有代码（Kernel32 API）在鸿蒙 PC 上不生效，但这是按平台条件编译的，不影响。此外该库已合并到 org.jline:jansi，建议评估是否直接使用 JLine 3 的 jansi 模块。",
     "blockers": [
       {
@@ -1252,7 +1253,21 @@
       "评估是否改用 org.jline:jansi（JLine 3 维护的分支）以获得更好的上游支持"
     ],
     "notes": "Jansi 已被上游标记为不再维护，合并入 org.jline:jansi。对于鸿蒙适配，建议优先评估 JLine 3 的 jansi 模块是否已有更好的跨平台支持。核心不确定性：OHOS NDK 的 musl/POSIX 子集是否包含完整的终端 API。如果终端 API 不可用，降级方案是让 JNI 库加载失败（jansi.graceful=true），此时 Jansi 只能做 ANSI 剥离——但终端检测和窗口尺寸获取将不可用。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "jansi",
@@ -1275,19 +1290,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_full",
-        "rationale": "Java 层可直接运行但 JNI 原生层需重编+终端 API 可用性未知——介于 recompile_only 和 needs_adaptation_full 之间；若 OHOS NDK 的 POSIX 终端 API 完整覆盖则可降为 recompile_only"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Jansi 不涉及 GUI、3D 渲染、媒体或特定硬件场景——它是一个纯终端/控制台库，通过 JNI 调用平台终端 API 实现 ANSI 转义码处理。",

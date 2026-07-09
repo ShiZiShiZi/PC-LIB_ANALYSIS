@@ -1549,8 +1549,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层，Node-API 桥接）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1572,7 +1571,9 @@
         "category": "platform",
         "evidence": [
           "src/x11/fg_window_x11_glx.c:335"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wgl",
@@ -1584,7 +1585,9 @@
         "category": "platform",
         "evidence": [
           "src/mswin/fg_window_mswin.c:291"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11_core",
@@ -1599,7 +1602,9 @@
         "evidence": [
           "src/x11/fg_init_x11.c:170",
           "src/x11/fg_main_x11.c:585"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wayland_core",
@@ -1613,7 +1618,9 @@
         "category": "platform",
         "evidence": [
           "src/wayland/fg_init_wl.c:80"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1623,7 +1630,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "鸿蒙 PC 提供 OpenGL ES/EGL（partial），可走 GLES+EGL 路径；完整桌面 OpenGL 扩展覆盖不确定",
-        "source": "references/harmony-pc-capabilities.json → graphics_3d.opengl + graphics_3d.egl"
+        "source": "references/harmony-pc-capabilities.json → graphics_3d.opengl + graphics_3d.egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:window_system",
@@ -1631,7 +1639,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FreeGLUT 的核心功能依赖窗口系统。鸿蒙 PC 是否有原生窗口 API——直接决定是否能为 FreeGLUT 编写鸿蒙后端",
-        "source": "references/harmony-pc-capabilities.json → gui.wm"
+        "source": "references/harmony-pc-capabilities.json → gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ndk_window",
@@ -1639,11 +1648,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC NDK 提供原生窗口创建/事件 API，可据此编写 FreeGLUT 鸿蒙后端；否则无法实现",
-        "source": "references/harmony-pc-capabilities.json（未见对应行）"
+        "source": "references/harmony-pc-capabilities.json（未见对应行）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "write_harmony_backend",
     "summary": "FreeGLUT 的核心是平台抽象层——每个平台后端约 1000-3000 行代码实现窗口/上下文/事件等原语。适配鸿蒙的关键路径是：利用鸿蒙 EGL+GLES 作为渲染后端，编写全新的鸿蒙平台后端（窗口创建、事件循环、输入处理），替代现有 X11/Win32/Cocoa/Wayland 后端。",
     "blockers": [
       {
@@ -1730,7 +1739,26 @@
       "验证现有 EGL 后端在鸿蒙 GLES 环境下的功能完整性"
     ],
     "notes": "FreeGLUT 的架构天然支持新平台后端——每个后端实现约 10-15 个 fgPlatform* 函数即可接入。关键不确定性在于鸿蒙 PC 是否暴露原生窗口 API。若有，工作量主要在编写新后端（参考 Android 后端约 1000 行）；若无，则需通过 ArkUI 间接封装，复杂度大幅增加。confidence 设为 medium 因 ta:window_system 和 ta:ndk_window 均为 unknown。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:glx",
+          "ua:wgl",
+          "ua:x11_core",
+          "ua:wayland_core"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1738,22 +1766,30 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "code_metrics",
-        "field": "platform_adaptation",
-        "kind": "gap",
-        "value": "directory-isolated-platform-code",
-        "rationale": "FreeGLUT 的平台适配代码以整目录隔离（src/mswin/、src/x11/、src/cocoa/、src/wayland/）而非仅靠编译宏守卫，导致 platform_adaptation 宏计数显著低估实际平台适配代码量。"
+        "code": "ua_func_class_defaulted:ua:glx",
+        "class": "actionable",
+        "message": "unadaptable_api ua:glx 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "write_harmony_backend",
-        "rationale": "FreeGLUT 是窗口系统胶合层，其适配路径不是重编译或桥接，而是编写全新的平台后端（实现 fgPlatform* 函数族），与现有推荐值不匹配。"
+        "code": "ua_func_class_defaulted:ua:wgl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wgl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:x11_core",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_core 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wayland_core",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wayland_core 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

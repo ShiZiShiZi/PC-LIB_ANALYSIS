@@ -387,7 +387,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在已移植的 Node.js 24.13.0 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -396,7 +395,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "napi-build-utils 是一个纯 JavaScript 库，零原生依赖、零平台特定 API，仅使用 Node.js 内置标准模块（path、process）。鸿蒙 PC 已移植 Node.js 24.13.0 运行时，该库可直接在鸿蒙 Node.js 上运行，无需任何代码修改、无需编译、无需重新打包。唯一工作量是 npm install 后在鸿蒙 Node.js 上验证其测试套件通过。",
     "target_assumptions": [
       {
@@ -405,7 +403,8 @@
         "required": true,
         "target_status": "available",
         "impact": "该库的唯一运行前提；Node.js 已移植，该库即可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs（状态 available，24.13.0）"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs（状态 available，24.13.0）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -425,7 +424,21 @@
       "确认 process.versions.napi 在鸿蒙 Node.js 上正确返回 N-API 版本号"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。本库为纯 JS、无原生扩展、无平台耦合——是最简单的 no_adaptation 档。若目标为 ArkTS 沙箱应用（模型 B），则需逐个替换 process.* / path.* 等 Node 核心模块为 @ohos.* 等价 API，难度与工作量会显著上升，但这不是库的典型使用场景。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "napi-build-utils",
@@ -450,7 +463,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 JavaScript 工具库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备，无鸿蒙适配重点场景。",

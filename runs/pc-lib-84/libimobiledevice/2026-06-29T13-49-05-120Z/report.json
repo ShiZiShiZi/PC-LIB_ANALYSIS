@@ -1372,8 +1372,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（原生 C/C++ 库经 OHOS NDK 重编，arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1382,7 +1381,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi / recompile_only（取决于是否封装为 Node-API/ArkTS 可用形态，核心前提是 usbmuxd 可用）",
     "summary": "libimobiledevice 是跨平台 C 库，协议逻辑本身可在 OHOS NDK 下重编；但其核心价值——通过 USB 与 iOS 设备通信——完全依赖外部 usbmuxd/Apple Mobile Device 协议栈，而这是鸿蒙 PC 目标侧尚未核实的能力。若目标环境不支持该能力，USB 路径不可用，仅能降级使用 WiFi sync，整体判定为 hard/needs_adaptation_partial。",
     "blockers": [
       {
@@ -1483,7 +1481,9 @@
         ],
         "caused_by": [
           "ta:usbmuxd"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1493,7 +1493,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "库核心 USB 连接与设备发现依赖 usbmuxd；缺失则 USB 路径不可用，WiFi-only 功能受限。",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial + 项目特定 Apple USB 协议事实"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial + 项目特定 Apple USB 协议事实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libusbmuxd-deps",
@@ -1501,7 +1502,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "C 库需 OHOS NDK 交叉编译，依赖链若未鸿蒙化需自行移植。",
-        "source": "dependency-analysis + references/harmony-pc-capabilities.json"
+        "source": "dependency-analysis + references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -1509,7 +1511,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响是否同时构建 x86_64 产物；arm64 已确认可用。",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:network",
@@ -1517,7 +1520,8 @@
         "required": true,
         "target_status": "available",
         "impact": "WiFi sync 与本地通信可用。",
-        "source": "OHOS NDK POSIX 子集支持 sockets"
+        "source": "OHOS NDK POSIX 子集支持 sockets",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1571,7 +1575,23 @@
       "若打包为 ArkTS 应用，需通过 Node-API 封装核心接口并申请必要权限"
     ],
     "notes": "评估默认按 C 库模型 A（经 OHOS NDK 重编为原生库）展开。库的核心价值依赖 usbmuxd/Apple USB 协议栈，而这是鸿蒙 PC 目标侧未核实的能力，因此结论为 hard/needs_adaptation_partial。OpenSSL、MbedTLS、readline、ed25519 已可在 OpenHarmony PC cmd-pkgs 获取，降低了部分依赖移植工作量。若目标环境确认无法连接 iOS 设备，则应升级为 infeasible；若仅使用 WiFi sync 且 usbmuxd 不必须，则工作量可降低。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:usbmuxd"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1581,29 +1601,15 @@
       "仓库未包含测试代码（tests=0）"
     ],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "new_value",
-        "value": "移动设备管理 / iOS 配套工具库",
-        "rationale": "该库专注于 Apple iOS 设备通信，不属于通用网络/图形/数据领域。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "network",
-        "rationale": "除硬件外，WiFi sync 与 reverse_proxy 涉及标准 TCP socket，适合作为独立场景标注。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "autotools_pkgconfig",
-        "rationale": "C/C++ 项目通过 configure.ac + Makefile.am 使用 pkg-config 检测系统依赖，推荐取值中未明确列出。"
+        "code": "ua_func_class_defaulted:ua:usbmuxd",
+        "class": "actionable",
+        "message": "unadaptable_api ua:usbmuxd 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

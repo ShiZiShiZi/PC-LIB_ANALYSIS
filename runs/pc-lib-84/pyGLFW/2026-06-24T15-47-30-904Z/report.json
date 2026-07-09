@@ -707,8 +707,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Python 3.12 已移植；OHOS NDK musl + POSIX 子集；arm64/x86_64）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -717,7 +716,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "port_glfw_native_backend",
     "summary": "pyGLFW 是纯 Python ctypes 封装，可在鸿蒙 Python 上直接运行；但其所有功能都委托给 GLFW 原生库，而 GLFW 目前无鸿蒙后端。要在鸿蒙 PC 使用，需先用 OHOS NDK 为 GLFW 实现鸿蒙窗口/显示后端并编译出 libglfw.so，pyGLFW 本身主要需调整库搜索路径。暴露 Win32/Cocoa/X11/Wayland 原生句柄的平台函数在鸿蒙上无对应实现，属于不可移植部分。",
     "blockers": [
       {
@@ -787,7 +785,9 @@
         "category": "platform",
         "evidence": [
           "glfw/__init__.py:2897"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cocoa_handles",
@@ -798,7 +798,9 @@
         "category": "platform",
         "evidence": [
           "glfw/__init__.py:2936"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11_handles",
@@ -809,7 +811,9 @@
         "category": "platform",
         "evidence": [
           "glfw/__init__.py:3001"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wayland_handles",
@@ -820,7 +824,9 @@
         "category": "platform",
         "evidence": [
           "glfw/__init__.py:3096"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -830,7 +836,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 封装可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:glfw_backend",
@@ -838,7 +845,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "GLFW 核心窗口创建、事件处理与输入功能无法工作；pyGLFW 所有能力都依赖该后端",
-        "source": "GLFW upstream platform support; OpenHarmony PC cmd-pkgs mirror (glfw/glfw3 not present)"
+        "source": "GLFW upstream platform support; OpenHarmony PC cmd-pkgs mirror (glfw/glfw3 not present)",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:opengl_vulkan",
@@ -846,7 +854,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "影响 OpenGL/Vulkan 上下文创建与图形渲染功能",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -874,7 +883,26 @@
       "在鸿蒙 Python 上跑通 pyGLFW 示例，验证窗口创建、事件、输入与图形上下文"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。pyGLFW 本身无需改动即可解释执行，但其价值完全取决于 GLFW 原生库能否在鸿蒙上工作。GLFW 目前无鸿蒙后端且未出现在 OpenHarmony PC 预编译包清单中，是核心阻塞点；OpenGL/Vulkan 在鸿蒙 PC 上的可用性尚未核实，进一步压低置信度。若目标场景仅为无头/离屏渲染（OSMesa），工作量可显著降低。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_handles",
+          "ua:cocoa_handles",
+          "ua:x11_handles",
+          "ua:wayland_handles"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -885,11 +913,32 @@
     "observations": [],
     "harmony_warnings": [
       {
+        "code": "ua_func_class_defaulted:ua:win32_handles",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_handles 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cocoa_handles",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cocoa_handles 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:x11_handles",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_handles 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wayland_handles",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wayland_handles 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
         "code": "cap_miss:rendering_3d",
         "class": "actionable",
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

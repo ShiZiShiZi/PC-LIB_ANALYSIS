@@ -650,7 +650,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（运行在已移植的 Node.js 24 运行时上；纯 JavaScript，无原生扩展；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -667,11 +666,11 @@
         "required": true,
         "target_status": "available",
         "impact": "该库全部功能依赖 WebAssembly JS API；该 API 为 V8 引擎内置，鸿蒙 Node.js 基于 V8 正常支持",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs（Node.js 24.13.0 已移植）+ V8 内建 WebAssembly 能力"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs（Node.js 24.13.0 已移植）+ V8 内建 WebAssembly 能力",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为纯 JavaScript 库，运行时仅使用 WebAssembly 标准 JS API（WebAssembly.Module/validate/instantiate 等）与 JS 内置对象（TypedArray/BigInt/SharedArrayBuffer/atob），无原生扩展、无平台特有 API、无 C 依赖、无外部命令调用。鸿蒙 PC 已移植 Node.js 24（基于 V8，内建 WebAssembly 支持），直接在已移植运行时上 `npm install` 即可使用，无需任何适配工作。唯一的构建期依赖（wabt/binaryen）仅用于发布前编译 WAT→WASM 字节码，不影响终端使用——npm 包已内含预编译的 WASM 字节数组。",
     "blockers": [],
     "compatible": [
@@ -695,7 +694,21 @@
       "如需从源码构建发布版本，确保 wabt/binaryen npm 包在鸿蒙 Node.js 下可安装运行"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库零原生扩展、零平台耦合，是最简单的 no_adaptation 情形。webassembly 能力为 V8 内建，无需额外权限或目标能力假设。若鸿蒙 Node.js 运行时对 WebAssembly 的支持有任何已知限制（如 SharedArrayBuffer 在特定配置下不可用），threads 检测器可能返回 false 但不影响库运行。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "wasm-feature-detect",
@@ -716,7 +729,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯 JavaScript WebAssembly 特性检测库，不涉及 GUI/3D 渲染/媒体/特定硬件场景。运行时仅调用 WebAssembly 标准 JS API 与 TypedArray/BigInt 等内置对象，无原生扩展、无图形/音视频/设备依赖。",

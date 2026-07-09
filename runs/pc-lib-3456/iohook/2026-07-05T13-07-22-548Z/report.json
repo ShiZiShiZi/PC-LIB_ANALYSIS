@@ -1658,8 +1658,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；Node.js 24.13.0 已移植，可直接运行 JS 层；原生插件 iohook.node 需经 OHOS NDK/musl 重编；arm64/x86_64）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1668,7 +1667,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "iohook 是 Node.js 原生插件，鸿蒙 PC 已移植 Node.js 24.13.0，JS 层（index.js，EventEmitter 封装与快捷键逻辑）可直接运行。但核心原生扩展（src/iohook.cc 与 vendored libuiohook）深度依赖各桌面平台的全局输入钩子 API——Windows SetWindowsHookEx/macOS CGEventTap/X11 XRecord——这些在当前鸿蒙 PC 上均无等价实现。移植工作量在于：用 @ohos.multimodalInput（经 Node-API 桥接）或鸿蒙 PC 桌面环境提供的等效输入钩子 API，为 libuiohook 编写全新的 src/ohos/ 平台后端，再用 OHOS NDK 交叉编译整个原生插件。功能理论上都可适配，但需鸿蒙 PC 开放全局输入监听能力——该目标假设当前未核实，置信度因而下调至 medium。",
     "blockers": [
       {
@@ -1760,7 +1758,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 层无需改动；原生插件在鸿蒙 Node.js 上通过 require() 加载。",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_input_hook",
@@ -1768,7 +1767,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不存在，iohook 无法捕获系统级键鼠事件——这是移植的决定性前提；可用 @ohos.multimodalInput 或 OHOS NDK 原生输入 API 替代（前提是它们支持全局监听）。",
-        "source": "references/harmony-pc-capabilities.json — 当前未收录此能力（桌面窗口管理器状态为 unknown）"
+        "source": "references/harmony-pc-capabilities.json — 当前未收录此能力（桌面窗口管理器状态为 unknown）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1813,7 +1813,21 @@
       "更新 build.js 预编译脚本以支持鸿蒙平台（新增 ohos target、OHOS NDK 工具链配置、打包上传）"
     ],
     "notes": "评估按模型 A（库跑在已移植的鸿蒙 Node.js 24 上）。核心不确定性在鸿蒙 PC 是否提供系统级全局输入钩子能力——当前 harmony-pc-capabilities.json 未收录此题项（桌面窗口管理器/显示服务均为 unknown），故下调 confidence 至 medium。若鸿蒙提供等价能力，移植可行（needs_adaptation_full）；若不提供，iohook 的功能范围降为仅监听本应用内的事件（需改变 API 语义），或整体不可移植（infeasible）。libuiohook 已按平台分离后端，新增鸿蒙后端是增量、非破坏性工作。纯 JS 层（EventEmitter/快捷键）和 NAN 绑定层可复用，大大降低移植范围。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "iohook",
@@ -1830,52 +1844,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "xkbcommon",
-        "rationale": "libuiohook 在 Linux 上使用 xkbcommon 库（libxkbcommon）进行 XKB 键盘状态管理——该 API 属于 Linux 输入栈特有，不属于 X11 核心（xcb/xlib），因此单独列为 xkbcommon 组与 x11 组区分。现有 type 推荐集未覆盖此场景。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "darwin_cg",
-        "rationale": "macOS CoreGraphics Event Tap（CGEventTap/CGEventSourceKeyState/CFRunLoop）是一组独立于 IOKit/Carbon 的系统输入框架，在 native_api type 推荐集无对应标签——区分为 darwin_cg（CoreGraphics 事件栈）与 darwin_cf（CoreFoundation RunLoop）两个组，更好地反映 API 分层。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "darwin_objc",
-        "rationale": "libuiohook 的 macOS 后端使用 Objective-C 运行时 API（objc_getClass/objc_msgSend）动态调用 TISInputSource 进行键盘布局查询——是少数在 C 代码中直接调用 objc 运行时的场景，单独分组为 darwin_objc 以区别于 CoreGraphics/CoreFoundation 组。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "libuiohook 以源码形式嵌入仓库（libuiohook/ 目录），CMakeLists.txt 通过 add_subdirectory 编译为静态库后链接——标准 vendored 依赖，但 acquisition 推荐值中 vendored 的典型示例是 copied source tree，此处确为此情况。"
-      },
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "MIT AND LGPL-3.0-or-later",
-        "rationale": "iohook 自身（JS/TypeScript + NAN C++ 绑定）声明 MIT，但 vendored libuiohook（~7200 行 C）为 LGPL-3.0-or-later 且以静态库链接进 iohook.node。从许可合规角度，最终产物受 LGPL-3.0+ 约束——SPDX 仅用 'LGPL-3.0-or-later' 表达最终有效许可，但实际为 MIT 包装 + LGPL 核心的复合。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "全局输入钩子能力",
-        "rationale": "harmony-pc-capabilities.json 目前未收录「全局输入监听/钩子」这一桌面开发常用能力（Windows SetWindowsHookEx / macOS CGEventTap / X11 XRecord 的等价 API）——对于 iohook 等输入钩子类库，这是决定性的移植前提。建议在 GUI/桌面集成段新增此项，并在 @ohos.multimodalInput 或者其他系统能力中确认是否提供。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "iohook 的核心功能是系统级键盘鼠标事件捕获，直接依赖各平台原生输入 API（Win32/IOKit/X11），不涉及 GUI 渲染、3D 图形、媒体编解码或特定硬件。虽然它是桌面应用基础设施的一部分，但自身仅是输入监听层——不绘制窗口、不做渲染、不访问 GPU/摄像头/蓝牙。",

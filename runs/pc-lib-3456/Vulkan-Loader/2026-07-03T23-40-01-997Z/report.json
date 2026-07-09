@@ -1737,8 +1737,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核，OHOS NDK：clang + musl libc + POSIX 子集，arm64/x86_64；默认按 C/C++ 库模型评估：用 OHOS NDK 交叉编译为 .so，可作为原生库被其他鸿蒙原生应用/游戏链接）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1747,7 +1746,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile_ohos",
     "summary": "Vulkan-Loader 是 C99 图形系统库，核心逻辑（驱动/层发现、dispatch table、跳板）可在 OHOS NDK 上交叉编译；POSIX 线程与动态加载在 musl 下基本可用。主要风险在于鸿蒙 PC 是否提供 Vulkan 运行时与 GPU ICD 驱动（目标事实 unknown），以及原有 WSI 后端（XCB/X11/Wayland/Win32/Metal）与鸿蒙窗口系统不匹配。若 Vulkan 在鸿蒙上不可用，则核心功能不可适配；当前按未知处理，置信度降至 medium。",
     "blockers": [
       {
@@ -1856,7 +1854,9 @@
         ],
         "caused_by": [
           "ta:wsi_backend"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:wayland_surface",
@@ -1870,7 +1870,9 @@
         ],
         "caused_by": [
           "ta:wsi_backend"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_surface",
@@ -1884,7 +1886,9 @@
         ],
         "caused_by": [
           "ta:wsi_backend"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metal_surface",
@@ -1899,7 +1903,9 @@
         ],
         "caused_by": [
           "ta:wsi_backend"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:directfb_surface",
@@ -1913,7 +1919,9 @@
         ],
         "caused_by": [
           "ta:wsi_backend"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1923,7 +1931,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本库核心功能就是加载 Vulkan ICD；若鸿蒙无 Vulkan 则整体不可适配",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gpu_drivers",
@@ -1931,7 +1940,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Loader 必须能找到并加载 GPU 厂商驱动才能工作",
-        "source": "native_api.dynamic_libraries / loader/loader.c:loader_icd_scan"
+        "source": "native_api.dynamic_libraries / loader/loader.c:loader_icd_scan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wsi_backend",
@@ -1939,7 +1949,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "现有 WSI 后端均不原生匹配鸿蒙；需要关闭或新增后端",
-        "source": "references/harmony-pc-capabilities.json#gui.wm / native_api.wsi_platform"
+        "source": "references/harmony-pc-capabilities.json#gui.wm / native_api.wsi_platform",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_posix",
@@ -1947,7 +1958,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "核心 loader 依赖这些 POSIX 接口；musl 通常支持，但 secure_getenv、procfs 等需验证",
-        "source": "references/harmony-pc-capabilities.json intro + native_api.posix"
+        "source": "references/harmony-pc-capabilities.json intro + native_api.posix",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
@@ -1985,7 +1997,27 @@
       "在鸿蒙目标上跑通 loader 单元测试与真实 ICD 加载验证"
     ],
     "notes": "评估按 C/C++ 库模型 A（OHOS NDK 交叉编译）进行。Vulkan 在鸿蒙 PC 的可用性是当前最大不确定因素：references/harmony-pc-capabilities.json 中 graphics_3d.vulkan 状态为 unknown。若后续核实 Vulkan 可用，则 porting_class 可下调至 needs_adaptation_full；若不可用，则整体趋向 infeasible。本库不是终端用户应用，不适用 ArkTS 沙箱应用模型 C。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:xcb_surface",
+          "ua:wayland_surface",
+          "ua:win32_surface",
+          "ua:metal_surface",
+          "ua:directfb_surface"
+        ]
+      }
+    }
   },
   "library": {
     "name": "Vulkan-Loader",
@@ -2011,32 +2043,38 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios.gui",
-        "kind": "ambiguity",
-        "value": "gui",
-        "rationale": "Vulkan-Loader 自身不是 GUI 工具包，但包含 WSI（窗口系统集成）surface 创建代码。按 skill「有窗口系统调用即 present」口径，将 gui 场景标记为 present，kind 限定为 wsi 而非 qt/gtk 等控件框架，避免误判为 GUI 应用。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "new_value",
-        "value": "vulkan_runtime",
-        "rationale": "本库核心依赖 Vulkan 运行时，而 references/harmony-pc-capabilities.json 中 graphics_3d.vulkan 为 unknown，是决定性假设。建议面板#/harmony-caps 优先核实此项，结果将直接翻转 porting_class。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "new_value",
-        "value": "Vulkan-Headers in cmd-pkgs",
-        "rationale": "harmony_adapted.js 显示 Vulkan-Headers 已在 OpenHarmony PC cmd-pkgs 中提供，但仅有头文件不意味 Vulkan 运行时/驱动可用；dim-9 仍按 unknown 处理。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:xcb_surface",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xcb_surface 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:wayland_surface",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wayland_surface 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_surface",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_surface 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:metal_surface",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal_surface 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:directfb_surface",
+        "class": "actionable",
+        "message": "unadaptable_api ua:directfb_surface 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目是 Vulkan 图形加载器，核心触及 3D 图形与 GPU 硬件场景；包含窗口系统集成（WSI）代码但不直接提供 GUI 控件。无云服务或媒体处理场景。",

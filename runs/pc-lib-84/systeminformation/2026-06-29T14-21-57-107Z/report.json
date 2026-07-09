@@ -1242,8 +1242,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层，Node-API 桥接——无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1268,7 +1267,9 @@
           "lib/cpu.js:1132",
           "lib/network.js:268",
           "lib/processes.js:371"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:reg_query",
@@ -1282,7 +1283,9 @@
           "lib/osinfo.js:367",
           "lib/osinfo.js:1296",
           "lib/cpu.js:1638"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:linux_proc_sys",
@@ -1300,7 +1303,9 @@
           "lib/network.js:943",
           "lib/battery.js:88",
           "lib/system.js:57"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:macos_ioreg",
@@ -1315,7 +1320,9 @@
           "lib/battery.js:195",
           "lib/graphics.js:776",
           "lib/cpu.js:905"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:netsh",
@@ -1329,7 +1336,9 @@
           "lib/wifi.js:477",
           "lib/wifi.js:674",
           "lib/network.js:358"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1339,7 +1348,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 JavaScript 代码可直接运行在已移植的 Node.js 上",
-        "source": "references/harmony-pc-capabilities.json runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -1347,7 +1357,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "该库核心机制是执行 shell 命令获取系统信息；若鸿蒙 PC 不支持子进程或受限，则整体不可运行",
-        "source": "references/harmony-pc-capabilities.json process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:harmony_sysinfo_api",
@@ -1355,7 +1366,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需有鸿蒙原生的系统信息 API 替代 Linux procfs/sysfs 和 Windows WMI；否则核心功能无法实现",
-        "source": "推断：鸿蒙 PC 需提供 @ohos.systemParameter 或类似 API"
+        "source": "推断：鸿蒙 PC 需提供 @ohos.systemParameter 或类似 API",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:harmony_shell_tools",
@@ -1363,7 +1375,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "库大量依赖 shell 命令获取信息；鸿蒙 PC 是否提供等价命令直接影响可适配范围",
-        "source": "推断：鸿蒙 NDK/musl 环境的命令行工具覆盖"
+        "source": "推断：鸿蒙 NDK/musl 环境的命令行工具覆盖",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1386,7 +1399,6 @@
         ]
       }
     ],
-    "recommended_path": "find_alternative",
     "summary": "systeminformation 的核心机制是执行平台专有的系统命令和读取 procfs/sysfs/注册表，这些与特定 OS 内核和用户态工具链深度绑定。鸿蒙 PC 自研内核不提供 Linux ABI（/proc、/sys 不存在），也无 Windows WMI/注册表/macOS ioreg 等接口。因此不能简单重编译或替换少量 API，需要为鸿蒙平台重写每个信息采集模块，使用 @ohos 系统管理 API（如 @ohos.systemParameter、@ohos.bluetooth、@ohos.usbManager、@ohos.wifiManager 等）替代原来的 shell 命令/文件读取。由于大量模块需重写（且部分鸿蒙 API 可用性未核实），整体为部分可适配。",
     "blockers": [
       {
@@ -1543,7 +1555,27 @@
       "验证蓝牙/USB/WiFi 模块能否通过 @ohos.bluetooth/@ohos.usbManager/@ohos.wifiManager API 获取设备信息"
     ],
     "notes": "该库的核心价值在于通过执行平台命令获取系统信息，这与鸿蒙的 API 驱动模式有根本差异。关键不确定性在于：(1) 鸿蒙 PC 的 Node.js 是否支持 child_process；(2) 鸿蒙是否提供足够的系统信息查询 API 来替代 Linux procfs/sysfs 和 Windows WMI。若两者均为否定，则整体不可行。置信度为 low 因为 target_assumptions 中有 3 项 unknown。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_cim",
+          "ua:reg_query",
+          "ua:linux_proc_sys",
+          "ua:macos_ioreg",
+          "ua:netsh"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1554,43 +1586,35 @@
       "测试覆盖极低（仅 2 个测试用例），测试质量可能不足以保证功能正确性"
     ],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "library (with CLI tool)",
-        "rationale": "该库有 package.json bin 入口提供 CLI 工具，但主要用途是作为 API 库被其他代码调用，CLI 是附加功能，kind 仍为 library 而非 cli"
+        "code": "ua_func_class_defaulted:ua:win32_cim",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_cim 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_sysfs",
-        "rationale": "Linux /sys/class/* 和 /sys/devices/* 是独立的系统信息接口类型，不同于 /proc（procfs），两者获取的信息维度和访问方式不同，分开归类更清晰"
+        "code": "ua_func_class_defaulted:ua:reg_query",
+        "class": "actionable",
+        "message": "unadaptable_api ua:reg_query 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "win32_commands",
-        "rationale": "Windows 平台通过 PowerShell/CIM/WMI 命令获取信息，是一类独立的平台交互模式，不同于直接调用 Win32 API"
+        "code": "ua_func_class_defaulted:ua:linux_proc_sys",
+        "class": "actionable",
+        "message": "unadaptable_api ua:linux_proc_sys 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "macos_commands",
-        "rationale": "macOS 平台通过 system_profiler/ioreg/sysctl/sw_vers 等专有命令获取信息，是独立的平台交互模式"
+        "code": "ua_func_class_defaulted:ua:macos_ioreg",
+        "class": "actionable",
+        "message": "unadaptable_api ua:macos_ioreg 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_commands",
-        "rationale": "Linux 平台通过 dmidecode/lscpu/lsblk/smartctl 等用户态命令获取信息，区别于直接读取 /proc /sys 的方式"
+        "code": "ua_func_class_defaulted:ua:netsh",
+        "class": "actionable",
+        "message": "unadaptable_api ua:netsh 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

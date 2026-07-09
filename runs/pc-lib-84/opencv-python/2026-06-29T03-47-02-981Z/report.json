@@ -1088,8 +1088,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：库跑在已移植的 Python 3.12 运行时上；OpenCV C++ 原生扩展经 OHOS NDK/musl 交叉编译；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1106,7 +1105,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 构建脚本可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -1114,7 +1114,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OpenCV C++ 核心与 Python 绑定需编译为鸿蒙 .so",
-        "source": "harmony-pc-capabilities.json#arch + 模型 A 默认假设"
+        "source": "harmony-pc-capabilities.json#arch + 模型 A 默认假设",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt",
@@ -1122,7 +1123,8 @@
         "required": false,
         "target_status": "available",
         "impact": "非 headless 构建可使用 Qt 后端；headless 构建可完全绕过 GUI",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:multimedia",
@@ -1130,7 +1132,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "V4L/MSMF 等后端无法在鸿蒙使用，需依赖 @ohos.multimedia 替代；若不可用则视频采集/解码功能受限",
-        "source": "references/harmony-pc-capabilities.json#media.ohos_multimedia"
+        "source": "references/harmony-pc-capabilities.json#media.ohos_multimedia",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:camera_perm",
@@ -1138,7 +1141,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "cv2.VideoCapture 调用摄像头需 CAMERA 权限，权限模型待核实",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_camera"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_camera",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1161,7 +1165,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile_opencv + run_on_ported_runtime",
     "summary": "opencv-python 本体是纯 Python 打包层，可直接跑在鸿蒙已移植 Python 上；真正工作量在于将 OpenCV C++ 核心与 Python 绑定用 OHOS NDK 交叉编译为鸿蒙 .so，并把 Linux/Windows 专有的视频 I/O（V4L/MSMF）和 GUI 后端替换为鸿蒙原生能力或 headless 配置。OpenHarmony PC PyPI 镜像中已存在 opencv-python 的 ohos wheel，说明该路径已被社区验证。因 OpenCV 子模块未检出，具体 C++ 平台 API 清单无法穷尽，置信度评为 medium。",
     "blockers": [
       {
@@ -1268,7 +1271,21 @@
       "声明 ohos.permission.CAMERA 等必要权限并验证 PC 形态摄像头可用性"
     ],
     "notes": "本次分析时 opencv、opencv_contrib、multibuild 子模块未初始化，因此无法直接扫描 OpenCV 本体的原生 API 与依赖细节；dim 7/dim 9 结论基于 setup.py、README、CI/Docker 配置及 OpenCV 已知架构推断。OpenHarmony PC PyPI 镜像已存在 opencv-python 的 ohos wheel，表明该项目的鸿蒙化路径已被社区走通，但本报告仍按源码现状评估工作量。若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，需整体改为 C++ Node-API 桥接或 ArkTS 重写，结论将收紧为 hard/infeasible。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1279,36 +1296,8 @@
       "opencv、opencv_contrib、multibuild 子模块在本次检出中未初始化（空目录），因此本报告无法扫描 OpenCV 本体源码级的 native_api、依赖细节与完整平台 API 清单；相关结论基于 setup.py/CI/Docker/README 推断。",
       "opencv-python 已出现在 OpenHarmony PC PyPI 镜像中（含 ohos wheel），说明社区已完成或正在维护鸿蒙化构建；本报告仍按源码现状给出评估。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "classification",
-        "kind": "gap",
-        "value": "wrapper_vs_core",
-        "rationale": "opencv-python 仓库本质是 OpenCV 的 Python 打包/分发层，而非计算机视觉算法库本身；现有分类假设更适用于自包含库，需区分“包装脚本”与“被包装 C++ 核心”两类能力。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "submodule",
-        "rationale": "OpenCV/multibuild/opencv_contrib 以 git 子模块形式存在，既非 package_manager 也非 fetchcontent，使用 submodule 作为 acquisition 值更准确地描述其集成方式。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "scope",
-        "kind": "gap",
-        "value": "missing_submodule",
-        "rationale": "由于 OpenCV 子模块未检出，无法给出 OpenCV 本体的 native_api 清单（如 OpenGL、V4L ioctl、DirectShow、x86 SIMD 等），导致 dim 7 仅反映包装层代码。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "mirror_adapted_but_source_unverified",
-        "rationale": "OpenHarmony PC PyPI 镜像已提供 opencv-python 的 ohos wheel，但本次检出的源码子模块为空；评估按源码现状给出 needs_adaptation_full，而非直接采纳镜像结论。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

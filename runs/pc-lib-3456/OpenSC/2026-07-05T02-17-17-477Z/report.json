@@ -1858,8 +1858,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK / musl + POSIX 子集；arm64 / x86_64；自研内核，非 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1869,7 +1868,6 @@
     },
     "confidence": "medium",
     "summary": "OpenSC 是 C 语言智能卡中间件库，核心逻辑（卡驱动、ASN.1、PKCS#15、PKCS#11）为标准 C 与标准密码学算法，可经 OHOS NDK 重新编译。主要阻碍在于 PC/SC 读卡器通信层——鸿蒙 PC 当前缺少 pcsclite 或等价智能卡服务，需移植 pcsclite 或开发 OHOS 原生 reader 后端来替换。已适配依赖（OpenSSL/zlib/readline）不计阻碍。Windows 专有代码和 macOS CryptoTokenKit 均为条件编译，非 OHOS 构建障碍。通知功能所用 fork/execv 在 OHOS POSIX 子集可能受限，需降级处理。整体可移植，但 reader 后端的适配构成主要工作量。",
-    "recommended_path": "recompile_napi",
     "blockers": [
       {
         "id": "bk:pcsc_reader",
@@ -1947,7 +1945,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若 OHOS NDK 缺失 mmap/mlock/dlopen，则安全内存管理和动态库加载需重新实现",
-        "source": "harmony-pc-capabilities.json —— OHOS NDK 基于 musl，涵盖 POSIX 子集"
+        "source": "harmony-pc-capabilities.json —— OHOS NDK 基于 musl，涵盖 POSIX 子集",
+        "target_status_model": "available"
       },
       {
         "id": "ta:smart_card_service",
@@ -1955,7 +1954,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无等价智能卡服务，则必须移植 pcsclite 到 OHOS NDK 或开发基于 USB/串口的原生 reader 驱动——这是本库移植的最大未知因素和工作量变量",
-        "source": "harmony-pc-capabilities.json —— 未覆盖智能卡读卡器服务，待补充核实"
+        "source": "harmony-pc-capabilities.json —— 未覆盖智能卡读卡器服务，待补充核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -2009,7 +2009,21 @@
       "可选：移植 libeac (OpenPACE) 以支持 eID/ePassport 的 PACE 协议"
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编后以 .so 形式供上层调用）。最大不确定性在于鸿蒙 PC 的智能卡读卡器支持：若鸿蒙 PC 已有类似 PC/SC 的智能卡服务框架，只需对接新 reader 后端（类似 reader-cryptotokenkit.m 之于 macOS），工作量约 10–15 人天；若完全没有智能卡服务，需移植 pcsclite 本身，工作量上浮至 20–25 人天。鸿蒙 PC 智能卡服务能力和 musl fork/execv 支持状态均为未核实项（target_assumptions 中的 unknown 项），故 confidence 下调为 medium。评估不涉及应用模型 C（库本身不是应用）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "OpenSC",
@@ -2032,10 +2046,11 @@
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "confidence_overall": "high",
+    "confidence_overall": "medium",
     "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯 C 智能卡中间件库，不涉及 GUI 界面、3D 渲染或音视频媒体处理。核心硬件交互是通过标准 PC/SC 协议访问智能卡读卡器，这是一个标准化抽象层，不依赖特定品牌硬件。",

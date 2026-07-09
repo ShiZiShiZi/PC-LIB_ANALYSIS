@@ -16,6 +16,12 @@
 | Julia | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.10.6 |
 | .NET / CLR 运行时（C#/F#） | ⬜ 未核实 |  |  | 鸿蒙 PC 是否已移植 .NET/CLR 运行时——待核实；未列入官方已移植运行时清单，.NET 库/应用能否运行取决于此（模型反哺高频缺口） |
 
+## 命令行工具 / 外部二进制（shell-out 型库/应用依赖的独立可执行程序在鸿蒙 PC 的可用性）
+
+| 能力 | 状态 | 来源 | 核对时间 | 说明 |
+|------|------|------|----------|------|
+| nmap 网络扫描工具 | ❌ 不支持 | 人工核实：OpenHarmony PC C/C++ 预编译包(cmd-pkgs) 未收录 nmap；且 nmap 的 raw socket/抓包扫描依赖鸿蒙 PC 沙箱/自研内核不提供的底层网络能力 | 2026-07-09 | shell-out 型库(如 Ullaakut/nmap 的 Go 封装)依赖此外部二进制：库代码本身纯语言、可交叉编译(porting_class 可为 no_adaptation)，但目标缺此工具则功能受阻(functional_viability=blocked_external)。check 置 null 为人工策展——不因 cmd-pkgs 是否收录该包而自动翻转(能否运行还取决于 raw socket 能力)。若鸿蒙后续提供等价网络探测工具，可经使用端 WithBinaryPath 指定替代二进制 |
+
 ## JDK 内部模块开放性（Java 应用/工具常依赖）
 
 | 能力 | 状态 | 来源 | 核对时间 | 说明 |

@@ -1538,8 +1538,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK native layer)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -1562,7 +1561,9 @@
         "evidence": [
           "clamonacc/clamonacc.c:349",
           "clamonacc/fanotif/fanotif.c:105"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:inotify",
@@ -1577,7 +1578,9 @@
         "evidence": [
           "clamonacc/inotif/inotif.c:432",
           "clamonacc/inotif/inotif.c:220"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:prctl",
@@ -1590,7 +1593,9 @@
         "evidence": [
           "clamonacc/scan/onas_queue.c:151",
           "clamonacc/inotif/inotif.c:390"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1600,7 +1605,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "libclamav 核心扫描功能依赖 POSIX API（文件 I/O、线程、mmap、socket）；如缺失则需逐项适配",
-        "source": "references/harmony-pc-capabilities.json musl/POSIX 段"
+        "source": "references/harmony-pc-capabilities.json musl/POSIX 段",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:fanotify_inotify",
@@ -1608,7 +1614,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "clamonacc 实时监控功能不可用，但不影响核心扫描能力（clamd/clamscan 仍可工作）",
-        "source": "Linux 内核专有 API，鸿蒙无等价"
+        "source": "Linux 内核专有 API，鸿蒙无等价",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:openssl_availability",
@@ -1616,7 +1623,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "核心加密与签名验证功能依赖 OpenSSL，不可用则 CVD 签名校验和 TLS 连接失效",
-        "source": "references/harmony-pc-capabilities.json cmd-pkgs 段"
+        "source": "references/harmony-pc-capabilities.json cmd-pkgs 段",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:curl_availability",
@@ -1624,7 +1632,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "freshclam 特征库更新依赖 libcurl HTTP/HTTPS 下载",
-        "source": "references/harmony-pc-capabilities.json cmd-pkgs 段"
+        "source": "references/harmony-pc-capabilities.json cmd-pkgs 段",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1638,7 +1647,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "ClamAV 是典型的 C/C++ 守护进程应用，核心扫描引擎（libclamav）主要依赖 POSIX 标准API，理论上可通过 OHOS NDK 交叉编译移植。主要障碍：1) clamonacc 依赖 Linux 专有 fanotify/inotify，在鸿蒙上无替代，该模块不可移植；2) 外部依赖（OpenSSL、libcurl、zlib 等）需确认鸿蒙端可用性；3) Rust 子组件需 ohos target 支持。建议路径：使用 OHOS NDK 交叉编译核心组件（libclamav + clamd + clamscan + freshclam），放弃 clamonacc 实时监控功能，其余子系统逐项验证依赖可用性。",
     "blockers": [
       {
@@ -1745,6 +1753,24 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:fanotify",
+          "ua:inotify",
+          "ua:prctl"
+        ]
+      }
     }
   },
   "meta": {
@@ -1753,29 +1779,30 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "ClamAV 以守护进程和 CLI 工具为主要交付形态，终端用户直接启动运行，虽然 libclamav 也作为库被集成，但整体项目定位更偏应用"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build",
-        "rationale": "Rust git 依赖（onenote_parser、clam-sigutil）通过 Cargo 从 git 仓库下载并编译，不同于 vendored/fetchcontent/package_manager"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:fanotify",
+        "class": "actionable",
+        "message": "unadaptable_api ua:fanotify 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:inotify",
+        "class": "actionable",
+        "message": "unadaptable_api ua:inotify 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:prctl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:prctl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

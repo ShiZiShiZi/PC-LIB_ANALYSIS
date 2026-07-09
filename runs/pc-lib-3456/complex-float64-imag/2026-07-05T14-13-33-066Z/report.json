@@ -525,7 +525,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 运行时上；原生 C 部分可选经 OHOS NDK/musl 重编；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -534,7 +533,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库是 Node.js 纯数值计算子包，JS 实现（读取对象的 .im 属性）可直接在鸿蒙 PC 已移植的 Node.js 上运行，零修改。C 实现（stdlib_complex128_imag）仅使用标准 C99 union 类型解析复数内存布局，无任何操作系统/平台 API 调用，若需使用原生路径也仅需 OHOS NDK 简单重编。无外部命令、无文件/网络/设备访问、无 GUI/3D/媒体/硬件依赖，无云服务依赖。整体无需适配改动。",
     "target_assumptions": [
       {
@@ -543,7 +541,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 实现依赖 Node.js 运行时；鸿蒙 PC 已提供 Node.js 24.13.0，不构成阻碍",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -551,7 +550,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "C 原生模块经由 N-API 编译加载；若需使用 C 实现路径则需 OHOS NDK，但 JS 回退路径无需任何构建",
-        "source": "references/harmony-pc-capabilities.json，N-API 可用性未单独核实但 JS 版本可用"
+        "source": "references/harmony-pc-capabilities.json，N-API 可用性未单独核实但 JS 版本可用",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [],
@@ -578,7 +578,21 @@
       "若需使用 C Native 路径：用 OHOS NDK（clang + musl）重新编译 src/main.c 为 .so"
     ],
     "notes": "按模型 A（库跑在已移植 Node.js 运行时）评估。C 实现为零平台依赖的纯 C99，不影响移植难度。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -602,32 +616,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "clarity",
-        "value": "nodejs",
-        "rationale": "package.json 明确定义了 npm 包 @stdlib/complex-float64-imag，C 代码是作为 Node.js Native Addon 使用的"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "clarity",
-        "value": "library",
-        "rationale": "这是一个可被其他代码 import 调用的 npm 库，属于 stdlib 生态的一部分"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs.benchmark",
-        "kind": "note",
-        "value": "benchmark 目录被 metrics.py 归为 production，实际是性能测试基准代码，非核心生产逻辑；但 benchmark 代码不影响生产范围判断（C/JS 核心实现均在生产 dirs: src, lib, include）"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算函数，不涉及 GUI、3D 渲染、媒体处理或特定硬件。",

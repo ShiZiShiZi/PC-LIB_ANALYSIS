@@ -907,7 +907,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（原生层 OHOS NDK / musl libc / clang；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -917,7 +916,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "TinyXML-2 是纯 C++ XML 解析库，无第三方依赖、无 GUI/媒体/硬件/云服务，所有平台相关代码都通过 #ifdef 隔离并提供默认分支。只需使用 OHOS NDK 重新编译即可在鸿蒙 PC 上作为静态或动态库使用；若需被 ArkTS 应用调用，可再通过 Node-API 包装暴露。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -927,7 +925,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 库必须在鸿蒙原生层重编，工具链可用是全部结论的前提",
-        "source": "references/harmony-pc-capabilities.json 导言：原生层 OHOS NDK（musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json 导言：原生层 OHOS NDK（musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -935,7 +934,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库本身架构无关，当前评估以 arm64 主力架构为准",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -972,7 +972,21 @@
       "在鸿蒙 PC 或模拟器上编译并运行 xmltest 测试，验证解析/保存功能一致"
     ],
     "notes": "评估仅针对库本体（tinyxml2.h/tinyxml2.cpp）。xmltest.cpp 为测试文件，docs/resources 为文档与测试资源，均不计入生产代码的平台依赖。默认按「库经 NDK 重编后被其他 C++ 代码链接」的模型 A 评估；若目标是将该库通过 Node-API 暴露给 ArkTS，则额外需要编写 napi 封装层，工作量约增加 3–7 人天。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "tinyxml2",
@@ -994,26 +1008,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "xmltest.cpp 被 cloc 计入根目录 production",
-        "rationale": "metrics.json 将位于仓库根的 xmltest.cpp 计为生产代码，但它实质是测试可执行文件；本分析在 native_api/dependencies/harmony_adaptation 中已将其排除，仅以 tinyxml2.h/tinyxml2.cpp 为生产代码。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "docs/resources 目录被计为 production",
-        "rationale": "这些目录包含 Doxygen 生成的 HTML/CSS/JS 文档与 XML 测试资源，不应视为库的生产源码；能力分类与平台 API 分析未据此下结论。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "TinyXML-2 是纯数据解析/序列化库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件访问。",

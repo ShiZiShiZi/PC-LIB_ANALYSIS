@@ -683,8 +683,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 A：Go 库跑在已移植的 Go 运行时上；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         2.6,
@@ -736,7 +735,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "剪贴板读写是核心功能；鸿蒙 PC 若未暴露等价剪贴板 API 或命令，则无法运行",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -751,7 +751,6 @@
       }
     ],
     "critical_dependencies": [],
-    "recommended_path": "add_ohos_backend",
     "summary": "Go 运行时已鸿蒙化，库本体公共 API 可零改动复用；核心阻碍是现有平台后端未覆盖 OHOS，需要新增基于鸿蒙 Basic Services Kit 的剪贴板后端（cgo 调用 oh_pasteboard.h 或 exec 调用系统命令），并声明 READ_PASTEBOARD 权限。",
     "blockers": [
       {
@@ -789,7 +788,21 @@
       "在鸿蒙 Go 运行时上交叉编译并跑通单元测试"
     ],
     "notes": "评估按模型 A（Go 库跑在已移植 Go 运行时上）。SDK 文档显示 @ohos.pasteboard / oh_pasteboard.h 在 Phone/PC/2in1/Tablet/TV/Wearable 可用，但 PC 形态具体可用性尚未经 caps 核实，故置信度为 medium；若目标为 ArkTS 沙箱应用（模型 B）则需改为 Node-API/ArkTS 桥接，工作量会上升。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "clipboard",
@@ -812,29 +825,15 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "clipboard",
-        "rationale": "剪贴板库的核心能力是系统剪贴板访问，不在 gui/rendering_3d/media/hardware 四类推荐场景中，作为自定义 scenario 标记并引用 desktop_integration.dnd_clipboard 目标能力。"
-      },
-      {
-        "dimension": "code_partition",
-        "field": "buckets",
-        "kind": "ambiguity",
-        "value": "go_platform_files",
-        "rationale": "Go 平台后端文件按 +build 标签按 OS 选择，鸿蒙 PC 不匹配任何现有标签，需新增 ohos 后端文件而非直接修改现有文件；needs_adaptation 桶 LOC 按现有平台后端总量估算。"
-      }
-    ],
+    "observations": [],
     "warnings": [
       "metrics.py 未识别 Go 测试函数（TestCopyAndPaste、TestMultiCopyAndPaste），tests.test_cases 计为 0；实际有 2 个测试函数。"
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目核心涉及系统剪贴板读写，属于桌面集成能力；不涉及 GUI 窗口、3D 渲染、媒体编解码或特定硬件访问。",

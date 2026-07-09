@@ -998,8 +998,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK + musl POSIX 子集，arm64/x86_64）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -1008,7 +1007,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "LZ4 核心算法高度可移植，仅依赖标准 C 库；命令行工具的平台相关代码已全部通过 #ifdef 隔离出 POSIX 分支。鸿蒙化主要工作是用 OHOS NDK 交叉编译并在 arm64/x86_64 上验证 CLI 功能，无不可适配的平台或硬件 API。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1018,7 +1016,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 库必须通过 OHOS NDK 交叉编译为鸿蒙 .so",
-        "source": "references/harmony-pc-capabilities.json#runtimes 不适用；OHOS NDK 为原生 C/C++ 提供 musl 工具链"
+        "source": "references/harmony-pc-capabilities.json#runtimes 不适用；OHOS NDK 为原生 C/C++ 提供 musl 工具链",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_subset",
@@ -1026,7 +1025,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "CLI 的 POSIX 路径可正常工作；个别较新接口（如 utimensat）需运行时验证，缺失时可回退到 utime",
-        "source": "native_api 中 posix 组"
+        "source": "native_api 中 posix 组",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:pthread",
@@ -1034,7 +1034,8 @@
         "required": false,
         "target_status": "available",
         "impact": "多线程 CLI 依赖 pthread；若缺失可编译为单线程模式（LZ4IO_MULTITHREAD=0）",
-        "source": "references/harmony-pc-capabilities.json#process_security 推断 musl 支持 pthread"
+        "source": "references/harmony-pc-capabilities.json#process_security 推断 musl 支持 pthread",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1107,7 +1108,21 @@
       "（可选）为 ArkTS 应用封装 Node-API 绑定，暴露 LZ4_compress/LZ4_decompress_safe 等核心 API"
     ],
     "notes": "评估按 HarmonyOS PC 原生 C 库口径（模型 A）；由于 lz4 是算法库，实际最常见的鸿蒙化路径是直接交叉编译为 .so 供 C/C++ 应用链接，而非必须走 Node-API。若目标为 ArkTS 应用，则需额外编写 N-API 封装层，工作量上浮 3-5 人天。无 GUI、3D、媒体、硬件或云服务依赖。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "lz4",
@@ -1131,29 +1146,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "new_value",
-        "value": "BSD-2-Clause AND GPL-2.0-or-later",
-        "rationale": "仓库顶层 LICENSE 明确按目录拆分许可：lib/ 为 BSD-2-Clause，其余为 GPL-2.0-or-later，整体 SPDX 表达式可写为 AND 组合。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "arch_intrinsics",
-        "rationale": "LZ4 使用 __builtin_ctz/_BitScanForward 等 CPU 位运算 intrinsic 加速匹配长度计算，但均有纯软件回退路径；归入 hardware/arch_intrinsics 以区分于通用标准库。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "recompile_napi vs cross_compile",
-        "rationale": "lz4 作为 C 算法库，默认按技能要求给 recompile_napi；但实际场景中更常见的是直接交叉编译为 .so 供 C/C++ 应用链接，仅在需要 ArkTS 绑定时才走 N-API。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
@@ -1165,7 +1158,8 @@
         "message": "license.category(permissive) 与依据 SPDX(BSD-2-Clause AND GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "LZ4 是纯数据压缩算法库/CLI，不涉及 GUI、3D 渲染、音视频媒体或特定硬件设备；仅使用通用 CPU 位运算 intrinsic（有纯软件回退）。鸿蒙适配重点在于 C 代码经 OHOS NDK 重编与 POSIX 子集兼容性。",

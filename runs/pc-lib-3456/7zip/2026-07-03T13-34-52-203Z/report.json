@@ -1975,8 +1975,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（整包桌面应用口径，模型 C；评估目标为 ArkTS/原生 C++ 混合桌面应用）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -1985,7 +1984,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "arkui_rewrite_gui_or_cli_only",
     "summary": "7-Zip 的核心压缩/解压算法与命令行逻辑可移植，但 Windows 原生 GUI（7zFM/7zG）、Explorer 右键扩展、注册表集成、Shell 调用等桌面集成层在鸿蒙 PC 无直接对应，必须重写或裁剪。整体按应用模型 C 评估为「部分可适配」：可交付命令行版本或重新实现 GUI 的版本，但无法直接运行现有 Win32 二进制。",
     "unadaptable_apis": [
       {
@@ -2002,7 +2000,9 @@
           "CPP/Windows/Window.cpp:20",
           "CPP/Windows/Window.cpp:75",
           "CPP/7zip/UI/FileManager/FM.cpp:785"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:explorer_shell",
@@ -2018,7 +2018,9 @@
           "CPP/7zip/UI/Explorer/DllExportsExplorer.cpp",
           "CPP/7zip/UI/FileManager/PanelDrag.cpp:6",
           "C/Util/7zipInstall/7zipInstall.c:549"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:registry",
@@ -2034,7 +2036,9 @@
           "CPP/Windows/Registry.cpp:60",
           "CPP/Windows/Registry.cpp:151",
           "C/Util/7zipInstall/7zipInstall.c:367"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:shellexecute",
@@ -2049,7 +2053,9 @@
         "evidence": [
           "CPP/7zip/UI/FileManager/BrowseDialog2.cpp:1048",
           "C/Util/SfxSetup/SfxSetup.c:595"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:reparse_ioctl",
@@ -2064,7 +2070,9 @@
         "evidence": [
           "CPP/Windows/FileLink.cpp:535",
           "CPP/Windows/FileIO.h:233"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2074,7 +2082,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "7zFM/7zG 的完整界面层无法运行，必须重写为 ArkUI",
-        "source": "native_api + references/harmony-pc-capabilities.json#gui.wm (Win32 不可用)"
+        "source": "native_api + references/harmony-pc-capabilities.json#gui.wm (Win32 不可用)",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:win32_shell",
@@ -2082,7 +2091,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "资源管理器扩展、文件夹浏览、打开方式等桌面集成需完全替换",
-        "source": "native_api + references/harmony-pc-capabilities.json#desktop_integration"
+        "source": "native_api + references/harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:win32_registry",
@@ -2090,7 +2100,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "用户设置、安装路径、上下文菜单注册等需迁移到应用私有存储/Preferences",
-        "source": "native_api（CPP/Windows/Registry.cpp、C/Util/7zipInstall）"
+        "source": "native_api（CPP/Windows/Registry.cpp、C/Util/7zipInstall）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:desktop_app_delivery",
@@ -2098,7 +2109,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 .hap，则需整体重新打包并放弃 Win32 安装程序",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -2106,7 +2118,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "打开文件编辑器、SFX 安装拉起子进程等功能在沙箱中可能受限",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn + runtime_surface.subprocess"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn + runtime_surface.subprocess",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:storage_permission",
@@ -2114,7 +2127,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "归档工具核心功能依赖读写用户文件，权限授予方式待核实",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_subset",
@@ -2122,7 +2136,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "命令行核心功能可复用 POSIX 后端，但部分接口可能缺失或行为差异，需要条件编译降级",
-        "source": "references/harmony-pc-capabilities.json intro + native_api.posix_*"
+        "source": "references/harmony-pc-capabilities.json intro + native_api.posix_*",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [
@@ -2306,7 +2321,27 @@
       "处理存储权限申请并验证沙箱外文件访问能力"
     ],
     "notes": "本评估按整包桌面应用（模型 C）进行，置信度为 medium，主因是鸿蒙 PC 桌面应用交付形态、外部进程启动能力与存储权限模型尚为 unknown。若仅交付命令行版本，工作量可降至 10–20 人天，porting_class 可视为 needs_adaptation_full。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:createwindow",
+          "ua:explorer_shell",
+          "ua:registry",
+          "ua:shellexecute",
+          "ua:reparse_ioctl"
+        ]
+      }
+    }
   },
   "library": {
     "name": "7-Zip",
@@ -2335,45 +2370,42 @@
       "仓库为浅克隆（--depth 1），report.library.commit 为当前 HEAD，但缺少历史 tag/分支信息。",
       "codegraph 索引存在，但 codegraph files 顶层查询未返回结果，后续分析使用 codegraph context/callers/search 与 grep/Read 结合完成。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "application",
-        "rationale": "7-Zip 源码同时包含可复用的压缩库代码与终端用户可执行程序/GUI，但官网与构建目标均为桌面应用，因此判为 application（模型 C）。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored_source",
-        "rationale": "7-Zip 没有包管理器清单，第三方解码器以单/少文件源码形式直接复制到仓库（C/ZstdDec.c、CPP/7zip/Compress/LzfseDecoder.cpp、C/Xxh64.c），推荐取值中的 package_manager/fetchcontent/submodule 均不适用，使用 vendored 描述。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "win32_process_snapshot",
-        "rationale": "为表达 CreateToolhelp32Snapshot/Process32First/Process32Next 这组用于检测文件被哪个进程占用的系统 API，单独设立 win32_process_snapshot 组。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "arkui_rewrite_gui_or_cli_only",
-        "rationale": "7-Zip 的 Win32 GUI 无法适配，推荐路径为「使用 ArkUI 重写 GUI」或「仅交付命令行版本」，单一现有取值不能精确描述。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:createwindow",
+        "class": "actionable",
+        "message": "unadaptable_api ua:createwindow 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:explorer_shell",
+        "class": "actionable",
+        "message": "unadaptable_api ua:explorer_shell 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:registry",
+        "class": "actionable",
+        "message": "unadaptable_api ua:registry 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:shellexecute",
+        "class": "actionable",
+        "message": "unadaptable_api ua:shellexecute 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:reparse_ioctl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:reparse_ioctl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:读写存储（文件访问）",
         "class": "actionable",
         "message": "required_permission 读写存储（文件访问） 的 source_capability=archive_file_io 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "7-Zip 是重度依赖 Windows 原生 GUI 与 Shell 的桌面应用；核心压缩算法与命令行后端跨平台，但文件管理器窗口、Explorer 扩展、注册表集成均为 Win32 专有。项目不涉及 3D 渲染、音视频媒体或特定硬件加速。",

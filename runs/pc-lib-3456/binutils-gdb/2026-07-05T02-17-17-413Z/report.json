@@ -3007,8 +3007,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（原生 C/C++ 工具链经 OHOS NDK/musl 重新编译；arm64/x86_64；自研内核，无 Linux ABI；工具以独立可执行程序形式运行，非库形式被链接）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -3017,7 +3016,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "本仓库为 GNU 工具链（binutils 二进制工具 + GDB 调试器），全部为原生 C/C++/汇编程序，必须经 OHOS NDK 重新编译才能在鸿蒙 PC 上运行。binutils 工具（as/ld/objdump/nm/readelf/size/strings/objcopy/strip/ar/addr2line/c++filt 等）主要进行文件级 I/O 操作，核心功能在 OHOS NDK/musl 上重编后应基本可用。但 GDB 深度依赖 ptrace/waitpid/fork/signal //proc 伪文件系统等 POSIX 调试原语——这些在鸿蒙 PC（自研内核，非 Linux）上的可用性未知或部分不可用，构成核心移植阻碍。gdbserver 同样依赖 ptrace。GDB 的远程调试模式（连接远程 gdbserver）与核心转储分析能力受影响较小。",
     "target_assumptions": [
       {
@@ -3026,7 +3024,8 @@
         "required": true,
         "target_status": "available",
         "impact": "这是 binutils 工具重编的基线——musl 支持标准 C/POSIX 文件操作和 mmap 则 binutils 核心功能可重编",
-        "source": "references/harmony-pc-capabilities.json（OHOS NDK 以 musl 为 libc，POSIX 子集已提供）"
+        "source": "references/harmony-pc-capabilities.json（OHOS NDK 以 musl 为 libc，POSIX 子集已提供）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ptrace",
@@ -3034,7 +3033,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不提供 ptrace 则 GDB 无法做本地原生调试；按 remote 模式 + core 分析收敛可降级为 partial",
-        "source": "references/harmony-pc-capabilities.json#process_security.ptrace"
+        "source": "references/harmony-pc-capabilities.json#process_security.ptrace",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:fork_exec",
@@ -3042,7 +3042,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不提供则 GDB 无法 fork 子进程来启动被调试目标——gdb native 模式不可用；remote 模式仍可用",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:procfs",
@@ -3050,7 +3051,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GDB Linux 原生后端通过 /proc/$pid/mem 读写进程内存；无此接口则必须实现替代机制",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:signals",
@@ -3058,7 +3060,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "调试过程中的停止/步进/中断均依赖信号；缺失则 GDB 调试控制不可用",
-        "source": "references/harmony-pc-capabilities.json（musl 应提供基本信号，但 SIGTRAP/SIGSTOP 的行为需核实）"
+        "source": "references/harmony-pc-capabilities.json（musl 应提供基本信号，但 SIGTRAP/SIGSTOP 的行为需核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libthread_db",
@@ -3066,7 +3069,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "即使 ptrace 可用，多线程调试还需 libthread_db；鸿蒙 musl 线程模型不同——须实现等价机制",
-        "source": "harmony-pc-capabilities.json（无对应条目；musl 无 libthread_db，需重新设计）"
+        "source": "harmony-pc-capabilities.json（无对应条目；musl 无 libthread_db，需重新设计）",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -3221,7 +3225,9 @@
           "gdb/inf-ptrace.c:264",
           "gdb/linux-nat.c:1643",
           "gdbserver/linux-low.cc"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:procfs_mem",
@@ -3235,7 +3241,9 @@
         ],
         "evidence": [
           "gdb/linux-nat.c:2258"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:thread_db",
@@ -3249,7 +3257,9 @@
         ],
         "evidence": [
           "gdb/linux-thread-db.c:721"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [],
@@ -3307,7 +3317,25 @@
       "gprofng 性能采集器评估适配策略：如 LD_PRELOAD 注入不可用则降级为统计采样或对接 HiPerf"
     ],
     "notes": "评估按原生 C/C++ 工具集口径（工具自身编译为鸿蒙原生可执行程序）。binutils 工具集（不含 GDB）可通过 OHOS NDK 交叉编译实现基本运行（person_days 约 10-20）；GDB 的本地调试模式因深度依赖 ptrace/fork/procfs/libthread_db，在鸿蒙自研内核上的可用性几乎完全取决于目标平台是否提供等价接口——当前所有核 ps 程调试相关目标能力状态均为 unknown（5 条 target_assumptions），因此整体置信度为 medium。建议路标：短期先交叉编译 binutils 并验证文件工具功能；中期评估鸿蒙调试接口可用性后决定 GDB 适配深度；长期目标为完整运行 GDB remote 调试 + core 分析场景。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:ptrace",
+          "ua:procfs_mem",
+          "ua:thread_db"
+        ]
+      }
+    }
   },
   "library": {
     "name": "binutils-gdb",
@@ -3334,40 +3362,29 @@
   "meta": {
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "tool",
-        "rationale": "binutils-gdb 是包含多个 CLI 工具与一个交互式调试器的工具集，library.kind 选 tool 最适合——它既非单一 library 也非传统 GUI 应用，而是开发者使用的可执行工具套件。同时内含 bfd/opcodes 等作为库被其他程序链接。"
-      },
-      {
-        "dimension": "license",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "strong_copyleft",
-        "rationale": "仓库含 GPL-2.0(COPYING)、GPL-3.0(COPYING3)、LGPL-2.1(COPYING.LIB)、LGPL-3.0(COPYING3.LIB) 四份许可证全文。binutils 与 GDB 主体为 GPL-3.0-or-later（configure.ac 声明），libiberty 历史上为 LGPL——按最严格口径取 GPL-3.0-or-later/strong_copyleft。对使用者而言，动态链接 bfd/opcodes 需遵守 GPL 条款，静态链接更严格。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "posix_ptrace / posix_signal / posix_syscall",
-        "rationale": "POSIX 调试 API 族群（ptrace/fork/signals/waitpid）在实践中横跨 platform 与 system 两层——ptrace 广义上是 POSIX 接口(category=platform)，但在鸿蒙自研内核上等价于需要全新内核支持的接口，实际阻 effect 相当于 system 层。目前的 category 二分法不够精细表达这种「跨内核就不存在」的接口。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_partial",
-        "rationale": "binutils 核心（as/ld/objdump）仅需重编即可；GDB 本地调试依赖 ptrace/procfs/fork/signals 全部未知——需将同一个仓库按组件拆分评估：binutils 子集为 recompile_only 或 needs_adaptation_full，GDB+gdb server 为 needs_adaptation_partial/infeasible。但分析单元只有一个，取整体最严=partial。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:ptrace",
+        "class": "actionable",
+        "message": "unadaptable_api ua:ptrace 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:procfs_mem",
+        "class": "actionable",
+        "message": "unadaptable_api ua:procfs_mem 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:thread_db",
+        "class": "actionable",
+        "message": "unadaptable_api ua:thread_db 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目为纯 CLI 工具链，不涉及 GUI/桌面界面、3D 图形渲染、音视频媒体或特定硬件设备。核心运行时需求为文件 I/O（目标文件/可执行文件读写）、进程间通信（ptrace/信号/管道）和网络（远程调试）。属纯粹的计算/文件处理类工具集。",

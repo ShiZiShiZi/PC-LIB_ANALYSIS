@@ -642,7 +642,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（运行在已移植的 Go 运行时上；自研内核，非 Linux ABI；arm64/x86_64）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -660,7 +659,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库代码为纯 Go，可在鸿蒙 Go 运行时上直接运行",
-        "source": "harmony-pc-capabilities.json#runtimes.go"
+        "source": "harmony-pc-capabilities.json#runtimes.go",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -669,7 +669,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本库通过 exec 启动 nmap；若鸿蒙 PC 限制子进程或沙箱禁止 spawn，则核心功能无法运行",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:nmap_binary",
@@ -678,7 +679,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "核心扫描功能完全依赖 nmap；无 nmap 则库无法完成扫描",
-        "source": "README.md:41-42; nmap.go:64-69"
+        "source": "README.md:41-42; nmap.go:64-69",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -692,7 +694,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "本库自身为纯 Go 包装代码，无需源码改动即可在鸿蒙 PC 的 Go 运行时上运行。但实际可用性取决于两个外部条件：鸿蒙 PC 是否允许启动子进程，以及 nmap 二进制是否已移植或预装。若任一条件不满足，核心扫描功能将不可用。",
     "blockers": [
       {
@@ -754,7 +755,21 @@
       "在鸿蒙 Go 运行时上跑通单元测试和示例验证库行为"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Go 运行时上）。本库代码本身无原生扩展，平台耦合度极低；主要风险是外部 nmap 二进制和子进程模型在鸿蒙 PC 上的可用性。由于这两个关键事实均未核实，confidence 下调为 medium。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "nmap",
@@ -777,33 +792,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "nmap 二进制 / 网络扫描工具在鸿蒙 PC 的可用性",
-        "rationale": "本库核心功能依赖外部 nmap 二进制，但 harmony-pc-capabilities.json 中未收录该目标能力；建议补充「nmap 等网络扫描工具可用性」或「外部系统二进制可用性」行以便未来分析对号入座。"
-      },
-      {
-        "dimension": "code_partition",
-        "field": "coverage",
-        "kind": "excluded_dir",
-        "value": ".github/workflows",
-        "rationale": "metrics 将 .github/workflows 归为 production（109 行），但 CI 工作流不属于库运行时代码，未纳入迁移分区。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "system_binary",
-        "value": "nmap",
-        "rationale": "nmap 作为运行时外部二进制依赖，未在 go.mod 中声明，按 acquisition:system 处理。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为 nmap 的 Go 包装库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件访问；核心能力是通过子进程调用 nmap 进行网络扫描。",

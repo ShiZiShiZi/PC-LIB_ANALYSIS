@@ -1416,8 +1416,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 A：库跑在 OHOS NDK 原生层；C 库经 OHOS NDK (clang + musl) 重编译为 .so；arm64/x86_64；自研内核，非 Linux ABI)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1426,7 +1425,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libetpan 是一个高度可移植的 C 邮件协议库（已适配 Linux/macOS/Windows/iOS/Android 五大平台），核心网络协议（IMAP/SMTP/POP3/NNTP）依赖标准 POSIX socket/pthread/select/poll/mmap，这些在 OHOS NDK musl 环境下基本可用。主要工作是：① 用 OHOS NDK 交叉编译并处理 autotools → OHOS toolchain 适配；② 隐私引擎中的 fork/system 调用（PGP/SMIME 功能）在 OHOS 上可能受限，需条件编译禁用或替换；③ 优先选用已有鸿蒙移植的依赖（OpenSSL 替代 GnuTLS、LMDB 替代 Berkeley DB、iconv 已有鸿蒙版）。无 GUI/3D/硬件耦合，核心传输与解析层可在鸿蒙 PC 上完整运行。",
     "blockers": [
       {
@@ -1468,7 +1466,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "核心网络 I/O 与多线程依赖此子集；若无则整个库无法在 OHOS 上编译运行",
-        "source": "harmony-pc-capabilities.json — OHOS NDK 文档未逐 API 列出，但 musl 的 POSIX 覆盖通常满足这些常用调用"
+        "source": "harmony-pc-capabilities.json — OHOS NDK 文档未逐 API 列出，但 musl 的 POSIX 覆盖通常满足这些常用调用",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:fork_ohos",
@@ -1476,7 +1475,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 PGP/SMIME 隐私引擎和 SSH 隧道功能；即使不可用也可条件编译禁用，不影响核心协议收发",
-        "source": "harmony-pc-capabilities.json#process_security.spawn — 待核实"
+        "source": "harmony-pc-capabilities.json#process_security.spawn — 待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1526,7 +1526,21 @@
       "在鸿蒙 PC 模拟器/真机上跑通单元测试（unittests/ + tests/），验证核心协议收发与消息解析功能完整性"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 重编为 .so）。fork/system/exec 的存在使 confidence 降至 medium（OHOS 上这些调用的可用状态未知），但这些仅为可选隐私功能所用，即使不可用也不影响核心邮件协议收发。libetpan 已适配 iOS 沙箱环境，对受限平台有适配先例（iOS 上已注释 system() 调用），这降低了整体适配风险。所有依赖均为 optional，且多数已有鸿蒙移植版（6/12 已鸿蒙化），可选依赖可灵活选型或禁用。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libetpan",
@@ -1556,7 +1570,8 @@
     "warnings": [],
     "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯 C 邮件协议库，不涉及 GUI 界面、3D 图形渲染、音视频媒体处理或特定硬件设备访问。",

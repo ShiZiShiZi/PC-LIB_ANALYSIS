@@ -783,7 +783,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 运行时上；原生 N-API 插件可经 OHOS NDK 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -792,7 +791,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js 数学库，鸿蒙 PC 已移植 Node.js 运行时，纯 JavaScript 部分（lib/main.js 使用 Math.abs，lib/abs.js 使用 TypedArray 位操作）可直接运行，无需任何修改。C 原生插件（src/main.c + src/addon.c，通过 N-API 调用）为可选性能优化：JS 回退路径已完整可用，若需原生加速可经 OHOS NDK（clang + musl）重编 .node 文件——C 代码仅用标准 C99 + N-API，无任何平台特有 API，重编工作量极低。整体无需适配。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -803,7 +801,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时已移植，纯 JS 代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -831,7 +830,21 @@
       "（可选）用 OHOS NDK 编译 C 原生插件以获得更高性能，只需调整 binding.gyp 的工具链路径"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。纯 JS 实现（Math.abs）为默认导出路径，是完整的回退实现。C N-API 原生插件为可选优化，即使不编译也不影响库的功能完整性。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/math-base-special-abs",
@@ -851,19 +864,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "devDependencies 中的包被生产代码 require",
-        "rationale": "@stdlib/array-float64、@stdlib/array-uint32、@stdlib/assert-is-little-endian 在 package.json 列为 devDependencies，但在生产代码 lib/abs.js 和 lib/high.js 中被实际 require 使用。这可能是 stdlib 单体仓库的包管理惯例——主仓库统一管理所有包的依赖，单个包发布时 npm 会自动提升这些 devDependencies 为实际依赖。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数学计算库，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。函数输入为 double 值、输出为绝对值，无任何设备/图形/音视频依赖。",

@@ -639,7 +639,6 @@
   },
   "harmony_adaptation": {
     "summary": "zip.js 是纯 JavaScript 库，跑在已移植到鸿蒙 PC 的 Node.js 运行时上。所有使用的 API 皆属 Web 标准或 ECMAScript 内建，无平台特有 API、无原生扩展、无 OS 系统调用。压缩核心采用 WebAssembly（zlib-wasm）或纯 JS 降级，均可直接在鸿蒙 Node.js 上运行。无外部运行时依赖。属于无需适配即可直接运行的库。",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "confidence": "high",
     "target_assumptions": [
@@ -652,7 +651,8 @@
         "evidence": [
           "package.json:31"
         ],
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "WebAssembly（WASM）",
@@ -663,7 +663,8 @@
         "evidence": [
           "lib/core/streams/zlib-wasm/zlib-streams-loader.js:53"
         ],
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       },
       {
         "capability": "Web Crypto API（crypto.subtle）",
@@ -674,7 +675,8 @@
         "evidence": [
           "lib/core/streams/aes-crypto-stream.js:61"
         ],
-        "id": "ta:3"
+        "id": "ta:3",
+        "target_status_model": "available"
       },
       {
         "capability": "CompressionStream / DecompressionStream",
@@ -685,13 +687,13 @@
         "evidence": [
           "lib/core/configuration.js:53"
         ],
-        "id": "ta:4"
+        "id": "ta:4",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [],
     "unadaptable_apis": [],
     "required_permissions": [],
-    "recommended_path": "无需任何修改。zip.js 可直接在鸿蒙 PC 的 Node.js 环境下安装使用：npm install @zip.js/zip.js。推荐使用带 WASM 的默认构建（lib/zip-wasm.js）以获得最佳性能，若 WASM 加载失败自动降级到纯 JS 实现。如果目标环境为 ArkTS 沙箱（模型 B），需通过 Node-API 桥接暴露压缩能力，但非默认场景。",
     "effort": {
       "person_days": {
         "lo": 0,
@@ -701,7 +703,21 @@
       "level": "very_low"
     },
     "notes": "按 dim-9 模型 A（运行时模型）评估：纯 JS 库跑在已移植的 Node.js 上，运行时不是阻碍。所有 Web 标准 API（fetch、Web Crypto、ReadableStream、WritableStream、TransformStream、WebAssembly）在 Node.js 中均有实现。纯 JS zlib 降级方案 (zlib-js) 确保即使 WASM 加载失败或 CompressionStream 不可用仍能正常工作。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -724,26 +740,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "dependencies",
-        "kind": "empty_list",
-        "value": "zero_runtime_deps",
-        "rationale": "该库无任何外部运行时依赖（package.json dependencies 字段完全为空）。所有压缩/加密核心代码均为内嵌实现（vendored）。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "all_portable",
-        "value": "only_standard_apis",
-        "rationale": "所有使用的 API 均属 Web 标准或 ECMAScript 语言标准。无 Win32/POSIX/macOS 平台特有 API。WASM 加载是唯一接近 FFI 的操作，但 WebAssembly 本身是标准运行时能力。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 JavaScript 数据压缩/归档库，不涉及 GUI 界面、3D 渲染、媒体处理或特定硬件依赖。所有敏感场景均不涉及。",

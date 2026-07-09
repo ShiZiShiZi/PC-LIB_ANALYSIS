@@ -729,8 +729,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Julia 1.10 运行时上; SUNDIALS 原生共享库需经 OHOS NDK 重编或提供鸿蒙预编译版; arm64/x86_64; 自研内核, 无 Linux ABI)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -739,7 +738,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "Sundials_jll.jl 是 Julia 生态的 JLL 包装包，鸿蒙 PC 已移植 Julia 1.10 运行时，Julia 包装代码可直接运行。核心工作量在于 SUNDIALS 原生 C 库（24 个 .so）及其传递依赖（OpenBLAS、SuiteSparse、libgfortran）需要在鸿蒙上重新编译并提供 OHOS 版本的预编译二进制 artifact。SUNDIALS 本身是纯数值计算库（无 GUI/硬件/平台特有 API），用标准 C/Fortran 编写，理论上经 OHOS NDK 重编即可。但需为 Yggdrasil 构建树新增鸿蒙平台目标，产出对应的 artifact tarball。",
     "blockers": [
       {
@@ -805,7 +803,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 已移植到鸿蒙 PC（1.10.6），包装代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.julia"
+        "source": "references/harmony-pc-capabilities.json#runtimes.julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_fortran",
@@ -813,7 +812,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SUNDIALS 依赖 Fortran 运行时库（libgfortran），若 OHOS NDK 不含 Fortran 前端则需额外解决",
-        "source": "references/harmony-pc-capabilities.json — 未明确记录 Fortran 支持"
+        "source": "references/harmony-pc-capabilities.json — 未明确记录 Fortran 支持",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -838,7 +838,21 @@
       "在鸿蒙 Julia 上运行 Sundials.jl 测试套件验证功能完整"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Julia 运行时上）。Julia 运行时已移植（1.10.6），包装代码可直接运行。核心阻碍是 SUNDIALS 及其传递原生依赖（OpenBLAS/SuiteSparse/libgfortran）需在鸿蒙上提供预编译版本。这些均为纯数值计算库，无 GUI/硬件/平台特有 API，理论上经 OHOS NDK 交叉编译即可。confidence 为 medium 是因为 OHOS NDK 对 Fortran 编译的支持状态未知（ta:ohos_ndk_fortran），若 Fortran 不可用则工作量会上升。platform_adaptation 和 platform_branches 均为 0（本包无 C/C++ 代码、无运行时平台分支），平台耦合极轻。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Sundials_jll.jl",
@@ -863,26 +877,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia JLL 包装包的生态归属：Julia 不在 python/java/nodejs/cpp/rust/go/dotnet 之列，归为 other。Julia 已有移植运行时但生态类型未单独列枚举。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "recompile_napi",
-        "rationale": "Julia JLL 包的鸿蒙适配路径不完全是 recompile_napi（那是 C/C++ 库经 NDK 重编 + Node-API 暴露给 ArkTS 的路径），此处实际是「原生库经 OHOS NDK 重编 + JLL artifact 发布」，更精确的描述应为 julia_jll_artifact_build，但沿用了最近似推荐值。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯 Julia JLL 二进制包装包，不涉及 GUI、3D 渲染、媒体或特定硬件场景。其功能仅限于定位和加载预编译的 SUNDIALS 数值求解器共享库。",

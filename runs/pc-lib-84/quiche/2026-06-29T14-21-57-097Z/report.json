@@ -1365,8 +1365,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，musl + POSIX 子集）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1388,7 +1387,9 @@
         "category": "platform",
         "evidence": [
           "datagram-socket/src/mmsg.rs"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:recvmmsg",
@@ -1402,7 +1403,9 @@
         "category": "platform",
         "evidence": [
           "datagram-socket/src/mmsg.rs"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:udp_gso",
@@ -1416,7 +1419,9 @@
         "category": "platform",
         "evidence": [
           "tokio-quiche/src/socket/capabilities.rs:173"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:udp_gro",
@@ -1430,7 +1435,9 @@
         "category": "platform",
         "evidence": [
           "tokio-quiche/src/socket/capabilities.rs:223"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:so_txtime",
@@ -1444,7 +1451,9 @@
         "category": "platform",
         "evidence": [
           "tokio-quiche/src/socket/capabilities.rs:196"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1454,7 +1463,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已确认可用；quiche MSRV 1.88 满足要求",
-        "source": "references/harmony-pc-capabilities.json runtimes.rust"
+        "source": "references/harmony-pc-capabilities.json runtimes.rust",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_api",
@@ -1462,7 +1472,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 基于 musl libc，提供 POSIX 子集；基础 sendmsg/recvmsg/setsockopt 应可用",
-        "source": "OHOS NDK 文档（musl libc POSIX 子集）"
+        "source": "OHOS NDK 文档（musl libc POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:linux_socket",
@@ -1470,7 +1481,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "这些是 Linux 内核专有扩展，用于性能优化；鸿蒙自研内核未必实现；缺失时降级到标准 POSIX socket 路径，功能不受影响但性能下降",
-        "source": "references/harmony-pc-capabilities.json（无对应条目）"
+        "source": "references/harmony-pc-capabilities.json（无对应条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:boringssl_build",
@@ -1478,7 +1490,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "quiche 的 TLS 层硬依赖 BoringSSL（通过 boring/boring-sys crate）；若无法编译则整个库无法构建。可能需要适配 boring-sys 的交叉编译脚本以支持 ohos target",
-        "source": "quiche/Cargo.toml（boring 依赖）"
+        "source": "quiche/Cargo.toml（boring 依赖）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:tokio_ohos",
@@ -1486,7 +1499,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "tokio-quiche 依赖 tokio；若 tokio 不支持 OHOS 则异步封装不可用，但核心 quiche 库（同步 API）仍可工作",
-        "source": "tokio-quiche/Cargo.toml"
+        "source": "tokio-quiche/Cargo.toml",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cmake",
@@ -1494,7 +1508,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "boring-sys 编译 BoringSSL 需要 cmake；缺失则无法构建",
-        "source": "README.md:332"
+        "source": "README.md:332",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1509,7 +1524,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_napi",
     "summary": "quiche 的核心 QUIC 协议实现是纯 Rust 跨平台代码，可编译到鸿蒙 OHOS target。主要工作集中在：(1) 适配 BoringSSL 编译（boring-sys 需要支持 ohos target 的交叉编译）；(2) Linux 特有 socket 选项（GSO/GRO/SO_TXTIME）在鸿蒙不可用时的降级处理（已有 cfg(target_os) 条件守卫，降级路径已存在）；(3) 确保 tokio 在 OHOS 上运行（异步封装层需要）。核心库（同步 API）可独立于 tokio 使用。",
     "blockers": [
       {
@@ -1618,6 +1632,26 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:sendmmsg",
+          "ua:recvmmsg",
+          "ua:udp_gso",
+          "ua:udp_gro",
+          "ua:so_txtime"
+        ]
+      }
     }
   },
   "meta": {
@@ -1625,22 +1659,40 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_socket",
-        "rationale": "Linux 特有 socket 选项（UDP_GSO/UDP_GRO/SO_TXTIME 等）不属于标准 posix 也不属于 win32，需要新的 type 值来描述"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:sendmmsg",
+        "class": "actionable",
+        "message": "unadaptable_api ua:sendmmsg 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:recvmmsg",
+        "class": "actionable",
+        "message": "unadaptable_api ua:recvmmsg 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:udp_gso",
+        "class": "actionable",
+        "message": "unadaptable_api ua:udp_gso 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:udp_gro",
+        "class": "actionable",
+        "message": "unadaptable_api ua:udp_gro 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:so_txtime",
+        "class": "actionable",
+        "message": "unadaptable_api ua:so_txtime 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

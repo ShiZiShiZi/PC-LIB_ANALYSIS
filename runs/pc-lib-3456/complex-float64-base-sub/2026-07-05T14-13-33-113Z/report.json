@@ -610,7 +610,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 运行时上；原生 C 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -619,7 +618,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库是 stdlib 的双精度复数减法模块，核心逻辑为纯 JavaScript 实现（可直接运行于鸿蒙 Node.js），另提供 C 原生 N-API 扩展作为性能加速。C 代码仅使用 C99 标准算术运算和 stdlib 自有类型（stdlib_complex128_t），无任何平台特有系统调用、Win32/POSIX API、外部命令或硬件依赖。移植工作仅限于将 C 原生扩展用 OHOS NDK 重新编译为 .node 文件。纯 JS 后备版本无需编译即可运行。整体可行，工作量低。",
     "blockers": [
       {
@@ -646,7 +644,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 JavaScript 实现和原生 N-API 扩展均依赖 Node.js 运行时",
-        "source": "harmony-pc-capabilities.json#语言运行时"
+        "source": "harmony-pc-capabilities.json#语言运行时",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -654,7 +653,8 @@
         "required": false,
         "target_status": "available",
         "impact": "原生 C 扩展通过 N-API 宏生成的绑定代码依赖此能力",
-        "source": "harmony-pc-capabilities.json#语言运行时"
+        "source": "harmony-pc-capabilities.json#语言运行时",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -688,7 +688,21 @@
       "若 N-API 二进制兼容性有问题，纯 JS 后备已就绪可无缝降级"
     ],
     "notes": "按模型 A（库跑在已移植的 Node.js 运行时上）评估。C 原生扩展仅是性能优化路径，纯 JS 实现可作为降级方案——即便 N-API 编译暂遇困难，库的功能完整性不受影响。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float64-base-sub",
@@ -703,15 +717,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.py 报告测试框架为 jest/mocha，但 Makefile 与测试引用明确使用 tape（@stdlib 标准测试框架），应为 tape 而不是 jest/mocha"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -722,7 +728,8 @@
         "message": "porting_class=recompile_only 但主生态为 nodejs（已移植运行时）且无原生调用面，疑似应为 no_adaptation"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI/3D 渲染/媒体播放/特定硬件等鸿蒙适配重点场景",

@@ -842,7 +842,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（经 OHOS NDK musl + clang 交叉编译为 .so，再通过 Node-API 暴露给 ArkTS；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -851,7 +850,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库为纯算法 C 库，仅使用 C 标准库函数（stdlib/string/stdio/errno），无平台特有 API、无系统调用、无动态加载、无硬件依赖。所有可选依赖（libiconv、libunistring、gettext）均有内置回退或可在鸿蒙系统中提供。移植只需用 OHOS NDK（ohos.toolchain.cmake + clang + musl）交叉编译为 .so，可选为 ArkTS 暴露 Node-API 桥接。platform_adaptation 与 platform_branches 均无命中，证实无平台耦合代码。",
     "blockers": [
       {
@@ -876,7 +874,8 @@
         "required": true,
         "target_status": "available",
         "impact": "全部核心功能依赖 C 标准库；若缺失则无法运行",
-        "source": "harmony-pc-capabilities.json#runtimes（OHOS NDK 基于 musl 提供标准 C 库）"
+        "source": "harmony-pc-capabilities.json#runtimes（OHOS NDK 基于 musl 提供标准 C 库）",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -913,7 +912,21 @@
     ],
     "notes": "评估按默认模型 A（库经 OHOS NDK 重编为 .so）。该库是已知最易移植的 C 库之一：零平台特有 API、零系统调用、零编译宏平台分支——OHOS NDK/musl 提供的标准 C 库完全覆盖其需求。若目标是 ArkTS 沙箱应用（模型 B），仅需追加 Node-API 桥接层暴露 idn2_* 公共入口。",
     "required_permissions": [],
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libidn2",
@@ -947,7 +960,8 @@
         "message": "license.category(weak_copyleft) 与依据 SPDX(GPL-2.0-or-later OR LGPL-3.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "本项目为纯文本处理/国际化域名编解码库，不涉及 GUI、3D 渲染、媒体处理或特定硬件等鸿蒙适配重点场景。",

@@ -797,8 +797,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层，无 Linux ABI）",
-    "feasibility": "infeasible",
-    "porting_class": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -822,7 +821,9 @@
           "Xlib/display.py:88-89",
           "Xlib/protocol/display.py:83-92",
           "Xlib/support/unix_connect.py:74-117"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nvcontrol",
@@ -837,7 +838,9 @@
         "evidence": [
           "Xlib/ext/nvcontrol.py",
           "Xlib/ext/__init__.py:39"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -847,7 +850,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "X11 是库的所有功能的前提。目标平台无 X11 时，库无法建立显示连接，核心能力全部失效。",
-        "source": "HarmonyOS NEXT PC 架构描述（自研内核、ArkTS 应用层、非 Linux ABI）及 references/harmony-pc-capabilities.json gui/wm 段；X11 未在目标平台能力清单中出现，且与 ArkUI 架构互斥。"
+        "source": "HarmonyOS NEXT PC 架构描述（自研内核、ArkTS 应用层、非 Linux ABI）及 references/harmony-pc-capabilities.json gui/wm 段；X11 未在目标平台能力清单中出现，且与 ArkUI 架构互斥。",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:python_runtime",
@@ -855,7 +859,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 代码本身可在已移植的 Python 运行时上运行，但这对本库无实际意义，因为库的功能依赖不可用的 X11。",
-        "source": "references/harmony-pc-capabilities.json runtimes/python"
+        "source": "references/harmony-pc-capabilities.json runtimes/python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -869,7 +874,6 @@
         ]
       }
     ],
-    "recommended_path": "abandon / find_alternative",
     "summary": "python-xlib 是面向 X Window System 的客户端库，其全部价值建立在能连接 X11 服务器之上。HarmonyOS NEXT PC 采用自研内核与 ArkTS 应用层，不存在 X11 显示服务器与协议栈，因此该库无法移植。依赖它的 Python 应用若想在鸿蒙 PC 上提供 GUI，必须改用 ArkUI、Qt（鸿蒙社区已适配）或其他鸿蒙原生窗口方案重写界面层。",
     "blockers": [
       {
@@ -934,7 +938,24 @@
     ],
     "key_tasks": [],
     "notes": "置信度为 high：X11 是库的本质依赖，而 HarmonyOS NEXT PC 的 ArkTS/自研内核架构明确排除了 X11。该结论不依赖未核实的能力假设。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:x11_socket",
+          "ua:nvcontrol"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -943,6 +964,19 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:x11_socket",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_socket 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nvcontrol",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nvcontrol 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   }
 }

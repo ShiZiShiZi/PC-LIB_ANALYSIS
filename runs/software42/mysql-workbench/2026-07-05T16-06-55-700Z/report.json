@@ -2540,8 +2540,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 C：整包桌面应用——需 GTK+ GUI 在鸿蒙 PC 桌面环境打包并启动运行；原生 C++ 层经 OHOS NDK/musl 重编为 .so；嵌入式 Python 3.7+ 脚本引擎经鸿蒙已移植 Python 3.12 跑）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -2550,7 +2549,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_native_ui",
     "summary": "MySQL Workbench 是 100 万行生产代码的跨平台 C++ 桌面 GUI 应用，有三套平台前端（GTK/Cocoa/WinForms）。鸿蒙 PC 的 GTK 标记为 available，打开了最现实的移植路径——以 Linux GTK/GTKmm 前端为基准用 OHOS NDK 重编译 + Cairo 图形 + 嵌入式 Python，但大量桌面集成能力（多窗口/docking/系统托盘/文件对话框/剪贴板/密钥环/启动器/打包签名）在鸿蒙 PC 上的可用性全部 unknown。Windows C# WinForms+DllImport 前端与 macOS Cocoa 前端整体不可移植，需删除对应的平台代码。libssh、OpenSSL、MySQL 连接器等底层 C/C++ 库均需在鸿蒙 PC 上重编译或确认 cmd-pkgs 已有移植产物。整体可行性取决于桌面窗口环境与 GTK 移植的完整程度，置信被大量 unknown 目标事实下调至 medium。",
     "blockers": [
       {
@@ -2687,7 +2685,9 @@
         "evidence": [
           "library/base.windows/Win32.cs:2850-3059",
           "frontend/windows/WBControls/FlatTabControl.cs:224"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cocoa_appkit",
@@ -2702,7 +2702,9 @@
         "evidence": [
           "frontend/mac/workbench/WBMainController.mm:924",
           "frontend/mac/plugin/WBPluginEditorBase.mm:209"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2712,7 +2714,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK 为 Workbench 唯一可跨平台移植的 UI 方案，其鸿蒙可用性是整包迁移的前提",
-        "source": "references/harmony-pc-capabilities.json#gui.gtk"
+        "source": "references/harmony-pc-capabilities.json#gui.gtk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:wm",
@@ -2720,7 +2723,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 GTK 窗口、多窗口管理、事件循环能否正常运行",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:docking",
@@ -2728,7 +2732,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Workbench 重度依赖 dockable 面板布局（TabViewDockingPoint），不支持则整体 UI 布局失效",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.docking"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.docking",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_delivery",
@@ -2736,7 +2741,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定能否将 Workbench 打包为鸿蒙 PC 可启动的应用——若必须走 .hap 签名安装则需整体重打包架构",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:subprocess",
@@ -2744,7 +2750,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "服务器管理功能（mysqld 启停/mysqldump 导出/mysql 导入/SSH 隧道）依赖 subprocess 能力",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:fs_access",
@@ -2752,7 +2759,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "全部用户配置、日志、模型文件依赖文件系统访问",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cairo_on_ohos",
@@ -2760,7 +2768,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Cairo 是 Workbench 画布渲染引擎的核心依赖（ER 图绘制、结果集图表），不可用则全部图形功能丧失",
-        "source": "references/harmony-pc-capabilities.json（Cairo 未在 graphics_3d/2d 段单独列出）"
+        "source": "references/harmony-pc-capabilities.json（Cairo 未在 graphics_3d/2d 段单独列出）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_on_ohos",
@@ -2768,7 +2777,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "OpenGL 用于画布硬件加速，非必须路径（纯 Cairo 软件渲染可降级）",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:arch_x86_64",
@@ -2776,7 +2786,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "arm64 为主力架构，x86_64 待核实；Workbench 当前仅 x86_64，交叉编译至 arm64 可行",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2837,7 +2848,24 @@
       "在鸿蒙 arm64 设备上跑通核心功能自测（连接 MySQL、SQL 查询、建模、迁移）"
     ],
     "notes": "评估按模型 C（整包桌面应用）口径。置信 medium：大量桌面集成与交付形态的目标能力为 unknown（wm/docking/desktop_delivery/subprocess/font_ime 等），结论依赖这些未核实事实；且 100 万行代码的 C++ 巨型应用鸿蒙化有大量工程不确定性。GTK 能力虽标记 available，但其在鸿蒙桌面环境的真实功能覆盖（事件循环、窗口层级、主题、输入法、HiDPI）仍需验证。若桌面窗口环境不支持传统多窗口/docking，Workbench 的 dockable 面板 UI（TabViewDockingPoint + mforms）可能需降级为单窗口平铺布局。若子进程受限，服务器管理功能（启停 mysqld/mysqldump/SSH 隧道）需整体替换为库调用（如 ssh 用 libssh 库内直连）。person_days 估算为 [40,80]（高到极高），大部分工作量在依赖重新编译、平台分支剔除与桌面集成适配/验证。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_import",
+          "ua:cocoa_appkit"
+        ]
+      }
+    }
   },
   "library": {
     "name": "mysql-workbench",
@@ -2864,31 +2892,19 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "MySQL Workbench 是终端用户启动运行的桌面 GUI 应用，有原生 launcher、打包目标(installer/AppImage/dmg)、GTK GUI 工具包，非被 API 调用的库"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "pkg_config",
-        "rationale": "CMake pkg_check_modules 本质上是 system 获取（预期系统预装 pkg-config 包），但查找机制与 find_package 不同，单独标注为 system 并加 declared_in"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "gap",
-        "value": "cocoa",
-        "rationale": "macOS Cocoa/AppKit API 在推荐清单中作为平台特有 API 出现，与 Win32 API 并列，均归 platform 类"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:win32_import",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_import 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cocoa_appkit",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cocoa_appkit 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "blocker_ref:bk:desktop_wm_unknown:ta:gtk_desktop",
         "class": "actionable",
@@ -2910,7 +2926,8 @@
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "MySQL Workbench 是典型的跨平台桌面 GUI 应用，核心场景为 GUI（GTK+/GTKmm/Cocoa/WinForms 三平台 UI）与 2D 图形渲染（Cairo/OpenGL 硬件加速 E-R 图绘制），不涉及音视频媒体或特定硬件（GPU 计算/外设）。鸿蒙 PC 的 GTK 已标记为 available，Cairo/OpenGL 为 partial/available，但 macOS Cocoa 与 Windows WinForms+DllImport 两个平台前端无法直接移植。",

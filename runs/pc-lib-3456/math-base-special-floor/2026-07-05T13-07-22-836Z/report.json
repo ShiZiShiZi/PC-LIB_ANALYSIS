@@ -614,7 +614,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上；原生 N-API 插件可选经 OHOS NDK 重编；arm64/x86_64)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -623,7 +622,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js 微包，鸿蒙 PC 已移植 Node.js 24 运行时。纯 JavaScript 回退实现（lib/main.js，直接使用 Math.floor）无需任何修改即可在鸿蒙 Node.js 上运行。原生 C 插件（src/main.c + src/addon.c）为可选性能优化：仅调用 C 标准库 floor() 并通过 Node-API 暴露，若需启用则用 OHOS NDK（musl libc + clang）重新编译即可——C99 标准、无平台特有系统调用、无外部命令、无文件系统访问，编译毫无阻碍。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -634,7 +632,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时已移植，纯 JavaScript 可直接跑",
-        "source": "harmony-pc-capabilities.json#nodejs"
+        "source": "harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -665,7 +664,21 @@
       "（可选）若需启用原生插件：用 OHOS NDK 交叉编译 addon.node（arm64/x86_64），修改 binding.gyp 目标平台配置"
     ],
     "notes": "该库原生插件极为简单（单函数、C99 标准库、无平台特有调用），纯 JS 回退已覆盖全部功能，原生插件重编为完全可选。按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "math-base-special-floor",
@@ -686,7 +699,8 @@
     "confidence_overall": "high",
     "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数学计算库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

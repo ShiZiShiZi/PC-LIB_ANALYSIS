@@ -1447,10 +1447,8 @@
     "notes": "构建需要 .NET 10 SDK（global.json 锁定），可交叉编译 net8.0/net9.0/net462 目标。Windows 上额外支持 net462（.NET Framework）目标。.NET Framework 目标仅在 Windows 上构建（csproj 条件限制）。"
   },
   "harmony_adaptation": {
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "effort": {
       "person_days": [
         15,
@@ -1537,7 +1535,9 @@
         "evidence": [
           "src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/LocalDb/LocalDbApi.windows.cs:5"
         ],
-        "id": "ua:1"
+        "id": "ua:1",
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "api": "Windows 原生 SSPI 认证 (NativeSspiContextProvider)",
@@ -1548,7 +1548,9 @@
         "evidence": [
           "src/Microsoft.Data.SqlClient/src/Microsoft/Data/SqlClient/SSPI/NativeSspiContextProvider.windows.cs:5"
         ],
-        "id": "ua:2"
+        "id": "ua:2",
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1558,7 +1560,8 @@
         "target_status": "unknown",
         "impact": "若 .NET 运行时未完整移植，整个库不可运行",
         "source": "references/harmony-pc-capabilities.json (runtimes section 无 .NET 条目)",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "unknown"
       },
       {
         "capability": "System.Net.Sockets 在鸿蒙 PC .NET 运行时中可用",
@@ -1566,7 +1569,8 @@
         "target_status": "unknown",
         "impact": "ManagedSNI 的 TCP 连接依赖此 API",
         "source": "inferred",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "unknown"
       },
       {
         "capability": "System.Net.Security.SslStream 在鸿蒙 PC .NET 运行时中可用",
@@ -1574,7 +1578,8 @@
         "target_status": "unknown",
         "impact": "TLS 加密连接依赖此 API",
         "source": "inferred",
-        "id": "ta:3"
+        "id": "ta:3",
+        "target_status_model": "unknown"
       },
       {
         "capability": "System.Security.Cryptography 完整实现在鸿蒙 PC .NET 运行时中可用",
@@ -1582,7 +1587,8 @@
         "target_status": "unknown",
         "impact": "Always Encrypted 的 AES-CBC-HMAC 算法依赖密码学 API",
         "source": "inferred",
-        "id": "ta:4"
+        "id": "ta:4",
+        "target_status_model": "unknown"
       },
       {
         "capability": "GSS API / Negotiate 认证在鸿蒙 PC 上可用",
@@ -1590,7 +1596,8 @@
         "target_status": "unknown",
         "impact": "Windows 集成认证的跨平台替代方案",
         "source": "inferred",
-        "id": "ta:5"
+        "id": "ta:5",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1609,6 +1616,23 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:1",
+          "ua:2"
+        ]
+      }
     }
   },
   "library": {
@@ -1629,29 +1653,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "7",
-        "field": "native_api.groups[].type",
-        "kind": "new_value",
-        "value": "native_sni_dll",
-        "rationale": "SqlClient 的 Windows 原生 SNI DLL 不是常规 Win32 API，而是项目自有的原生桥接库，需要新类型以区分"
-      },
-      {
-        "dimension": "9",
-        "field": "harmony_adaptation.porting_class",
-        "kind": "classification_note",
-        "value": "needs_adaptation_full",
-        "rationale": "虽然纯托管代码在理论上有 .NET 运行时即可运行，但 (1) .NET 运行时在鸿蒙 PC 上的状态为 unknown，(2) Windows 专有功能（SNI/SSPI/LocalDB）需要适配/禁用，(3) 运行时 BCL API 完整性未确认——因此归入 needs_adaptation_full 而非 recompile_only"
-      },
-      {
-        "dimension": "1",
-        "field": "function_summary.categories",
-        "kind": "coverage_note",
-        "value": "doc/ 目录下的示例代码未计入功能分类",
-        "rationale": "doc/apps/AzureSqlConnector 是独立的演示 Windows Forms 应用（非生产代码），doc/samples/ 是 API 用法示例——按生产范围口径排除"
-      }
-    ],
+    "observations": [],
     "warnings": [
       ".NET 运行时在鸿蒙 PC 上的可用性和 BCL 完整性为 unknown，是适配评估的最大不确定因素",
       "shape coerced: license.evidence array→string",
@@ -1709,10 +1711,21 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:1",
+        "class": "actionable",
+        "message": "unadaptable_api ua:1 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:2 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "scenarios": [

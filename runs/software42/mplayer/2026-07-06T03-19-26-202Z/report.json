@@ -2460,10 +2460,8 @@
     }
   },
   "harmony_adaptation": {
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "confidence": "low",
-    "recommended_path": "模型 C（整包桌面应用）。核心路径：(1) FFmpeg 内嵌编解码引擎经 OHOS NDK 重编（纯 C，POSIX 子集可满足）；(2) 视频输出需写 OHOS 原生显示后端（替换 X11/Xv/OpenGL）；(3) 音频输出需写 OHOS 音频后端（替换 ALSA/OSS/PulseAudio）；(4) x86 SIMD 汇编需转换为 ARM64 NEON 或回退标量 C；(5) 网络流媒体（HTTP/RTSP sockets）在 OHOS 上基本可用；(6) GUI (GTK) 在鸿蒙 PC 上已具备但窗口管理器待核实。由于目标平台诸多关键能力状态 unknown（窗口管理器/桌面显示服务/音频 I/O），整体置信为 low。",
     "summary": "MPlayer 迁移至鸿蒙 PC 的核心挑战在于所有平台 I/O 层（视频输出/音频输出/输入）必须在 OHOS 上从零实现等价后端。内嵌 FFmpeg 编解码管线（约 60% 代码量）可通过 OHOS NDK 重编相对直接，但视频显示、音频播放、x86 汇编优化、窗口事件循环均需大量重写。",
     "effort": {
       "person_days": [
@@ -2479,7 +2477,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "视频输出能否显示是应用能否启动运行的决定性条件。若无可用显示服务→infeasible；若存在→需实现 OHOS 视频输出驱动(vo_ohos)。",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "openharmony_audio_io",
@@ -2487,7 +2486,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "音频播放必需。若无低层 API 需走 @ohos.multimedia 系统 API 实现 ao_ohos 驱动。",
-        "source": "references/harmony-pc-capabilities.json#media.audio_io"
+        "source": "references/harmony-pc-capabilities.json#media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "openharmony_gtk",
@@ -2495,7 +2495,8 @@
         "required": false,
         "target_status": "available",
         "impact": "GUI 模式依赖 GTK。caps 标注 available（cmd-pkgs 含 gtk），但实际窗口集成程度待核实。命令行模式不依赖 GTK。",
-        "source": "references/harmony-pc-capabilities.json#gui.gtk"
+        "source": "references/harmony-pc-capabilities.json#gui.gtk",
+        "target_status_model": "available"
       },
       {
         "id": "openharmony_opengl",
@@ -2503,7 +2504,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "OpenGL 视频输出驱动 (vo_gl) 为可选项；若不可用可回退到其他显示后端。",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "openharmony_socket_network",
@@ -2511,7 +2513,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "网络流媒体功能依赖；OHOS NDK musl 通常提供 socket API，待确认无受限。",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "openharmony_ffmpeg_libs",
@@ -2519,7 +2522,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "MPlayer 内嵌 FFmpeg，可自行编译，不依赖外部预编译包。但若有预编译包可大幅降低工作量。",
-        "source": "references/harmony-pc-capabilities.json#media.video_codec"
+        "source": "references/harmony-pc-capabilities.json#media.video_codec",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -2631,7 +2635,9 @@
           "libvo/aclib.c",
           "libvo/fastmemcpy.h"
         ],
-        "id": "ua:1"
+        "id": "ua:1",
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "api": "Video4Linux2 (V4L2) ioctl 接口",
@@ -2642,7 +2648,9 @@
         "evidence": [
           "stream/tvi_v4l2.c"
         ],
-        "id": "ua:2"
+        "id": "ua:2",
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "api": "Linux DVB ioctl 接口",
@@ -2654,7 +2662,9 @@
           "stream/stream_dvb.c",
           "stream/dvb_tune.c"
         ],
-        "id": "ua:3"
+        "id": "ua:3",
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "api": "Win32 PE DLL 加载器 (loader/子系统)",
@@ -2665,7 +2675,9 @@
         "evidence": [
           "loader/"
         ],
-        "id": "ua:4"
+        "id": "ua:4",
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "api": "NVIDIA VDPAU 硬件解码 API",
@@ -2676,7 +2688,9 @@
         "evidence": [
           "libvo/vo_vdpau.c"
         ],
-        "id": "ua:5"
+        "id": "ua:5",
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [
@@ -2714,6 +2728,26 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:1",
+          "ua:2",
+          "ua:3",
+          "ua:4",
+          "ua:5"
+        ]
+      }
     }
   },
   "library": {
@@ -2737,7 +2771,32 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:1",
+        "class": "actionable",
+        "message": "unadaptable_api ua:1 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:2 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:3",
+        "class": "actionable",
+        "message": "unadaptable_api ua:3 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:4",
+        "class": "actionable",
+        "message": "unadaptable_api ua:4 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:5",
+        "class": "actionable",
+        "message": "unadaptable_api ua:5 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
         "code": "blocker_ref:no_ohos_video_output:vo_x11 不工作",
@@ -2833,7 +2892,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "MPlayer 作为媒体播放应用，核心触及 GUI/桌面 UI、媒体（音视频编解码/播放/采集）、3D 渲染（OpenGL 视频输出）三大鸿蒙适配重点场景，不涉及特定硬件依赖（仅为通用 PC 硬件）。",

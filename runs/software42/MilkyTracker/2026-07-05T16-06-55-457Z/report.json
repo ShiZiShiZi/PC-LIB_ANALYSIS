@@ -1723,8 +1723,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (模型 C: 整包桌面应用; OHOS NDK 交叉编译 C++ 核心; 需新增鸿蒙 GUI 后端与音频/MIDI 后端; arm64/x86_64; 自研内核, 非 Linux ABI)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -1733,7 +1732,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "MilkyTracker 为 C++ 桌面音乐制作应用，核心 MillyPlay 音频引擎（BSD 授权）与所有模块加载器为跨平台纯 C++ 代码，可直接用 OHOS NDK 重编译。主要适配工作在三块：(1) GUI 层当前依赖 SDL2+OpenGL（或 Cocoa/Win32），鸿蒙需 SDL2 交叉编译或改用 Qt（鸿蒙已支持）重写 ppui DisplayDevice 后端；(2) 音频 I/O 需新增鸿蒙 @ohos.multimedia.audio 后端替代 ALSA/JACK/CoreAudio/WinMM WaveOut；(3) MIDI 输入需新增鸿蒙 MIDI 后端（目标平台 MIDI 能力待核实）。核心混音/DSP/采样编辑器/乐谱编辑器逻辑完全可复用。无云端依赖、无特定硬件需求、无 CUDA/3D 渲染。zlib 等依赖库鸿蒙 cmd-pkgs 已有预编译包。整体可行但需大量平台适配工作。",
     "blockers": [
       {
@@ -1861,7 +1859,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GUI 窗口/事件/OpenGL 上下文创建的核心依赖；若无 SDL2 则需要 Qt 替代方案",
-        "source": "harmony-pc-capabilities.json（未收录 SDL2；可交叉编译，cmd-pkgs 中已有众多 C/C++ 库）"
+        "source": "harmony-pc-capabilities.json（未收录 SDL2；可交叉编译，cmd-pkgs 中已有众多 C/C++ 库）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengles_ohos",
@@ -1869,7 +1868,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "2D 纹理渲染加速依赖；partial 意味着基本可用但部分扩展可能缺失，可能需回退软件渲染（已有机制）",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:audio_ohos",
@@ -1877,7 +1877,8 @@
         "required": true,
         "target_status": "available",
         "impact": "音频输出核心依赖；已 available 意味着可以新增 OHOS 音频后端",
-        "source": "harmony-pc-capabilities.json#media.ohos_multimedia"
+        "source": "harmony-pc-capabilities.json#media.ohos_multimedia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:midi_ohos",
@@ -1885,7 +1886,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "MIDI 输入为可选功能（已有条件编译）；若无 MIDI 支持可禁用该功能模块，不影响核心播放/编辑",
-        "source": "harmony-pc-capabilities.json（MIDI 未收录）"
+        "source": "harmony-pc-capabilities.json（MIDI 未收录）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cmake_ndk",
@@ -1893,7 +1895,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 编译基础；已 available 意味着可直接交叉编译 MilkyPlay 与 ppui 核心",
-        "source": "harmony-pc-capabilities.json（运行时段 + arch 段；C/C++ 编译已验证）"
+        "source": "harmony-pc-capabilities.json（运行时段 + arch 段；C/C++ 编译已验证）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_wm",
@@ -1901,7 +1904,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "应用需独立窗口才能运行（SDL2 或 Qt 创建）；若仅支持 ArkTS .hap 沙箱则需整体重写为 ArkTS 应用",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       }
     ],
     "compatible": [
@@ -1969,7 +1973,21 @@
     ],
     "notes": "评估按模型 C（整包桌面应用）口径。核心挑战：GUI 后端（SDL2/OpenGL 在鸿蒙的可用性未核实）和音频 I/O 后端（需写新的 @ohos.multimedia.audio 后端）。MIDI 能力未知（可选功能，可放弃）。核心混音/编辑器代码为纯 C++ 可移植。zlib/lhasa/zziplib 等依赖库通过子模块内嵌编译，无运行时外部 C 库依赖。Qt 鸿蒙版已 available 作为备选 GUI 方案。因 SDL2 鸿蒙可用性、桌面窗口管理器能力、MIDI 支持 3 项关键假设为 unknown，confidence 下调至 medium。conflict of interest: MilkyPlay 播放引擎为 BSD 授权可自由移植，MilkyTracker 主体为 GPL-3.0-or-later 需注意授权合规。",
     "required_permissions": [],
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "MilkyTracker",
@@ -1989,22 +2007,7 @@
     "analyzed_at": "2026-07-05T16:35:10Z"
   },
   "meta": {
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "GPL-3.0-or-later WITH BSD-2-Clause",
-        "rationale": "MilkyTracker 本体为 GPL-3.0-or-later，MilkyPlay 子模块为 BSD-2-Clause。SPDX WITH 表达式用于表示同一仓库内不同组件不同授权的组合，但标准 SPDX WITH 语法是给例外用的，此处非标准用法；实际是两个独立子项目各有其授权的复合仓库。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "SDL2 不在 harmony-pc-capabilities.json 收录范围",
-        "rationale": "SDL2 是 MilkyTracker GUI 的核心跨平台后端，但目标能力画像未列 SDL2。SD2 可交叉编译（C + 已有桌面后端），但 cmd-pkgs 是否已提供未知。建议将 SDL2 加入 caps 并核实状态。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2015,7 +2018,8 @@
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "MilkyTracker 是桌面音乐制作应用，涉及 GUI（SDL2/OpenGL + 原生平台后端）与音频 I/O（ALSA/JACK/CoreAudio/WinMM + MIDI 输入）两大鸿蒙适配重点场景，不涉及 3D 渲染、视频或特定硬件。",

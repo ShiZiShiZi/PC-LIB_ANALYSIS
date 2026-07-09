@@ -1466,8 +1466,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（CLI 应用模型，运行在已移植的 Python 3.12 运行时上；无 GUI/桌面集成需求）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1476,7 +1475,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "esptool 是纯 Python CLI 应用，核心逻辑可在鸿蒙已移植 Python 上直接运行；能否真正可用取决于 HarmonyOS PC 是否允许访问 USB/串口设备以及 pySerial 能否正常工作。POSIX 专属的 fcntl/termios/ioctl 复位控制路径需要验证或条件降级，cryptography 等含原生扩展的依赖需在鸿蒙上重新编译。整体可行但风险集中在串口硬件访问层。",
     "blockers": [
       {
@@ -1534,7 +1532,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "esptool 所有核心功能都依赖串口通信；若 HarmonyOS PC 不支持或权限模型不允许访问，则无法使用",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:python_runtime",
@@ -1542,7 +1541,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 核心逻辑可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_termios",
@@ -1550,7 +1550,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响 UnixTightReset 的精确 DTR/RTS 控制；缺失时可回退到 ClassicReset",
-        "source": "references/harmony-pc-capabilities.json#process_security.sandbox"
+        "source": "references/harmony-pc-capabilities.json#process_security.sandbox",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1607,7 +1608,21 @@
       "跑通单元测试与一次真实 ESP 芯片烧录验证"
     ],
     "notes": "本评估按 CLI 应用模型（非 ArkTS GUI 应用）进行：Python 运行时 available，因此不判 infeasible。核心不确定性来自 HarmonyOS PC 的 USB/串口访问能力与权限模型，目前均为 unknown，导致 confidence 为 medium。若目标平台确认支持通用 USB/串口且 pySerial 可工作，则可降为 needs_adaptation_full；若完全不允许用户态串口访问，则核心功能不可用。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1615,15 +1630,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application(cli)",
-        "rationale": "esptool 是终端用户启动的 CLI 应用而非被调用的库；虽然 kind 取 application，但无 GUI/桌面集成，与典型桌面应用不同，故补充标注 cli 特征。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

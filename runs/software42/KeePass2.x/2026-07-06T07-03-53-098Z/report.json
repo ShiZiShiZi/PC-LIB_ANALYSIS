@@ -1360,8 +1360,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核非 Linux ABI；原生层 OHOS NDK musl + POSIX 子集；arm64/x86_64；评估按模型 C = 整包桌面应用）",
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         80,
@@ -1370,7 +1369,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "abandon",
     "summary": "KeePass 是一款基于 .NET/WinForms 的桌面 GUI 应用，深度绑定 Windows 平台（~100+ Win32 P/Invoke 声明、System.Windows.Forms 界面层、自建原生 C++ DLL KeePassLibN）。鸿蒙 PC 目前无 .NET 运行时（不在已移植运行时清单中），WinForms 桌面框架无对应等价物，自动键入/剪贴板/系统托盘/全局热键等桌面集成功能均需 ArkUI+@ohos 系统能力替代——实质相当于重写整个应用层。即使假设 .NET Core/Mono 未来可移植，WinForms 与 P/Invoke 的 Win32 API 依赖仍无鸿蒙等价实现，需将界面层、IPC、自动键入全部用 ArkTS/ArkUI+Node-API 重写。评估置信度 medium，因 .NET 运行时与 WinForms 在鸿蒙 PC 均为 unknown 状态（未列在目标能力画像 available 项中）。",
     "target_assumptions": [
       {
@@ -1379,7 +1377,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "鸿蒙 PC 无 .NET 运行时则整个应用无法直接执行（KeePass 为 C# 编译产物，需 .NET CLR/Mono 运行）。若未来出现移植版本则部分 C# 核心逻辑（密码数据库、加密、导入导出）可复用。",
-        "source": "references/harmony-pc-capabilities.json#runtimes（.NET/Mono 不在已移植运行时清单中）"
+        "source": "references/harmony-pc-capabilities.json#runtimes（.NET/Mono 不在已移植运行时清单中）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:winforms_gui",
@@ -1387,7 +1386,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "KeePass 的 50+ 表单、自定义控件、工具栏渲染均基于 WinForms。鸿蒙 PC 无 WinForms 实现，即使 .NET 运行时可用，GUI 层也需完全用 ArkUI 重写。",
-        "source": "references/harmony-pc-capabilities.json#gui（无 WinForms 条目；桌面窗口管理器/wm 状态 unknown）"
+        "source": "references/harmony-pc-capabilities.json#gui（无 WinForms 条目；桌面窗口管理器/wm 状态 unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_integration",
@@ -1395,7 +1395,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "KeePass 核心功能（密码置剪贴板、全局热键触发自动键入、系统托盘驻留、模拟键盘输入）重度依赖 Win32 API。system_tray/clipboard/file_dialog 在鸿蒙桌面均为 unknown。",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn_subprocess",
@@ -1403,7 +1404,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "应用通过 Process.Start 打开 URL、执行触发命令(ECAS)、运行 SPR 占位符命令。鸿蒙 PC 的进程模型与沙箱权限是否允许待核实。",
-        "source": "references/harmony-pc-capabilities.json#process_security#spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security#spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:app_delivery",
@@ -1411,7 +1413,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 仅支持 .hap/ArkTS ability 签名安装，则需改变整个打包/分发方式。",
-        "source": "references/harmony-pc-capabilities.json#app_delivery#desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery#desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -1515,7 +1518,9 @@
         ],
         "caused_by": [
           "ta:desktop_integration"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_registerhotkey",
@@ -1530,7 +1535,9 @@
         ],
         "caused_by": [
           "ta:desktop_integration"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_clipboard",
@@ -1545,7 +1552,9 @@
         ],
         "caused_by": [
           "ta:desktop_integration"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_aux_dacl",
@@ -1560,7 +1569,9 @@
         ],
         "caused_by": [
           "ta:dotnet_runtime"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [],
@@ -1606,7 +1617,26 @@
       "IPC 机制从 Windows RegisterWindowMessage/TCP 改为鸿蒙进程间通信方式"
     ],
     "notes": "评估按模型 C（整包桌面应用），置信度 medium 因多项关键目标能力(.NET 运行时/WinForms/桌面集成/传统应用交付)在 harmony-pc-capabilities.json 中均为 unknown——鸿蒙 PC 目前明确支持的运行时只有 Python/Node/Java/Rust/Go/Julia，.NET 不在其中。若 .NET Core/Mono 未来确被移植到鸿蒙 PC，可升级为 needs_adaptation_partial（person_days 约 40-80：核心库复用、界面与桌面集成重写）；若 RuntimeInformation.IsOSPlatform 通过且 OHOS NDK 可编译 KeePassLibN，AES-KDF/Argon2 可直接复用。Unix/Mono 路径（X11/gcrypt/argon2/xsel/xdotool）在鸿蒙环境同样不可用。本仓库为 KeePass 官方源码的第三方 VS2022 镜像，不改变原有实现与依赖。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:win32_sendinput",
+          "ua:win32_registerhotkey",
+          "ua:win32_clipboard",
+          "ua:win32_aux_dacl"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "KeePass",
@@ -1630,33 +1660,34 @@
   "meta": {
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "gap",
-        "value": "winforms_app",
-        "rationale": "现有 type 推荐集（win32/posix/cpp_stl/arch_simd 等）偏 C/C++，对 .NET WinForms 应用的 System.Windows.Forms/C# DllImport 模式缺少明确分类。本报告将 .NET BCL 归 standard（portable）、DllImport 的 Win32 API 按 dll 分 type（win32_user32/win32_kernel32 等），可作为 .NET 桌面应用的参考口径。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "runtime_unavailable",
-        "kind": "gap",
-        "value": "dotnet_missing_from_caps",
-        "rationale": "harmony-pc-capabilities.json 已移植运行时清单无 .NET/Mono。harmony-adaptation skill 的 ecosystem 基调表也只覆盖 python/java/nodejs/rust/go/cpp，缺少 dotnet 的默认模型/路径建议。若 .NET 未来列入已移植运行时，dotnet/WinForms 应用（模型 C）的评估锚点需要明确定义。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "system_framework",
-        "rationale": "现有 acquisition 推荐值（system/vendored/fetchcontent/submodule 等）偏 C/C++ 库集成，.NET Framework 作为系统级运行时基础类库的获取方式（类似 Java JDK/JRE system）未显式列出。本报告用 'system' 表示 .NET Framework 需预装，与 C++ system find_package 一致但获取渠道不同（Windows Update/os-provided vs pkg-config）。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:win32_sendinput",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_sendinput 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_registerhotkey",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_registerhotkey 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_clipboard",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_clipboard 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_aux_dacl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_aux_dacl 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "KeePass 作为 WinForms 桌面 GUI 应用，深度依赖 Win32 GUI 工具包（System.Windows.Forms + P/Invoke user32/kernel32/shell32）与桌面集成（剪贴板/热键/系统托盘/文件对话框/自动键入）。无 3D 渲染、无媒体处理、无特定硬件依赖。",

@@ -1487,8 +1487,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK, musl + POSIX 子集, arm64)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         16,
@@ -1547,7 +1546,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 OHOS NDK 基于 musl libc，提供 POSIX 子集，核心 socket API 可用；若缺失某接口需用鸿蒙等价替换",
-        "source": "references/harmony-pc-capabilities.json — OHOS NDK musl + POSIX 子集"
+        "source": "references/harmony-pc-capabilities.json — OHOS NDK musl + POSIX 子集",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openssl_mbedtls",
@@ -1555,7 +1555,8 @@
         "required": true,
         "target_status": "available",
         "impact": "IXWebSocket 的 TLS 依赖 OpenSSL/MbedTLS/LibreSSL/SecureTransport 四选一；鸿蒙不支持 Apple SecureTransport，需确保至少一个 TLS 后端可用",
-        "source": "cmd-pkgs 已提供 openssl 和 mbedtls 包"
+        "source": "cmd-pkgs 已提供 openssl 和 mbedtls 包",
+        "target_status_model": "available"
       },
       {
         "id": "ta:zlib",
@@ -1563,7 +1564,8 @@
         "required": true,
         "target_status": "available",
         "impact": "WebSocket per-message deflate 扩展和 HTTP gzip 编解码依赖 zlib",
-        "source": "cmd-pkgs 已提供 zlib 包"
+        "source": "cmd-pkgs 已提供 zlib 包",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pthread_setname",
@@ -1571,7 +1573,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "IXSetThreadName 使用 pthread_setname_np 设置线程名（调试辅助），若不可用则线程名功能降级，不影响核心功能",
-        "source": "references/harmony-pc-capabilities.json — POSIX 子集覆盖范围待核实"
+        "source": "references/harmony-pc-capabilities.json — POSIX 子集覆盖范围待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1612,7 +1615,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "IXWebSocket 是一个纯网络通信 C++ 库，核心功能（WebSocket 协议、HTTP、DNS 解析、TLS）基于 POSIX socket API 和标准 C++。鸿蒙 OHOS NDK 提供 musl libc + POSIX 子集，核心 socket API（connect/send/recv/poll/select/getaddrinfo/pipe/fcntl）可用。推荐路径为：使用 OHOS NDK 交叉编译，选择 OpenSSL 作为 TLS 后端（cmd-pkgs 已提供），添加 __OHOS__ 平台条件分支处理平台差异（主要是 TLS 后端选择和线程命名），验证测试通过即可。工作量中等，约 5–15 人天。",
     "blockers": [],
     "compatible": [
@@ -1662,7 +1664,21 @@
       "运行测试套件验证 WebSocket 客户端/服务端、TLS、DNS 解析、压缩功能"
     ],
     "notes": "IXWebSocket 的平台适配层已高度抽象（IXNetSystem/IXSocket 封装了所有平台差异），添加 __OHOS__ 分支工作量可控。Apple SecureTransport 后端在鸿蒙上不可用但不构成阻碍（选择 OpenSSL/MbedTLS 即可）。Windows 证书存储 API（CertOpenStore 等）仅 MbedTLS/OpenSSL 后端的 Windows 专有功能，鸿蒙上不适用但不影响核心 TLS 功能。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "IXWebSocket",
@@ -1690,16 +1706,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "apple_framework",
-        "rationale": "Apple SecureTransport 通过 -framework Foundation -framework Security 链接，不属于 system(via find_package)/vendored/fetchcontent/package_manager 任何一类；暂归 system 但语义不够精确"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "IXWebSocket 是纯网络通信库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件设备访问。唯一相关的鸿蒙适配场景是网络通信能力本身。",

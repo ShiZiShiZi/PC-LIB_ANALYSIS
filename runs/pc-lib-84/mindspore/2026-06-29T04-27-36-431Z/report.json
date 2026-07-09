@@ -1390,8 +1390,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：库跑在已移植的 Python 3.12 运行时上；C++ 原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         60,
@@ -1400,7 +1399,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "MindSpore 体量巨大（生产代码 213 万行），且深度绑定 NVIDIA CUDA/Ascend 两类专有硬件后端。鸿蒙 PC 上仅 CPU 后端存在移植路径：Python 前端可运行在已移植的 Python 运行时上，C++ 核心需用 OHOS NDK 交叉编译，多数通用依赖已有鸿蒙预编译包；但 CUDA/Ascend 算子与通信后端无等价实现，相关功能无法移植。OpenCL Lite GPU 后端与 FFmpeg 媒体解码可用性待核实。",
     "unadaptable_apis": [
       {
@@ -1416,7 +1414,9 @@
         "evidence": [
           "mindspore/lite/src/extendrt/delegate/tensorrt/tensorrt_allocator.cc:35",
           "mindspore/ccsrc/plugin/device/gpu/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:hccl_acl",
@@ -1431,7 +1431,9 @@
         "evidence": [
           "mindspore/python/mindspore/communication/_comm_helper.py:31-40",
           "mindspore/ccsrc/plugin/device/ascend/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nccl",
@@ -1446,7 +1448,9 @@
         "evidence": [
           "cmake/external_libs/nccl.cmake",
           "mindspore/python/mindspore/communication/_comm_helper.py:64-66"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1456,7 +1460,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 前端无需重写，直接运行在鸿蒙 Python 上",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -1464,7 +1469,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心可交叉编译为鸿蒙 .so",
-        "source": "harmony-pc-capabilities.json intro"
+        "source": "harmony-pc-capabilities.json intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cuda",
@@ -1472,7 +1478,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "不支持则 GPU 后端与 NCCL 分布式功能无法运行",
-        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ascend",
@@ -1480,7 +1487,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "不支持则 Ascend 后端无法运行",
-        "source": "实际硬件依赖；harmony-pc-capabilities.json 无对应支持条目"
+        "source": "实际硬件依赖；harmony-pc-capabilities.json 无对应支持条目",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:opencl",
@@ -1488,7 +1496,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若可用则可保留 Lite OpenCL 后端，否则 Lite GPU 路径需裁剪",
-        "source": "harmony-pc-capabilities.json#hardware_devices.opencl"
+        "source": "harmony-pc-capabilities.json#hardware_devices.opencl",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ffmpeg",
@@ -1496,7 +1505,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "MindData 多媒体输入源需验证或替换",
-        "source": "harmony-pc-capabilities.json#media.video_codec / ohos_multimedia"
+        "source": "harmony-pc-capabilities.json#media.video_codec / ohos_multimedia",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1651,7 +1661,25 @@
       "在鸿蒙 Python 上跑通 CPU 后端单元测试与典型训练示例"
     ],
     "notes": "评估基于 HarmonyOS PC 默认库模型（Python 运行时已移植）。若目标为 ArkTS 沙箱应用（模型 B），则整个 Python 前端不可用，需将 C++ 核心通过 Node-API 重新暴露，工作量与不可移植风险会大幅上升。鸿蒙 PC 对 x86_64 的覆盖、OpenCL 驱动、FFmpeg 媒体栈等事实尚未核实，已记入 target_assumptions 并下调置信度至 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda",
+          "ua:hccl_acl",
+          "ua:nccl"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1659,36 +1687,25 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "framework",
-        "rationale": "MindSpore 是深度学习框架而非普通库/应用，kind 取 framework 更准确；现有推荐值未明确列出 framework。"
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "download_build",
-        "rationale": "MindSpore 通过自定义 mindspore_add_pkg 从 URL 下载源码并在构建时编译安装，既非纯 FetchContent 也非 ExternalProject，现有推荐值不能精确描述。"
+        "code": "ua_func_class_defaulted:ua:hccl_acl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:hccl_acl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "ascend",
-        "rationale": "华为 Ascend ACL/HCCL/DVPP 是专有硬件 API 家族，现有推荐清单未覆盖，需新增 ascend 类型。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "ascend_hardware",
-        "rationale": "harmony-pc-capabilities.json 未列出华为 Ascend NPU 在鸿蒙 PC 的支持状态，但该事实对 MindSpore 评估至关重要，只能记为 unavailable。"
+        "code": "ua_func_class_defaulted:ua:nccl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nccl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

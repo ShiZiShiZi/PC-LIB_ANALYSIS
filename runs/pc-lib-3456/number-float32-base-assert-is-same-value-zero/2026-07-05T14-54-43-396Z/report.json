@@ -684,7 +684,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，Node.js 已移植，N-API 原生支持）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -702,7 +701,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植到 HarmonyOS PC（参考 harmony-pc-capabilities.json runtimes），JS 代码可直接跑，不构成阻碍",
-        "source": "references/harmony-pc-capabilities.json→sections[0].rows[0] (Node.js available)"
+        "source": "references/harmony-pc-capabilities.json→sections[0].rows[0] (Node.js available)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -710,11 +710,11 @@
         "required": true,
         "target_status": "available",
         "impact": "N-API 是 Node.js 内置的原生模块接口，Node.js 已移植则 N-API 可用，C addon 无需改动即可编译运行",
-        "source": "Node.js 运行时已移植 → N-API 作为内建模块跟随可用"
+        "source": "Node.js 运行时已移植 → N-API 作为内建模块跟随可用",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库仅包含纯 JavaScript 实现（约 50 行）和 C 原生 addon（通过 Node-API），无任何平台特有 API、系统调用、硬件依赖或外部服务。Node.js 运行时已在 HarmonyOS PC 上移植可用，N-API 作为 Node.js 内建模块同样可用，因此库无需做任何代码修改即可直接运行。",
     "blockers": [],
     "compatible": [
@@ -739,7 +739,21 @@
       "如需原生加速：在鸿蒙 NDK OHOS 环境下用 node-gyp 重新编译 addon.node"
     ],
     "notes": "原生 addon 为可选优化（.native.js 通过 tryRequire 加载，失败时仍可使用纯 JS 版本）。评价口径：HarmonyOS PC with already-ported Node.js runtime。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/number-float32-base-assert-is-same-value-zero",
@@ -757,24 +771,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "package_manager",
-        "rationale": "所有依赖来自 npm 注册表，通过 npm install 获取，没有 vendored/fetchcontent/submodule 等情形"
-      },
-      {
-        "dimension": "library",
-        "field": "bindings",
-        "kind": "ambiguity",
-        "value": "cpp",
-        "rationale": "该库有 C 原生 addon，但不是传统意义上的语言绑定层（如 C++ 核心 + Python 绑定）；这里的 C 是 node-gyp 编译的 Node.js 原生加速模块，走 N-API 接口。bindings 取了 cpp 最接近（编译型语言），但可讨论，实际更像是 nodejs 生态内的原生扩展"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数学计算库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

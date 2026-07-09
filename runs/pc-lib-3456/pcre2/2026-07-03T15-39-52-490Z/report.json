@@ -1092,7 +1092,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1102,7 +1101,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "PCRE2 主体为纯 C99 标准库代码，平台耦合极低；用 OHOS NDK 交叉编译即可获得 arm64/x86_64 的 libpcre2-*.so。可选的 JIT 依赖 sljit 子模块，默认关闭，若启用则需随 sljit 一起为 OHOS NDK 重编并处理 CPU 特性检测。pcre2grep/pcre2test 中的 Windows/POSIX 分支在鸿蒙上可改用 POSIX 路径或裁剪。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1112,7 +1110,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心库无需平台 API，仅需 NDK 即可交叉编译",
-        "source": "references/harmony-pc-capabilities.json（OHOS NDK + musl POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json（OHOS NDK + musl POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:sljit_cpu",
@@ -1120,7 +1119,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅当启用 JIT 时需要；缺失则关闭 JIT 仍保持完整正则功能",
-        "source": "deps/sljit 未在本次 checkout 中初始化，需单独评估"
+        "source": "deps/sljit 未在本次 checkout 中初始化，需单独评估",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1164,7 +1164,21 @@
       "验证 pcre2grep/pcre2test 工具在鸿蒙 POSIX 环境下的文件与颜色输出行为"
     ],
     "notes": "评估按 C/C++ 库默认口径（模型 A）：核心库无原生扩展以外的运行时依赖，仅需 NDK 重编。当前 checkout 未初始化 deps/sljit 子模块，JIT 默认关闭，分析中将其视为可选能力。若目标场景强制要求 JIT 且 sljit 的 CPU 特性检测/可执行内存分配器在鸿蒙上不可用，则工作量会上升为 needs_adaptation_full/partial。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "pcre2",
@@ -1197,23 +1211,9 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "gap",
-        "value": "maint/doc counted as production code",
-        "rationale": "脚本将 maint/ 中的生成脚本/数据表和 doc/ 中的 HTML 文档计入 production，导致 C 语言占比显得偏低；实际可执行库代码集中在 src/。"
-      },
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "gap",
-        "value": "custom C test harness",
-        "rationale": "PCRE2 使用 RunTest/RunGrepTest shell 脚本 + pcre2test/pcre2_jit_test 自定义 C 测试，非 pytest/googletest 等框架，脚本未能识别测试用例数。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "PCRE2 为纯文本/正则处理库，不触及 GUI、3D 渲染、媒体或特定硬件设备。可选 JIT 编译会生成目标架构机器码并使用 SIMD/CPU 特性检测，但可通过关闭 JIT 完全规避，且不依赖不可替代的专用硬件。",

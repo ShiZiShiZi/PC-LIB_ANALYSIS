@@ -996,8 +996,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1014,7 +1013,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "剪贴板操作是本库核心功能，若无等价 API 则整个库不可移植",
-        "source": "references/harmony-pc-capabilities.json → desktop_integration.dnd_clipboard (unknown)"
+        "source": "references/harmony-pc-capabilities.json → desktop_integration.dnd_clipboard (unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:node_napi",
@@ -1022,7 +1022,8 @@
         "required": true,
         "target_status": "available",
         "impact": "N-API 已在鸿蒙 PC 可用，JS 绑定层与异步工作器无需修改",
-        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs (available)"
+        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs (available)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:image_codec",
@@ -1030,7 +1031,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "图像保存/加载功能依赖此能力；若 NDK 无直接 API，可通过 @ohos.multimedia.image 或第三方库（libjpeg/libpng）解决",
-        "source": "references/harmony-pc-capabilities.json → media.ohos_multimedia (available) + media.video_codec (unknown)"
+        "source": "references/harmony-pc-capabilities.json → media.ohos_multimedia (available) + media.video_codec (unknown)",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1044,7 +1046,6 @@
         ]
       }
     ],
-    "recommended_path": "replace_platform_api",
     "summary": "本库的核心功能（剪贴板读写）完全依赖 Windows Win32 / macOS Cocoa 平台专有 API，需用鸿蒙剪贴板 API (@ohos.pasteboard) 重写原生层。N-API 绑定层（export.cc / general_async_worker.h）可完整复用；JS 接口层（index.js）无需修改；图像编解码可使用鸿蒙 @ohos.multimedia.image 或链接 libjpeg/libpng 替代 GDI+。工作量主要在于用鸿蒙 NDK/ArkTS 剪贴板 API 重写 clipboard_harmony.cpp。",
     "blockers": [
       {
@@ -1135,7 +1136,21 @@
       "编写鸿蒙平台测试用例"
     ],
     "notes": "关键不确定点：(1) 鸿蒙 PC 剪贴板 API 是否支持文件路径列表与图像格式的读写（target_status=unknown），若不支持则部分功能（文件路径读写、图像操作）不可移植，porting_class 可能升为 needs_adaptation_partial；(2) 图像编解码在 NDK 层的可用性也需核实。Node.js 运行时本身已在鸿蒙 PC 可用（available），N-API addon 加载不是阻碍。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1143,29 +1158,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "cocoa",
-        "rationale": "macOS Cocoa 框架的 NSPasteboard/NSImage/NSBitmapImageRep 调用不属于已有的 win32/posix/opengl 等类型，单独归类为 cocoa"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "gdiplus",
-        "rationale": "Windows GDI+ API 独立于 Win32 剪贴板 API，需单独归类以区分图形操作与剪贴板操作"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "replace_platform_api",
-        "rationale": "本库核心逻辑需完全替换平台 API（Win32/Cocoa→鸿蒙等价），但 N-API 绑定层与 JS 接口层可复用，不同于完全重写"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

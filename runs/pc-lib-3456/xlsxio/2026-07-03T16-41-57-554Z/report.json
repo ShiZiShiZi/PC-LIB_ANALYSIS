@@ -1065,7 +1065,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK / musl libc / clang 交叉编译；arm64 & x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1074,7 +1073,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "xlsxio 是纯 C 库，经 OHOS NDK 重新编译即可在鸿蒙 PC 运行。库依赖 expat 和 minizip（或 libzip），均为跨平台通用 C 库，可在鸿蒙 OHOS NDK 下编译。库自身无特定平台 API 依赖（线程/管道均有 POSIX 和 Windows 双后端，POSIX 端经 musl POSIX 子集覆盖良好），可直接交叉编译为 .so。平台条件编译需新增鸿蒙分支（类似 NOT WIN32 AND NOT APPLE → pthread），工作量集中于工具链适配与依赖库的交叉编译。",
     "blockers": [
       {
@@ -1146,7 +1144,8 @@
         "required": true,
         "target_status": "available",
         "impact": "写入功能的异步管道线程创建依赖；OHOS NDK 的 musl 已支持 pthread",
-        "source": "harmony-pc-capabilities.json#runtimes（鸿蒙 PC musl + POSIX 子集）"
+        "source": "harmony-pc-capabilities.json#runtimes（鸿蒙 PC musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:expat-ohos",
@@ -1154,7 +1153,8 @@
         "required": true,
         "target_status": "available",
         "impact": "读取功能核心依赖；expat 为纯 C 跨平台 XML 解析库，交叉编译无障碍；cmd-pkgs 清单含 expat",
-        "source": "harmony-pc-capabilities.json#packages（cmd-pkgs 包清单）"
+        "source": "harmony-pc-capabilities.json#packages（cmd-pkgs 包清单）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:zlib-ohos",
@@ -1162,7 +1162,8 @@
         "required": true,
         "target_status": "available",
         "impact": "读写功能的核心 ZIP 压缩依赖；zlib 和 minizip 为纯 C 跨平台库，cmd-pkgs 清单含 zlib",
-        "source": "harmony-pc-capabilities.json#packages（cmd-pkgs 包清单）"
+        "source": "harmony-pc-capabilities.json#packages（cmd-pkgs 包清单）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1197,7 +1198,21 @@
       "在鸿蒙 PC 上验证读写 .xlsx 文件的功能正确性，确保与各平台行为一致"
     ],
     "notes": "评估按模型 A（C 库经 OHOS NDK 重新编译，可通过 Node-API 暴露给 ArkTS 层或作为原生依赖供其它鸿蒙库使用）。库无 GUI/3D/媒体/硬件/云服务依赖，适配工作集中在工具链调通与三个依赖库的交叉编译上。32 行 Windows 条件编译代码需对应适配/新增鸿蒙分支（影响 person_days 上调至 [3,8] 而非 [2,5]）。若 minizip 和 expat 已在鸿蒙 cmd-pkgs 预编译清单中，工作量和时间可进一步降低。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "xlsxio",
@@ -1220,7 +1235,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数据处理 C 库，不涉及 GUI、3D 渲染、媒体或特定硬件等鸿蒙适配重点场景。",

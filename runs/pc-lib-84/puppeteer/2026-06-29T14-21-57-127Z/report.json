@@ -1257,8 +1257,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接——无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1275,7 +1274,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Puppeteer 纯 Node.js/TypeScript 实现，需 Node.js 运行时；Node.js 24.13.0 已确认可用",
-        "source": "references/harmony-pc-capabilities.json nodejs"
+        "source": "references/harmony-pc-capabilities.json nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn_process",
@@ -1283,7 +1283,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Puppeteer 核心依赖：启动浏览器进程、调用系统工具（unzip/tar/hdiutil/ffmpeg）。若鸿蒙 PC 限制子进程启动则核心功能不可用",
-        "source": "references/harmony-pc-capabilities.json spawn"
+        "source": "references/harmony-pc-capabilities.json spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:chromium_binary",
@@ -1291,7 +1292,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Puppeteer 需要可运行的 Chrome/Chromium 或 Firefox 浏览器进程；若无可用浏览器二进制则核心功能无法运行",
-        "source": "推断：无已知的鸿蒙 PC Chromium/Firefox 原生构建"
+        "source": "推断：无已知的鸿蒙 PC Chromium/Firefox 原生构建",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:websocket",
@@ -1299,7 +1301,8 @@
         "required": true,
         "target_status": "available",
         "impact": "需与浏览器 CDP/BiDi WebSocket 端点建立连接；ws 为纯 JS 实现，Node.js 可用即可",
-        "source": "推断：ws 为纯 JS 库，无原生依赖"
+        "source": "推断：ws 为纯 JS 库，无原生依赖",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1314,7 +1317,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Puppeteer 本身是纯 JavaScript/TypeScript 库，可运行在已移植的 Node.js 24 上，无需编译原生代码。但核心依赖是可运行的 Chromium/Firefox 浏览器二进制——这是决定性前提。若鸿蒙 PC 有 Chromium（如通过 cmd-pkgs 或 Electron 环境提供），则 Puppeteer 可直接使用；否则需等待浏览器移植。平台特定代码（Windows taskkill、macOS hdiutil、Linux unzip）需替换为鸿蒙等价工具。ffmpeg 录屏为可选功能。",
     "blockers": [
       {
@@ -1404,7 +1406,21 @@
       "ffmpeg 录屏功能需确认鸿蒙 ffmpeg 可用性或禁用"
     ],
     "notes": "Puppeteer 的核心价值在于控制浏览器，自身无原生代码。适配难度主要取决于目标平台能否运行 Chromium/Firefox——这不是 Puppeteer 自身能解决的问题。若浏览器可用，剩余工作是平台工具链适配（安装/解压/进程管理），工作量中等。置信度为 medium 因 ta:spawn_process 和 ta:chromium_binary 的 target_status 为 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1412,36 +1428,7 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "chromium_binary_availability",
-        "rationale": "Chromium/Firefox 浏览器二进制在鸿蒙 PC 的可用性是决定性前提，但 harmony-pc-capabilities.json 未收录此能力项——属于应用级依赖而非平台基础设施，需单独判断"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "source_repo",
-        "kind": "gap",
-        "value": "chromium-bidi_source_uncertain",
-        "rationale": "chromium-bidi 的源码仓库 URL 不确定，可能为 https://github.com/nickvdp/chromium-bidi 或 Chromium 项目内部仓库"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "node_core",
-        "rationale": "Node.js 核心模块（child_process/os/fs 等）作为标准库类别，有别于浏览器端 JS 标准，需区分标注"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "win32_process",
-        "rationale": "Windows 进程管理工具（taskkill）不属于 Win32 API 但属于 Windows 平台特有的命令行工具"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cloud_miss:gcp",
@@ -1449,6 +1436,7 @@
         "message": "依赖/网络出现 gcp 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

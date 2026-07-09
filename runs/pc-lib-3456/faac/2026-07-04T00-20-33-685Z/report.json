@@ -811,8 +811,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK native 层，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -829,7 +828,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libfaac 核心仅依赖标准 C 数学库与内存操作；OHOS NDK 提供 musl，可重编运行。",
-        "source": "references/harmony-pc-capabilities.json#runtimes 未直接列 C，但 NDK native 层默认提供 C/C++ 标准库"
+        "source": "references/harmony-pc-capabilities.json#runtimes 未直接列 C，但 NDK native 层默认提供 C/C++ 标准库",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_io",
@@ -837,7 +837,8 @@
         "required": false,
         "target_status": "available",
         "impact": "仅影响可选命令行前端；库核心不依赖。若前端需保留，OHOS NDK POSIX 子集应可覆盖。",
-        "source": "native_api 分析：POSIX 调用均位于 frontend/main.c、frontend/mp4write.c"
+        "source": "native_api 分析：POSIX 调用均位于 frontend/main.c、frontend/mp4write.c",
+        "target_status_model": "available"
       },
       {
         "id": "ta:file_storage",
@@ -845,7 +846,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅命令行前端需要本地文件读写；库核心通过调用者传入内存缓冲，可在 ArkTS 侧用文件 Picker/安全访问方式喂数据。",
-        "source": "references/harmony-pc-capabilities.json#permissions perm_storage"
+        "source": "references/harmony-pc-capabilities.json#permissions perm_storage",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -867,7 +869,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile_ndk",
     "summary": "FAAC 是轻量级的纯 C AAC 编码库，核心算法与比特流封装均为标准 C，仅依赖系统 libm；平台相关代码集中在可选的命令行前端（POSIX/Win32）与条件编译的 x86 SSE2/CPUID 加速路径。在 HarmonyOS NEXT PC 上，可直接使用 OHOS NDK 交叉编译 libfaac，关闭 SSE2 自动走标量量化路径；POSIX 前端大概率可原样运行或仅做少量适配；Windows-only 的 faacgui 可直接弃用。整体无不可适配 API，属于「需要适配但全部功能可迁移」的类型。",
     "blockers": [],
     "compatible": [
@@ -907,7 +908,21 @@
       "针对鸿蒙应用沙箱，使用安全文件访问方式喂入音频数据（如通过 ArkTS 文件选择器读取后传入 native 层）。"
     ],
     "notes": "虽然项目 README 提示 AAC 专利费风险，但属于法律/商业问题，不改变鸿蒙技术可移植性结论。由于目标平台 C 运行时与 POSIX 子集可用性较高，且核心库不依赖任何 unavailable 能力，置信度评为 high。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "faac",
@@ -935,7 +950,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "FAAC 属于纯软件音频编解码库，核心场景为 media（音频编码）。不触及 GUI、3D 渲染或特殊硬件；虽有 x86 SSE2 优化，但提供完整可移植 C 回退，不依赖特定硬件。",

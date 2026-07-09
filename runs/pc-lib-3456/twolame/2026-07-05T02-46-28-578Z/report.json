@@ -1059,7 +1059,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK 原生层，交叉编译为 .so 共享库）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1077,7 +1076,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心编码逻辑所需的 sqrt/powf/sin/cos/log10/lrintf 等数学函数全部由标准 C 库提供，OHOS NDK 已有完整移植",
-        "source": "references/harmony-pc-capabilities.json — OHOS NDK C 标准库"
+        "source": "references/harmony-pc-capabilities.json — OHOS NDK C 标准库",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos-cross-compile",
@@ -1085,7 +1085,8 @@
         "required": true,
         "target_status": "available",
         "impact": "twolame 使用 autotools 构建，需要适配为 CMake 或直接使用 NDK clang 编译。C99 标准代码无特殊编译器扩展，Clang 完全兼容",
-        "source": "references/harmony-pc-capabilities.json — OHOS NDK 交叉编译"
+        "source": "references/harmony-pc-capabilities.json — OHOS NDK 交叉编译",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libsndfile-optional",
@@ -1093,11 +1094,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "前端工具 twolame 可选依赖 libsndfile；核心库 libtwolame 不依赖。可通过 --disable-sndfile 禁用前端构建，或在鸿蒙上先行移植 libsndfile。",
-        "source": "references/harmony-pc-capabilities.json — 未核实 libsndfile 鸿蒙移植状态"
+        "source": "references/harmony-pc-capabilities.json — 未核实 libsndfile 鸿蒙移植状态",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "twolame 核心库是纯 C99 数学计算库，仅使用 C 标准库（stdio/stdlib/string/math），不涉及任何平台专有 API 或系统调用。在 HarmonyOS NEXT PC 上通过 OHOS NDK Clang 交叉编译即可生成 .so 共享库，无需修改源代码。唯一的平台条件编译（_WIN32 DLL 符号导出、GCC visibility）在鸿蒙 NDK Clang 上走 GCC 路径（__attribute__），无需改动。工作量极小：编写 CMakeLists.txt 并交叉编译、验证编码输出比特流正确性。前端工具可通过禁用 libsndfile 或待 libsndfile 移植后再构建。",
     "blockers": [],
     "compatible": [
@@ -1133,7 +1134,21 @@
       "若需要前端工具，禁用 libsndfile 或等待其鸿蒙移植"
     ],
     "notes": "twolame 属于最理想的鸿蒙移植候选：纯 C、无平台 API、无外部非标准依赖、无网络/硬件/设备访问。移植风险极低。前端工具依赖 libsndfile，但核心库可独立编译使用。libm 是 OHOS NDK 的标准组件，无需额外移植工作。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "twolame",
@@ -1161,7 +1176,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目触及媒体（音频编码）场景，是基于纯 CPU 数学运算的软件音频编码器，不涉及 GUI、3D 渲染或特定硬件。",

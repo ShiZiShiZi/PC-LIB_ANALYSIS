@@ -945,7 +945,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -954,7 +953,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "distfit 为纯 Python 科学计算库，无原生扩展、无平台专有 API、无 GUI/硬件依赖。鸿蒙 PC 已移植 Python 运行时，核心数值依赖 numpy/scipy/pandas/matplotlib/statsmodels 已有官方鸿蒙 PyPI 镜像构建；其余纯 Python 依赖（packaging/pypickle/colourmap/scatterd/joblib）可直接通过源码在鸿蒙 Python 上安装运行，无需修改库本体。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -965,7 +963,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 运行时可用是纯 Python 库运行的前提",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1000,7 +999,21 @@
       "验证 plot/plot_summary/qqplot 等绘图功能在鸿蒙 matplotlib 后端下的输出"
     ],
     "notes": "评估按模型 A（库跑在已移植的 Python 运行时上）。若目标是 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，需整体重写，结论将完全不同。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1011,22 +1024,8 @@
       "docs/ 目录主要为 Sphinx 生成的 HTML/JS/CSS 静态文档（16069 行），不是库的生产代码。"
     ],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "ambiguity",
-        "value": "docs/ generated Sphinx HTML counted as production",
-        "rationale": "docs/ 目录主要为 Sphinx 生成的 HTML/JS/CSS 静态文档（16069 行），不是库的生产代码；cloc 按目录名将其计入 production，本次分析按库本体 distfit/ 进行维度推理。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "test_example_dirs",
-        "kind": "gap",
-        "value": "examples.py not in examples/ directory",
-        "rationale": "distfit/examples.py 是独立示例脚本（未被 __init__.py 导入），但按目录名 token 未被识别为示例；本次分析将其排除在生产代码与依赖分析之外。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

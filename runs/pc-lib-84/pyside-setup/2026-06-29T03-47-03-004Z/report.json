@@ -1192,8 +1192,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在已移植的 Python 3.12 运行时上；原生 C/C++ 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1202,7 +1201,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime + recompile_native_extensions",
     "summary": "PySide6 是 Python 库，鸿蒙 PC 已移植 Python 运行时，因此 Python 构建脚本和运行时逻辑可直接运行。核心移植工作量在于：使用 OHOS NDK 重新编译 libshiboken、libpyside 以及 60 余个 Qt 模块的 C++ 绑定，并链接到已移植的 Qt6 鸿蒙版。Qt6 在鸿蒙 PC 上已有社区移植，因此 GUI 核心能力可适配；OpenGL、Multimedia 等可选模块需根据鸿蒙 Qt6 后端覆盖情况做条件编译或裁剪。",
     "blockers": [
       {
@@ -1301,7 +1299,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 运行时已移植，PySide6 的 Python 层可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt6_harmony",
@@ -1309,7 +1308,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt6 是 PySide6 的核心被绑定目标；Qt6 已鸿蒙化则绑定层可链接并运行",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_platform",
@@ -1317,7 +1317,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "NDK 与 Qt 鸿蒙后端共同决定平台分支代码能否编译运行",
-        "source": "references/harmony-pc-capabilities.json#arch / #graphics_3d"
+        "source": "references/harmony-pc-capabilities.json#arch / #graphics_3d",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:qt_module_coverage",
@@ -1325,7 +1326,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "缺失模块可通过 SKIP_MODULES 裁剪，不影响核心绑定构建",
-        "source": "references/harmony-pc-capabilities.json#gui / #media"
+        "source": "references/harmony-pc-capabilities.json#gui / #media",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_gles",
@@ -1333,7 +1335,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "影响 QtOpenGL、QtQuick3D 等模块绑定能否完整构建",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl / #graphics_3d.egl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl / #graphics_3d.egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:libclang",
@@ -1341,7 +1344,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅在需要本地重新生成绑定时需要；可先在宿主平台生成代码再带入",
-        "source": "依赖分析：sources/shiboken6_generator/ApiExtractor/CMakeLists.txt"
+        "source": "依赖分析：sources/shiboken6_generator/ApiExtractor/CMakeLists.txt",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1379,7 +1383,21 @@
       "准备鸿蒙 PC wheel 打包流程，处理 .so 库名后缀与 qt.conf 内嵌资源路径"
     ],
     "notes": "评估按模型 A（库跑在已移植的鸿蒙 Python 运行时上）。Qt6 在鸿蒙 PC 已有社区移植是核心利好；主要工作量是 C++ 原生扩展重编与平台分支适配。置信度为 medium，因为部分可选 Qt 模块（WebEngine、Multimedia）与 libclang 在鸿蒙 PC 的可用性尚未核实，但均可通过裁剪或交叉生成方式规避。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1389,36 +1407,8 @@
     "warnings": [
       "源文件 SPDX 标头与顶层 COPYING 文件存在 LGPL 版本差异，报告以源文件 SPDX 标头为准。"
     ],
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "new_value",
-        "value": "LicenseRef-Qt-Commercial OR (LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only) AND (GPL-3.0-only WITH Qt-GPL-exception-1.0) AND BSD-3-Clause",
-        "rationale": "同一仓库内存在三类 SPDX 标识：运行时/绑定代码多为 LGPL-3.0/GPL-2.0/GPL-3.0 多选一，生成器代码多为 GPL-3.0-only WITH Qt-GPL-exception-1.0，CMake 配置多为 BSD-3-Clause，且均含 Qt 商业授权选项。现有推荐取值无法覆盖这种复杂多重授权组合。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "qt_supermodule",
-        "rationale": "coin/dependencies.yaml 显示 Qt 各模块通过 ../../qt/* 超级模块源码树引入，既不是传统 find_package 系统依赖，也不是 FetchContent/submodule，可视为 Qt 超级模块源码树依赖。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "qt_platform_abstraction",
-        "rationale": "项目通过 Qt 的 Q_OS_* 宏与 QNativeInterface 暴露原生平台接口（X11/Wayland/Windows），属于跨平台 GUI 绑定项目特有的平台 API 用法，介于 platform 与 portable 之间。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "run_on_ported_runtime + recompile_native_extensions",
-        "rationale": "PySide6 是既有 Python 运行时层又有大量 C++ 原生扩展的库，适配路径需同时利用已移植 Python 运行时和 OHOS NDK 重编原生扩展，单一取值无法表达。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

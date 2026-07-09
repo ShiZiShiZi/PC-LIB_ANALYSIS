@@ -1576,7 +1576,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (OHOS NDK + musl libc + POSIX 子集; 交叉编译为 arm64/x86_64 .so; 自研内核, 非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         5,
@@ -1585,7 +1584,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "FreeImage 为纯 C/C++ 图像处理库，核心代码仅使用标准 C 库 (fopen/malloc/…) 和 C++ STL (std::map/std::vector/…)，未使用 POSIX 专有系统调用或平台特有内核接口。Windows 外部插件加载机制完全由 #ifdef _WIN32 守卫，非 Windows 平台自动排除。主要工作量为用 OHOS NDK 交叉编译 FreeImage 自身及其 9 个 vendored 第三方编解码库（zlib、libpng、libjpeg、libtiff、libwebp 等），这些库均为可移植 C 代码且多数已有鸿蒙预编译（cmd-pkgs 清单含 zlib/libpng/boost/eigen 等），无需源码级改动。外部 .fip 插件机制（Windows LoadLibrary）在鸿蒙上不可用，但为可选功能（load_local_plugins_only 参数可禁用），不影响核心图像读写。",
     "blockers": [
       {
@@ -1639,7 +1637,8 @@
         "required": true,
         "target_status": "available",
         "impact": "提供标准 C 库和 C++ STL，FreeImage 核心代码全依赖于此——可用即可重编",
-        "source": "harmony-pc-capabilities.json#intro (OHOS NDK musl + POSIX 子集)"
+        "source": "harmony-pc-capabilities.json#intro (OHOS NDK musl + POSIX 子集)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:vendored_libs",
@@ -1647,7 +1646,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "多数已确认可编译——zlib/libpng 在 cmd-pkgs 已有预编译；libraw/libjxr/openexr 需实测但为纯 C 移植性高",
-        "source": "cmake 跨平台构建经验 + cmd-pkgs 预编译清单"
+        "source": "cmake 跨平台构建经验 + cmd-pkgs 预编译清单",
+        "target_status_model": "partial"
       }
     ],
     "compatible": [
@@ -1688,7 +1688,21 @@
     ],
     "required_permissions": [],
     "notes": "FreeImage 为纯 C/C++ 图像库，架构简单，平台耦合轻。核心代码不涉及网络/设备/子进程/GUI/3D/硬件，唯一平台相关代码均被 #ifdef _WIN32 守卫而不影响非 Windows 构建。vendored 第三方编解码库（zlib、libpng 等）为纯 C 实现，OHOS NDK 交叉编译风险低且部分已有鸿蒙预编译版。评估按库默认口径（模型 A，重编 + 链接为原生 .so），适配鸿蒙 PC 的核心工作量在交叉编译而非源码改造。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "one_liner": "FreeImage — 开源跨平台图像处理库，支持 30+ 种图像格式的加载、保存、转换与基本处理",
@@ -1709,22 +1723,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "FreeImage 将 9 个第三方编解码库源代码直接复制到 Source/ 目录下内嵌编译，非 git submodule 也非 CMake FetchContent——'vendored' 准确描述此获取方式，对应 locality: local。"
-      },
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "new_value",
-        "value": "FIPL-1.0",
-        "rationale": "FreeImage Public License 1.0 为类 MPL 风格自由许可，SPDX 注册标识为 FIPL-1.0。另附 GPLv2/GPLv3 可选双许可。"
-      }
-    ],
+    "observations": [],
     "cross_dim_checks": {
       "capability_profile_vs_deps": "Pass — deps 无 GUI/3D/媒体/硬件库，capability_profile 各场景 present=false，一致。",
       "cloud_services_vs_deps_network": "Pass — deps 无云厂商 SDK，runtime_surface.network 为空，cloud_services present=false，一致。",
@@ -1733,7 +1732,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "FreeImage 为纯图像编解码与处理库，不涉及 GUI 窗口/控件、3D 渲染、音视频媒体处理、特定硬件设备等鸿蒙适配重点场景。",

@@ -1189,8 +1189,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1207,7 +1206,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植到鸿蒙 PC 且支持 N-API，纯 JS 和 N-API 插件可直接运行",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_posix",
@@ -1215,7 +1215,8 @@
         "required": true,
         "target_status": "available",
         "impact": "LevelDB 的 POSIX Env 需要的 mmap/pread/fcntl/pthread 等在 musl 上可用",
-        "source": "references/harmony-pc-capabilities.json intro: 鸿蒙 PC NDK 提供 musl + POSIX 子集"
+        "source": "references/harmony-pc-capabilities.json intro: 鸿蒙 PC NDK 提供 musl + POSIX 子集",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libuv",
@@ -1223,11 +1224,11 @@
         "required": true,
         "target_status": "available",
         "impact": "port-libuv 层依赖 libuv 线程原语，随 Node.js 自带",
-        "source": "Node.js 内置 libuv"
+        "source": "Node.js 内置 libuv",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "leveldown 适配鸿蒙 PC 的核心工作是使用 OHOS NDK 重新编译 N-API 原生插件。关键有利因素：1) Node.js 已移植且支持 N-API；2) 内嵌 LevelDB 已有鸿蒙 PC 预编译包（cmd-pkgs）；3) port-libuv 层使用 libuv 替代 pthread（libuv 随 Node.js 自带）；4) POSIX Env 需要的 API（mmap/pread/fcntl）在 musl 上可用。主要工作：调整 node-gyp 构建配置以适配 OHOS NDK 工具链、验证 libuv 版本兼容性、处理可能的平台差异（如 fdatasync 在 musl 上的行为、mmap 限制等）。",
     "blockers": [
       {
@@ -1301,7 +1302,21 @@
       "运行完整测试套件验证功能正确性"
     ],
     "notes": "leveldown 的核心绑定层（binding.cc）是纯 N-API 代码，无平台依赖。复杂性主要在内嵌 LevelDB 的平台抽象层。但项目已提供 port-libuv 版本，且 LevelDB/snappy 已有鸿蒙预编译包，大幅降低适配难度。deps/ 目录下的大量 LevelDB 测试代码不计入生产范围评估。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1309,22 +1324,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "code-metrics 脚本将 JavaScript 测试框架识别为 jest/mocha，实际项目使用 tape（由 package.json devDependencies 的 \"tape\" 确认），已修正"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_linked_runtime",
-        "rationale": "libuv 不作为独立依赖安装，而是通过 Node.js 运行时隐式提供头文件和链接，归类为 system 不完全准确（非 OS 预装），归类为 runtime 更合适但也不完全是运行时加载——实际是编译时引用运行时内置库。暂用 system 表示"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

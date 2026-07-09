@@ -605,7 +605,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -623,7 +622,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 实现在 ported Node.js 上可直接运行，无需改动",
-        "source": "references/harmony-pc-capabilities.json → sections.runtimes (id: nodejs)"
+        "source": "references/harmony-pc-capabilities.json → sections.runtimes (id: nodejs)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -631,11 +631,11 @@
         "required": true,
         "target_status": "available",
         "impact": "C 实现仅含标准 C union 访问和类型定义，OHOS NDK 可完整编译",
-        "source": "references/harmony-pc-capabilities.json → intro"
+        "source": "references/harmony-pc-capabilities.json → intro",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "本库 JS 实现在已移植到鸿蒙 PC 的 Node.js 上可直接运行，无需修改。C 实现仅包含纯计算代码（union 类型转换），无任何平台特有 API 调用，使用 OHOS NDK 重新编译即可。两个依赖包（@stdlib/complex-float64-ctor 和 @stdlib/array-float64）同为 stdlib 内部包，纯计算或无平台依赖。整体适配工作量极小。",
     "blockers": [],
     "compatible": [
@@ -667,7 +667,21 @@
       "验证 C 端 stdlib_complex128_reim() 在 OHOS NDK 下的输出正确性"
     ],
     "notes": "本库功能极其单一（仅提取复数的实部和虚部），JS 与 C 实现均不依赖任何平台能力。C 端使用的 stdlib_complex128_parts_t 联合体是纯内存 reinterpret 操作，不涉 ABI 兼容问题。评估基于已移植的 Node.js 运行时和 OHOS NDK 两项目标能力，均为 available 状态，置信度高。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float64-reim",
@@ -683,19 +697,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "package_manager",
-        "rationale": "所有 npm 依赖通过 npm registry 获取，符合 package_manager 推荐值"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为纯数值计算微工具，不涉及 GUI、3D 渲染、媒体或硬件设备场景。",

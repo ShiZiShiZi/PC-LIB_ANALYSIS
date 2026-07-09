@@ -1084,8 +1084,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Java JDK 上；原生层 OHOS NDK；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -1138,7 +1137,9 @@
         "category": "ffi",
         "evidence": [
           "pgjdbc/src/main/java/org/postgresql/jdbc/ClientLogicImpl.java:12"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1148,7 +1149,8 @@
         "required": true,
         "target_status": "available",
         "impact": "驱动纯 Java 核心可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:internet_permission",
@@ -1156,7 +1158,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JDBC 驱动需要连接数据库服务器；若该权限不可用则核心功能受限",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gauss_cl_jni",
@@ -1164,7 +1167,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响可选的客户端加密功能；关闭 enable_ce 时不影响核心 JDBC",
-        "source": "本仓库未包含源码，需上游 openGauss 提供"
+        "source": "本仓库未包含源码，需上游 openGauss 提供",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1179,7 +1183,6 @@
       }
     ],
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "驱动主体是纯 Java 库，可在鸿蒙 PC 已移植的 JDK 上直接运行；仅当启用客户端加密（enable_ce=1）时才需要外部 JNI 原生库 gauss_cl_jni 的鸿蒙版本。默认关闭 enable_ce 时，核心 JDBC 连接、SQL 执行、事务、XA、连接池、SSL/国密 TLCP 均可直接复用。",
     "blockers": [
       {
@@ -1227,7 +1230,23 @@
       "验证 SSL/国密 TLCP 连接在鸿蒙 JDK 上的行为"
     ],
     "notes": "评估按库口径（模型 A：跑在已移植的 Java 运行时上）。由于 ohos.permission.INTERNET 的可授予性在 caps JSON 中为 unknown，且 gauss_cl_jni 源码/鸿蒙版本未核实，整体 confidence 为 medium。默认关闭 enable_ce 时，本库可视为 no_adaptation。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:gauss_cl_jni"
+        ]
+      }
+    }
   },
   "library": {
     "name": "openGauss JDBC Driver",
@@ -1260,38 +1279,14 @@
     "warnings": [
       "未运行 scripts/harmony_adapted.js：OpenHarmony PC mirror 仅覆盖 Python/C++ 包，Java 依赖不在其列。"
     ],
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "README 链接 MulanPSL-2.0，LICENSE 文件与 pom.xml 为 BSD-2-Clause",
-        "rationale": "README_en.md 末尾指向 MulanPSL-2.0，但仓库根 LICENSE 和 pgjdbc/pom.xml 明确声明 BSD-2-Clause，按文件与 manifest 权威性取 BSD-2-Clause。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "gap",
-        "value": "provided scope Java 依赖为可选特性运行时需要",
-        "rationale": "shardingsphere-parser、bgmprovider 为 provided，不会自动传递，若使用读写分离/国密 TLCP 需在应用侧显式引入并确保在鸿蒙 JDK 上可用。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries.acquisition",
-        "kind": "new_value",
-        "value": "third_party",
-        "rationale": "gauss_cl_jni 既非本仓构建产物，也非系统预装库，而是 openGauss 外部原生库，运行时通过 JNI 加载。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "gap",
-        "value": "run_on_ported_runtime_with_optional_native_dep",
-        "rationale": "纯 Java 库主体走 run_on_ported_runtime，但存在可选 JNI 扩展（gauss_cl_jni）需单独处理；现有 recommended_path 枚举未显式覆盖这种混合口径。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:gauss_cl_jni",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gauss_cl_jni 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
@@ -1303,7 +1298,8 @@
         "message": "dim-9 有 unadaptable_apis 但代码分区无 unadaptable 桶（分桶可能漏标）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯数据库连接库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件设备；核心依赖 Java 标准网络/安全 API，仅有可选的客户端加密功能通过 JNI 调用外部原生库。",

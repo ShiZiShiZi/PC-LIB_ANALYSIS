@@ -64,6 +64,9 @@ const PLAT_LABELS = { windows: 'Windows', posix: 'POSIX', linux: 'Linux', macos:
 // adaptation_assessment.overall — 是否可适配总判（派生，替代旧 feasibility）
 const OVERALL_LABELS = { adaptable: '可适配', adaptable_with_tailoring: '可适配（部分平台特性需裁剪）', core_blocked: '核心功能不完全可适配' };
 const OVERALL_CLS = { adaptable: 'done', adaptable_with_tailoring: 'sev-major', core_blocked: 'error' };
+// functional_viability — 运行前提是否满足（目标侧派生轴，与 overall 正交：代码可无需适配但功能受阻于外部前提）
+const FV_LABELS = { viable: '前提齐备', viable_with_work: '有条件可用', blocked_external: '功能受阻·依赖外部前提', unverified: '前提未核实' };
+const FV_CLS = { viable: 'done', viable_with_work: 'sev-major', blocked_external: 'error', unverified: 'gray' };
 // unadaptable_apis[].functionality_class — 功能类别（核心 vs 平台差异）
 const FUNC_CLASS_LABELS = { core: '核心功能', platform_specific: '平台差异功能' };
 // effort.level — 难度等级（server 派生：effective_class 下限 × person_days 数量级）
@@ -122,6 +125,17 @@ const TOPO_ORDER = ['harmonized', 'no_adaptation', 'recompile_only', 'needs_adap
 // 移植分级（effective_class）的 5 个取值——用于列表过滤选项；不含拓扑专用的 harmonized/unanalyzed
 const PORTING_CLASS_ORDER = ['no_adaptation', 'recompile_only', 'needs_adaptation', 'needs_adaptation_platform_partial', 'needs_adaptation_core_partial'];
 const topoStatusMeta = (s) => TOPO_STATUS[s] || { label: s || '未知', color: '#9aa4b2' };
+// 移植分级「徽章」配色（仅首页列表 + 报告卡；依赖拓扑图仍用 TOPO_STATUS 图例配色）：
+// 无需适配→绿、有不可适配点(核心/平台差异)→红；仅交叉编译/需适配·全部可适配 无键 → 回退原色。
+const PCLASS_BADGE_COLOR = {
+  no_adaptation: '#1f9d55',
+  needs_adaptation_platform_partial: '#d65745',
+  needs_adaptation_core_partial: '#d65745',
+};
+const pclassBadge = (cls) => {
+  const m = topoStatusMeta(cls);
+  return `<span class="badge" style="background:${PCLASS_BADGE_COLOR[cls] || m.color};color:#fff">${esc(m.label)}</span>`;
+};
 
 // HarmonyOS-PC mirror adaptation status (already-ported packages), cached client-side.
 const harmonyMemo = new Map();   // `${eco}:${name}` -> {adapted, source}
@@ -374,7 +388,7 @@ function renderList() {
       <th class="c-chk"><input type="checkbox" id="selAll" ${allSel ? 'checked' : ''} title="全选/取消" /></th>
       <th>名称</th><th class="c-st">状态</th><th>生态</th><th>语言</th>
       <th class="c-num">生产代码</th><th class="c-num">测试</th><th>协议</th>
-      <th class="c-st">移植分级</th><th class="c-st">难度等级</th><th class="c-act">操作</th>
+      <th class="c-st">移植分级</th><th class="c-st">运行前提</th><th class="c-st">难度等级</th><th class="c-act">操作</th>
     </tr></thead><tbody>${slice.map((lib) => {
       const st = libStatus(lib); const s = lib.summary || {};
       return `<tr data-name="${esc(lib.name)}">
@@ -389,7 +403,8 @@ function renderList() {
         <td class="c-num">${s.prodCode != null ? num(s.prodCode) : '—'}</td>
         <td class="c-num">${s.testCases != null ? num(s.testCases) : '—'}</td>
         <td>${esc(s.license || '—')}${s.licenseCategory ? ` <span class="badge ${LIC_CAT_CLS[s.licenseCategory] || 'gray'}">${LIC_CAT_LABELS[s.licenseCategory] || esc(s.licenseCategory)}</span>` : ''}</td>
-        <td class="c-st">${s.portingClass ? (() => { const m = topoStatusMeta(s.portingClass); return `<span class="badge" style="background:${m.color};color:#fff">${esc(m.label)}</span>`; })() : '—'}</td>
+        <td class="c-st">${s.portingClass ? pclassBadge(s.portingClass) : '—'}</td>
+        <td class="c-st">${s.functionalViability ? `<span class="badge ${FV_CLS[s.functionalViability] || 'gray'}">${FV_LABELS[s.functionalViability] || esc(s.functionalViability)}</span>` : '—'}</td>
         <td class="c-st">${s.difficultyLevel ? `<span class="badge ${LVL_CLS[s.difficultyLevel] || 'gray'}"${s.personDays ? ` title="${esc(fmtDays(s.personDays))}"` : ''}>${esc(LVL_LABELS[s.difficultyLevel] || s.difficultyLevel)}</span>` : '—'}</td>
         <td class="c-act">
           <a class="btn sm ghost" href="#/lib/${enc(lib.name)}">详情</a>
@@ -976,8 +991,11 @@ async function renderObservations() {
         <td>${it.value ? `<code>${esc(it.value)}</code>` : '—'}</td>
         <td class="c-num">${it.count}</td>
         <td>${(it.libs || []).map((n) => `<a href="#/lib/${enc(n)}">${esc(n)}</a>`).join('、')}</td>
-        <td class="muted">${esc(it.rationale || '')}</td></tr>`).join('')}</tbody></table>
+        <td class="muted">${esc(it.rationale || '')}${it.kind === 'caps_gap' ? ` <button class="btn sm ghost obs-cap-add" data-cap="${esc(it.value || '')}" data-sec="${esc(it.field || 'cli_tools')}">补进能力库</button>` : ''}</td></tr>`).join('')}</tbody></table>
     </div>`).join('');
+  // caps_gap → 一键补进目标能力库（无绑定：跨库聚合项，登记后各库重分析或逐份「补充到能力库」绑定即刷新）
+  $$('.obs-cap-add').forEach((b) => b.onclick = () => capAddModal(
+    { capability: b.dataset.cap, sectionId: b.dataset.sec || 'cli_tools' }, null, () => renderObservations()));
 }
 
 // ===========================================================================
@@ -991,6 +1009,7 @@ function capStale(r) {
 }
 async function renderHarmonyCaps() {
   setHeader('<a class="btn ghost" href="#/">← 返回库列表</a>' +
+    '<button class="btn ghost" id="capAdd">＋ 补充能力/缺口</button>' +
     '<button class="btn" id="capSync">🔄 联网同步(包清单)</button>');
   $('#app').innerHTML = `<div class="detail-head"><h1>🧭 鸿蒙 PC 目标能力画像</h1><span id="capSynced" class="muted"></span></div>
     <p class="muted">鸿蒙适配判定的<strong>目标侧事实源</strong>（库与应用通用）。带「检查源」的行可一键联网同步（复用 cmd-pkgs/PyPI）；其余需人工核实——把社区已确认的能力内联标记为已支持并填来源。<strong>「研究优先级」</strong>列＝该能力被多少个已分析报告的 <code>target_assumptions</code> 需要（未核实 + 高需求 = 优先核实）。<span class="hint" style="display:inline">未核实 / 过期(>${STALE_DAYS}天) 的行高亮。</span></p>
@@ -1004,6 +1023,9 @@ async function renderHarmonyCaps() {
     } catch { toast('同步失败', 'err'); }
     btn.disabled = false; btn.textContent = '🔄 联网同步(包清单)';
   };
+  $('#capAdd').onclick = () => capAddModal({}, null, async () => {
+    try { drawCaps(await api('/api/harmony-caps')); } catch { /* keep current view */ }
+  });
   try { drawCaps(await api('/api/harmony-caps')); }
   catch { $('#caps').innerHTML = '<div class="hint err">加载失败</div>'; }
 }
@@ -1040,7 +1062,7 @@ function drawCaps(data) {
   }).join('');
   $$('.cap-edit').forEach((b) => b.onclick = () => capEdit(b.dataset.id, data));
 }
-function capEdit(id, data) {
+function capEdit(id, data, onSaved) {
   let row = null;
   for (const s of data.sections) { const r = (s.rows || []).find((x) => x.id === id); if (r) { row = r; break; } }
   if (!row) return;
@@ -1057,7 +1079,55 @@ function capEdit(id, data) {
       const r = await api('/api/harmony-caps/row', { method: 'POST', headers: JSONH, body: JSON.stringify({
         id, status: $('#capStatus').value, source: $('#capSource').value.trim(), note: $('#capNote').value.trim() }) });
       if (r.error) return toast(r.error, 'err');
-      closeModal(); toast('已保存并标记已核实', 'ok'); drawCaps(r.caps);
+      closeModal(); toast('已保存并标记已核实', 'ok');
+      if (onSaved) onSaved(r); else drawCaps(r.caps);
+    } catch { toast('保存失败', 'err'); }
+  };
+}
+
+// Sections a promoted capability can land in (id → 中文 title). cli_tools first (the common
+// shell-out/external-binary case). Used by capAddModal's section picker.
+const CAP_SECTIONS = [
+  ['cli_tools', '命令行工具 / 外部二进制'], ['runtimes', '语言运行时'], ['gui', '桌面 GUI'],
+  ['graphics_3d', '3D 图形栈'], ['media', '媒体'], ['hardware_devices', '硬件设备'],
+  ['process_security', '进程/安全模型'], ['desktop_integration', '桌面集成'],
+  ['app_delivery', '应用交付'], ['jdk_internals', 'JDK 内部模块'], ['permissions', '权限模型'], ['arch', '架构'],
+];
+// Add/confirm a target-capability row (create the section if new). `bindCtx` (optional):
+// {group,name,run,ta_id} binds the originating report's assumption to the new row so it refreshes
+// on read (no re-analysis). `onSaved(resp)` fires after success.
+function capAddModal(prefill, bindCtx, onSaved) {
+  prefill = prefill || {};
+  const guessId = (String(prefill.capability || '').match(/[A-Za-z0-9]+([._-][A-Za-z0-9]+)*/) || [''])[0].toLowerCase();
+  const secId0 = prefill.sectionId || 'cli_tools';
+  const secOpts = CAP_SECTIONS.map(([id, t]) => `<option value="${id}" ${id === secId0 ? 'selected' : ''}>${esc(t)} (${id})</option>`).join('');
+  const stOpts = ['unavailable', 'available', 'partial', 'unknown']
+    .map((v) => `<option value="${v}" ${v === (prefill.status || 'unavailable') ? 'selected' : ''}>${TGT_LABELS[v]}</option>`).join('');
+  const willBind = bindCtx && bindCtx.ta_id && bindCtx.name && bindCtx.run;
+  showModal(`<h2>补充到目标能力库</h2>
+    <p class="muted">把该目标能力登记进 <code>harmony-pc-capabilities.json</code> 并核实其状态。${willBind ? '保存后本报告的该假设将绑定此能力行并<strong>立即刷新</strong>（无需重分析）。' : ''}</p>
+    <label>所属段 <select id="capAddSec">${secOpts}</select></label>
+    <label>能力名（展示）<input id="capAddCap" type="text" value="${esc(prefill.capability || '')}" /></label>
+    <label>能力行 id（英文 slug，唯一）<input id="capAddId" type="text" value="${esc(guessId)}" placeholder="如 nmap / ffmpeg / libusb" /></label>
+    <label>状态 <select id="capAddStatus">${stOpts}</select></label>
+    <label>来源（核实依据，建议填）<input id="capAddSource" type="text" placeholder="社区链接 / 文档 / 人工核实说明" /></label>
+    <label>说明 <input id="capAddNote" type="text" /></label>
+    <div class="actions"><button class="btn" data-close>取消</button>
+      <button class="btn primary" id="capAddSave">保存并确认</button></div>`);
+  $('#capAddSave').onclick = async () => {
+    const id = $('#capAddId').value.trim();
+    if (!id) return toast('请填写能力行 id（英文 slug）', 'err');
+    const secId = $('#capAddSec').value;
+    const secTitle = (CAP_SECTIONS.find(([x]) => x === secId) || [])[1] || secId;
+    const body = { sectionId: secId, sectionTitle: secTitle, id,
+      capability: $('#capAddCap').value.trim() || id, status: $('#capAddStatus').value,
+      source: $('#capAddSource').value.trim(), note: $('#capAddNote').value.trim() };
+    if (willBind) body.bind = { group: bindCtx.group, name: bindCtx.name, run: bindCtx.run, ta_id: bindCtx.ta_id };
+    try {
+      const r = await api('/api/harmony-caps/add-row', { method: 'POST', headers: JSONH, body: JSON.stringify(body) });
+      if (r.error) return toast(r.error, 'err');
+      closeModal(); toast(r.bound ? '已补充能力并绑定，报告已刷新' : '已补充到能力库', 'ok');
+      if (onSaved) onSaved(r);
     } catch { toast('保存失败', 'err'); }
   };
 }
@@ -1693,17 +1763,20 @@ function renderReport(r) {
   const asBy = as.by_arch || {};
   if (Object.keys(asBy).length) {
     const ARCH_LABELS = { x86: 'x86/x64', arm: 'ARM/NEON', riscv: 'RISC-V', generic: '未归类' };
-    const ent = Object.entries(asBy).sort((a, b) => ((b[1].loc || 0) + (b[1].hits || 0)) - ((a[1].loc || 0) + (a[1].hits || 0)));
+    const ent = Object.entries(asBy).sort((a, b) => ((b[1].loc || 0) + (b[1].simd_loc || 0) + (b[1].hits || 0)) - ((a[1].loc || 0) + (a[1].simd_loc || 0) + (a[1].hits || 0)));
     const rows = ent.map(([k, v]) => `<div class="platblock"><div class="platrow">
         <span class="pl-name">${esc(ARCH_LABELS[k] || k)}</span>
-        <span class="pl-count">${v.loc ? `汇编 ${num(v.loc)} 行 · ` : ''}${v.hits ? `intrinsics/内联 ${num(v.hits)} 处 · ` : ''}${num(v.files)} 文件</span>
+        <span class="pl-count">${v.loc ? `汇编 ${num(v.loc)} 行 · ` : ''}${v.simd_loc ? `SIMD ${num(v.simd_loc)} 行 · ` : ''}${v.hits ? `intrinsics头/内联 ${num(v.hits)} 处 · ` : ''}${num(v.files)} 文件</span>
       </div></div>`).join('');
     const hdrs = (as.intrinsics_headers || []).map((h) => `<span class="mtok">${esc(h)}</span>`).join('');
     const samp = (as.samples || []).slice(0, 6)
       .map((s) => `<div class="codeloc"><span class="muted">${esc(s.file)}${s.line ? ':' + s.line : ''}</span> ${esc(s.text || s.kind)}</div>`).join('');
     const x86Only = asBy.x86 && !asBy.arm;
+    const asmT = as.total || 0, simdT = as.simd_total || 0;
+    const headNum = (asmT && simdT) ? `架构相关 ${num(asmT + simdT)} 行（汇编 ${num(asmT)} · SIMD ${num(simdT)}）`
+      : simdT ? `SIMD ${num(simdT)} 行` : `汇编 ${num(asmT)} 行`;
     parts.push(sec('架构相关代码（汇编 / SIMD）',
-      `<div class="pl-head" title="${esc(as.notes || '')}"><span class="muted">独立汇编文件、SIMD intrinsics、内联汇编（生产代码）</span><b>汇编共 ${num(as.total || 0)} 行</b></div>` +
+      `<div class="pl-head" title="${esc(as.notes || '')}"><span class="muted">独立汇编文件、SIMD intrinsics、内联汇编（生产代码）</span><b>${headNum}</b></div>` +
       rows + (hdrs ? `<div class="pl-macros" style="margin-left:0">${hdrs}</div>` : '') +
       (samp ? `<div class="codeloc-list">${samp}</div>` : '') +
       `<p class="hint">${x86Only ? '⚠ 仅见 x86 架构实现、未见 ARM 对应——arm64 鸿蒙 PC 上需补 NEON/标量回退，是适配硬点。' : '机械计数：x86 与 ARM 并存时多为已有双路径，重编验证即可。'}</p>`));
@@ -1904,6 +1977,10 @@ function renderReport(r) {
     // 是否可适配总判（adaptation_assessment.overall，派生，替代旧 feasibility）
     const overallBadge = aa.overall
       ? `<span class="badge ${OVERALL_CLS[aa.overall] || 'gray'}">${OVERALL_LABELS[aa.overall] || esc(aa.overall)}</span>` : '—';
+    // 运行前提是否满足（functional_viability，派生自 target_assumptions，与 overall 正交）
+    const fv = ha.functional_viability || null;
+    const viabilityBadge = fv
+      ? `<span class="badge ${FV_CLS[fv] || 'gray'}">${FV_LABELS[fv] || esc(fv)}</span>` : '—';
     // 难度等级（effort.level，server 派生）+ 工作量人天
     const lvl = (ha.effort && ha.effort.level) || null;
     const diffBadge = lvl
@@ -1932,9 +2009,7 @@ function renderReport(r) {
       : '';
     // 移植分级徽章：按 5 档 effective_class 上色（派生）
     const effClass = aa.effective_class || ha.porting_class || null;
-    const pcMeta = effClass ? topoStatusMeta(effClass) : null;
-    const pcBadge = pcMeta
-      ? `<span class="badge" style="background:${pcMeta.color};color:#fff">${pcMeta.label}</span>` : '—';
+    const pcBadge = effClass ? pclassBadge(effClass) : '—';
     const unRows = (ha.unadaptable_apis || []).map((u) => {
       const cat = u.category ? `<code>${esc(u.category)}</code>` : '';
       const fc = u.functionality_class
@@ -1967,14 +2042,19 @@ function renderReport(r) {
     const unverified = ta.filter((a) => a.required && a.target_status === 'unknown').length;
     const taRows = ta.map((a) => {
       const st = a.target_status || 'unknown';
-      return `<tr><td>${esc(a.capability || '')}</td>
+      // action: keyed → 去核实(打开该 caps 行编辑)；未登记(caps_gap) → 补充到能力库(建行+绑定本报告)
+      const act = a.capability_key
+        ? `<button class="btn sm ghost ta-verify" data-key="${esc(a.capability_key)}">核实</button>`
+        : `<button class="btn sm ghost ta-add" data-ta="${esc(a.id || '')}" data-cap="${esc(a.capability || '')}">补充到能力库</button>`;
+      return `<tr><td>${esc(a.capability || '')}${a.capability_key ? ` <code class="muted" title="caps 行 id">${esc(a.capability_key)}</code>` : ''}</td>
         <td>${a.required ? '<b>必需</b>' : '可选'}</td>
         <td><span class="badge ${TGT_CLS[st] || 'gray'}">${TGT_LABELS[st] || esc(st)}</span></td>
-        <td class="muted">${esc(a.impact || '')}</td></tr>`;
+        <td class="muted">${esc(a.impact || '')}</td>
+        <td>${act}</td></tr>`;
     }).join('');
     const assumptions = taRows
-      ? (unverified ? `<div class="hint err" style="margin:6px 0">⚠ 结论依赖 ${unverified} 项未核实的鸿蒙 PC 目标能力，准确性受限——见下表「未核实」项，请人工核实后重评。</div>` : '')
-        + `<div class="subtitle">目标平台能力假设</div><table class="apitable"><thead><tr><th>目标能力</th><th>必需性</th><th>目标状态</th><th>影响</th></tr></thead><tbody>${taRows}</tbody></table>`
+      ? (unverified ? `<div class="hint err" style="margin:6px 0">⚠ 结论依赖 ${unverified} 项未核实的鸿蒙 PC 目标能力，准确性受限——「补充到能力库」登记并核实后报告即刷新（无需重分析）。</div>` : '')
+        + `<div class="subtitle">目标平台能力假设</div><table class="apitable"><thead><tr><th>目标能力</th><th>必需性</th><th>目标状态</th><th>影响</th><th>核实</th></tr></thead><tbody>${taRows}</tbody></table>`
       : '';
     // 所需鸿蒙权限（required_permissions）
     const permRows = (ha.required_permissions || []).map((p) => {
@@ -2008,7 +2088,8 @@ function renderReport(r) {
       ? `<div class="subtitle">工作量分项</div><table class="apitable"><thead><tr><th>分项</th><th>人天</th><th>估算依据</th></tr></thead><tbody>${ebRows}</tbody></table>`
       : '';
     parts.push(sec('鸿蒙适配评估', `<div class="kv">
-      <b>是否可适配</b><span>${overallBadge}</span>
+      <b>代码适配</b><span>${overallBadge}</span>
+      <b>运行前提</b><span>${viabilityBadge}</span>
       <b>移植分级</b><span>${pcBadge}</span>
       <b>难度等级</b><span>${diffBadge}</span>
       <b>工作量</b><span>${effortTxt}</span>
@@ -2041,6 +2122,20 @@ function renderReport(r) {
   el.innerHTML = parts.join('');
   depHlKey = null;
   el.onclick = depHighlightHandler;   // delegated click-to-highlight for dep tags
+  // target_assumptions 核实动作：keyed → 编辑该 caps 行；caps_gap → 补充能力并绑定本报告。
+  // 保存后重载报告 → serve-time caps 回投刷新 target_status/functional_viability（无需重分析）。
+  const reloadReport = () => { if (curReport) loadRun(curReport.name, curReport.run); };
+  el.querySelectorAll('.ta-verify').forEach((b) => b.onclick = async (ev) => {
+    ev.stopPropagation();
+    try { capEdit(b.dataset.key, await api('/api/harmony-caps'), reloadReport); }
+    catch { toast('加载能力库失败', 'err'); }
+  });
+  el.querySelectorAll('.ta-add').forEach((b) => b.onclick = (ev) => {
+    ev.stopPropagation();
+    capAddModal({ capability: b.dataset.cap },
+      { group: activeGroup, name: curReport && curReport.name, run: curReport && curReport.run, ta_id: b.dataset.ta },
+      reloadReport);
+  });
   if (hasDeps) loadDepTree(curReport && curReport.name);
   decorateHarmonyBadges(el).then(() => updateDepHarmonyCount(r));
   buildReportNav(toc);

@@ -1033,8 +1033,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 A：库跑在已移植的鸿蒙 Node.js 24 运行时上；Rust .node 原生插件经 OHOS NDK/musl 交叉编译为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1043,7 +1042,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "本库为 Node.js N-API 原生插件，JS 层已内置 OpenHarmony 平台分支（index.js:454-505），可直接在鸿蒙 Node.js 上运行；核心工作量在于 Rust 原生插件需通过 OHOS NDK 交叉编译，且其依赖的 xcap 截图引擎目前仅有 Win32（DXGI）/macOS（CoreGraphics）/Linux（XCB+PipeWire）后端，需新开发鸿蒙后端以适配鸿蒙 PC 的显示帧捕获机制。鸿蒙 PC 的显示捕获 API 状态尚未核实——若不存在等效 API，则端口可行性需重新评估。",
     "blockers": [
       {
@@ -1101,7 +1099,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 层需 Node.js 运行时——已移植，可忽略",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:rust_ohos_target",
@@ -1109,7 +1108,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust 原生插件编译依赖——Rust 1.89+ 已支持 ohos target，可忽略",
-        "source": "harmony-pc-capabilities.json#runtimes.rust"
+        "source": "harmony-pc-capabilities.json#runtimes.rust",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_display_capture",
@@ -1117,7 +1117,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "xcap 鸿蒙后端的核心依赖——若无此能力则截图功能整体无法实现，可移植性降级为 infeasible",
-        "source": "harmony-pc-capabilities.json#gui.wm（桌面窗口管理器/显示服务状态 unknown）"
+        "source": "harmony-pc-capabilities.json#gui.wm（桌面窗口管理器/显示服务状态 unknown）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1164,7 +1165,21 @@
       "在鸿蒙 PC 上验证截图功能——Monitor.fromPoint()、Window.all()、Image 编码输出"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。JS 层已内置 OpenHarmony 平台分支且逻辑无需修改，工作量集中在 xcap 引擎的新 OHOS 后端开发。关键不确定性：鸿蒙 PC 是否提供桌面屏幕/窗口捕获 API——此能力在 harmony-pc-capabilities.json 中标记为 unknown（桌面窗口管理器/显示服务），若不存在则本库迁移降级为 infeasible。xcap 已在 Cargo.toml 中表明为同一作者的 crate（nashaofu/xcap），新后端可集成到上游。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "node-screenshots",
@@ -1178,26 +1193,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "LICENSE file MIT vs package.json Apache-2.0",
-        "rationale": "package.json 声明 license 为 Apache-2.0，但仓库根目录 LICENSE 文件实际内容为标准 MIT License 全文。以 LICENSE 文件法律文本为准取 MIT。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "rendering_3d",
-        "kind": "ambiguity",
-        "value": "xcap 在 Windows 端用 D3D11 Desktop Duplication API——用途是帧捕获而非渲染，但 API 本身属 DirectX 家族",
-        "rationale": "D3D11 用于桌面帧捕获（IDXGIOutputDuplication），非传统 3D 渲染场景；按 skill 推荐集 DirectX 属 rendering_3d 故标 present，但语义模糊——是否应另立 capture 类型？"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为桌面截图库，通过 xcap 引擎触及各桌面平台的显示/窗口系统（Win32 DXGI、macOS CoreGraphics、Linux XCB/PipeWire），但不自行创建窗口或 GUI 界面；图像编码（PNG/JPEG/BMP）由 xcap image 功能提供。",

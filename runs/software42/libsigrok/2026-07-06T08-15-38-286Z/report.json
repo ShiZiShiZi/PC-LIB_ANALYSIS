@@ -1446,8 +1446,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库模型 A：经 OHOS NDK/musl clang 重编为 .so，由上层应用通过 Node-API 或直接链接调用；arm64/x86_64；自研内核非 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1456,7 +1455,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libsigrok 的核心 C 库代码基于 POSIX 标准 API（socket/poll/select/unistd/fcntl），这些在 OHOS NDK 的 musl libc 中基本可用。必须依赖 glib 和 libzip 已在 OHOS cmd-pkgs 提供预编译包。大多数可选依赖（libusb、libserialport、hidapi、nettle、libieee1284、zlib）也在 cmd-pkgs 中——可直接重编链接。三个主要阻碍点（bluez 蓝牙、libftdi、libgpib、libtirpc）均为可选依赖，对应的驱动可通过 configure --disable 禁用而不影响核心功能。整体可移植，工作量集中在 OHOS NDK 工具链配置和可选驱动的裁剪/替代。",
     "blockers": [
       {
@@ -1577,7 +1575,21 @@
       "验证 POSIX socket/poll/select/gettimeofday 在 musl 上的行为正确性"
     ],
     "notes": "libsigrok 的模块化设计带来很大的移植弹性——configue.ac 中 90+ 驱动各自标注依赖，编译时自动检测并启用/禁用。核心库仅需 glib + libzip（均已鸿蒙化），其余全部可选。BlueZ 蓝牙依赖为 Linux 内核接口、GPIB 为冷门硬件接口、BeagleLogic 为嵌入式 FPGA 驱动——均可 disable 不影响核心价值。若需完整迁移所有驱动，bluez 的 @ohos.bluetooth 适配工作量最大（约 3-5 人天额外）。C++/Python/Ruby/Java 绑定为附加产物，需对应运行时也可用（鸿蒙 Python 3.12/JDK 17 均可用），但绑定层面有 SWIG 生成代码需重新运行且 glibmm/pygobject 在鸿蒙尚未适配。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libsigrok",
@@ -1607,7 +1619,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "libsigrok 核心为硬件设备通信库，主要触及 hardware 场景（USB、串口、蓝牙、GPIB 等物理接口）。不涉及 GUI 图形界面、3D 渲染、音视频媒体处理。",

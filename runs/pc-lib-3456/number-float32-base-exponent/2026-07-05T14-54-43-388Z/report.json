@@ -706,7 +706,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK musl + POSIX 子集；已移植 Node.js 24 运行时；arm64/x86_64）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -716,7 +715,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime (JS) + recompile_napi (C addon)",
     "summary": "该库为 Node.js 数值计算包（stdlib 的一员），鸿蒙 PC 已移植 Node.js 24 运行时，纯 JavaScript 部分可直接运行，无需修改。C 原生插件使用 N-API 和 C99 标准库，无平台特有 API/系统调用——可用 OHOS NDK 重新编译为 OHOS .so，代码改动量为零。整体移植工作简单明确。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -726,7 +724,8 @@
         "required": true,
         "target_status": "available",
         "impact": "本库在 Node.js 上运行，JS 部分可直接使用，不支持则整体不可用",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -734,7 +733,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 原生插件通过 N-API 暴露给 JS。Node.js 移植版随附 N-API 标准接口，可重编",
-        "source": "N-API 为 Node.js 核心组成部分，Node.js 已移植则 N-API 可用"
+        "source": "N-API 为 Node.js 核心组成部分，Node.js 已移植则 N-API 可用",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -742,7 +742,8 @@
         "required": false,
         "target_status": "available",
         "impact": "鸿蒙 PC 主力架构，重编后可直接运行",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -797,7 +798,21 @@
       "若未使用 N-API 原生插件，纯 JS 版本已可直接使用，零移植工作"
     ],
     "notes": "按模型 A（库跑在已移植的 Node.js 运行时上）评估。因无 platform/system/hardware 类 API，无 GUI/3D/媒体/硬件场景，confidence 为 high。person_days 估算：纯 JS 路径 0 天，C 插件重编约 2-4 人天。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "number-float32-base-exponent",
@@ -815,19 +830,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.json 自动识别为 jest/mocha，但实际使用 tape 测试框架"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、媒体处理或特定硬件。",

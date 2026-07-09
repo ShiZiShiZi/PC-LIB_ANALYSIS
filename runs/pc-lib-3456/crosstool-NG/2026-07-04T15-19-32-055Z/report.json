@@ -1243,8 +1243,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核，无 Linux ABI；原生层 OHOS NDK / musl + POSIX 子集；C 代码经 OHOS NDK 交叉编译；shell 脚本依赖 bash + GNU 工具链作为运行环境）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1261,7 +1260,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "crosstool-NG 整个运行环境建立在 bash + GNU make 驱动上，没有这些工具整个工具完全无法运行——这是 crosstool-NG 的硬前提：ct-ng 本身是 `#!/usr/bin/make -rf` shebang 的 make 脚本，所有构建逻辑用 bash 编写",
-        "source": "harmony-pc-capabilities.json 未收录 GNU 命令行工具的能力条目，需要核实"
+        "source": "harmony-pc-capabilities.json 未收录 GNU 命令行工具的能力条目，需要核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:subprocess",
@@ -1269,7 +1269,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "整个 crosstool-NG 构建流程就是编排一系列外部命令的调用：下载源码 (wget/curl)→解压(tar/gzip/bzip2/xz)→打补丁(patch)→配置(./configure)→编译(make)→安装(make install)。若沙箱不允许子进程执行，整个工具完全不可用",
-        "source": "harmony-pc-capabilities.json#spawn 状态 unknown；需核实鸿蒙 PC 桌面环境的进程模型"
+        "source": "harmony-pc-capabilities.json#spawn 状态 unknown；需核实鸿蒙 PC 桌面环境的进程模型",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:gcc",
@@ -1277,10 +1278,10 @@
         "required": true,
         "target_status": "unknown",
         "impact": "kconfig 需要 C 编译器编译；构建工具链时还需 host C/C++ 编译器编译各组件（GCC/binutils 等）——这是工具链构建器的核心需求",
-        "source": "harmony-pc-capabilities.json 未收录系统级 C 编译器能力"
+        "source": "harmony-pc-capabilities.json 未收录系统级 C 编译器能力",
+        "target_status_model": "unknown"
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "crosstool-NG 是一个纯 POSIX CLI 工具（交叉编译工具链构建器），由 shell 脚本与 C 代码组成。C 代码（kconfig 菜单配置系统，~18K 行）可经 OHOS NDK 交叉编译（ncurses + gettext 已鸿蒙化），POSIX API（mmap/popen/signal）在 OHOS NDK musl 子集中基本可用。主要不确定性在于运行环境：工具的核心逻辑由 bash 脚本 + GNU make 驱动，严重依赖 GNU 命令行工具栈和子进程执行能力——这些都是 crosstool-NG 的硬前提，但鸿蒙 PC 对 GNU 工具和外部进程执行的支持状态尚未核实（harmony-pc-capabilities.json 未收录 GNU CLI 工具能力条目，进程启动（spawn）状态标记 unknown）。如果 bash、GNU make、GNU sed/awk/grep 以及 C 编译器在鸿蒙 PC 上可用且允许子进程执行，则整个工具可移植（修改量集中在构建系统适配和 OHOS NDK 交叉编译配置上）。若没有 GNU 工具或不允许子进程调用，则工具无法在不提供这些能力的鸿蒙 PC 形态上运行。",
     "blockers": [
       {
@@ -1413,7 +1414,21 @@
       "在鸿蒙 PC 上验证完整流程：ct-ng menuconfig（TUI 配置）→ ct-ng build（构建选定的交叉工具链样本）"
     ],
     "notes": "crosstool-NG 是一个构建工具链的工具（meta-builder），其移植问题本质上是环境依赖问题而非代码适配问题。93% 的仓库体积是补丁数据（不涉及可执行逻辑），实际需要移植的代码（C shell）约 25K 行。评估置信度为 low，因为三个硬前提（GNU 命令行工具栈可用性、子进程执行能力、C 编译器可用性）在 harmony-pc-capabilities.json 中均为 unknown——这些是 crosstool-NG 运行的刚性基础前提，缺一不可。建议优先核实这三项：若三项均可满足，则整个工具移植工作量在中高水平（10-20 人天）；若任一不满足，则工具在此鸿蒙 PC 形态上不可运行。另注：crosstool-NG 的使用场景通常是在类 Unix 宿主机上构建 Linux 交叉编译工具链——该使用场景本身在鸿蒙 PC 上的适用性需另行评估（例如构建出的 Linux ARM 工具链运行在 Linux 目标上，与宿主是鸿蒙 PC 不冲突）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "crosstool-NG",
@@ -1431,31 +1446,10 @@
     "analyzer": "pc-lib-analyzer",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "other",
-        "rationale": "bash/gmake/gawk/gsed/bison/flex/wget/patch 等 GNU 命令行工具被归入 ecosystem=other，因为它们不属于任何编程语言生态——它们是系统级命令行工具，dim-6 的 ecosystem 轴设计只覆盖编程语言生态（cpp/python/java/…），对构建工具/系统工具这种非语言依赖缺乏表达。建议后续在 ecosystem 中新增 system-tools 值或通过 acquisition:system 区分"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "GNU 命令行工具（bash/make/sed/awk/grep）可用性",
-        "rationale": "harmony-pc-capabilities.json 收录了主流编程语言运行时（Node/Python/Java/Rust/Go/Julia）的能力状态，但未收录 GNU 命令行工具的可移植性状态。对于 crosstool-NG 这类本质上是 shell 脚本 + GNU 工具驱动的构建工具，这些工具才是最关键的运行环境前提——不核实就无法给出可靠评估。建议在 capabilities 中增加 GNU CLI 工具 一节"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "gap",
-        "value": "tool",
-        "rationale": "schema 里 library.kind 推荐值有 library/application/framework/tool/cli/service/plugin/other。crosstool-NG 是一个后台 CLI 构建工具，选 tool 最贴切——它既有 CLI 入口（ct-ng），又不完全是面向终端用户的交互应用，而是面向开发者的专业构建工具。tool 与 cli 在现词表中都合适，但 tool 强调「构建/制作用途」更准确"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   },
   "capability_profile": {
     "summary": "crosstool-NG 是一个纯 POSIX 命令行工具（终端构建工具链构建器），不涉及桌面 GUI 窗口、3D 图形渲染、媒体编解码/采集、或特定硬件设备。其唯一用户界面交互是 ncurses 终端的菜单界面（menuconfig/nconfig），但这是 TUI 而非桌面 GUI 窗口系统。",

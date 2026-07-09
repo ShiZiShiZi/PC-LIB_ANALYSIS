@@ -560,7 +560,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK musl + POSIX 子集；arm64/x86_64；Node.js 24.13.0 已移植）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -569,7 +568,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库是 Node.js 纯数值计算包，鸿蒙 PC 已移植 Node.js 24.13.0 运行时。JavaScript 实现无任何平台相关代码，可直接运行。C 原生扩展（src/main.c）仅使用 stdlib 自有类型（stdlib_complex64_t、stdlib_complex64_parts_t），不含任何标准 C 库、POSIX、Win32 或系统调用调用，代码量仅 8 行，用 OHOS NDK 重新编译即可。所有运行时依赖（@stdlib/array-float32 等）同为 stdlib 内部 npm 包，运行在已移植的 Node.js 上。整体移植工作量极低。",
     "blockers": [
       {
@@ -595,7 +593,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JavaScript 实现依赖 Node.js 运行时；目标已知 available（24.13.0 已移植），不计阻碍",
-        "source": "harmony-pc-capabilities.json#nodejs"
+        "source": "harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -629,7 +628,21 @@
       "确认 manifest.json 的构建配置在 OHOS NDK 下正确解析"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。C 原生扩展非常轻量（仅 8 行生产代码），即使跳过原生编译，纯 JS 实现也提供完整功能。platform_adaptation 和 platform_branches 都是 0，确认无任何平台耦合代码。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -651,33 +664,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "summary",
-        "kind": "gap",
-        "value": "single_function_module",
-        "rationale": "该库仅导出一个函数 reim()，功能极单一，是 stdlib 微包架构的典型示例"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "gap",
-        "value": "stdlib_monorepo",
-        "rationale": "所有运行时依赖均为 @stdlib/* 子包，来自同一 monorepo（stdlib-js/stdlib），彼此链式依赖无外部第三方依赖"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "gap",
-        "value": "no_native_api",
-        "rationale": "生产代码不含任何标准 C 库、POSIX、Win32 或系统 API 调用；C 代码仅使用 stdlib 自有类型"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算数学函数库，不涉及 GUI、3D 渲染、媒体处理或特定硬件。",

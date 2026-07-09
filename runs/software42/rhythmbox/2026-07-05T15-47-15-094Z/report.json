@@ -1817,8 +1817,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C：整包桌面应用；自研内核非 Linux ABI；原生层 OHOS NDK + musl + POSIX 子集；GTK3 已由社区 cmd-pkgs 提供鸿蒙预编译包；arm64/x86_64；应用需打包为鸿蒙格式）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -1827,7 +1826,6 @@
       "level": "very_high"
     },
     "confidence": "low",
-    "recommended_path": "cross_compile",
     "summary": "Rhythmbox 是 GNOME 桌面的完整音乐播放器应用（C + GTK3 + GStreamer），365K 行生产代码。核心依赖 GTK3/GStreamer/GLib 已由社区提供鸿蒙预编译包，主体 C 代码经 OHOS NDK 重编理论上可行。但作为 GNOME 桌面应用，大量功能依赖 Linux 桌面生态：X11 窗口后端（条件编译可绕过）、GUdev 设备监控、V4L2 FM 广播硬件（无法适配）、D-Bus 桌面集成（MPRIS/通知/电源管理/Secret Service/Zeitgeist）。鸿蒙 PC 的桌面窗口环境、D-Bus 会话总线、音频 I/O 后端等关键目标能力状态多为 unknown，结论高度不确定。核心音乐库管理+播放+GTK3 界面可尝试移植，FM 广播与设备同步插件应移除。",
     "unadaptable_apis": [
       {
@@ -1840,7 +1838,9 @@
         "category": "system",
         "evidence": [
           "plugins/fmradio/rb-radio-tuner-v4l2.c:111-232"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:gudev",
@@ -1853,7 +1853,9 @@
         "evidence": [
           "meson.build:73-77",
           "shell/rb-removable-media-manager.c"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1863,7 +1865,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK3 已在 cmd-pkgs 提供鸿蒙预编译包；其显示后端（Wayland 或鸿蒙自有）能否实际运行在多窗口桌面环境待核实",
-        "source": "harmony-pc-capabilities.json#gui.gtk"
+        "source": "harmony-pc-capabilities.json#gui.gtk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:wm",
@@ -1871,7 +1874,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GTK3 多窗口应用需桌面上有窗口管理器来管理窗口位置、大小、焦点；若无完整桌面环境，Rhythmbox 的窗口/侧栏/对话框布局无法正常工作",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dbus",
@@ -1879,7 +1883,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Rhythmbox 深度依赖 D-Bus 会话总线：MPRIS 远程控制接口、通知服务、元数据提取进程间通信、可移动媒体挂载信号均通过 D-Bus。无 D-Bus 会话总线则应用内部进程间通信（主进程↔元数据服务）与远程控制（rhythmbox-client）不可用",
-        "source": "harmony-pc-capabilities.json#process_security"
+        "source": "harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_integration",
@@ -1887,7 +1892,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "libsecret 已适配（cmd-pkgs 提供），GSettings 为 GLib 核心组件应可运行；但通知（libnotify）、电源管理（power-manager 插件）、Zeitgeist 活动日志等桌面集成组件在鸿蒙 PC 上无对应服务——可禁用对应插件或替换为鸿蒙系统 API",
-        "source": "harmony-pc-capabilities.json#desktop_integration"
+        "source": "harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audio_io",
@@ -1895,7 +1901,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GStreamer 核心库已适配，但音频输出需要后端 sink（如 Linux ALSA/PulseAudio）。鸿蒙 PC 的音频输出须通过 @ohos.multimedia.audio 或 OHOS NDK 音频 API——GStreamer 是否已有鸿蒙音频 sink 后端待核实；若无则需自行编写 GStreamer 音频输出元素",
-        "source": "harmony-pc-capabilities.json#media.audio_io"
+        "source": "harmony-pc-capabilities.json#media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:app_delivery",
@@ -1903,7 +1910,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Rhythmbox 为 ELF 可执行文件 + .so 插件 + 数据文件的标准 Linux 应用结构；需确认鸿蒙 PC 是否支持通过 OHOS NDK 构建的 native 可执行程序打包为可安装应用包，以及 GSettings schemas/图标缓存/GIO 模块注册等安装后步骤如何实现",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -1911,7 +1919,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "大部分依赖已在 arm64 鸿蒙提供预编译包；若目标为 x86_64 需确认覆盖",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2129,7 +2138,24 @@
       "8. 在鸿蒙 arm64 模拟器/设备上做全功能集成测试（音乐库扫描、播放、播客下载、插件加载）"
     ],
     "notes": "评估按模型 C（整包桌面应用），因为 Rhythmbox 是终端用户启动的 GNOME 桌面音乐播放器。核心不确定性来自鸿蒙 PC 桌面环境的未知状态：①桌面窗口管理器（多窗口 GTK3 能否跑）为 unknown；②D-Bus 会话总线为 unknown（影响 MPRIS/进程间通信/通知/设备监控）；③音频 I/O 为 unknown（GStreamer 能否找到可用的音频输出后端）。若这些能力均不可用（最坏情况），则需将 Rhythmbox 的 GTK3 GUI 换为 ArkUI 重写（模型 B），工作量将远超当前估算的上限。当前评估基于乐观假设（GTK3 能在鸿蒙桌面跑 + GStreamer 能找到音频输出通道 + D-Bus 有替代方案），confidence: low。FM 广播（V4L2）和 USB 设备同步（GUdev/ipod/mtp）明确不可用，已标记为 unadaptable_apis/hardware。code_metrics 显示 platform_adaptation 与 platform_branches 均为 0（C 代码中无 Windows/macOS 编译宏守卫，也无可检测的运行时平台判断），平台耦合主要为 Linux 特有 API（prctl/V4L2/cfmakeraw/GNU 扩展）——多数已有条件编译保护。多数核心 GNOME 库已在 cmd-pkgs 提供鸿蒙版，减少了自编译工作量，但应用层 GNOME 桌面集成基建（非库）的鸿蒙等价物仍然缺失。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:v4l2",
+          "ua:gudev"
+        ]
+      }
+    }
   },
   "library": {
     "name": "rhythmbox",
@@ -2150,61 +2176,24 @@
   },
   "meta": {
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "Rhythmbox 是完整的 GNOME 桌面应用——有 main() 入口（shell/main.c）、.desktop 启动器、meson install 打包，终端用户直接运行而非被其他应用 API 调用。以 application 身份分析，走模型 C（整包桌面应用）鸿蒙口径。"
-      },
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "GPL-2.0-or-later WITH GStreamer-exception-2008",
-        "rationale": "COPYING 明确标注有一个 non-GPL-compatible GStreamer plugins 例外条款，但 SPDX 标准中没有与之完全匹配的 exception identifier。最接近的是 GStreamer-exception-2008 变体（实际文本出现在多个 GNOME 项目）。采近似 spdx 并用 notes 说明。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "linux_v4l2",
-        "rationale": "V4L2 ioctl 是 Linux 内核独有的硬件设备控制接口——介于 platform 与 hardware 之间。按 skill 约定放 system（内核层 ioctl），但因它操作的是 FM 收音机调谐器实体硬件，也可归 hardware。最终选择 system 因为接口是内核 ioctl 而非 GPU/SIMD/加速器类。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "GNOME 生态的几乎所有依赖均为系统级 find_package 获取（发行版包管理器预装），符合 system + system 的推荐值，无需另造。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "gap",
-        "value": "many GNOME platform libs adapted",
-        "rationale": "通过 harmony_adapted.js 核对 cmd-pkgs 发现：glib/gtk/gstreamer/cairo/pango/gdk-pixbuf/libsoup/json-glib/libxml2/libpeas/libsecret/x11 已在鸿蒙 PC 预编译包中——这对 GNOME 应用移植是重大利好。但 GNOME 桌面集成层（D-Bus 会话总线、GSettings schemas 服务、通知、电源管理等）不是库层面的问题——需要鸿蒙 PC 桌面环境支持。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "confidence",
-        "kind": "gap",
-        "value": "low",
-        "rationale": "鸿蒙 PC 桌面环境的核心能力（多窗口环境、D-Bus 会话总线、音频 I/O 后端）在参考文件中全部 unknown——这些对 GUI 应用是决定性因素。若这些能力不可用，整体可行性从 'hard' 翻转为 'infeasible'。需人工核实 harmony-pc-capabilities.json 后重新评估。"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "ambiguity",
-        "value": "unknown",
-        "rationale": "Rhythmbox 访问的云服务（Last.fm/ListenBrainz/MusicBrainz/iTunes Store/Magnatune/gpodder.net）均为独立的小型服务或社区项目，不属于大型云厂商。均通过标准 HTTP REST API 访问，无厂商私有 SDK。vendor 记为 unknown 是合适的。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:v4l2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:v4l2 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:gudev",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gudev 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "Rhythmbox 作为 GNOME 桌面音乐播放器，深度触及 GUI（GTK3 + X11 窗口栈）与媒体（GStreamer 音视频管线）场景；FM 广播插件直接操作 V4L2 内核硬件设备。GTK3 在鸿蒙 PC cmd-pkgs 中已适配，但桌面窗口管理器的多窗口/桌面集成能力待核实；GStreamer 核心库已适配，但具体编解码器插件与底层音频 I/O 后端状态待核实；V4L2 FM 硬件依赖仅 Linux 有对应，鸿蒙 PC 无可替代。",

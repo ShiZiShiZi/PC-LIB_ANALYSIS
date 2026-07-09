@@ -1020,7 +1020,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK / musl libc + POSIX 子集; clang 交叉编译; arm64/x86_64; 自研内核, 非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -1029,7 +1028,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile",
     "summary": "Codec 2 核心库仅依赖 C 标准库与 libm，无任何平台特有系统调用、无动态加载、无 GUI/硬件依赖。CMake 构建体系成熟，通过 OHOS NDK (musl libc + clang + ohos.toolchain.cmake) 交叉编译为 arm64 .so 即可运行。math.h 所有函数（sin/cos/sqrt/pow/log10 等）均为 C 标准库，musl 完全覆盖。整体移植工作量极低，主要集中在交叉编译工具链配置与测试验证。",
     "blockers": [
       {
@@ -1073,7 +1071,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libcodec2 所有标准 C 与数学函数均可直接使用，无需改动",
-        "source": "OHOS NDK 基于 musl libc，完整提供 ISO C 与 math.h"
+        "source": "OHOS NDK 基于 musl libc，完整提供 ISO C 与 math.h",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -1081,7 +1080,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 PC 主力架构为 arm64，交叉编译无阻碍",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1132,7 +1132,21 @@
       "确认可选依赖 lpcnetfreedv 是否需要在鸿蒙上构建（如需，同样用 OHOS NDK 交叉编译并提供 LPCNET_BUILD_DIR）"
     ],
     "notes": "库为纯 C99 + 标准 C/math 库计算库，无平台特有系统调用、无 GUI、无网络、无设备访问。唯一适配工作是通过 OHOS NDK 交叉编译。arm_math.c 在嵌入式宏启用时依赖 ARM CMSIS-DSP，PC 构建不受影响。CLI 工具（c2enc/c2dec/freedv_tx/freedv_rx）使用了 POSIX getopt，如需在鸿蒙 PC 上运行为工具程序也需重新编译，但不属于库的移植范畴。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "codec2",
@@ -1156,7 +1170,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Codec 2 是纯数学 DSP 计算库，不涉及 GUI/3D 渲染/音视频媒体采集播放/特定硬件外设等鸿蒙适配重点场景，无需额外适配。",

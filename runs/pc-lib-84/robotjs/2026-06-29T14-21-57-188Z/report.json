@@ -1254,8 +1254,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1279,7 +1278,9 @@
           "src/mouse.c:114",
           "src/mouse.c:120",
           "src/keypress.c:128"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:send_input",
@@ -1294,7 +1295,9 @@
         "evidence": [
           "src/mouse.c:145",
           "src/keypress.c:108"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11_xtest",
@@ -1311,7 +1314,9 @@
           "src/mouse.c:210",
           "src/keypress.c:22",
           "src/screengrab.c:108"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:screen_capture",
@@ -1327,7 +1332,9 @@
           "src/screengrab.c:43",
           "src/screengrab.c:108",
           "src/screengrab.c:164"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1337,7 +1344,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则鼠标/键盘/滚动等全部核心功能无法实现，库完全不可用",
-        "source": "references/harmony-pc-capabilities.json (无对应条目，为推断需求)"
+        "source": "references/harmony-pc-capabilities.json (无对应条目，为推断需求)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:screen_access",
@@ -1345,7 +1353,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "不支持则截图和像素颜色读取功能无法实现",
-        "source": "references/harmony-pc-capabilities.json (无对应条目，为推断需求)"
+        "source": "references/harmony-pc-capabilities.json (无对应条目，为推断需求)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:clipboard",
@@ -1353,7 +1362,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "不支持则剪贴板功能不可用（非核心功能）",
-        "source": "references/harmony-pc-capabilities.json → desktop_integration.dnd_clipboard"
+        "source": "references/harmony-pc-capabilities.json → desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:node_napi",
@@ -1361,7 +1371,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植到鸿蒙 PC，N-API 插件可编译运行",
-        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json → runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libpng_zlib",
@@ -1369,7 +1380,8 @@
         "required": true,
         "target_status": "available",
         "impact": "cmd-pkgs 社区已提供 libpng 和 zlib 预编译包",
-        "source": "references/harmony-pc-capabilities.json (cmd-pkgs 可用)"
+        "source": "references/harmony-pc-capabilities.json (cmd-pkgs 可用)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1384,7 +1396,6 @@
         ]
       }
     ],
-    "recommended_path": "find_alternative",
     "summary": "RobotJS 的核心功能（鼠标/键盘输入注入、屏幕捕获）完全依赖 macOS/Windows/Linux 三大平台的专有 GUI 输入 API，没有任何标准/可移植替代。移植到鸿蒙 PC 需要：(1) 用 OHOS NDK 输入事件 API 完全重写鼠标/键盘事件层；(2) 用 OHOS 屏幕捕获 API 重写截图层；(3) 保留 N-API 绑定层和纯计算逻辑。由于鸿蒙 PC 是否提供对等的输入事件注入和屏幕像素读取 API 尚属未知，整体可行性高度不确定。",
     "blockers": [
       {
@@ -1473,7 +1484,26 @@
       "在鸿蒙 PC Node.js 环境中编译并测试 N-API 插件"
     ],
     "notes": "本评估置信度为 low，因为核心阻碍点（输入事件注入和屏幕捕获 API）在鸿蒙 PC 上的可用性均为 unknown。若鸿蒙 PC 提供对等 API，则 porting_class 可升级为 needs_adaptation_full，工作量约 30-60 人天（主要是为三个模块编写鸿蒙后端）；若不提供，则核心功能无法移植，库在鸿蒙上不可用。IOKit（macOS 媒体键）和 POSIX fork/exec（Linux 弹窗）为非核心功能，不影响整体判定。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cg_event",
+          "ua:send_input",
+          "ua:x11_xtest",
+          "ua:screen_capture"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1481,36 +1511,30 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "macos_coregraphics",
-        "rationale": "macOS CoreGraphics 事件 API 是一个显著的 API 族，包含 CGEventCreateMouseEvent/CGEventPost 等，现有推荐值中没有覆盖 macOS 桌面事件注入场景"
+        "code": "ua_func_class_defaulted:ua:cg_event",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cg_event 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "macos_iokit",
-        "rationale": "macOS IOKit HID 系统用于媒体键输入，与 CoreGraphics 分属不同子系统，需单独分组"
+        "code": "ua_func_class_defaulted:ua:send_input",
+        "class": "actionable",
+        "message": "unadaptable_api ua:send_input 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "x11_xtest",
-        "rationale": "X11/XTest 扩展是 Linux 输入注入的专用 API 族，区别于通用 X11/Xlib"
+        "code": "ua_func_class_defaulted:ua:x11_xtest",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_xtest 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "category",
-        "kind": "new_value",
-        "value": "platform_api",
-        "rationale": "阻碍点来自平台专有 GUI 输入 API 无等价，与现有推荐值不同，需更通用的描述"
+        "code": "ua_func_class_defaulted:ua:screen_capture",
+        "class": "actionable",
+        "message": "unadaptable_api ua:screen_capture 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

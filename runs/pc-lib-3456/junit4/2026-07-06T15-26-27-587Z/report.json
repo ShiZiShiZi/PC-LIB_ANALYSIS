@@ -842,7 +842,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，ArkTS 应用层）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -860,7 +859,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JDK 已移植至鸿蒙 PC，JUnit 4 纯 Java 字节码可直接运行",
-        "source": "references/harmony-pc-capabilities.json runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:jmx_management",
@@ -868,11 +868,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "FailOnTimeout 的 lookForStuckThread 功能使用 ThreadMXBean 获取 CPU 时间；若 JMX 不可用，该可选特性降级（返回 0），不影响核心测试运行",
-        "source": "references/harmony-pc-capabilities.json jdk_internals.jdk_management"
+        "source": "references/harmony-pc-capabilities.json jdk_internals.jdk_management",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "JUnit 4 是纯 Java 测试框架，全部使用 Java 标准库 API，无平台原生代码、无 JNI、无动态链接库。鸿蒙 PC 已移植 JDK 17/8，JUnit 4 的字节码可直接在已移植的 JDK 上运行，无需任何适配工作。唯一涉及的非核心 JDK 模块是 java.lang.management（ThreadMXBean），用于超时检测的可选 stuck-thread 查找功能；即使该模块不可用也仅功能降级，不影响核心测试能力。",
     "blockers": [],
     "compatible": [
@@ -898,7 +898,21 @@
       "（可选）验证 ThreadMXBean 在鸿蒙 JDK 上的可用性，确认 lookForStuckThread 功能"
     ],
     "notes": "JUnit 4 当前处于维护模式，仅修复关键缺陷和安全问题。本评估基于其作为被 API 调用的三方库（kind=library），使用模型 A（运行在已移植 JDK 上）。java.lang.management 在鸿蒙 JDK 上的状态为 unknown，但由于仅用于可选的 stuck-thread 检测功能且有优雅降级，不影响 porting_class 判定。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "junit4",
@@ -926,7 +940,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "JUnit 4 是纯 Java 测试框架，不涉及 GUI 桌面界面、3D 渲染、音视频媒体或特定硬件设备。所有功能均基于 Java 标准库实现，无鸿蒙适配重点场景。",

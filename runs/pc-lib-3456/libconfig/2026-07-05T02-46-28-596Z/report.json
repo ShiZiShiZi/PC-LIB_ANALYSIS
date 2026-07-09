@@ -1175,7 +1175,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C/C++ 库经 OHOS NDK / musl libc 重新编译为 .so；arm64 / x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1184,7 +1183,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libconfig 为纯 C99 标准库，零外部依赖（仅 Windows 平台链接系统 Shlwapi，POSIX 路径用首字符 '/' 判相对路径无需此依赖）。使用标准 C 库（stdio/stdlib/string）+ 基本 POSIX（fstat/fsync/locale API），仅在 Windows 上通过条件编译使用 Win32 API（DllMain/FlushFileBuffers/PathIsRelativeA 等）。所有平台相关代码均有 #ifdef 守卫且已有 POSIX 回退路径。用 OHOS NDK 交叉编译为 .arm64/.x86_64 .so 即可运行，无需修改任何源码逻辑。",
     "blockers": [
       {
@@ -1246,7 +1244,21 @@
       "在鸿蒙 PC 上运行 tests/ 下的回归测试，验证解析与写入正确性"
     ],
     "notes": "该库为零外部依赖 C99 系统库，所有平台差异已通过 #ifdef WIN32/__APPLE__/HAVE_USELOCALE 等编译宏条件处理，POSIX 路径在 OHOS musl 下直接可用。Windows 特有的 Shlwapi.dll 依赖仅在 WIN32 编译时链接，OHOS 上走 POSIX 路径（字符串首字符 '/' 判相对路径）。platform_adaptation 统计为 141 行条件编译代码（windows=134, macos=5, linux=2），主要为 locale 控制与 fsync 刷写的平台适配、非核心功能，不影响移植复杂度。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1272,27 +1284,13 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "count",
-        "kind": "gap",
-        "value": "1",
-        "rationale": "libconfig 近乎零外部依赖：仅 Windows 平台链接 Shlwapi（Shell 轻量实用 API，PathIsRelativeA），POSIX 路径无需外部依赖。configure.ac 探测的 locale/xlocale.h/newlocale 等均为系统标准库函数。dependencies 的 count 设 1 反映唯一可列出的外部链接项。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "note",
-        "value": "cpp",
-        "rationale": "libconfig 为纯 C 库，但有完整 C++ 封装（libconfig::Config/Setting），语言生态选 cpp 以反映其同时面向 C 和 C++ 使用者的定位。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯 C 语言配置文件解析库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。scenarios 为空。",

@@ -1316,7 +1316,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（在浏览器或 Electron/CEF 环境中运行）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -1342,7 +1341,8 @@
         "required": true,
         "target_status": "available",
         "source": "harmony-pc-capabilities.json#gui.electron（Electron/CEF 已有鸿蒙版）",
-        "impact": "库为浏览器指纹库，必须在浏览器环境中运行；Electron/CEF 可用则无需改动代码。"
+        "impact": "库为浏览器指纹库，必须在浏览器环境中运行；Electron/CEF 可用则无需改动代码。",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1358,7 +1358,6 @@
     ],
     "unadaptable_apis": [],
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "FingerprintJS 是纯浏览器 JS 库，无原生扩展、无平台 API，依赖浏览器 Web API 采集指纹。鸿蒙 PC 已支持 Electron/CEF 浏览器环境，因此库代码可直接运行，仅需在目标应用中验证 Web API 可用性并处理网络权限。",
     "blockers": [],
     "compatible": [
@@ -1386,7 +1385,21 @@
       "在目标浏览器环境中跑通测试，确认指纹生成与主流浏览器一致"
     ],
     "notes": "本评估按库在浏览器/Electron 环境中运行（鸿蒙 PC 已支持 Electron）。若强行在 Node.js 服务端运行，会因缺少 window/document 而失败，需使用 headless 浏览器或重写采集逻辑。 monitoring 默认开启但可关闭。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "fingerprintjs",
@@ -1410,41 +1423,13 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "new_value",
-        "value": "browser_web_api_as_standard",
-        "rationale": "本库为浏览器 JS 库，使用 DOM/Canvas/WebGL/Web Audio 等 Web API。这些 API 不是 OS 原生平台 API，也不是语言标准库，而是浏览器运行时标准 API。现有 category 中没有更合适的选项，按最接近的 'standard'（标准运行时 API）归类，并增加此观察以探讨是否应在 skill 中增加 'browser_runtime' 类别。"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "fingerprint",
-        "rationale": "运行期有一个可选的匿名统计请求发送至 FingerprintJS 自有 CDN m1.openfpcdn.io，属于厂商遥测而非 Firebase/AWS 等推荐云厂商。推荐 vendor 列表中无对应项，使用 'fingerprint' 作为新 vendor 值。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "web_browser_environment",
-        "rationale": "本库本质是浏览器运行时依赖型库（而非 GUI/3D/媒体/硬件应用）。现有推荐场景集未覆盖 '浏览器运行环境' 这一关键适配前提，dim-9 通过 target_assumptions 处理。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "ambiguity",
-        "value": "browser_runtime_status",
-        "rationale": "鸿蒙 PC 能力表中无独立的 'browser runtime environment' 行，仅有 Electron/CEF 标注 available。本评估假设库在 Electron/CEF 或等效浏览器环境中运行，目标状态为 available，但 confidence 下调为 medium，因为具体 Web API（Web Audio、Client Hints）在鸿蒙 PC 浏览器中的完整度尚未逐项核实。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目主要触及浏览器媒体与 3D 图形 API（用于指纹采集），但不涉及桌面 GUI、3D 渲染管线、音视频编解码或特定硬件。所有触及的浏览器 API 在鸿蒙 PC 浏览器/Electron 环境中均有望直接可用。",

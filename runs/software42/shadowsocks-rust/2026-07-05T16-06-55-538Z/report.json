@@ -2639,8 +2639,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（Rust CLI 应用经 ohos target 交叉编译；自研内核，非 Linux ABI；原生层 OHOS NDK/musl；架构 arm64 已知可用，x86_64 待核实）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -2649,7 +2648,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "Rust 运行时已在鸿蒙 PC 移植（1.89+，有 ohos target），shadowsocks-rust 可作为原生程序经 Cargo 交叉编译到鸿蒙 PC。核心代理中继/加密/配置逻辑（tokio + socket2 + shadowsocks-crypto）均为纯 Rust 跨平台代码，可直接编译。需要适配的部分：① 新增 OHOS 平台的 target_os 条件编译分支（参考 generic Unix fallback others.rs），排除 Linux/Windows/BSD 特有 socket 选项与透明代理/路由标记功能；② 守护进程化模块（fork/setsid/waitpid）在 OHOS musl 上可能不可用，需条件编译排除或改用 OHOS 服务管理机制；③ TUN 虚拟网卡功能依赖 tun crate 的 OHOS 支持；④ 批量 recvmmsg/sendmmsg 仅 Linux —— 上述均为可选功能/平台优化，核心 SOCKS/HTTP 代理功能不受影响。目标平台 arm64 已知可用，x86_64 状态 unknown——若仅 arm64 则下调 confidence 至 medium。",
     "blockers": [
       {
@@ -2731,7 +2729,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust 已移植到鸿蒙 PC（1.89+），可直接交叉编译。若不可用则整体不可移植",
-        "source": "harmony-pc-capabilities.json#runtimes.rust"
+        "source": "harmony-pc-capabilities.json#runtimes.rust",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -2739,7 +2738,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 PC 主力架构为 arm64，交叉编译目标匹配",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -2747,7 +2747,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "x86_64 OC目标状态 unknown，若不可用则仅支持 arm64",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:tun_ohos",
@@ -2755,7 +2756,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "TUN 为可选功能；若不可用则禁用 local-tun feature，核心代理不受影响",
-        "source": "harmony-pc-capabilities.json（无对应条目）"
+        "source": "harmony-pc-capabilities.json（无对应条目）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2811,7 +2813,21 @@
       "处理 OHOS 权限声明（INTERNET），打包为鸿蒙可执行二进制或 HAP"
     ],
     "notes": "评估按模型 C（CLI 应用，Rust 原生二进制经 ohos target 交叉编译）。Rust 运行时在鸿蒙 PC 已移植（available），运行时本身不是阻碍。平台特有代码均通过 target_os 条件编译隔离，新增 OHOS 条件后自动回退到 generic Unix 路径。大部分 Linux/BSD/Windows 特有功能（SO_MARK、IP_TRANSPARENT、PF ioctl、WSAIoctl、MPTCP、recvmmsg/sendmmsg）均为可选优化，核心 SOCKS/HTTP 代理不需要它们。daemonize 为 Unix 前台/后台运行辅助，非核心功能。target_assumptions 含 x86_64 状态 unknown——若仅 arm64 可用则约束 target 架构，但不影响 feasibility。ohos.permission.INTERNET 状态 unknown 下调 confidence 至 medium（该权限为代理功能必需，待核实 PC 形态下的授予流程）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "shadowsocks-rust",
@@ -2837,36 +2853,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "cli",
-        "rationale": "shadowsocks-rust 既是 CLI 应用（bin/*.rs 入口），也发布 library crates（shadowsocks, shadowsocks-service），判定为 cli 而非 library 是因为其主要分发形态是 sslocal/ssserver 等命令行工具"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "ambiguity",
-        "value": "mixed",
-        "rationale": "核心为跨平台 Rust 代码，但平台特有 socket 选项按 target_os 条件编译覆盖 Linux/BSD/macOS/Windows/Android，非单一平台；选 mixed 表示多平台有各自分支但核心跨平台"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "category",
-        "kind": "new_value",
-        "value": "win32_api",
-        "rationale": "Windows Winsock API 组在鸿蒙上不可用但为条件编译排除，归类为 win32_api（平台特有 API 类别），属于已有 blocker category"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "shadowsocks 与 shadowsocks-service 为本仓 workspace 内部 crate，使用 Cargo path 依赖，用 vendored 表达 locality:local"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2877,7 +2864,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯网络代理 CLI 应用，不涉及 GUI/3D 渲染/媒体处理/特定硬件设备等鸿蒙适配重点场景。TUN 虚拟网卡为软件虚拟网络接口（非硬件设备），归入网络维度。",

@@ -2139,8 +2139,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK / musl libc / clang 交叉编译；自研内核，非 Linux ABI；arm64/x86_64)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -2149,7 +2148,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "krb5 为 C 语言网络认证库，需经 OHOS NDK 交叉编译（recompile_napi 路径）。核心功能（Kerberos 协议逻辑、加密引擎、ASN.1 编解码、认证流程、KDC 逻辑）全为平台无关的纯 C 代码，可直接在 OHOS NDK 上编译。POSIX socket/文件 I/O/signal 等平台 API 在 OHOS NDK（musl libc）中均有支持。Windows 专有路径（注册表/MSLSA/LeashDLL）由 #ifdef _WIN32 守卫不会编译。Linux 专有功能（keyutils 密钥环、SYS_getrandom/syscall、Linux audit）同样有条件编译降级回退。所有动态加载（dlopen）在 OHOS NDK 中可用。主要工作量在 autotools 适配 OHOS 工具链、可选依赖（OpenSSL/LMDB/LDAP）的交叉编译与集成、以及约 5035 行平台守卫代码中的 OHOS 新增分支与测试。无不可适配的核心功能。",
     "blockers": [
       {
@@ -2242,7 +2240,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "缺此则整个库的网络通信（KDC 连接、凭据传播）无法工作；krb5 为网络认证协议库，socket 为硬依赖",
-        "source": "OHOS NDK / musl libc 文档——POSIX socket 子集一般可用，但具体覆盖与行为差异待核实"
+        "source": "OHOS NDK / musl libc 文档——POSIX socket 子集一般可用，但具体覆盖与行为差异待核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_file",
@@ -2250,7 +2249,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "凭据缓存、密钥表、配置文件的持久化存储与互斥访问依赖这些 API",
-        "source": "OHOS NDK / musl libc 文档——标准 POSIX 文件操作一般可用，待核实"
+        "source": "OHOS NDK / musl libc 文档——标准 POSIX 文件操作一般可用，待核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:openssl_ohos",
@@ -2258,7 +2258,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "非必需——可回退到内置加密实现（builtin），但会损失 PKINIT/TLS/SPAKE 等高级功能",
-        "source": "references/harmony-pc-capabilities.json——cmd-pkgs 预编译清单中 OpenSSL 可能已适配"
+        "source": "references/harmony-pc-capabilities.json——cmd-pkgs 预编译清单中 OpenSSL 可能已适配",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2322,7 +2323,21 @@
       "构建 CLI 工具（kinit/klist/kadmin/kdb5_util/krb5kdc 等）并验证功能在 OHOS 上可用"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 交叉编译后以 .so 形式链接到其它应用）。krb5 整体跨平台设计成熟——所有平台特有 API 均有 #ifdef 守卫与 POSIX 回退，Windows 路径（注册表/MSLSA/Leash）不会在 OHOS 上编译，Linux 特有路径（keyutils/audit/syscall）可通过 configure 检测自动禁用。核心阻碍仅仅是 MUSL libc 部分 POSIX 扩展（getpwnam/mmap MAP_SHARED）的行为差异，均有可降级的备选路径。若目标是 ArkTS 应用（模型 B），则 krb5 需经 N-API 包装为 ArkTS Native 模块，增加 N-API 胶水层工作量但整体可行性不变。所有 required 的 target_assumptions（POSIX socket/file）标记为 unknown 因为 OHOS musl POSIX 子集的具体覆盖范围待核实，故整体 confidence 下调为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "krb5",
@@ -2347,7 +2362,8 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯网络认证协议库，不涉及 GUI、3D 渲染、媒体编解码、或特定硬件设备。所有场景（gui/rendering_3d/media/hardware）均不触及。",

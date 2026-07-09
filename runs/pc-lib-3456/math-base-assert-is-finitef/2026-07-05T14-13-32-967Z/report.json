@@ -724,7 +724,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，无 Linux ABI；OHOS NDK musl libc + POSIX 子集；arm64/x86_64；鸿蒙已移植 Node.js 运行时）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -733,7 +732,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库是纯数学断言函数，主入口归 JS 纯实现（lib/main.js），可直接跑在鸿蒙 PC 已移植的 Node.js 24 运行时上，无需任何代码修改。所有运行时依赖（@stdlib/constants-float32-pinf、@stdlib/constants-float32-ninf）均为纯 JS 包，在鸿蒙 Node.js 上同样可直接运行。可选的 N-API 原生加速插件需经 OHOS NDK 重新编译（C99 + N-API，无平台特有 API，重编工作量极小），但不影响核心功能的使用。无平台耦合、无外部命令、无设备/网络依赖，移植零阻碍。",
     "compatible": [
       {
@@ -767,7 +765,8 @@
         "required": true,
         "target_status": "available",
         "impact": "有已移植 Node.js 运行时时，纯 JS 代码（主路径）可直接运行。该能力已确认（harmony-pc-capabilities.json#runtime.nodejs）。",
-        "source": "references/harmony-pc-capabilities.json#runtime.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtime.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -778,7 +777,21 @@
       "（可选）用 OHOS NDK + musl 重新编译 N-API 原生插件以获性能提升：在 OHOS NDK 环境下以 C99 标准编译 src/addon.c + src/is_finitef.c，link 时加 -lm"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。纯 JS 主路径无原生/平台耦合，零改动即可使用。原生 N-API addon 为可选加速，OHOS NDK 支持 N-API，重编工作量极小（约 0.5 人天）。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "math-base-assert-is-finitef",
@@ -799,26 +812,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "optional",
-        "rationale": "@stdlib/napi-* 依赖在 package.json 中列在 dependencies（而非 optionalDependencies），但它们仅在原生 N-API 插件路径中使用；主 JS 路径不依赖它们。按语义归为 optional scope，并在 notes 中说明。"
-      },
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.json 报告 frameworks 为 jest/mocha，但实际使用 tape（通过 Makefile JAVASCRIPT_TEST 变量指向 tape/bin/tape）。这是脚本对 tape 这类 TAP 运行器的启发式误判。已将正确的框架 tape 记录在 notes 中。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数学计算库，不涉及 GUI、3D 渲染、媒体处理或特定硬件设备。",

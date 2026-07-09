@@ -708,7 +708,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, OHOS NDK 原生层, ArkTS 应用层)",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -726,7 +725,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若 Java 运行时不可用则库无法运行，但按默认口径 Java 已移植",
-        "source": "CLAUDE.md 默认口径：Python/Node.js/Java/Rust/Go/Julia 运行时已移植"
+        "source": "CLAUDE.md 默认口径：Python/Node.js/Java/Rust/Go/Julia 运行时已移植",
+        "target_status_model": "available"
       },
       {
         "id": "ta:jdk_logging",
@@ -734,11 +734,11 @@
         "required": false,
         "target_status": "available",
         "impact": "Jdk14Logger 适配器需要此模块；不可用时回退到 SimpleLog",
-        "source": "java.util.logging 是 JDK 标准模块"
+        "source": "java.util.logging 是 JDK 标准模块",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Apache Commons Logging 是纯 Java 日志门面库，仅使用 JDK 标准库 API（java.util.logging、ServiceLoader、AccessController 等），无平台特有代码、无原生调用、无 FFI。所有 7 个编译依赖均为 optional。在鸿蒙 PC 已移植 Java 运行时的前提下，该库可直接运行，无需任何适配。",
     "blockers": [],
     "compatible": [
@@ -777,7 +777,21 @@
       "若需使用 SLF4J/Log4j 2 适配器，确认对应后端库在鸿蒙可用"
     ],
     "notes": "本库的所有可选依赖（Log4j/SLF4J/Avalon/LogKit/Servlet API）均为 optional 作用域，不影响核心功能。即使没有任何可选后端，库仍可通过 SimpleLog 和 Jdk14Logger 正常工作。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Apache Commons Logging",
@@ -804,7 +818,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI、3D 渲染、媒体或特定硬件场景，为纯 Java 日志门面库。",

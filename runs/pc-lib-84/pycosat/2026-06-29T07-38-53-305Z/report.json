@@ -574,7 +574,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -583,7 +582,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "pycosat 是带 C 扩展的 Python 库，鸿蒙 PC 已移植 Python 运行时，纯 Python 封装层无需改动；核心工作是使用 OHOS NDK 将内嵌的 PicoSAT C 源码与 pycosat.c 重新编译为 arm64/x86_64 .so 扩展。代码仅依赖 C 标准库、Python C-API 和 POSIX getrusage（用于计时，且已有 Windows 降级路径），无 GUI/网络/子进程/硬件依赖，整体适配工作量低。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -594,7 +592,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 封装层可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_getrusage",
@@ -602,7 +601,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "仅影响 picosat_time_stamp / picosat_seconds 计时统计；缺失时可启用 NGETRUSAGE 宏跳过",
-        "source": "musl POSIX 子集 + 代码已有 NGETRUSAGE 回退"
+        "source": "musl POSIX 子集 + 代码已有 NGETRUSAGE 回退",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
@@ -636,7 +636,21 @@
       "运行 test_pycosat.py 验证 solve / itersolve 功能"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。默认构建未启用 VISCORES（可视化）和 RCODE（R 绑定）宏，因此 gnuplot / system / popen / usleep / <R.h> 等代码不参与生产编译，不计入迁移阻碍。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -645,6 +659,7 @@
     "confidence_overall": "high",
     "warnings": [],
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

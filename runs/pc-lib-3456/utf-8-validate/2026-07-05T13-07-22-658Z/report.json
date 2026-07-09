@@ -773,7 +773,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13.0 运行时上; N-API 原生插件经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核, 非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -782,7 +781,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js 库，鸿蒙 PC 已移植 Node.js 24.13.0 运行时，纯 JavaScript 部分（入口与 fallback）可直接运行。唯一工作在于 N-API 原生插件（src/validation.cc + vendored is_utf8 C++ 引擎）需要用 OHOS NDK 交叉编译为 .node。is_utf8 引擎已内置 arm64 NEON、x86_64 AVX/SSE 与标量回退三条路径，运行时自动选择最优——arm64 NEON 路径在鸿蒙主架构上直接可用，无需代码改动。build 依赖 node-gyp-build 需在鸿蒙 Node.js 上能正常工作（跨操作系统 npm 包，无原生组件）。",
     "blockers": [
       {
@@ -840,7 +838,8 @@
         "required": true,
         "target_status": "available",
         "impact": "arm64 NEON 加速路径在鸿蒙上编译即用",
-        "source": "harmony-pc-capabilities.json#arch (arm64=available); arm_neon.h 为 ARM 编译工具链标准头"
+        "source": "harmony-pc-capabilities.json#arch (arm64=available); arm_neon.h 为 ARM 编译工具链标准头",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -875,7 +874,21 @@
     ],
     "required_permissions": [],
     "notes": "按模型 A 评估（库跑在鸿蒙已移植 Node.js 运行时上）。库规模极小（生产代码 ~5777 行），核心 N-API 封装仅 40 行 C++，vendored is_utf8 引擎仅需重编无需改代码，整体为 recompile_only 级。ARM NEON 是鸿蒙 PC 主力架构 arm64 的标准 SIMD 指令集，编译即用；x86_64 SIMD 若鸿蒙未提供替代，标量回退路径自动激活、功能正确仅性能下降。node-gyp-build 为纯 JS 跨 OS npm 包，鸿蒙 Node.js 上预期正常运作。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -899,7 +912,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯计算库，不涉及 GUI、3D 渲染、媒体或特定硬件等鸿蒙适配重点场景；SIMD 加速为 CPU 指令集级优化（ARM NEON / x86 SSE/AVX），各有标量回退路径，非特定硬件依赖",

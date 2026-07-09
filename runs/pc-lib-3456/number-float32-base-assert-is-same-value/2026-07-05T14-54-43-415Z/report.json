@@ -652,7 +652,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：跑在已移植的鸿蒙 Node.js 24 运行时上；自研内核，无 Linux ABI；arm64/x86_64）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -662,7 +661,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 @stdlib 家族的单精度浮点 SameValue 断言函数，提供双实现路径：(1) 纯 JavaScript 实现（lib/main.js），仅使用 JS 语言特性；(2) C 原生 Node-API 插件（src/addon.c + src/main.c），编译产物 addon.node 为可选项。纯 JS 路径在鸿蒙 Node.js 上无需任何改动即可运行，零移植工作量。C 原生插件仅使用 C99 标准库类型和 Node-API 桥接接口，无平台特有 API 或系统调用，若需启用可经 OHOS NDK 重编。总体无阻碍，confidence 高。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -673,7 +671,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已确认鸿蒙 PC 提供 Node.js 24.13.0，JS/TS 可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -699,7 +698,21 @@
       "（可选）如有性能需求，用 OHOS NDK 重编 C 原生插件 addon.node"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。纯 JS 实现无任何平台耦合，是完整且独立的生产实现——无需编译原生扩展库即可正常工作。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "number-float32-base-assert-is-same-value",
@@ -722,19 +735,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.json 自动检测为 jest/mocha，但实际测试框架为 tape（require('tape')），构建使用 tape + tap-min 报告器。自动检测因 tape 使用 describe/it 之外的 API 签名而生成了名称近义词误判。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算断言库，不涉及 GUI、3D 渲染、媒体处理或特定硬件。",

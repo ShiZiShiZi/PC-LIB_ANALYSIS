@@ -511,7 +511,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24.13.0 运行时上; arm64/x86_64; 自研内核, 无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -520,7 +519,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "本库为纯 JavaScript 命名空间聚合包（stdlib 子包），仅将子模块的导出汇聚为统一命名空间对象。鸿蒙 PC 已移植 Node.js 24.13.0 运行时，纯 JS 代码可直接运行，无需任何修改。本仓库自身无原生扩展、无平台特有 API 调用、无外部命令、无文件/网络/设备访问。所有运行时依赖为 npm 上的 @stdlib/* 子包（同一生态），在鸿蒙 Node.js 上 npm install 即可安装。迁移工作仅限：在鸿蒙 Node.js 上执行 npm install，跑通单元测试验证即可。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -531,7 +529,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无——鸿蒙 PC 已确认提供 Node.js 24.13.0",
-        "source": "references/harmony-pc-capabilities.json#nodejs"
+        "source": "references/harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:npm",
@@ -539,7 +538,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无——npm 随 Node.js 提供",
-        "source": "常识推断（Node.js 随附 npm）"
+        "source": "常识推断（Node.js 随附 npm）",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -565,7 +565,21 @@
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。本仓库为轻量命名空间包，实际复数运算实现位于子包（@stdlib/complex-float32-base 等）中——这些子包可能含 C/C++ 原生扩展（如 base 子包涉及数值算法性能优化），需另行逐一评估其鸿蒙化可行性。只要子包可在鸿蒙 Node.js 上正常安装运行，本包无需任何代码修改。",
     "required_permissions": [],
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "one_liner": "stdlib 的子包，提供单精度复数浮点数运算的命名空间聚合函数。",
@@ -582,33 +596,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "clarity",
-        "value": "nodejs",
-        "rationale": "package.json 明确 npm 包，无其他语言清单"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "gap",
-        "value": "empty",
-        "rationale": "纯 JS 命名空间聚合包，本仓库不含任何 C/C++/原生代码或平台特有 API 调用。子包可能含原生扩展（如 base 数值运算），但不在本仓库范围内"
-      },
-      {
-        "dimension": "dependency-analysis",
-        "field": "note",
-        "kind": "scope",
-        "value": "stdlib-monorepo",
-        "rationale": "全部运行时依赖均为 stdlib 同项目子包，同一生态下拆分到独立 npm 包"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为纯 JavaScript 数值计算库，不涉及 GUI、3D 渲染、媒体处理或特定硬件设备。",

@@ -641,8 +641,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK, OpenGL ES 3.2 + EGL 已支持)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         67.7,
@@ -693,7 +692,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙已支持 OpenGL ES 3.2（向下兼容 GLES 2.0），本库所有 GLES 2.0 API 封装可映射到鸿蒙 GLES 3.2 实现",
-        "source": "references/harmony-pc-capabilities.json id:opengl (status:partial); harmonyos-sdk-api-lookup 文档「标准库-OpenGL ES.md」确认支持 GLES 3.2 + libGLESv3.so + libEGL.so"
+        "source": "references/harmony-pc-capabilities.json id:opengl (status:partial); harmonyos-sdk-api-lookup 文档「标准库-OpenGL ES.md」确认支持 GLES 3.2 + libGLESv3.so + libEGL.so",
+        "target_status_model": "available"
       },
       {
         "id": "ta:egl",
@@ -701,7 +701,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙已支持 EGL，可替代 GLEW 的函数指针加载功能（通过 eglGetProcAddress）",
-        "source": "harmonyos-sdk-api-lookup 文档「标准库-EGL.md」确认支持 EGL + libEGL.so"
+        "source": "harmonyos-sdk-api-lookup 文档「标准库-EGL.md」确认支持 EGL + libEGL.so",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt_ohos",
@@ -709,12 +710,12 @@
         "required": false,
         "target_status": "available",
         "impact": "Qt 后端可使用鸿蒙版 Qt5 的 QOpenGLFunctions 替代 QGLFunctions（Qt4 已过时）；若不用 Qt 后端则不影响",
-        "source": "references/harmony-pc-capabilities.json id:qt (status:available)"
+        "source": "references/harmony-pc-capabilities.json id:qt (status:available)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
     "critical_dependencies": [],
-    "recommended_path": "cross_compile",
     "summary": "本库是 OpenGL ES 2.0 的 C++ 封装层，鸿蒙 PC 已原生支持 OpenGL ES 3.2（向下兼容 GLES 2.0）和 EGL。适配核心工作是：(1) 为 normal 后端新增 __OHOS__ 平台分支，使用 <GLES3/gl3.h> + <EGL/egl.h> + eglGetProcAddress 替代 GLEW；(2) 删除内嵌的 GLEW 源码（31651 行整体替换为系统 GLES 头文件）；(3) Qt 后端将 QGLFunctions (Qt4) 升级为 QOpenGLFunctions (Qt5)；(4) 构建系统从 Yip 迁移到 CMake。所有 GLES 2.0 API 在鸿蒙 GLES 3.2 中均有对应实现，无需改写 API 调用逻辑。",
     "blockers": [
       {
@@ -799,7 +800,21 @@
       "在鸿蒙 PC 上编译并运行测试，验证所有 GLES 2.0 封装函数正常工作"
     ],
     "notes": "鸿蒙已支持 OpenGL ES 3.2（向下兼容 GLES 2.0）和 EGL，本库所需的所有图形 API 均有等价实现。主要改造集中在构建系统和平台适配层，核心 GL 封装逻辑无需修改。Qt 后端为可选适配项（如宿主项目不使用 Qt 则可跳过）。内嵌 GLEW 的 31651 行代码是整体删除替换，实际修改量远小于此数字。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "gles2",
@@ -827,15 +842,7 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "build_env",
-        "field": "build_system",
-        "kind": "new_value",
-        "value": "yip",
-        "rationale": "构建系统为 Yip（非主流），Yipfile 替代 CMakeLists.txt，需在报告中记录并作为迁移考量"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cap_miss:gui",
@@ -843,7 +850,8 @@
         "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目是一个 OpenGL ES 2.0 API 封装库，核心场景是 3D 图形渲染（通过 OpenGL/GLES 驱动）。不涉及 GUI 工具包、媒体编解码或特定硬件设备。",

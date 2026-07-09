@@ -692,7 +692,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（arm64/x86_64，OHOS NDK + musl POSIX 子集；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -701,7 +700,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "apr-iconv 是纯 C 字符集转换库，核心逻辑仅依赖 C 标准库与 APR 可移植运行时；唯一运行时依赖 APR 已在 OpenHarmony PC cmd-pkgs 中提供移植版。移植路径清晰：使用 OHOS NDK 交叉编译 libapriconv-1.so 与全部 ccs/ces 转换模块，必要时通过 Node-API 封装为 ArkTS/JS 可调用的接口。无需改动字符转换算法本体。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -711,7 +709,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 源码需经 OHOS NDK 重编为 .so；NDK 存在且 arm64 已确认支持，x86_64 待核实",
-        "source": "references/harmony-pc-capabilities.json intro / arch.arm64"
+        "source": "references/harmony-pc-capabilities.json intro / arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:apr_ohos",
@@ -719,7 +718,8 @@
         "required": true,
         "target_status": "available",
         "impact": "APR 已鸿蒙化，apr-iconv 依赖的 apr_dso_load/apr_env_get/apr_stat 等接口可直接复用",
-        "source": "scripts/harmony_adapted.js 查询结果 + references/harmony-pc-capabilities.json"
+        "source": "scripts/harmony_adapted.js 查询结果 + references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -790,7 +790,21 @@
       "（可选）编写 Node-API 绑定，将 apr_iconv_open/close/conv 暴露给 ArkTS/JS 应用"
     ],
     "notes": "按库模型 A 评估：C 库经 OHOS NDK 重编后在鸿蒙原生层运行。由于 APR 已官方鸿蒙化，DSO/路径/环境变量抽象无阻塞风险；仅有工具链适配与一处 POSIX getopt  minor 点。无 GUI/媒体/硬件/云服务场景，无需额外 ohos.permission。若目标为纯 ArkTS 应用（模型 B），则需额外 Node-API 封装层，工作量增加约 3–5 人天。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "apr-iconv",
@@ -818,7 +832,8 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "apr-iconv 是纯字符集转换库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件访问；所有工作均为内存中的字节/Unicode 转换与文件 I/O。",

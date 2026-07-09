@@ -610,10 +610,8 @@
     "packaging": "NuGet package (Serilog); includes build props targets (Serilog.targets) for consuming projects"
   },
   "harmony_adaptation": {
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "effort": {
       "person_days": [
         3,
@@ -646,13 +644,28 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 无可用 .NET 运行时，Serilog 完全无法运行；若有已移植运行时，则可直接运行（核心库为纯托管代码、无原生依赖）",
-        "source": "references/harmony-pc-capabilities.json — 无 dotnet 条目，对照已有 python/nodejs/java/rust/go/julia 条目推知 .NET 尚未确认"
+        "source": "references/harmony-pc-capabilities.json — 无 dotnet 条目，对照已有 python/nodejs/java/rust/go/julia 条目推知 .NET 尚未确认",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
     "notes": "Serilog 是纯托管 .NET 库，无 P/Invoke、无原生代码、无平台特有 API、无文件系统/网络/子进程依赖。一旦 .NET 运行时在鸿蒙 PC 可用，Serilog 核心库（net6.0+/net8.0+ TFM）应可直接运行，无需代码修改。工作量主要取决于 .NET 运行时的移植状态而非 Serilog 本身。net462/net471 TFM（依赖 .NET Framework）在非 Windows 平台不可用，但 net6.0+ TFM 已覆盖现代 .NET。构建工具链（dotnet SDK/MSBuild）也需确认鸿蒙可用性，但构建可在交叉编译环境完成。",
     "run_on_ported_runtime": true,
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Serilog",
@@ -674,22 +687,7 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "9",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime_unknown",
-        "rationale": "harmony-pc-capabilities.json 列出了 python/nodejs/java/rust/go/julia 运行时均为 available，但无 .NET/dotnet 运行时条目，状态为 unknown。这决定了整个鸿蒙适配评估的置信上限。"
-      },
-      {
-        "dimension": "7",
-        "field": "groups[].type",
-        "kind": "novel",
-        "value": "dotnet_bcl",
-        "rationale": "Serilog 使用的底层 API 均为 .NET BCL 标准库（非 P/Invoke 或原生调用），需要专门的分类来区分 .NET 托管标准库 API 与 C/C++ 标准库 API。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "warnings": [
       "shape coerced: license.evidence array→string",
@@ -704,7 +702,8 @@
       "shape coerced: meta.observations[0].dimension integer→string",
       "shape coerced: meta.observations[1].dimension integer→string"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "scenarios": [],

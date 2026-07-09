@@ -1562,7 +1562,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库模型 A：经 OHOS NDK 重新编译为 arm64/x86_64 .so，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1581,7 +1580,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "核心网络功能依赖；若子集缺失则无法运行",
-        "source": "harmony-pc-capabilities.json 未单列 POSIX socket，但引言提到 NDK 为 musl+POSIX 子集"
+        "source": "harmony-pc-capabilities.json 未单列 POSIX socket，但引言提到 NDK 为 musl+POSIX 子集",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet_perm",
@@ -1590,7 +1590,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "所有网络访问都需要网络权限",
-        "source": "harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1606,7 +1607,6 @@
       }
     ],
     "critical_dependencies": [],
-    "recommended_path": "recompile_napi",
     "summary": "IXWebSocket 是 C++ 跨平台网络库，核心依赖 zlib、OpenSSL/MbedTLS 等已出现在 OpenHarmony PC 预编译包清单中；源码主要走 POSIX socket 分支，Windows/Apple 专有代码由条件编译隔离，在鸿蒙 PC 上只需通过 OHOS NDK 重新编译并链接鸿蒙化依赖即可。由于 caps 表未明确列出 POSIX socket 与 INTERNET 权限在 PC 形态的授予状态，置信度下调至 medium。",
     "blockers": [],
     "compatible": [
@@ -1640,7 +1640,21 @@
       "确认 ohos.permission.INTERNET 在目标 PC 形态的授予方式，并在包装层声明"
     ],
     "notes": "评估按库模型 A（被其他 C++ 代码链接）而非 ArkTS 应用。ws 命令行工具仅用于测试，不属于核心库运行时；若需将库暴露给 ArkTS 应用，可再包一层 Node-API。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "IXWebSocket",
@@ -1672,15 +1686,7 @@
       }
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "permissions",
-        "kind": "caps_gap",
-        "value": "POSIX socket API",
-        "rationale": "IXWebSocket 核心库完全依赖 POSIX socket API（socket/connect/poll/getaddrinfo），但 harmony-pc-capabilities.json 未明确列出该目标能力，导致 dim-9 只能记 target_status=unknown 并下调置信度；建议在 runtimes 或 permissions 段补充 POSIX socket 支持状态。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings_reviewed": [
       {
@@ -1689,7 +1695,8 @@
         "rationale": "INTERNET 权限由网络通信能力驱动，而非 capability_profile 的 gui/3d/media/hardware 四类场景；source_capability 使用 'network' 作为其它来源标记，符合 schema 对 source_capability 的描述。"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "IXWebSocket 为纯网络通信库，不触及 GUI、3D 渲染、音视频媒体或特定硬件设备；鸿蒙化时主要关注网络 socket/TLS/压缩依赖与 POSIX 子集的兼容性。",

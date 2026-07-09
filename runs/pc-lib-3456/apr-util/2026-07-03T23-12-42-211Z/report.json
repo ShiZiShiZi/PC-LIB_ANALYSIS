@@ -1482,8 +1482,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK + musl libc + POSIX 子集，arm64/x86_64；作为 C 库经交叉编译供其他应用链接）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1492,7 +1491,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile",
     "summary": "apr-util 是平台耦合较轻的 C 工具库，核心功能（数据桶、DBD/DBM 抽象、加密摘要、JSON/XML、UUID 等）可在 HarmonyOS PC 上通过 OHOS NDK 交叉编译运行。APR、Expat、OpenSSL、SQLite3、iconv、GDBM、LMDB、OpenLDAP 等关键依赖已有 OpenHarmony PC 预编译包；未鸿蒙化的可选驱动（PostgreSQL/MySQL/Oracle/ODBC/Berkeley DB/NSS/CommonCrypto 等）可通过构建开关裁剪，不影响核心库。",
     "blockers": [
       {
@@ -1535,7 +1533,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 库需使用 ohos.toolchain.cmake / clang 交叉编译为 .so",
-        "source": "references/harmony-pc-capabilities.json intro"
+        "source": "references/harmony-pc-capabilities.json intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_time_pid_host",
@@ -1543,7 +1542,8 @@
         "required": true,
         "target_status": "available",
         "impact": "UUID 生成、密码校验、队列实现依赖这些 POSIX API",
-        "source": "references/harmony-pc-capabilities.json intro（musl POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json intro（musl POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:iconv",
@@ -1551,7 +1551,8 @@
         "required": true,
         "target_status": "available",
         "impact": "xlate 模块依赖 iconv；musl/OHOS 支持 iconv",
-        "source": "references/harmony-pc-capabilities.json intro"
+        "source": "references/harmony-pc-capabilities.json intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:dso",
@@ -1559,7 +1560,8 @@
         "required": true,
         "target_status": "available",
         "impact": "可选驱动模块依赖 DSO 加载；APR 已鸿蒙化且 OHOS NDK 支持 DSO",
-        "source": "dependencies: apr harmony_adapted=true + OHOS NDK DSO 支持"
+        "source": "dependencies: apr harmony_adapted=true + OHOS NDK DSO 支持",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1597,7 +1599,21 @@
       "运行测试套件（abts）验证核心功能"
     ],
     "notes": "评估按库模型 A/C 交叉编译口径。apr-util 本身无 GUI、媒体、硬件或云服务场景，因此不存在 ArkTS 重写需求。未鸿蒙化的可选后端均非核心，可通过构建开关裁剪。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "apr-util",
@@ -1621,40 +1637,12 @@
   "meta": {
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "C/C++ 依赖通过 find_package、pkg-config、-l 链接或 configure 探测获取，统一归为 system；与 CMake/Autotools 声明方式无关。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "optional_driver",
-        "rationale": "apr-util 的数据库/加密/DBM/LDAP 后端高度模块化，多数为可选且可通过开关裁剪；scope 统一标为 optional，不区分默认开启/关闭。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "iconv_classification",
-        "rationale": "iconv 并非 ANSI C 标准而是 POSIX 扩展，但在 musl/OHOS 上普遍可用；此处按 platform/posix 分类。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "new_value",
-        "value": "ohos_ndk_posix_subset",
-        "rationale": "harmony-pc-capabilities.json 未单独列出 POSIX 子集条目，但 intro 已说明 OHOS NDK 基于 musl + POSIX 子集，故作为目标能力假设并标 available。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "apr-util 是底层 C 工具库，不直接涉及桌面 GUI、3D 渲染、媒体编解码或特定硬件访问；其网络客户端能力（memcached/Redis）属于应用层调用，不纳入 capability_profile 场景。",

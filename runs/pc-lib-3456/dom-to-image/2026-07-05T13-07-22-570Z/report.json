@@ -1050,7 +1050,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（库以 npm 包形式分发，经 Webpack/Vite 等打包工具引入，运行于鸿蒙 PC 浏览器/WebView 环境中；Node.js 24.13.0 已移植，构建工具链可用）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -1059,7 +1058,6 @@
       "level": "very_low"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "dom-to-image 是纯 JavaScript 浏览器端库，零运行时依赖、零原生扩展、零平台专有 API 调用——全部功能由 W3C 标准 Web API（Canvas 2D、SVG foreignObject、CSSOM、XMLSerializer）实现。该库以 npm 包形式分发，经标准打包工具（Webpack/Vite/esbuild）引入后运行于浏览器环境中。构建工具链在鸿蒙 PC 的已移植 Node.js 24 上可用。库本体无需任何代码改动，唯一前提是鸿蒙 PC 的浏览器/WebView 支持 Canvas 2D 与 SVG foreignObject（现代浏览器普遍支持）。验证通过后即视为完全可运行。评为 no_adaptation，工作量 0-1 人天。置信度因目标浏览器 Web API 兼容性未经核实而下调为 medium。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1070,7 +1068,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "库的全部功能依赖浏览器标准 Web API——不支持则完全不可运行",
-        "source": "harmony-pc-capabilities.json 未收录浏览器 Web API 兼容性条目（该画像侧重于系统级/桌面级能力）；需人工核实鸿蒙 PC 内置浏览器引擎（是否为 Chromium 内核）及 foreignObject 支持情况。"
+        "source": "harmony-pc-capabilities.json 未收录浏览器 Web API 兼容性条目（该画像侧重于系统级/桌面级能力）；需人工核实鸿蒙 PC 内置浏览器引擎（是否为 Chromium 内核）及 foreignObject 支持情况。",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1088,7 +1087,21 @@
       "确认鸿蒙 PC WebView 的 SVG foreignObject 安全策略不阻止序列化（参考：Safari 因安全策略不支持）"
     ],
     "notes": "该库为浏览器端库（非 Node.js 库），虽然以 npm 包形式发布且可通过 require/import 引入，但实际执行需要浏览器 DOM/Canvas/SVG 环境——无法直接在 Node.js 中运行。评估基于默认运行时模型（模型 A：库跑在已移植运行时上），但这里的'运行时'特指鸿蒙 PC 的浏览器/WebView 引擎（而非 Node.js）。若目标为 ArkTS 沙箱应用（模型 B），由于 ArkTS 无 DOM/Canvas/SVG API，该库需完全重写——结论会收紧为 infeasible/needs_adaptation_partial。置信度下调至 medium 原因为：harmony-pc-capabilities.json 未覆盖浏览器 Web API 兼容性，SVG foreignObject 支持状态未经核实。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "dom-to-image",
@@ -1105,26 +1118,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "browser_webapi_compatibility",
-        "rationale": "harmony-pc-capabilities.json 未收录浏览器/WebView Web API 兼容性条目（如 Canvas 2D、SVG foreignObject、CSSOM 等），导致浏览器端库的目标能力核实缺乏权威数据源。建议在 capabilities 中新增 browser/webview 段，覆盖渲染引擎类型(Chromium/自研)、foreignObject/SVG/Canvas/WebGL 等关键特性支持状态。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "count",
-        "kind": "ambiguity",
-        "value": "zero_runtime_deps",
-        "rationale": "该库 runtime dependencies 为零（package.json dependencies 为空），所有依赖均为 dev/test 用途。code_metrics 将 bower_components/ 和 node_modules/ 统计为 production 代码（31,525 行），但实际库本体仅 src/dom-to-image.js 618 行。模型分析中 runtime deps 按生产代码口径判定为零，与脚本统计的 production LOC 存在概念差异。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯浏览器端 JavaScript 库，不涉及 GUI 工具包、3D 渲染、媒体编解码或特定硬件依赖。全部功能基于浏览器标准 Web API（Canvas 2D、SVG、CSSOM）实现，为纯计算/渲染性库。",

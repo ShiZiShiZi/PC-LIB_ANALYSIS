@@ -1233,8 +1233,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 原生库经 OHOS NDK/musl 交叉编译为 .so；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1243,7 +1242,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile + platform_backend_rewrite",
     "summary": "libfido2 的核心 C 逻辑（CBOR、密码学、CTAP 协议）可经 OHOS NDK 交叉编译，且 OpenSSL、zlib、hidapi、pcsc-lite 已有鸿蒙预编译包。但默认 Linux HID 后端深度依赖 libudev 与 Linux hidraw ioctl，鸿蒙 PC 并非 Linux ABI，需要重写或切换到 hidapi 后端；NFC netlink 路径在鸿蒙上无直接等价；Windows Hello 为 Windows 专有。整体可部分适配，核心 USB HID 路径能否跑通取决于鸿蒙是否暴露等价的 USB HID 设备访问能力。",
     "unadaptable_apis": [
       {
@@ -1255,7 +1253,9 @@
         "category": "platform",
         "evidence": [
           "repos/pc-lib-3456/libfido2/src/winhello.c:92"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1265,7 +1265,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 库移植的前提；OHOS NDK 提供 clang + musl + ohos.toolchain.cmake",
-        "source": "HarmonyOS NEXT PC 原生开发套件"
+        "source": "HarmonyOS NEXT PC 原生开发套件",
+        "target_status_model": "available"
       },
       {
         "id": "ta:usb_hid",
@@ -1273,7 +1274,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "核心 USB FIDO 设备路径必需；若鸿蒙未暴露等价接口，需大量重写",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:nfc",
@@ -1281,7 +1283,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 NFC 通信路径，可通过 USB 路径降级",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.bluetooth（无 NFC 专项，按设备访问未知处理）"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.bluetooth（无 NFC 专项，按设备访问未知处理）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_socket_ioctl",
@@ -1289,7 +1292,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "HID/NFC 代码大量依赖；OHOS musl POSIX 子集可能缺失部分 ioctl/netlink 语义",
-        "source": "harmony-adaptation skill 口径 / OHOS POSIX 子集"
+        "source": "harmony-adaptation skill 口径 / OHOS POSIX 子集",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:libcbor_build",
@@ -1297,7 +1301,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "libcbor 无预编译鸿蒙包，需自行验证可编译性；若失败需寻找 CBOR 替代",
-        "source": "scripts/harmony_adapted.js 查询结果"
+        "source": "scripts/harmony_adapted.js 查询结果",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:pcsc_service",
@@ -1305,7 +1310,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "PC/SC 后端能否工作取决于运行时服务是否存在",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1441,7 +1447,23 @@
       "申请 USB 设备访问权限，运行回归测试验证凭证/断言流程"
     ],
     "notes": "评估按 C/C++ 库口径（OHOS NDK 交叉编译）而非 ArkTS 沙箱模型。当前鸿蒙 PC 对 USB HID/NFC 的暴露情况未核实，是主要不确定性来源。metrics.py 将 regress/ 目录归为生产代码，实际该目录为回归测试。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:winhello"
+        ]
+      }
+    }
   },
   "library": {
     "name": "libfido2",
@@ -1469,40 +1491,19 @@
       "metrics.py 将 regress/ 目录归为生产代码；该目录实际为回归测试，但按脚本口径保留其行数。",
       "鸿蒙 PC 的 USB HID 设备访问能力在 harmony-pc-capabilities.json 中未明确，属于未核实目标事实。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "category",
-        "kind": "new_value",
-        "value": "security_hardware",
-        "rationale": "libfido2 是 FIDO2 安全密钥通信库，现有 categories 里没有专门的‘安全硬件/认证’分类，本次按硬件访问 + 密码学验证组合描述。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "hardware:security_key",
-        "rationale": "推荐场景集只有 gui/rendering_3d/media/hardware；USB HID/NFC/PCSC 安全密钥属于 hardware，但细分为 security_key 更准确，已在 kind 中注明。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "udev/netlink 分类",
-        "rationale": "udev 本质是对 /sys 的用户态封装，netlink 是 Linux 特有 socket 域。本报告将 udev/netlink 归为 system（内核/伪文件接口）与 platform（Linux-only 套接字）之间，按系统层处理。"
-      },
-      {
-        "dimension": "code-metrics",
-        "field": "test classification",
-        "kind": "gap",
-        "value": "regress/ treated as production",
-        "rationale": "cloc 按目录名未将 regress/ 识别为测试；项目实际使用 CMake add_test 运行 regress/ 下的可执行文件。建议在 common.py 中把 regress/ 作为 test 目录。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:winhello",
+        "class": "actionable",
+        "message": "unadaptable_api ua:winhello 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目涉及 USB HID/NFC/PCSC 安全硬件访问，属于硬件设备交互场景；不涉及 GUI、3D 渲染或音视频媒体。",

@@ -784,8 +784,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -802,7 +801,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 已移植至鸿蒙 PC，纯 Python 库可直接运行",
-        "source": "references/harmony-pc-capabilities.json → runtimes.python"
+        "source": "references/harmony-pc-capabilities.json → runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:mindspore_port",
@@ -810,7 +810,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "MindCV 完全依赖 MindSpore，若 MindSpore 未移植则 MindCV 无法运行；需 MindSpore 提供鸿蒙 PC 的计算后端（至少 CPU，理想为 NPU/GPU）",
-        "source": "模型判断：MindSpore 是深度学习框架，包含 C++/CUDA/Ascend 原生代码，需专门移植"
+        "source": "模型判断：MindSpore 是深度学习框架，包含 C++/CUDA/Ascend 原生代码，需专门移植",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:numpy_port",
@@ -818,11 +819,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "numpy 含 C/Fortran 原生扩展，需有鸿蒙 PC 编译版本；若不可用则推理与数据处理功能受影响",
-        "source": "模型判断：numpy 含原生扩展，需有 ohos wheel 或从源码编译"
+        "source": "模型判断：numpy 含原生扩展，需有 ohos wheel 或从源码编译",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "MindCV 是纯 Python 深度学习库，核心阻碍在于运行时依赖 MindSpore 和 numpy。Python 运行时已移植至鸿蒙 PC（available），但 MindSpore 和 numpy 的鸿蒙适配状态均为 unknown——MindSpore 作为含大量 C++/硬件加速代码的深度学习框架，移植工作量巨大且不确定性高。若 MindSpore 不可用，MindCV 整体不可用。若 MindSpore 可用（至少 CPU 模式），MindCV 本身无需代码修改即可运行。",
     "blockers": [
       {
@@ -887,7 +888,21 @@
       "如需硬件加速，验证 MindSpore 在鸿蒙 PC 上的 NPU/GPU 后端可用性"
     ],
     "notes": "本评估置信度为 medium，因 MindSpore（核心依赖）和 numpy 的鸿蒙适配状态均为 unknown。MindCV 自身代码零平台依赖，porting_class 取 needs_adaptation_full 是因为核心依赖 MindSpore 需要大量适配工作（而非 MindCV 本身）。若 MindSpore 已适配则 MindCV 的 porting_class 可降为 no_adaptation。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -895,15 +910,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_full_vs_no_adaptation_conditional",
-        "rationale": "MindCV 自身是纯 Python 零平台依赖库，但其核心依赖 MindSpore（含 C++/CUDA/Ascend 原生代码）需要大量适配。porting_class 按'本体是否需要改造'判定应为 no_adaptation，但按'含依赖是否可运行'判定为 needs_adaptation_full。当前取 needs_adaptation_full 以反映实际落地难度。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

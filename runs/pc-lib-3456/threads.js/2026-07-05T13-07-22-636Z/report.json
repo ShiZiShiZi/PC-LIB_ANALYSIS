@@ -837,7 +837,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24.13.0 运行时上；纯 JS/TS 库，无原生扩展；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -846,7 +845,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "threads.js 为纯 JavaScript/TypeScript 库，无原生 C/C++ 扩展、无 N-API 插件、无平台特有系统调用。鸿蒙 PC 已移植 Node.js 24.13.0 运行时（worker_threads 核心模块应随运行时提供），所有纯 JS 依赖（callsites/debug/is-observable/observable-fns）一同在运行时上工作，安装即可用。唯一的平台相关分支（process.platform === 'win32' 路径处理）在鸿蒙 PC 上自然走非 Windows 分支，无需适配。整体零改造工作量，仅需在鸿蒙 Node.js 上 npm install 并跑通测试验证。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -857,7 +855,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 运行时已移植到鸿蒙 PC（24.13.0），纯 JS/TS 库可直接运行；worker_threads 作为 Node.js 12+ 内置模块应随运行时提供",
-        "source": "references/harmony-pc-capabilities.json #runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json #runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -893,7 +892,21 @@
       "若测试发现 worker_threads 在鸿蒙上的特定差异，做轻量条件补丁（预计零到极少量修改）"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。纯 JS/TS 库 + 已移植运行时 + 无原生扩展 → 理想的可移植情形。唯一需关注的是 worker_threads 在鸿蒙 Node.js 中的信号处理行为（SIGINT/SIGTERM 优雅终止），但这是 Node.js 运行时的职责而非本库需适配的点，且鸿蒙自研内核上 Node.js 应有自己的信号模拟/抽象。tiny-worker 可选依赖在 Node.js 24 环境下不会触发（程序自动走 worker_threads 路径），无需关注其鸿蒙兼容性。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "threads.js",
@@ -918,7 +931,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯 JavaScript/TypeScript 并发库，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。所有功能通过 Node.js 标准模块（worker_threads）和浏览器 Web Worker API 实现，无原生 C/C++ 扩展、无 GPU 图形 API、无媒体编解码。",

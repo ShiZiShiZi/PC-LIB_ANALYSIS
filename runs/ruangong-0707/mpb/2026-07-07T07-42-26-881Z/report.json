@@ -842,8 +842,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，Go 运行时已移植）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3.1,
@@ -894,7 +893,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 终端环境不支持标准 POSIX ioctl，则 cwriter 的 GetSize/IsTerminal 函数需适配替代方案（如环境变量/转义序列查询）",
-        "source": "references/harmony-pc-capabilities.json（Go 运行时已移植，但终端 ioctl 可用性未核实）"
+        "source": "references/harmony-pc-capabilities.json（Go 运行时已移植，但终端 ioctl 可用性未核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:go_runtime",
@@ -902,7 +902,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Go 已官方支持 ohos 目标（1.24+），纯 Go 代码可编译运行",
-        "source": "references/harmony-pc-capabilities.json id=go"
+        "source": "references/harmony-pc-capabilities.json id=go",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -920,7 +921,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "mpb 是一个纯 Go 终端进度条渲染库，Go 运行时已在鸿蒙 PC 移植（available），大部分代码为纯逻辑可直接编译。主要适配点在 cwriter 子包的 POSIX 终端 ioctl 调用（TIOCGWINSZ/TCGETS），需验证鸿蒙 PC 终端环境是否支持这些标准 POSIX 接口。若支持，则仅需交叉编译即可运行；若不支持，需实现替代的终端尺寸检测方案（如 ANSI DSR 转义序列查询），工作量可控。",
     "blockers": [
       {
@@ -972,7 +972,21 @@
       "运行 go test -race ./... 验证全量测试通过"
     ],
     "notes": "Go 运行时已在鸿蒙 PC 移植（available），但终端 POSIX ioctl 可用性为 unknown，故 confidence 降为 medium。若核实 ioctl 可用，则 porting_class 可升至 recompile_only。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "mpb",
@@ -999,16 +1013,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_ioctl",
-        "rationale": "Go 库通过 golang.org/x/sys/unix 调用 POSIX ioctl 不属于传统分类（win32/posix/ctypes_ffi），作为平台 API 的新类型更精确"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "mpb 不涉及 GUI 桌面界面、3D 渲染、媒体编解码或特定硬件设备。它是一个纯终端（TTY）进度条渲染库，唯一与设备相关的是通过 ioctl/Console API 访问终端设备以检测尺寸和 TTY 状态，不依赖 GPU/摄像头/蓝牙等硬件。",

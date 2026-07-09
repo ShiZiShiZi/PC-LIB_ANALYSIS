@@ -1012,8 +1012,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK + musl libc POSIX 子集; arm64/x86_64; 自研内核, 非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         7,
@@ -1022,7 +1021,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "Readline 为纯 C 库，不存在已移植运行时可直接跑（它本身就是原生库）。移植需经 OHOS NDK 交叉编译为 .so，并用 Node-API 封装以暴露给 ArkTS/鸿蒙生态。核心算法（行编辑、历史管理、补全、键绑定）完全可移植；最大的未知数在终端 I/O 层——Readline 深度依赖 POSIX termios 终端属性控制（tcgetattr/tcsetattr、非规范模式、ioctl 窗口大小/缓冲区查询）与 POSIX 信号处理，这些在鸿蒙 PC 终端模拟器中的兼容性尚未核实。若终端 I/O 层兼容则移植难度适中，若不兼容则需大幅改造终端抽象层。ncurses 系统依赖已在 cmd-pkgs 中提供鸿蒙版，不是阻碍。",
     "blockers": [
       {
@@ -1113,7 +1111,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不支持则 Readline 的核心功能（非回显单字符读入、窗口大小检测）无法工作——这是库的根本前提，不支持则整体不可用",
-        "source": "harmony-pc-capabilities.json（终端 I/O 能力未单独列出，需核实鸿蒙 PC 终端模拟器提供的 POSIX TTY 兼容性）"
+        "source": "harmony-pc-capabilities.json（终端 I/O 能力未单独列出，需核实鸿蒙 PC 终端模拟器提供的 POSIX TTY 兼容性）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_signals",
@@ -1121,7 +1120,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "HANDLE_SIGNALS 默认开启——若不支持可关闭宏编译降级为无信号处理模式，但会丢失 Ctrl-C 中断、窗口大小变化通知等交互能力",
-        "source": "harmony-pc-capabilities.json（信号处理能力未单独列出，需核实 musl/OHOS 内核的信号支持范围）"
+        "source": "harmony-pc-capabilities.json（信号处理能力未单独列出，需核实 musl/OHOS 内核的信号支持范围）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1184,7 +1184,21 @@
       "在鸿蒙终端上运行示例程序（examples/rl、rlcat 等）验证行编辑、补全、历史功能正常"
     ],
     "notes": "评估按模型 A（C 库经 OHOS NDK 重编 + Node-API 封装）口径。Readline 本身不包含 GUI/3D/媒体/硬件场景（capability_profile 为空），移植的不可替代核心是其对 POSIX 终端 I/O 子系统的依赖——这决定了「能否在鸿蒙 PC 上提供与 Linux 同等体验的命令行编辑」。confidence=medium 是因为两条关键目标假设（POSIX 终端 I/O 兼容性、信号处理兼容性）均为 unknown——结论依赖未核实的目标事实；若二者均 available 则可上调到 high 并缩短 person_days 至 [5,8]。platform_adaptation 共 143 行平台守卫代码（以 Windows _WIN32 为主），非关键阻碍——鸿蒙走 POSIX 路径自动覆盖。ncurses 已确认在 cmd-pkgs 中提供鸿蒙版（harmony_adapted=true），不计为阻碍。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "readline",
@@ -1207,33 +1221,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_termios",
-        "rationale": "POSIX termios 终端 I/O（tcgetattr/tcsetattr/tcdrain）不是 POSIX 文件的 posix 类型所能覆盖；它是 Unix 终端驱动的核心 API，需单列为一类"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "posix_tty",
-        "rationale": "harmony-pc-capabilities.json 缺少 POSIX 终端 I/O（termios）兼容性条目——这是命令行库/CLI 工具迁移的核心前提，需补充"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "name",
-        "kind": "ambiguity",
-        "value": "termcap (aliases: ncurses, tinfo...)",
-        "rationale": "Readline 的终端库依赖是可选多选一的系统库（termcap/curses/ncurses/tinfo 任选），用单一 name='termcap' + aliases 表达多选关系；ncurses 为当前最常用替代且在 cmd-pkgs 中已适配"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为 GNU Readline —— 一个纯命令行行编辑 C 库。不涉及任何 GUI 桌面界面/窗口、3D 图形渲染、音视频媒体处理或特定硬件设备。所有交互通过标准终端 I/O（STDIN/STDOUT）完成，属于纯终端/文本界面库，不在鸿蒙适配重点场景（GUI/3D/媒体/硬件）中。",

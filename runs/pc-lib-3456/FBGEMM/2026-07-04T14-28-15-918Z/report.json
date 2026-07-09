@@ -1772,8 +1772,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在已移植的 Python 运行时上；原生 C++/CUDA 扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1782,7 +1781,6 @@
       "level": "high"
     },
     "confidence": "high",
-    "recommended_path": "build_cpu_only_variant",
     "summary": "FBGEMM 的 CPU 核心（低精度 GEMM/卷积）具备 ARM Neon/SVE 路径，可在鸿蒙 PC 已移植 Python + OHOS NDK 上重编运行；但其主力功能 FBGEMM_GPU/FBGEMM_GPU GenAI 强依赖 NVIDIA CUDA/NCCL/NVML（以及 AMD ROCm/HIP）GPU 计算栈，而鸿蒙 PC 目标能力中 GPU 通用计算 CUDA 为 unavailable，导致 GPU 算子无法移植。推荐路径是构建 CPU-only 变体并裁剪 GPU 相关模块，整体属于「部分可适配」。",
     "unadaptable_apis": [
       {
@@ -1798,7 +1796,9 @@
         ],
         "caused_by": [
           "ta:cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nccl",
@@ -1812,7 +1812,9 @@
         ],
         "caused_by": [
           "ta:cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nvml",
@@ -1826,7 +1828,9 @@
         ],
         "caused_by": [
           "ta:cuda"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1836,7 +1840,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 包运行与构建脚本执行的前提，已满足",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -1844,7 +1849,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++/CUDA 扩展需重编为鸿蒙 .so，NDK 存在且支持 C++20",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cuda",
@@ -1852,7 +1858,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "FBGEMM_GPU 与 GenAI 的 CUDA 算子无法运行，必须裁剪或降级为 CPU-only",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:arm64_simd",
@@ -1860,7 +1867,8 @@
         "required": true,
         "target_status": "available",
         "impact": "CPU-only 变体可复用现有 ARM 优化路径，无需重写核心算法",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64 + 仓库 ARM 内核实现"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64 + 仓库 ARM 内核实现",
+        "target_status_model": "available"
       },
       {
         "id": "ta:procfs",
@@ -1868,7 +1876,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "仅影响 SSD-TBE 训练中的 Linux 内存 eviction 触发路径，非核心功能",
-        "source": "references/harmony-pc-capabilities.json#process_security"
+        "source": "references/harmony-pc-capabilities.json#process_security",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [],
@@ -1960,7 +1969,25 @@
       "裁剪 FBGEMM_GPU GenAI 中依赖 CUDA 的模块，或明确标记为 GPU-only 不可移植"
     ],
     "notes": "评估基于模型 A（库跑在已移植运行时上）。因 CUDA 在鸿蒙 PC 目标事实中为 unavailable，GPU 功能无法移植；若评估口径要求保留 GPU 训练/推理能力，则结论应调整为 infeasible。CPU-only 路径置信度较高，但 asmjit/cpuinfo/cutlass/folly 的实际交叉编译工作量会显著影响总人天。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "high",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda_runtime",
+          "ua:nccl",
+          "ua:nvml"
+        ]
+      }
+    }
   },
   "library": {
     "name": "FBGEMM",
@@ -1990,16 +2017,26 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "python",
-        "rationale": "仓库同时包含 C++ 核心库 fbgemm（CMake 项目 fbgemm）与 Python 分发包 fbgemm_gpu（setup.py）。按「可安装分发包/主交付物」口径选择 python；若按「核心实现语言」口径也可能判为 cpp。"
+        "code": "ua_func_class_defaulted:ua:cuda_runtime",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda_runtime 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nccl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nccl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nvml",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nvml 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   },
   "capability_profile": {
     "summary": "FBGEMM 是一个纯计算/算子库，不涉及桌面 GUI、3D 图形渲染或音视频媒体处理；其鸿蒙适配的关键场景是**硬件/GPU 通用计算**（CUDA/ROCm 训练/推理算子），这是主要阻碍来源。",

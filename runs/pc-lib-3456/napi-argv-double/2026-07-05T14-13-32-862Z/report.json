@@ -703,7 +703,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK/musl + libnode，arm64/x86_64；Node.js 24.13.0 已移植）；按模型 A（库跑在已移植的 Node.js 运行时上，N-API 原生插件经 NDK 重编）评估",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -712,7 +711,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "本库为 stdlib 生态的 N-API 基础设施包，JS 层仅导出头文件目录路径，核心逻辑在 C 层通过 Node-API 将 napi_value 转换为 double。鸿蒙 PC 已移植 Node.js 24 运行时，纯 JS 代码可直接运行无需改动。C 原生代码仅使用了标准 C99 和 Node-API（napi.h），无平台特有 API、无系统调用、无 GPU/硬件依赖，只需用 OHOS NDK 重新编译即可。",
     "blockers": [
       {
@@ -738,7 +736,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植则运行时本身不阻碍；若无已移植 Node.js 则不可移植",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -774,7 +773,21 @@
       "在鸿蒙 Node.js 24 上运行测试验证功能正确"
     ],
     "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 上）评估。N-API 原生插件需 OHOS NDK 重编，但 C 源码纯用 C99 + Node-API，无平台耦合，重编工作量极小。已移植运行时（Node.js 24）不是阻碍。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/napi-argv-double",
@@ -794,26 +807,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "nodejs",
-        "rationale": "库以 package.json/npm 分发，核心是 JS wrapper + C N-API 实现。metrics.py 将 primary language 判为 Python（因 CI 脚本和标记文件居多），但实质应为 nodejs（生态由 Node.js 定义）。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "primary",
-        "kind": "ambiguity",
-        "value": "Python→nodejs",
-        "rationale": "metrics.py 报告的 primary language 为 Python（111行，来自 CI 脚本），但该库实际核心语言为 C（38行）+ JavaScript（16行），生态为 nodejs。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为纯数值转换的 N-API 基础设施，不涉及 GUI、3D 渲染、媒体处理或特定硬件。",

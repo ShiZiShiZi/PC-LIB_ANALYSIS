@@ -3325,7 +3325,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在鸿蒙已移植的 Qt6 运行时上；原生 C++ 代码经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         4,
@@ -3333,8 +3332,7 @@
       ],
       "level": "medium"
     },
-    "confidence": "high",
-    "recommended_path": "recompile_napi",
+    "confidence": "medium",
     "summary": "KSyntaxHighlighting 为纯 C++/Qt6 库，自身无平台特有代码（零编译宏守卫，零 Win32/POSIX 直接调用，零硬件 API），所有平台抽象均由 Qt6 提供。Qt6 已在鸿蒙 PC 社区提供移植版，库仅需用 OHOS NDK 交叉编译并链接 Qt6 for OHOS 即可运行。内置 300+ XML 语法定义与 JSON 主题文件以 Qt 资源 (.qrc) 形式编译进 .so，无需外部文件依赖。网络更新功能（DefinitionDownloader）为可选特性，鸿蒙上可禁用或保留（需网络权限）。整体属于低难度重编移植，不涉及代码修改。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -3344,7 +3342,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt6 是库的核心依赖（Core/Gui PUBLIC、Network PRIVATE），不提供则库无法编译运行",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ecm_ohos",
@@ -3352,7 +3351,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "ECM 为纯 CMake 模块（Perl 脚本），不产生编译产物，理论上可在任何 CMake 环境运行；但 OHOS NDK 工具链下的兼容性未经核实",
-        "source": "references/harmony-pc-capabilities.json（未收录 ECM）"
+        "source": "references/harmony-pc-capabilities.json（未收录 ECM）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -3444,7 +3444,21 @@
       "（可选）编译 ksyntaxhighlighter CLI 工具并验证 HTML/ANSI 输出"
     ],
     "notes": "平台适配信号极低：code_metrics.platform_adaptation 全部为 0（生产代码零编译宏守卫），platform_branches 仅 1 处且位于测试数据中（非生产代码）。库完全依赖 Qt6 的跨平台抽象层，自身不直接触碰任何平台/系统/硬件 API。Qt6 鸿蒙版已在社区可用（harmony-pc-capabilities.json 标记 available，含 qt6/qtbase 等组件），是该路径可行的关键前提。ECM 未在 caps 中收录（target_status=unknown），但 ECM 为纯 CMake 宏/Perl 脚本，不参与编译，不影响可行性——仅作为 minor 阻碍点记录。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "KSyntaxHighlighting",
@@ -3468,48 +3482,20 @@
     "analyzed_at": "2026-07-04T15:33:22Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "所有依赖均通过 CMake find_package 获取，符合推荐的 system 取值"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "ambiguity",
-        "value": "命令行工具",
-        "rationale": "ksyntaxhighlighter CLI 既可作为库的测试/演示工具，也可独立使用。当前归类为功能类别之一（非 entry_points 主要维度），反映其作为库附带的可执行工具性质"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "qt_framework",
-        "rationale": "Qt 框架 API 严格来说不是 language stdlib，但 Qt 的跨平台设计使其行为类似 portable 标准库——对外屏蔽 OS 差异。归类为 standard/portable，以区别于 platform/system 类 API"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "ECM 未在 harmony-pc-capabilities.json 收录",
-        "rationale": "ECM 是 KDE 框架构建系统核心，纯 CMake/Perl 模块不参与编译，通常跨平台兼容——但 caps 中未收录，导致 ta:ecm_ohos 的 target_status=unknown。建议后续在 caps 中增补 ECM/CMake 构建工具链条目"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目是文本处理库，自身不涉及 GUI 窗口/界面、3D 渲染、音视频媒体或特定硬件场景。底层依赖 Qt6 Core/Gui/Network 提供跨平台文本格式与网络能力，但这些均由 Qt 抽象层处理，库本体无平台特有的窗口/图形/硬件调用。",

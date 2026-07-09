@@ -2265,8 +2265,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（C/C++ 库经 OHOS NDK/musl 交叉编译为 .so；Python/Java/JS 绑定跑在已移植运行时上；arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -2283,7 +2282,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 musl 的 C++17 std::filesystem/std::thread 不支持，需替换实现或回退 C++14 路径",
-        "source": "references/harmony-pc-capabilities.json#runtimes（musl + POSIX 子集，但 C++17 STL 覆盖未明确记载）"
+        "source": "references/harmony-pc-capabilities.json#runtimes（musl + POSIX 子集，但 C++17 STL 覆盖未明确记载）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_ohos",
@@ -2291,7 +2291,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "OpenGL ES/EGL 为 partial——可用但不完整；GPU 纹理上传功能可能受限或需适配鸿蒙特定扩展；此功能可通过编译选项禁用，核心库不受影响",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl+egl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl+egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:vulkan_ohos",
@@ -2299,7 +2300,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Vulkan 可用性未知；GPU 纹理上传功能需待 Vulkan 可用性明确；此功能可通过编译选项禁用",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:python_ohos",
@@ -2307,7 +2309,8 @@
         "required": false,
         "target_status": "available",
         "impact": "Python 绑定可直接运行（cffi 已在 OHOS 镜像可用）；仅需 CFFI 原生扩展编译产物（ktx_texture.c）经 OHOS NDK 重编",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:java_ohos",
@@ -2315,11 +2318,11 @@
         "required": false,
         "target_status": "available",
         "impact": "Java 绑定可直接运行；JNI 原生库（ktx-jni.so）需经 OHOS NDK 重编",
-        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "KTX-Software 为 C/C++ 纹理处理库，核心功能（KTX 文件读写、Basis Universal/ASTC 编码压缩、格式转码）均为纯 CPU 计算，不依赖 GPU 运行时或平台特有 API。所有 C/C++ 依赖均已 vendored（内联编译），无外部库阻碍。GPU 纹理上传（OpenGL/Vulkan）为可选功能，可通过编译标志关闭，核心库仍可完整编译运行。平台适配量中等（platform_adaptation 总计 1717 行，集中在动态库加载路径）。推荐路径：经 OHOS NDK 交叉编译 libktx 为 arm64/x86_64 .so，GPU 上传功能初期条件禁用，后续待鸿蒙 OpenGL/Vulkan 状态明确后再启用。Python/Java 绑定可跑在鸿蒙已移植运行时上，仅需 JNI/CFFI 原生扩展重编。",
     "blockers": [
       {
@@ -2466,7 +2469,21 @@
       "跟进鸿蒙 OpenGL ES/Vulkan PC 状态——状态明确后启用 GPU 纹理上传功能"
     ],
     "notes": "评估按模型 A（C++ 库经 OHOS NDK 重编，绑定跑在已移植运行时上）。GPU 上传功能（OpenGL/Vulkan 纹理实例化）状态受制于鸿蒙 GPU 运行时覆盖情况——目前 OpenGL ES/EGL 为 partial、Vulkan 为 unknown，因此整体 confidence 降为 medium。但核心 KTX 文件处理功能（读写、编码、转码、压缩）完全不依赖 GPU，即使 GPU 上传禁用仍可交付完整可用的纹理处理库。平台适配代码量适中（platform_adaptation 总计 1717 行），主要集中在大段 #ifdef 守卫的 SIMD 配置和动态库加载路径，结构性条件编译使得鸿蒙端口改动局部可控。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "KTX-Software",
@@ -2492,33 +2509,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "图像 I/O 插件",
-        "rationale": "KTX-Software 内置图像读写插件（PNG/JPEG/EXR/NetPBM）用于 ktx 工具的图像格式转换——既非纹理格式本身也非 GPU 上传，属于工具链层能力，独立设为一个功能分类"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "emscripten",
-        "rationale": "Emscripten 绑定 API（EMSCRIPTEN_BINDINGS、emscripten::val 等）不属于传统 C++ STL 或平台 API——它是 WASM 编译目标独有的桥接层，涉及 JS/C++ 跨语言互操作，与 JNI/CFFI 同样属 FFI 类但语义不同，在此列为单独组"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "recompile_napi",
-        "rationale": "虽然推荐路径标记为 recompile_napi（C++ 库经 OHOS NDK 重编后通过 Node-API 暴露），但 KTX-Software 的核心库本身已是 C API，不需要额外的 N-API 包装——除非目标是将它暴露给 ArkTS 应用调用。对库的 C API 直接交叉编译后通过 C 链接使用即可，因此 recompile_napi 在此上下文中实质等同于 cross_compile"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为 GPU 纹理容器库，涉及 3D 渲染场景（OpenGL/Vulkan 纹理上传）与硬件加速场景（SIMD 编码加速、可选 OpenCL），不涉及 GUI 界面和媒体（音视频）。",

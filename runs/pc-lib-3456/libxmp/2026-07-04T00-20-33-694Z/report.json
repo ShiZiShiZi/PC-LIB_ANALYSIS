@@ -1050,8 +1050,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 交叉编译为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1060,7 +1059,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libxmp 是高度可移植的纯 C 模块音乐渲染库，核心功能仅依赖 C 标准库与少量 POSIX 文件/进程 API，可在 OHOS NDK 下重新编译运行。主要移植工作在于验证编译、跑通测试，以及处理 RAR/MO3 格式依赖的外部 unrar/unmo3 助手程序：若鸿蒙 PC 不支持 spawn 或缺少这些命令，则这两个格式需要替代方案或降级禁用。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1070,7 +1068,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 PCM 合成、文件 I/O、内存管理依赖标准 C 库；musl 可用则基础功能无阻碍",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_spawn",
@@ -1078,7 +1077,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "RAR/MO3 解包依赖调用外部 unrar/unmo3；若 spawn 受限或命令不存在，则这两个格式无法使用",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arm64",
@@ -1086,7 +1086,8 @@
         "required": true,
         "target_status": "available",
         "impact": "主力架构，编译目标可用",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -1094,7 +1095,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "如需要 x86_64 目标，需核实 OHOS NDK 是否提供该 target；arm64 已确认可用",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1161,7 +1163,21 @@
       "可选：通过 Node-API 将 libxmp 封装为 ArkTS 可调用的原生模块（若目标为 ArkTS 应用）"
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编后被其他代码链接/调用）。核心库无不可适配 API；唯一不确定点是外部进程 spawn 能力与 x86_64 支持，二者均记为 target_assumptions 并将 confidence 降至 medium。若目标为 ArkTS 应用，则需额外加一层 Node-API 封装，工作量小幅上升。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libxmp",
@@ -1191,23 +1207,9 @@
       "仓库无独立 LICENSE 文件，MIT 许可文本位于 README 末尾；已据此判定。",
       "harmony_adaptation.confidence 因外部进程 spawn 能力与 x86_64 支持状态 unknown 而下调至 medium。"
     ],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_via_cmake_find_library",
-        "rationale": "libxmp 通过 CMake find_library(LIBM_LIBRARY m) 与 autotools AC_CHECK_LIB(m, ceil) 检测并链接系统数学库，可视为 system acquisition 的 CMake/autotools 具体形态。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers.category",
-        "kind": "new_value",
-        "value": "subprocess_unavailable",
-        "rationale": "库自身调用 fork/execvp/popen 运行外部命令（非应用层 shell-out），作为可选格式支持的一部分；在鸿蒙 PC 上属于“外部进程调用不可用/受限”类阻碍，现有推荐分类未直接覆盖。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libxmp 本身是一个纯音频计算库：将模块文件合成为 PCM 缓冲区，不涉及 GUI、3D 渲染、硬件设备或云端服务。音频最终输出由调用方（如示例中的 SDL/OpenAL）负责，因此核心能力在鸿蒙 PC 上可迁移。",

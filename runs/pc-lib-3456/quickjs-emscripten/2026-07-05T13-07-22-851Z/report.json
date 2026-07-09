@@ -942,7 +942,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24.13.0 运行时上；WebAssembly 由 V8 内置支持；arm64/x86_64）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -951,7 +950,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "quickjs-emscripten 是纯 TypeScript/JavaScript 库，其唯一原生组件（QuickJS C 引擎）已被预编译为 WebAssembly 模块，随 npm 包分发。鸿蒙 PC 已移植 Node.js 24.13.0（回合主社区），包含 V8 引擎的完整 WebAssembly 支持。库的生产代码无任何平台专有系统调用、无文件系统/网络/子进程/环境变量访问、无 GUI 或硬件依赖。直接通过 npm/pnpm 安装即可在鸿蒙 PC 的 Node.js 上运行，无需任何代码修改或重新编译。唯一前提条件（Node.js WASM 支持）已核实为 available，整体为即装即用。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -962,7 +960,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 PC 已提供 Node.js 24.13.0（回合主社区），包含完整 WebAssembly 支持，库可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -998,7 +997,21 @@
       "（可选）验证 Asyncify 变体在鸿蒙 V8 上的挂起/恢复行为一致性"
     ],
     "notes": "库的 C 源码（vendor/quickjs、c/interface.c）仅在构建时由 Emscripten 编译为 WASM，运行时不需要 C 编译器或原生编译。鸿蒙 PC Node.js 24.13.0 已回合主社区，V8 版本与标准 Node.js 一致，WebAssembly 能力无需额外验证。若目标环境为纯浏览器或 Cloudflare Workers 等非 Node.js 运行时，同样基于 V8 WASM 支持即可直接运行。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "quickjs-emscripten",
@@ -1022,26 +1035,12 @@
   "meta": {
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "quickjs 和 quickjs-ng 是 C 源码通过 git subtree 内嵌于 vendor/ 目录中，非 git submodule 也非包管理器获取——是 git subtree 合并的 vendored 源码"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "emscripten_wasm",
-        "rationale": "Emscripten WASM 模块接口（_malloc/HEAPU8/stringToUTF8 等）是 WebAssembly 生态特有的跨语言 FFI 机制，不完全属于传统的 ctypes/JNI/Node-FFI 分类，需要单独的 type 表达"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯计算型 JavaScript 沙箱引擎库，不涉及 GUI、3D 渲染、音视频媒体或特定硬件。其唯一硬件层面依赖是 WebAssembly 运行时（Node.js V8/浏览器内置），属于标准能力。",

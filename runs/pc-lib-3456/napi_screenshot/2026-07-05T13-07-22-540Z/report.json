@@ -919,8 +919,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上；N-API 原生插件经 OHOS NDK 重编；arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -929,7 +928,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "该库为 Node.js N-API 原生插件（Rust 内核），鸿蒙 PC 已移植 Node.js 24 运行时。纯 JavaScript 包装层（index.js）可直接运行；Rust 原生部分需用 OHOS NDK 交叉编译，并替换 Win32 GDI 后端为鸿蒙等价图形 API 或截屏能力。关键阻碍在于 Win32 GDI 是平台专有 API，鸿蒙无直接等价，需用 @ohos 系统能力重写截屏后端。macOS/Linux 后端本为未实现占位，无额外工作量。依赖的 Rust crates（png/anyhow/libc）均为纯 Rust 跨平台库，可正常交叉编译。",
     "blockers": [
       {
@@ -985,7 +983,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时可用，JS 包装层与 N-API 加载机制可直接工作",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:rust",
@@ -993,7 +992,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust crate 可经 ohos target 交叉编译为 .so",
-        "source": "references/harmony-pc-capabilities.json#runtimes.rust"
+        "source": "references/harmony-pc-capabilities.json#runtimes.rust",
+        "target_status_model": "available"
       },
       {
         "id": "ta:screen_capture",
@@ -1001,7 +1001,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 无屏幕捕获 API 等价，截屏功能无法实现，该库失去核心价值",
-        "source": "references/harmony-pc-capabilities.json （无直接对应条目，需核实 @ohos.multimedia 是否有屏幕录制/截屏能力）"
+        "source": "references/harmony-pc-capabilities.json （无直接对应条目，需核实 @ohos.multimedia 是否有屏幕录制/截屏能力）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1045,7 +1046,21 @@
       "在鸿蒙 Node.js 上跑通单元测试，验证截屏功能完整"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。核心不确定性：鸿蒙 PC 是否提供屏幕像素捕获 API（类似 Win32 GDI 或 macOS CGDisplay）。若鸿蒙无此能力，该库核心功能不可移植（porting_class 升至 needs_adaptation_partial 或 infeasible）。display-info 的鸿蒙后端也为未知，但可通过 JS 层 @ohos.display 规避。所有 Rust 依赖均未在 OpenHarmony PC 镜像中预编译（harmony_adapted 均为 false），需逐一交叉编译。置信度中——因屏幕捕获能力（ta:screen_capture）为 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "napi_screenshot",
@@ -1069,38 +1084,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "library",
-        "rationale": "该库是 Node.js N-API 原生插件，虽为 npm 包但本质是系统级能力封装（桌面截屏），介于 library 与 tool 之间。按 public API 调用模式判定为 library。"
-      },
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "MIT（仅 package.json 声明）",
-        "rationale": "仓库无 LICENSE 文件、源代码无 SPDX 头，仅 package.json license 字段声明 MIT——无法验证完整许可证文本，置信度中。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "鸿蒙 PC 屏幕捕获 API 能力未知",
-        "rationale": "harmony-pc-capabilities.json 无屏幕捕获/截屏相关条目（@ohos.multimedia.media.AVScreenCapture 虽在媒体段提及但作为三方 API 的可用性未核实），该能力对截屏库为核心必需——建议补充该条目。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "gap",
-        "value": "macOS/Linux 后端为未实现占位",
-        "rationale": "darwin.rs 与 linux.rs 的 capture_screen 返回 Err('not implemented')，但 Win32 后端的平台守卫分派机制已就绪——这表明该库设计为跨平台但当前仅 Windows 可用。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为 Node.js 桌面截屏原生插件，触及 GUI/桌面场景（通过 Win32 GDI 捕获屏幕像素），不涉及 3D 渲染、媒体编解码或特定硬件设备。",

@@ -2327,8 +2327,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK musl + POSIX 子集；arm64/x86_64）。本应用按模型 C（整包桌面应用）评估。",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -2337,7 +2336,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi_and_replace_platform_apis",
     "summary": "Nmap 是深度平台耦合的网络安全应用。核心 C/C++ 代码可通过 OHOS NDK 交叉编译；OpenSSL、libpcap、zlib、libssh2、pcre2、libdnet、liblinear 均已出现在鸿蒙 PC 预编译包中，可显著降低依赖工作量。但 Nmap 的核心能力——原始套接字、libpcap 抓包、Linux procfs/sysfs 网络接口枚举、termios 终端交互——均依赖 HarmonyOS PC 尚未明确支持或形态不同的底层能力；Zenmap 的 PyGObject Python 绑定也未在鸿蒙镜像中确认。因此整体判定为部分可适配：命令行扫描核心可在获得足够网络权限后重写关键平台层恢复，GUI 前端则需额外决策（移植 PyGObject 或重写界面）。",
     "blockers": [
       {
@@ -2449,7 +2447,9 @@
         ],
         "caused_by": [
           "ta:linux_net_pseudo_fs"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:sysfs_net",
@@ -2464,7 +2464,9 @@
         ],
         "caused_by": [
           "ta:linux_net_pseudo_fs"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2474,7 +2476,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Nmap 核心扫描与 Nping 包构造依赖；若不可用，需大幅裁剪为仅 connect 扫描。",
-        "source": "native_api analysis + references/harmony-pc-capabilities.json#permissions（perm_internet 状态 unknown，未列 raw socket）"
+        "source": "native_api analysis + references/harmony-pc-capabilities.json#permissions（perm_internet 状态 unknown，未列 raw socket）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:pcap_backend",
@@ -2482,7 +2485,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "影响无连接扫描与 OS 指纹识别；libpcap 包已可用但后端能力待验证。",
-        "source": "dependencies.libpcap.harmony_adapted=true"
+        "source": "dependencies.libpcap.harmony_adapted=true",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:linux_net_pseudo_fs",
@@ -2490,7 +2494,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Nmap 在 Linux 上通过这些伪文件读取接口/路由；鸿蒙无 Linux ABI，必须重写。",
-        "source": "native_api analysis + references/harmony-pc-capabilities.json 架构说明"
+        "source": "native_api analysis + references/harmony-pc-capabilities.json 架构说明",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:gtk_python_binding",
@@ -2498,7 +2503,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Zenmap GUI 可用性；不必须（命令行 nmap 仍可独立运行）。",
-        "source": "dependencies.PyGObject.harmony_adapted=false"
+        "source": "dependencies.PyGObject.harmony_adapted=false",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:process_spawn",
@@ -2506,7 +2512,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Zenmap 调用 nmap 后端依赖 subprocess.Popen；若受限则 GUI 无法驱动扫描。",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2564,7 +2571,24 @@
       "在鸿蒙 PC 设备上执行完整回归测试，验证 TCP connect/UDP/SYN/OS 指纹等扫描模式"
     ],
     "notes": "评估按 HarmonyOS PC 桌面应用模型 C 进行。置信度为 medium，因为原始套接字、进程 spawn、PyGObject 等关键目标能力在 references/harmony-pc-capabilities.json 中仍为 unknown。若这些能力后续核实为 available，难度可降至 needs_adaptation_full 且 person_days 下修。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:procfs_net",
+          "ua:sysfs_net"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2576,29 +2600,20 @@
       "PyGObject 未在鸿蒙 PyPI 镜像中确认有 ohos  wheel。",
       "Nmap 使用大量 Linux 特有 procfs/sysfs 路径，鸿蒙 PC 需要重写而非直接移植。"
     ],
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "autotools_subdir",
-        "rationale": "Nmap 通过 AC_CONFIG_SUBDIRS 将 libpcap/libpcre/libz/libssh2/libdnet/liblua/liblinear 作为 autotools 子目录构建，既不是典型 submodule 也不是 CMake FetchContent，用 'vendored' 描述其 locality 最准确，但 acquisition 上可 coined 'autotools_subdir'。"
+        "code": "ua_func_class_defaulted:ua:procfs_net",
+        "class": "actionable",
+        "message": "unadaptable_api ua:procfs_net 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "recompile_napi_and_replace_platform_apis",
-        "rationale": "Nmap 这类深度平台耦合的 C 网络应用，不仅要 OHOS NDK 重编，还必须用鸿蒙原生网络 API 替换 procfs/sysfs/raw socket 等平台层，单一 'recompile_napi' 不足以描述。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "raw_socket/packet_capture",
-        "rationale": " capability_profile 推荐场景中的 hardware 主要面向 GPU/USB/蓝牙等具体硬件；Nmap 的原始套接字/抓包更偏向网络层系统能力，本次归入 hardware 并在 kind 中 coined 'raw_socket'、'packet_capture'。"
+        "code": "ua_func_class_defaulted:ua:sysfs_net",
+        "class": "actionable",
+        "message": "unadaptable_api ua:sysfs_net 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

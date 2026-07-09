@@ -2239,8 +2239,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK musl + POSIX 子集，arm64/x86_64；已移植 Python/Node/Java/Rust/Go 运行时）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -2249,7 +2248,6 @@
       "level": "high"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile_ohos",
     "summary": "Graphviz 核心（libcgraph、libgvc、各布局引擎）是纯 C/C++ 计算与图形输出库，可通过 OHOS NDK 交叉编译；大量可选依赖（zlib/expat/cairo/pango/freetype/fontconfig/libgd/webp/GDK/X11/GTK2/Tcl/Python3/Perl 等）已在 OpenHarmony PC 镜像中提供，移植基础较好。主要工作是为鸿蒙新增插件/可执行文件路径发现分支、关闭或替换未鸿蒙化的可选平台插件/依赖，以及按需重建 SWIG 多语言绑定。GVEdit/Smyrna/macOS Cocoa 等交互式 GUI 程序属于可选组件，保留它们会引入额外桌面/OpenGL 适配工作；若把它们纳入必保范围，整体评级会上升为 needs_adaptation_partial/hard。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -2259,7 +2257,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心库与插件必须经 OHOS NDK 重新编译为鸿蒙 .so",
-        "source": "harmony-pc-capabilities.json intro"
+        "source": "harmony-pc-capabilities.json intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -2267,7 +2266,8 @@
         "required": true,
         "target_status": "available",
         "impact": "主要构建目标架构",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_file",
@@ -2275,7 +2275,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "核心文件/路径/环境变量访问在 musl/OHOS 下基本可用，但需验证个别标志与行为",
-        "source": "harmony-pc-capabilities.json intro"
+        "source": "harmony-pc-capabilities.json intro",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:qt",
@@ -2283,7 +2284,8 @@
         "required": false,
         "target_status": "available",
         "impact": "GVEdit 可复用 Qt 鸿蒙版",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:gtk",
@@ -2291,7 +2293,8 @@
         "required": false,
         "target_status": "available",
         "impact": "Smyrna 可复用 GTK2 鸿蒙版",
-        "source": "harmony-pc-capabilities.json#gui.gtk"
+        "source": "harmony-pc-capabilities.json#gui.gtk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl_desktop",
@@ -2299,7 +2302,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "Smyrna/glcomp 的 OpenGL 固定管线可能需要迁移到 OpenGL ES 或重写",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:desktop_wm",
@@ -2307,7 +2311,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "GVEdit/Smyrna 等桌面 GUI 程序需要多窗口桌面环境，状态未核实",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -2315,7 +2320,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅在目标为 x86_64 时相关，arm64 已确认可用",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:external_spawn",
@@ -2323,7 +2329,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "gvpr 的 system() 调用在鸿蒙受限/待核实",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2489,7 +2496,21 @@
       "若需保留 GUI 工具，评估 Qt/GTK/OpenGL ES 或 ArkGraphics 3D 的界面迁移方案"
     ],
     "notes": "本评估默认按库模型 A（核心 C/C++ 库经 OHOS NDK 重编，供已移植运行时调用）。仓库中的交互式 GUI 程序（gvedit、smyrna、macosx）是可选组件；若把它们作为必保应用（模型 C）处理，需额外确认桌面窗口管理器、文件对话框、拖拽剪贴板等目标能力，整体评级会上升为 needs_adaptation_partial/hard。dot.demo/plugin.demo 等示例目录已在生产范围中排除，不作为迁移阻碍。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "graphviz",
@@ -2520,36 +2541,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "code_metrics.top_dirs",
-        "kind": "ambiguity",
-        "value": "dot.demo / plugin.demo / doc classified as production by counter",
-        "rationale": "metrics.py 按目录名 token 把 dot.demo、plugin.demo 记为 production，但它们是示例/演示代码；doc/ 主要是文档。本次分析已将它们排除在库能力之外，仅把 dot.demo/plugin.demo 作为示例处理，未把其中的平台 API 当作生产结论。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "cross_compile_ohos",
-        "rationale": "Graphviz 是 C/C++ 库，默认适配路径不是 simple recompile_napi，而是使用 OHOS NDK 交叉编译整个仓库（含可选插件与绑定），因此 coined 'cross_compile_ohos'。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system (find_package/pkg-config)",
-        "rationale": "Graphviz 的 C/C++ 依赖全部通过 CMake find_package 或 pkg-config 发现，需要系统预装；这与 vcpkg/conan 等 package_manager 获取方式不同，但仍在推荐范围。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "gap",
-        "value": "2D vector rendering (Cairo/Pango)",
-        "rationale": "Graphviz 大量输出插件基于 Cairo/Pango 2D 绘制，既非纯 GUI 也非 3D 渲染；当前推荐场景集没有 'rendering_2d'，暂归入 gui/rendering_3d 之外未单列，但实际工作量主要在这里。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2560,7 +2552,8 @@
         "message": "required_permission ohos.permission.读写存储 的 source_capability=filesystem 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Graphviz 触及 GUI 桌面程序（Qt 版 GVEdit、GTK 版 Smyrna、macOS Cocoa 应用）与 OpenGL GPU 渲染（Smyrna/glcomp）两大鸿蒙高成本适配场景；不涉及音视频媒体处理，也不依赖特定硬件加速器。",

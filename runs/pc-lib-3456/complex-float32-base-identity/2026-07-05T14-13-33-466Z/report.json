@@ -620,7 +620,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 运行时上；原生 N-API addon 经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -629,7 +628,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库是 Node.js 的极简数学函数库（恒等函数），鸿蒙 PC 已移植 Node.js 运行时，纯 JavaScript 部分可直接运行。C 原生 N-API addon 仅执行值传递（返回输入值），无任何平台特有 API 或系统调用，只需用 OHOS NDK 交叉编译 addon.c+main.c 生成 .node 文件即可。",
     "blockers": [
       {
@@ -656,7 +654,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 代码可直接运行；N-API addon 需重编",
-        "source": "harmony-pc-capabilities.json#language_runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#language_runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -664,7 +663,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C addon 可经 N-API 调用",
-        "source": "harmony-pc-capabilities.json#language_runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#language_runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -696,7 +696,21 @@
       "确认 @stdlib/complex-float32-ctor 等运行时依赖已有鸿蒙版或可随 Node.js runtime 安装"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库本身极简，porting_class 为 recompile_only；但运行时依赖 @stdlib/complex-float32-ctor 等 stdlib 子包自身也含 C 扩展，需逐包评估其鸿蒙化状态。若这些依赖不可移植，会经自底向上 rollup 提升本库的适配等级——当前评估仅覆盖本库本体。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float32-base-identity",
@@ -722,7 +736,8 @@
     "observations": [],
     "warnings": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数学计算库，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",

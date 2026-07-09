@@ -1021,7 +1021,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (经 OHOS NDK/musl 重编为 .so；arm64/x86_64；自研内核，非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1030,7 +1029,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "xdelta 核心库（libxdelta3）为纯 C99 算法实现，仅依赖 C 标准库（malloc/memset/memcpy 等 musl 均支持），无需任何平台特有 API。两个可选外部依赖（xz/liblzma 与 BLAKE3）均已鸿蒙化。核心差分编解码逻辑经 OHOS NDK 重编即可运行。命令行工具（xdelta3-main.h）含 POSIX/Windows 文件 I/O 与外部压缩子进程（fork/execlp），若需完整 CLI 则需适配；可先禁 EXTERNAL_COMPRESSION=0 并以 STDIO 路径（XD3_STDIO=1）最小化移植。",
     "blockers": [
       {
@@ -1083,7 +1081,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心库仅需 C99 标准库，musl 完全覆盖。CLI 工具需确认 STDIO 路径可用。",
-        "source": "harmony-pc-capabilities.json — 自研内核支持 OHOS NDK"
+        "source": "harmony-pc-capabilities.json — 自研内核支持 OHOS NDK",
+        "target_status_model": "available"
       },
       {
         "id": "ta:liblzma_adapted",
@@ -1091,7 +1090,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选依赖已有鸿蒙移植，启用 LZMA 二级压缩时可直接使用。",
-        "source": "harmony-pc-capabilities.json — cmd-pkgs 预编译清单"
+        "source": "harmony-pc-capabilities.json — cmd-pkgs 预编译清单",
+        "target_status_model": "available"
       },
       {
         "id": "ta:blake3_adapted",
@@ -1099,7 +1099,8 @@
         "required": false,
         "target_status": "available",
         "impact": "可选依赖已有鸿蒙移植，启用 armor 模式时可直接使用。",
-        "source": "harmony-pc-capabilities.json — cmd-pkgs 预编译清单"
+        "source": "harmony-pc-capabilities.json — cmd-pkgs 预编译清单",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1143,7 +1144,21 @@
       "在鸿蒙 PC 上运行 `xdelta3 test` 内置自测试和 C++ Googletest 回归套件验证功能完整"
     ],
     "notes": "platform_adaptation 机械信号仅 37 行（windows 18/macos 11/linux 8），均为 CLI 前端（xdelta3-main.h）的条件编译分支，核心库不触及。platform_branches 为 0（无运行时平台判断）。块设备 ioctl 非关键路径，失败有降级。两个外部依赖均已鸿蒙化。若只需库功能（libxdelta3 被别的代码调用），工作量集中在 OHOS NDK 重编验证，person_days [2,5] 即可。若需完整 CLI 工具（含外部压缩），则需额外适配 fork/pipe/execlp 路径（person_days 可能达 [5,12]）。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1165,26 +1180,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependency-analysis",
-        "field": "dependencies",
-        "kind": "gap",
-        "value": "外部依赖仅 2 项且均为可选编译开关控制",
-        "rationale": "xdelta 的依赖极简——核心库（libxdelta3）默认无外部依赖，CLI 工具可选联动 liblzma 和 BLAKE3，均通过 CMake FetchContent 静态链接。Go 回归测试工具为 test-only，不计入"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "gap",
-        "value": "纯数据处理工具，不涉及任何 GUI/3D/媒体/硬件场景",
-        "rationale": "xdelta 为纯二进制差分压缩算法实现——输入输出均为文件或流式缓冲区，无图形/音视频/硬件交互"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "xdelta 是纯数据处理库/CLI工具，不涉及 GUI/3D渲染/媒体/特定硬件场景。所有功能均为本地内存中的二进制差分算法实现，输入输出为文件或管道流。",

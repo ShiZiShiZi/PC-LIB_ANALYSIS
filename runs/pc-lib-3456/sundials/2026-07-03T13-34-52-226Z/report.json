@@ -1766,8 +1766,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库模型 A：C/C++ 核心经 OHOS NDK/musl 交叉编译为 .so；Python 绑定 sundials4py 跑在已移植的 Python 3.12 上；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1776,7 +1775,6 @@
       "level": "high"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile",
     "summary": "SUNDIALS 核心是纯 C/C++ 数值算法库，平台耦合较轻：除计时器与可选 Pthread 外几乎只依赖 C 标准库与 math。迁移主线是用 OHOS NDK 交叉编译 CPU/串行/OpenMP/Pthread 后端，关闭 CUDA/HIP/SYCL/MAGMA/oneMKL 等 GPU/专有硬件后端；sundials4py 的 nanobind C 扩展也需用 NDK 重编。唯一无法平移的部分是 NVIDIA CUDA 加速路径（可选），需在鸿蒙上裁剪该功能。",
     "unadaptable_apis": [
       {
@@ -1793,7 +1791,9 @@
           "include/nvector/nvector_cuda.h",
           "src/sunmemory/cuda/sundials_cuda_memory.cu",
           "cmake/SundialsSetupCuda.cmake:75"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:magma",
@@ -1808,7 +1808,9 @@
         "evidence": [
           "cmake/tpl/SundialsMAGMA.cmake:40",
           "include/sunlinsol/sunlinsol_magmadense.h"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:onemkl",
@@ -1823,7 +1825,9 @@
         "evidence": [
           "cmake/tpl/SundialsONEMKL.cmake:54",
           "include/sunmatrix/sunmatrix_onemkldense.h"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1833,7 +1837,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 核心库与 nanobind C 扩展均需 NDK 编译；可用则核心可移植。",
-        "source": "harmony-pc-capabilities.json#runtimes / OpenHarmonyPCDeveloper"
+        "source": "harmony-pc-capabilities.json#runtimes / OpenHarmonyPCDeveloper",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_timers",
@@ -1841,7 +1846,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SUNProfiler 与 Pthread N_Vector 后端的必需前提。",
-        "source": "harmony-pc-capabilities.json#runtimes / OHOS NDK POSIX 子集"
+        "source": "harmony-pc-capabilities.json#runtimes / OHOS NDK POSIX 子集",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python312",
@@ -1849,7 +1855,8 @@
         "required": true,
         "target_status": "available",
         "impact": "sundials4py Python 绑定运行必需。",
-        "source": "harmony-pc-capabilities.json#runtimes#python"
+        "source": "harmony-pc-capabilities.json#runtimes#python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:numpy",
@@ -1857,7 +1864,8 @@
         "required": true,
         "target_status": "available",
         "impact": "sundials4py 运行期依赖 numpy ndarray。",
-        "source": "scripts/harmony_adapted.js"
+        "source": "scripts/harmony_adapted.js",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cuda",
@@ -1865,7 +1873,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA 后端无法移植，需关闭 SUNDIALS_ENABLE_CUDA。",
-        "source": "harmony-pc-capabilities.json#hardware_devices#gpu_compute_cuda"
+        "source": "harmony-pc-capabilities.json#hardware_devices#gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:intel",
@@ -1873,7 +1882,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "oneMKL 后端无法移植，需关闭 SUNDIALS_ENABLE_ONEMKL。",
-        "source": "harmony-pc-capabilities.json#hardware_devices#onemkl"
+        "source": "harmony-pc-capabilities.json#hardware_devices#onemkl",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:optional_tpls",
@@ -1881,7 +1891,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "关闭这些 TPL 可避免阻塞；若需启用，则需逐一移植或确认 cmd-pkgs 中 availability。",
-        "source": "harmony-pc-capabilities.json / scripts/harmony_adapted.js"
+        "source": "harmony-pc-capabilities.json / scripts/harmony_adapted.js",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -2001,7 +2012,25 @@
       "按需逐步移植 LAPACK/KLU/SuperLU 等可选 TPL，或确认 cmd-pkgs 中是否已有预编译包。"
     ],
     "notes": "评估按库模型 A（C/C++ 经 OHOS NDK 交叉编译；Python 绑定跑在已移植 Python 运行时）。核心库可完整迁移；CUDA/oneMKL/MAGMA 等 GPU/专有硬件后端为不可平移的 optional 功能，鸿蒙化版本需裁剪。若目标是将 SUNDIALS 作为 ArkTS 应用的一部分（模型 B/C），还需额外加 Node-API 封装层，工作量显著增加。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda",
+          "ua:magma",
+          "ua:onemkl"
+        ]
+      }
+    }
   },
   "library": {
     "name": "SUNDIALS",
@@ -2028,41 +2057,30 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system_find_package",
-        "rationale": "SUNDIALS 所有 C/C++ TPL 均通过 CMake find_package 依赖系统预装库，未使用 FetchContent/ExternalProject/vcpkg，acquisition 统一记为 system。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "bindings",
-        "kind": "new_value",
-        "value": "fortran_via_swig",
-        "rationale": "SUNDIALS 通过 SWIG 生成 Fortran 2003 接口；bindings 字段 schema 只允许语言枚举，Fortran 归入 other，此处记录以便后续考虑是否扩展 bindings 词表。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "mpi_as_standard",
-        "rationale": "MPI 是跨平台标准但依赖外部运行时；按 schema 归类为 standard（portable），实际迁移中 MPI 实现（OpenMPI/MPICH）是否已鸿蒙化需单独判断。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "optional_unadaptable",
-        "rationale": "CUDA/oneMKL 等 GPU/专有后端为可选功能且不可适配；porting_class 按 schema 需为 needs_adaptation_partial（unadaptable_apis 非空），但实际迁移路径是关闭这些可选后端而非核心功能受损。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:magma",
+        "class": "actionable",
+        "message": "unadaptable_api ua:magma 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:onemkl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:onemkl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "SUNDIALS 是纯数值计算库，不触及 GUI、3D 渲染或音视频媒体；仅在启用可选后端时涉及 GPU 通用计算（CUDA/HIP/SYCL），其中 CUDA 为 NVIDIA 专有硬件。",

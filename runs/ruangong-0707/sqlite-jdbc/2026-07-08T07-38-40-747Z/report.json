@@ -1348,9 +1348,8 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（运行在经过移植的 JDK 上；原生库通过 OHOS NDK/musl 交叉编译为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "porting_class_model": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         20.7,
@@ -1410,7 +1409,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Java 字节码与 JDBC API 可在鸿蒙 PC 直接运行，无需重写上层逻辑",
-        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -1419,7 +1419,8 @@
         "required": true,
         "target_status": "available",
         "impact": "原生库至少可针对 arm64 鸿蒙 PC 设备交叉编译",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1437,7 +1438,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime_with_ohos_native_rebuild",
     "summary": "sqlite-jdbc 是 Java 库，核心运行在已移植的鸿蒙 JDK 上，无 GUI/3D/媒体/硬件依赖。迁移主要工作有两块：一是用 OHOS NDK 交叉编译 SQLite + JNI 原生库；二是扩展 OSInfo/Loader 对鸿蒙 PC 的 OS/架构识别与资源路径映射。无不可适配 API，整体可行，但构建脚本与平台探测需要适配。",
     "blockers": [
       {
@@ -1531,7 +1531,21 @@
       "调整 pom.xml 增加 natives-harmonyos / without-natives 等 JAR classifier（或复用 Linux-Musl 路径作为临时回退）",
       "在鸿蒙 JDK 上运行单元测试，验证原生库加载、JDBC 连接、UDF、备份/恢复功能"
     ],
-    "notes": "评估默认按「库跑在已移植的鸿蒙 JDK 上」口径；不涉及 ArkTS 沙箱应用重写。当前无未知 required 目标能力，但 OSInfo 的外部命令与 /proc 路径在鸿蒙 PC 上的可用性需实测验证。若鸿蒙 PC 仅支持 x86_64 且 arm64 覆盖不完整，工作量会略增。"
+    "notes": "评估默认按「库跑在已移植的鸿蒙 JDK 上」口径；不涉及 ArkTS 沙箱应用重写。当前无未知 required 目标能力，但 OSInfo 的外部命令与 /proc 路径在鸿蒙 PC 上的可用性需实测验证。若鸿蒙 PC 仅支持 x86_64 且 arm64 覆盖不完整，工作量会略增。",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "sqlite-jdbc",
@@ -1556,36 +1570,15 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "kind": "ambiguity",
-        "field": "library.kind",
-        "value": "library",
-        "rationale": "项目是 Maven 分发的 JDBC 驱动，主要被 Java 应用以 API 方式使用，无终端用户启动入口，因此判定为 library。"
-      },
-      {
-        "dimension": "dependencies",
-        "kind": "new_value",
-        "field": "acquisition",
-        "value": "vendored_source_download",
-        "rationale": "SQLite C 库未在 pom.xml 中声明，而是通过 Makefile 在构建时从 sqlite.org 下载源码并编译进 libsqlitejdbc.so，属于 vendored + 远端源码下载。"
-      },
-      {
-        "dimension": "code_partition",
-        "kind": "ambiguity",
-        "field": "buckets",
-        "value": "build_scripts_in_needs_adaptation",
-        "rationale": "docker/Makefile/pom.xml 等构建脚本/元数据被归入 needs_adaptation 桶，因为它们需要新增 OHOS 构建目标；其余纯 Java 业务逻辑直接复用。"
-      }
-    ],
+    "observations": [],
     "warnings": [
       "code_metrics.platform_branches 未检测到 Java 的 System.getProperty/os.name 等运行时平台分支，本维度按人工阅读源码补判。"
     ],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数据库访问库，不触及 GUI、3D 渲染、音视频媒体或特定硬件设备；迁移重点是原生库重编与平台识别逻辑适配。",

@@ -2002,8 +2002,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK/musl + POSIX 子集；arm64/x86_64；TODO：Mozilla/Firefox/XULRunner 平台是否可用——这是 Zotero 目前唯一依赖的运行时）",
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         300,
@@ -2012,7 +2011,6 @@
       "level": "very_high"
     },
     "confidence": "low",
-    "recommended_path": "abandon",
     "summary": "Zotero 是基于 Mozilla XULRunner/Firefox 平台的桌面应用程序——其 UI 框架（XUL/XHTML）、组件系统（XPCOM）、系统服务层（Services.*/ChromeUtils/IOUtils）均深度绑定 Mozilla/Gecko 运行时，而非标准的 Node.js 或 Qt/GTK/Electron。鸿蒙 PC 目前没有 Mozilla XULRunner/Firefox 运行时，也没有 XUL/XPCOM 的等价实现。将 Zotero 移植到鸿蒙 PC 需要的不是「适配」而是「重写」——把基于 Mozilla 平台的整个应用重新实现到 ArkTS/ArkUI 或 Electron 等目标平台上。这是一个全新的开发项目而非移植。JS 业务逻辑（同步引擎、翻译器、CSL 引文处理、数据模型）理论上可复用，但 XUL UI 层（~545K 行生产代码的主体）、XPCOM 组件调用、Mozilla 平台 API 全部需替换。建议评估现有可复用的业务逻辑，在鸿蒙 PC 上新建 Zotero客户端项目（可能走 Electron/ArkUI 路径）。",
     "blockers": [
       {
@@ -2130,7 +2128,9 @@
         "evidence": [
           "chrome/content/zotero/xpcom/http.js:25",
           "chrome/content/zotero/xpcom/reader.js:489"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:xpcom_services",
@@ -2145,7 +2145,9 @@
         "evidence": [
           "chrome/content/zotero/xpcom/http.js:27",
           "chrome/content/zotero/xpcom/dictionaries.js:185"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:xpcom_ioutils",
@@ -2160,7 +2162,9 @@
         "evidence": [
           "chrome/content/zotero/xpcom/reader.js:521",
           "chrome/content/zotero/xpcom/http.js:758"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:xul_ui",
@@ -2175,7 +2179,9 @@
         "evidence": [
           "chrome/content/zotero/zoteroPane.xhtml",
           "chrome/content/zotero/elements/"
-        ]
+        ],
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2185,7 +2191,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Zotero 完全搭建在 Mozilla 平台上——无 Mozilla 运行时则本体不可运行。不存在对应条目是因为 harmony-pc-capabilities.json 仅覆盖主流语言运行时和桌面框架，未收录 Mozilla/XULRunner——但无信息=鸿蒙上无此平台，即 unavailable",
-        "source": "harmony-pc-capabilities.json 未收录 Mozilla/XULRunner（仅有 Node/Python/Java/Go/Rust/Julia 运行时和 Qt/GTK/Electron GUI）"
+        "source": "harmony-pc-capabilities.json 未收录 Mozilla/XULRunner（仅有 Node/Python/Java/Go/Rust/Julia 运行时和 Qt/GTK/Electron GUI）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:electron",
@@ -2193,7 +2200,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若选择 Electron 作为替代平台重写 Zotero UI，则需 Electron 鸿蒙版；若选 ArkTS/ArkUI 则不需要",
-        "source": "harmony-pc-capabilities.json#gui.electron"
+        "source": "harmony-pc-capabilities.json#gui.electron",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_wm",
@@ -2201,7 +2209,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "更换 UI 层后仍需要桌面级窗口环境运行多窗口、标签页等 UI 功能——待核实",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:app_delivery",
@@ -2209,7 +2218,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 只支持 .hap/ArkTS ability 形态，走 Electron/Node 重写路径可能需要额外适配或受限——待核实",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2266,7 +2276,26 @@
       "集成测试：在鸿蒙 PC 上跑通核心同步/翻译/引用/PDF 阅读流程"
     ],
     "notes": "Zotero 移植到鸿蒙 PC 的本质问题是：它运行在 Mozilla/XULRunner 平台上而非标准 Node.js 上——这一平台在鸿蒙无对应实现，且不存在部分适配的可能。这不仅仅是 '换一个 GUI 工具包'——整个组件模型、系统服务抽象、UI 框架、文件 I/O、窗口管理、本地化均绑定 Mozilla 专有 API。建议从复用业务逻辑开始，在鸿蒙 PC 上重写一个全新客户端——这是新项目而非移植。评估基于 harmony-pc-capabilities.json（Mozilla/XULRunner 未收录于任何 section→视为 unavailable），且 GUI 窗口管理器、桌面交付形态、权限授予方式均为 unknown→confidence=low。若 Electron 在鸿蒙 PC 可用且 window manager 提供桌面窗口能力，走 Electron 路径可显著降低工作量（UI 层复用现有的 React 组件和 HTML/CSS 样式，避免完全重写）。npm 依赖和 WASM 模块均跨平台可直接使用——这是最大的复用资产。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "low",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:xpcom_components",
+          "ua:xpcom_services",
+          "ua:xpcom_ioutils",
+          "ua:xul_ui"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "zotero",
@@ -2285,61 +2314,34 @@
   },
   "meta": {
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "mozilla_xul_application",
-        "rationale": "Zotero 是基于 Mozilla XULRunner/Firefox 平台的桌面应用，不属于常见 GUI 框架（Qt/GTK/Electron/Swing）中的任何一种。其架构（XUL UI + XPCOM 组件 + Gecko 引擎 + chrome.manifest）是 Mozilla 平台特有的。现有的 application kind 框架中没有直接描述这种运行时依赖的粒度——清单中虽可填 'application'，但 dim-9 需要知道这不是普通的 Electron/Node.js 桌面应用，它的运行时（Mozilla）在鸿蒙 PC 上完全不存在。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "xpcom_core / xpcom_file_io / xpcom_network / xpcom_clipboard / xpcom_zip / xpcom_sqlite / xpcom_spellcheck / xpcom_window / xul_ui",
-        "rationale": "这些 Mozilla 平台特有的 API 家族不在推荐 list 中（推荐的是 Win32/POSIX/STL/Java/NPM），但 Zotero 的主体 API 面是 XPCOM——需要新增这些 type 值来准确描述。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "\"other\" for Mozilla/XULRunner platform runtime",
-        "rationale": "Zotero 最大的运行时依赖是 Mozilla XULRunner/Firefox 平台——这不是 npm 包，不属于 nodejs ecosystem，但又是核心 runtime 依赖。dim-6 的 deps 列表侧重 manifest-声明的包，未包含隐式的'平台运行时'依赖。已在 notes 中说明。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "gui kind: mozilla_xul",
-        "rationale": "capability_profile 的 gui kind 推荐集（qt/gtk/electron/swing/javafx…）中缺少 Mozilla XUL/XULRunner 作为一种 GUI 框架的类型。Zotero 的 UI 层完全是 Mozilla 专有的 XUL DOM + XPCOM 窗口管理。"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "zotero (own service)",
-        "rationale": "Zotero 的云端服务是自建服务（zotero.org API + ZFS/S3 存储），不属于 AWS/GCP/Firebase/Sentry 等常见云厂商 SDK 场景。这是'自有云服务'的 case——dim-11 的 vendor 推荐集侧重于第三方云 SDK，自建云常被遗漏。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "harmony_status",
-        "kind": "gap",
-        "value": "mozilla_platform availability on HarmonyOS",
-        "rationale": "harmony-pc-capabilities.json 覆盖了 Node/Python/Java/Go/Rust/Julia 运行时和 Qt/GTK/Electron/Swing/JavaFX GUI，但完全没有 Mozilla/XULRunner——这是一个遗漏的主要平台。实际上在整个开源桌面应用生态中，Mozilla/XUL 平台已经式微（Firefox 自身在移除 XUL），但 Zotero 等少数应用仍在使用。建议在 caps 中增加一条 'mozilla_xulrunner' 行，状态标记为 unavailable（被分析已不可行）。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "abandon vs electron_rewrite vs arkts_rewrite",
-        "rationale": "对于 '运行时平台完全不存在 + 其专有 UI 框架无替代' 的应用，'重写'是唯一的'可移植'路径——但在 workload 层面已完全超出 'porting/adaptation' 范畴，进入 'new project'。dim-9 的 recommended_path 开放词表默认了有路径可走——但 abandon（放弃原生移植，新建客户端）也应是一个有效推荐。已在 assessment 中使用。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:xpcom_components",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xpcom_components 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:xpcom_services",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xpcom_services 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:xpcom_ioutils",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xpcom_ioutils 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:xul_ui",
+        "class": "actionable",
+        "message": "unadaptable_api ua:xul_ui 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "Zotero 是一款桌面 GUI 应用，运行在 Mozilla XULRunner/Firefox 平台（XUL/XHTML UI），不直接依赖传统 GUI 工具包（Qt/GTK/Swing/Electron），但也并非纯 Web 应用——其 UI 框架基于 Mozilla 的 XUL/Gecko + 自定义 Web Components + React 组件。涉及 GUI 场景，另有 IPC 管道通信、PDF/EPUB 媒体阅读。不涉及 3D 渲染或特定硬件。",

@@ -500,8 +500,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Julia 运行时已移植）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -518,7 +517,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 运行时已移植到鸿蒙 PC，本 JLL 包的 Julia 代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json → runtimes → julia"
+        "source": "references/harmony-pc-capabilities.json → runtimes → julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libdl_dlopen",
@@ -526,7 +526,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JLLWrappers 依赖 Julia Libdl 标准库的 dlopen 机制来加载 oneTBB 共享库；若鸿蒙 Julia 移植版本支持 Libdl（大概率支持，因为 Julia NDK 移植通常包含此功能），则无阻碍",
-        "source": "references/harmony-pc-capabilities.json → runtimes → julia（Libdl 为 Julia 标准库，随运行时提供）"
+        "source": "references/harmony-pc-capabilities.json → runtimes → julia（Libdl 为 Julia 标准库，随运行时提供）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:onetbb_native",
@@ -534,11 +535,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本包的核心价值是分发 oneTBB 的预编译共享库；若鸿蒙平台没有对应的预编译 artifact，需用 OHOS NDK 重新编译 oneTBB 并制作新的 artifact",
-        "source": "Artifacts.toml（当前仅覆盖 Linux/macOS/Windows/FreeBSD，无 ohos 目标三元组）"
+        "source": "Artifacts.toml（当前仅覆盖 Linux/macOS/Windows/FreeBSD，无 ohos 目标三元组）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "本包是 oneTBB 的 Julia JLL 二进制包装，Julia 代码本身高度可移植（仅依赖 Julia 标准库），关键阻碍是预编译的 oneTBB 共享库尚无鸿蒙 aarch64 版本。需在 Yggdrasil 构建树中新增 ohos 目标三元组，用 OHOS NDK 交叉编译 oneTBB 源码生成新的 artifact，然后生成对应的 wrapper 脚本。Julia 端代码无需修改。",
     "blockers": [
       {
@@ -601,7 +602,21 @@
       "更新 Project.toml 版本号并注册到 Julia General Registry"
     ],
     "notes": "置信度 medium：Julia 运行时已确认可用，但 Libdl 的 dlopen 在鸿蒙 Julia 上的支持状态未核实，且 oneTBB 能否用 OHOS NDK 成功编译也存在不确定性（oneTBB 依赖 pthread/POSIX 原语，OHOS NDK 提供的 musl + POSIX 子集覆盖率待验证）。如果 oneTBB 源码本身能成功交叉编译，则本 JLL 包的适配工作量主要在构建配置而非代码修改。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "oneTBB_jll",
@@ -626,31 +641,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia 生态未在 closed axis 中列出，使用 other 表示；本包为 Julia JLL 包装包，核心生态为 Julia"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "Julia 标准库和 JuliaPackaging 工具的生态不在推荐的 cpp/c/python/java/nodejs/rust/go/dotnet 列表中，使用 other"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "julia_stdlib",
-        "rationale": "Julia 标准库 Libdl 提供的动态加载常量（RTLD_LAZY/RTLD_DEEPBIND）不属于已有 type 分类（win32/posix/cpp_stl/python_stdlib/java_std/node_core 等），新增 julia_stdlib"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本包为 Julia 二进制包装库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

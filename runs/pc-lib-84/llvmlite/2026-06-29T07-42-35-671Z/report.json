@@ -1110,8 +1110,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1120,7 +1119,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "build_llvm_for_ohos_then_compile_wrapper",
     "summary": "llvmlite 是纯 Python + 自构建 C++ 包装的编译器库。Python 部分可在鸿蒙 PC 已移植的 Python 上直接运行；真正的移植工作量在于将 LLVM 22 用 OHOS NDK 交叉编译到鸿蒙平台，并据此重新编译 libllvmlite 包装层。llvmlite 自身平台相关代码极少且均为条件分支，无无法适配的平台/硬件 API。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1130,7 +1128,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "LLVM 是 llvmlite 的唯一核心原生依赖；若无法在 OHOS 上构建或功能缺失，则整个库无法工作",
-        "source": "references/harmony-pc-capabilities.json 未直接列出 LLVM；OpenHarmony PC 预编译包清单也未包含 llvm/llvmdev"
+        "source": "references/harmony-pc-capabilities.json 未直接列出 LLVM；OpenHarmony PC 预编译包清单也未包含 llvm/llvmdev",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:python_runtime",
@@ -1138,7 +1137,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 层可直接运行，无需重写",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -1146,7 +1146,8 @@
         "required": true,
         "target_status": "available",
         "impact": "用于编译 libllvmlite 共享库",
-        "source": "references/harmony-pc-capabilities.json 默认口径"
+        "source": "references/harmony-pc-capabilities.json 默认口径",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1217,7 +1218,21 @@
       "若发现 musl/OHOS POSIX 子集与 LLVM 的兼容问题，按需调整 CMake 编译选项或代码条件分支"
     ],
     "notes": "评估按模型 A（库跑在已移植的 Python 运行时上）。LLVM 未在 OpenHarmony PC 官方源中出现是本评估的主要不确定因素；由于 LLVM 本身高度可移植且支持多种 Unix-like 目标，技术上应可编译到 OHOS，但实际工作量和稳定性需验证。未触及 GUI/3D/媒体/硬件场景，无 ohos.permission 需求。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1227,29 +1242,8 @@
       "codegraph 命令在当前环境无法调用（codegraph status 失败），结构查询使用 grep/Read 完成"
     ],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "conda_channel",
-        "rationale": "llvmlite 官方推荐通过 numba anaconda 频道使用 conda 安装 llvmdev=22，这是一种介于 system 与 package_manager 之间的获取方式，现有推荐取值未明确覆盖"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "build_llvm_for_ohos_then_compile_wrapper",
-        "rationale": "llvmlite 的核心阻碍是其唯一原生依赖 LLVM 需要先在 OHOS 上可用，现有路径取值未直接表达「先移植上游 LLVM 再编译本库包装层」的两阶段路径"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "llvm_platform_abstraction",
-        "rationale": "llvmlite 的平台相关调用全部通过 LLVM 自身的跨平台抽象（llvm::sys::DynamicLibrary、JITEventListener、ORC JIT），并非直接调用 Win32/POSIX API，现有 type 推荐集未覆盖"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

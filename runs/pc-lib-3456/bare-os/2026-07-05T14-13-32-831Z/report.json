@@ -1446,7 +1446,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（Node.js 24 已移植运行时；原生插件经 OHOS NDK/musl 重编；arm64/x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -1455,7 +1454,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "bare-os 是 Bare 运行时的 Node.js C 原生插件，鸿蒙 PC 已移植 Node.js 24 运行时。所有系统信息查询均经 libuv 跨平台 API 实现，无 Win32/COM/Cocoa 等平台特有调用。仅一处 POSIX 特有调用(getegid)受条件编译守卫，musl libc 已支持。唯一工作是使用 OHOS NDK 重新编译 binding.c 为 .so 原生插件，不需要修改源代码。",
     "compatible": [
       {
@@ -1520,7 +1518,8 @@
         "required": true,
         "target_status": "available",
         "impact": "运行时已就绪，非阻碍",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libuv",
@@ -1528,7 +1527,8 @@
         "required": true,
         "target_status": "available",
         "impact": "所有系统查询依赖 libuv——Node.js 移植版已捆绑 libuv",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_getegid",
@@ -1536,7 +1536,8 @@
         "required": true,
         "target_status": "available",
         "impact": "条件编译的 POSIX 特有调用，musl 已实现",
-        "source": "musl libc API 参考"
+        "source": "musl libc API 参考",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1547,7 +1548,21 @@
       "将编译产物加入 npm prebuilds 分发管道"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上，原生插件经 OHOS NDK 重编）。Bare 运行时（Node.js 生态的下游）假定已随鸿蒙 Node.js 移植。libuv 是鸿蒙 Node.js 的组件，无需单独处理。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1568,26 +1583,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "test_files",
-        "kind": "ambiguity",
-        "value": "test.js 位于仓库根目录，metrics.py 按目录名未将其判为测试文件（无 tests/、test/ 等目录前缀），但实际内容为测试代码（使用 brittle 框架，包含 30+ 个 test() 用例）。数量级：1 个测试文件，约 30 个测试用例。",
-        "rationale": "metrics.py 按目录名分词归类，根目录单文件 test.js 被计入 production（420 行）；实际该文件全为测试代码，但 assemble 脚本忠实使用 metrics.json 的 tests 统计数据（0 测试文件）。手动补充：test.js 含 brittle 测试框架约 30 个用例。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_branches",
-        "kind": "note",
-        "value": "生产代码 index.js 包含 2 处运行时平台分支（binding.platform === 'win32'），用于 EOL 与 devNull 常量，仅返回不同字符串值，不调用平台特有 API。",
-        "rationale": "metrics.py 的 platform_branches 仅从 test.js 取样（6 条）；生产 index.js 的 2 条平台分支未计入，但无实质影响（仅字符串常量选择）。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "bare-os 是纯系统工具库，不涉及 GUI/3D 渲染/媒体播放或特定硬件设备控制。所有系统信息查询均经 libuv 跨平台抽象层完成，不直接操作硬件。",

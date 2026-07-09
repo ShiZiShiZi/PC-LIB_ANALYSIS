@@ -1688,8 +1688,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK/musl libc + POSIX 子集；arm64/x86_64）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1698,7 +1697,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "cross_compile",
     "summary": "the_silver_searcher 是标准 C 语言 CLI 工具，核心依赖 PCRE（正则）、pthread（多线程）、zlib/lzma（可选压缩）均为跨平台且已鸿蒙化的库。鸿蒙 PC 的 OHOS NDK 基于 musl libc 提供 POSIX 子集，ag 使用的 POSIX API（pthread、mmap、stat、dirent、fnmatch 等）均在 musl 支持范围内。唯一的 glibc 专有依赖 fopencookie 已有条件编译回退路径。Win32 代码由 #ifdef 隔离自动排除。只需用 OHOS NDK 交叉编译即可在鸿蒙 PC 上运行，无需修改核心逻辑。",
     "blockers": [
       {
@@ -1768,7 +1766,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若 musl 不支持这些核心 POSIX API 则程序无法运行；但 musl 已知支持这些标准接口",
-        "source": "references/harmony-pc-capabilities.json — OHOS NDK 基于 musl libc"
+        "source": "references/harmony-pc-capabilities.json — OHOS NDK 基于 musl libc",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pcre_ohos",
@@ -1776,7 +1775,8 @@
         "required": true,
         "target_status": "available",
         "impact": "PCRE 是 ag 正则搜索核心引擎，缺失则仅剩字面量搜索；已鸿蒙化故无阻碍",
-        "source": "harmony_adapted 印章 — OpenHarmony PC cmd-pkgs"
+        "source": "harmony_adapted 印章 — OpenHarmony PC cmd-pkgs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:popen_fork",
@@ -1784,7 +1784,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "popen 依赖的 fork 在 OHOS 沙箱/受限环境下可能不可用；但此仅为辅助功能（加载全局 Git 忽略规则和分页），非核心搜索能力，缺失不影响主功能",
-        "source": "references/harmony-pc-capabilities.json — musl POSIX 子集能力"
+        "source": "references/harmony-pc-capabilities.json — musl POSIX 子集能力",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1832,7 +1833,21 @@
       "在鸿蒙 PC 仿真/真机上跑功能验证：文件搜索、正则匹配、多线程、压缩文件搜索"
     ],
     "notes": "评估按模型 A（库/CLI 工具跑在 OHOS NDK 原生层上）。ag 是纯 CLI 工具不涉及 GUI/3D/媒体/服务器，capability_profile 和 cloud_services 均为空，简化了评估。唯一 target_status=unknown 的是 popen/fork（ta:popen_fork），但这是辅助功能且非必需，不阻碍主功能移植，因此 confidence 维持 high。若 OHOS 下 popen 可用则构建更简单。代码量适中（~4000 行 C），平台条件编译清晰，移植难度低。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "the_silver_searcher",
@@ -1853,33 +1868,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "cli",
-        "rationale": "ag 是独立可执行 CLI 工具而非库，具有 main 入口和用户交互界面（命令行选项），归入 'cli' 类型。既非典型 library（被 API 调用）也非 desktop application（GUI），在 kind 闭轴推荐集中需要独立类别。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "autoconf AC_CHECK_LIBS/AC_SEARCH_LIBS 期望依赖已系统预装（-l 链接），定位为 system/sytem acquisition。这与 find_package 的 system 相同路径。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "config_h_stubs",
-        "rationale": "util.c 提供多个标准 API 的回退实现（strndup/strlcpy/vasprintf/getline/fgetln/realpath），属于可移植性补丁（stub），非平台 API 也非标准库——它是项目自身实现的可移植层，归入一个独立的 'config_h_stubs' 类型更准确地描述其性质。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "the_silver_searcher 是纯 CLI 文本搜索工具，不含 GUI 界面、3D 图形渲染、音视频媒体处理或特定硬件设备依赖。四个鸿蒙适配重点场景均未触及。",

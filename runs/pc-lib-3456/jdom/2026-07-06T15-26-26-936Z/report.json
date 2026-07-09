@@ -814,7 +814,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -832,11 +831,11 @@
         "required": true,
         "target_status": "available",
         "impact": "JDOM2 核心功能完全依赖 JDK 标准 XML 模块；若不可用则整体无法运行",
-        "source": "references/harmony-pc-capabilities.json → runtimes.java_jdk (available): JDK 17.0.x / JDK 8 已移植"
+        "source": "references/harmony-pc-capabilities.json → runtimes.java_jdk (available): JDK 17.0.x / JDK 8 已移植",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "JDOM2 是纯 Java 库，仅依赖 JDK 标准库的 XML 模块（javax.xml.parsers / javax.xml.transform / javax.xml.stream / org.xml.sax / org.w3c.dom），无原生代码、无平台特有 API、无 GUI、无网络通信。鸿蒙 PC 已移植 JDK 17.0.x / JDK 8，纯 Java 字节码可直接运行，无需任何适配。",
     "blockers": [],
     "compatible": [
@@ -853,7 +852,21 @@
       "可选：在鸿蒙 PC JDK 上运行 JDOM2 JUnit 测试套件确认兼容性"
     ],
     "notes": "JDOM2 的所有可选依赖（jaxen、xercesImpl、xalan）均非核心运行所需。即使这些可选依赖在鸿蒙 PC 上不可用，JDOM2 核心功能仍可使用 JDK 内置的 XML 实现。JDK 内置 XPath 引擎（javax.xml.xpath）同样可用作 Jaxen 的替代。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "jdom",
@@ -876,19 +889,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "BSD-3-Clause",
-        "rationale": "JDOM LICENSE.txt 实质是 BSD-3-Clause（4 条件中第 3、4 条是标准 endorsement/name-use 限制），但 Maven POM 描述为'Similar to Apache License but with the acknowledgment clause removed'。选择 BSD-3-Clause 因实质条件匹配。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "JDOM2 是纯 Java XML 处理库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

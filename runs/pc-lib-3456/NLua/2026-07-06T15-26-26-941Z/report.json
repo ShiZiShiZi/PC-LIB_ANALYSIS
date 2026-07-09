@@ -699,8 +699,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核，OHOS NDK 原生层)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -717,7 +716,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "NLua 是 .NET 库，需要 .NET 运行时才能执行。鸿蒙 PC 上 .NET 运行时的可用性未核实——若不可用则整个库无法运行",
-        "source": "references/harmony-pc-capabilities.json runtimes 段未列出 .NET/dotnet"
+        "source": "references/harmony-pc-capabilities.json runtimes 段未列出 .NET/dotnet",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:reflection_emit",
@@ -725,7 +725,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "NLua 的 CodeGeneration 使用 Reflection.Emit 动态生成事件处理器和委托类型。若鸿蒙 .NET 运行时不支持 Emit（如 AOT 模式），则事件桥接功能受限，需改用预注册委托类型（已有 iOS AOT 的条件编译路径可参考）",
-        "source": "src/GenerateEventAssembly/CodeGeneration.cs:16 (NETSTANDARD/WINDOWS_UWP 条件编译已禁用 Emit)"
+        "source": "src/GenerateEventAssembly/CodeGeneration.cs:16 (NETSTANDARD/WINDOWS_UWP 条件编译已禁用 Emit)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:native_lua",
@@ -733,11 +734,11 @@
         "required": true,
         "target_status": "available",
         "impact": "Lua 是标准 C 代码，可用 OHOS NDK (musl + POSIX 子集) 编译。KeraLua 需要此原生库",
-        "source": "Lua 5.4 为纯 ANSI C，无平台依赖，可交叉编译"
+        "source": "Lua 5.4 为纯 ANSI C，无平台依赖，可交叉编译",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "NLua 的适配可行性取决于鸿蒙 PC 上 .NET 运行时的可用性——这是未核实的关键前提。若 .NET 可用，核心工作是用 OHOS NDK 交叉编译原生 Lua 5.4 并适配 KeraLua 的 P/Invoke 绑定；C# 托管代码本身是跨平台的。Reflection.Emit 在 AOT 环境下不可用，但 NLua 已有 iOS AOT 条件编译路径可复用。若 .NET 不可用，则需考虑整体迁移到其他语言（如通过 Node-API 封装为 Node.js 原生模块），工作量将大幅增加。",
     "blockers": [
       {
@@ -827,7 +828,21 @@
       "在鸿蒙 PC 上运行 NLua 测试套件验证功能完整性"
     ],
     "notes": "置信度为 low，因为核心前提（.NET 运行时可用性）尚未核实。若 .NET 运行时可用，实际工作量偏向区间低端（15-20 人天）；若不可用且需用其他语言重写，则趋向高端或超出。Lua 5.4 的 OHOS NDK 编译本身不应构成障碍（纯 C 代码）。KeraLua 的 P/Invoke 层需验证在 OHOS musl 环境下的函数名解析规则。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "NLua",
@@ -850,33 +865,12 @@
   },
   "meta": {
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime",
-        "rationale": "harmony-pc-capabilities.json 的 runtimes 段未列出 .NET/dotnet 运行时，但 NLua 作为 .NET 库完全依赖它。这是一个关键的能力缺口，建议在参考文件中补充 .NET 运行时条目"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "reflection_emit",
-        "rationale": "System.Reflection.Emit 是 .NET 标准库的一部分但在 AOT 环境下不可用，其可移植性介于 standard 和 platform 之间——归类为 standard 但标注 conditional=true"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "dotnet_stdlib",
-        "rationale": ".NET BCL 的 Marshal 类属于标准库但涉及非托管内存操作，在可移植性分类上与 C++ STL / Python stdlib 同属 standard，但语义更接近 FFI 辅助"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   },
   "capability_profile": {
     "summary": "NLua 是一个纯计算/脚本桥接库，不涉及 GUI、3D 渲染、媒体处理或特定硬件访问。其唯一的外部依赖是原生 Lua 共享库（通过 KeraLua P/Invoke 加载），属于标准 FFI 桥接场景。",

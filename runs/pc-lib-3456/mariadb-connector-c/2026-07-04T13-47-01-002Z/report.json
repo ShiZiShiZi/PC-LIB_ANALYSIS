@@ -1572,7 +1572,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK + musl libc，arm64/x86_64；库经交叉编译为 .so 供 C/C++ 应用链接）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1590,7 +1589,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 库编译、链接与运行的基础",
-        "source": "references/harmony-pc-capabilities.json 引言（OHOS NDK musl + POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json 引言（OHOS NDK musl + POSIX 子集）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_sockets",
@@ -1598,7 +1598,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "核心数据库网络连接依赖；musl POSIX 子集基本覆盖，但需验证个别 socket 选项与行为",
-        "source": "references/harmony-pc-capabilities.json 引言（musl POSIX 子集）"
+        "source": "references/harmony-pc-capabilities.json 引言（musl POSIX 子集）",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:pthread",
@@ -1606,7 +1607,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库初始化与 TLS/插件加载的并发安全依赖",
-        "source": "references/harmony-pc-capabilities.json 引言（OHOS NDK musl）"
+        "source": "references/harmony-pc-capabilities.json 引言（OHOS NDK musl）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:dynamic_loading",
@@ -1614,7 +1616,8 @@
         "required": true,
         "target_status": "available",
         "impact": "按需加载认证/IO/压缩插件",
-        "source": "references/harmony-pc-capabilities.json 引言（OHOS NDK）"
+        "source": "references/harmony-pc-capabilities.json 引言（OHOS NDK）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:tls_openssl",
@@ -1622,7 +1625,8 @@
         "required": true,
         "target_status": "available",
         "impact": "默认 TLS 加密连接依赖；不可用则需切换到 GnuTLS（未鸿蒙化）或禁用 TLS",
-        "source": "references/harmony-pc-capabilities.json#openssl"
+        "source": "references/harmony-pc-capabilities.json#openssl",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libcurl",
@@ -1630,7 +1634,8 @@
         "required": false,
         "target_status": "available",
         "impact": "仅当启用 remote_io 插件时需要；否则无影响",
-        "source": "references/harmony-pc-capabilities.json#curl"
+        "source": "references/harmony-pc-capabilities.json#curl",
+        "target_status_model": "available"
       },
       {
         "id": "ta:gssapi",
@@ -1638,7 +1643,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "auth_gssapi_client 插件当前无鸿蒙预编译包；该插件默认动态且可选，不影响核心连接",
-        "source": "scripts/harmony_adapted.js 查询结果"
+        "source": "scripts/harmony_adapted.js 查询结果",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [
@@ -1653,7 +1659,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_napi",
     "summary": "MariaDB Connector/C 是标准 C 网络客户端库，核心功能均基于 POSIX sockets/pthread/dlopen 与 OpenSSL；这些能力在 OHOS NDK 上均可复现。主要工作是用 ohos.toolchain.cmake 交叉编译并验证可选插件（GSSAPI 等）行为，Windows 专有路径在鸿蒙上直接走 POSIX 分支即可。",
     "blockers": [
       {
@@ -1710,7 +1715,21 @@
       "按需申请 ohos.permission.INTERNET 等网络权限"
     ],
     "notes": "评估按 HarmonyOS NEXT PC 库模型（OHOS NDK 重编后链接使用）。代码中 Windows named pipe/shared memory/Schannel 等专有路径仅在 _WIN32 下编译，鸿蒙上走 POSIX socket 分支。confidence 为 medium 是因为 capabilities.json 未单独列出 POSIX sockets/pthread/dlopen 等目标事实，需编译/测试验证。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "MariaDB Connector/C",
@@ -1738,22 +1757,7 @@
   "meta": {
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "posix_sockets/pthread/dlopen",
-        "rationale": "references/harmony-pc-capabilities.json 没有单独列出 POSIX sockets、pthread、dlopen 等 NDK 基础能力行，dim-9 只能依据引言中的“musl + POSIX 子集”将其记为 partial/available；建议补充独立行以提升置信度。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "bundled_submodule_or_vendored",
-        "rationale": "zlib 默认来自仓库内 external/zlib（非 git submodule），使用 vendored 描述；该形态在 C/C++ 库中常见。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1764,7 +1768,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=database_networking 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "MariaDB Connector/C 是纯数据库客户端网络库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件访问。",

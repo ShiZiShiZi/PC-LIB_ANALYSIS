@@ -774,7 +774,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Go 1.24+ 运行时上；自研内核，无 Linux ABI）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -802,12 +801,12 @@
         "required": true,
         "target_status": "available",
         "impact": "本库为纯 Go 实现，无原生扩展，必须依赖已移植的 Go 运行时才能编译运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.go"
+        "source": "references/harmony-pc-capabilities.json#runtimes.go",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Fx 是纯 Go 依赖注入框架，无原生扩展、无 GUI/媒体/硬件/网络访问，仅使用 Go 标准库与少量跨平台 Go 包（dig/multierr/zap/golang.org/x/sys）。鸿蒙 PC 已移植 Go 1.24+ 运行时，因此本库源码无需改动，直接在其上编译运行即可；唯一成本是跑通测试验证。",
     "blockers": [],
     "compatible": [
@@ -831,7 +830,21 @@
       "在鸿蒙 PC 的 Go 1.24+ 环境中执行 go test ./... 验证全部单元测试通过"
     ],
     "notes": "按模型 A（库跑在已移植的 Go 运行时上）评估。golang.org/x/sys 虽为平台相关包，但 Go 工具链会按目标 OS 选择合适构建文件；若鸿蒙 Go 目标尚未被 x/sys 显式支持，可能需在构建时传入 GOOS=linux 等回退标签，但这属于工具链配置而非源码适配。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "fx",
@@ -854,24 +867,10 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "code_partition",
-        "field": "dir_loc",
-        "kind": "ambiguity",
-        "value": "docs/ex 示例代码被计入 production.code",
-        "rationale": "metrics.py 将 docs/ex 目录按 token 规则判为 production，但该目录下是独立的 get-started 可运行示例（main.go）。在代码分区中已将其纳入 reuse_direct 桶，因为示例本身也是纯 Go 且可随库一起运行；如需更严格口径，可将 docs/ex 的 707 行从生产代码中剔除。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "harmony_adapted",
-        "kind": "gap",
-        "value": "Go 模块无鸿蒙镜像预编译产物",
-        "rationale": "scripts/harmony_adapted.js 对 Go 依赖全部返回 adapted:false。Go 生态以源码分发为主，不存在类似 PyPI wheel 或 cmd-pkgs 预编译包的鸿蒙镜像；纯 Go 依赖是否可在鸿蒙运行取决于 Go 运行时与工具链支持，而非预编译产物。当前 skill 中 harmony_adapted 对 Go 的解读不够明确。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯 Go 依赖注入框架，不涉及 GUI、3D 渲染、媒体处理或特定硬件访问。",

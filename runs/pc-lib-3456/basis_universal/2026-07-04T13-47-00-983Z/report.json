@@ -1402,8 +1402,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK 交叉编译为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1412,7 +1411,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_ohos_ndk",
     "summary": "Basis Universal 是 CPU 密集型纹理编解码库，核心算法完全基于 C++17 标准库与自包含数据结构，平台耦合轻。移植主路径为：使用 OHOS NDK（clang + musl）交叉编译编码器/转码器静态库，处理少量 Win32/POSIX 平台分支（文件路径、计时、64 位文件偏移），并验证可选的 OpenCL/SSE 路径在鸿蒙上被正确关闭或回退。Python 绑定可复用已鸿蒙化的 numpy、Pillow，仅需用鸿蒙 Python 重编 pybind11 扩展。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1422,7 +1420,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 库移植的基础；可用则编码器/转码器可编译为鸿蒙 .so",
-        "source": "references/harmony-pc-capabilities.json#arch + NDK 事实"
+        "source": "references/harmony-pc-capabilities.json#arch + NDK 事实",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cpp_stdlib",
@@ -1430,7 +1429,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心线程池、文件路径遍历依赖 C++17 STL",
-        "source": "musl libc + clang C++17 支持"
+        "source": "musl libc + clang C++17 支持",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_timer",
@@ -1438,7 +1438,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Linux/POSIX 分支的高精度计时依赖 musl 支持的 gettimeofday",
-        "source": "musl POSIX 子集"
+        "source": "musl POSIX 子集",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opencl",
@@ -1446,7 +1447,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "OpenCL 仅为 ETC1S 编码的可选加速；若不可用，编码器自动回退 CPU 多线程",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.opencl"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.opencl",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -1454,7 +1456,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "SSE4.1 为 x86 可选加速；arm64 上走标量/NEON 替代路径即可",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1559,7 +1562,21 @@
       "跑通 basisu -test 系列内置测试，验证 LDR/HDR 各编码模式在鸿蒙上的功能完整"
     ],
     "notes": "评估按库口径（模型 A）：C/C++ 库经 OHOS NDK 重编后供鸿蒙应用链接。OpenCL 与 SSE 均为可选加速，失败/缺失时自动回退 CPU，不构成核心阻塞。存在 OpenCL 与 x86_64 两个 unknown 目标事实，因此 confidence 为 medium；若目标设备为 arm64 且关闭 OpenCL，则移植风险进一步降低。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "basis_universal",
@@ -1587,41 +1604,13 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "production_scope",
-        "kind": "gap",
-        "value": "example/demo 目录排除说明",
-        "rationale": "仓库包含 shader_deblocking_glfw（OpenGL/GLFW 示例）、shader_deblocking_d3d11（D3D11 示例）、example、example_capi、example_transcoding 等独立可运行示例。本次分析将其判为 example 并在 native_api/dependencies/harmony_adaptation 中排除，只聚焦 encoder/、transcoder/ 与命令行工具等生产代码。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "vendored_tinyexr",
-        "rationale": "为区分项目自身代码与 vendored tinyexr 的 POSIX mmap/open/fstat 调用，单独列出 vendored_tinyexr API 组，便于下游判断这些平台调用来自内嵌第三方代码。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "blockers[].category",
-        "kind": "new_value",
-        "value": "hardware_optional",
-        "rationale": "OpenCL 加速为纯可选功能且失败时自动回退 CPU，传统 hardware 类别会过度暗示阻塞；新增 hardware_optional 以表达“存在硬件 API 但非必需”的阻碍等级。"
-      },
-      {
-        "dimension": "license",
-        "field": "license_files",
-        "kind": "gap",
-        "value": ".reuse/dep5 未在 checkout 中",
-        "rationale": "README.md 提到 .reuse/dep5 与 LICENSES/ 目录，但当前 shallow clone 未包含 .reuse/dep5；LICENSES/ 目录存在。主许可证仍为 Apache-2.0，vendored 许可细节在对应文件头中。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "项目本体为离线纹理编解码算法库，不直接涉及桌面 GUI、3D 渲染管线或音视频媒体流。生产代码触及的硬件依赖仅为可选的 OpenCL GPU 加速与 x86 SSE4.1 SIMD（均有 CPU 标量回退），不属于特定不可替代硬件。",

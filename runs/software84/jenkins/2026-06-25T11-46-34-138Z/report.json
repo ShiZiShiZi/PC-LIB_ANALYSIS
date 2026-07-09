@@ -2364,8 +2364,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（作为整包桌面/服务器应用运行；Java 已移植，鸿蒙自研内核、无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -2381,7 +2380,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JDK 可运行是 Jenkins 作为 Java 应用的前提",
-        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:spawn",
@@ -2389,7 +2389,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Jenkins 构建执行、agent 启动、Unix 重启均依赖外部进程",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:storage",
@@ -2397,7 +2398,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JENKINS_HOME 与插件/构建数据需要持久化文件访问",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_storage",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet",
@@ -2405,7 +2407,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "HTTP 8080、agent remoting、WebSocket、插件下载都依赖网络",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -2413,7 +2416,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定可执行 WAR 形态能否在鸿蒙 PC 直接启动",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:headless_awt",
@@ -2421,7 +2425,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JFreeChart 图表生成依赖 BufferedImage/Font/Graphics2D",
-        "source": "references/harmony-pc-capabilities.json#gui.awt_headful"
+        "source": "references/harmony-pc-capabilities.json#gui.awt_headful",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jmx",
@@ -2429,7 +2434,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅堆转储等诊断功能使用，缺失可降级",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_management"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_management",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2469,7 +2475,9 @@
         ],
         "caused_by": [
           "ta:spawn"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:winp_dll",
@@ -2483,7 +2491,9 @@
         ],
         "caused_by": [
           "ta:spawn"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:kernel32",
@@ -2494,10 +2504,11 @@
         "category": "platform",
         "evidence": [
           "core/src/main/java/hudson/util/jna/Kernel32Utils.java:100"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
-    "recommended_path": "run_on_ported_jdk + verify_permissions + port_or_replace_jna",
     "summary": "Jenkins 作为 Java Web 应用，核心逻辑（Servlet、Spring Security、Stapler、Groovy、插件框架）可运行在已移植的鸿蒙 JDK 上。主要风险在于：① JNA 原生调度库/libc 桥接在鸿蒙上可能无法直接工作，影响 Unix agent 重启与进程树自省；② 高度依赖 ProcessBuilder 启动外部构建进程，鸿蒙桌面应用的进程/权限模型待核实；③ JENKINS_HOME 大量文件读写与网络监听需要存储/网络权限；④ 可执行 WAR 的桌面应用交付形态支持未核实。Windows 专用路径（winp/Kernel32/winsw）在鸿蒙上不会触发，不构成本体阻碍。",
     "blockers": [
       {
@@ -2657,7 +2668,25 @@
       "在鸿蒙 JDK 上运行核心单元测试与集成测试"
     ],
     "notes": "本评估按模型 C（整包应用）进行。Jenkins 不是 ArkTS 应用，因此不考虑 Node-API 桥接重写。Windows 专用原生组件（winp/Kernel32/winsw）在鸿蒙上不会加载，不视为本体核心阻碍；真正的核心风险是 JNA POSIX 路径与鸿蒙进程/权限模型。由于存在多项 target_status=unknown 的目标能力假设，整体置信度降至 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:jna_libc",
+          "ua:winp_dll",
+          "ua:kernel32"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2667,51 +2696,23 @@
     "warnings": [
       "harmony_adapted 未对 Java/Node 依赖进行打标：OpenHarmony PC 镜像查询脚本当前仅覆盖 python/cpp 生态。"
     ],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "reactor_module",
-        "rationale": "Jenkins 的 cli/core/war 等自有模块在同一 Maven 反应堆中构建，现有 acquisition 推荐值未覆盖，本次将 org.jenkins-ci.main 模块按 reactor_module 处理。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "new_value",
-        "value": "other",
-        "rationale": "winsw 是 Windows 可执行文件依赖，不是 Java/Node 包，归入 other 生态。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "jna_ffi",
-        "rationale": "Jenkins 通过 JNA 调用 Windows/POSIX 原生 API，作为 FFI 桥接单独成组更清晰。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "web_ui",
-        "rationale": "Jenkins 是 Web 应用，无桌面 GUI；现有 gui 场景指桌面窗口栈，因此 web_ui 不作为 present 场景，仅在 summary 说明。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "category",
-        "kind": "new_value",
-        "value": "jdk_module",
-        "rationale": "headless AWT 属于 JDK 模块支持问题，非传统平台 API。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "category",
-        "kind": "new_value",
-        "value": "app_delivery",
-        "rationale": "传统 JAR/WAR 桌面/服务器应用在鸿蒙 PC 的交付形态属于应用交付模型假设。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:jna_libc",
+        "class": "actionable",
+        "message": "unadaptable_api ua:jna_libc 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:winp_dll",
+        "class": "actionable",
+        "message": "unadaptable_api ua:winp_dll 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:kernel32",
+        "class": "actionable",
+        "message": "unadaptable_api ua:kernel32 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
@@ -2723,6 +2724,7 @@
         "message": "required_permission 读写存储 的 source_capability=filesystem 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

@@ -1596,8 +1596,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK / musl / clang；arm64/x86_64；C/C++ 库默认经 NDK 重编后运行）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -1606,7 +1605,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_with_ohos_backend",
     "summary": "Breakpad 是 C++ 库，核心 minidump 格式解析、符号化与栈回溯算法为纯 C++，可经 OHOS NDK 交叉编译直接运行。真正的难点在客户端崩溃捕获后端：Linux 实现深度依赖 ptrace、/proc、clone、信号等 Linux 特有进程调试原语，而鸿蒙 PC 为自研内核，这些能力是否等价可用尚未核实。若鸿蒙提供类似跨进程调试接口，可在 Linux 后端基础上改造；否则需为鸿蒙新增一套崩溃捕获后端，导致工作量与不确定性显著上升。上传、zlib、zstd 等依赖已有鸿蒙预编译包，不构成阻碍。",
     "blockers": [
       {
@@ -1724,7 +1722,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Linux 客户端崩溃捕获核心依赖 ptrace；若鸿蒙无等价能力，in-process 崩溃转储无法直接工作",
-        "source": "references/harmony-pc-capabilities.json#process_security.ptrace"
+        "source": "references/harmony-pc-capabilities.json#process_security.ptrace",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:procfs",
@@ -1732,7 +1731,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "崩溃现场枚举线程、读取内存映射与进程状态依赖 /proc；鸿蒙自研内核未必提供相同节点",
-        "source": "native_api.linux_procfs"
+        "source": "native_api.linux_procfs",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:clone_signals",
@@ -1740,7 +1740,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "in-process dump 生成机制依赖这些 Linux/POSIX 特性；缺失则需改用 out-of-process 服务模型",
-        "source": "native_api.linux_process_control / native_api.linux_signals"
+        "source": "native_api.linux_process_control / native_api.linux_signals",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -1748,7 +1749,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响可选的 objdump 反汇编路径；缺失时可禁用该功能",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cross_attach",
@@ -1756,7 +1758,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "out-of-process dump 与 ptrace 附加都需要该能力；沙箱限制可能使其不可用",
-        "source": "references/harmony-pc-capabilities.json#process_security.cross_attach"
+        "source": "references/harmony-pc-capabilities.json#process_security.cross_attach",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -1764,7 +1767,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "arm64 可优先验证；x86_64 缺失仅影响部分测试/工具构建",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1824,7 +1828,21 @@
       "评估并关闭/替代 objdump 子进程调用"
     ],
     "notes": "评估基于「C/C++ 库经 OHOS NDK 重编」的模型 A。由于 ptrace、/proc、clone、信号等关键进程调试能力在鸿蒙 PC 上的状态为 unknown，整体置信度为 medium；一旦核实这些能力不可用，porting_class 可能升级为 infeasible（客户端崩溃捕获），但 minidump 处理器库仍可独立移植。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "breakpad",
@@ -1845,48 +1863,13 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "crash_reporting",
-        "rationale": "Breakpad 的核心场景是崩溃报告/进程调试，不在 gui/rendering_3d/media/hardware 四个推荐键中。为准确标注其鸿蒙适配难点，新增 crash_reporting 场景键。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "network_upload",
-        "rationale": "Breakpad 通过 libcurl 上传崩溃报告/符号文件，属于需要网络权限的运行时场景，但不在标准四键中，故新增 network_upload。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "submodule",
-        "rationale": "Breakpad 通过 .gitmodules/DEPS 将 googletest 与 linux-syscall-support 作为 git submodule 引入，acquisition 推荐值中 submodule 已有，这里仅确认使用。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "sys_* wrappers via lss",
-        "rationale": "linux-syscall-support 提供的 sys_open/sys_read 等封装本质是直接系统调用，但实现的是标准文件 I/O 语义。本报告将文件 I/O 归入 standard，ptrace/clone/prctl/procfs 归入 system/platform，以区分可移植性与内核耦合度。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_partial vs infeasible",
-        "rationale": "客户端崩溃捕获重度依赖 ptrace/procfs/clone，而鸿蒙 PC 自研内核的这些能力状态为 unknown。当前按「可能部分可适配」处理；若后续核实鸿蒙无等价跨进程调试接口，应升级为 infeasible（客户端部分），但 processor 库仍可独立运行。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Breakpad 本身不触及 GUI、3D 渲染、媒体编解码或特定硬件；核心场景是崩溃报告与进程级调试。其鸿蒙适配难点在于：客户端崩溃捕获深度依赖 ptrace、/proc、clone、信号等 Linux/UNIX 进程调试原语，这些在鸿蒙 PC 自研内核上的可用性与语义尚未核实。",

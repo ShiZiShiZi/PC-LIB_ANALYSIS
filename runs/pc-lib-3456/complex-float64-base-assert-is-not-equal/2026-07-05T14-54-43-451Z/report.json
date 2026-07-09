@@ -567,7 +567,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层 + OHOS NDK 原生层 + Node-API 桥接）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -585,11 +584,11 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 可用则纯 JavaScript 代码无需修改即可运行",
-        "source": "references/harmony-pc-capabilities.json 的 runtimes 段 nodejs 行"
+        "source": "references/harmony-pc-capabilities.json 的 runtimes 段 nodejs 行",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "本库是一个极简的纯计算库——JavaScript 实现运行在已移植的 Node.js 运行时上无需任何修改；C 实现仅使用 C99 标准库（stdbool.h、浮点数运算），用 OHOS NDK 重新编译即可。所有运行时依赖均为 stdlib 子包（纯 JavaScript 或同类 C addon），生态链本身没有不可移植的平台 API 依赖。整体移植工作量极小。",
     "blockers": [],
     "compatible": [
@@ -625,7 +624,21 @@
       "CI/CD 流水线增加 OHOS NDK 编译步骤"
     ],
     "notes": "评估基于 HarmonyOS NEXT PC Node.js 运行时已移植这一事实。依赖链中所有 C addon 均需相应 OHOS NDK 重编，但均无平台 API 阻碍。整体移植性极高。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-float64-base-assert-is-not-equal",
@@ -641,19 +654,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "library",
-        "rationale": "该项目是一个 npm 包，提供 API 被其他代码引用，无独立启动入口，属于 library 类型。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库是纯数值计算库，不涉及 GUI/3D 渲染/音视频媒体/特定硬件等鸿蒙适配重点场景。所有代码均为浮点数比较运算，不依赖任何外部设备或图形栈。",

@@ -1610,8 +1610,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；JDK 17 已移植；应用按整包桌面应用模型 C 评估）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1620,7 +1619,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "verify_jdk_desktop_then_repackage",
     "summary": "JMeter 是 Java 桌面应用，核心负载引擎为纯 Java 逻辑，可在已移植的鸿蒙 JDK 17 上运行。移植关键在于确认鸿蒙 PC 是否支持 headful AWT/Swing 与桌面集成能力：若支持，则主要工作为重新打包成鸿蒙可分发格式并验证各协议依赖；若不支持，则 GUI 模式需要重写。RMI 分布式服务、ProcessBuilder 外部命令、JMX 诊断能力也需逐项核实。当前因多项目标能力未知，置信度为 medium。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1630,7 +1628,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JMeter GUI 模式完全依赖 javax.swing / java.awt；不支持则 GUI 无法启动，只能使用非 GUI 模式",
-        "source": "references/harmony-pc-capabilities.json#gui.awt_headful / #gui.swing"
+        "source": "references/harmony-pc-capabilities.json#gui.awt_headful / #gui.swing",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_integration",
@@ -1638,7 +1637,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JMeter 使用 JFileChooser、Desktop.browse、DnD、菜单栏集成等；缺失将降低 GUI 可用性",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:java_rmi",
@@ -1646,7 +1646,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响分布式/远程测试模式；单机模式不依赖",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn / JDK RMI"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn / JDK RMI",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jmx_platform",
@@ -1654,7 +1655,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "影响线程/堆转储与重启功能；核心压测不依赖",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_management"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.jdk_management",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:process_spawn",
@@ -1662,7 +1664,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响 SystemSampler 执行用户自定义命令与 Restart 功能；可被禁用或替换",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app_delivery",
@@ -1670,7 +1673,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 JMeter 能否以现有 zip 分发形态直接部署，或必须重打包为鸿蒙应用包",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:add_opens",
@@ -1678,7 +1682,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JMeter 启动脚本依赖大量 --add-opens java.desktop/sun.awt=ALL-UNNAMED 等参数",
-        "source": "references/harmony-pc-capabilities.json#jdk_internals.add_opens"
+        "source": "references/harmony-pc-capabilities.json#jdk_internals.add_opens",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1833,7 +1838,21 @@
       "回归跑通核心单元测试与示例压测脚本"
     ],
     "notes": "评估按 HarmonyOS PC 应用模型 C（整包桌面应用）进行。Java 运行时已被列为 available，因此不将 JDK 本身视为阻碍。当前置信度为 medium，因为 headful AWT/Swing、桌面集成、应用交付形态等关键目标能力均为 unknown，结论依赖这些未核实事实；若其中任何 required 项被证实为 unavailable，可行性应下调为 hard 或 infeasible（GUI 模式）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1845,29 +1864,8 @@
       "OpenHarmony PC mirror script (scripts/harmony_adapted.js) only covers python/cpp/c ecosystems; Java/Maven dependencies were not stamped with harmony_adapted.",
       "Headless JMeter (-n) can bypass Swing/AWT, but the primary value proposition of JMeter includes its GUI IDE; GUI feasibility depends on unverified HarmonyOS PC headful AWT/Swing support."
     ],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "gap",
-        "value": "java_deps_not_in_mirror",
-        "rationale": "OpenHarmony PC 已鸿蒙化镜像目前只覆盖 python/cpp/c，Java/Maven 生态依赖无法通过 scripts/harmony_adapted.js 判定是否已移植。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "category",
-        "kind": "ambiguity",
-        "value": "swing_awt_platform_or_standard",
-        "rationale": "Swing/AWT 属于 Java SE 标准库，但依赖 headful 桌面后端；在应用模型 C 下将其归为 platform+portable，以突出其对目标平台桌面能力的依赖。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "full_vs_partial_under_unknown",
-        "rationale": "因目标能力 headful AWT/Swing 为 unknown 而非 unavailable，未将 Swing 列入 unadaptable_apis；选择 needs_adaptation_full 表达'若目标支持则全部可适配'，但 person_days 区间已反映 GUI 不确定性。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

@@ -774,7 +774,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核，非 Linux ABI；原生层 OHOS NDK musl + POSIX 子集；arm64 / x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -783,7 +782,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "Imath 为纯 C++ 数学库，零外部运行时依赖（仅链接系统标准数学库 libm），仅使用 C++ 标准库（iostream/limits/cmath/type_traits 等）和标准 C 库（math.h/stdlib.h/assert.h/string.h/limits.h）。平台相关代码仅限 MSVC/GCC/Clang 编译器适配宏（__declspec、__restrict、#pragma warning）和 DLL 导出/导入声明，无任何 Win32/POSIX/Linux 系统调用、无 GPU/硬件 API、无网络/文件系统/子进程、无第三方依赖。整体在鸿蒙 PC 上仅需用 OHOS NDK（ohos.toolchain.cmake）重新编译为 .so 即可，基本无代码改动。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -794,7 +792,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无此工具链则无法编译",
-        "source": "harmony-pc-capabilities.json —— 鸿蒙 PC OHOS NDK 已提供 clang/CMake 交叉编译工具链"
+        "source": "harmony-pc-capabilities.json —— 鸿蒙 PC OHOS NDK 已提供 clang/CMake 交叉编译工具链",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libm",
@@ -802,7 +801,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Imath 编译产物链接 libm；musl 随 OHOS NDK 提供，无需单独适配",
-        "source": "OHOS NDK musl 提供 POSIX 数学函数"
+        "source": "OHOS NDK musl 提供 POSIX 数学函数",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -838,7 +838,21 @@
     ],
     "required_permissions": [],
     "notes": "Imath 为纯标准 C++ 数学库，零外部依赖、零平台系统调用，移植工作仅限于交叉编译。platform_adaptation 统计的 45 行 Windows 代码全部为编译器 pragma/DLL 导出宏，不涉及任何平台系统 API。可选 Python 绑定（Boost.Python / pybind11）不在默认构建范围内；若启用则 Python 运行时在鸿蒙 PC 已移植（Python 3.12），纯 Python 层无需适配，C 扩展（PyImath.so）需同步用 OHOS NDK 重编。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -870,7 +884,8 @@
         "message": "依赖/native_api 出现 rendering_3d 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Imath 为纯数学计算库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

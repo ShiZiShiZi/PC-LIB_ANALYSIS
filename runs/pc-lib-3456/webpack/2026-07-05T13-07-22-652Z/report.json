@@ -1494,7 +1494,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13.0 运行时上; 纯 JavaScript/CommonJS 构建工具，无原生扩展; arm64/x86_64; 自研内核，非 Linux ABI)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -1503,7 +1502,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "webpack 是纯 JavaScript/CommonJS 构建工具，无原生扩展(N-API/C++ addon)、无平台特定系统调用、无 GUI/3D/媒体/硬件依赖。鸿蒙 PC 已移植 Node.js 24.13.0（available），webpack 可直接在鸿蒙 PC 的 Node.js 上运行，无需任何代码改动。所有 21 个运行时 npm 依赖均为 JavaScript 包，同样可直接运行。唯一需确认的工作量：将 webpack + 依赖安装到鸿蒙 PC 的 Node.js 环境中并跑通集成测试验证功能完整。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -1517,7 +1515,8 @@
         "source": "harmony-pc-capabilities.json#runtimes.nodejs",
         "evidence": [
           "harmony-pc-capabilities.json: id=nodejs, status=available, note='24.13.0'"
-        ]
+        ],
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1566,7 +1565,21 @@
       "确认 filesystem watch 行为与路径处理在鸿蒙 PC 上一致（WINDOWS_ABS_PATH_REGEXP 正则无误判）"
     ],
     "notes": "评估按模型 A（库/工具跑在鸿蒙已移植 Node.js 运行时上）。webpack 为纯 JS 构建工具，无原生扩展、无平台特定调用、无 GUI 或硬件依赖——是 no_adaptation 的理想形态。唯一外部能力依赖是 Node.js 标准库（fs/path/crypto/stream/http/zlib），鸿蒙 Node.js 均提供等价实现。所有 21 个 npm 运行时依赖同为 JavaScript 包，无需单独适配。HttpUriPlugin 用 http/https 模块远端下载——鸿蒙 Node.js 下网络访问取决于系统防火墙与网络策略，非代码适配问题。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "ecosystem": "nodejs",
@@ -1588,7 +1601,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "webpack 是纯 Node.js 构建工具（CLI + 程序化 API），不涉及 GUI/3D 渲染/媒体/硬件设备场景。所有功能均为纯计算：模块解析、依赖图构建、代码生成与输出。",

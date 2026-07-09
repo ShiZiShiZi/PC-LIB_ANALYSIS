@@ -1640,8 +1640,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（自研内核，非 Linux ABI；arm64/x86_64；原生层 OHOS NDK musl + POSIX 子集；应用层可选 ArkTS/ArkUI 或经已移植运行时运行）——按模型 C（整包桌面应用）评估：终端用户启动运行的桌面 IDE",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1650,7 +1649,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime（跑在鸿蒙已移植 JDK 上）+ 条件式适配（JavaFX 状态为 unknown 且对应用是决定性因素）",
     "summary": "BlueJ/Greenfoot 是纯 Java 桌面 IDE 应用，依赖 JavaFX 23.0.2 全功能 GUI 工具包和 javax.sound.sampled 音频系统。鸿蒙 PC 已移植 JDK 17 运行时，但本项目要求 JDK 21——需升级鸿蒙 JDK 或回退本项目的语言级别。所有运行时依赖均为纯 Java 字节码（从 Maven Central 获取），无需 NDK 重编译。关键不确定性在于 JavaFX 在鸿蒙 PC 是否可用——若可用则移植工作量集中在平台适配（子进程启动路径调整、macOS/Win 专属代码的条件编译屏蔽、音频后端调通）；若不可用则需用 ArkUI 重写整层 UI（174K 生产代码中绝大部分为 GUI 层），工作量剧增并可能升至 partial 甚至 infeasible。平台特有 shell 命令（mspaint/osascript/GIMP）为条件分支，鸿蒙上走 Linux/默认路径即可。Windows C++ 原生启动器（bjlaunch/usblaunch）仅用于 Windows 安装包，鸿蒙 PC 无需移植。数据采集为可选功能可安全禁用。",
     "blockers": [
       {
@@ -1786,7 +1784,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JavaFX 是 GUI 全部基础设施——若不可用则整层 GUI（约 60% 生产代码量）需用 ArkUI 重写；若可用则 Java 业务逻辑层可直接复用",
-        "source": "references/harmony-pc-capabilities.json#gui.javafx"
+        "source": "references/harmony-pc-capabilities.json#gui.javafx",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:jdk21",
@@ -1794,7 +1793,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "需将本项目降级至 JDK 17（中等改动量）或推动鸿蒙 JDK 升级至 21",
-        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:awt_headful",
@@ -1802,7 +1802,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅 Greenfoot 用 MediaTracker 加载图像和 Debug VM 用 Toolkit 监听窗口事件——非核心依赖，可代码替代",
-        "source": "references/harmony-pc-capabilities.json#gui.awt_headful"
+        "source": "references/harmony-pc-capabilities.json#gui.awt_headful",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:audio",
@@ -1810,7 +1811,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Greenfoot 音效功能依赖；BlueJ 无音频需求，可在 Greenfoot 侧条件禁用",
-        "source": "references/harmony-pc-capabilities.json#media.audio_io"
+        "source": "references/harmony-pc-capabilities.json#media.audio_io",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -1818,7 +1820,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "编译用户代码、启动调试 VM、打开浏览器等功能依赖子进程启动——若受限则 IDE 核心功能（编译+调试）无法运行",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1826,7 +1829,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定打包分发方式——若只支持 ArkTS .hap 则需将整个应用重打包为鸿蒙原生应用格式",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1904,7 +1908,21 @@
       "用 Gradle 在鸿蒙平台构建并运行集成测试，验证 IDE 核心功能完整"
     ],
     "notes": "结论基于模型 C（整包桌面应用）口径，关键阻塞点 JavaFX 在鸿蒙 PC 的支持状态未核实（harmony-pc-capabilities.json 标为 unknown）——若 JavaFX 不可用，porting_class 应升级至 needs_adaptation_partial（unadaptable_apis 为空但工作量剧增至 40+ 人-天，需整层 UI 用 ArkUI 重写）。当前评估假设 JavaFX 可用（为最可能的 medium-confidence 推断）。Greenfoot 应用场景（学生游戏/模拟项目）可在鸿蒙 PC 上正常运行——World/Actor 框架为纯 Java 2D 图形操作。Windows 原生 C++ 启动器和 macOS 打包工具链在鸿蒙上无需移植（鸿蒙应用使用其自身分发格式）。仅 C/C++ 代码位于 bluej/package/ 安装器目录，不属于运行时依赖。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "BlueJ-Greenfoot",
@@ -1925,47 +1943,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "该仓库是 monorepo 包含两个完整的 IDE 桌面应用（BlueJ 和 Greenfoot），由终端用户直接启动运行——符合 application 定义。不同于一般的库 dependency 分析，应用需关注 GUI 工具包、启动器、打包、运行期服务（JDI 调试 VM）等维度"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "JavaFX ecosystem 标为 cpp",
-        "rationale": "JavaFX 虽是 Java 平台库（org.openjfx 坐标），但其底层图形栈为 C++ 原生实现（Prism 渲染、Glass 窗口），且鸿蒙适配评估需要关注原生图形层。将其标为 cpp 以在依赖拓扑图与鸿蒙评估中正确反映其原生依赖性质"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "ambiguity",
-        "value": "Java 应用无传统 POSIX/Win32 类 native_api",
-        "rationale": "Java 桌面应用通过 JDK 抽象层访问系统功能（文件、网络、图形、音频），不直接调用 C 级别系统 API。但 JDI（com.sun.jdi.*）、com.sun.glass.ui 等 JDK 内部 API 以及 Runtime.exec 外部命令调用是平台相关面，归类在 platform 与 system 组"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries",
-        "kind": "gap",
-        "value": "C++ 原生启动器不在运行时加载路径中",
-        "rationale": "bjlaunch.cc/usblaunch.cc 是 Windows 独立 EXE 启动器（编译为 .exe），不在 Java 运行时通过 System.loadLibrary 加载——属于打包/分发层面，非 native_api.dynamic_libraries 范畴"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_full vs needs_adaptation_partial 的边界取决于 JavaFX unknown 状态",
-        "rationale": "若 JavaFX 在鸿蒙 PC 可用 → needs_adaptation_full（全部功能可适配）；若不可用 → needs_adaptation_partial（UI 需 ArkUI 重写但核心仍可大部复用，且无 unadaptable_apis）。此 unknown 假设使 confidence 至多 medium"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为 Java 桌面 IDE 应用，触及两个鸿蒙适配重点场景：GUI（JavaFX 23.0.2 全功能桌面 UI，含控件、WebView、剪贴板、Swing 互操作）和媒体（javax.sound.sampled 音频播放/录制 + JLayer MP3 解码）。不涉及 3D 渲染或特定硬件。GUI 工具包（JavaFX）在鸿蒙 PC 的状态 unknown，是决定可移植性的关键。",

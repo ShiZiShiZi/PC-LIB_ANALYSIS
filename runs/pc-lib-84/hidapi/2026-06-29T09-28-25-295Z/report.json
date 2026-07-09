@@ -1197,8 +1197,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, OHOS NDK, 无 Linux ABI)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1222,7 +1221,9 @@
           "linux/hid.c:553",
           "linux/hid.c:1229",
           "linux/hid.c:1248"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:libudev",
@@ -1236,7 +1237,9 @@
         "category": "platform",
         "evidence": [
           "linux/hid.c:43"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:iokit_hid",
@@ -1251,7 +1254,9 @@
         "evidence": [
           "mac/hid.c:446",
           "mac/hid.c:1054"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:win32_hid",
@@ -1264,7 +1269,9 @@
         "evidence": [
           "windows/hid.c:841",
           "windows/hid.c:1303"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1274,7 +1281,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙 PC 不提供 HID 设备访问接口，则需编写全新后端实现，工作量取决于鸿蒙暴露的设备访问能力层次",
-        "source": "references/harmony-pc-capabilities.json → hardware_devices → usb_serial（USB/串口，unknown）"
+        "source": "references/harmony-pc-capabilities.json → hardware_devices → usb_serial（USB/串口，unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libusb_ohos",
@@ -1282,7 +1290,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若 libusb 可用，则 libusb 后端可直接编译使用（绕过 hidraw），大幅降低适配工作量",
-        "source": "references/harmony-pc-capabilities.json → hardware_devices → usb_serial"
+        "source": "references/harmony-pc-capabilities.json → hardware_devices → usb_serial",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1305,7 +1314,6 @@
         ]
       }
     ],
-    "recommended_path": "write_ohos_backend",
     "summary": "hidapi 的全部平台后端（Win32/Linux hidraw+libusb/macOS IOKit/NetBSD）都依赖操作系统专有 HID API，无法直接在鸿蒙 PC 上编译运行。需编写新的 OHOS 后端实现：若鸿蒙提供类似 hidraw 的设备节点或 NDK HID API，可参照 Linux hidraw 后端模式实现；若 libusb-1.0 已移植到鸿蒙 PC，则 libusb 后端可直接使用。公共 API 层（hidapi.h）无需修改。",
     "blockers": [
       {
@@ -1415,7 +1423,26 @@
       "处理鸿蒙权限模型（ohos.permission.USE_USB / ohos.permission.USE_BLUETOOTH）"
     ],
     "notes": "关键不确定性：鸿蒙 PC 的 HID 设备访问能力完全未知——若提供类似 hidraw 的设备节点或 NDK 层 HID API，则适配工作量较低（15-20 人天）；若需要从 USB 驱动层开始适配，工作量将显著增大（30-40 人天）。libusb 后端若可用是最短路径，但 libusb 自身在鸿蒙上的可用性也未知。confidence 因多个 required target_assumptions 为 unknown 而评为 low。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:linux_hidraw_ioctl",
+          "ua:libudev",
+          "ua:iokit_hid",
+          "ua:win32_hid"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1423,29 +1450,30 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "new_value",
-        "value": "LicenseRef-hidapi-orig",
-        "rationale": "原始 HIDAPI 许可证不在 SPDX 标准标识符中，需使用 LicenseRef 引用"
+        "code": "ua_func_class_defaulted:ua:linux_hidraw_ioctl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:linux_hidraw_ioctl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "write_ohos_backend",
-        "rationale": "现有推荐值（recompile_napi/cross_compile/arkts_rewrite/wrap_ffi/find_alternative/abandon）均不适用于需为鸿蒙编写全新平台后端的场景"
+        "code": "ua_func_class_defaulted:ua:libudev",
+        "class": "actionable",
+        "message": "unadaptable_api ua:libudev 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "linux_sysfs",
-        "rationale": "Linux hidraw 后端的核心 API 是 ioctl+sysfs，不同于通用 POSIX 类型，需单独归类以反映其对 Linux 内核子系统的深度依赖"
+        "code": "ua_func_class_defaulted:ua:iokit_hid",
+        "class": "actionable",
+        "message": "unadaptable_api ua:iokit_hid 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:win32_hid",
+        "class": "actionable",
+        "message": "unadaptable_api ua:win32_hid 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

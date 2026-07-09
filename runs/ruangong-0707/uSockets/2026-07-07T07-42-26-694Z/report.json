@@ -956,10 +956,8 @@
     "entry_points": []
   },
   "harmony_adaptation": {
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "confidence": "medium",
-    "recommended_path": "重编译 + 适配事件循环后端：核心 socket API 经 OHOS NDK musl/POSIX 子集可用，但需为鸿蒙提供新的事件循环后端（替代 epoll/kqueue）并解决 io_uring/recvmmsg 等不可用 API",
     "target_assumptions": [
       {
         "id": "ta:posix_socket",
@@ -967,7 +965,8 @@
         "required": true,
         "target_status": "available",
         "impact": "OHOS NDK 提供 musl + POSIX 子集，BSD socket API 可用，核心 TCP/UDP 功能无阻碍",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:epoll",
@@ -975,7 +974,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "鸿蒙自研内核无 Linux epoll，需提供替代事件循环后端（如基于 libuv 或鸿蒙原生 poll）",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:kqueue",
@@ -983,7 +983,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "鸿蒙非 BSD 内核，kqueue 不可用",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:io_uring",
@@ -991,7 +992,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "io_uring 为 Linux 5.1+ 专有，鸿蒙不可用；io_uring 后端整体不可移植但为可选特性",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:eventfd",
@@ -999,7 +1001,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "用于跨线程唤醒事件循环；若不可用需用 pipe 替代",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:recvmmsg_sendmmsg",
@@ -1007,7 +1010,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "Linux 专有 API，鸿蒙无等价；UDP 高性能路径需降级为 recvmsg/sendmsg 或逐包收发",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:openssl_boringssl",
@@ -1015,7 +1019,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "TLS 后端依赖；鸿蒙 PC 上 OpenSSL/BoringSSL 的可用性待核实；若不可用需用鸿蒙 @ohos.net.socket TLS 或移植 OpenSSL",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:libuv",
@@ -1023,7 +1028,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "libuv 后端可作为鸿蒙的跨平台事件循环方案；libuv 在鸿蒙上的可用性待核实",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:timerfd",
@@ -1031,7 +1037,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "io_uring 后端专用，鸿蒙不可用；但 io_uring 本身已不可用，此为连锁影响",
-        "source": "harmony-pc-capabilities.json"
+        "source": "harmony-pc-capabilities.json",
+        "target_status_model": "unavailable"
       }
     ],
     "unadaptable_apis": [
@@ -1045,7 +1052,9 @@
         "evidence": [
           "src/io_uring/io_loop.c:330",
           "src/io_uring/io_socket.c:114-116"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:recvmmsg_sendmmsg",
@@ -1057,7 +1066,9 @@
         "evidence": [
           "src/bsd.c:632",
           "src/bsd.c:676"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:epoll",
@@ -1068,7 +1079,9 @@
         "category": "platform_specific_event_loop",
         "evidence": [
           "src/eventing/epoll_kqueue.c:104-123"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:kqueue",
@@ -1079,7 +1092,9 @@
         "category": "platform_specific_event_loop",
         "evidence": [
           "src/eventing/epoll_kqueue.c:106-125"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:gcd",
@@ -1091,7 +1106,9 @@
         "evidence": [
           "src/eventing/gcd.c:74-79",
           "src/eventing/gcd.c:55"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "blockers": [
@@ -1215,7 +1232,27 @@
       }
     ],
     "notes": "uSockets 的架构本身支持多种事件循环后端（已有多后端切换的编译宏），这为鸿蒙适配提供了良好的扩展点。关键工作是为鸿蒙实现一个新的事件循环后端（参照 libuv.c/epoll_kqueue.c 的模式），并在 bsd.c 中为鸿蒙适配平台特定 API（recvmmsg/sendmmsg 降级、eventfd 替代）。io_uring 和 GCD 后端可直接排除。lsquic（QUIC）依赖 recvmmsg/sendmmsg，在鸿蒙上需降级处理。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:io_uring",
+          "ua:recvmmsg_sendmmsg",
+          "ua:epoll",
+          "ua:kqueue",
+          "ua:gcd"
+        ]
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1304,12 +1341,38 @@
     ],
     "harmony_warnings": [
       {
+        "code": "ua_func_class_defaulted:ua:io_uring",
+        "class": "actionable",
+        "message": "unadaptable_api ua:io_uring 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:recvmmsg_sendmmsg",
+        "class": "actionable",
+        "message": "unadaptable_api ua:recvmmsg_sendmmsg 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:epoll",
+        "class": "actionable",
+        "message": "unadaptable_api ua:epoll 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:kqueue",
+        "class": "actionable",
+        "message": "unadaptable_api ua:kqueue 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:gcd",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gcd 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=networking 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "scenarios": [

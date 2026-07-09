@@ -2589,8 +2589,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C：整包桌面应用——终端用户启动运行的完整 BASIC 开发平台。自研内核、非 Linux ABI；原生层 OHOS NDK(musl+POSIX 子集)；C/C++ 组件用 ohos.toolchain.cmake 交叉编译；IDE(Gambas 编写)依赖 gb.qt6 组件绑定，GUI 通过 Qt6 OHOS 版呈现）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -2599,7 +2598,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "Gambas 是一个重 POSIX/Linux 桌面耦合的完整开发平台。核心运行时代码大量使用 fork/exec/pipe/signal/mmap 等 POSIX API——其中 fork 在鸿蒙自研内核上可能不可用（musl fork 依赖内核 clone 系统调用）；X11/Wayland/D-Bus/V4L2/GNOME-Keyring/OpenAL 等 Linux 桌面生态组件在鸿蒙无直接等价，但均为可选组件可禁用。Qt6 和 GTK3 已提供鸿蒙版（via cmd-pkgs），多数系统库（zlib/OpenSSL/FFmpeg/SQLite/libcurl 等）也已有鸿蒙预编译包。核心编译器（gbc）为标准 C 实现、平台耦合较轻；IDE 为 Gambas 自身编写，其运行依赖 gb.qt6 组件的成功移植。fork/exec 的替代方案（posix_spawn 或 OHOS 进程 API）和 X11 组件的剥离是决定可行性的关键——这些直接影响运行时进程管理能力。大量 POSIX 信号处理（SIGCHLD/SIGALRM/自定义信号管道）也需逐项核查 musl/OHOS 的可用性。整体结论：核心功能可适配但需大量改造，部分 Linux 特有组件无法移植（应禁用），工作量极大。",
     "blockers": [
       {
@@ -2803,7 +2801,9 @@
         "evidence": [
           "gb.desktop.x11/src/",
           "gb.qt6/src/x11/main.cpp:327"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:v4l2_api",
@@ -2817,7 +2817,9 @@
         "category": "system",
         "evidence": [
           "gb.v4l/src/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:dbus_api",
@@ -2831,7 +2833,9 @@
         "category": "platform",
         "evidence": [
           "gb.dbus/src/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:gnome_keyring_api",
@@ -2845,7 +2849,9 @@
         "category": "platform",
         "evidence": [
           "gb.desktop.gnome.keyring/src/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:openal_api",
@@ -2857,7 +2863,9 @@
         "category": "ffi",
         "evidence": [
           "gb.openal/src/"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2867,7 +2875,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若不可用则 IDE 和所有 Qt 依赖的 Gambas 程序无法运行，需换 GTK3 或 ArkUI 重写 GUI——工作量极大",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_subset",
@@ -2875,7 +2884,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "fork 若不可用则整个进程管理逻辑需重写（≈15-20 人-天）；信号模型若不完全兼容则信号处理/子进程回收需改造",
-        "source": "harmony-pc-capabilities.json（POSIX 子集未逐 API 列出——fork/musl 支持情况为 unknown）"
+        "source": "harmony-pc-capabilities.json（POSIX 子集未逐 API 列出——fork/musl 支持情况为 unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x11_desktop",
@@ -2883,7 +2893,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "不影响核心——gb.desktop.x11 为可选组件，可禁用；但失去 Linux 桌面窗口管理 API",
-        "source": "harmony-pc-capabilities.json（鸿蒙自研内核，无 X11）"
+        "source": "harmony-pc-capabilities.json（鸿蒙自研内核，无 X11）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:dbus",
@@ -2891,7 +2902,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "不影响核心——gb.dbus 为可选组件，可禁用；但失去标准桌面 IPC 能力",
-        "source": "harmony-pc-capabilities.json（鸿蒙无 D-Bus 守护进程）"
+        "source": "harmony-pc-capabilities.json（鸿蒙无 D-Bus 守护进程）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:v4l2",
@@ -2899,7 +2911,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "不影响核心——gb.v4l 为可选组件，可禁用；视频采集需改用 @ohos.multimedia.camera",
-        "source": "harmony-pc-capabilities.json（鸿蒙非 Linux 内核，无 V4L2）"
+        "source": "harmony-pc-capabilities.json（鸿蒙非 Linux 内核，无 V4L2）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:gnome_keyring",
@@ -2907,7 +2920,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "不影响核心——gb.desktop.gnome.keyring 为可选组件，可禁用",
-        "source": "harmony-pc-capabilities.json（鸿蒙无 GNOME 桌面生态）"
+        "source": "harmony-pc-capabilities.json（鸿蒙无 GNOME 桌面生态）",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [
@@ -2968,7 +2982,27 @@
       "编写 Gambas on HarmonyOS 适配文档和构建脚本"
     ],
     "notes": "评估按模型 C（整包桌面应用）——Gambas 是终端用户启动运行的完整 IDE 和开发平台。核心不确定性来自 OHOS musl 的 POSIX 子集覆盖范围（fork/signal/mmap/pipe 具体支持情况未知）——fork 若不可用将显著增加工作量（+15-20 人-天）但非致命（有 posix_spawn 替代）。X11/D-Bus/V4L2/GNOME-Keyring/OpenAL/GTK2/Qt4/Qt5 均为可选组件，可禁用——不影响核心功能。Qt6 已有社区 OHOS 版（via cmd-pkgs），GTK3、FFmpeg、SQLite、OpenSSL 等大量系统库也已鸿蒙化，显著降低了底层依赖移植成本。Gambas IDE 本身用 Gambas 编写——只要 gb.qt6 组件能运行，IDE 即可零修改跑起来，这是最大的优势。confidence 设为 medium 因 POSIX 子集覆盖情况（特别是 fork）为 unknown，若 fork 不可用，effort 区间上限需上调 15-20 人-天。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:x11_api",
+          "ua:v4l2_api",
+          "ua:dbus_api",
+          "ua:gnome_keyring_api",
+          "ua:openal_api"
+        ]
+      }
+    }
   },
   "library": {
     "name": "gambas",
@@ -2987,54 +3021,39 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "application",
-        "rationale": "Gambas 既是编程语言（语言/编译器/运行时可视为 framework）又是完整的 IDE 应用（终端用户启动运行的桌面工具）。判定为 application 因 IDE 的入口点为终端用户启动，且打包/distribution 面向最终用户而非库调用者。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "self_build",
-        "rationale": "Gambas 中 gb.db2.*（第二代数据库驱动）和 comp/src 下的 Gambas 组件均为本仓自带、用 Gambas 编写并与主项目一并构建——不是外部包也不是传统 vendored（因为是 Gambas 语言源码非 C vendored）。coin 了 self_build 表示本仓自身的子项目。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "optional system libraries (45+)",
-        "rationale": "Gambas 的 50+ 个 gb.* 组件各对应一个可选系统库——每个都是 configure 时按用户系统上已安装的库决定是否编译。这些依赖的 scope 严格说都是 optional：没有某个库只是少一个组件，不影响核心。但已安装即为 runtime。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "ambiguity",
-        "value": "mixed",
-        "rationale": "Gambas 核心为 POSIX/Linux 优先、平台守卫仅 81 行 #ifdef——Win32 无任何 include 或 API 调用，本质是 Linux/POSIX 平台。但通过 Qt（跨平台）和 GTK（跨平台但 Linux 优先）提供了一定的跨平台性。标记为 mixed 准确但实质接近 posix-only。"
-      },
-      {
-        "dimension": "bazel",
-        "field": "build_env",
-        "kind": "gap",
-        "value": "autotools OHOS cross-compilation support",
-        "rationale": "Gambas 使用 autotools 构建系统，OHOS NDK 的 ohos.toolchain.cmake 是为 CMake 设计的——autotools 交叉编译需手动设置 --host/host triplet/CROSS_COMPILE/CC/CXX 等环境变量，无现成 CMake toolchain。这增加了构建系统适配的复杂度，现有维度评估中已反映但 skill 缺少对此场景的指导。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "ambiguity",
-        "value": "fork() availability on OHOS",
-        "rationale": "OHOS 自研内核（非 Linux）的 musl fork() 支持未知——fork 是 clone() 系统调用的用户态封装，OHOS 内核是否提供等价 clone 机制待核实。这是决定 Gambas 核心 gbx 运行时能否移植的关键事实，target_status 暂标 unknown、confidence 下调至 medium。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:x11_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11_api 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:v4l2_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:v4l2_api 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:dbus_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:dbus_api 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:gnome_keyring_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:gnome_keyring_api 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:openal_api",
+        "class": "actionable",
+        "message": "unadaptable_api ua:openal_api 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "Gambas 作为一个完整的图形化 BASIC 开发平台（IDE + 运行时 + 组件生态），涉及四大鸿蒙适配重点场景：GUI（Qt6/Qt5/Qt4/GTK3/GTK2 + X11/Wayland 窗口栈）、3D 渲染（OpenGL/EGL）、媒体（FFmpeg 音视频编解码、V4L2 视频采集、OpenAL 3D 音频、SDL2 多媒体框架）以及硬件（V4L2 摄像头、GPU 渲染设备）。这些场景的鸿蒙支持状态各异——Qt/GTK 已适配但仍需大量适配工作，OpenGL 部分可用，FFmpeg 已移植但 V4L2/OpenAL/X11/D-Bus 等 Linux 特有组件在鸿蒙无直接等价。",

@@ -1794,8 +1794,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层 + OHOS NDK 原生层 + Node-API 桥接）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -1805,7 +1804,6 @@
     },
     "confidence": "high",
     "summary": "本库已具备较好的 HarmonyOS 移植基础：js-binding.js 原生插件加载器已包含 openharmony 平台分支，支持 arm64/x64/arm 三种架构的 .node 文件加载。核心图形引擎 Skia 已广泛用于 OpenHarmony/HarmonyOS 图形栈，编译到 OHOS NDK 目标可行。Rust 语言可通过 rustc 的 aarch64-unknown-linux-ohos 等 target 交叉编译。所有 Rust 依赖（napi、libavif、gif、cssparser 等）均为纯 Rust crate 或可交叉编译的 C FFI。主要工作量在于 CI/CD 流程中加入 OHOS 编译目标、构建 Skia 的 OHOS 静态库、以及发布对应的 npm 包（@napi-rs/canvas-openharmony-arm64 等）。",
-    "recommended_path": "cross_compile",
     "key_tasks": [
       "在 CI 中添加 OHOS NDK 编译环境（aarch64-unknown-linux-ohos / x86_64-unknown-linux-ohos Rust target）",
       "将 Skia 编译为 OHOS NDK 目标（利用现有 Skia submodule + cc crate 编译流程）",
@@ -1821,7 +1819,8 @@
         "required": true,
         "target_status": "available",
         "impact": "N-API 是 HarmonyOS 原生插件标准接口，已支持。本库的整个 Rust→JS 桥接层依赖此能力。",
-        "source": "references/harmony-pc-capabilities.json (Node-API)"
+        "source": "references/harmony-pc-capabilities.json (Node-API)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_skia",
@@ -1829,7 +1828,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Skia 已用于 OpenHarmony 图形子系统。本库通过 submodule 方式内嵌 Skia 并静态链接，只需为 OHOS 目标编译即可。",
-        "source": "references/harmony-pc-capabilities.json (图形渲染)"
+        "source": "references/harmony-pc-capabilities.json (图形渲染)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_rust",
@@ -1837,7 +1837,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Rust 官方已支持 OHOS target。libavif-sys 等 C FFI crate 需 OHOS NDK 环境。",
-        "source": "references/harmony-pc-capabilities.json (Rust 开发)"
+        "source": "references/harmony-pc-capabilities.json (Rust 开发)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -1948,7 +1949,21 @@
       }
     ],
     "notes": "本库对 HarmonyOS 已有部分支持（js-binding.js 中包含 openharmony 二进制加载分支），但尚未发布对应的预编译 .node 包。主要工作量为 CI/CD 构建流水线适配（约 5-15 人天），源码修改量极小。现有 11 个预编译平台加上 OHOS 后扩至 12+ 平台。置信度高，因为 napi-rs 框架原生支持 OHOS，且 Skia 已在 OpenHarmony 中使用。person_days 不含首次 Skia 交叉编译环境的搭建时间（取决于开发者 OHOS NDK 熟悉度）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@napi-rs/canvas",
@@ -1972,22 +1987,7 @@
   "meta": {
     "schema_version": "1.0",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "rust",
-        "rationale": "项目核心实现是 Rust（cdylib 原生插件），但在运行时通过 N-API 桥接暴露给 Node.js。选 rust 作为主生态因为它控制编译和原生层；nodejs 放在 bindings 里。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "Skia 库作为 git submodule（skia/）并在构建时静态链接（cc::Build + vendored skia-c C++ 封装），属于 vendored 子模块+自编译，对 Rust 依赖是 package_manager（Cargo），对 Skia C++ 桥接是 submodule+build。Skia 本身是 vendored submodule。"
-      }
-    ],
+    "observations": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
@@ -1997,7 +1997,8 @@
         "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库是一个纯 2D 渲染引擎库，不具备传统桌面 GUI（无窗口/控件），不涉及 3D 渲染。主要触及媒体场景（多格式图像编解码与 Lottie 动画渲染），不依赖特定硬件。",

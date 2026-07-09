@@ -1880,8 +1880,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 A：C/C++ 库经 OHOS NDK 重编，以 .so 形式被鸿蒙原生应用链接调用；arm64 主力架构；自研内核 + musl libc POSIX 子集）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1890,7 +1889,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "TNN 作为 C++ 推理库，核心 CPU 推理路径（C++ STL + ARM NEON 向量化）可通过 OHOS NDK 重编移植到鸿蒙 PC arm64 上。主要工作量在：(1) 适配 POSIX 子集差异（/proc/cpuinfo 解析、shm_open 共享内存互斥锁需替代方案）；(2) 裁剪不可移植的可选后端（CUDA/Metal/华为 NPU/瑞芯微 NPU 在鸿蒙无等价实现）；(3) OpenCL 后端依赖鸿蒙 PC OpenCL 可用性（unknown），若不支持则仅用 CPU 后端。核心推理功能可保留，GPU/NPU 硬件加速能力受限。",
     "blockers": [
       {
@@ -2036,7 +2034,9 @@
         "category": "hardware",
         "evidence": [
           "source/tnn/device/cuda/cuda_device.cc:50"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:cublas_gemm",
@@ -2050,7 +2050,9 @@
         "category": "hardware",
         "evidence": [
           "source/tnn/device/cuda/acc/cuda_conv_layer_acc.cc:80"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metal_device",
@@ -2062,7 +2064,9 @@
         "category": "hardware",
         "evidence": [
           "source/tnn/device/metal/metal_runtime.mm:30"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metal_cmd_queue",
@@ -2074,7 +2078,9 @@
         "category": "hardware",
         "evidence": [
           "source/tnn/device/metal/metal_command_queue.mm:28"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:hiai_client",
@@ -2086,7 +2092,9 @@
         "category": "hardware",
         "evidence": [
           "source/tnn/device/huawei_npu/npu_network.cc:150"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:rk_exection",
@@ -2098,7 +2106,9 @@
         "category": "hardware",
         "evidence": [
           "source/tnn/device/rknpu/rknpu_network.cc:86"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2108,7 +2118,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA 后端为可选加速模块，不影响核心 CPU 推理功能；鸿蒙无 NVIDIA GPU 驱动，该后端不可用",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:opencl",
@@ -2116,7 +2127,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "OpenCL 后端为可选加速模块，运行时动态加载；若鸿蒙 PC 不支持则自动回退 CPU 推理，功能完整但性能受限",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.opencl"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.opencl",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -2124,7 +2136,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "X86 AVX 后端依赖 x86_64 架构；鸿蒙 PC 当前主力为 arm64，X86 后端自然不可用",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arm64",
@@ -2132,7 +2145,8 @@
         "required": true,
         "target_status": "available",
         "impact": "ARM NEON 后端可完整运行，是鸿蒙 PC 主力架构上的核心推理路径",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:opengl_es",
@@ -2140,7 +2154,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "仅用于 SHARING_MEM_WITH_OPENGL 可选功能（OpenCL-GL 显存共享），不影响推理功能",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
@@ -2186,7 +2201,28 @@
       "在鸿蒙 arm64 设备上编译运行单元测试（gtest），验证推理结果正确性"
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编）进行。TNN 核心推理能力（CPU + ARM NEON）可移植，主要阻碍来自不可移植的可选硬件加速后端（CUDA/Metal/华为 NPU/瑞芯微 NPU），这些均为编译期选项默认关闭，不影响基本功能。OpenCL 与 X86 后端的鸿蒙可用性依赖未核实的目标事实（unknown），已下调 confidence 至 medium。跨进程共享缓存功能（shm_open/mmap）的适配需验证 OHOS musl POSIX 子集覆盖度，若不支持可用单进程模式运行。鸿蒙 PC 当前主力架构为 arm64（available），ARM NEON 后端可直接启用。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda_malloc",
+          "ua:cublas_gemm",
+          "ua:metal_device",
+          "ua:metal_cmd_queue",
+          "ua:hiai_client",
+          "ua:rk_exection"
+        ]
+      }
+    }
   },
   "library": {
     "name": "TNN",
@@ -2212,31 +2248,42 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "prebuilt_binary",
-        "rationale": "华为 HiAI DDK 和瑞芯微 RK NPU DDK 以预编译 .so 形式内嵌于 third_party/ 目录，既不是 vendored source 也不是 system 安装的包，用 prebuilt_binary 描述最准确"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "npu_huawei / npu_rk",
-        "rationale": "华为 NPU 和瑞芯微 NPU 的 API 类型不同于 GPU 计算（CUDA/OpenCL），属于 NPU 加速器类别。现有推荐集无 NPU 专用 type，暂按各自厂商命名。建议后续纳入 'npu' 作为通用 NPU 大类"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "category",
-        "kind": "new_value",
-        "value": "hardware_npu",
-        "rationale": "NPU 加速器阻碍点（华为达芬奇/瑞芯微）不同于 GPU 加速器，现有推荐集无此 category，自造以区分"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:cuda_malloc",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda_malloc 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:cublas_gemm",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cublas_gemm 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:metal_device",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal_device 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:metal_cmd_queue",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal_cmd_queue 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:hiai_client",
+        "class": "actionable",
+        "message": "unadaptable_api ua:hiai_client 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:rk_exection",
+        "class": "actionable",
+        "message": "unadaptable_api ua:rk_exection 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目是纯计算型 C++ 推理库，不涉及 GUI/媒体。硬件层面深度集成了 GPU 通用计算（OpenCL/CUDA/Metal）与 NPU（华为达芬奇/瑞芯微）加速后端，并大量使用 ARM NEON 与 X86 AVX SIMD 向量指令。这些后端均为可选模块，核心 CPU 推理路径仅依赖 C++ STL 与基本 POSIX API。",

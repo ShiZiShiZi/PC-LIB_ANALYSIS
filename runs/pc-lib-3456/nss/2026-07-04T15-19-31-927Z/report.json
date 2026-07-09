@@ -1966,17 +1966,15 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (经 OHOS NDK/musl 重新编译为 .so 共享库; arm64/x86_64; 自研内核, 无 Linux ABI; 库可被鸿蒙原生应用通过 Node-API 或直接链接调用)",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
         10
       ],
-      "level": "high"
+      "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "NSS 核心代码为跨平台 C/C++，绝大多数 OS 交互通过 NSPR 可移植运行时层（已鸿蒙化）完成。主要工作为：① 用 OHOS NDK（clang + musl）重编所有 .so 模块；② 在构建系统中（GYP config.gypi）新增 ohos 目标平台的编译配置；③ 适配少量直接使用 POSIX API 的路径（freebl 随机数熵源 /dev/urandom、CPU 特性检测 getauxval 等，均有条件编译守卫和纯 C 回退）；④ 验证 AArch64 汇编优化（NEON/AES）在 OHOS 上可用（应该支持）；⑤ 可选 FIPS 模式的 Linux libaudit 审计集成在 OHOS 不可用但非必要。无平台专有 API 强依赖（Win32/POSIX-only 均有条件编译守卫），无特定硬件依赖，整体障碍点少且均可通过条件编译或 NSPR 替换解决。",
     "blockers": [
       {
@@ -2087,7 +2085,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "mmap/dlopen/getpid 等 POSIX API 在 OHOS musl 中的可用性决定 freebl 熵采集和动态加载路径是否需要改造；基础文件 I/O、线程、网络经 NSPR 抽象层不受直接影响",
-        "source": "references/harmony-pc-capabilities.json intro: 'OHOS NDK（musl + POSIX 子集）'，具体 API 覆盖未知"
+        "source": "references/harmony-pc-capabilities.json intro: 'OHOS NDK（musl + POSIX 子集）'，具体 API 覆盖未知",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:dev_urandom",
@@ -2095,7 +2094,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "POSIX 随机数熵源依赖 /dev/urandom——若 OHOS 内核不提供，需改用 NSPR 随机数接口或 OHOS 内核随机数 API。NSS 已有结构化熵源注册机制，改造量小",
-        "source": "references/harmony-pc-capabilities.json 未列出此项"
+        "source": "references/harmony-pc-capabilities.json 未列出此项",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:nspr_adapted",
@@ -2103,7 +2103,8 @@
         "required": true,
         "target_status": "available",
         "impact": "NSPR 已鸿蒙化——文件 I/O、网络、线程、动态库加载、环境变量等 OS 抽象层可直接使用，是最关键的前置依赖",
-        "source": "harmony_adapted stamp: OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+        "source": "harmony_adapted stamp: OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:zlib_adapted",
@@ -2111,7 +2112,8 @@
         "required": true,
         "target_status": "available",
         "impact": "zlib 已鸿蒙化——压缩/解压缩功能可直接使用",
-        "source": "harmony_adapted stamp: OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+        "source": "harmony_adapted stamp: OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -2164,7 +2166,21 @@
     "porting_class_model": "recompile_only",
     "porting_class_adjusted": {
       "from": "recompile_only",
-      "to": "needs_adaptation_partial"
+      "to": "needs_adaptation"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
     }
   },
   "library": {
@@ -2193,30 +2209,8 @@
     "bindings": []
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "nspr_runtime",
-        "rationale": "NSPR 作为 OS 抽象层被 NSS 大量使用——它不是标准语言库（不属于 C/C++ STL）、不是平台特有（恰是为了跨平台）、也不完全是系统调用层。它更像一个可移植的系统服务层，介于 'standard' 和 'platform' 之间。当前归入 standard/portable——因为对 NSS 而言 NSPR 就是它的 '标准库'，但该分类对依赖 NSPR 的其他库也具有参考价值。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries.acquisition",
-        "kind": "new_value",
-        "value": "self_build",
-        "rationale": "freebl3/softokn3 等库由本仓自身构建，但运行时通过 dlopen/PR_LoadLibrary 动态加载（而非链接时直接链接），它们不是外部依赖、不是系统库、也不是 vendored。现有的 system/third_party/bundled 都不准确——'self_build' 表示本仓构建产物通过动态加载机制运行时绑定。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "vendored",
-        "rationale": "SQLite 以完整的 sqlite3.c/sqlite3.h 合并源文件形式内嵌在 lib/sqlite/ 目录中——这是典型的 vendored 依赖。但 NSS 也允许通过 --system-sqlite 使用系统预装版，这使该依赖的 acquisition 在 vendored 和 system 之间切换。当前按默认构建（非 --system-sqlite）标记为 vendored，但这种双模式依赖的表征值得在 skill 中提及。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2224,10 +2218,11 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 recompile_only，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 recompile_only，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "NSS 是纯密码学库，生产代码不涉及 GUI 桌面界面、3D 图形渲染、音视频编解码/采集或特定硬件设备。freebl 模块中 AES-NI/SSE/AVX/ARM NEON/PowerPC AltiVec 等 SIMD 指令加速属 CPU ISA 扩展（运行时自动检测并可用纯 C 回退），不依赖特定外设或专用硬件。",

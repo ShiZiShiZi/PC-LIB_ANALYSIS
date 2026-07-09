@@ -1334,7 +1334,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (C 库经 OHOS NDK/clang+musl 交叉编译为 .so；arm64/x86_64；自研内核，无 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -1343,7 +1342,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "Blosc 是一个纯 C 库，核心算法为标准 C + pthread 多线程，无平台特有系统调用、无外部子进程、无网络/文件系统依赖。Win32 相关代码全部在 _WIN32 条件编译下，鸿蒙编译时自然排除。SIMD 加速（SSE2/AVX2）仅在 x86_64 上生效且有无加速通用的 C 回退。三个内嵌编解码库（LZ4/Zlib/Zstd）同为可移植 C 代码。整体仅需用 OHOS NDK 交叉编译即可产出 .so，无需源码级改造。",
     "blockers": [
       {
@@ -1408,7 +1406,8 @@
         "required": true,
         "target_status": "available",
         "impact": "基础；不可用则整个库无法构建",
-        "source": "harmony-pc-capabilities.json#runtimes.c"
+        "source": "harmony-pc-capabilities.json#runtimes.c",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pthread",
@@ -1416,7 +1415,8 @@
         "required": true,
         "target_status": "available",
         "impact": "多线程路径需要；musl libc 包含 pthread 实现",
-        "source": "harmony-pc-capabilities.json#runtimes.c"
+        "source": "harmony-pc-capabilities.json#runtimes.c",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cmake",
@@ -1424,7 +1424,8 @@
         "required": true,
         "target_status": "available",
         "impact": "构建必需；OHOS 提供 ohos.toolchain.cmake",
-        "source": "harmony-pc-capabilities.json#toolchain"
+        "source": "harmony-pc-capabilities.json#toolchain",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64-arch",
@@ -1432,7 +1433,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "非必需；x86 SIMD 在 arm64 上不可用，通用 C 回退已内置",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "partial"
       }
     ],
     "compatible": [
@@ -1482,7 +1484,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（C 库经 OHOS NDK 重编，供上层运行时/NDK 应用链接）。Blosc 是极度可移植的纯 C 库，所有平台差异已有条件编译处理，无需任何源码级改造即可在 OHOS NDK 下编译。pthread（核心运行时依赖）在 musl/OHOS 中可用。唯一注意点是 arm64 上 SIMD 加速不可用——但库已经内置通用 C 回退，性能下降可接受。code_metrics.platform_adaptation 共 668 行平台守卫代码（win:541, macos:73, linux:3, posix:51），主要集中在 Win32 兼容层，鸿蒙编译时全部自动排除。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1511,7 +1527,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本库为纯数据压缩库，涉及 SIMD 硬件加速（SSE2/AVX2），但每条 SIMD 路径均有通用 C 回退实现，非特定硬件依赖。不涉及 GUI、3D 渲染或音视频媒体。",

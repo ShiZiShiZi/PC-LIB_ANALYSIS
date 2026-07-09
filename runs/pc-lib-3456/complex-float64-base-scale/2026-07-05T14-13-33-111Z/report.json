@@ -672,10 +672,8 @@
     ]
   },
   "harmony_adaptation": {
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "confidence": "high",
-    "recommended_path": "JavaScript 路径可直接在鸿蒙 PC 的 Node.js（已移植）上运行，无需改动。C 原生插件需要为目标架构重新编译：用 OHOS NDK 的 C99 编译器编译 src/main.c，通过 N-API 桥接。因不依赖任何平台特有 API，仅需确保 stdlib 各依赖包可用即可。",
     "effort": {
       "person_days": [
         0.5,
@@ -690,7 +688,8 @@
         "target_status": "available",
         "impact": "已移植到鸿蒙 PC，纯 JS 路径可直接运行",
         "source": "HarmonyOS PC 能力画像：Node.js 运行时已移植",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "N-API (Node.js native addon interface)",
@@ -698,7 +697,8 @@
         "target_status": "available",
         "impact": "C 原生插件可通过 N-API 桥接编译运行",
         "source": "OHOS NDK 支持 N-API",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       },
       {
         "capability": "C99 编译器 (OHOS NDK)",
@@ -706,13 +706,28 @@
         "target_status": "available",
         "impact": "C 源码使用标准 C99，无平台特定宏或库",
         "source": "OHOS NDK 提供标准 C 编译环境",
-        "id": "ta:3"
+        "id": "ta:3",
+        "target_status_model": "available"
       }
     ],
     "blockers": [],
     "unadaptable_apis": [],
     "required_permissions": [],
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -726,33 +741,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "ecosystem",
-        "kind": "note",
-        "value": "JavaScript (npm)",
-        "rationale": "该库是 stdlib 标准库的独立 npm 子包，纯数值计算"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "observation",
-        "value": "no_platform_api",
-        "rationale": "C 生产代码仅使用 stdlib 内部头文件，无系统调用或平台特有 API。benchmark C 使用了 gettimeofday（POSIX），但不计入生产代码。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "note",
-        "value": "recompile_only",
-        "rationale": "JavaScript 路径直接运行在已移植的 Node.js 上；C 原生插件需用 OHOS NDK 重新编译，但源码纯算术无平台约束"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、媒体处理或特定硬件场景。",

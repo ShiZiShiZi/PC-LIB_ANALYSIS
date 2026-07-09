@@ -768,7 +768,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC （跑在已移植的 Node.js 24 运行时上；C 原生部分经 OHOS NDK 重新编译；自研内核，无 Linux ABI）",
     "summary": "本项目为 Node.js 原生插件基础设施库，纯 C/JS。Node.js 运行时已在鸿蒙 PC 可用；代码仅使用 Node-API 与 C 标准库（assert.h、stdint.h），无任何平台特有 API、系统调用、外部命令或硬件依赖。四个运行时 npm 依赖也是 stdlib 原生包，需随同重编。整体仅需重编即可适配，无平台阻碍。",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -778,7 +777,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "blockers": [
       {
         "id": "bk:dep_stdlib",
@@ -805,7 +803,8 @@
         "required": true,
         "target_status": "available",
         "impact": "本库作为 npm 包，其 JS 入口和 C 原生插件均需运行时；Node.js 已移植则基础可行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -843,7 +842,21 @@
       "package.json 的 os 列表增加 ohos 条目"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。若目标为 ArkTS 沙箱应用（模型 B），则 Node.js 运行时不可用，需用 N-API 桥接暴露 C 函数给 ArkTS。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/math-base-napi-ternary",
@@ -869,7 +882,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯数学数值计算基础设施库，提供 C 宏与 Node-API 绑定的样板代码，不涉及任何 GUI、3D 渲染、音视频媒体或特定硬件。",

@@ -400,7 +400,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -409,7 +408,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -417,11 +416,11 @@
         "capability": ".NET 运行时（.NET 9.0+ 或 .NET Standard 2.0+ 兼容运行时）",
         "required": true,
         "target_status": "unknown",
-        "impact": "若无 .NET 运行时则该库无法运行，但这是运行时层面问题而非库本身的适配阻碍"
+        "impact": "若无 .NET 运行时则该库无法运行，但这是运行时层面问题而非库本身的适配阻碍",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "NDesk.Options.Core 是一个基于回调的 C# 命令行选项解析库，仅使用 .NET BCL 标准类型（Regex、KeyedCollection、TypeDescriptor 等），完全跨平台，无平台特有 API、无原生依赖、无外部依赖——在已移植的 .NET 运行时上可直接运行，无需任何代码修改。",
     "blockers": [],
     "compatible": [
@@ -450,7 +449,21 @@
     ],
     "key_tasks": [],
     "notes": "该库唯一的隐含前提是目标平台存在兼容的 .NET 运行时。当前 harmony-pc-capabilities.json 未列出 .NET 运行时状态（标记为 unknown），但 .NET 已开源且跨平台，鸿蒙 PC 社区有移植预期。即使无官方运行时，该库也可面向 .NET Standard 2.0 编译，兼容任何支持该标准的运行时。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "NDesk.Options.Core",
@@ -474,25 +487,18 @@
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "gap",
-        "value": "Unit Tests 目录被脚本归类为 production 但实为测试代码",
-        "rationale": "metrics.py 的目录名 token 分类未能识别含空格的 'Unit Tests' 目录名为测试目录，但 assemble_report.py 会按 test_example_dirs 过滤，不影响最终报告的 languages/code_metrics/tests 块。此处仅作记录。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目为纯命令行解析库，不涉及 GUI、3D 渲染、媒体处理或特定硬件，无鸿蒙适配重点场景。",

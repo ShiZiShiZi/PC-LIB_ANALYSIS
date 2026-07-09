@@ -2429,8 +2429,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库默认模型 A：跑在已移植语言运行时 / 经 OHOS NDK 重编原生层；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -2439,7 +2438,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "MuJoCo 核心物理引擎为跨平台 C/C++ 算法代码，经 OHOS NDK 重编即可运行；主要工作量在将 OpenGL 渲染器适配到鸿蒙 OpenGL ES/EGL（或 ArkGraphics 3D），以及将 GLFW/ImGui viewer 替换为鸿蒙桌面窗口能力。可选的 USD、JAX/MJX、sysid 视频等功能可默认关闭或另行移植。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -2449,7 +2447,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "渲染路径需在鸿蒙图形栈上运行；若 OpenGL ES/EGL 覆盖不足，需改写为 noop 或 ArkGraphics 3D",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl / #graphics_3d.egl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl / #graphics_3d.egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:glfw_windowing",
@@ -2457,7 +2456,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "库核心可脱离 GUI 运行；若需移植交互式 viewer，需替换为鸿蒙桌面窗口/输入能力",
-        "source": "references/harmony-pc-capabilities.json#gui.wm / #desktop_integration"
+        "source": "references/harmony-pc-capabilities.json#gui.wm / #desktop_integration",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_dlopen",
@@ -2465,7 +2465,8 @@
         "required": true,
         "target_status": "available",
         "impact": "插件加载与 GLAD 符号解析依赖动态加载，musl 已支持",
-        "source": "references/harmony-pc-capabilities.json intro"
+        "source": "references/harmony-pc-capabilities.json intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_runtime",
@@ -2473,7 +2474,8 @@
         "required": false,
         "target_status": "available",
         "impact": "Python 绑定可直接跑在已移植的鸿蒙 Python 上，原生扩展需 NDK 重编",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -2622,7 +2624,21 @@
       "运行核心单元测试，验证跨平台物理计算结果一致"
     ],
     "notes": "本评估按库模型 A（跑在已移植运行时 + NDK 重编）进行；OpenGL/GUI 目标能力存在未知/部分支持事实，因此 confidence 为 medium。若将 simulate 视为独立桌面应用（模型 C），则 GUI/窗口栈会成为更强阻碍。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -2630,36 +2646,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "fetchpackage / findorfetch",
-        "rationale": "MuJoCo 使用自定义 CMake 包装 fetchpackage 与 findorfetch 管理第三方源码，建议将这类 wrapper 归入 fetchcontent 变体或新增 acquisition 值"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "scope",
-        "kind": "gap",
-        "value": "repo_contains_multiple_packages",
-        "rationale": "同一仓库包含 mujoco 核心库、mujoco-mjx 子包、Unity 插件与 WASM 绑定，function_summary 以核心 C/C++ 库为主，MJX 等作为可选/附加能力"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "ambiguity",
-        "value": "opengl_egl_partial",
-        "rationale": "鸿蒙 PC OpenGL ES/EGL 的桌面完整度未知，导致渲染器适配工作量与可行性存在不确定性"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "video_encode_optional",
-        "rationale": "sysid 报告生成 MP4 属于可选媒体场景，但未使用摄像头/麦克风等硬件，仅依赖 imageio/ffmpeg"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

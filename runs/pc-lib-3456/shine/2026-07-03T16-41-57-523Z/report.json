@@ -951,7 +951,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (经 OHOS NDK/musl 重编为 .so；arm64/x86_64；自研内核，非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -960,7 +959,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "Shine 是纯 C 定点运算 MP3 编码库，仅依赖 C 标准库与数学库（libm），无任何平台特有系统调用、GUI 框架或特定硬件接口。唯一工作需要将其通过 OHOS NDK（clang + musl）交叉编译为 arm64 与 x86_64 的 .so 文件。ARM/MIPS 专用内联汇编有通用 C 回退路径，在 x86_64 上无需处理。整体可移植性极高。",
     "blockers": [
       {
@@ -1014,7 +1012,8 @@
         "required": true,
         "target_status": "available",
         "impact": "影响 ARM/MIPS 优化路径；若 clang 不兼容，回退到通用 C 乘法也有正确语义，仅性能略降",
-        "source": "OHOS NDK 使用 clang 工具链"
+        "source": "OHOS NDK 使用 clang 工具链",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1054,7 +1053,21 @@
     ],
     "required_permissions": [],
     "notes": "该库为极简自包含 C 库，无第三方依赖、无平台私有 API、无外部命令调用。porting_class=recompile_only 由纯 C 标准库 + 无平台专有 API 支撑。若目标是 ArkTS 应用通过 Node-API 调用，则需额外包装一层 napi 桥接（工作量 +1-2 person_days）。JS/WASM 绑定可独立评估——wasm 运行时通常已移植到鸿蒙浏览器/Node.js。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "shine",
@@ -1080,7 +1093,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "本项目为纯 MP3 音频编码库/工具，涉及媒体(audio)场景但为纯软件算法，不涉及 GUI、3D 渲染、GPU 或特定硬件设备。",

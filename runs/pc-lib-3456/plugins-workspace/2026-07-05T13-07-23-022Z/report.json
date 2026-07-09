@@ -2385,8 +2385,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (Rust 已有 ohos target，可为 Rust crate 交叉编译至鸿蒙原生层；插件作为 Tauri 应用的原生组件，经 OHOS NDK 交叉编译 .so 供宿主应用加载；arm64/x86_64；自研内核，非 Linux ABI)",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         35,
@@ -2395,7 +2394,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "该 Tauri 插件集合以 Rust 编写（有 Rust ohos target），在理论上可经 OHOS NDK 交叉编译为鸿蒙 PC 原生 .so 库。但实际可移植性高度依赖两大前提：① Tauri v2 框架本身在鸿蒙 PC 的可用性（WebView 环境 + 窗口管理）；② 鸿蒙 PC 桌面集成能力（原生文件对话框、系统剪贴板、桌面通知、全局快捷键、开机自启、深度链接、D-Bus 等价 IPC）的支持状态。目前 harmony-pc-capabilities.json 中大部分桌面集成能力状态为 unknown，且所有依赖 crate 均未在 OpenHarmony PC 镜像中预编译提供。不含 3D 渲染或多媒体编解码依赖（无需处理 GUI 工具包重写），但平台耦合代码量较大（119 个 cfg(target_os) 分支）。po类的纯计算/数据插件（process/os/store/log/sql）相对易移植，平台绑定插件（dialog/clipboard/notification/global-shortcut/autostart/single-instance）需等目标能力核实后再定是否可以改写。",
     "blockers": [
       {
@@ -2514,7 +2512,8 @@
         "required": true,
         "target_status": "available",
         "impact": "这是 Rust crate 在鸿蒙 PC 运行的唯一编译路径——已确认可用，不构成阻碍",
-        "source": "harmony-pc-capabilities.json#runtimes.rust"
+        "source": "harmony-pc-capabilities.json#runtimes.rust",
+        "target_status_model": "available"
       },
       {
         "id": "ta:tauri-webview",
@@ -2522,7 +2521,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "插件集合的所有 Rust crate 依赖 tauri 框架的 Runtime trait/AppHandle；若 Tauri 在鸿蒙不可用，整个插件集合无法工作——这是最关键的阻塞前提",
-        "source": "harmony-pc-capabilities.json#gui.electron（Tauri 基于系统 WebView，与 Electron/CEF 同属 Chromium WebView 类但机制不同；鸿蒙 WebView 支持待核实）"
+        "source": "harmony-pc-capabilities.json#gui.electron（Tauri 基于系统 WebView，与 Electron/CEF 同属 Chromium WebView 类但机制不同；鸿蒙 WebView 支持待核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:file-dialog",
@@ -2530,7 +2530,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "dialog 插件核心功能（打开/保存文件、消息对话框）依赖——若不可用则 dialog 插件完全无法工作",
-        "source": "harmony-pc-capabilities.json#desktop_integration.file_dialog"
+        "source": "harmony-pc-capabilities.json#desktop_integration.file_dialog",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:clipboard",
@@ -2538,7 +2539,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "clipboard-manager 插件核心功能依赖——若不可用则该插件无法工作",
-        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:notification",
@@ -2546,7 +2548,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "notification 插件核心功能依赖——若不可用则该插件无法工作",
-        "source": "harmony-pc-capabilities.json#permissions.perm_notification"
+        "source": "harmony-pc-capabilities.json#permissions.perm_notification",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:global-shortcut",
@@ -2554,7 +2557,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "global-shortcut 插件依赖——非必需（仅该插件功能受影响）",
-        "source": "harmony-pc-capabilities.json（无直接条目，需核实鸿蒙桌面全局热键支持）"
+        "source": "harmony-pc-capabilities.json（无直接条目，需核实鸿蒙桌面全局热键支持）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:autostart",
@@ -2562,7 +2566,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "autostart 插件依赖——非必需（仅该插件功能受影响）",
-        "source": "harmony-pc-capabilities.json（无直接条目）"
+        "source": "harmony-pc-capabilities.json（无直接条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:deep-link",
@@ -2570,7 +2575,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "deep-link 插件依赖——非必需（仅该插件功能受影响）",
-        "source": "harmony-pc-capabilities.json（无直接条目）"
+        "source": "harmony-pc-capabilities.json（无直接条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -2578,7 +2584,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "window-state 和 positioner 插件以及 Tauri 框架自身窗口管理依赖——若鸿蒙桌面不提供多窗口环境则所有窗口相关功能不可用",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2667,7 +2674,21 @@
       "在鸿蒙 PC 环境运行各插件的集成测试，验证功能完整与稳定性"
     ],
     "notes": "结论关键依赖两大未知前提：Tauri 框架鸿蒙移植状态与鸿蒙 PC 桌面集成能力支持。harmony-pc-capabilities.json 中 desktop_integration 的 6 项均为 unknown、gui.wm（窗口管理器）为 unknown、gui.electron（WebView 类）为 unknown——这 9 项 unknown 将 confidence 下调至 medium。已知 Rust 的 ohos target 为 available（不阻碍）。所有 30+ 依赖 crate 在 OpenHarmony PC 镜像均无预编译版，每个需自行验证 ohos 交叉编译。若 Tauri 无法在鸿蒙 PC 运行，则整个插件集合无法使用；若 Tauri 可用但部分桌面集成能力缺失，可对相应插件作功能降级（dialog/clipboard/notification/global-shortcut/autostart/deep-link）。person_days[35,70] 为全 workspace 30 个插件整体估算——各插件独立，可按需分别适配。按 Model A（库运行在已移植 Rust 运行时上，经 OHOS NDK 交叉编译）；非 ArkTS 沙箱应用（Model B 不适用）。所有移动端专属插件（barcode-scanner/biometric/geolocation/haptics/nfc/positioner）在桌面端 compile target 中本来就不编译，不影响桌面适配评估。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "plugins-workspace",
@@ -2698,39 +2719,11 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "desktop_integration",
-        "rationale": "Tauri 插件集合的 GUI 场景不涉及传统 GUI 工具包(Qt/GTK/Swing)，而是通过 OS 原生桌面集成（文件对话框、剪贴板、系统通知、全局快捷键、开机自启、深度链接）提供能力。现有 capability_profile 的 gui key 覆盖不够细分——建议未来可增加 desktop_integration 子场景区分「GUI 工具包应用」与「系统桌面能力桥接」"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "needs_adaptation_partial",
-        "rationale": "全 workspace 30 个插件各自独立性很高——约一半插件基本可移植(process/os/store/log/sql/http/websocket/localhost/upload/fs/cli/stronghold)，另一半深度依赖平台桌面能力(dialog/clipboard/notification/global-shortcut/autostart/single-instance/deep-link/window-state/positioner/shell)。整体定 partial 因平台绑定插件功能受限于鸿蒙 PC 桌面集成的 unknown 状态，但非平台绑定插件的核心功能均可移植"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "多个版本共存",
-        "rationale": "updater 插件使用 reqwest 0.13 而 http/upload 使用 reqwest 0.12——Cargo 可共存但实际语义相同（同一 HTTP 客户端的不同主版本）。在依赖列表中分列为 reqwest 和 reqwest-013 以避免混淆——命名约定（在 name 加版本后缀）非标准做法，建议 skill 增加多版本共存的处理指引"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "gap",
-        "value": "mobile_platform_bridge",
-        "rationale": "Tauri 插件框架的移动端 Kotlin/Swift 原生插件注册通过 PluginApi::register_android_plugin 完成，这是在 native_api 分类中不存在的新模式——它不是传统 ctypes/JNI/N-API FFI，而是框架级的跨语言插件桥接"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目作为 Tauri 桌面/移动应用插件集合，深度涉及操作系统桌面集成（原生对话框、剪贴板、系统通知、窗口管理、文件系统访问）与移动端硬件能力（摄像头、生物识别、GPS、NFC、振动反馈）。不涉及 3D 渲染或多媒体编解码。插件本身不绑定特定 GUI 工具包——GUI 渲染由宿主 Tauri 应用的 WebView 承担，插件负责与 OS 系统服务交互。",

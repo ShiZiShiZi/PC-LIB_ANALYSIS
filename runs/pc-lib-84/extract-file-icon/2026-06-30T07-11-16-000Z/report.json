@@ -775,8 +775,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK + Node-API)",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -798,7 +797,9 @@
         "category": "platform",
         "evidence": [
           "lib/addon.cc:224"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:shgetimagelist",
@@ -812,7 +813,9 @@
         "category": "platform",
         "evidence": [
           "lib/addon.cc:236"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nsworkspace_iconforfile",
@@ -826,7 +829,9 @@
         "category": "platform",
         "evidence": [
           "lib/addon.mm:20"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -836,7 +841,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Windows 端核心功能完全不可用——无此 API 则无法从文件路径获取关联图标",
-        "source": "harmony-pc-capabilities.json — 无 Shell API 相关条目，鸿蒙桌面集成能力未知（desktop_integration 段均为 unknown）"
+        "source": "harmony-pc-capabilities.json — 无 Shell API 相关条目，鸿蒙桌面集成能力未知（desktop_integration 段均为 unknown）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:appkit_icon_api",
@@ -844,7 +850,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "macOS 端核心功能完全不可用——鸿蒙无 NSWorkspace 等价接口",
-        "source": "harmony-pc-capabilities.json — 无 AppKit 条目，鸿蒙桌面 GUI 能力未知（gui 段大多 unknown）"
+        "source": "harmony-pc-capabilities.json — 无 AppKit 条目，鸿蒙桌面 GUI 能力未知（gui 段大多 unknown）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:nodejs_napi",
@@ -852,7 +859,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 已移植至鸿蒙 PC，N-API 可用——原生模块的编译和加载层面不构成阻碍",
-        "source": "harmony-pc-capabilities.json — runtimes.nodejs: available"
+        "source": "harmony-pc-capabilities.json — runtimes.nodejs: available",
+        "target_status_model": "available"
       },
       {
         "id": "ta:gdiplus",
@@ -860,7 +868,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "Windows 端 PNG 编码依赖 GDI+，鸿蒙无 GDI+——需替换为其他 PNG 编码方案",
-        "source": "harmony-pc-capabilities.json — 无 GDI+ 条目，Windows 专有图形栈"
+        "source": "harmony-pc-capabilities.json — 无 GDI+ 条目，Windows 专有图形栈",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:harmony_file_icon_api",
@@ -868,7 +877,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若鸿蒙提供文件图标查询接口则可替代 Shell/AppKit API 重写核心逻辑；若不存在则需自行维护 MIME 类型→图标映射",
-        "source": "harmony-pc-capabilities.json — desktop_integration.file_dialog: unknown；无文件图标相关条目"
+        "source": "harmony-pc-capabilities.json — desktop_integration.file_dialog: unknown；无文件图标相关条目",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -883,7 +893,6 @@
         ]
       }
     ],
-    "recommended_path": "find_alternative",
     "summary": "该库的核心功能——从操作系统获取文件关联图标——完全依赖 Windows Shell API（SHGetFileInfoW/SHGetImageList/GDI+）和 macOS AppKit（NSWorkspace），这些 API 在鸿蒙 PC 上均无等价实现。Node.js + N-API 层面可正常运行，但原生 C++ 层需要全面重写。推荐路径：寻找鸿蒙文件图标 API（@ohos.file 相关接口）替代，若无则需自行实现 MIME 类型→图标映射表，使用 libpng 或 stb_image_write 替代 GDI+ 做 PNG 编码。",
     "blockers": [
       {
@@ -972,7 +981,25 @@
       "更新 binding.gyp 增加 OHOS 条件编译块"
     ],
     "notes": "Node.js 已在鸿蒙 PC 可用（harmony-pc-capabilities: available），因此原生模块的编译和加载框架层面不构成阻碍。核心困难在于平台专有的 Shell/AppKit 图标 API 无鸿蒙等价。若鸿蒙 PC 提供文件图标查询 API 则适配工作量大幅降低；否则需自行维护文件类型→图标映射。ta:harmony_file_icon_api 的 target_status 为 unknown，已据此下调 confidence 至 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:shgetfileinfow",
+          "ua:shgetimagelist",
+          "ua:nsworkspace_iconforfile"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -980,22 +1007,25 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "appkit",
-        "rationale": "macOS AppKit API 作为一个独立的平台 API 家族，与 win32 并列；现有推荐值中无此分类，但属于平台专有 API，新增合理"
+        "code": "ua_func_class_defaulted:ua:shgetfileinfow",
+        "class": "actionable",
+        "message": "unadaptable_api ua:shgetfileinfow 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "library",
-        "rationale": "该包通过 npm 发布、被其他 Node.js/Electron 应用 require 使用，是典型的原生扩展库，非终端用户直接启动的应用"
+        "code": "ua_func_class_defaulted:ua:shgetimagelist",
+        "class": "actionable",
+        "message": "unadaptable_api ua:shgetimagelist 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nsworkspace_iconforfile",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nsworkspace_iconforfile 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

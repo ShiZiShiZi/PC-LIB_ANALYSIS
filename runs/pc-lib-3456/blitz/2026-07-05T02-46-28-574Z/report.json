@@ -1060,7 +1060,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（OHOS NDK，musl libc + POSIX 子集，clang、ohos.toolchain.cmake；arm64 主力，x86_64 待核实）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1069,7 +1068,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "Blitz++ 为主体头文件模板库 + 小型编译库（libblitz）。核心为 C++98 模板代码，仅依赖 C++ 标准库与 libm（数学库）。平台相关代码极少且全部为 #ifdef 条件编译守卫（pthread/Windows 临界区/OpenMP 锁仅线程安全模式启用，默认关闭；getrusage 仅性能计时器且有关 ANSI clock 回退）。在鸿蒙 PC 上仅需用 OHOS NDK（ohos.toolchain.cmake + clang + musl）重新编译 libblitz 得到 .so/a 即可——头文件模板零改动。用到的 libm 是 musl 的标配部分。可选依赖（Boost Serialization/MPI、PAPI、TBB）均为系统级可选，鸿蒙上若不可用不影响核心功能。整体可行，工作量低。",
     "blockers": [
       {
@@ -1124,7 +1122,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Blitz++ 仅需标准 C++98 编译器与 libm，OHOS NDK 的 clang + musl 满足条件；libm 为 musl 标准组成",
-        "source": "harmony-pc-capabilities.json#runtimes（OHOS NDK clang 工具链已可用）"
+        "source": "harmony-pc-capabilities.json#runtimes（OHOS NDK clang 工具链已可用）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64_arch",
@@ -1132,7 +1131,8 @@
         "required": true,
         "target_status": "available",
         "impact": "鸿蒙 PC 主力架构为 arm64，Blitz++ 为纯 C++ 模板库无架构特定代码，arm64 直接可用",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64_arch",
@@ -1140,7 +1140,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Blitz++ 无架构特定代码，x86_64 若可用也直接编译；但覆盖情况待核实",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1187,7 +1188,21 @@
       "生成 ohos 适配的 CMake 配置包（blitzConfig.cmake），供鸿蒙 NDK 项目 find_package(blitz) 使用"
     ],
     "notes": "评估按模型 A（库经 OHOS NDK 重编后链接进鸿蒙原生应用）。Blitz++ 极其轻量——核心为头文件模板库，唯一编译产物是 libblitz（globals.cpp→全局变量实例）。平台适配代码量仅 11 行（code_metrics.platform_adaptation.total=11）且全部 #ifdef 守卫，鸿蒙编译路径与 Linux 一致。linalg/gmres.cpp 单独声明 GPL-2.0 许可（非主库三选一），鸿蒙迁移时若使用 GMRES 求解器需注意 GPL 传染性合规。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "blitz",
@@ -1206,36 +1221,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "tests",
-        "kind": "gap",
-        "value": "testsuite_dir_misclassified",
-        "rationale": "metrics.py 将 testsuite/ 目录（3465 行）归类为 production（代码特征类似 C++ 测试程序），但 CMakeLists.txt:52-56 明确将 testsuite、examples、benchmarks 归类在 BUILD_TESTING 选项下。benchmarks/ 目录（26221 行，大量 Fortran 对比代码）同样应为 benchmark 而非 production。compiler/ 目录（1141 行）是编译器特征探测程序（构建工具）。这些非生产代码被脚本分类为 production，导致 production 行数偏高（66789 vs 实际生产约 27000）。已在 function_summary/dependencies/native_api 中按实际生产代码（blitz/ + random/ + linalg/ + src/）得出结论，未受此影响。"
-      },
-      {
-        "dimension": "tests",
-        "field": "test_cases",
-        "kind": "gap",
-        "value": "test_framework_undetected",
-        "rationale": "metrics.py 报告 test_files=0、test_cases=0、frameworks=[]，原因是 testsuite/ 目录使用自定义测试框架（编译为独立可执行程序、程序输出即测试结果），而非标准框架（Google Test/Catch2 等），regex 匹配未命中。testsuite/ 目录确实包含大量测试程序（3465 行），均被 CMake 的 add_test 注册。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "ambiguity",
-        "value": "gmres_linalg_separate_license",
-        "rationale": "linalg/gmres.cpp 与 gmres.h 为独立贡献者（Idesbald van den Bosch）的 GMRES 求解器实现，单独声明 GPL-2.0-only（非主库的 LGPLv3/BSD/Artistic 三选一）。该文件未在 CMakeLists.txt 中被独立构建目标引用，属于 linalg/ 目录下的独立代码。在 license.json 的 notes 中注明此兼容性风险。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "posix_stdlib_clock_as_portable_fallback",
-        "rationale": "clock() 在 timer.h 中作为 getrusage 的 ANSI C 回退路径出现。将其归类为 standard/posix 而非 platform——clock 是 ISO C 标准的一部分，但代码中仅当 BZ_HAVE_RUSAGE 未定义时使用（即 POSIX 不可用时的回退），这种双重身份难以严格归类。处理方式：将其独立为 posix_stdlib 组，category=standard（因为 clock 本身是 ISO C 标准），platform=posix（因为出现在 POSIX 条件编译分支中）。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
@@ -1247,7 +1233,8 @@
         "message": "license.category(permissive) 与依据 SPDX(LGPL-3.0-only OR BSD-3-Clause OR Artistic-2.0) 派生的性质(weak_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Blitz++ 为纯数值计算库，不涉及 GUI 界面、3D 图形渲染、音视频媒体处理、或特定硬件设备依赖。SIMD 对齐辅助仅为编译期元编程与内存对齐编译器提示，不构成硬件锁定。",

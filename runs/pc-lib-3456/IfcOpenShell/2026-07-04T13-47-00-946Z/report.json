@@ -2387,8 +2387,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（库默认走模型 A：跑在已移植的 Python 3.12 运行时上；C++ 原生扩展/依赖经 OHOS NDK/musl 交叉编译；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -2397,7 +2396,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile_native_deps",
     "summary": "IfcOpenShell 的 Python 逻辑与大多数 Python 依赖可直接跑在鸿蒙已移植 Python 上；真正的难点是 C++ 核心及其对 OpenCASCADE 几何内核的深度依赖。OpenCASCADE 目前不在 OpenHarmony PC 预编译包清单中，需要先用 OHOS NDK 交叉编译（或等待社区移植），再重新编译 IfcParse/IfcGeom/IfcConvert 与 SWIG Python 绑定。可选的 OpenCOLLADA 导出可暂时关闭，核心几何/转换功能不受影响。涉及网络的后端（bSDD/BCF/OpenCDE）需 INTERNET 权限，目前 PC 形态权限模型待核实。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -2407,7 +2405,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 部分可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -2415,7 +2414,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "C++ 核心与原生扩展必须经 NDK 编译为 .so",
-        "source": "harmony-pc-capabilities.json 引言所述 OHOS NDK，但无独立行"
+        "source": "harmony-pc-capabilities.json 引言所述 OHOS NDK，但无独立行",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opencascade",
@@ -2423,7 +2423,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "核心几何转换完全依赖 OCCT；若不能移植则整体不可行",
-        "source": "scripts/harmony_adapted.js 查询结果：occt 未在 cmd-pkgs 清单"
+        "source": "scripts/harmony_adapted.js 查询结果：occt 未在 cmd-pkgs 清单",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:x86_64",
@@ -2431,7 +2432,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响非 arm64 部署",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet_perm",
@@ -2439,7 +2441,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "bSDD/BCF/OpenCDE 等网络功能受限",
-        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json#permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2557,7 +2560,21 @@
       "若需保留 Bonsai，额外评估 Blender 在鸿蒙 PC 的可用性（本评估未将其作为核心阻塞）"
     ],
     "notes": "本评估按库模型 A（跑在已移植 Python 上）进行，核心关注 ifcopenshell 库本体。Bonsai 作为 Blender 插件依赖 Blender GUI/3D 视口与桌面集成，若必须一起交付则属于模型 C 应用问题，需额外核实 Blender 与鸿蒙桌面环境支持。OpenCASCADE 是否能在 OHOS NDK 上编译成功是最大不确定性，因此 confidence 为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "IfcOpenShell",
@@ -2583,43 +2600,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].key",
-        "kind": "new_value",
-        "value": "desktop_integration",
-        "rationale": "Bonsai（Blender 插件）调用 xdg-open/update-mime-database/update-desktop-database/sips 等进行文件关联与桌面入口注册，是鸿蒙化时的重点场景，现有推荐集（gui/rendering_3d/media/hardware）未覆盖。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].kind",
-        "kind": "new_value",
-        "value": "blender",
-        "rationale": "Bonsai 并非使用 Qt/GTK/Electron 等传统 GUI 工具包，而是嵌入 Blender 的 Python API 与窗口系统；评估 GUI 场景时现有 kind 列表未包含 blender。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "dynamic_libraries[].mechanism",
-        "kind": "new_value",
-        "value": "python_import",
-        "rationale": "IfcOpenShell 的 C++ 核心以 SWIG 生成 Python 扩展 ifcopenshell_wrapper，运行时通过 Python import 加载，不是 ctypes/dlopen/LoadLibrary。"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "services[].vendor",
-        "kind": "new_value",
-        "value": "buildingsmart / kontroll / neo4j",
-        "rationale": "本项目触发的云端服务不是常见 Firebase/AWS/Azure 等，而是 buildingSMART 的 bSDD/BCF 规范服务、Kontroll OpenCDE 托管服务以及 Neo4j 图数据库。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "bindings",
-        "kind": "gap",
-        "value": "java",
-        "rationale": "仓库包含 src/ifcjni，提供 Java/JNI 绑定；library.bindings 填入了 java 以反映多语言支持，但技能示例主要强调 C++ core + Python/Java/C# 绑定。"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
@@ -2631,7 +2612,8 @@
         "message": "required_permission 读写存储 的 source_capability=filesystem 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "核心库为无 GUI 的数据/几何处理库，但仓库包含 Bonsai（Blender 插件，重度依赖 Blender GUI 与 3D 视口）以及可选的 QtViewer。若仅使用 ifcopenshell 库本体，GUI/3D 场景不构成阻碍；若要把 Bonsai 一起带上，则 Blender 在鸿蒙 PC 的可用性成为关键未知项。",

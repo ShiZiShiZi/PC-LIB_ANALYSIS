@@ -2070,8 +2070,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：C++ 核心经 OHOS NDK/musl 重编为 .so；Python 绑定跑在已移植的 Python 3.12 运行时上；arm64/x86_64）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         40,
@@ -2093,7 +2092,9 @@
         ],
         "evidence": [
           "pxr/imaging/garch/glApi.cpp:3137-3142"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:metal_backend",
@@ -2108,7 +2109,9 @@
         "evidence": [
           "pxr/imaging/hgiMetal",
           "pxr/imaging/hdSt/materialXShaderGen.cpp:18"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -2118,7 +2121,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 绑定与大量构建/工具脚本可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:cpp_arm64",
@@ -2126,7 +2130,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 C++ 库可编译为 .so，是移植基础",
-        "source": "references/harmony-pc-capabilities.json#arch.arm64"
+        "source": "references/harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64",
@@ -2134,7 +2139,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若需 x86_64 目标，当前目标能力未核实，会额外增加验证工作",
-        "source": "references/harmony-pc-capabilities.json#arch.x86_64"
+        "source": "references/harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl",
@@ -2142,7 +2148,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "默认成像/usdview 依赖桌面 OpenGL；部分功能需重写为 GLES/EGL 或 ArkGraphics 3D",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:vulkan",
@@ -2150,7 +2157,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "hgiVulkan 可选后端是否可直接启用待核实",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.vulkan",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:qt",
@@ -2158,11 +2166,11 @@
         "required": true,
         "target_status": "available",
         "impact": "usdview 的 Qt 窗口系统可复用，但 PySide 绑定未适配",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi_with_graphics_backend_rewrite",
     "summary": "OpenUSD 核心场景描述层是标准 C++，可在 OHOS NDK 上重编；但默认 OpenGL 成像后端、usdview 的 PySide/Qt 绑定、以及 TBB/OpenSubdiv 等关键依赖均未鸿蒙化，需要较大改造量。整体可部分移植，3D 检视与渲染栈是主要难点。",
     "blockers": [
       {
@@ -2299,7 +2307,24 @@
       "在鸿蒙 Python 3.12 上跑通 Python 绑定单元测试"
     ],
     "notes": "评估按库口径（模型 A）进行；usdview 作为终端用户应用应按模型 C 重新评估，GUI/窗口/桌面集成会进一步推高工作量。目标平台对 x86_64、Vulkan 及若干 POSIX 调试机制的状态未核实，已将置信度下调至 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:glx_wgl_loader",
+          "ua:metal_backend"
+        ]
+      }
+    }
   },
   "library": {
     "name": "OpenUSD",
@@ -2327,40 +2352,21 @@
   "meta": {
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "license",
-        "field": "spdx",
-        "kind": "ambiguity",
-        "value": "Tomorrow Open Source Technology License 1.0",
-        "rationale": "协议文本明确声明与 Apache-2.0 第 6 节不同，不能简单映射为 Apache-2.0；按 skill 要求使用 NOASSERTION 并标注 category 为 permissive。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored_in_plugin",
-        "rationale": "OpenUSD 将 AVIF/aom/libyuv/OpenEXR-core 等库以源码形式 vendored 在 pxr/imaging/plugin/ 下，与系统依赖并列存在；acquisition 仍用 vendored，但来源路径需特别说明。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "harmony_status",
-        "kind": "gap",
-        "value": "pyside_binding_status",
-        "rationale": "gui 场景由 Qt + PySide 共同提供；目标能力表只列出 Qt，未列出 PySide 绑定状态，导致 gui 整体 harmony_status 只能判为 partial。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "x86_64_ohos_unknown",
-        "rationale": "目标能力表 x86_64 状态为 unknown；OpenUSD 若需同时支持 x86_64 鸿蒙 PC，该假设会拉低置信度。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:glx_wgl_loader",
+        "class": "actionable",
+        "message": "unadaptable_api ua:glx_wgl_loader 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:metal_backend",
+        "class": "actionable",
+        "message": "unadaptable_api ua:metal_backend 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "cap_miss:media",
         "class": "actionable",
@@ -2372,7 +2378,8 @@
         "message": "license.category(permissive) 与依据 SPDX(NOASSERTION) 派生的性质(undeclared) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "OpenUSD 核心场景描述能力本身不直接涉及 GUI/3D 渲染/媒体/特定硬件，但成像（Imaging）与检视器（usdview）组件深度依赖 3D 图形栈与 Qt GUI。",

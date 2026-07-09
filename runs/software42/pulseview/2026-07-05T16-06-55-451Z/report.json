@@ -1149,8 +1149,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C：整包桌面应用，基于已移植的 Qt 鸿蒙版重编译打包；arm64/x86_64；OHOS NDK / musl libc；自研内核非 Linux ABI）",
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1159,7 +1158,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "PulseView 是 C++/Qt 桌面应用，核心价值在通过 libsigrok 驱动层连接物理测量硬件。鸿蒙 PC 社区已有 Qt 鸿蒙版，GUI 层可经 OHOS NDK 重编链接鸿蒙 Qt Widgets；Boost 也已鸿蒙化可用。但三项关键目标能力未核实：(1) 鸿蒙 PC 是否提供传统桌面窗口管理环境以运行 Qt Widgets 应用；(2) libsigrok 及其驱动栈能否在鸿蒙 PC 上编译并访问 USB/串口设备（权限模型未知）；(3) 鸿蒙 PC 的应用交付模型是否支持原生可执行文件分发。若第(2)项不可行则应用核心价值丧失（无法连接硬件），整体变 infeasible。可选功能 ENABLE_DECODE 和 ENABLE_FLOW 默认关闭、降低风险。POSIX 信号处理已在 Windows 下有条件关闭模式，可直接沿用。",
     "blockers": [
       {
@@ -1261,7 +1259,8 @@
         "required": true,
         "target_status": "available",
         "impact": "若不可用则整个 GUI 无法运行、需 ArkUI 重写界面。已确认社区提供 Qt 鸿蒙版 → 可重编译链接。",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_wm",
@@ -1269,7 +1268,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Qt Widgets 应用需运行在传统窗口管理器之上（多窗口、文件对话框等）。若鸿蒙 PC 不支持此环境而仅支持 ArkUI 沙箱，则整应用无法运行。",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:usb_serial",
@@ -1277,7 +1277,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "应用核心功依赖 libsigrok 通过 USB/串口连接测量硬件。若鸿蒙 PC 不允许此类设备访问或 libsigrok 无法适配，则失去核心价值。",
-        "source": "harmony-pc-capabilities.json#hardware_devices.usb_serial"
+        "source": "harmony-pc-capabilities.json#hardware_devices.usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:app_delivery",
@@ -1285,7 +1286,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定了编译产物格式和分发方式。若仅支持 ArkTS HAP 则需将 C++ 应用封装为 Native C++ ability。",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:file_dialog",
@@ -1293,7 +1295,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "应用通过 QFileDialog 打开/保存 session 和导出文件，依赖桌面原生文件对话框和文件系统访问。若鸿蒙 PC 无原生文件对话框则需回退到 Qt 内置方案。",
-        "source": "harmony-pc-capabilities.json#desktop_integration.file_dialog"
+        "source": "harmony-pc-capabilities.json#desktop_integration.file_dialog",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arch_x86_64",
@@ -1301,7 +1304,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "arm64 已确认为主力架构；x86_64 若不可用仅减少目标平台，不影响可行性判断。",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1347,7 +1351,21 @@
       "在鸿蒙 PC 上运行单元测试（Boost.Test，28 个用例）验证编译产物基本功能"
     ],
     "notes": "评估按模型 C（整包桌面应用），三项关键目标能力为 unknown：桌面窗口环境（wm）、USB/串口设备访问（usb_serial）、应用交付模型（desktop_app）——因此 confidence 下调为 medium、note 中注明结论依赖未核实目标事实。若 Qt 桌面窗口环境和 USB 设备权限经核实均可用，则可降为 needs_adaptation_full、feasibility 升为 feasible_with_effort、person_days 约 [20,35]；若两者均不可用，则须 arkts_rewrite 或 abandon，端口 infeasible。libsigrok 及 libsigrokdecode 均未鸿蒙化，需自主交叉编译。ENABLE_DECODE 可选功能默认启用但仅依赖 libsigrokdecode（纯软件库），编译不涉硬件；ENABLE_FLOW 默认关闭，不计入阻碍。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "pulseview",
@@ -1367,29 +1385,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "application",
-        "rationale": "PulseView 是终端用户启动运行的 Qt 桌面 GUI 应用，非库。有 main.cpp 启动入口、原生可执行文件打包、桌面文件注册。按 model C 评估鸿蒙适配。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].type",
-        "kind": "gap",
-        "value": "android",
-        "rationale": "Android 平台 API 代码由 CMake ANDROID 编译宏守卫，仅 Android 构建时编译。归入 platform/linux 类别因其底层为 Linux 内核 AOSP，但实际是独立平台。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system",
-        "rationale": "所有依赖均通过 CMake find_package + pkg-config 从系统获取，符合标准 Linux 开发模型。Qt5/Qt6 二选一、所有依赖均为系统预装方式。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -1400,7 +1396,8 @@
         "message": "依赖/native_api 出现 media 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "PulseView 是 Qt 桌面 GUI 应用，涉及 GUI 窗口界面和通过 libsigrok 间接访问 USB/串口测量硬件。无 3D 渲染（不使用 OpenGL/Vulkan）、无媒体编解码（可选 GStreamer 流默认关闭）、不依赖云端服务。核心适配挑战在 Qt 桌面环境 + USB 设备 I/O 在鸿蒙 PC 上的可用性。",

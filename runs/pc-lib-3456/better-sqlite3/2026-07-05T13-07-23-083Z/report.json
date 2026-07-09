@@ -1133,7 +1133,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（跑在已移植的 Node.js 24 运行时上；N-API 原生插件经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，非 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1142,7 +1141,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "better-sqlite3 为 Node.js N-API 原生插件，鸿蒙 PC 已移植 Node.js 24 运行时，JS 封装层（lib/）无需任何改动即可运行。C++ 原生层（src/）仅使用 V8 API、Node 核心 API、C++20 STL 与标准 C 库，无 Win32 或 POSIX 专有系统调用——唯一的生产代码平台守卫均为 V8/Node ABI 版本差异（非 OS 平台耦合）。内嵌的 SQLite 合并源码（deps/sqlite3/sqlite3.c）已在 OpenHarmony PC 官方预编译包清单中确认可移植。整体仅需用 OHOS NDK 重新编译 better_sqlite3.node 即可，无平台 API 改写。",
     "blockers": [
       {
@@ -1181,7 +1179,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Node.js 24 已移植，JS 层可直接运行；N-API ABI 兼容，C++ 插件可用 OHOS NDK 编译",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1225,7 +1224,21 @@
       "在鸿蒙 Node.js 上运行现有测试套件（mocha），验证 SQLite 读写/事务/函数/备份功能完整性"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。内嵌 SQLite 合并源码的 platform_adaptation 信号（1749 行 #ifdef _WIN32/__APPLE__/__linux__）均来自 SQLite 自身的跨平台抽象层（VFS），在 OHOS NDK musl 环境下应走 POSIX/linux 路径编译通过——但有 1220 行 __APPLE__ 守卫代码需验证 musl 下是否有替代路径。若目标是 ArkTS 沙箱应用（模型 B），则 Node.js 运行时不可用、需将整个库逻辑以 ArkTS + @ohos.data.relationalStore 重写，工作量大幅上升。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "better-sqlite3",
@@ -1240,33 +1253,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "domain",
-        "kind": "new_value",
-        "value": "数据库",
-        "rationale": "该库是一个嵌入式数据库驱动（SQLite wrapper），domain 取 '数据库' 而非广义的 'data'，因它本身就是完整的关系数据库引擎的 Node.js 接口"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "SQLite 以合并源码（amalgamation）形式内嵌在 deps/sqlite3/ 中，非 git submodule 也非 package manager——需在现有 acquisition 值中选用 vendored 来描述这种'源码拷贝到仓库内'的获取方式"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "new_value",
-        "value": "cross-platform",
-        "rationale": "库自身的 C++ 代码无任何 OS 平台 #ifdef（仅有 V8/Node ABI 版本差异），但 vendored SQLite 的 C 合并源码内部有大量平台条件编译。整体仍可视为跨平台——各平台均可编译。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "better-sqlite3 是一个嵌入式的本地数据库驱动，纯计算+存储逻辑，不涉及 GUI 界面、3D 渲染、音视频媒体处理或特定硬件设备。所有场景均为否。",

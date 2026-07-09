@@ -1376,8 +1376,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：库跑在已移植的 Python 3.12 运行时上；原生扩展/平台库经 OHOS NDK/musl 评估；自研内核，无 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         7,
@@ -1386,7 +1385,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "add_harmonyos_backend",
     "summary": "mss 是纯 Python 库，鸿蒙 PC 已移植 Python 运行时，算法层（PNG 编码、EDID 解析、像素重排、NumPy/PIL/PyTorch/TensorFlow 接口）可直接运行；但 Windows/macOS/Linux 三套平台后端在鸿蒙上均不可用，必须基于 HarmonyOS 原生屏幕采集能力实现一套新后端。核心功能可适配，工作集中在新后端开发与权限处理。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1396,7 +1394,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 运行时可用则纯 Python 逻辑无需重写",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:screen_capture_api",
@@ -1404,7 +1403,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不存在等价 API，则需通过 ArkTS/@ohos.multimedia 桥接或放弃部分功能",
-        "source": "references/harmony-pc-capabilities.json#media.ohos_multimedia / #graphics_3d（无 screen_capture 专行，按未知处理）"
+        "source": "references/harmony-pc-capabilities.json#media.ohos_multimedia / #graphics_3d（无 screen_capture 专行，按未知处理）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1529,7 +1529,21 @@
       "在 HarmonyOS PC 上跑通现有单元测试，验证多显示器、光标叠加、PNG 保存等功能"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python 运行时）进行。若目标形态改为 ArkTS 沙箱应用（模型 B），则 Python 运行时不可用，需要以 C/C++ 原生模块 + Node-API 方式重写核心截图逻辑，工作量与难度将大幅上升。当前置信度为 medium，因为 HarmonyOS PC 屏幕采集 API 的具体形态、权限模型及 Python 可访问性均未在公开参考中核实。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1537,43 +1551,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "library vs cli",
-        "rationale": "mss 同时是 PyPI 库（import mss）和 console_script 入口（mss CLI）。按项目主体定位与 public API，最终判为 library，并在 build_env.entry_points 中保留 CLI 信息。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "category",
-        "kind": "new_value",
-        "value": "xcbproto_xml_as_production",
-        "rationale": "src/xcbproto/ 下的 randr.xml/render.xml/shm.xml/xfixes.xml/xproto.xml 为 XCB 协议定义文件，被 gen_xcb_to_py.py 用于生成 ctypes 绑定，metrics.py 将其计为 production XML（约 7192 行）。它们属于协议数据/生成输入，非可执行代码，但纳入了源码分发。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "key",
-        "kind": "new_value",
-        "value": "screen_capture",
-        "rationale": "mss 的核心能力是屏幕像素采集，既不属于 gui（无窗口工具包）、rendering_3d（无 3D 图形 API），也不完全等同于 media（非音视频编解码/摄像头采集）。因此新增 screen_capture 场景键。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "add_harmonyos_backend",
-        "rationale": "现有推荐路径（run_on_ported_runtime/recompile_napi/arkts_rewrite/wrap_ffi/find_alternative/abandon）均不精确描述 mss 的移植方式：需要为 HarmonyOS 新增一套原生后端，同时保留 Python 算法层。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "platform_branches",
-        "kind": "gap",
-        "value": "runtime platform detection",
-        "rationale": "平台分支计数仅命中 4 处 platform.system() 调用，全部用于后端选择或 CLI 提示，未遗漏关键平台耦合；Windows/macOS/Linux 的实际 API 调用均通过按文件组织的后端模块隔离，而非 inline 平台分支。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

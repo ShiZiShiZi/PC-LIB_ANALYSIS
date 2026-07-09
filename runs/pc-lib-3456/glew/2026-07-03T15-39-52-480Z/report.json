@@ -1202,8 +1202,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK musl + POSIX 子集；arm64/x86_64）。按 C/C++ 库默认模型 A 评估：经 OHOS NDK 重新编译为 .so 后供其他应用链接。",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         12,
@@ -1212,7 +1211,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_egl",
     "summary": "GLEW 作为 OpenGL 扩展加载库，移植核心在于把平台相关的 get-proc-address 入口切换到 HarmonyOS PC 实际可用的图形栈。Windows WGL、macOS NSGL 与 Linux GLX（依赖 X11 服务器）在鸿蒙上均无法直接使用；EGL + OpenGL ES 分支是最可行的入口，因为目标平台图形栈对 EGL/GLES 呈 partial 支持。需要在 OHOS NDK 下以 GLEW_EGL 模式重编，验证 eglGetProcAddress 与扩展字符串解析，并新增鸿蒙/OHOS 平台分支。",
     "unadaptable_apis": [
       {
@@ -1226,7 +1224,9 @@
           "auto/src/glew_head.c:149",
           "auto/src/glew_init_wgl.c:29"
         ],
-        "caused_by": []
+        "caused_by": [],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:glx",
@@ -1241,7 +1241,9 @@
         ],
         "caused_by": [
           "ta:x11_server"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:nsgl",
@@ -1253,7 +1255,9 @@
         "evidence": [
           "auto/src/glew_head.c:86-135"
         ],
-        "caused_by": []
+        "caused_by": [],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:x11",
@@ -1267,7 +1271,9 @@
         ],
         "caused_by": [
           "ta:x11_server"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1277,7 +1283,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "GLEW 的核心价值是加载 OpenGL 扩展；若目标平台 GLES 扩展集不完整，则部分扩展标志无法启用",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:egl",
@@ -1285,7 +1292,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "EGL 是 GLEW 在鸿蒙上的主要可行入口；具体版本/扩展待核实",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.egl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:x11_server",
@@ -1293,7 +1301,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "GLX 路径依赖 X11 服务器；无服务器则 glewInit 在默认 Linux 分支下无法创建/获取显示连接",
-        "source": "推断：HarmonyOS PC 采用自研窗口/显示栈，不提供原生 X11 服务器"
+        "source": "推断：HarmonyOS PC 采用自研窗口/显示栈，不提供原生 X11 服务器",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_ndk_c",
@@ -1301,7 +1310,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 库无运行时依赖，只要 NDK 能编译 ANSI C 与 POSIX dlopen 即可重编",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "available"
       },
       {
         "id": "ta:dlopen",
@@ -1309,7 +1319,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "部分平台回退路径用 dlopen(NULL)/dlsym 查找符号；musl POSIX 子集通常支持，但需验证",
-        "source": "references/harmony-pc-capabilities.json#intro"
+        "source": "references/harmony-pc-capabilities.json#intro",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
@@ -1431,7 +1442,26 @@
       "若目标平台 EGL 不支持某些扩展，补充条件编译或运行时降级逻辑"
     ],
     "notes": "评估基于当前 checkout（auto/ 代码生成模板），实际生成的 src/glew.c 与 include/GL/*.h 未在工作树中，但平台分支逻辑由模板完全代表。X11 客户端库虽在 OpenHarmony PC cmd-pkgs 中可用，但 GLX 路径需要 X11 显示服务器配合，因此仍判为不可用。 confidence 为 medium 是因为 OpenGL/EGL 在鸿蒙 PC 上的实际扩展覆盖待实测。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:wgl",
+          "ua:glx",
+          "ua:nsgl",
+          "ua:x11"
+        ]
+      }
+    }
   },
   "library": {
     "name": "glew",
@@ -1464,16 +1494,31 @@
       "工作树缺少官方发布包中预生成的 src/glew.c 与 include/GL/*.h；分析基于 auto/ 代码生成模板、构建配置与 README。"
     ],
     "confidence_overall": "medium",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
       {
-        "dimension": "function_summary",
-        "field": "production_code_scope",
-        "kind": "gap",
-        "value": "generated_sources_missing",
-        "rationale": "本次 checkout 的 src/ 目录仅含 visualinfo.c，缺少生成的 glew.c；include/GL 头文件亦不在工作树。库的核心行为由 auto/src/ 模板完整代表，但缺少实际编译产物可能使 native_api 调用次数为基于模板的估计。"
+        "code": "ua_func_class_defaulted:ua:wgl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wgl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:glx",
+        "class": "actionable",
+        "message": "unadaptable_api ua:glx 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:nsgl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:nsgl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:x11",
+        "class": "actionable",
+        "message": "unadaptable_api ua:x11 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   },
   "capability_profile": {
     "summary": "GLEW 核心触及 3D 渲染技术栈中的 OpenGL 扩展加载场景，本身不提供 GUI 控件、媒体编解码或直接硬件访问。",

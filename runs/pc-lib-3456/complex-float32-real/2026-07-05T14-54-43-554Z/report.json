@@ -546,7 +546,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层，OHOS NDK 原生层，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -555,7 +554,7 @@
       ],
       "level": "low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -564,7 +563,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS 生产代码（lib/main.js）直接运行在 Node.js 上，运行时已移植则 JS 侧无需修改。",
-        "source": "已有 OpenHarmony PC Node.js 端口"
+        "source": "已有 OpenHarmony PC Node.js 端口",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk_c99",
@@ -572,7 +572,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 生产代码（src/main.c）仅使用 C99 标准语法和依赖的头文件，OHOS NDK 支持 C99 则可顺利重编。",
-        "source": "OHOS NDK 文档"
+        "source": "OHOS NDK 文档",
+        "target_status_model": "available"
       },
       {
         "id": "ta:dep_ctor_ported",
@@ -580,11 +581,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "本库的 C 实现依赖该包的 stdlib_complex64_parts_t 类型定义；若其未适配则需一并打包。但该包同样仅使用 C99 标准语法，适配难度与本库相同。",
-        "source": "未在 HarmonyOS PC 镜像中找到；属同一 stdlib 生态"
+        "source": "未在 HarmonyOS PC 镜像中找到；属同一 stdlib 生态",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "该库适配难度极低。JS 侧在已移植的 Node.js 上无需修改直接运行；C 侧仅使用 C99 标准语法（union 类型双关），不含任何操作系统/平台特定 API，用 OHOS NDK 重编译即可。依赖 @stdlib/complex-float32-ctor 也是同一模式。整体为重新编译即可适配。",
     "blockers": [],
     "compatible": [
@@ -624,7 +625,21 @@
       "将包发布至鸿蒙 npm 镜像或 fork"
     ],
     "notes": "结论前提：Node.js 运行时已移植到鸿蒙 PC（已有社区端口）。C99 编译器和 OHOS NDK 可用。对于纯 JS 使用场景（如 Web 浏览器中），根本无需任何适配——浏览器版本直接可用。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float32-real",
@@ -640,34 +655,20 @@
     "analyzed_at": "2026-07-05T15:11:56Z"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "gap",
-        "value": "empty_groups",
-        "rationale": "该库的生产 C 代码仅使用依赖包的类型定义进行 union 解包，不含任何独立于依赖的 API 调用——导致 native_api.groups 为空数组。契约未预见到纯零平台 API 调用的情形，但 schema 允许 groups 为 []。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "package_manager",
-        "rationale": "所有依赖通过 npm 安装，acquisition 取 package_manager 最贴切。C 编译时隐含的 -lm 不在 manifest 中显式声明，不纳入依赖列表。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、媒体或任何硬件设备访问。其全部能力就是从一个复数对象中提取一个 float32 数值。",

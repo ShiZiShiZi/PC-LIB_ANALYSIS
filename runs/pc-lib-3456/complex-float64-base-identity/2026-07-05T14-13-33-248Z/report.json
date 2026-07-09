@@ -852,7 +852,6 @@
     "notes": "构建需要 node-gyp（及平台 C 编译器）编译 src/addon.c 生成 addon.node。纯 JS 路径（lib/main.js）无需编译。OS 兼容列表宽泛，实际运行须 Node.js 支持。"
   },
   "harmony_adaptation": {
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "confidence": "high",
     "effort": {
@@ -862,7 +861,6 @@
       ],
       "level": "low"
     },
-    "recommended_path": "Node.js 运行环境在 HarmonyOS NEXT 上已有移植版，纯 JavaScript 路径 (lib/main.js) 无需任何修改即可运行。如需原生扩展性能，将 C 源码 (src/main.c, src/addon.c) 通过 OHOS NDK 的 node-gyp 或 cmake 重新编译为 .node 文件即可——C 代码仅使用标准 C99 和 N-API (Node-API)，无平台相关系统调用，无需代码修改。",
     "blockers": [],
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -872,7 +870,8 @@
         "target_status": "available",
         "impact": "ported - pure JS path runs out of the box",
         "source": "https://gitee.com/openharmony/third_party_node",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       },
       {
         "capability": "Node-API (N-API) on HarmonyOS NEXT PC",
@@ -880,7 +879,8 @@
         "target_status": "available",
         "impact": "available via OHOS Node.js port; needed for native addon path only",
         "source": "OHOS NDK documentation",
-        "id": "ta:2"
+        "id": "ta:2",
+        "target_status_model": "available"
       },
       {
         "capability": "POSIX sys/time.h (gettimeofday)",
@@ -888,12 +888,27 @@
         "target_status": "available",
         "impact": "only used in benchmark code (non-production); available on OHOS",
         "source": "OHOS NDK / musl libc",
-        "id": "ta:3"
+        "id": "ta:3",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
     "notes": "核心逻辑 f(z)=z 极其简单，恒等函数只需返回输入值，无任何平台假设。生产代码中 C 部分仅使用标准 C99 和 N-API，benchmark 使用的 gettimeofday 不产生产品依赖。鸿蒙化工作量约 0.5-1.5 人天，主要是搭建 OHOS NDK 编译环境重新编译 .node 文件。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -914,32 +929,11 @@
     "analyzer": "pc-lib-analyzer",
     "analyzed_at": "2026-07-05T14:13:33Z",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "use",
-        "value": "nodejs",
-        "rationale": "npm 包、CommonJS 模块、Node.js N-API 原生扩展"
-      },
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "use",
-        "value": "library",
-        "rationale": "被其他代码以 API 调用的 stdlib 子包，非终端用户启动的应用"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups[].category",
-        "kind": "use",
-        "value": "ffi",
-        "rationale": "通过 N-API 宏（STDLIB_MATH_BASE_NAPI_MODULE_Z_Z）桥接 C 与 JavaScript"
-      }
-    ],
+    "observations": [],
     "warnings": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "scenarios": [

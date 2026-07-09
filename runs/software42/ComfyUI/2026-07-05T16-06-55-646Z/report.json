@@ -1923,8 +1923,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（应用层 Python Web 服务，跑在已移植的 Python 3.12 + PyTorch 上，经浏览器访问 HTML/JS 前端；arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         12,
@@ -1933,7 +1932,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "ComfyUI 为 Python Web 应用（Web 前端 + Python 后端推理引擎），鸿蒙 PC 已移植 Python 3.12 和 PyTorch（有 *-ohos_*.whl），核心引擎（节点图/执行/缓存/Web 服务器）可直接运行。主要适配工作在于：(1) 约 10 个尚未在 OHOS 镜像提供预编译轮子的 Python 依赖（torchvision/torchaudio/torchsde/transformers/einops/pyyaml 等）需验证或 OHOS NDK 交叉编译其 C 扩展；(2) GPU 加速——CUDA 在鸿蒙不可用，需退化到 CPU 推理或适配 Ascend NPU；(3) GLSL 着色器节点依赖 EGL/OpenGL ES，鸿蒙为 partial 支持——需在目标环境验证。整体可移植，但部分未核实的目标能力使置信度中等。",
     "blockers": [
       {
@@ -2005,7 +2003,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "CUDA 为 NVIDIA 专有，鸿蒙无等价。ComfyUI 有 CPU 回退（--cpu）和 NPU 后端——核心功能不依赖 CUDA，但推理性能大幅下降",
-        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:opengl_es_egl",
@@ -2013,7 +2012,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "GLSL 着色器为可选功能节点，EGL/GLES 不可用时该节点不工作但整体引擎仍可运行",
-        "source": "harmony-pc-capabilities.json#graphics_3d.opengl + .egl"
+        "source": "harmony-pc-capabilities.json#graphics_3d.opengl + .egl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:python_runtime",
@@ -2021,7 +2021,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已移植，纯 Python 部分可直接运行——这是整个移植的基础前提",
-        "source": "harmony-pc-capabilities.json#runtimes.python"
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:pytorch_ohos",
@@ -2029,7 +2030,8 @@
         "required": true,
         "target_status": "available",
         "impact": "PyTorch 已有 ohos wheel，核心推理可运行；但 torchvision/torchaudio/torchsde 尚无 ohos wheel，需额外工作",
-        "source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+        "source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:video_codec",
@@ -2037,7 +2039,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "av (PyAV) 包需要 FFmpeg C 库的 OHOS 版本；视频模型为可选功能，不影响图像生成核心",
-        "source": "harmony-pc-capabilities.json#media.video_codec"
+        "source": "harmony-pc-capabilities.json#media.video_codec",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2104,7 +2107,21 @@
       "处理 nvidia-smi 调用路径——鸿蒙下跳过（CUDA 不可用时该路径不执行，加条件守卫即可）"
     ],
     "notes": "评估按模型 C（整包桌面/服务器应用，跑在已移植的 Python 运行时上）。ComfyUI 为 Web 应用（非原生 GUI），前端由浏览器渲染，因此 GUI 工具包/窗口栈/桌面集成的鸿蒙状态不构成阻碍。关键不确定性：(1) transformers/torchvision/torchaudio/torchsde 的 OHOS 交叉编译工作量——这些是核心推理管线依赖，纯 Python 部分可直接安装，但 C 扩展需 OHOS NDK 重编（tokenizers 已有 ohos 版，其余需验证）；(2) GPU 加速在鸿蒙的可行性——CUDA 不可用后 CPU 推理极慢，实际可用性取决于鸿蒙 PC 的 GPU 驱动（NPU/ROCm）成熟度与 PyTorch 后端适配；(3) 鸿蒙 PC 的网络监听权限模型（ohos.permission.INTERNET 授予方式）——Web 服务需监听端口，若受限则需调整部署模式。因多项目标能力 unknown，confidence 下调至 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "ComfyUI",
@@ -2132,43 +2149,7 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "application",
-        "rationale": "ComfyUI 既可作为独立桌面应用启动（main.py），也可通过 pip 安装作为 Python 包导入（start_comfyui 函数暴露可复用组件），兼具应用与库的双重属性。判定为 application 因其主要分发形态是用户直接启动运行，而非被其他代码以 API 调用。AGENTS.md 也将其称为 'application'（No Internet Requests 节）。"
-      },
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "GLSL 着色器图像处理",
-        "rationale": "当前推荐类别集中无 GPU 着色器/实时渲染类，GLSLShader 节点直接运行用户编写的 GLSL ES 片段着色器，是一种非常见功能类别。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "ambiguity",
-        "value": "package_manager",
-        "rationale": "torch 在 requirements.txt 中未指定版本，用户需根据 GPU 后端自行选择正确的 PyTorch 变体（CUDA/ROCm/CPU），这比普通 PyPI 'pip install torch' 更复杂——需要根据 GPU 类型安装特定的 PyTorch 频道。当前统一标为 package_manager 以表达 '通过 pip/uv 从 registry 安装' 的本意。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "ecosystem",
-        "kind": "ambiguity",
-        "value": "comfy-kitchen/comfy-aimdo/comfy-angle 的 source_repo 为 null",
-        "rationale": "这三个是 ComfyUI 官方的闭源/非公开仓库 Python 包，可在 PyPI 安装（pip install comfy-kitchen），但其主源代码仓库未公开披露。source_repo 无法确定。"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "present",
-        "kind": "ambiguity",
-        "value": "false",
-        "rationale": "ComfyUI 核心明确禁止互联网请求（AGENTS.md: 'Do not add code to core ComfyUI that makes requests to the internet'），无遥测/分析/崩溃上报/云同步。但 README 提到 'API nodes provide access to the best closed source models'——这些 API 节点属于 comfy_api_nodes 目录，通过 requests/aiohttp 调用外部云 API（如 Nano Banana/Hunyuan3D 等）。按生产范围口径，comfy_api_nodes 下仅有少量 Python 代码（metrics 显示 32 行在 custom_nodes），且核心引擎本身不硬编码任何云端端点。标记 present:false 是恰当的。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
@@ -2177,7 +2158,8 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目触及 3D 渲染、媒体与 GPU 计算三大鸿蒙适配重点场景——GLSL 着色器节点通过 ANGLE/EGL 使用 OpenGL ES 3.0 渲染、视频模型通过 PyAV/FFmpeg 编解码、音频模型通过 torchaudio 处理、核心推理在 GPU 上加速（多后端）。不涉及原生桌面 GUI（纯 Web 前端）。",

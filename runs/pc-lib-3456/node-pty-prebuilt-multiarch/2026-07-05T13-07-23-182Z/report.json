@@ -1751,8 +1751,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（库跑在已移植的鸿蒙 Node.js 24.13 运行时上；C++ N-API 原生扩展经 OHOS NDK/musl 重编；arm64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1761,7 +1760,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js N-API 原生扩展，鸿蒙 PC 已移植 Node.js 24.13，JS/TS 层面可直接运行。核心适配工作为将 C++ 原生模块（pty.node、conpty.node 等）用 OHOS NDK 交叉编译为 arm64 .so，并处理 POSIX PTY API（forkpty/openpty/posix_openpt/ioctl/termios）在 OHOS musl NDK 下的可用性。Windows Win32/ConPTY 后端在鸿蒙上不可用但仍属死代码、不阻塞；Unix 路径已有 macOS 的 posix_spawn+posix_openpt 回退方案，可作为 OHOS 适配起点。需逐项核实 OHOS NDK 的 PTY/termios/signal/procfs 支持状态（均为 unknown），故置信度为 medium。",
     "blockers": [
       {
@@ -1871,7 +1869,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JS/TS 层面直接运行，C++ 扩展入口 NODE_API_MODULE 可用",
-        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:posix_pty",
@@ -1879,7 +1878,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无 PTY 创建能力，整个库的核心功能（交互式终端）无法运行；需核实 musl 是否提供 pty.h/libutil 或 posix_openpt",
-        "source": "references/harmony-pc-capabilities.json（NDK/musl POSIX 子集部分，pty 未列出，待核实）"
+        "source": "references/harmony-pc-capabilities.json（NDK/musl POSIX 子集部分，pty 未列出，待核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:termios",
@@ -1887,7 +1887,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "termios 是 POSIX PTY 的核心配套 API，决定终端属性设置和大小调整是否可用；缺失可降级为仅默认定制",
-        "source": "references/harmony-pc-capabilities.json（未列出，musl 基本 POSIX 功能，待核实）"
+        "source": "references/harmony-pc-capabilities.json（未列出，musl 基本 POSIX 功能，待核实）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_subprocess",
@@ -1895,7 +1896,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "PTY 的本质是在 TTY 中创建子进程并读写其 I/O；若 OHOS 沙箱不允许子进程创建则整个库功能无法工作",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn (unknown)"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn (unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:procfs",
@@ -1903,7 +1905,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "非核心功能，仅用于获取终端前台进程名；不可用时可通过返回空退化为无害缺失",
-        "source": "references/harmony-pc-capabilities.json（未列出）"
+        "source": "references/harmony-pc-capabilities.json（未列出）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1941,7 +1944,21 @@
       "在鸿蒙 Node.js 上构建并验证 PTY 的 spawn/open/fork 功能（创建 bash/sh 伪终端、读写 I/O、resize、退出回调）"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24.13 运行时上）。关键不确定性在于 OHOS NDK musl 对 POSIX PTY 原语（forkpty/openpty/posix_openpt）的支持程度——这是库的唯一硬依赖（无 PTY = 库无存在价值）。好消息：① 库已有基于 posix_spawn+posix_openpt 的 macOS 分支，比 forkpty 更轻量、更易移植；② 鸿蒙 PC 的进程/安全模型中对子进程创建（spawn）的态度待核实（target_assumptions 已标记 unknown）。Windows ConPTY/WinPTY 路径在鸿蒙上为死代码不编译。四个 ta: 均为 unknown+required ⇒ confidence 降至 medium。若鸿蒙 Node.js/NDK 确证不支持 PTY 原语，则该库在鸿蒙 PC 上无移植路径（infeasible）；但 musl 通常提供 pty.h，概率较大。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "node-pty-prebuilt-multiarch",
@@ -1966,24 +1983,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "bundled",
-        "rationale": "third_party/conpty 目录存放的是预编译 DLL（conpty.dll），通过 GetProcAddress 动态加载。不是源码 vendored 也不是标准的系统/远程依赖，属于预编译二进制内嵌模式。'bundled' 准确描述了这种内部附带预编译二进制的方式。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "ambiguity",
-        "value": "posix_pty_termios",
-        "rationale": "PTY/termios 是库的核心依赖，但 harmony-pc-capabilities.json 未列 OHOS NDK 对 PTY 原语的支持状态。forkpty/openpty/posix_openpt 是 POSIX.1 标准中的可选部分（非全部 Unix 实现），musl 提供 pty.h 但 OHOS 内核是否支持 PTY 设备(/dev/ptmx) 是另一回事。需人工核实。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为 Node.js 伪终端（PTY）原生扩展库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件适配场景。其核心是封装 OS 层终端机制，适配工作量集中在 POSIX/Win32 系统 API 和 C++ N-API 原生扩展的重编译。",

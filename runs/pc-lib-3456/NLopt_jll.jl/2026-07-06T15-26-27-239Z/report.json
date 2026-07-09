@@ -450,16 +450,14 @@
     "notes": "本包本身无编译步骤，所有原生二进制由 Yggdrasil CI 预构建并发布到 GitHub Releases。Julia 包管理器在安装时自动下载匹配当前平台的 artifact。"
   },
   "harmony_adaptation": {
-    "porting_class": "needs_adaptation_partial",
-    "feasibility": "hard",
+    "porting_class": "needs_adaptation",
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "effort": {
       "person_days": [
         3,
         10
       ],
-      "level": "high"
+      "level": "medium"
     },
     "blockers": [
       {
@@ -505,7 +503,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Julia 1.10.6 已移植至鸿蒙 PC，包装器 Julia 代码可直接运行",
-        "source": "references/harmony-pc-capabilities.json#julia"
+        "source": "references/harmony-pc-capabilities.json#julia",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libnlopt_native",
@@ -513,7 +512,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "当前无预编译的鸿蒙版 libnlopt 二进制，需自行在 OHOS NDK 下编译 NLopt 源码",
-        "source": "Artifacts.toml（无 ohos 目标条目）"
+        "source": "Artifacts.toml（无 ohos 目标条目）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:platform_detection",
@@ -521,12 +521,27 @@
         "required": true,
         "target_status": "partial",
         "impact": "需新增鸿蒙平台 wrapper 文件与 Artifacts.toml 条目；JLLWrappers 框架可扩展",
-        "source": "src/wrappers/ 目录（仅含 18 个非鸿蒙平台）"
+        "source": "src/wrappers/ 目录（仅含 18 个非鸿蒙平台）",
+        "target_status_model": "partial"
       }
     ],
     "required_permissions": [],
     "notes": "本包是 Julia JLL 包装器，Julia 运行时已移植鸿蒙 PC（available），包装器代码本身为纯 Julia，可直接运行。核心阻碍在于 libnlopt 原生二进制当前无鸿蒙构建——但 NLopt 上游为标准 C 库（可选纯 C 实现避开 C++ 依赖），依赖简单，在 OHOS NDK 下编译预期可行。总体评估：部分可适配，主要工作为 (1) 在 OHOS NDK 下编译 NLopt 源码产出 libnlopt.so，(2) 新增鸿蒙平台 wrapper 与 artifact 条目。不涉及 GUI/硬件/云服务，无不可适配 API。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "NLopt_jll.jl",
@@ -551,22 +566,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "1",
-        "field": "library.ecosystem",
-        "kind": "gap",
-        "value": "other",
-        "rationale": "Julia 生态不在 schema 枚举（python/java/nodejs/cpp/rust/go/dotnet/other）中，被迫归入 other。Julia 有独立包管理器和注册表，未来可考虑新增 julia 枚举值。"
-      },
-      {
-        "dimension": "1",
-        "field": "library.kind",
-        "kind": "novel_value",
-        "value": "plugin",
-        "rationale": "JLL 包装器既非传统 library（不含算法实现），也非 application/plugin/cli/framework/tool/service；它是 Julia 生态的专用二进制包装层，选用 plugin 最接近其'依附于宿主运行时加载外部原生库'的本质。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -580,7 +580,8 @@
       "shape coerced: meta.observations[0].dimension integer→string",
       "shape coerced: meta.observations[1].dimension integer→string"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "scenarios": [

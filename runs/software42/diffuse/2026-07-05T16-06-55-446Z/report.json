@@ -1054,8 +1054,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C：整包桌面应用，跑在鸿蒙已移植的 Python 3.12 运行时上；GTK3 GUI 库经 cmd-pkgs 预编译提供；arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         8,
@@ -1064,7 +1063,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "port_and_package",
     "summary": "Diffuse 是 Python GTK3 桌面 GUI 应用。Python 3.12 运行时与 GTK3 C 库在鸿蒙 PC 均已可用；pycairo（PyGObject 的依赖之一）也已适配。主要适配工作为在鸿蒙 PC 上从源码编译 PyGObject Python 绑定（含 GTK3/Cairo/GObject 的 C 扩展部分），并验证 GTK3 在鸿蒙桌面窗口环境下的功能完整性。VCS 命令行工具集成需各 VCS 工具（git/svn/hg 等）在鸿蒙上可用——这些为可选功能，缺失时仅影响 VCS 对比而文件对比核心能力不受影响。整体可行，但多项目标能力（桌面窗口管理器、文件对话框、外部进程启动、应用交付形态）状态为 unknown，置信度下调为 medium。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1074,7 +1072,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK3 已适配则可作为 GUI 后端的底层依赖；PyGObject 的编译依赖此条件满足",
-        "source": "references/harmony-pc-capabilities.json#gui.gtk (status: available, via cmd-pkgs)"
+        "source": "references/harmony-pc-capabilities.json#gui.gtk (status: available, via cmd-pkgs)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:wm_desktop",
@@ -1082,7 +1081,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GTK3 应用需要窗口管理器来创建和显示窗口；若鸿蒙 PC 无传统桌面窗口环境，则整个 GUI 无法运行",
-        "source": "references/harmony-pc-capabilities.json#gui.wm (status: unknown)"
+        "source": "references/harmony-pc-capabilities.json#gui.wm (status: unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn_process",
@@ -1090,7 +1090,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "VCS 集成依赖 subprocess.Popen 调用 git/svn/hg 等外部命令；非必需——文件对比不依赖此能力",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn (status: unknown)"
+        "source": "references/harmony-pc-capabilities.json#process_security.spawn (status: unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_delivery",
@@ -1098,7 +1099,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定应用如何打包、签名和分发到鸿蒙 PC；若只支持 .hap 形态则需重构启动与打包方式",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app (status: unknown)"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app (status: unknown)",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1217,7 +1219,21 @@
       "在鸿蒙 PC 上运行完整功能测试并修复兼容性问题"
     ],
     "notes": "评估按模型 C（整包桌面应用）。Python 运行时已移植、GTK3 C 库已在 cmd-pkgs——这两个核心依赖排除了 infeasible 判定。但 PyGObject 需从源码编译，且桌面窗口管理器/外部进程启动/应用交付形态三项均为 unknown——这些是 GTK3 应用能否实际运行的决定性前提，unknown 导致 confidence 降至 medium。VCS 集成中的多种命令行工具（svn/hg/bzr/cvs/darcs/mtn/rcs）暂未在鸿蒙适配——但这些为可选功能，文件对比核心不依赖。代码中仅 4 处运行时平台判断（os.name/platfrom.system），无 C/C++ 编译宏，整体平台耦合度低。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "diffuse",
@@ -1236,7 +1252,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Diffuse 是一款基于 GTK3 的 Python 桌面 GUI 应用，涉及桌面 GUI 场景；不涉及 3D 渲染、媒体处理或特定硬件设备访问。",

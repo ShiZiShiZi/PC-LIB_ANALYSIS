@@ -967,7 +967,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24.13.0 运行时上；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -976,7 +975,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "esm 是纯 JavaScript 的 ESM 模块加载器，零运行时依赖，不包含任何原生 C/C++ 扩展。鸿蒙 PC 已移植 Node.js 24.13.0 运行时（references/harmony-pc-capabilities.json#runtimes.nodejs），esm 的全部功能只需 npm install 后 `require('esm')(module)` 即可在鸿蒙 Node.js 上直接使用，无需代码修改或重编译。其使用的 process.binding() 等 Node 内部 API 随鸿蒙 Node.js 自带。无 GUI、硬件、媒体、云服务等外部依赖。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -988,7 +986,8 @@
         "target_status": "available",
         "impact": "无此能力则整个库无法运行。已确认鸿蒙 PC 提供 Node.js 24.13.0",
         "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
-        "id": "ta:1"
+        "id": "ta:1",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1039,7 +1038,21 @@
       "`require = require('esm')(module)` — 即可直接使用 ES 模块语法"
     ],
     "notes": "按模型 A（默认）评估：库跑在鸿蒙已移植的 Node.js 运行时上。鸿蒙 Node.js 24.13.0 已回合主社区，process.binding 等内部 API 随 Node 源码一并移植。esm 不依赖任何原生插件（.node 文件），故零适配工作量。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "esm",
@@ -1056,7 +1069,8 @@
     "analyzer": "pc-lib-analyzer",
     "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "scenarios": [

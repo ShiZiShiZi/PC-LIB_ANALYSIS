@@ -1510,8 +1510,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, OHOS NDK native 层, Node-API 桥接)",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1528,7 +1527,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "Qt 鸿蒙版是否完整支持 ScintillaEditBase 所需的 QPainter/QFont/QClipboard/QScrollBar 等功能，直接影响 Qt 后端的可用性",
-        "source": "references/harmony-pc-capabilities.json → gui.qt"
+        "source": "references/harmony-pc-capabilities.json → gui.qt",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:gtk_ohos",
@@ -1536,7 +1536,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "GTK 后端是备选路径，若 Qt 后端可用则不依赖 GTK",
-        "source": "references/harmony-pc-capabilities.json → gui.gtk"
+        "source": "references/harmony-pc-capabilities.json → gui.gtk",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:ohos_drawing",
@@ -1544,7 +1545,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 Qt 后端不够完整，需直接用 OHOS NDK 绘图 API 实现新的 Platform 层，此时 NDK 绘图能力完整性决定可行性",
-        "source": "references/harmony-pc-capabilities.json → graphics_3d.skia_2d"
+        "source": "references/harmony-pc-capabilities.json → graphics_3d.skia_2d",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_ime",
@@ -1552,7 +1554,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "源代码编辑器必须支持 IME（中文/日文/韩文输入），鸿蒙 IME 集成方式待核实",
-        "source": "references/harmony-pc-capabilities.json → desktop_integration.font_ime"
+        "source": "references/harmony-pc-capabilities.json → desktop_integration.font_ime",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:ohos_clipboard_dnd",
@@ -1560,11 +1563,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "编辑器的复制/粘贴/拖放功能依赖系统剪贴板和拖放协议",
-        "source": "references/harmony-pc-capabilities.json → desktop_integration.dnd_clipboard"
+        "source": "references/harmony-pc-capabilities.json → desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "Scintilla 的核心编辑引擎（src/，约 32000 行 C++）完全平台无关，适配工作集中在 Platform 抽象层的鸿蒙实现。推荐路径：基于已有的 Qt 后端（ScintillaEditBase），链接 Qt 鸿蒙版进行交叉编译。若 Qt 鸿蒙版功能不足，则需新建 PlatOHOS/ScintillaOHOS 后端，对接 OHOS NDK 原生绘图 API。Win32/Cocoa 后端代码在鸿蒙构建中不参与编译（由编译宏控制），无需处理。",
     "blockers": [
       {
@@ -1661,7 +1664,21 @@
       "全面测试：文本编辑、语法高亮、折叠、自动补全、IME、剪贴板等"
     ],
     "notes": "核心编辑引擎的平台无关性是最大优势——约 70% 的代码（src/ + include/）无需修改。风险集中在 GUI 后端适配：Qt 鸿蒙版功能完整性尚需验证，特别是自定义绘制（QPainter）、字体度量（QFontMetrics）、输入法、剪贴板等方面。若 Qt 鸿蒙版功能充足，工作量主要在交叉编译配置和测试验证（约 1-2 人月）；若需新建原生 OHOS 后端，工作量显著增加（约 2-3 人月）。confidence 为 medium 因为 ta:ohos_ime、ta:ohos_drawing、ta:ohos_clipboard_dnd 的 target_status 为 unknown",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1669,22 +1686,8 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "library",
-        "rationale": "Scintilla 是被其他应用（IDE/编辑器）作为编辑控件嵌入使用的库，非独立运行的应用"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "runtime_load",
-        "rationale": "Direct2D/DirectWrite DLL 通过 LoadLibraryEx 运行时动态加载，与 system（编译时链接）和 vendored（源码内置）均不同，是运行时按需探测的可选功能"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

@@ -607,8 +607,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -625,11 +624,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "SimpleBase 是纯 .NET 托管库，必须在 .NET 运行时上执行。若鸿蒙 PC 无 .NET 运行时，则整个库无法运行，需寻找替代路径（如通过已移植的语言绑定重写、或等待 .NET 移植）。",
-        "source": "references/harmony-pc-capabilities.json 的 runtimes 段未收录 .NET/dotnet 条目"
+        "source": "references/harmony-pc-capabilities.json 的 runtimes 段未收录 .NET/dotnet 条目",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "SimpleBase 是纯 .NET 托管代码库，无平台专有 API、无原生扩展、无 unsafe 代码、零运行时依赖。代码 100% 跨平台可移植，唯一前提是鸿蒙 PC 上存在 .NET 8.0+ 运行时。当前该运行时移植状态未知，构成主要不确定性。若 .NET 运行时可用，则库可直接运行（no_adaptation 或 recompile_only 级别）；若不可用，需通过其他已移植语言（如 Python/Java）重写编码逻辑或等待 .NET 移植。",
     "blockers": [
       {
@@ -681,7 +680,21 @@
       "若 .NET 不可用：评估用 Python/Java/Rust 等已移植语言重写核心编码逻辑的方案"
     ],
     "notes": "主要不确定性在于 .NET 运行时在鸿蒙 PC 上的状态。harmony-pc-capabilities.json 的 runtimes 段已列出 Python/Node.js/Java/Rust/Go/Julia 为 available，但未收录 .NET。SimpleBase 本身代码完全跨平台可移植——若运行时就绪则适配工作量极低。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "SimpleBase",
@@ -701,19 +714,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime_unknown",
-        "rationale": "harmony-pc-capabilities.json 的 runtimes 段未收录 .NET/dotnet 条目，而本项目是 .NET 库——这是评估的核心未知因素，建议补充 .NET 运行时在鸿蒙 PC 的移植状态条目"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "SimpleBase 是纯计算型数据编码库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。所有功能均在 .NET 托管内存中完成，无需 GPU/设备/外设。",

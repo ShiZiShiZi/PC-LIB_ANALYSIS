@@ -2270,8 +2270,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；原生层 OHOS NDK（musl + POSIX 子集）；arm64/x86_64）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         35,
@@ -2280,7 +2279,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "find_alternative",
     "summary": "Tracy 是一个包含桌面 GUI 分析器、客户端 SDK 和服务器分析引擎的 C++ 性能分析工具（application）。鸿蒙 PC 已移植 C/C++ 工具链（OHOS NDK），6 个运行时依赖已鸿蒙化（freetype/zstd/nlohmann-json/base64/tidy-html5/libcurl），服务器分析模块和客户端库核心逻辑可经 OHOS NDK 重编移植。但桌面 GUI 分析器依赖 GLFW+ImGui+OpenGL 窗口栈（Windows/Linux/Wayland/macOS），该组合在鸿蒙 PC 尚未确认可用，GUI 层需替换为鸿蒙原生方案（Qt/ArkUI）。客户端库平台适配代码量大（platform_adaptation: 4042 行守卫代码，覆盖 Windows/Linux/macOS），需新增鸿蒙 OHOS 平台后端。原生文件对话框（NFD）依赖平台原生 API 也需适配。整体分析引擎可行，但 GUI 界面层需显著重做，部分平台特有功能（ETW 采样、/proc/kcore 内核符号、Linux syscall）无法直接适配。",
     "target_assumptions": [
       {
@@ -2289,7 +2287,8 @@
         "required": true,
         "target_status": "available",
         "impact": "客户端库（TracyClient）与服务器分析引擎（TracyServer）的 C++ 代码编译前提——确认可用",
-        "source": "references/harmony-pc-capabilities.json (OHOS NDK)"
+        "source": "references/harmony-pc-capabilities.json (OHOS NDK)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_wm",
@@ -2297,7 +2296,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GUI 分析器（tracy-profiler）运行的前提——无桌面窗口环境则 GUI 无法启动，需改用 ArkUI/HAP 或 Qt 方案重新实现界面层",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl",
@@ -2305,7 +2305,8 @@
         "required": true,
         "target_status": "partial",
         "impact": "ImGui 当前通过 OpenGL3 后端渲染 GUI——鸿蒙提供 GLES/EGL（partial），ImGui GLES2 后端可替代但需验证完整 OpenGL 扩展支持",
-        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl"
+        "source": "references/harmony-pc-capabilities.json#graphics_3d.opengl",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:desktop_app_delivery",
@@ -2313,7 +2314,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "分析器的分发与运行方式——鸿蒙 PC 是否支持传统可执行文件直接运行待核实；若仅支持 HAP 则需整体改为鸿蒙应用包格式",
-        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:file_dialog",
@@ -2321,7 +2323,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "NFD 依赖平台原生文件对话框——未知则需评估替代方案（Qt 文件对话框 / 简化实现），非核心阻碍",
-        "source": "references/harmony-pc-capabilities.json#desktop_integration.file_dialog"
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.file_dialog",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2474,7 +2477,9 @@
         "evidence": [
           "public/client/TracySysTrace.cpp"
         ],
-        "caused_by": []
+        "caused_by": [],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:kcore",
@@ -2486,7 +2491,9 @@
         "evidence": [
           "public/client/TracyKCore.cpp"
         ],
-        "caused_by": []
+        "caused_by": [],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "compatible": [
@@ -2534,7 +2541,24 @@
       "Python 绑定适配：pybind11 + Python 3.12 在鸿蒙上构建 tracy_client wheel"
     ],
     "notes": "评估按模型 C（整包桌面应用）口径。核心不确定性在 GUI 层：ImGui+GLFW+OpenGL 组合在鸿蒙 PC 上的可用性悬而未决。若鸿蒙 PC 仅支持 HAP 分发且无传统桌面窗口环境，GUI 分析器移植工作量将大幅上升（可能需 ArkUI 重写全部界面）。若只移植分析引擎+命令行工具（不含 GUI），person_days 可降至 [15, 30]、porting_class 可升至 needs_adaptation_full。客户端库的 4042 行平台守卫代码（platform_adaptation: windows 1467 / linux 2242 / macos 333）需要逐一评估鸿蒙等价替代，是主要的工作量来源。6/17 运行时依赖已鸿蒙化降低了一部分工作量。置信度受 3 项 required+unknown 目标假设（desktop_wm / desktop_app_delivery / file_dialog）影响下调为 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:etw_sampling",
+          "ua:kcore"
+        ]
+      }
+    }
   },
   "library": {
     "name": "tracy",
@@ -2559,40 +2583,24 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "application",
-        "rationale": "Tracy 同时包含客户端库（TracyClient，作为 SDK 嵌入目标应用）和桌面 GUI 分析器（tracy-profiler，终端用户启动的独立应用）。判断主交付物为分析器 GUI 应用而非纯库，故判定 kind=application、走模型 C 鸿蒙口径。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "hardware_timer",
-        "rationale": "硬件计时器（RDTSC/CNTVCT/mach_absolute_time）与 CPU 特征检测（cpuid/xgetbv）场景不完全是 GPGPU 或 SIMD——它更像是 CPU 级硬件功能依赖，归入 hardware 场景但 specific_hardware=false。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "fetchcontent",
-        "rationale": "CPM FetchContent 是 CMake 生态的取源码编译方式，与 system/vendored/submodule/download_build 均不同，已在推荐集中。另有 vendored 的 CPM.cmake 如 CMake 包管理工具自身被 vendored。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "confidence",
-        "kind": "ambiguity",
-        "value": "medium",
-        "rationale": "5 项 target_assumptions 中有 3 项 required+unknown（桌面窗口管理器/OpenGL 完整支持/传统应用交付），且关键是决定 GUI 分析器可行性的核心假设。confidence 下调至 medium 如实反映不确定性。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:etw_sampling",
+        "class": "actionable",
+        "message": "unadaptable_api ua:etw_sampling 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:kcore",
+        "class": "actionable",
+        "message": "unadaptable_api ua:kcore 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "Tracy 作为桌面 GUI 性能分析器，重度依赖 GUI 窗口系统（ImGui + GLFW/Wayland + OpenGL/EGL）和 3D 图形栈（通过 OpenGL 渲染 GUI）；使用硬件高精度计时器（x86 RDTSC / ARM CNTVCT）和 CPU 特性检测（cpuid）；GPU 分析功能通过客户端头文件提供对 Vulkan/D3D/Metal/CUDA/OpenCL 的插桩支持（但不直接调用）。",

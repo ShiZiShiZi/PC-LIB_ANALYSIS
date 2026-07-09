@@ -1958,7 +1958,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (经 OHOS NDK (musl libc + POSIX 子集) 重编; arm64/x86_64; 自研内核, 非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1967,7 +1966,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "该库为纯 C 语言 MQTT 客户端库，核心协议逻辑（报文编解码、QoS 管理、持久化存储）完全不依赖平台 API。平台抽象层通过 #ifdef 在 POSIX（Linux/macOS/FreeBSD/AIX/Solaris）与 Win32 间切换，鸿蒙 PC 的 OHOS NDK 基于 musl libc 提供 POSIX 兼容层，BSD socket / pthread / poll / clock_gettime 等核心 API 均可用。OpenSSL（TLS 支持所需）在 OHOS 已有预编译包。仅需用 OHOS NDK 重新编译，最多在信号处理（SIGPIPE）上增加 OHOS 条件分支，整体可移植且工作量低。",
     "blockers": [
       {
@@ -2005,7 +2003,8 @@
         "required": true,
         "target_status": "available",
         "impact": "该库的所有 POSIX 平台 API 都依赖这些标准接口；全部可用则核心功能不受影响",
-        "source": "harmony-pc-capabilities.json; OHOS NDK 文档确认基于 musl"
+        "source": "harmony-pc-capabilities.json; OHOS NDK 文档确认基于 musl",
+        "target_status_model": "available"
       },
       {
         "id": "ta:openssl_ohos",
@@ -2013,7 +2012,8 @@
         "required": false,
         "target_status": "available",
         "impact": "仅 PAHO_WITH_SSL=TRUE 编译时需 OpenSSL；已适配则 SSL/TLS 功能可直接启用",
-        "source": "harmony-pc-capabilities.json; scripts/harmony_adapted.js 确认 cmd-pkgs 含 openssl"
+        "source": "harmony-pc-capabilities.json; scripts/harmony_adapted.js 确认 cmd-pkgs 含 openssl",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -2068,7 +2068,21 @@
       "在 OHOS 上运行 paho 测试套件验证功能完整性"
     ],
     "notes": "该库已有成熟的 POSIX 平台抽象层（@src/Socket.c, Thread.c, MQTTTime.c），8 个系统/RTOS 平台支持。OHOS NDK 基于 musl libc，与 Linux/POSIX 高度兼容，核心 API（socket/pthread/poll/clock_gettime）均在 musl 中实现。最大不确定点是 SIGPIPE 处理在 OHOS 上的支持——即使受限也易于绕过。整体的工作量主要在 toolchain 配置与编译验证，代码级改动极少或无。无外部命令、无 /proc /sys 访问、无设备操作、无 HW 依赖。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "paho.mqtt.c",
@@ -2089,22 +2103,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_socket",
-        "rationale": "BSD socket API 按 POSIX 标准定义，但在 C 库中位于 'standard'（跨平台 socket 层）和 'platform'（特定 OS 信号/线程）之间。本项目将其归入 standard，因为 BSD socket 在所有目标平台（Windows 经 Winsock2、Unix 原生）均可用且接口统一。"
-      },
-      {
-        "dimension": "build_env",
-        "field": "platforms",
-        "kind": "new_value",
-        "value": "vxworks",
-        "rationale": "OsWrapper.h/c 提供了 VxWorks 实时操作系统的兼容层（_WRS_KERNEL 宏），反映了该库对嵌入式 RTOS 的支持。VxWorks 不在推荐的 OS 枚举中，按实际添加。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2115,7 +2114,8 @@
         "message": "license.category(permissive) 与依据 SPDX(EPL-2.0 OR EDL-1.0) 派生的性质(weak_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯网络通信库，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备。通过 BSD socket API 与 MQTT broker 进行 TCP/TLS/WebSocket 通信，不涉及鸿蒙适配重点场景。",

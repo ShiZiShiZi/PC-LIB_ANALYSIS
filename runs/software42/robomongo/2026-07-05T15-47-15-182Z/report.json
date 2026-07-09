@@ -1759,8 +1759,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C：整包桌面应用；Qt5 C++ 应用，需 OHOS NDK 重编为鸿蒙原生可执行文件；arm64/x86_64；自研内核，非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         25,
@@ -1769,7 +1768,6 @@
       "level": "very_high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "Robo 3T 为 Qt5 C++ 桌面应用，核心 Qt GUI 框架已有鸿蒙社区移植（available），移植主路径为将 C++ 代码经 OHOS NDK 交叉编译为鸿蒙原生可执行文件。主要工作量在于：(1) MongoDB Shell fork（robomongo-shell，含 vendored Boost/abseil-cpp/pcre/mozjs-60/fmt）需整套 OHOS NDK 重编译——这是最大工程项；(2) libssh2 C 库的 POSIX socket 层需适配 OHOS musl POSIX 子集；(3) QtWebEngineWidgets（Chromium 内嵌）在鸿蒙状态 unknown，但当前 Linux 已禁用，可在鸿蒙同样禁用而不影响核心功能。三个关键目标能力 unknown（桌面窗口管理器、桌面集成子能力、传统桌面应用交付模型）拖低置信度至 medium。无 3D 渲染、无媒体、无特定硬件依赖、无云服务——无不可解阻碍。",
     "blockers": [
       {
@@ -1891,7 +1889,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心 GUI 框架；available → 不构成阻碍",
-        "source": "harmony-pc-capabilities.json#gui.qt"
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:wm",
@@ -1899,7 +1898,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Qt5 应用能否以传统桌面窗口形态运行的决定性因素；unknown → 下调 confidence 至 medium",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1907,7 +1907,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定整体打包与分发路径；若仅支持 .hap 则需写 ArkTS launcher wrapper",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cef",
@@ -1915,7 +1916,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅 Welcome Tab 使用，Linux 已禁用，鸿蒙可同样禁用",
-        "source": "harmony-pc-capabilities.json#gui.electron"
+        "source": "harmony-pc-capabilities.json#gui.electron",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:tray",
@@ -1923,7 +1925,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "非核心功能；缺失时 Qt 可降级运行",
-        "source": "harmony-pc-capabilities.json#desktop_integration.tray"
+        "source": "harmony-pc-capabilities.json#desktop_integration.tray",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:file_dialog",
@@ -1931,7 +1934,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Qt 自有对话框可回退",
-        "source": "harmony-pc-capabilities.json#desktop_integration.file_dialog"
+        "source": "harmony-pc-capabilities.json#desktop_integration.file_dialog",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dnd_clipboard",
@@ -1939,7 +1943,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "用户体验影响，非阻塞",
-        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard"
+        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:hidpi",
@@ -1947,7 +1952,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Qt5 内置高 DPI 支持（QA_EnableHighDpiScaling），若 QPA 适配则可用",
-        "source": "harmony-pc-capabilities.json#desktop_integration.hidpi"
+        "source": "harmony-pc-capabilities.json#desktop_integration.hidpi",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:font_ime",
@@ -1955,7 +1961,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "Qt5 内置 i18n 支持，需 OHOS 字体/输入法后端",
-        "source": "harmony-pc-capabilities.json#desktop_integration.font_ime"
+        "source": "harmony-pc-capabilities.json#desktop_integration.font_ime",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:printing",
@@ -1963,7 +1970,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "非核心功能，禁用不影响核心使用",
-        "source": "harmony-pc-capabilities.json#desktop_integration.printing"
+        "source": "harmony-pc-capabilities.json#desktop_integration.printing",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn",
@@ -1971,7 +1979,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅 mongoexport 导出使用；可改用内嵌 driver 实现",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -2025,7 +2034,21 @@
       "在鸿蒙 PC 上运行单元测试（googletest 2668 用例，需先交叉编译 googletest）验证功能完整性"
     ],
     "notes": "评估按模型 C（整包桌面应用）。核心限制不确定点：鸿蒙 PC 桌面窗口管理器/显示服务与桌面应用交付形态均为 unknown——这决定了 Qt5 应用能否以传统方式运行及打包分发路径。Qt5 社区鸿蒙版已提供（available），但桌面多窗口环境是否搭载尚待核实。QtWebEngineWidgets / CEF 在鸿蒙 unknown，但可选功能（当前 Linux 已禁用），不计入核心阻碍。无不可适配 API（所有用到的平台 API 均有鸿蒙适配或替代方案），故 porting_class = needs_adaptation_full（全部可适配）而非 partial。person_days 上限 50 反映 MongoDB Shell fork 整套 vendored C++ 依赖链的交叉编译复杂度（Boost/abseil/pcre/MozJS/fmt）；若社区已有预编译的 robomongo-shell 鸿蒙版则量级可大幅下调。compatible 项与 key_tasks 对应前序 7 条具体工作。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "robomongo",
@@ -2050,20 +2073,13 @@
       "capability-profile",
       "cloud-service-analysis"
     ],
-    "observations": [
-      {
-        "dimension": "dependency-analysis",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "system (prebuilt object files)",
-        "rationale": "robomongo-shell (MongoDB fork) 以预编译 .o 对象文件方式引用的获取方式，既不是 vendored（源码在外部仓库需要提前预编译）也不是传统 system（已安装的系统库），而是 '需要在系统上预编译后由 CMAKE_PREFIX_PATH 指向'——接近 ExternalProject 但无自动下载步骤。当前归为 system，但精确语义为 'prebuilt_local' 更准确。"
-      }
-    ],
+    "observations": [],
     "notes": "项目为 C++ Qt5 桌面应用 (MongoDB GUI)，非库。代码 31 万行（生产），仅约 600 行平台特定编译宏守卫代码（windows 418 + macos 218 + linux 3）。",
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "本项目为 MongoDB 桌面管理工具（GUI 应用），核心涉及 GUI（Qt5 Widgets + Chromium WebEngine）与网络通信两大场景。不涉及 3D 渲染、音视频媒体或特定硬件设备。",

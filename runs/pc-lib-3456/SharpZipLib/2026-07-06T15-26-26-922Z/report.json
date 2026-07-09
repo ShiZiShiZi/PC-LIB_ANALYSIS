@@ -877,7 +877,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (自研内核, 无 Linux ABI; OHOS NDK 原生层; arm64; .NET 运行时在鸿蒙 PC 的可用性未知)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -886,7 +885,6 @@
       "level": "very_low"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "SharpZipLib 是纯托管 C# 库，不依赖任何原生代码（无 P/Invoke、无 unsafe 代码、无 DllImport），所有功能基于 .NET BCL 标准库（System.IO/System.Security.Cryptography/System.Threading）。若鸿蒙 PC 上有可用的 .NET 运行时（.NET 6.0+ 或 .NET Standard 2.0+ 兼容运行时），则该库可直接运行，无需任何代码改动。主要不确定因素是 .NET 运行时在鸿蒙 PC 上的可用性——目前目标平台能力参考中未列出 .NET 运行时状态。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -897,7 +895,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "无可用 .NET 运行时则本库完全无法运行",
-        "source": "harmony-pc-capabilities.json 未列出 dotnet 运行时"
+        "source": "harmony-pc-capabilities.json 未列出 dotnet 运行时",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -928,7 +927,21 @@
       "若 .NET 运行时不可用，评估在鸿蒙 PC 上移植 .NET 运行时的可行性或选择替代压缩库"
     ],
     "notes": "评估按模型 A（库跑在已移植运行时上）。.NET 运行时在鸿蒙 PC 的状态为 unknown，故 confidence 降为 medium。本库无任何原生/平台/硬件耦合，一旦 .NET 运行时可用，porting_class 即为 no_adaptation（零代码改动）。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -950,19 +963,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime_unknown",
-        "rationale": "harmony-pc-capabilities.json 未列出 .NET 运行时在鸿蒙 PC 的可用性，这是本库能否运行的决定性前提；当前标为 unknown 并下调 confidence"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯数据压缩/归档库，不涉及 GUI、3D 渲染、媒体处理或特定硬件依赖。",

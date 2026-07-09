@@ -1432,7 +1432,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（OHOS NDK + musl，arm64/x86_64；库默认跑在已移植的运行时上）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1442,7 +1441,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi / cross_compile",
     "summary": "Brotli 核心是纯 C 算法库，无平台专有系统调用或硬件依赖，适配鸿蒙 PC 的主要工作是用 OHOS NDK 重新编译 C 核心（及各语言原生绑定）。CLI 中 POSIX 文件元数据复制在鸿蒙沙箱/权限模型下可能需微调，但不影响库 API。纯 Java/JS 实现可直接运行在已移植运行时上。",
     "blockers": [
       {
@@ -1468,7 +1466,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 核心及 JNI/Go cgo/Python 扩展需要 NDK 交叉编译",
-        "source": "HarmonyOS PC 原生开发文档（OHOS NDK）"
+        "source": "HarmonyOS PC 原生开发文档（OHOS NDK）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:musl_posix",
@@ -1476,7 +1475,8 @@
         "required": true,
         "target_status": "available",
         "impact": "CLI 文件 I/O 与元数据复制依赖这些 API",
-        "source": "OHOS NDK 基于 musl libc"
+        "source": "OHOS NDK 基于 musl libc",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python",
@@ -1484,7 +1484,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Python 绑定可直接运行在已移植运行时上，只需重编 C 扩展",
-        "source": "references/harmony-pc-capabilities.json#runtimes/python"
+        "source": "references/harmony-pc-capabilities.json#runtimes/python",
+        "target_status_model": "available"
       },
       {
         "id": "ta:java",
@@ -1492,7 +1493,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Java 解码器可直接运行；JNI 包装器需重编原生库",
-        "source": "references/harmony-pc-capabilities.json#runtimes/java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes/java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:nodejs",
@@ -1500,7 +1502,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 JS 解码器与 CLI 可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes/nodejs"
+        "source": "references/harmony-pc-capabilities.json#runtimes/nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:go",
@@ -1508,7 +1511,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Go cgo 绑定需 C 核心重编，纯 Go 实现可直接编译运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes/go"
+        "source": "references/harmony-pc-capabilities.json#runtimes/go",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1545,7 +1549,21 @@
       "在鸿蒙 Python/Java/Node/Go 运行时下跑通单元测试"
     ],
     "notes": "评估按模型 A（库跑在已移植的运行时上）。C# 绑定依赖 .NET 运行时，当前目标能力表未列出其状态，但 C# 不是项目核心交付形态；若需完整支持 C# 绑定，建议先确认 HarmonyOS PC 的 .NET 可用性。若目标为 ArkTS 沙箱应用（模型 B），纯 JS/TS 代码需评估 Node 核心模块 fs/perf_hooks 的可用性，但本库核心更推荐通过 NDK 以 napi 方式暴露。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1553,22 +1571,8 @@
     "counter_tool": "cloc",
     "confidence_overall": "high",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "research_tools",
-        "rationale": "research/ 目录包含字典生成、差异可视化、直方图等实验性辅助程序，既非核心库亦非测试/示例，单独列为一个能力分类更准确。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "gap",
-        "value": "research_dependencies",
-        "rationale": "research/ 下的研究工具使用 gflags、sais.hxx、divsufsort.h、glob.h 等，未计入核心库依赖；当前按'仅在测试/示例出现才排除'的硬规则它们应被计入，但为聚焦核心库交付物而未列出，值得人工反哺是否需要在分析中显式拆分。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   }
 }

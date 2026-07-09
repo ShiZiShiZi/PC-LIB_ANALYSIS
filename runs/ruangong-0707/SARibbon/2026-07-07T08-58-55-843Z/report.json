@@ -1191,8 +1191,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C++ 库默认走模型 A：经 OHOS NDK 重编为 .so 供 Qt 应用链接；arm64/x86_64；自研内核，无 Linux ABI）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         17.4,
@@ -1259,7 +1258,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库核心依赖 Qt 5，已确认可用则 C++ 库可重编译运行；这是最低成本路径。",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt6",
@@ -1267,7 +1267,8 @@
         "required": false,
         "target_status": "partial",
         "impact": "PyQt6/PySide6 绑定与 Qt 6 构建路径受限；非必需，可降级到 Qt 5。",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "partial"
       },
       {
         "id": "ta:desktop_wm",
@@ -1275,7 +1276,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "控件库本身只提供 QWidget，但需要宿主应用有桌面窗口环境才能展示；若鸿蒙 PC 无桌面窗口，则库虽可编译但无法用于可见 GUI。",
-        "source": "references/harmony-pc-capabilities.json#gui.wm"
+        "source": "references/harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1305,7 +1307,6 @@
         ]
       }
     ],
-    "recommended_path": "recompile_qt5",
     "summary": "SARibbon 作为纯 Qt Widgets 库，未直接使用 Win32/POSIX/macOS 原生 API，整体移植路径清晰：关闭可选的 QWindowKit，使用鸿蒙 PC 已确认可用的 Qt 5 重新编译 C++ 核心，即可在 Qt 5 桌面应用中运行。需要额外工作的是 PyQt6/PySide6 绑定（依赖 Qt 6）与系统暗色模式检测的 fallback。",
     "blockers": [
       {
@@ -1393,7 +1394,21 @@
       "跑通 Qt Test 单元测试，验证布局、RTL、主题、按钮等核心功能"
     ],
     "notes": "评估基于模型 A（C++ 库在鸿蒙已移植运行时/Qt 5 上重编）。目标侧事实以 references/harmony-pc-capabilities.json 为准：Qt 5 可用，Qt 6 需降级。由于桌面窗口管理器在鸿蒙 PC 上状态为 unknown，置信度降至 medium。生产代码中无直接 Win32/POSIX/macOS 原生调用，阻碍点均为可选/降级项，核心功能可移植。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "SARibbon",
@@ -1427,30 +1442,9 @@
       "harmony_adapted.js 对 Qt 相关包名（qtbase/qtsvg/qttools/qwindowkit）返回 adapted:false，但 references/harmony-pc-capabilities.json 已人工/社区确认 Qt 5 在鸿蒙 PC 可用；dim-9 以 caps JSON 为准。",
       "code-metrics 脚本未识别 Qt Test 的 private slots 测试用例，仅统计出 22 例 Python 冒烟测试；C++ 单元测试的实际用例数高于脚本输出。"
     ],
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "gap",
-        "value": "qt_test_not_detected",
-        "rationale": "metrics.py 的用例计数正则未匹配 Qt Test 的 `private slots:` 模式，导致 15 个 C++ 测试文件被统计为 0 用例。建议 code-metrics 的 tests.py 增加对 Qt Test、Catch2、Google Test 等 C++ 框架的检测。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "harmony_adapted",
-        "kind": "gap",
-        "value": "qt_caps_vs_mirror_mismatch",
-        "rationale": "cmd-pkgs 镜像未列出 Qt 包名，但 harmony-pc-capabilities.json 已确认 Qt 5 可用。依赖的 harmony_adapted 字段与 caps 事实存在表面冲突，需以 caps JSON 为权威。"
-      },
-      {
-        "dimension": "code_partition",
-        "field": "buckets",
-        "kind": "ambiguity",
-        "value": "docs_in_reuse_direct",
-        "rationale": "docs/、.github/、scripts/ 等非可执行目录被 metrics 计入 production.code，为保证覆盖率归入 reuse_direct。严格来说它们不属于迁移代码，但此举满足对账要求。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "SARibbon 是一个典型的桌面 GUI 控件库，核心场景是围绕 Qt Widgets 的 Ribbon 界面；不涉及 3D 渲染、媒体编解码或特定硬件访问。其鸿蒙适配关键取决于 Qt 在鸿蒙 PC 上的可用程度。",

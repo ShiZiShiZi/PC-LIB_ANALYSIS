@@ -1288,8 +1288,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核 + OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         30,
@@ -1306,7 +1305,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt6 是项目 GUI 与核心跨平台抽象的唯一框架，不可用则整个应用无法运行",
-        "source": "references/harmony-pc-capabilities.json → gui.qt (available, 社区已提供 Qt 鸿蒙版)"
+        "source": "references/harmony-pc-capabilities.json → gui.qt (available, 社区已提供 Qt 鸿蒙版)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:sqlite3_harmony",
@@ -1314,7 +1314,8 @@
         "required": true,
         "target_status": "available",
         "impact": "SQLite3 是本项目的核心数据库引擎，不可用则核心功能完全不可用",
-        "source": "cmd-pkgs: sqlite3 → adapted (OpenHarmony PC C/C++ 预编译包)"
+        "source": "cmd-pkgs: sqlite3 → adapted (OpenHarmony PC C/C++ 预编译包)",
+        "target_status_model": "available"
       },
       {
         "id": "ta:desktop_wm",
@@ -1322,7 +1323,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Letos 是 MDI 桌面应用，需要完整的桌面窗口环境来运行多个文档窗口。若桌面窗口管理器不支持传统 X11/Wayland/Win32 下层窗口协议，Qt6 需要适配鸿蒙原生窗口栈后本应用才能运行",
-        "source": "references/harmony-pc-capabilities.json → gui.wm (unknown)"
+        "source": "references/harmony-pc-capabilities.json → gui.wm (unknown)",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cpp20_ndk",
@@ -1330,7 +1332,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "项目要求 C++20 标准及 GNU 语言扩展，若 OHOS NDK 仅支持 C++17 或缺少所需扩展则编译失败",
-        "source": "Letos/cmake/common.cmake:8-10; OHOS NDK 编译能力待核实"
+        "source": "Letos/cmake/common.cmake:8-10; OHOS NDK 编译能力待核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:dynamic_plugin_loading",
@@ -1338,7 +1341,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Letos 通过 QPluginLoader 动态加载 23 个内置插件（导出、导入、脚本扩展等），若鸿蒙沙箱禁止运行时 dlopen 或以受限方式提供，需改造为静态链接",
-        "source": "Letos/core/services/impl/pluginmanagerimpl.cpp:144; references/harmony-pc-capabilities.json → process_security (全部 unknown)"
+        "source": "Letos/core/services/impl/pluginmanagerimpl.cpp:144; references/harmony-pc-capabilities.json → process_security (全部 unknown)",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1362,7 +1366,6 @@
         ]
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "Letos 的核心 SQLite 管理逻辑是平台无关的（仅依赖 Qt6 + SQLite3），Qt6 和 SQLite3 均已有鸿蒙社区移植版本，因此核心功能适合通过交叉编译方式移植到鸿蒙 PC。主要适配工作集中在：(1) 为鸿蒙编译 Qt6 生态组件并交叉编译本项目；(2) 替换/隔离平台特定的崩溃处理器（Windows SEH/POSIX signal）；(3) 确认鸿蒙桌面窗口环境对 Qt6 Widgets MDI 模式的支持情况；(4) 评估 QPluginLoader 动态加载在鸿蒙沙箱中的可用性，必要时改为静态链接插件。总工作量估计 30–60 人天，但因桌面窗口管理器、C++20 NDK 支持、动态加载等关键目标能力均未核实，置信度为 medium。",
     "blockers": [
       {
@@ -1484,7 +1487,21 @@
       "适配应用打包：确认鸿蒙 PC 的应用交付形态（.hap / 原生可执行），生成对应的安装包"
     ],
     "notes": "项目约 1M 行代码（含 80.5 万行 Qt Linguist 翻译文件 + 23.8 万行 C 合并文件），绝大多数为平台无关的 SQL 解析器、数据库抽象、GUI 界面定义。平台特有代码约 4,139 行（metrics 统计的 #ifdef 守卫代码），主要集中在崩溃处理器和单实例模块，均可通过条件编译隔离。最大不确定性来自鸿蒙桌面窗口环境的成熟度（Qt6 是否已承接窗口后端），以及 OHOS NDK 的 C++20 支持程度——这两点直接决定项目能否编译运行。建议先核实这两个阻塞前提再启动移植。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "letos",
@@ -1507,33 +1524,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "cloud_services",
-        "field": "vendor",
-        "kind": "new_value",
-        "value": "letos_org",
-        "rationale": "Letos 使用自建站点 letos.org 进行更新检查，不属于任何主流云厂商（Firebase/AWS/GCP/Azure/阿里云/腾讯云等），此值不在推荐词表中"
-      },
-      {
-        "dimension": "cloud_services",
-        "field": "categories",
-        "kind": "new_value",
-        "value": "hosting",
-        "rationale": "Letos 的云端服务仅为自建更新检查端点，属于简单的文件托管/站点托管，推荐词表中 closest 是 hosting 但未明确列出"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "ambiguity",
-        "value": "cross_compile",
-        "rationale": "cross_compile 用于描述 C++ Qt6 桌面应用通过交叉编译移植到鸿蒙 PC 的路径；与 recompile_napi / arkts_rewrite / wrap_ffi 不同，本路径的核心是交叉编译 Qt 应用本身"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为基于 Qt6 Widgets 的桌面 GUI 应用，涉及 GUI 场景（Qt6 桌面窗口架构）。不涉及 3D 渲染、音视频媒体或特定硬件访问。",

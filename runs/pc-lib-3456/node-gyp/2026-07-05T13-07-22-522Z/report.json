@@ -1590,7 +1590,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 Node.js 24.13.0 / Python 3.12.9 运行时上；arm64/x86_64；自研内核，非 Linux ABI）",
-    "feasibility": "feasible",
     "porting_class": "no_adaptation",
     "effort": {
       "person_days": [
@@ -1599,7 +1598,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "high",
+    "confidence": "medium",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
@@ -1608,7 +1607,8 @@
         "required": true,
         "target_status": "available",
         "impact": "node-gyp 的全部 JS 逻辑依赖 Node.js 运行；已移植→零阻碍",
-        "source": "references/harmony-pc-capabilities.json runtimes#nodejs — 24.13.0 已移植"
+        "source": "references/harmony-pc-capabilities.json runtimes#nodejs — 24.13.0 已移植",
+        "target_status_model": "available"
       },
       {
         "id": "ta:python_runtime",
@@ -1616,7 +1616,8 @@
         "required": true,
         "target_status": "available",
         "impact": "内嵌的 gyp-next 构建文件生成器需 Python 运行；已移植→零阻碍",
-        "source": "references/harmony-pc-capabilities.json runtimes#python — 3.12.9 已移植"
+        "source": "references/harmony-pc-capabilities.json runtimes#python — 3.12.9 已移植",
+        "target_status_model": "available"
       },
       {
         "id": "ta:subprocess_spawn",
@@ -1624,7 +1625,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "node-gyp 须启动 python、make/msbuild 等外部工具链；若受限则功能性受影响",
-        "source": "references/harmony-pc-capabilities.json process_security#spawn — 待核实"
+        "source": "references/harmony-pc-capabilities.json process_security#spawn — 待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1639,7 +1641,6 @@
         ]
       }
     ],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "node-gyp 自身是纯 JS + vendored Python 脚本的 CLI 构建工具，无需编译，无原生扩展。Node.js 与 Python 运行时均已移植鸿蒙 PC。其 JS 依赖（env-paths、semver、tar、undici 等）均为纯 JS npm 包，在鸿蒙 Node.js 上可直接运行。核心构建逻辑——调用 Python gyp-next 生成 Makefile、驱动 make/编译器构建——在鸿蒙上对应 Unix 路径即可工作（鸿蒙 PC 非 Windows，Windows 专有的 Visual Studio/注册表/COM 检测分支不会触发）。唯一外部依赖是运行时需有 C/C++ 编译工具链（OHOS NDK 提供 clang + make）和网络可达 nodejs.org 或自定义 dist-url 镜像。整体零适配，可直接作为鸿蒙 PC 的原生插件构建工具使用。",
     "blockers": [
       {
@@ -1708,7 +1709,21 @@
       "运行 node-gyp configure/build 构建一个简单 test addon 验证端到端流程"
     ],
     "notes": "评估按模型 A（CLI 工具跑在鸿蒙已移植 Node.js 运行时上）。node-gyp 自身为零适配（no_adaptation），不必编译、无原生部分。唯一未尽事宜为鸿蒙 PC 子进程模型的可用性（ta:subprocess_spawn，target_status=unknown），若受阻需等待平台能力成熟——但这不影响 node-gyp 代码自身的可移植性判定，confidence 因此仍为 high（该项影响的是它作为「可工作的构建工具」而非「可运行的代码」）。Windows 专有代码（find-visualstudio.js、Find-VisualStudio.cs、reg.exe 调用）在鸿蒙 PC 上因 process.platform !== 'win32' 而不会执行，无需适配。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "node-gyp",
@@ -1727,46 +1742,18 @@
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "cli",
-        "rationale": "node-gyp 不是被调用的库，没有稳定对外 API；也不是终端用户直接启动的桌面应用（虽然是 CLI 工具）。它更接近 build tool / CLI utility 分类。当前 kind=cli 需下游确认是否需要其它归类或合并到 tool。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "vendored",
-        "rationale": "gyp-next 是以完整源码形式内嵌在 gyp/ 目录中的，非 package_manager 方式引入，也非 git submodule。现有推荐值 vendored 适用但需确认词表归类（locality=local 已正确体现）。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "scope",
-        "kind": "ambiguity",
-        "value": "vendored_python",
-        "rationale": "node-gyp 的代码量主体是 vendored gyp-next Python 代码（~24k 行），其平台 API 使用量远超主仓库 JS 部分（~2.2k 行）。这在 native_api 中按 python_stdlib 组完整列出，但 vendored 子系统的归属可能引起双重计数误解（它已在 dependencies 中作为 gyp-next 列出）。这里按「生产代码全部归属本库分析」的原则处理。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "confidence",
-        "kind": "ambiguity",
-        "value": "high 但含 unknown 假设",
-        "rationale": "ta:subprocess_spawn 的 target_status=unknown 属于「子进程启动」这一非 node-gyp 本体的平台能力问题。node-gyp 自身代码的可移植性（纯脚本、零原生）不受影响，故 confidence 仍为 high。但若严格按「任何 required+unknown ⇒ confidence≤medium」则应为 medium。这里选择了描述性上下文的判法：子进程能力未知不影响 node-gyp 代码自身无需改造的事实，仅在 notes 中注明。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "counter_tool": "cloc",
     "harmony_warnings": [
       {
-        "code": "conf_high_unknown",
-        "class": "actionable",
-        "message": "存在 required 且 unknown 的目标假设，confidence 不应为 high"
+        "code": "confidence_capped_unknown",
+        "class": "info",
+        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "node-gyp 为 Node.js CLI 构建工具，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件设备等鸿蒙适配重点场景。其全部功能为命令行文件操作、网络下载和子进程构建编排，属于纯计算/工具类。",

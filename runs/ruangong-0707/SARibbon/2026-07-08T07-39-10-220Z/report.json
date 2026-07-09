@@ -1243,7 +1243,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK/musl + clang 交叉编译，arm64/x86_64；Qt 已鸿蒙化）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1304,12 +1303,12 @@
         "required": true,
         "target_status": "available",
         "impact": "Qt 是 SARibbon 全部 GUI 控件的底座；若不可用则库无法运行",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
     "critical_dependencies": [],
-    "recommended_path": "recompile_napi",
     "summary": "SARibbon 是纯 C++/Qt Widgets 库，无直接平台系统调用，平台相关代码仅为条件编译的暗色模式检测（在未知平台可安全回退）。在 Qt 已鸿蒙化的前提下，只需用 OHOS NDK 重新编译源码（默认关闭 QWindowKit 特性）即可运行。整体可行，工作量主要来自交叉编译、构建系统适配和测试验证。",
     "blockers": [],
     "compatible": [
@@ -1338,7 +1337,21 @@
       "跑通 Qt Test 单元测试并验证暗色模式/主题切换"
     ],
     "notes": "评估按库口径（模型 A）：C++ 核心经 OHOS NDK 重编为 .so 后，可被其它鸿蒙 Qt 应用链接。Python 绑定需 PyQt5/PyQt6/PySide6 在鸿蒙 Python 上可用，当前未在 OpenHarmony PC 镜像中查到预编译包，但 Qt 本身已可用，绑定可随 Qt 一起重新构建。若目标是 ArkTS 应用（模型 B），则需把 Qt Widgets 层替换为 ArkUI，结论将完全不同。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "SARibbon",
@@ -1370,17 +1383,10 @@
     "warnings": [
       "codegraph files query 对 src/SARibbonBar 子树返回空，已使用 bash ls + grep 完成源码结构探查；未影响结论。"
     ],
-    "observations": [
-      {
-        "dimension": "code_partition",
-        "field": "dir_loc",
-        "kind": "gap",
-        "value": "docs/ 被 code_metrics 归为 production 并计入 dir_loc",
-        "rationale": "Markdown 文档与配置文件（docs/、.github/、cmake/）被 cloc 算作生产代码，但迁移时无需源码改动，code_partition 将其全部归入 reuse_direct。建议后续考虑将非代码文档从迁移工作量分桶中剥离或单列。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "SARibbon 是一个纯 Qt Widgets 桌面 UI 控件库，核心触及的鸿蒙适配重点场景是 GUI（Qt5/Qt6 Widgets）。不涉及 3D 渲染、音视频媒体和特定硬件设备。",

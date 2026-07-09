@@ -700,7 +700,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核；Node.js 24.13.0 已移植；原生扩展经 OHOS NDK/musl 重编；arm64/x86_64）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         1,
@@ -709,7 +708,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "该库为 Node.js/JS 纯算法库（带 C 原生加速），鸿蒙 PC 已移植 Node.js 24.13.0 运行时，JavaScript 部分可直接运行。C 原生扩展仅使用标准浮点算术与 N-API（Node.js 内置），无任何操作系统平台 API、POSIX/Win32 调用、外部依赖或硬件耦合。唯一移植工作：用 OHOS NDK（clang + musl）交叉编译两个 C 源文件（main.c + addon.c）为 arm64/x86_64 .so 节点插件，重新运行 node-gyp 即可。估计 1-3 人天。",
     "blockers": [
       {
@@ -735,7 +733,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无运行时阻碍",
-        "source": "harmony-pc-capabilities.json#nodejs"
+        "source": "harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi",
@@ -743,7 +742,8 @@
         "required": true,
         "target_status": "available",
         "impact": "N-API 作为 Node.js 内置 API，随运行时可用；原生插件可正常加载",
-        "source": "harmony-pc-capabilities.json#nodejs"
+        "source": "harmony-pc-capabilities.json#nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -771,7 +771,21 @@
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。无需平台适配、无外部命令调用、无设备访问。代码中无 #ifdef 平台守卫（platform_adaptation = 0）、无运行时平台分支（platform_branches = 0），跨平台性极好。",
     "required_permissions": [],
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/complex-float64-base-mul-add",
@@ -797,7 +811,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、多媒体或特定硬件。",

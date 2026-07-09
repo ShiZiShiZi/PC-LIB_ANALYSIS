@@ -2711,8 +2711,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC（模型 C——整包桌面应用，经 OHOS NDK/musl 交叉编译，GTK3 已由社区在 cmd-pkgs 适配；arm64/x86_64；自研内核非 Linux ABI）",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         20,
@@ -2721,7 +2720,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "cross_compile",
     "summary": "Geany 为 GTK3 桌面 IDE 应用（C/C++，约 45 万行生产代码）。核心 GUI 框架 GTK3 已在鸿蒙 cmd-pkgs 适配（available，确定性高），GLib 同样适配；内嵌的 Scintilla/Lexilla/ctags 为 C/C++ 代码，经 OHOS NDK 交叉编译即可。主要工作量在：(1) 构建系统适配 OHOS NDK 工具链；(2) 剥离/替换 Windows（win32.c）和 macOS（osx.c）平台代码为 OHOS 等价实现；(3) 验证 POSIX 子集兼容性（Unix 域 socket、信号处理、进程创建）；(4) 确认 GModule/VTE 在 OHOS 上可用或提供替代；(5) 打包为鸿蒙桌面应用并测试。因 GTK 运行所需桌面窗口环境（窗口管理器/显示服务）的目标事实为 unknown，置信度为 medium。",
     "blockers": [
       {
@@ -2852,7 +2850,8 @@
         "required": true,
         "target_status": "available",
         "impact": "GTK3 已在 cmd-pkgs 适配——核心 GUI 框架无阻碍",
-        "source": "harmony-pc-capabilities.json#gui.gtk"
+        "source": "harmony-pc-capabilities.json#gui.gtk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:gmodule",
@@ -2860,7 +2859,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "插件系统核心依赖——若不可用则插件功能全部失效（非核心但影响扩展性）",
-        "source": "harmony-pc-capabilities.json：GModule 无对应条目，需核实"
+        "source": "harmony-pc-capabilities.json：GModule 无对应条目，需核实",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:spawn_unknown",
@@ -2868,7 +2868,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "构建/搜索/终端功能依赖——若受限则这些功能失效，但代码编辑核心可用",
-        "source": "harmony-pc-capabilities.json#process_security.spawn"
+        "source": "harmony-pc-capabilities.json#process_security.spawn",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -2876,7 +2877,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定整体打包与分发路径——若仅支持 ArkTS .hap 则需将 Geany 适配为 HAP 应用（可能涉及启动器改写）",
-        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app"
+        "source": "harmony-pc-capabilities.json#app_delivery.desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:wm",
@@ -2884,7 +2886,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GTK 能否在鸿蒙桌面上正常运行——无窗口环境则整个应用无法显示",
-        "source": "harmony-pc-capabilities.json#gui.wm"
+        "source": "harmony-pc-capabilities.json#gui.wm",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:posix_socket",
@@ -2892,7 +2895,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "单实例检测功能依赖——若不可用可用 TCP localhost 替代（Windows 路径已有实现）",
-        "source": "harmony-pc-capabilities.json：无对应条目"
+        "source": "harmony-pc-capabilities.json：无对应条目",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:arch",
@@ -2900,7 +2904,8 @@
         "required": true,
         "target_status": "available",
         "impact": "arm64 为主力架构——无阻碍",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [
@@ -2964,7 +2969,21 @@
       "在鸿蒙 PC 实际环境中运行功能验证：编辑器、语法高亮、代码补全、构建执行、配置持久化"
     ],
     "notes": "评估按模型 C（整包桌面应用）。GTK3 和 GLib 已在鸿蒙 cmd-pkgs 中适配（available），这是移植可行性最关键的正面信号——核心 GUI 框架无需从头开发。主要不确定性来自鸿蒙桌面生态尚未完全明确的目标能力：桌面窗口管理器是否支持 GTK 运行（ta:wm 为 unknown）、桌面应用打包格式（ta:desktop_app 为 unknown）、GModule 可用性（ta:gmodule 为 unknown）。这些 unknown 项导致 confidence 为 medium——在目标事实 verified 之前，porting_class 不升 infeasible 但也不降 no_adaptation。Windows/macOS 平台代码（win32.c/osx.c）由 #ifdef 隔离，不影响 OHOS 编译。VTE 终端可选，禁用以降低复杂度。vendored 库（Scintilla/Lexilla/ctags）为标准 C++，无平台 API 硬依赖，交叉编译即可。platform_adaptation 代码量约 791 行（主要为 Windows 分支），移除此平台守卫不影响核心功能——鸿蒙走 Unix/POSIX 路径。因 INTERNET 权限项在网络功能中使用（单实例 socket），且该权限的目标状态为 unknown，相关权限限制尚不明确。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "geany",
@@ -2985,33 +3004,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "glib / gtk",
-        "rationale": "GTK/GLib API 是跨平台 GUI 框架——在 Linux/macOS/Windows 上均可运行（通过 GTK 的 win32/X11/Wayland/Mac 后端），按 native-api 技能的 portable vs platform 分类归入 'platform' category 加 'portable' platform 字段。但严格来说 GTK 在鸿蒙上的可用性取决于 OHOS 是否有对应后端——分类为此形态是对 GTK 跨平台性质的如实描述。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target",
-        "kind": "gap",
-        "value": "OHOS desktop window manager",
-        "rationale": "harmony-pc-capabilities.json 中 GUI 段有 gtk 条目（status=available），但桌面窗口管理器/显示服务条目（wm）为 unknown。GTK 运行时依赖窗口系统——在 Linux 上依赖 X11/Wayland，在 Windows 上依赖 Win32 GDI，在 macOS 上依赖 Quartz。GTK 库本身已在 cmd-pkgs 编译，但能否在鸿蒙桌面上实际渲染窗口取决于 OHOS 桌面图形栈（是否有 Wayland compositor 或等价显示服务）。这一关键目标事实为 unknown 导致 confidence 下调为 medium——建议核实后补充到 harmony-pc-capabilities.json 的 gui 段或 desktop_integration 段。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "gap",
-        "value": "模型 C 桌面应用打包路径不明确",
-        "rationale": "harmony-pc-capabilities.json 的应用交付段 '传统桌面应用' 和 'ArkTS ability' 均为 unknown。Geany 作为 C/C++ GTK 桌面应用，其自然打包路径是「可执行文件 + 系统库 + 数据文件」的桌面包——但这套机制在 OHOS PC 上是否支持尚不明确。若仅支持 ArkTS .hap，则需要将 geany 包裹为 native ability（通过 N-API 启动 C++ 代码）——这会是更大的工程变更。建议核实后更新 capabilities 文件。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "Geany 是 GTK3 桌面 IDE 应用，核心场景为 GUI 桌面界面（多窗口编辑/标签页/菜单/对话框/侧栏布局）。无 3D 渲染、无媒体编解码/采集、无特定硬件依赖（纯软件应用）。所有场景均通过 GTK 工具包 + POSIX/Win32 平台适配层实现。",

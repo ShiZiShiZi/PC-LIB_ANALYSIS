@@ -1341,7 +1341,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK——musl libc + POSIX 子集，clang/CMake ohos.toolchain.cmake；自研内核，非 Linux ABI；arm64/x86_64)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -1350,7 +1349,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libzint 是纯 C99 编写的条码编码库，所有平台差异（Win32 UTF-8 文件名处理、目录创建）均经 #ifdef _WIN32 条件编译隔离（共 417 行平台守卫代码，全部位于 Windows 分支 + 3 行 Linux 分支），OHOS NDK 的 musl libc 完全覆盖其 POSIX 调用。库本身可选是否链接 libpng/Qt/GS1SE——禁用后即为零外部依赖的纯 C 库，仅依赖 C 标准库和 libm。核心库可直接用 OHOS NDK（ohos.toolchain.cmake + clang）交叉编译为 .so；Qt GUI 应用（Zint Barcode Studio）可在鸿蒙 Qt 移植版上重新编译运行。整体工作量集中在 CMake 工具链适配和编译验证。",
     "blockers": [
       {
@@ -1403,7 +1401,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心文件 I/O 路径依赖，缺失则库无法正常工作",
-        "source": "references/harmony-pc-capabilities.json"
+        "source": "references/harmony-pc-capabilities.json",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt_harmony",
@@ -1411,7 +1410,8 @@
         "required": false,
         "target_status": "available",
         "impact": "仅 Qt GUI 应用需要，库本体不需要；已核实社区提供鸿蒙 Qt 移植版",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1449,7 +1449,21 @@
       "在鸿蒙开发板/模拟器上运行 libzint 单元测试（backend/tests/）验证功能完整"
     ],
     "notes": "Zint 是理想的鸿蒙移植候选项目——核心库零外部强依赖（所有外部依赖均可选），平台差异仅限 Win32 文件名处理且已通过 #ifdef 隔离，OHOS NDK 的 musl libc 完全覆盖其 POSIX 调用面。CI 已覆盖 Linux/macOS/Windows/FreeBSD + x86_64/arm64，证明代码可移植性强。若只需核心条码编码功能，禁用 libpng/GS1SE/Qt 后为纯 C 库，porting_class = recompile_only，工作量极低。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "zint",
@@ -1483,7 +1497,8 @@
         "message": "license.category(permissive) 与依据 SPDX(BSD-3-Clause AND GPL-3.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "Zint 触及 Qt GUI 场景（桌面 GUI 应用 Zint Barcode Studio）和 2D 渲染场景（内存图像缓冲区生成），不涉及 3D 渲染、媒体或特定硬件。核心库 libzint 本身不依赖 GUI。",

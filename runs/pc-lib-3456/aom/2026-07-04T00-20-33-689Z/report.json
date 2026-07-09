@@ -1390,7 +1390,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，非 Linux ABI；OHOS NDK/musl + POSIX 子集；arm64/x86_64）；库按模型 A 评估：经 OHOS NDK 交叉编译为原生 .so 后供应用链接/调用。",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -1400,7 +1399,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "AOM 是 C/C++ 原生编解码库，核心算法可移植；平台差异已被 #ifdef 封装，在 HarmonyOS（Linux-like）上走 POSIX/pthread 路径即可。移植主要工作是用 OHOS NDK 交叉编译并验证 arm64/x86_64 的 SIMD/汇编路径、内嵌的 libyuv/libwebm/highway 能否一同编过。无必须的平台专有 API（Win32/macOS 分支在鸿蒙上不启用），无特定硬件依赖，无云服务。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1410,7 +1408,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C/C++ 库移植的基础前提；NDK 提供则核心可编译",
-        "source": "harmony-pc-capabilities.json#runtimes 未直接列 NDK，但鸿蒙 PC 原生层基于 OHOS NDK"
+        "source": "harmony-pc-capabilities.json#runtimes 未直接列 NDK，但鸿蒙 PC 原生层基于 OHOS NDK",
+        "target_status_model": "available"
       },
       {
         "id": "ta:arm64",
@@ -1418,7 +1417,8 @@
         "required": true,
         "target_status": "available",
         "impact": "AOM 主力目标架构；arm64 已确认可用且 NEON 路径成熟",
-        "source": "harmony-pc-capabilities.json#arch.arm64"
+        "source": "harmony-pc-capabilities.json#arch.arm64",
+        "target_status_model": "available"
       },
       {
         "id": "ta:x86_64_simd",
@@ -1426,7 +1426,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "若需 x86_64 目标，须验证 OHOS NDK 是否完整支持 x86_64 SIMD 与 yasm/nasm 汇编；不确认则仅影响该架构",
-        "source": "harmony-pc-capabilities.json#arch.x86_64"
+        "source": "harmony-pc-capabilities.json#arch.x86_64",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:video_codec",
@@ -1434,7 +1435,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "AOM 的核心能力即 AV1 编解码；若鸿蒙对纯 C/C++ 编解码库无额外限制则可直接使用，否则需转 @ohos.multimedia",
-        "source": "harmony-pc-capabilities.json#media.video_codec"
+        "source": "harmony-pc-capabilities.json#media.video_codec",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:fenv",
@@ -1442,7 +1444,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响调试构建中的浮点异常捕获；缺失可条件编译关闭",
-        "source": "aom/src/aom_encoder.c:145-149"
+        "source": "aom/src/aom_encoder.c:145-149",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1495,7 +1498,21 @@
       "生成并安装 aom.pc 与 CMake config，作为鸿蒙 PC 系统/三方库分发"
     ],
     "notes": "评估按库模型 A（OHOS NDK 重编后供应用链接）。置信度为 medium，主要因 x86_64 架构支持与三方视频编解码库在鸿蒙原生层的可用性尚未在 capabilities 中核实；arm64 路径已明确可用。若目标仅为 arm64，person_days 可降至 8–12；若需同时支持 x86_64 并验证全量 SIMD，工作量和不确定性会上升。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "aom",
@@ -1523,29 +1540,7 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "fuchsia",
-        "rationale": "AOM 的 aarch64 CPU 特性检测包含 Fuchsia 专用 zx_system_get_features 调用，现有推荐 API 家族列表未覆盖 fuchsia/zircon，故新增该 type。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "media.harmony_status",
-        "kind": "gap",
-        "value": "av1_video_codec",
-        "rationale": "harmony-pc-capabilities.json 的 media 段仅列通用 video_codec（unknown），未区分 AV1/H.264/H.265 等具体编解码器；AOM 作为 AV1 参考实现，其支持状态应单独核实。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "recompile_only for large SIMD library",
-        "rationale": "AOM 规模很大（44 万行生产代码）且含大量 SIMD/汇编，虽平台差异被 #ifdef 隔离，但验证 OHOS NDK 能否编译全部 x86_64/arm64 intrinsic 仍需较多工作。recompile_only 与 person_days 区间需反映这一规模，而非小型纯 C 库。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "cap_miss:gui",
@@ -1553,7 +1548,8 @@
         "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "AOM 是纯粹的音视频编解码库，核心触及媒体（AV1 视频编解码）场景；不触及 GUI、3D 渲染或特定不可替代硬件。SIMD 优化依赖 CPU ISA（x86/ARM），属于可移植架构优化而非特定硬件。",

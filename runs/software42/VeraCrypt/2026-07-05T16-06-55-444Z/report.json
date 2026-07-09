@@ -2368,10 +2368,8 @@
     "notes": "VeraCrypt 使用平台分支构建：Unix 平台统一使用 GNU Make+Makefile 主干（约 750 行），内部分支 Linux/Darwin/FreeBSD/OpenBSD 配置段；Windows 使用独立的 Visual Studio .sln 方案。依赖 wxWidgets 跨平台 GUI 库、FUSE 用户空间文件系统。C++ 标准在 GCC 4.8-10 为 C++11，GCC 11+ 为 gnu++14。支持可复现构建（SOURCE_DATE_EPOCH）。构建产物需要操作系统数字签名（Windows WHQL/代码签名、macOS notarization）。"
   },
   "harmony_adaptation": {
-    "porting_class": "infeasible",
-    "feasibility": "infeasible",
+    "porting_class": "needs_adaptation",
     "confidence": "medium",
-    "recommended_path": "不建议直接移植。VeraCrypt 作为深度依赖 Windows NT 内核驱动与 Linux FUSE/loop 设备栈的磁盘加密应用，其核心 I/O 路径（实时加密卷的透明加解密）无法在鸿蒙自研内核上复现。可行的替代路径：① 实现纯 ArkTS/ArkUI 的前端 GUI（卷管理/密码输入/设置），后端用 OHOS NDK 重写的独立加密引擎通过 Node-API 暴露；② 仅提供文件级加密容器（类似 VeraCrypt 的文件容器模式，不涉及设备级挂载），放弃系统盘加密和内核驱动模式。此路径下工作量巨大且功能严重缩水，不推荐。",
     "effort": {
       "person_days": [
         720,
@@ -2386,7 +2384,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "GUI 不可用——需用 ArkTS/ArkUI 完全重写所有对话框和窗口（约 40 个 Form 类）",
-        "source": "harmony-pc-capabilities.json gui section — wxWidgets 未列出"
+        "source": "harmony-pc-capabilities.json gui section — wxWidgets 未列出",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:fuse",
@@ -2394,7 +2393,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "阻塞——鸿蒙自研内核不支持 FUSE 协议",
-        "source": "harmony-pc-capabilities.json — 无 FUSE 支持记录；鸿蒙为自研内核非 Linux"
+        "source": "harmony-pc-capabilities.json — 无 FUSE 支持记录；鸿蒙为自研内核非 Linux",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:nt_driver",
@@ -2402,7 +2402,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "阻塞——鸿蒙无 Windows 内核；仅在 Windows 平台需要",
-        "source": "harmony-pc-capabilities.json — 无 NT 内核"
+        "source": "harmony-pc-capabilities.json — 无 NT 内核",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:block_device",
@@ -2410,7 +2411,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不可用则无法加密物理磁盘/分区——只能做文件容器模式",
-        "source": "harmony-pc-capabilities.json — 未列出块设备原始访问能力"
+        "source": "harmony-pc-capabilities.json — 未列出块设备原始访问能力",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:loop_device",
@@ -2418,7 +2420,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "阻塞——鸿蒙无 Linux loop 设备机制",
-        "source": "harmony-pc-capabilities.json — 鸿蒙自研内核无 Linux 设备模型"
+        "source": "harmony-pc-capabilities.json — 鸿蒙自研内核无 Linux 设备模型",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:desktop_app_delivery",
@@ -2426,7 +2429,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "需改为鸿蒙应用包(.hap)分发模型",
-        "source": "harmony-pc-capabilities.json app_delivery section — desktop_app 待核实"
+        "source": "harmony-pc-capabilities.json app_delivery section — desktop_app 待核实",
+        "target_status_model": "unknown"
       }
     ],
     "blockers": [
@@ -2552,7 +2556,9 @@
         "evidence": [
           "src/Driver/Fuse/FuseService.cpp:36"
         ],
-        "id": "ua:1"
+        "id": "ua:1",
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "api": "mount(2) / umount(2)",
@@ -2566,7 +2572,9 @@
         "evidence": [
           "src/Core/Unix/Linux/CoreLinux.cpp:19 (sys/mount.h)"
         ],
-        "id": "ua:2"
+        "id": "ua:2",
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "api": "IoCreateDevice / IoGetDeviceObjectPointer (NTDDK)",
@@ -2580,7 +2588,9 @@
         "evidence": [
           "src/Driver/Ntdriver.c:15 (#include <ntddk.h>)"
         ],
-        "id": "ua:3"
+        "id": "ua:3",
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "api": "DeviceIoControl (Win32)",
@@ -2594,7 +2604,9 @@
         "evidence": [
           "src/Mount/Mount.c:10"
         ],
-        "id": "ua:4"
+        "id": "ua:4",
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "api": "losetup (外部命令)",
@@ -2608,7 +2620,9 @@
         "evidence": [
           "src/Core/Unix/Linux/CoreLinux.cpp:57"
         ],
-        "id": "ua:5"
+        "id": "ua:5",
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       },
       {
         "api": "CoreFoundation / IOKit (macOS)",
@@ -2620,7 +2634,9 @@
         "evidence": [
           "src/Core/Unix/MacOSX/CoreMacOSX.cpp:19"
         ],
-        "id": "ua:6"
+        "id": "ua:6",
+        "functionality_class": "core",
+        "functionality_class_defaulted": true
       }
     ],
     "required_permissions": [
@@ -2662,7 +2678,28 @@
       }
     ],
     "notes": "VeraCrypt 被判定为 infeasible 主要原因：其核心加密卷挂载功能深度依赖操作系统内核级的 I/O 拦截——Windows 上通过 NT 内核过滤驱动(driver stack)实现，Unix 上通过 FUSE 用户空间文件系统 + loop 设备 + mount 系统调用实现。这两个模型都绑定特定内核架构（Windows NT 和 Linux），无法跨内核移植。鸿蒙 PC 采用自研内核（非 Linux ABI），缺少 FUSE 协议、loop 设备和 Linux mount 机制。即使 GUI 层可以用 ArkTS/ArkUI 重写，缺少内核级磁盘 I/O 透明拦截能力意味着加密卷无法实时挂载为可读写的文件系统——而这正是 VeraCrypt 存在的原因。若仅做文件级加密容器（不涉及设备挂载），功能严重缩水，不再是 VeraCrypt 的同功能替代。confidence=medium 因 target_assumptions 中有多项 unknown（鸿蒙 PC 的块设备访问模型、桌面应用分发形态、权限模型），这些若证实可用可能略微降低难度，但 FUSE + loop + mount 的缺失已构成不可逾越的阻碍。",
-    "porting_class_model": "infeasible"
+    "porting_class_model": "infeasible",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_core_partial",
+      "overall": "core_blocked",
+      "core": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:1",
+          "ua:2",
+          "ua:3",
+          "ua:4",
+          "ua:5",
+          "ua:6"
+        ]
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "VeraCrypt",
@@ -2683,36 +2720,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "categories",
-        "kind": "novel_value",
-        "value": "storage_driver",
-        "rationale": "VeraCrypt 的 存储驱动/内核文件系统 功能是其核心，属于 capability_profile 中自创的独立场景 key"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "novel_value",
-        "value": "storage_driver",
-        "rationale": "传统的 gui/rendering_3d/media/hardware 场景键不足以描述磁盘加密应用的 '内核驱动/文件系统驱动' 特性，自创 storage_driver 键"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "coverage_gap",
-        "value": "Windows 用户模式代码在仓库中，但由于是跨平台应用，大量 Win32 API 条目与 POSIX 条目共存——需要在 dim-9 合成时注意两个平台路径互不干扰",
-        "rationale": "应用的 native_api 需要覆盖所有支持平台的 API，而非只关注单一平台"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "classification",
-        "value": "infeasible",
-        "rationale": "磁盘加密应用需要内核级 I/O 拦截，鸿蒙自研内核缺乏 FUSE 支持、loop 设备、NT 驱动框架等任何等价机制。核心功能无法实现——不是难度问题而是架构不兼容。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -2767,7 +2775,40 @@
       "shape coerced: harmony_adaptation.required_permissions[2].evidence string→array",
       "shape coerced: harmony_adaptation.required_permissions[3].evidence string→array"
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:1",
+        "class": "actionable",
+        "message": "unadaptable_api ua:1 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:2",
+        "class": "actionable",
+        "message": "unadaptable_api ua:2 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:3",
+        "class": "actionable",
+        "message": "unadaptable_api ua:3 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:4",
+        "class": "actionable",
+        "message": "unadaptable_api ua:4 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:5",
+        "class": "actionable",
+        "message": "unadaptable_api ua:5 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:6",
+        "class": "actionable",
+        "message": "unadaptable_api ua:6 未标 functionality_class，已默认按 core 归类——请据实标 core/platform_specific"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "VeraCrypt 作为桌面磁盘加密应用，涉及 GUI 界面（wxWidgets）和硬件级磁盘访问（块设备直接 I/O、内核驱动/FUSE 文件系统），不涉及 3D 渲染、音视频媒体或云端服务。",

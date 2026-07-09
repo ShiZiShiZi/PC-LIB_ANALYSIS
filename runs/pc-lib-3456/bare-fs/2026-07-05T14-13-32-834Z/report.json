@@ -1006,8 +1006,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; 原生扩展经 OHOS NDK/musl 重编; arm64/x86_64; 自研内核)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1016,7 +1015,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "bare-fs 是为 Bare JavaScript 运行时设计的文件系统操作库，其 API 紧密跟随 Node.js fs 模块。鸿蒙 PC 已移植 Node.js 24，但 bare-fs 深度绑定 Bare 特定 API（Bare.platform、require.addon()、Bare 的 C 插件接口），无法直接使用。适配路径：将 JS 层从 Bare 专用 API 迁移到标准 Node.js 等价接口（使用 node:fs 替代底层绑定），或将 Bare C API 调用改为 Node.js N-API，使 C 绑定可经 OHOS NDK 重编。由于所有平台文件 I/O 均通过可移植的 libuv，底层无不可适配的 API。",
     "target_assumptions": [
       {
@@ -1025,7 +1023,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "推荐不移植 Bare 运行时，改为适配到已移植的 Node.js 上运行。若坚持 Port Bare 运行时则需额外 30+ 人天。",
-        "source": "harmony-pc-capabilities.json#runtimes（Bare 不在已移植清单中）"
+        "source": "harmony-pc-capabilities.json#runtimes（Bare 不在已移植清单中）",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:nodejs",
@@ -1033,7 +1032,8 @@
         "required": true,
         "target_status": "available",
         "impact": "已知 Node.js 24 已在鸿蒙 PC 可用，bare-fs 的 JS 适配目标即为在该运行时上运行。",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libuv",
@@ -1041,7 +1041,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libuv 是跨平台 C 库，为 Node.js 与 Bare 共用，鸿蒙 PC 上 Node.js 已自带有，无需额外移植。",
-        "source": "推理：Node.js 24 ported ⇒ libuv accompanies"
+        "source": "推理：Node.js 24 ported ⇒ libuv accompanies",
+        "target_status_model": "available"
       }
     ],
     "blockers": [
@@ -1128,7 +1129,21 @@
       "跑通测试套件，验证文件 I/O 功能在 HarmonyOS PC 上的正确性"
     ],
     "notes": "默认按模型 A（运行在鸿蒙已移植语言运行时上）评估。bare-fs 使用 Bare 运行时（非标准 Node.js），但因其 API 设计紧贴 Node.js fs，最务实的路径是适配到鸿蒙的 Node.js 运行时而非移植 Bare。若坚持移植 Bare 运行时本身需额外 30+ 人天。此评估假设 Node.js 的 N-API 在 OHOS NDK 中完整可用。bare-fs 无 GUI、无 3D、无媒体、无硬件依赖，轻量化使其适配复杂度远低于同类系统耦合库。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1150,17 +1165,10 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "library",
-        "field": "ecosystem",
-        "kind": "ecosystem_identification",
-        "value": "bare",
-        "rationale": "bare-fs 是 Holepunch Bare 生态系统的一部分，使用 Bare 运行时 API（Bare.platform, require.addon()），npm 包，非标准 Node.js 模块。"
-      }
-    ],
+    "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "bare-fs 是纯文件系统操作库，不涉及 GUI、3D 渲染、媒体处理或特定硬件，所有 I/O 操作通过 libuv 抽象层完成。",

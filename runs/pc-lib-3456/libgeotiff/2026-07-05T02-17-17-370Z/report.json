@@ -859,7 +859,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (OHOS NDK musl libc + POSIX 子集, 自研内核非 Linux ABI; arm64/x86_64; 库经 OHOS NDK 重新编译, 可选经 N-API 桥接暴露给 ArkTS)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -868,7 +867,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libgeotiff 是纯 C99 地理空间库，仅使用标准 C 库（stdio/stdlib/string/math）+ libtiff + PROJ，无平台特有 API（无 Win32/POSIX 专有/无 syscall/无 GPU/无 FFI）。OHOS NDK（musl libc）提供标准 C 支持，只需用 OHOS NDK 交叉编译库本体及其依赖（libtiff、PROJ、zlib），并可选经 N-API 暴露给 ArkTS。libtiff 和 PROJ 均为跨平台 C/C++ 库，在 OHOS 上编译可行性高；zlib 在 OpenHarmony PC 预编译清单中。整体属纯 C/C++ 重编类库，无功能性适配需求。",
     "blockers": [
       {
@@ -909,7 +907,8 @@
         "required": true,
         "target_status": "available",
         "impact": "无此则 libgeotiff 无法编译",
-        "source": "OHOS NDK musl libc 提供标准 C 支持，含 stdio/stdlib/string/math——鸿蒙 PC 基础原生开发组件"
+        "source": "OHOS NDK musl libc 提供标准 C 支持，含 stdio/stdlib/string/math——鸿蒙 PC 基础原生开发组件",
+        "target_status_model": "available"
       },
       {
         "id": "ta:libtiff-ohos",
@@ -917,7 +916,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libtiff 为 libgeotiff 的必要运行时依赖",
-        "source": "libtiff 是纯 C 库（C99），仅依赖标准 C + zlib/libjpeg，在 OHOS NDK 下交叉编译可行"
+        "source": "libtiff 是纯 C 库（C99），仅依赖标准 C + zlib/libjpeg，在 OHOS NDK 下交叉编译可行",
+        "target_status_model": "available"
       },
       {
         "id": "ta:proj-ohos",
@@ -925,7 +925,8 @@
         "required": true,
         "target_status": "available",
         "impact": "PROJ 为 libgeotiff 的必要运行时依赖（EPSG 数据库查询 + 坐标变换）",
-        "source": "PROJ 是跨平台 C/C++ 库，依赖 SQLite + 数学库（C stdlib / curl / tiff）；这些基础库在 OHOS NDK 下可交叉编译"
+        "source": "PROJ 是跨平台 C/C++ 库，依赖 SQLite + 数学库（C stdlib / curl / tiff）；这些基础库在 OHOS NDK 下可交叉编译",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -975,7 +976,21 @@
       "在鸿蒙 PC 上构建并运行 listgeo/makegeo 验证地理标签读写与投影归一化功能完整"
     ],
     "notes": "评估按模型 A（库跑在鸿蒙原生层上，经 OHOS NDK 重编）。libgeotiff 无 GUI、无平台特有 API、无专有硬件——属 C 语言纯算法库的最有利适配场景。核心工作量在其两个运行时依赖（libtiff + PROJ）的 OHOS 端口确认/编译，而非 libgeotiff 自身的代码改动。zlib 在 cmd-pkgs 预编译清单中可直接用。若同时把 libtiff + PROJ 纳入分析（递归依赖），三者合计工作量约为 [10, 25] 人-天（PROJ 复杂度最高）。若目标为 ArkTS 应用（模型 B），需额外开发 N-API 桥接层将 GTIF* API 暴露给 ArkTS，工作量新增 [5, 10] 人-天。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libgeotiff",
@@ -994,7 +1009,8 @@
     "observations": [],
     "warnings": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "本项目为纯 C 地理空间数据处理库，不涉及 GUI、3D 渲染、媒体或硬件设备场景。",

@@ -1129,7 +1129,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (OHOS NDK / clang + musl libc; arm64 / x86_64; 自研内核，非 Linux ABI)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -1138,7 +1137,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "Graphite2 为零外部依赖的纯 C/C++ 字体排版引擎，仅使用 C/C++ 标准库（stdio、stdlib、cstring、cmath、algorithm 等）。无 POSIX 专有系统调用、无 Win32 API（仅日志跟踪模块有 Windows 条件编译代码，默认编译已禁用 GRAPHITE2_NTRACING=ON），零动态加载本地库依赖。只需用 OHOS NDK (clang + musl) 交叉编译为 arm64/x86_64 的 libgraphite2.so，再通过 Node-API 暴露给 ArkTS 或直接链接入原生模块。Python 绑定（ctypes）在鸿蒙 Python 上加载重编后的 .so 即可直接使用。",
     "blockers": [
       {
@@ -1165,7 +1163,8 @@
         "required": true,
         "target_status": "available",
         "impact": "所有源文件均依赖于 C/C++ 标准库；musl 兼容 POSIX 子集且实现齐全，无阻碍。",
-        "source": "OHOS NDK 文档（musl libc，POSIX 兼容子集）"
+        "source": "OHOS NDK 文档（musl libc，POSIX 兼容子集）",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -1212,7 +1211,21 @@
     ],
     "required_permissions": [],
     "notes": "评估按模型 A（库经 OHOS NDK 重编，可被其他原生模块链接或经 Python ctypes 调用）。Graphite2 的平台耦合度极低：仅 gr_logging.cpp 有一段 Windows 条件编译代码（GR2_NTRACING=ON 默认禁用它，生产构建不需要）；无 POSIX 专有调用、无 Win32 核心依赖、无外部库。code_metrics.platform_adaptation 报告的 30 行 Windows 守卫代码主要是 Types.h 中的导入/导出宏（__declspec/__attribute__）和 Main.h 中的编译器扩展（__builtin_mul_overflow/intsafe.h），在 OHOS NDK (clang) 上都会走 GCC 路径，适配量微不足道。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "kind": "library",
@@ -1248,7 +1261,8 @@
         "message": "license.category(permissive) 与依据 SPDX(LGPL-2.1-or-later OR MPL-2.0 OR GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "scenarios": [

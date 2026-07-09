@@ -562,7 +562,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接，不提供 Linux ABI 兼容）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -580,7 +579,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 JS 代码依赖 Node.js 运行；若 Node.js 不可用则需在 ArkTS 环境下重写",
-        "source": "references/harmony-pc-capabilities.json - 运行时段（已移植运行时）"
+        "source": "references/harmony-pc-capabilities.json - 运行时段（已移植运行时）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -588,11 +588,11 @@
         "required": true,
         "target_status": "available",
         "impact": "C 插件需 OHOS NDK 编译，需 stdbool.h 等标准头文件",
-        "source": "references/harmony-pc-capabilities.json - 运行时段"
+        "source": "references/harmony-pc-capabilities.json - 运行时段",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "recompile_napi",
     "summary": "本库是纯数值计算函数，无平台专有依赖。JavaScript 实现可直接在已移植的 Node.js 上运行；C 原生插件需通过 OHOS NDK 重新编译。工作量极低。",
     "blockers": [],
     "compatible": [
@@ -617,7 +617,21 @@
       "在鸿蒙 Node.js 环境中验证 JS 实现行为一致"
     ],
     "notes": "此库为 @stdlib/complex-float64-base-assert-is-equal v0.1.3 的评估，基于其 Node.js 生态 + C 原生扩展的架构。无平台守卫代码（platform_adaptation=0，platform_branches=0），跨平台性极好。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "complex-float64-base-assert-is-equal",
@@ -638,15 +652,7 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "tests",
-        "field": "frameworks",
-        "kind": "ambiguity",
-        "value": "tape",
-        "rationale": "metrics.json 将测试框架判为 jest/mocha，但实际使用 tape（require('tape')）——tape 是 stdout TAP 格式测试运行器，与 jest/mocha 不同"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
@@ -657,7 +663,8 @@
         "message": "porting_class=recompile_only 但主生态为 nodejs（已移植运行时）且无原生调用面，疑似应为 no_adaptation"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯数值计算库，不涉及 GUI、3D 渲染、音视频或硬件设备场景。",

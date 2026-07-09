@@ -1178,8 +1178,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK + Qt 鸿蒙版）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15.1,
@@ -1238,7 +1237,8 @@
         "required": true,
         "target_status": "available",
         "impact": "QZXing 核心与 QML 层依赖 Qt 跨平台图形/对象模型；Qt 鸿蒙社区版可用，核心功能可直接重编。",
-        "source": "references/harmony-pc-capabilities.json#gui.qt"
+        "source": "references/harmony-pc-capabilities.json#gui.qt",
+        "target_status_model": "available"
       },
       {
         "id": "ta:qt_multimedia_camera",
@@ -1246,7 +1246,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "仅影响可选的实时摄像头扫码（QZXingFilter/QZXingFilterVideoSink）；若不可用，可关闭 QZXING_MULTIMEDIA 或基于 @ohos.multimedia.camera 重写帧捕获层。",
-        "source": "capability_profile.media/hardware + references/harmony-pc-capabilities.json#media.camera_capture"
+        "source": "capability_profile.media/hardware + references/harmony-pc-capabilities.json#media.camera_capture",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1262,7 +1263,6 @@
       }
     ],
     "critical_dependencies": [],
-    "recommended_path": "recompile_napi",
     "summary": "QZXing 是以 Qt 为核心的 C++ 库，条码算法本身纯跨平台。在 HarmonyOS NEXT PC 上，使用 Qt 鸿蒙版（建议 Qt5）配合 OHOS NDK 即可重编核心库；QML 封装层与 Image Provider 依赖 Qt QML/Quick，亦可复用。唯一不确定的是可选的实时摄像头路径（Qt Multimedia），若目标平台该后端不可用，可关闭 QZXING_MULTIMEDIA 或基于 @ohos.multimedia.camera 重写视频帧接收层。",
     "blockers": [],
     "compatible": [
@@ -1291,7 +1291,21 @@
       "运行测试用例，验证各条码格式与 QR 编码输出。"
     ],
     "notes": "本评估假设使用 Qt5 鸿蒙版；Qt6 虽被源码支持，但当前社区主要提供 Qt5 移植。关闭 QZXING_MULTIMEDIA 时，移植难度接近 recompile_only；Windows 专用 win_iconv 在目标平台不编译，不构成阻碍。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "qzxing",
@@ -1321,7 +1335,8 @@
     ],
     "observations": [],
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "QZXing 是一个 Qt 图形/图像库，核心依赖 Qt 的 QImage 与 GUI 抽象；可选的实时扫码功能通过 Qt Multimedia 访问摄像头视频帧。项目不涉及 3D 渲染、云端服务或专有硬件（GPU 计算、NPU 等）。",

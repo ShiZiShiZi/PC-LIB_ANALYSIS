@@ -691,7 +691,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (经 OHOS NDK 交叉编译为 .so；musl libc + POSIX 子集，无特殊平台需求；arm64/x86_64)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         2,
@@ -700,7 +699,6 @@
       "level": "low"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "libaec 是纯 C99 算法库，无第三方依赖，仅使用 C 标准库（malloc/free/memcpy/memset 等）中的可移植函数。无平台特定 API、无 GUI/网络/文件系统操作。唯一工作量是用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译为 .so 并验证大端/小端检测和编译器内建函数在 OHOS 上的可用性。整体适配难度极低。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -711,7 +709,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libaec 全部 API 仅依赖这些标准库函数，musl 提供即可直接通过编译",
-        "source": "harmony-pc-capabilities.json — OHOS NDK 基础能力"
+        "source": "harmony-pc-capabilities.json — OHOS NDK 基础能力",
+        "target_status_model": "available"
       },
       {
         "id": "ta:clang_builtins",
@@ -719,7 +718,8 @@
         "required": false,
         "target_status": "available",
         "impact": "仅优化路径，存在纯 C 回退；clang 作为 OHOS NDK 编译器天生支持",
-        "source": "harmony-pc-capabilities.json — OHOS NDK 编译器（clang）"
+        "source": "harmony-pc-capabilities.json — OHOS NDK 编译器（clang）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:endian_detection",
@@ -727,7 +727,8 @@
         "required": true,
         "target_status": "available",
         "impact": "libaec 依赖编译时确定字节序以选择高效内存拷贝路径；OHOS 目标架构（arm64/x86_64）均为小端，检测应正确",
-        "source": "harmony-pc-capabilities.json — OHOS NDK 目标架构 arm64/x86_64"
+        "source": "harmony-pc-capabilities.json — OHOS NDK 目标架构 arm64/x86_64",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -769,7 +770,21 @@
     ],
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 重编）。libaec 是该类别中最简单的场景之一：零依赖、零平台 API、纯可移植 C99。即使目标要求 ArkTS 应用集成（模型 B），也只需将 SO 加载到 Node-API 中暴露即可，工作量不变。",
     "required_permissions": [],
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libaec",
@@ -797,7 +812,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": null
   },
   "capability_profile": {
     "summary": "本项目为纯数据压缩算法库，不涉及 GUI、3D 渲染、媒体处理、云服务或特定硬件。",

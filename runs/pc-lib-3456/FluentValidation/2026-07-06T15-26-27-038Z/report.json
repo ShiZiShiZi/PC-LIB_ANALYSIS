@@ -677,8 +677,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         3,
@@ -695,11 +694,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "FluentValidation 是纯托管 .NET 库，若鸿蒙 PC 无 .NET 运行时则无法直接运行，需等待 .NET 移植或通过替代方案（如 NativeAOT 编译为原生二进制）",
-        "source": "references/harmony-pc-capabilities.json runtimes 段未列出 .NET/dotnet"
+        "source": "references/harmony-pc-capabilities.json runtimes 段未列出 .NET/dotnet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "FluentValidation 是纯托管 C#/.NET 库，无原生代码、无平台 API、无动态库加载、无系统调用，完全依赖 .NET BCL。若鸿蒙 PC 提供 .NET 8+ 运行时，则可零修改直接运行；若 .NET 运行时尚不可用，则需等待移植或采用 NativeAOT 将其编译为鸿蒙原生二进制。依赖注入扩展子包对 Microsoft.Extensions.DependencyInjection.Abstractions 的依赖为纯托管包，同样随运行时可用而可用。",
     "blockers": [
       {
@@ -749,7 +748,21 @@
       "验证依赖注入扩展在鸿蒙 .NET 环境下的兼容性"
     ],
     "notes": "本库为纯托管 .NET 库，无任何原生/平台依赖。主要不确定性来自 .NET 运行时在鸿蒙 PC 的状态——harmony-pc-capabilities.json 的 runtimes 段未列出 .NET，故标记为 unknown。若 .NET 运行时已移植（类似 Java/Python/Node.js 的情况），则 porting_class 实际为 no_adaptation，effort 降为 0-1 人天。当前按 needs_adaptation_full 评估（保守假设需要适配工作）。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "FluentValidation",
@@ -769,19 +782,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "dotnet_runtime_unknown",
-        "rationale": "harmony-pc-capabilities.json 的 runtimes 段列出 Python/Java/Node.js/Rust/Go/Julia 但未列出 .NET，.NET 运行时在鸿蒙 PC 的可用性是 FluentValidation 可行性的决定性未知因素"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "FluentValidation 是纯数据验证库，不涉及 GUI、3D 渲染、媒体或特定硬件，无鸿蒙适配重点场景。",

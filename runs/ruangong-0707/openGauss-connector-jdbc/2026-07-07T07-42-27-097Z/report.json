@@ -1026,8 +1026,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层 + OHOS NDK 原生层）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         6.6,
@@ -1065,7 +1064,9 @@
         "category": "ffi",
         "evidence": [
           "pgjdbc/src/main/java/org/postgresql/jdbc/ClientLogicImpl.java:12"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1075,7 +1076,8 @@
         "required": true,
         "target_status": "available",
         "impact": "核心数据库连接加密依赖 SSL/TLS，若 JDK SSL 实现不完整则驱动无法建立安全连接",
-        "source": "references/harmony-pc-capabilities.json runtimes.java_jdk"
+        "source": "references/harmony-pc-capabilities.json runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:jdk_gss",
@@ -1083,7 +1085,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "GSS/Kerberos 认证为可选功能，若鸿蒙 JDK 不包含 GSS-API 实现则该认证方式不可用，但不影响基本用户名/密码认证",
-        "source": "references/harmony-pc-capabilities.json jdk_internals（未列出 GSS-API，状态 unknown）"
+        "source": "references/harmony-pc-capabilities.json jdk_internals（未列出 GSS-API，状态 unknown）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet_permission",
@@ -1091,7 +1094,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "JDBC 驱动需通过网络连接数据库服务器，若无网络权限则核心功能不可用",
-        "source": "references/harmony-pc-capabilities.json permissions.perm_internet"
+        "source": "references/harmony-pc-capabilities.json permissions.perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1106,7 +1110,6 @@
       }
     ],
     "critical_dependencies": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "本驱动是纯 Java JDBC 驱动（基于 pgjdbc 二次开发），核心功能使用标准 JDK API，可运行在已移植到鸿蒙 PC 的 JDK 上。主要工作为：(1) 验证并适配 SSL 证书默认路径（Windows 条件分支需增加鸿蒙路径或统一处理）；(2) 确认 BGMProvider（国密 TLCP）、BouncyCastle（加密私钥解析）、ShardingSphere SQL 解析器（读写分离）在鸿蒙 JDK 的兼容性，不兼容则相应功能降级；(3) ClientLogic 客户端数据加密依赖 JNI 原生库 gauss_cl_jni，该库目前无鸿蒙版本，此功能不可用但为可选特性。GSS/Kerberos 认证功能取决于鸿蒙 JDK 的 GSS-API 实现完整性。",
     "blockers": [
       {
@@ -1188,6 +1191,22 @@
     "porting_class_adjusted": {
       "from": "needs_adaptation_full",
       "to": "needs_adaptation_partial"
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:client_logic_jni"
+        ]
+      }
     }
   },
   "library": {
@@ -1221,10 +1240,16 @@
       {
         "code": "pclass_adjusted",
         "class": "info",
-        "message": "porting_class 模型原判 needs_adaptation_full，但存在无法适配的 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+        "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
+      },
+      {
+        "code": "ua_func_class_defaulted:ua:client_logic_jni",
+        "class": "actionable",
+        "message": "unadaptable_api ua:client_logic_jni 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目不涉及 GUI/3D 渲染/媒体/特定硬件场景，是一个纯数据库连接库，核心功能为网络通信与加密认证。",

@@ -387,7 +387,7 @@ _INTRIN_HEADER_ARCH = {
     "x86": ("mmintrin", "xmmintrin", "emmintrin", "pmmintrin", "tmmintrin",
             "smmintrin", "nmmintrin", "wmmintrin", "ammintrin", "immintrin",
             "avxintrin", "avx2intrin", "avx512", "x86intrin", "x86gprintrin",
-            "cpuid"),
+            "cpuid", "intrin"),
     "arm": ("arm_neon", "arm_acle", "arm_sve", "arm_fp16", "arm_bf16",
             "arm64intr", "arm64_neon", "armintr"),
     "riscv": ("riscv_vector", "riscv_crypto", "riscv_bitmanip"),
@@ -400,6 +400,24 @@ _ARCH_LINE_HINTS = {
     "x86": re.compile(r"\b(?:[re]?[abcd]x|[re]?(?:si|di|sp|bp)|xmm\d|ymm\d|zmm\d|cpuid|rdtsc)\b", re.I),
     "arm": re.compile(r"\b(?:aarch64|neon|vld\d|vst\d|dmb|dsb|isb|w(?:zr|sp)|mrs|msr)\b", re.I),
 }
+# SIMD intrinsic *usage* (call sites / vector types), not just the header include —
+# this is the real architecture-specific work in header-only / intrinsics-heavy libs
+# (e.g. hnswlib). Counted as simd_loc (lines), so a file that pulls the intrinsic
+# header *transitively* (no direct #include of its own) is still attributed. The names
+# are identical in C/C++ and Rust core::arch, so both are scanned. Case-sensitive on
+# purpose (real intrinsics are lowercase; UPPER_CASE macros like _MM_SHUFFLE are skipped).
+_SIMD_INTRIN_ARCH = (
+    ("x86", re.compile(
+        r"\b_mm(?:256|512)?_[a-z]"            # _mm_/_mm256_/_mm512_ calls
+        r"|\b__m(?:128|256|512)\w*\b")),      # __m128/__m256/__m512(i/d) vector types
+    ("arm", re.compile(
+        r"\b(?:float|u?int|poly)(?:8|16|32|64)x\d+(?:x\d+)?_t\b"          # NEON types: float32x4_t, uint8x16x2_t
+        r"|\bv[a-z][a-z0-9]*_(?:[su](?:8|16|32|64)|f(?:16|32|64)|p(?:8|16|64))\b"  # NEON intrinsics: vld1q_f32
+        r"|\bsv(?:float|u?int|bool)\w*_t\b")),                             # SVE types: svfloat32_t
+    ("riscv", re.compile(
+        r"\b__riscv_\w+"                       # RVV intrinsics: __riscv_vfadd_vv_f32m1
+        r"|\bv(?:float|u?int)\w*m\d+_t\b")),   # RVV types: vfloat32m1_t
+)
 
 
 def _arch_of_path(path: str) -> str | None:
@@ -425,7 +443,7 @@ def arch_specific(repo: str, cloc: ClocResult) -> dict:
     """Count production architecture-specific code: standalone assembly files (LOC,
     arch from path tokens), SIMD-intrinsics includes, and inline-asm sites in
     C/C++/Rust (comment/string hits masked out). Heuristic but reproducible."""
-    by = {a: {"files": set(), "hits": 0, "loc": 0} for a in ("x86", "arm", "riscv", "generic")}
+    by = {a: {"files": set(), "hits": 0, "loc": 0, "simd_loc": 0} for a in ("x86", "arm", "riscv", "generic")}
     asm_files, headers, samples = [], set(), []
     inline_hits = 0
 
@@ -485,8 +503,18 @@ def arch_specific(repo: str, cloc: ClocResult) -> dict:
                 by[arch]["files"].add(f.path)
                 by[arch]["hits"] += 1
                 sample("inline_asm", f.path, i, raw, arch)
-    out = {a: {"files": len(v["files"]), "hits": v["hits"], "loc": v["loc"]}
-           for a, v in by.items() if v["files"] or v["hits"] or v["loc"]}
+                continue
+            # 4) SIMD intrinsic *usage* (call sites / vector types) — counted per line
+            #    as simd_loc, so a file that pulls the intrinsic header transitively
+            #    (no #include of its own, e.g. hnswlib space_l2.h) is still attributed.
+            for a, rx in _SIMD_INTRIN_ARCH:
+                if rx.search(s):
+                    by[a]["simd_loc"] += 1
+                    by[a]["files"].add(f.path)
+                    sample("simd", f.path, i, lines[i - 1], a)
+                    break
+    out = {a: {"files": len(v["files"]), "hits": v["hits"], "loc": v["loc"], "simd_loc": v["simd_loc"]}
+           for a, v in by.items() if v["files"] or v["hits"] or v["loc"] or v["simd_loc"]}
     return {
         "by_arch": out,
         "asm_files": asm_files,
@@ -494,11 +522,15 @@ def arch_specific(repo: str, cloc: ClocResult) -> dict:
         "intrinsics_headers": sorted(headers),
         "samples": samples,
         "total": sum(v["loc"] for v in out.values()),
+        "simd_total": sum(v["simd_loc"] for v in out.values()),
         "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径"
                  "关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/"
-                 "arm_neon.h…>)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中"
-                 "已剔除；total=汇编文件 LOC 之和。仅 x86 有而无 arm 回退的部分是 arm64 鸿蒙 PC"
-                 "上的适配点，供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。",
+                 "arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive "
+                 "include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编"
+                 "(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、"
+                 "simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 "
+                 "鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 "
+                 "codegraph 追踪种子）。",
     }
 
 

@@ -1448,7 +1448,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC（跑在已移植的 JDK 17 运行时上；纯 Java 字节码可直接运行；JLine 终端库的 JNI 原生后端需 OHOS NDK 重编；arm64/x86_64；自研内核，无 Linux ABI）",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         1,
@@ -1465,7 +1464,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JVM 运行时是 Maven 运行的唯一前提；已确认可用，不构成阻碍",
-        "source": "harmony-pc-capabilities.json#runtimes.java_jdk"
+        "source": "harmony-pc-capabilities.json#runtimes.java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:jline_jni",
@@ -1473,11 +1473,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "JLine 的 JNI 后端编译失败时可降级为纯 Java 终端实现(ffm)或简化终端模式，不影响核心构建功能",
-        "source": "推断：musl/OHOS NDK 对 JLine JNI（termios/ioctl/signal）的支持程度待核实"
+        "source": "推断：musl/OHOS NDK 对 JLine JNI（termios/ioctl/signal）的支持程度待核实",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Apache Maven 是纯 Java CLI 工具，鸿蒙 PC 已移植 JDK 17 运行时（available），Maven 作为纯 Java 字节码可直接在此 JDK 上运行。主要工作量仅在于：1) JLine 终端库的 JNI 原生后端需经 OHOS NDK 重编（也可回退到纯 Java 终端），2) 文件路径与平台属性（如 os.name）适配。整体可行性高（feasible），无需代码级改写。",
     "blockers": [
       {
@@ -1558,7 +1558,21 @@
       "跑通 core-it 集成测试套件（至少核心构建场景）"
     ],
     "notes": "评估按模型 A（库/CLI 工具跑在已移植 JDK 17 上）。Maven 自身无 GUI、无进程 fork、无硬件访问——作为纯 Java CLI 工具，移植障碍很小。JLine JNI 原生终端后端是唯一的编译型依赖，可降级为纯 Java 后端不影响核心功能。鸿蒙 JDK 17 的 os.name/路径布局等平台属性差异需少量适配工作。注意：Maven 是自举构建工具（用 Maven 构建自身），移植后需确认在鸿蒙上可自举（即用鸿蒙上的 Maven 编译 Maven 源码）。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Apache Maven",
@@ -1580,40 +1594,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "new_value",
-        "value": "cli",
-        "rationale": "Maven 是一个被终端用户通过命令行启动的 CLI 构建工具，严格介于 application 与 tool 之间，但其有启动器/入口点/分发打包，更接近 CLI 形态。'cli' 已存在推荐值但较边缘。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "purpose",
-        "kind": "ambiguity",
-        "value": "jline 包含 jni 原生后端",
-        "rationale": "JLine 依赖中 jline-terminal-jni 和 jline-native 包含 JNI 原生共享库，虽为传递依赖但 JNI 层需要编译型适配。在 dependency 条目中作为单一条目归并了 jline 全部子模块（含 reader/style/builtins/console/terminal/ffm/jni/native），并用 used_symbols 标注了 JLine Java API 的入口点。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "ambiguity",
-        "value": "java_system_props",
-        "rationale": "System.getProperty/System.getenv 在 Java CLI 应用中广泛用作平台判断与配置入口。归类为 platform（因 os.name 等值确实随平台变化），但本质上仍是 JDK 标准 API。用 platform 而非 standard 是因为这些调用确实引入了平台耦合（OS 名称/架构等标识会影响行为）。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "porting_class",
-        "kind": "ambiguity",
-        "value": "no_adaptation vs recompile_only",
-        "rationale": "JLine JNI 原生后端的重编需求介于 '无需适配' 和 '仅需重编' 之间。最终定为 no_adaptation 因为：① JLine JNI 可降级为纯 Java FFM 后端不需编译；② 即使需编译该 JNI 库，也仅影响终端交互体验而非 Maven 核心构建功能；③ Maven 主体（Java 代码）确实无需任何改动。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "Maven 是纯 Java CLI 工具，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。唯一的平台耦合点是通过 JLine 终端库（含 JNI 原生后端）实现交互式终端控制，属于轻量平台抽象。",

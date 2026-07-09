@@ -827,7 +827,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13 运行时上; 纯 JS/TS 库无原生扩展; arm64 + 可选 x86_64; 自研内核非 Linux ABI)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -836,7 +835,6 @@
       "level": "very_low"
     },
     "confidence": "high",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "colorthief 是一个纯 TypeScript/JavaScript 库，零运行时依赖（仅 sharp 为可选 Node.js 图片解码的 peerDependency）。鸿蒙 PC 已移植 Node.js 24.13 运行时，纯 JS 代码可直接运行，无需任何代码改动。唯一的可选项 sharp 是一个 C++ 原生扩展的 npm 包（libvips 绑定），若需 Node.js 端图片解码功能，需 sharp 自身在鸿蒙上可用（或用户提供自定义解码器）。但 sharp 为 optional peerDependency——库核心的色彩量化、语义色板分类、浏览器端功能完全不受影响。整体判定：可在鸿蒙 PC 上直接使用，无需适配。",
     "blockers": [
       {
@@ -865,7 +863,8 @@
         "required": true,
         "target_status": "available",
         "impact": "库运行所需的底层平台——已移植（v24.13.0），不构成阻碍",
-        "source": "harmony-pc-capabilities.json#runtimes.nodejs"
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
       }
     ],
     "compatible": [
@@ -917,7 +916,21 @@
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。colorthief 是零运行时依赖的纯 JS/TS 库，唯一的可选 peerDependency（sharp）在 Node.js 端图片解码时可被用户的 custom decoder 绕过——库的 `configure()` 机制和 `NodePixelLoader` 的 `decoder` 选项即是为此设计。若目标是 ArkTS 沙箱应用且需在 ArkTS 中直接调用该库的色彩量化功能，则需改为模型 B（将核心 MMCQ/Rust WASM 算法经 Node-API 桥接到 ArkTS），但这不是本库的主要使用场景。",
     "required_permissions": [],
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "color-thief",
@@ -947,7 +960,8 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "纯计算型色彩分析库，不涉及 GUI、3D 渲染、媒体编解码或特定硬件访问。浏览器端使用 Canvas 2D 读取像素（标准 Web API），非 GUI 工具包。",

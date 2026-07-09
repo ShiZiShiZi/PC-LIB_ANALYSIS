@@ -212,7 +212,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS PC (自带内核，非 Linux ABI；原生层 OHOS NDK/musl libc；arm64/x86_64；库跑在已移植运行时上/应用按模型 C 整包评估)",
     "porting_class": "no_adaptation",
-    "feasibility": "feasible",
     "effort": {
       "person_days": [
         0,
@@ -221,7 +220,6 @@
       "level": "very_low"
     },
     "confidence": "low",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "本仓库是 Goby 项目的文档/入口仓库，不含任何程序源码，无内容可移植。README 描述的 Goby 实际产品为闭源商业桌面应用（Golang 后端 + Electron/VUE 前端），其主力源码不在本仓库中。对本仓库内容而言，不存在需要迁移的代码；对 Goby 产品本身的可移植性，因缺乏源码无法做精细评估，仅能据 README 提及的技术栈给出粗略参考。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -232,7 +230,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Goby 产品以 Electron 为前端壳，若鸿蒙 PC 无 Electron 支持则需用 ArkUI 重写整个界面层，工作量极大。本仓库无源码，此评估仅据 README 描述所作，非代码级分析。",
-        "source": "references/harmony-pc-capabilities.json#gui"
+        "source": "references/harmony-pc-capabilities.json#gui",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:app_delivery",
@@ -240,7 +239,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "Goby 作为闭源桌面应用需在鸿蒙 PC 上以某种形式打包安装运行；目标平台的传统桌面应用交付能力未核实。",
-        "source": "references/harmony-pc-capabilities.json#app_delivery"
+        "source": "references/harmony-pc-capabilities.json#app_delivery",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:go_runtime",
@@ -248,7 +248,8 @@
         "required": true,
         "target_status": "available",
         "impact": "Goby 后端使用 Golang，Go 运行时已在鸿蒙 PC 可用，后端逻辑可经交叉编译迁移。",
-        "source": "references/harmony-pc-capabilities.json#runtimes"
+        "source": "references/harmony-pc-capabilities.json#runtimes",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -264,7 +265,21 @@
     ],
     "key_tasks": [],
     "notes": "重要前置说明：本仓库（gobysec/Goby）是 Goby 产品的 GitHub 首页与文档仓库，仅含 README/Feedback.md 与截图图片，不包含任何程序源码。Goby 实际产品为闭源商业软件，使用 Golang + Electron + VUE 构建，其主力源码在其它仓库或未公开。因此：(1) 本仓库自身无代码可移植，porting_class 为 no_adaptation；(2) 对 Goby 产品的移植评估仅能据 README 描述作出技术栈层面的粗略估计——Go 后端可交叉编译（Go 运行时已鸿蒙化），但 Electron 前端壳在鸿蒙 PC 的支持状态 unknown，传统桌面应用交付能力 unknown，且有 Npcap（Windows 抓包驱动）/bp* 设备（macOS）等平台特定依赖；(3) 因缺乏源码级证据，confidence 设为 low，所有 target_assumptions 仅基于 README 文档推断。对 Goby 产品的实际可移植性需在其主源码仓库进行完整分析。",
-    "porting_class_model": "no_adaptation"
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "Goby",
@@ -282,34 +297,13 @@
     "one_liner": "新一代网络安全评估工具，集资产扫描、漏洞检测与内网渗透于一体"
   },
   "meta": {
-    "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "kind",
-        "kind": "ambiguity",
-        "value": "docs_only_repo",
-        "rationale": "该仓库仅含 README、图片与反馈指南，无任何源码。README 描述的是一个闭源商业应用（Goby 安全评估工具），本身为 Golang + Electron + VUE 的桌面应用，但实际代码不在此仓。将仓库本身判定为文档仓库，而非可分析的生产代码仓库。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "manifests",
-        "kind": "gap",
-        "value": "无清单文件",
-        "rationale": "仓库无 pyproject.toml/package.json/CMakeLists.txt/pom.xml/go.mod 等任何构建或包清单文件，无可提取的依赖声明。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "groups",
-        "kind": "gap",
-        "value": "无源码可分析",
-        "rationale": "仓库仅含 Markdown 与图片文件，无任何编程语言源码，无法执行平台 API 调用分析。"
-      }
-    ],
+    "confidence_overall": "medium",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本仓库为文档仓库，无源码可分析实际能力画像。据 README 描述，Goby 产品为 Electron + VUE 前端的桌面应用，涉及 GUI 场景。其它场景（3D 渲染/媒体/特定硬件）从文档描述中未明示涉及。",

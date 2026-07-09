@@ -694,8 +694,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核, 无 Linux ABI; arm64/x86_64; .NET/Mono 运行时在鸿蒙 PC 上可用性未知)",
-    "porting_class": "needs_adaptation_full",
-    "feasibility": "feasible_with_effort",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -704,7 +703,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "find_alternative",
     "summary": "该库为阿里云 OSS 的 C# SDK，纯 .NET 托管代码（无原生扩展、无平台特有 API），跨平台设计（支持 .NET Framework/Mono/.NET Core）。核心阻碍在于 .NET/Mono 运行时在鸿蒙 PC 上的可用性为 unknown——若 .NET 运行时可用则 SDK 可直接运行（近乎 no_adaptation），否则需换用其他语言的 OSS SDK（如 Java/Python/Node.js 版）。SDK 本身无原生依赖、无平台系统调用、无 GUI，移植难度完全取决于 .NET 运行时能否在鸿蒙 PC 上运行。",
     "blockers": [
       {
@@ -732,7 +730,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若不可用则整个 SDK 无法运行，需换用其他语言 SDK",
-        "source": "references/harmony-pc-capabilities.json#runtimes（.NET 未列出）"
+        "source": "references/harmony-pc-capabilities.json#runtimes（.NET 未列出）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -760,7 +759,21 @@
       "在鸿蒙 PC 上运行 SDK 的集成测试验证 Object 上传/下载/列举等核心功能"
     ],
     "notes": "评估按模型 A（库跑在已移植运行时上）。.NET/Mono 运行时在鸿蒙 PC 上的可用性为 unknown，因此 confidence 降为 medium。SDK 本身完全跨平台、零原生依赖、零平台 API 调用——移植难度完全取决于运行时。若 .NET 运行时确认可用，porting_class 可升级为 no_adaptation、person_days 降至 [0,2]。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "aliyun-oss-csharp-sdk",
@@ -785,19 +798,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "find_alternative",
-        "rationale": ".NET 运行时在鸿蒙 PC 可用性未知，且本项目为云服务 SDK，存在 Java/Python/Node.js 等已移植运行时的替代方案，因此推荐路径为「寻找替代」而非强制移植"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "本项目为纯云存储 SDK 库，不涉及 GUI、3D 渲染、媒体或特定硬件场景。",

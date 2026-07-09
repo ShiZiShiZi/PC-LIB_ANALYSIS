@@ -956,7 +956,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（C/C++ 库经 OHOS NDK/musl 重编为 arm64/x86_64 .so；自研内核，无 Linux ABI）",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -965,7 +964,6 @@
       "level": "medium"
     },
     "confidence": "high",
-    "recommended_path": "recompile_napi",
     "summary": "mp4v2 是纯 C++ 的 MP4 容器操作库，无第三方依赖，无 GUI/网络/硬件/云服务。其 POSIX 后端仅使用标准 C++ 与常见 POSIX API（stat、gettimeofday、getpid、random、rename），在 OHOS NDK/musl 下均可获得支持；Windows 专用分支通过条件编译排除。因此移植工作主要是使用 OHOS NDK 工具链重新编译并验证测试。",
     "blockers": [],
     "unadaptable_apis": [],
@@ -976,7 +974,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C++ 核心与 POSIX 文件 I/O 后端编译运行所必需",
-        "source": "harmony-pc-capabilities.json 引言：原生层 OHOS NDK（musl + POSIX 子集）"
+        "source": "harmony-pc-capabilities.json 引言：原生层 OHOS NDK（musl + POSIX 子集）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
@@ -1013,7 +1012,21 @@
       "（可选）如需暴露给 ArkTS，封装 Node-API 桥接层"
     ],
     "notes": "评估按模型 A（C/C++ 库跑在鸿蒙原生层）进行。若目标是将命令行工具打包为 ArkTS 桌面应用（模型 C），则需额外考虑文件权限与命令行入口，但库本体仍只需重编。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "mp4v2",
@@ -1041,30 +1054,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "gap",
-        "value": "no_external_deps",
-        "rationale": "mp4v2 的构建文件未声明任何第三方运行时依赖；当前 schema 的 dependencies 块适合有 manifest 的情况，对完全自包含的 C/C++ 库，count=0 是唯一合理表示。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "media_container_only",
-        "rationale": "mp4v2 触及的媒体场景不是编解码/播放/采集，而是 MP4 容器格式与元数据。建议在 media 场景下补充 kind 取值如 mp4_container/container_format/metadata，以便更精确地描述这类容器库。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "gap",
-        "value": "ohos_ndk_cpp",
-        "rationale": "C/C++ 库没有「语言运行时」条目可引用；其可移植性直接取决于 OHOS NDK（musl + POSIX 子集）可用性。capabilities.json 引言已说明该前提，建议在 runtimes 段或新增段明确列出 OHOS NDK C/C++ toolchain 状态。"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "mp4v2 本身是一个纯容器操作库，不直接处理编解码、播放、采集或 GUI/3D/硬件。它触及的媒体场景仅限于 MP4 文件容器结构与元数据读写，属于文件级多媒体处理，不依赖特定硬件或专有音视频后端。",

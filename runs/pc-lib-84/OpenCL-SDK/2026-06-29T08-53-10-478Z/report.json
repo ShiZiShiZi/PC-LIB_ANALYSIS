@@ -1122,8 +1122,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核、ArkTS 应用层、OHOS NDK 原生层、Node-API 桥接）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1145,7 +1144,9 @@
         "category": "platform",
         "evidence": [
           "lib/src/SDK/InteropContext.cpp:28-32"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       },
       {
         "id": "ua:glx",
@@ -1159,7 +1160,9 @@
         "category": "platform",
         "evidence": [
           "lib/src/SDK/InteropContext.cpp:34-38"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1169,7 +1172,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "OpenCL 是本库的核心基础；若无 OpenCL 运行时，SDK 所有功能完全不可用",
-        "source": "references/harmony-pc-capabilities.md GPU/计算加速段"
+        "source": "references/harmony-pc-capabilities.md GPU/计算加速段",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:opengl_interop",
@@ -1177,11 +1181,11 @@
         "required": false,
         "target_status": "unknown",
         "impact": "OpenGL 互操作为可选功能，不影响 SDK 核心库的使用；仅影响 OpenCL-OpenGL 互操作示例和 InteropContext 模块",
-        "source": "references/harmony-pc-capabilities.md 3D 图形栈段"
+        "source": "references/harmony-pc-capabilities.md 3D 图形栈段",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "OpenCL SDK 的核心工具库（Utils/SDK，不含 OpenGL 互操作）理论上可使用 OHOS NDK 交叉编译，但其运行完全依赖 OpenCL 运行时（ICD 加载器 + GPU 驱动）。鸿蒙 PC 上 OpenCL 运行时的支持状态未知，是决定性因素。OpenGL 互操作模块（WGL/GLX）为可选功能，可在鸿蒙构建中禁用（OPENCL_SDK_BUILD_OPENGL_SAMPLES=OFF）。",
     "blockers": [
       {
@@ -1257,7 +1261,24 @@
       "若需图形互操作，研究 OpenCL-Vulkan 路径替代 OpenCL-OpenGL"
     ],
     "notes": "本评估置信度为低（low），因为鸿蒙 PC 上 OpenCL 运行时的支持状态未知。若 OpenCL 运行时可用，则 SDK 核心库的移植工作量可降至中等；若不可用，则整个 SDK 在鸿蒙上无实用价值。OpenGL 互操作为可选模块，不影响核心评估。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:wgl",
+          "ua:glx"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1265,22 +1286,20 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low",
+    "harmony_warnings": [
       {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "arch_simd",
-        "rationale": "扩展加载器使用 __attribute__((visibility)) 控制符号导出，不属于 arch_simd 但归入现有分类不便；实际是编译器特性/符号可见性控制，暂用 arch_simd 代替，但更精确的分类应为 compiler_attribute"
+        "code": "ua_func_class_defaulted:ua:wgl",
+        "class": "actionable",
+        "message": "unadaptable_api ua:wgl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       },
       {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "gap",
-        "value": "cross_compile",
-        "rationale": "OpenCL SDK 核心是纯 C/C++ 库，理想路径是用 OHOS NDK 交叉编译（需 OpenCL 运行时），现有推荐值集缺少此场景的精确描述"
+        "code": "ua_func_class_defaulted:ua:glx",
+        "class": "actionable",
+        "message": "unadaptable_api ua:glx 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
-    ],
-    "normalized_version": 3
+    ]
   }
 }

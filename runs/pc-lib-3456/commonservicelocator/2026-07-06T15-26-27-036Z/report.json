@@ -404,8 +404,7 @@
   "harmony_adaptation": {
     "summary": "CommonServiceLocator 是一个纯 .NET 托管接口库，无原生代码、无平台 API 调用、无第三方依赖。其对鸿蒙 PC 适配的唯一前提是 .NET 运行时（CLR）在鸿蒙上可用。目前鸿蒙 PC 尚无 .NET 运行时移植记录，状态为 unknown，因此无法确定该库能否直接运行。",
     "target": "HarmonyOS NEXT PC",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         5,
@@ -422,11 +421,11 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 .NET 运行时不可用，则整个库无法在鸿蒙上运行——需移植 CLR/Mono 或通过其他语言重写等价接口",
-        "source": "references/harmony-pc-capabilities.json（runtimes 段无 .NET 条目）"
+        "source": "references/harmony-pc-capabilities.json（runtimes 段无 .NET 条目）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "find_alternative",
     "blockers": [
       {
         "id": "bk:dotnet_runtime",
@@ -470,7 +469,21 @@
       "验证 ActivationException 序列化行为在鸿蒙目标框架上的兼容性"
     ],
     "notes": "该库本质是一个接口定义库（interface + 静态访问器 + 一个辅助基类），无任何实质逻辑，无副作用。其鸿蒙适配的核心不确定性完全在于 .NET 运行时本身。若未来 .NET 运行时移植到鸿蒙，该库可零修改直接运行。当前 confidence 为 low 是因为 .NET 运行时在鸿蒙 PC 上的状态为 unknown。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "low",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "CommonServiceLocator",
@@ -498,16 +511,9 @@
     "counter_tool": "cloc",
     "warnings": [],
     "confidence_overall": "low",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "dotnet_bcl",
-        "rationale": ".NET BCL 标准库 API 不属于现有推荐取值（win32/posix/cpp_stl/python_stdlib/java_std/node_core），新增以覆盖 .NET 生态"
-      }
-    ],
-    "normalized_version": 3
+    "observations": [],
+    "normalized_version": 5,
+    "confidence_overall_model": "low"
   },
   "capability_profile": {
     "summary": "CommonServiceLocator 不涉及 GUI、3D 渲染、媒体处理或特定硬件，是一个纯逻辑抽象接口库。",

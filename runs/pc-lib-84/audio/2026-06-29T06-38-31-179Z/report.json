@@ -998,8 +998,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（模型 A：库跑在已移植的 Python 3.12 运行时上；原生扩展经 OHOS NDK/musl 重编；自研内核，无 Linux ABI）",
-    "feasibility": "hard",
-    "porting_class": "needs_adaptation_partial",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         15,
@@ -1008,7 +1007,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime_with_native_rebuild",
     "summary": "TorchAudio 主体为 Python 库，鸿蒙 PC 已移植 Python 与 PyTorch，理论上可运行；但自 2.9 起核心音频 I/O 完全依赖尚未鸿蒙化的 torchcodec，构成最大阻碍。C++ 扩展需用 OHOS NDK 重编，CUDA 加速路径在鸿蒙上不可用。建议先解决 torchcodec 依赖（移植或替换为 @ohos.multimedia.audio），再重编 C++ 扩展并关闭 CUDA。",
     "blockers": [
       {
@@ -1085,7 +1083,9 @@
           "src/libtorchaudio/cuda_utils.h:3",
           "src/libtorchaudio/rnnt/gpu/compute.cu:1",
           "src/libtorchaudio/forced_align/gpu/compute.cu:1"
-        ]
+        ],
+        "functionality_class": "platform_specific",
+        "functionality_class_defaulted": true
       }
     ],
     "target_assumptions": [
@@ -1095,7 +1095,8 @@
         "required": true,
         "target_status": "available",
         "impact": "纯 Python 部分与 PyTorch 张量逻辑可直接运行",
-        "source": "references/harmony-pc-capabilities.json#runtimes.python / #runtimes.python_jdk 及 torch 的 harmony_adapted 标记"
+        "source": "references/harmony-pc-capabilities.json#runtimes.python / #runtimes.python_jdk 及 torch 的 harmony_adapted 标记",
+        "target_status_model": "available"
       },
       {
         "id": "ta:torchcodec",
@@ -1103,7 +1104,8 @@
         "required": true,
         "target_status": "unavailable",
         "impact": "若不可用，核心 load/save 功能将失效，必须重写音频 I/O 层",
-        "source": "scripts/harmony_adapted.js 查询 torchcodec 无 ohos wheel"
+        "source": "scripts/harmony_adapted.js 查询 torchcodec 无 ohos wheel",
+        "target_status_model": "unavailable"
       },
       {
         "id": "ta:ohos_ndk_pytorch",
@@ -1111,7 +1113,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 libtorchaudio 等 C++ 扩展能否在鸿蒙上构建",
-        "source": "references/harmony-pc-capabilities.json#arch / NDK toolchain 状态未明确"
+        "source": "references/harmony-pc-capabilities.json#arch / NDK toolchain 状态未明确",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:cuda",
@@ -1119,7 +1122,8 @@
         "required": false,
         "target_status": "unavailable",
         "impact": "仅影响 GPU 加速路径，CPU 路径可完整运行",
-        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda"
+        "source": "references/harmony-pc-capabilities.json#hardware_devices.gpu_compute_cuda",
+        "target_status_model": "unavailable"
       }
     ],
     "required_permissions": [
@@ -1170,7 +1174,23 @@
       "评估 sentencepiece、deep-phonemizer 等可选依赖的鸿蒙可用性，必要时标记为受限功能"
     ],
     "notes": "评估按模型 A（库跑在已移植 Python/PyTorch 上）。torchcodec 未鸿蒙化是核心风险；若无法移植/替换，则 load/save 不可用，porting_class 将趋向 infeasible。C++ 扩展平台耦合极轻（无 Win32/POSIX 系统调用），重编工作量可控。目标平台 arch 与 NDK 对 PyTorch 扩展的支持状态为未核实项，已下调 confidence 至 medium。",
-    "porting_class_model": "needs_adaptation_partial"
+    "porting_class_model": "needs_adaptation_partial",
+    "confidence_model": "medium",
+    "functional_viability": "blocked_external",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation_platform_partial",
+      "overall": "adaptable_with_tailoring",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": false,
+        "unadaptable": [
+          "ua:cuda"
+        ]
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1178,36 +1198,20 @@
     "counter_tool": "cloc",
     "confidence_overall": "medium",
     "warnings": [],
-    "observations": [
-      {
-        "dimension": "dependencies",
-        "field": "scope",
-        "kind": "new_value",
-        "value": "runtime-critical-via-lazy-import",
-        "rationale": "torchcodec 未在 setup.py/requirements.txt 中显式声明为 install_requires，但通过 lazy import 成为 torchaudio.load/save 的必需运行时依赖；现有 acquisition/scope 模型未单独表达这种「隐式关键运行时依赖」。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "pytorch_cpp_stable",
-        "rationale": "TorchAudio 使用 PyTorch 稳定 ABI（torch::stable::*、STABLE_TORCH_LIBRARY）而非传统 Python C-API 或 ctypes，是 PyTorch 生态库的典型原生层形态，建议纳入 native_api 类型词表。"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "recommended_path",
-        "kind": "new_value",
-        "value": "run_on_ported_runtime_with_native_rebuild",
-        "rationale": "对于含 C++ 扩展的 PyTorch 生态库，默认 run_on_ported_runtime 不足以表达「需用 OHOS NDK 重编扩展」的工作，建议增加该路径描述。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
+      {
+        "code": "ua_func_class_defaulted:ua:cuda",
+        "class": "actionable",
+        "message": "unadaptable_api ua:cuda 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
+      },
       {
         "code": "cloud_miss:aws",
         "class": "actionable",
         "message": "依赖/网络出现 aws 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

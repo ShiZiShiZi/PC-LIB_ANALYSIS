@@ -693,7 +693,6 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，Node-API 桥接）",
-    "feasibility": "feasible_with_effort",
     "porting_class": "recompile_only",
     "effort": {
       "person_days": [
@@ -711,7 +710,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JavaScript 层可直接运行在已移植的 Node.js 上",
-        "source": "references/harmony-pc-capabilities.json > runtimes > nodejs"
+        "source": "references/harmony-pc-capabilities.json > runtimes > nodejs",
+        "target_status_model": "available"
       },
       {
         "id": "ta:ohos_ndk",
@@ -719,7 +719,8 @@
         "required": true,
         "target_status": "available",
         "impact": "C 代码（Node-API 插件）需用 OHOS NDK 重新编译，无其他依赖",
-        "source": "references/harmony-pc-capabilities.json > runtimes（语言运行时已移植隐式包含 NDK）"
+        "source": "references/harmony-pc-capabilities.json > runtimes（语言运行时已移植隐式包含 NDK）",
+        "target_status_model": "available"
       },
       {
         "id": "ta:napi_bridge",
@@ -727,11 +728,11 @@
         "required": true,
         "target_status": "available",
         "impact": "Node-API 调用在 HarmonyOS 上可用，无需修改 C 代码逻辑",
-        "source": "references/harmony-pc-capabilities.json > runtimes > nodejs（Node.js N-API 为内置模块）"
+        "source": "references/harmony-pc-capabilities.json > runtimes > nodejs（Node.js N-API 为内置模块）",
+        "target_status_model": "available"
       }
     ],
     "required_permissions": [],
-    "recommended_path": "cross_compile",
     "summary": "该库极为轻量，仅由 JavaScript 模块和 C Node-API 原生插件组成。JavaScript 部分可无缝运行在已移植的 Node.js 上；C 部分仅使用 Node-API 和 C 标准库（无平台专有 API），只需用 OHOS NDK 重新编译即可。npm 生产依赖（@stdlib/assert-napi-status-ok、@stdlib/utils-library-manifest）均可通过 npm 安装在已移植的 Node.js 上。整体适配工作量极小，无阻塞项。",
     "blockers": [],
     "compatible": [
@@ -765,7 +766,21 @@
       "运行测试确认类型断言功能正确"
     ],
     "notes": "本评估假设 HarmonyOS 的 Node-API 桥接完整实现了标准 N-API 函数（napi_create_function、napi_typeof 等）。由于代码仅使用了最基础的 N-API 子集，即使桥接存在微小差异也不太可能导致阻塞。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "@stdlib/assert-napi-equal-types",
@@ -785,24 +800,12 @@
   },
   "meta": {
     "confidence_overall": "high",
-    "observations": [
-      {
-        "dimension": "code_metrics",
-        "kind": "ambiguity",
-        "value": "primary_language_python",
-        "rationale": "cloc 将 YAML(GitHub Actions) 计为主语言 Python，但项目的核心是 JavaScript + C (Node-API)。主语言与生态系 nodejs。"
-      },
-      {
-        "dimension": "tests",
-        "kind": "gap",
-        "value": "frameworks_tape",
-        "rationale": "测试框架为 tape（非 jest/mocha），metrics 脚本归为 jest/mocha 系有偏差。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "high"
   },
   "capability_profile": {
     "summary": "本项目是纯工具函数库，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",

@@ -1708,8 +1708,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（按终端用户可启动运行的应用/工具评估；核心跑在已移植 JDK 上，recorder GUI 与桌面交付模型按模型 C 考量）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -1718,7 +1717,6 @@
       "level": "high"
     },
     "confidence": "medium",
-    "recommended_path": "run_on_ported_runtime",
     "summary": "Gatling 主体为 Scala/JVM 应用，鸿蒙 PC 已移植 JDK，核心负载引擎可基于 JDK 标准 NIO/JSSE 直接运行。主要移植工作在于：1) 验证并禁用 Linux 原生 Netty 传输（epoll/io_uring）与 tcnative/Brotli4j 原生库，强制回退到 NIO 与 JDK SSL；2) 确认 recorder 若需 GUI 则鸿蒙 JDK 必须支持 headful AWT/Swing，否则使用 headless 模式或重写 GUI；3) 重新打包为鸿蒙可接受的桌面应用形态并验证网络权限。",
     "unadaptable_apis": [],
     "target_assumptions": [
@@ -1728,7 +1726,8 @@
         "required": true,
         "target_status": "available",
         "impact": "JDK 是运行基础；已确认已移植，不构成阻碍",
-        "source": "references/harmony-pc-capabilities.json#runtimes/java_jdk"
+        "source": "references/harmony-pc-capabilities.json#runtimes/java_jdk",
+        "target_status_model": "available"
       },
       {
         "id": "ta:awt_swing",
@@ -1736,7 +1735,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "recorder 默认 Swing GUI 需要；若不可用可回退到 --headless 命令行模式，GUI 功能不可用",
-        "source": "references/harmony-pc-capabilities.json#gui/awt_headful"
+        "source": "references/harmony-pc-capabilities.json#gui/awt_headful",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:desktop_app",
@@ -1744,7 +1744,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "决定 Gatling 是否可直接以现有 zip/JAR 形式在鸿蒙 PC 分发运行；若仅支持 .hap 则需重新打包",
-        "source": "references/harmony-pc-capabilities.json#app_delivery/desktop_app"
+        "source": "references/harmony-pc-capabilities.json#app_delivery/desktop_app",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:internet_permission",
@@ -1752,7 +1753,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "负载测试工具必须对外发起大量 HTTP/TCP 连接；PC 形态授予方式待核实",
-        "source": "references/harmony-pc-capabilities.json#permissions/perm_internet"
+        "source": "references/harmony-pc-capabilities.json#permissions/perm_internet",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1883,7 +1885,21 @@
       "申请并验证 ohos.permission.INTERNET 等网络权限对高并发负载测试的授予方式"
     ],
     "notes": "评估主要按应用/工具口径（模型 C）进行：核心 JVM 逻辑跑在已移植 JDK 上，运行时本身不是阻碍。真正工作量集中在原生依赖回退验证、recorder GUI 形态决策与重新打包。由于 headful AWT/Swing、桌面应用交付形态、PC 形态网络权限均为 unknown，整体置信度降至 medium；若这些目标事实后续核实为 available，则可下调至 low 工作量。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "meta": {
     "schema_version": "1.0",
@@ -1895,36 +1911,7 @@
       "scripts/harmony_adapted.js 当前仅支持 python/cpp 生态，未对 Java/Maven 依赖执行已鸿蒙化检查。",
       "tests.test_cases 脚本仅识别出 JUnit 用例 120 个，未统计 ScalaTest 用例，已在 tests.notes 中说明。"
     ],
-    "observations": [
-      {
-        "dimension": "function_summary",
-        "field": "library.kind",
-        "kind": "ambiguity",
-        "value": "application",
-        "rationale": "Gatling 同时发布库（io.gatling:gatling-core）与可启动 CLI/录制器应用。本次按存在 main 入口、用户直接运行的应用/工具口径判为 application；若侧重 Maven 库分发角度，亦可判为 framework。"
-      },
-      {
-        "dimension": "dependencies",
-        "field": "acquisition",
-        "kind": "new_value",
-        "value": "maven_classifier_bundle",
-        "rationale": "Netty/Brotli4j 等依赖通过同一 artifact 不同 classifier（linux-x86_64、linux-aarch_64、osx-aarch64 等）分发平台原生库，现有 acquisition 推荐值未显式覆盖这种“主包+多 classifier 原生包”的 bundle 形态。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "netty_native_transport",
-        "rationale": "Netty 的 epoll/io_uring/kqueue 原生传输是 JVM 项目常见的平台相关面，既非纯标准库也非直接系统调用，建议作为独立 API 家族记录。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios",
-        "kind": "new_value",
-        "value": "headless-cli",
-        "rationale": "对于同时提供 GUI 与 headless CLI 的工具，kind 中除 gui 外可补充 headless-cli，以表明 GUI 非唯一入口。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings": [
       {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
@@ -1932,6 +1919,7 @@
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
       }
     ],
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   }
 }

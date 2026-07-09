@@ -973,8 +973,7 @@
   },
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC（自研内核，OHOS NDK 原生层，musl + POSIX 子集）",
-    "feasibility": "feasible_with_effort",
-    "porting_class": "needs_adaptation_full",
+    "porting_class": "needs_adaptation",
     "effort": {
       "person_days": [
         10,
@@ -991,7 +990,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若无 libusb 或等价 USB 用户空间访问能力，整个库无法运行——USB 通信是 libmtp 的核心",
-        "source": "references/harmony-pc-capabilities.json → hardware_devices → usb_serial"
+        "source": "references/harmony-pc-capabilities.json → hardware_devices → usb_serial",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:usb_permission",
@@ -999,7 +999,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "即使有 libusb，若鸿蒙 PC 的权限模型限制应用直接访问 USB 设备节点，库将无法探测和连接 MTP 设备",
-        "source": "references/harmony-pc-capabilities.json → process_security → sandbox"
+        "source": "references/harmony-pc-capabilities.json → process_security → sandbox",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [
@@ -1011,7 +1012,6 @@
         "evidence": []
       }
     ],
-    "recommended_path": "cross_compile",
     "summary": "libmtp 是纯 C 库，无 GUI 依赖，核心逻辑（PTP/MTP 协议编解码、文件管理、播放列表处理）为平台无关代码。主要移植工作量在于 USB 通信后端——需确认 libusb-1.0 在鸿蒙 PC OHOS NDK 下的可用性。若 libusb 已移植（社区已提供部分 C/C++ 包），则主要工作是交叉编译和适配少量 POSIX 文件 I/O。mtp-probe 工具依赖 Linux sysfs，需重写或跳过。libgcrypt 和 libiconv 已在鸿蒙 PC 预编译包中可用。",
     "blockers": [
       {
@@ -1108,7 +1108,21 @@
       "适配 udev 规则生成（mtp-hotplug 在鸿蒙上无意义，可跳过）"
     ],
     "notes": "核心风险是 libusb 可用性与 USB 权限两个 unknown 项。若 libusb 可用且权限允许，移植工作量主要在构建配置而非代码修改——协议层代码完全可移植。若 libusb 不可用，需找到鸿蒙等价的 USB 用户空间 API 并实现替代后端（工作量显著增加）。置信度因两个 required 的 unknown 目标假设而降为 medium。",
-    "porting_class_model": "needs_adaptation_full"
+    "porting_class_model": "needs_adaptation_full",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libmtp",
@@ -1129,26 +1143,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "platform_dependence",
-        "kind": "ambiguity",
-        "value": "mixed",
-        "rationale": "库核心逻辑为平台无关代码，但 USB 通信依赖 libusb（portable），少量 Windows/Darwin 条件编译——platform_dependence='mixed' 较 'cross-platform' 更准确"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "top_dirs",
-        "kind": "gap",
-        "value": "logs 目录 273K 行记为 production",
-        "rationale": "logs/ 目录包含设备检测日志文本文件（mtp-detect-*.txt），cloc 将其计入 Text 语言的 production 代码，实际为调试数据而非生产代码。真正的 C 生产代码约 23K 行。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libmtp 涉及 USB 设备通信（硬件场景），但不涉及 GUI、3D 渲染或媒体编解码。USB 设备访问是库的核心功能——通过 libusb 直接操控 USB 总线与 MTP 设备通信。",

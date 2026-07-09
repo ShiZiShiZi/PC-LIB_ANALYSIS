@@ -1066,7 +1066,6 @@
   "harmony_adaptation": {
     "target": "HarmonyOS NEXT PC (自研内核，非 Linux ABI；原生层 OHOS NDK (musl libc + POSIX 子集)；arm64/x86_64；库经 OHOS NDK 编译为 .so，供鸿蒙 PC 用户态程序链接)",
     "porting_class": "recompile_only",
-    "feasibility": "feasible_with_effort",
     "effort": {
       "person_days": [
         3,
@@ -1075,7 +1074,6 @@
       "level": "medium"
     },
     "confidence": "medium",
-    "recommended_path": "recompile_napi",
     "summary": "libxcrypt 是纯 C 密码哈希库，完全自包含、无外部依赖。核心计算逻辑（SHA/DES/MD5/SM3/GOST/Salsa20/yescrypt/bcrypt 等）均为标准 C 实现，不依赖外部加密库。移植到鸿蒙 PC 的主要工作是：①用 OHOS NDK（clang + musl）交叉编译；②验证 CSPRNG 多级回退链中至少有一个在 OHOS musl 上可用；③确认符号版本化宏（__attribute__((alias))/.symver）在 clang 上正常工作。整体属于仅需重编的范畴，无阻塞性平台/硬件 API。",
     "blockers": [
       {
@@ -1141,7 +1139,8 @@
         "required": true,
         "target_status": "unknown",
         "impact": "若 OHOS musl 完全无 CSPRNG 接口且不暴露 /dev/urandom 类设备节点，则 salt 生成（crypt_gensalt）将无法获取密码学安全随机数，需新增 OHOS 后端适配",
-        "source": "harmony-pc-capabilities.json（OHOS NDK/musl POSIX 子集尚无明确的 CSPRNG 条目）"
+        "source": "harmony-pc-capabilities.json（OHOS NDK/musl POSIX 子集尚无明确的 CSPRNG 条目）",
+        "target_status_model": "unknown"
       },
       {
         "id": "ta:symver_clang",
@@ -1149,7 +1148,8 @@
         "required": false,
         "target_status": "unknown",
         "impact": "不影响功能——若不支持，configure 自动降为无版本化构建（HAVE_SYMVER=0）；仅丢失 glibc ABI 兼容性，鸿蒙 PC 场景不需要",
-        "source": "harmony-pc-capabilities.json（无 OHOS clang 符号版本化条目）"
+        "source": "harmony-pc-capabilities.json（无 OHOS clang 符号版本化条目）",
+        "target_status_model": "unknown"
       }
     ],
     "required_permissions": [],
@@ -1200,7 +1200,21 @@
       "按需生成 OHOS 平台的 pkg-config 文件或 cmake 查找模块"
     ],
     "notes": "1. 由于 OHOS musl CSPRNG 接口状态为 unknown，本评估置信度降为 medium——若 musl 完全无随机数源则需新增后端，工作量可能上升至 person_days 10–15。2. 平台适配代码量极低（total=10行），且均为 #ifdef 守卫的单行/几行分支，不构成大规模重构。3. libxcrypt 完全自包含（无外部依赖），这是移植的最大优势——无需等待任何依赖库先移植。4. 评估按库口径（模型 A：OHOS NDK 编译为 .so 供鸿蒙用户态程序链接），不涉及 ArkTS 沙箱。",
-    "porting_class_model": "recompile_only"
+    "porting_class_model": "recompile_only",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
   },
   "library": {
     "name": "libxcrypt",
@@ -1219,40 +1233,12 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "gcc_extensions",
-        "rationale": "符号版本化宏（__attribute__((alias))、__asm__(.symver)、__attribute__((symver))）是 C 库构建系统的核心组件，不属于 standard/platform/system/hardware/ffi 任一标准分类，但又必须记录（它们影响跨编译器移植性）。自创 'gcc_extensions' 类型归入 platform 类别（portable 平台）。"
-      },
-      {
-        "dimension": "native_api",
-        "field": "type",
-        "kind": "new_value",
-        "value": "posix_random",
-        "rationale": "CSPRNG 接口（arc4random_buf/getentropy/getrandom）位于 C 标准库与内核系统调用之间——它们是 libc 提供的函数但本质是系统随机数服务的桥接。归类为 system 而非 standard，因并非所有 C 运行时都提供。"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "scenarios[].key",
-        "kind": "ambiguity",
-        "value": "hardware (cpu_simd)",
-        "rationale": "x86 SIMD（SSE2/AVX）的归属有歧义——它是「硬件相关」但非特定硬件（任何现代 x86 CPU 都有），且所有路径有纯 C 回退。标为 hardware 但 specific_hardware=false、harmony_status=partial（取决于目标 arch），与 CUDA/FPGA 类真正的特定硬件区分开来。"
-      },
-      {
-        "dimension": "code_metrics",
-        "field": "platform_adaptation",
-        "kind": "ambiguity",
-        "value": "total 10 lines",
-        "rationale": "脚本计数的 10 行平台适应代码分散在 _WIN32/__APPLE__/__linux__/__unix__ 各 1–7 行，实际对应符号版本化宏的可选分支（crypt-port.h），不是大规模平台差异。这类极小量平台代码不应被机械解读为「需大量适配」信号。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
-    "normalized_version": 3
+    "normalized_version": 5,
+    "confidence_overall_model": "medium"
   },
   "capability_profile": {
     "summary": "libxcrypt 是一个纯计算型密码学库，不涉及 GUI/3D 渲染/媒体/特定硬件设备场景。唯一与硬件相关的使用是 yescrypt 优化路径中的 x86 SIMD 指令集（SSE2/AVX/XOP），但仅为性能优化，所有路径都有纯 C 回退。",
