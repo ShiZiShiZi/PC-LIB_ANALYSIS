@@ -65,10 +65,10 @@ present 场景 `harmony_status=unavailable` 或 `specific_hardware` → blocker/
 `caused_by` 回指场景 key）、不对这四类重查 caps 或从 native_api 重扫，只把状态翻译成 blocker/effort/remediation。
 `adaptation` 是描述性提示、不下移植结论（那是 dim-9 的 remediation）。** `target_assumptions` 只登记 dim-10
 覆盖不到的目标能力（运行时已移植性/JDK 内部模块/attach·进程模型/应用交付形态/桌面集成）。dim-9 还产 **`harmony_adaptation.required_permissions[]`**（鸿蒙化后所需
-`ohos.permission.*`，`{permission, reason, source_capability(交叉引用场景 key), harmony_status, evidence}`，
+`ohos.permission.*`，`{permission, reason, source_capability(交叉引用场景 key), grantability, evidence}`，
 对照 caps **权限模型段**）。目标侧 `references/harmony-pc-capabilities.json` 新增 **3D 图形栈 / 媒体 /
 硬件设备 / 权限模型** 4 段事实供对照（多为 unknown/partial，经面板 `#/harmony-caps` 人工核实后翻转）。
-`normalizeHarmony` 给缺失的 permission `harmony_status` 补 unknown，`validateHarmony` 校验 unavailable
+`normalizeHarmony` 给缺失的 permission `grantability` 补 unknown，`validateHarmony` 校验 unavailable
 权限须有对应 blocker。**存量报告需重新分析才有 capability_profile/required_permissions**；caps 新段与
 面板/xlsx（「能力画像」+「鸿蒙权限」sheet、汇总 GUI/3D/媒体/硬件 列）即时生效。
 
@@ -158,7 +158,7 @@ the dep tree); the **5-tier difficulty `effort.level`** (very_low…very_high / 
 drops to ≤medium when a required target_assumption is `unknown`, and propagates min up the rollup.
 Other closed axes: `blockers[].severity`/`blockers[].adaptability`(adaptable/partial/unadaptable —
 the structured signal `derivePortingClass` reads instead of regex over open-vocab category).
-Open vocab: `blockers[].category`/`harmony_status`. The three problem lists are a
+Open vocab: `blockers[].category`/`blockers[].remediation_status`. The three problem lists are a
 **single-source-of-truth model with cross-refs**: a fact is登记 once in its primary list
 (`target_assumptions`=root cause, `unadaptable_apis`=granular machine layer for rollup, `blockers`=result)
 and referenced elsewhere by stable `id` via `caused_by`/`manifests_as` (no duplicate prose → no
@@ -248,7 +248,7 @@ interpretive skill (dims 1, 5, 6, 7, 8, 9) follows this shape:
   backfills it from `spdx`/`name` for 存量 reports (model value wins), like `derivePortingClass`.
 - **Open detail vocabulary (model may coin)**: `dependencies[].acquisition`,
   `native_api.groups[].type`, `harmony_adaptation.blockers[].category`/
-  `blockers[].harmony_status`, etc. The UI degrades unknown values to the raw string.
+  `blockers[].remediation_status`, etc. The UI degrades unknown values to the raw string.
 
 `meta.observations` (`{dimension, field, kind, value, rationale}`) is aggregated by
 `/api/observations` and shown on the panel's **模型观察 / 词表反哺** page (`#/observations`)

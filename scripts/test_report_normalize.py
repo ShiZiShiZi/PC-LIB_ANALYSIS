@@ -325,6 +325,29 @@ l2_codes = [x.get("code") for x in (l2r["meta"].get("harmony_warnings") or [])]
 check("L2.no_capped_warning", "confidence_capped_unknown" in l2_codes, False)
 
 
+# ── Fixture M: v6 field-rename migration — legacy harmony_status on blocker/permission is moved to
+#    remediation_status/grantability; the capability_profile scenario harmony_status is KEPT. Idempotent.
+M = {
+    "harmony_adaptation": {
+        "porting_class": "needs_adaptation",
+        "blockers": [{"issue": "x", "harmony_status": "replace_with_ohos", "adaptability": "adaptable"}],
+        "required_permissions": [{"permission": "ohos.permission.CAMERA", "harmony_status": "restricted"}],
+    },
+    "capability_profile": {"scenarios": [{"key": "gui", "present": True, "harmony_status": "partial"}]},
+    "meta": {},
+}
+m = norm(M)["harmony_adaptation"]
+check("M.blocker_renamed", m["blockers"][0].get("remediation_status"), "replace_with_ohos")
+check("M.blocker_old_gone", "harmony_status" in m["blockers"][0], False)
+check("M.perm_renamed", m["required_permissions"][0].get("grantability"), "restricted")
+check("M.perm_old_gone", "harmony_status" in m["required_permissions"][0], False)
+# scenario status is a DIFFERENT field — must be untouched.
+check("M.scenario_kept", norm(M)["capability_profile"]["scenarios"][0].get("harmony_status"), "partial")
+# a report already using the new names normalizes to itself (no double-move / no resurrection of old key).
+m2 = norm(norm(M))["harmony_adaptation"]
+check("M.idempotent_blocker", m2["blockers"][0].get("remediation_status"), "replace_with_ohos")
+check("M.idempotent_perm", m2["required_permissions"][0].get("grantability"), "restricted")
+
 if _FAILS:
     print("FAIL:")
     for f in _FAILS:

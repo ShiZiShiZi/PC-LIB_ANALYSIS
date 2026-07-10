@@ -128,7 +128,7 @@ SysCap/起始版本，文件名自带 Kit+模块名）与 **`harmonyos-docs-look
 需要佐证 GUI 层重写量时可参考）。
 
 **何时查**（只查驱动结论的项，每库 **≤10 次检索**）：
-- 判 platform/hardware 类 blocker 的 `harmony_status`、写 `remediation` 的 `replace_with_ohos` 具体 API 之前；
+- 判 platform/hardware 类 blocker 的 `remediation_status`、写 `remediation` 的 `replace_with_ohos` 具体 API 之前；
 - 填 `required_permissions[]` 时——**权限名以文档为准**（抄 `ohos.permission.*` 全名 + user_grant/system_grant），
   不要凭记忆拼权限名；PC 形态**可授予性**仍对照 caps JSON 权限模型段；
 - 把某 API 判 `unadaptable` 之前——先按「文件名过滤 → 内容搜索」查一轮，**检索无果**才有底气记
@@ -250,7 +250,7 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
      **逐个**判其**自身**在鸿蒙 PC 上是否存在/可移植（看 `acquisition`/`source`：`system`
      平台库 vs `self_build` 包装器）。**属 GUI/图形/媒体/硬件能力的动态库（X11/XCB、libGL、libcudart、ffmpeg…）
      已由 capability_profile 对应场景覆盖，走 step 3**；本处只判**非能力类**运行时库（crypto/压缩/网络等，如
-     libssl/libz）。平台专有系统库（Win32 `user32`/`gdi32` 等）鸿蒙无等价 → `blocker`，`harmony_status:
+     libssl/libz）。平台专有系统库（Win32 `user32`/`gdi32` 等）鸿蒙无等价 → `blocker`，`remediation_status:
      replace_with_ohos`（改用 @ohos 能力）或 `unavailable`；跨平台且已移植到 OHOS 的通用库 → `minor`/`partial`，
      重编/重定位即可。每条复用该库的加载点 `evidence`(file:line)，`source_dimension: native_api`。
    - `runtime_surface.subprocess` → 调用具体平台命令(dmidecode/wmic/ioreg…)通常 `blocker`；
@@ -265,7 +265,7 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
    - `build_env`：工具链(CMake/musl 兼容性)、`compiler_extensions`(MSVC/GCC 特有)、
      是否覆盖 arm64/x86_64 → 阻碍或注意点。
 
-6. **判每条阻碍的 `harmony_status` 与 `remediation`**：能用 `@ohos.*` 平替的写
+6. **判每条阻碍的 `remediation_status` 与 `remediation`**：能用 `@ohos.*` 平替的写
    `replace_with_ohos` + 具体 API；需权限的 `needs_permission`;部分支持 `partial`;
    彻底没有 `unavailable`。**具体 @ohos API 名与「彻底没有」的判定优先经「目标侧 API 事实核查」
    查文档确认**（查到等价 → remediation 写准确模块名；两步检索无果 → 才写 `unavailable`/进
@@ -305,11 +305,11 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
 
 9. **产 `required_permissions[]`（鸿蒙化后运行所需权限）**：媒体/硬件/定位/网络等场景常需申请鸿蒙权限
    （`ohos.permission.CAMERA/MICROPHONE/LOCATION/INTERNET/读写存储/USE_BLUETOOTH…`）。逐项填 `{permission, reason,
-   source_capability(=capability_profile 的场景 key), harmony_status, evidence}`；**权限名优先经「目标侧 API
+   source_capability(=capability_profile 的场景 key), grantability, evidence}`；**权限名优先经「目标侧 API
    事实核查」查 `harmonyos-sdk-api-lookup` 文档核实**（抄全名与授权类型，evidence 引文档文件名），
-   不要凭记忆拼；`harmony_status` 对照 `harmony-pc-capabilities.json` 的**权限模型段**——**⚠️ 该轴闭轴取值刻意为
-   `available/restricted/unavailable/unknown`（用 `restricted` 而非其它状态轴的 `partial`），别混用**：
-   `restricted/unavailable`→酌情产 blocker；`unknown` 且该权限为运行必需 →下调 `confidence` 并 notes 注明。无需权限则 `[]`。
+   不要凭记忆拼；`grantability`（该权限的可授予性，闭轴 `available/restricted/unavailable/unknown`）对照
+   `harmony-pc-capabilities.json` 的**权限模型段**：`restricted/unavailable`→酌情产 blocker；`unknown`
+   且该权限为运行必需 →下调 `confidence` 并 notes 注明。无需权限则 `[]`。
 
 10. **汇总：估 `effort.person_days` 区间**（难度 `effort.level` 与 `adaptation_assessment`/`overall` 由归一派生，见开篇边界表，**你无需自填**）。
    你只输出两个**可观测**的量：`porting_class`（step 8，三档下限）与 `effort.person_days:[min,max]`
@@ -393,12 +393,12 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
   "blockers": [
     {"id": "bk:libfoo", "issue": "经 cffi 绑定的原生 C 库（libfoo）需在鸿蒙上重新编译",
      "severity": "major", "adaptability": "adaptable", "category": "native_dependency", "source_dimension": "dependencies",
-     "harmony_status": "partial",
+     "remediation_status": "partial",
      "remediation": "用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 libfoo 为 .so，再用鸿蒙 Python 重新构建 cffi 绑定；确认其自身不依赖 Linux 专有系统调用。",
      "evidence": ["setup.py:31", "src/_build.py:12"]},
     {"id": "bk:ioctl", "issue": "C 库内通过 mmap/部分 ioctl 访问设备",
      "severity": "minor", "adaptability": "partial", "category": "posix_subset_gap", "source_dimension": "native_api",
-     "harmony_status": "partial",
+     "remediation_status": "partial",
      "remediation": "musl/OHOS 的 POSIX 子集多数 mmap 可用；逐项核对涉及的 ioctl 命令字是否被 OHOS 支持，缺失项做条件编译降级。",
      "evidence": ["src/native/io.c:88"]}
   ],
@@ -439,15 +439,13 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
 
 ## Rules
 - **只综合,不重扫源码** —— 结论与 `evidence` 都来自前序维度;每条 `blocker` 标
-  `source_dimension` 并复用其 `file:line`。**唯一例外（不算重扫）**：填 `unadaptable_apis[].public_entry` 时以前序
-  `native_api.evidence`(file:line) 为种子、用预建 codegraph 向上追到公共入口（见 step 7）——复用前序 evidence 追**路由**，非重新发现特征事实。
+  `source_dimension` 并复用其 `file:line`。「不重扫」的确切含义与 `public_entry` 唯一例外**见开篇 synthesis 说明**，此处不重述。
 - **生产范围** —— 因 dims 6/7/8 已限定生产代码（排除测试/示例/演示），`blockers` 与
   `unadaptable_apis` 自然也是：**只在测试/示例里用到的平台 API 不是迁移阻碍**，不要列入。
   若整仓是**示例/教程集合**（生产代码≈0），据库本体收敛——`porting_class` 不按 demo 定档，
   `unadaptable_apis` 近空，`notes` 注明「本仓为示例集合，平台 API 仅见于示例」。
 - 闭轴(`porting_class`/`unadaptable_apis[].functionality_class`/`confidence`/`blockers[].severity`/`blockers[].adaptability`/`effort.level`)
-  取值**必须**落在 schema enum 内;开放词(`blockers[].category`/`harmony_status`)按实际写。**产出/派生分工见开篇边界表**——
-  你只给 `porting_class` 下限 + `effort.person_days` 区间 + `unadaptable_apis`（含 `functionality_class`）+ dim-12 分桶填准，其余归一确定性算出、落盘不自相矛盾（原判留存 `porting_class_model`）。
+  取值**必须**落在 schema enum 内;开放词(`blockers[].category`/`blockers[].remediation_status`)按实际写。**你产出什么 vs 归一派生什么**（含"落盘不自相矛盾/原判留 `porting_class_model`"）**见开篇边界表**，此处不重述。
 - 引用完整性 + 去重：每个 `caused_by`/`manifests_as`/`critical_dependencies[].refs` 引用的 id 必须在
   对应清单存在；同一事实只在主清单写完整内容、其余引用，避免重复计入难度。任一
   `blocker.adaptability: unadaptable` 应同时在 `unadaptable_apis` 有对应项（除非不是具体 API）。

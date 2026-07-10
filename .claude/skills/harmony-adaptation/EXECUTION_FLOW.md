@@ -73,7 +73,7 @@ agent 文件用 step 3（列 dim10/11/12，各标「BEFORE dim 9」）→ step 3
 ──────────────────────────────────────────────────────────────────────────────────────
 产清单 5  逐组消费特征 → blockers   仅 dim-10 覆盖不到的面(平台 I/O/syscall/subprocess/
                                     /proc·注册表·设备伪文件/arch·SIMD/构建工具链/JDK 内部·attach)
-      6  判 harmony_status + remediation   @ohos 平替 / needs_permission / partial / unavailable
+      6  判 remediation_status + remediation   @ohos 平替 / needs_permission / partial / unavailable
                                           (具体 API 名优先查鸿蒙文档技能，≤10 次；文档存在≠PC 可用)
       7  填 unadaptable_apis   API 粒度；functionality_class 必填(core/platform_specific)
                               public_entry 用父库引用名(rollup 求交靠它)；自底向上：先 ua→blocker→ta
@@ -133,7 +133,7 @@ worst-wins（子库 unadaptable API 只在 `parent.used_symbols ∩ child.public
 |---|---|---|
 | **P0** | dim-9 从旧 **5 值** porting_class（`needs_adaptation_full/partial`/`infeasible` + `feasibility`/`recommended_path`）重构为 **3 值** 时，**没同步驱动它/喂它的文件**：`pc-lib-analyzer.md`、`code-partition/SKILL.md`、`capability-profile/SKILL.md`、`report_schema.json:386` 仍指示模型产旧值——与 schema enum 和 SKILL.md 直接矛盾，诱导模型少填 `functionality_class`。 | ✅ **已修**：四处指令位对齐 3 值 + 强调 `functionality_class` 必填。归一的 `LEGACY_PCLASS_MAP`、JS 镜像、测试 fixture、"替代旧 feasibility"派生字段文档等**向后兼容资产刻意保留不动**。 |
 | **P1** | SKILL.md 步骤编号 `00/0c/0/0b…` 颠倒（多次插入的累积痕迹），核心判据（三档边界/可适配判据/常见误判）在「主旨」与「step 5」各讲一遍，"你不必填/归一覆盖"散落 ~8 处。 | ✅ **已修**：① 开篇加「模型产出 / 归一派生」边界总表；② 核心框架合并为唯一权威段；③ 步骤重编号 **1..12**（逻辑序：框定→产清单→量化→收尾）。 |
-| **P2** | ① `breakdown` 一旦产出即丢弃模型整体 person_days、重算为分项和——原文隐晦；② `required_permissions[].harmony_status` 用 `restricted`，与其余状态轴的 `partial` 不同、易误填。 | ✅ **已修**：①在边界表醒目标注；②在 step 9 加一句「该轴刻意用 restricted 而非 partial」。 |
+| **P2** | ① `breakdown` 一旦产出即丢弃模型整体 person_days、重算为分项和——原文隐晦；② 三个字段都叫 `harmony_status`（场景/权限/阻碍），权限轴用 `restricted`、场景轴用 `partial`，易误填。 | ✅ **已修**：①在边界表醒目标注；②**v6 彻底改名消除碰撞**：`required_permissions[].harmony_status`→`grantability`、`blockers[].harmony_status`→`remediation_status`，只有 `capability_profile.scenarios[].harmony_status` 保留原名（归一 idempotent 迁移存量）。 |
 
 ### 后续修复：`unadaptable_apis[].public_entry` 推导缺口（用户发现）
 `public_entry`（rollup 自底向上求交的唯一键）**无上游来源**——`native_api.apis[]` 只记调用点(file:line)、不记"哪个公共函数路由到它"，

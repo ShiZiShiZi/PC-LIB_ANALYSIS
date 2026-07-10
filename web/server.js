@@ -1107,7 +1107,7 @@ const RANK_CONF = ['low', 'medium', 'high'];
 // v4: dim-9 refactor — feasibility/recommended_path removed; porting_class collapsed to 3 values;
 // unadaptable_apis[].functionality_class drives a derived adaptation_assessment {effective_class,
 // overall, core, platform_specific}; effort.level floor keyed by effective_class.
-const NORMALIZED_VERSION = 5;
+const NORMALIZED_VERSION = 6;
 const W_ACT = 'actionable';   // model self-review may FIX (with evidence) or DISMISS as false positive
 const W_INFO = 'info';        // deterministic audit note — never dismissible
 
@@ -1166,6 +1166,14 @@ function normalizeHarmony(report) {
   // dropped in v4: feasibility / recommended_path
   delete ha.feasibility;
   delete ha.recommended_path;
+  // renamed in v6 (collision fix — three fields were all "harmony_status"): move the legacy key so
+  // 存量 reports (and any model still emitting the old name) normalize to the new field. Mirror of
+  // report_normalize.normalize_harmony. required_permissions[].harmony_status → grantability;
+  // blockers[].harmony_status → remediation_status. capability_profile scenario status UNCHANGED. Idempotent.
+  for (const p of (Array.isArray(ha.required_permissions) ? ha.required_permissions : []))
+    if (p && typeof p === 'object' && 'harmony_status' in p && !('grantability' in p)) { p.grantability = p.harmony_status; delete p.harmony_status; }
+  for (const b of (Array.isArray(ha.blockers) ? ha.blockers : []))
+    if (b && typeof b === 'object' && 'harmony_status' in b && !('remediation_status' in b)) { b.remediation_status = b.harmony_status; delete b.harmony_status; }
   ha.effort = ha.effort && typeof ha.effort === 'object' ? ha.effort : {};
   const tag = (arr, p) => Array.isArray(arr) && arr.forEach((it, i) => { if (it && typeof it === 'object' && !it.id) it.id = `${p}:${i + 1}`; });
   tag(ha.target_assumptions, 'ta'); tag(ha.unadaptable_apis, 'ua'); tag(ha.blockers, 'bk');
@@ -1192,10 +1200,10 @@ function normalizeHarmony(report) {
   // Two-dimensional (core vs platform-difference) assessment + 5-way effective_class. Needs the ua
   // ids assigned above; legacy default for functionality_class keys off the raw pick.
   const effective = deriveAdaptationAssessment(report, ha, base);
-  // required_permissions: default missing harmony_status to unknown so the panel/xlsx
+  // required_permissions: default missing grantability to unknown so the panel/xlsx
   // and confidence logic treat an unstated permission conservatively.
   if (Array.isArray(ha.required_permissions))
-    for (const p of ha.required_permissions) if (p && typeof p === 'object' && !p.harmony_status) p.harmony_status = 'unknown';
+    for (const p of ha.required_permissions) if (p && typeof p === 'object' && !p.grantability) p.grantability = 'unknown';
   // Effort breakdown + total (mirror report_normalize.normalize_harmony). recompile /
   // api_adaptation are derived from code_partition LOC; only touch a model-provided breakdown
   // (never synthesise one) so re-normalization is idempotent and no-breakdown reports keep the
@@ -1275,7 +1283,7 @@ function validateHarmony(report) {
   else if (reqUnknown && ha.confidence === 'high')
     w.push(['conf_high_unknown', W_ACT, '存在 required 且 unknown 的目标假设，confidence 不应为 high']);
   const perms = Array.isArray(ha.required_permissions) ? ha.required_permissions : [];
-  for (const p of perms) if (p && p.harmony_status === 'unavailable' && !blk.length)
+  for (const p of perms) if (p && p.grantability === 'unavailable' && !blk.length)
     w.push([`perm_unavail_noblocker:${p.permission || ''}`, W_ACT, `required_permission ${p.permission || ''} 为 unavailable 但无对应 blocker`]);
   return w;
 }

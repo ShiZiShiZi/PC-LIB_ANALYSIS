@@ -2142,7 +2142,8 @@ function renderReport(r) {
         ? `<span class="badge ${SEV_CLS[b.severity] || 'gray'}">${SEV_LABELS[b.severity] || esc(b.severity)}</span>` : '';
       const adapt = b.adaptability
         ? ` <span class="badge ${ADAPT_CLS[b.adaptability] || 'gray'}">${ADAPT_LABELS[b.adaptability] || esc(b.adaptability)}</span>` : '';
-      const status = b.harmony_status ? `<span class="tag">${esc(b.harmony_status)}</span>` : '';
+      const bStatus = b.remediation_status || b.harmony_status;   // v6 改名，兼容存量
+      const status = bStatus ? `<span class="tag">${esc(bStatus)}</span>` : '';
       const cat = b.category ? ` <code>${esc(b.category)}</code>` : '';
       const src = b.source_dimension ? ` <span class="muted">·${esc(b.source_dimension)}</span>` : '';
       const ev = (b.evidence || []).slice(0, 3).map(esc).join('、');
@@ -2206,7 +2207,7 @@ function renderReport(r) {
       : '';
     // 所需鸿蒙权限（required_permissions）
     const permRows = (ha.required_permissions || []).map((p) => {
-      const st = p.harmony_status || 'unknown';
+      const st = p.grantability || p.harmony_status || 'unknown';   // v6 改名，兼容存量
       return `<tr><td><code>${esc(p.permission || '')}</code></td>
         <td class="muted">${esc(p.reason || '')}${p.source_capability ? ` <span class="chip">${esc(CAP_LABELS[p.source_capability] || p.source_capability)}</span>` : ''}</td>
         <td><span class="badge ${TGT_CLS[st] || 'gray'}">${TGT_LABELS[st] || esc(st)}</span></td></tr>`;

@@ -272,7 +272,7 @@ the `.claude/skills/...` and `references/...` paths below resolve.
    `effort.person_days`/`blockers[].severity`/`blockers[].adaptability`) must use schema enum
    values; the derived `adaptation_assessment`/`effort.level` and the clamped-up `porting_class`
    are server-derived — 你只给 porting_class 下限、别填 adaptation_assessment/effort.level;
-   `blockers[].category`/`harmony_status` are open vocab; each blocker carries its
+   `blockers[].category`/`blockers[].remediation_status` are open vocab; each blocker carries its
    `source_dimension` + reused `evidence`.
 
    For every entry in `dependencies.dependencies`, set `acquisition` (OPEN vocab — coin a
