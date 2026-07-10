@@ -439,8 +439,9 @@ def _v_blockers(name, r):
         if adapt:
             head1 += "·" + adapt
         meta = [str(b[k]) for k in ("category", "source_dimension") if b.get(k)]
-        if b.get("harmony_status"):
-            meta.append("鸿蒙:" + str(b["harmony_status"]))
+        _bst = b.get("remediation_status") or b.get("harmony_status")   # v6 改名，兼容存量
+        if _bst:
+            meta.append("鸿蒙:" + str(_bst))
         lines = [f"{_circled(i)} {head1}" + (f"  [{'·'.join(meta)}]" if meta else "")]
         if b.get("issue"):
             lines.append(f"   问题: {b['issue']}")

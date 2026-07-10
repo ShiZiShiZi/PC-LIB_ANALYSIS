@@ -53,7 +53,11 @@ import sys
 #     / confidence_model persisted (the *_model pattern) so the serve-time caps re-projection can
 #     overwrite target_status from live caps yet stay re-derivable; required+unknown deterministically
 #     caps confidence at medium (previously only warned).
-NORMALIZED_VERSION = 5
+# v6: field rename to end the "harmony_status" name collision (three unrelated fields shared it):
+#     required_permissions[].harmony_status → grantability; blockers[].harmony_status → remediation_status.
+#     capability_profile.scenarios[].harmony_status keeps the canonical name. The legacy key is moved
+#     to the new field during normalization (idempotent), so 存量 reports migrate on serve/migrate.
+NORMALIZED_VERSION = 6
 
 # Warning classes. `actionable` = a heuristic recall/漏判 check the model's self-review
 # pass may FIX (amend the source dimension with evidence) or DISMISS as a false positive
@@ -541,6 +545,17 @@ def normalize_harmony(report):
     ha.pop("feasibility", None)
     ha.pop("recommended_path", None)
 
+    # renamed in v6 (collision fix — three fields were all "harmony_status"): move the legacy key
+    # so 存量 reports (and any model still emitting the old name) normalize to the new field.
+    # required_permissions[].harmony_status → grantability; blockers[].harmony_status → remediation_status.
+    # capability_profile.scenarios[].harmony_status is UNCHANGED (kept the canonical name). Idempotent.
+    for _p in ha.get("required_permissions") or []:
+        if isinstance(_p, dict) and "harmony_status" in _p and "grantability" not in _p:
+            _p["grantability"] = _p.pop("harmony_status")
+    for _b in ha.get("blockers") or []:
+        if isinstance(_b, dict) and "harmony_status" in _b and "remediation_status" not in _b:
+            _b["remediation_status"] = _b.pop("harmony_status")
+
     ha["effort"] = ha["effort"] if isinstance(ha.get("effort"), dict) else {}
 
     def _tag(arr, p):
@@ -586,8 +601,8 @@ def normalize_harmony(report):
 
     if isinstance(ha.get("required_permissions"), list):
         for p in ha["required_permissions"]:
-            if isinstance(p, dict) and not p.get("harmony_status"):
-                p["harmony_status"] = "unknown"
+            if isinstance(p, dict) and not p.get("grantability"):
+                p["grantability"] = "unknown"
 
     # Effort breakdown + total. `recompile`/`api_adaptation` are DERIVED from code_partition LOC
     # at configurable rates (like effort.level). We only touch the breakdown when the model
@@ -684,7 +699,7 @@ def validate_harmony(report):
         # safety net for an un-normalized read where the deterministic cap didn't run.
         w.append(("conf_high_unknown", W_ACT, "存在 required 且 unknown 的目标假设，confidence 不应为 high"))
     for p in _list(ha.get("required_permissions")):
-        if isinstance(p, dict) and p.get("harmony_status") == "unavailable" and not blk:
+        if isinstance(p, dict) and p.get("grantability") == "unavailable" and not blk:
             w.append((f"perm_unavail_noblocker:{p.get('permission') or ''}", W_ACT,
                       f"required_permission {p.get('permission') or ''} 为 unavailable 但无对应 blocker"))
     return w
