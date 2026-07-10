@@ -17,7 +17,7 @@ const os = require('os');
 const path = require('path');
 const url = require('url');
 const crypto = require('crypto');
-const { spawn, execFile } = require('child_process');
+const { spawn, execFile, execFileSync } = require('child_process');
 const resolve = require('./resolve');
 const harmonyMirror = require('./harmony-mirror');
 const harmonyCaps = require('../scripts/harmony_caps');   // HarmonyOS PC 目标能力画像（读/同步/人工策展）
@@ -195,11 +195,64 @@ const DEFAULT_SETTINGS = {
   recursiveAfterAnalyze: false,   // auto-start recursive dep analysis after a manual analyze
 };
 
+// Launching npm-installed CLIs on Windows: the on-PATH entry is a `.cmd` shim
+// (e.g. opencode.cmd -> node_modules/.../opencode.exe ; codegraph.cmd -> node ...shim.js).
+// Spawning the bare name with `shell:true` hands one giant command line to cmd.exe,
+// which mis-tokenizes a large/free-form argument (the analyze prompt ~6.5KB) and
+// fails CreateProcess with ERROR_FILE_NOT_FOUND ("系统找不到指定的文件") before the
+// program even starts. So on Windows we read each `.cmd` shim once at startup, extract
+// the REAL entry, and spawn it directly with `shell:false` (libuv quotes argv correctly,
+// no cmd metacharacter reparsing, also avoids DEP0190 + the CVE-2024-27980 .cmd block).
+// POSIX keeps the bare name. If a shim can't be resolved we fall back to the previous
+// `shell:isWindows` behavior so non-npm / non-Windows installs keep working.
+const CLI_RESOLVE_CACHE = {};
+function resolveCli(name) {
+  if (!isWindows) return { resolved: false };
+  if (Object.prototype.hasOwnProperty.call(CLI_RESOLVE_CACHE, name)) return CLI_RESOLVE_CACHE[name];
+  let vec = { resolved: false };
+  try {
+    const out = execFileSync('where.exe', [name], { encoding: 'utf8', timeout: 5000 });
+    const lines = out.split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+    const shim = lines.find((l) => /\.cmd$/i.test(l));
+    if (shim && fs.existsSync(shim)) {
+      const txt = fs.readFileSync(shim, 'utf8');
+      const dir = path.dirname(shim) + path.sep;
+      const expand = (p) => path.normalize(p.replace(/%dp0%/gi, dir).replace(/[\\/]+/g, path.sep));
+      let m = txt.match(/"((?:%dp0%)?[^"\r\n]*?\.exe)"\s+%\*/i);     // native-exe shim (opencode)
+      if (m) {
+        const p = expand(m[1]);
+        if (fs.existsSync(p)) vec = { resolved: true, kind: 'exe', file: p };
+      }
+      if (!vec.resolved) {
+        m = txt.match(/"((?:%dp0%)?[^"\r\n]*?\.js)"\s+%\*/i);        // node-js shim (codegraph)
+        if (m) {
+          const p = expand(m[1]);
+          if (fs.existsSync(p)) vec = { resolved: true, kind: 'node', file: p };
+        }
+      }
+    }
+  } catch (_) { /* leave unresolved -> fallback */ }
+  CLI_RESOLVE_CACHE[name] = vec;
+  return vec;
+}
+function spawnCli(name, args, opts) {
+  const v = resolveCli(name);
+  if (v.resolved && v.kind === 'exe') return spawn(v.file, args, { ...opts, shell: false });
+  if (v.resolved && v.kind === 'node') return spawn(process.execPath, [v.file, ...args], { ...opts, shell: false });
+  return spawn(name, args, { ...opts, shell: isWindows });
+}
+function execFileCli(name, args, opts, cb) {
+  const v = resolveCli(name);
+  if (v.resolved && v.kind === 'exe') return execFile(v.file, args, { ...opts, shell: false }, cb);
+  if (v.resolved && v.kind === 'node') return execFile(process.execPath, [v.file, ...args], { ...opts, shell: false }, cb);
+  return execFile(name, args, { ...opts, shell: isWindows }, cb);
+}
+
 // codegraph is optional: probe once at startup. The analyze prompt only mentions
 // codegraph when it is BOTH installed and enabled in settings; otherwise the
 // agent falls back to grep/Read.
 let codegraphAvailable = false;
-execFile('codegraph', ['--version'], { shell: isWindows, timeout: 5000 }, (err) => {
+execFileCli('codegraph', ['--version'], { timeout: 5000 }, (err) => {
   codegraphAvailable = !err;
   console.log(`  codegraph: ${codegraphAvailable ? 'available' : 'not found (analyses fall back to grep)'}`);
 });
@@ -227,7 +280,7 @@ function ensureCodegraphIndex(repoPath, onLog) {
   const log = (s) => { if (onLog) onLog(s); else console.log(`  codegraph: ${s}`); };
   codegraphIndexing.add(repoPath);
   log(`${initialized ? 'sync' : 'init -i'} ${path.relative(ROOT, repoPath)}…`);
-  execFile('codegraph', args, { cwd: ROOT, timeout: 600000, maxBuffer: 16 * 1024 * 1024 }, (err) => {
+  execFileCli('codegraph', args, { cwd: ROOT, timeout: 600000, maxBuffer: 16 * 1024 * 1024 }, (err) => {
     codegraphIndexing.delete(repoPath);
     log(err ? `index failed: ${String(err.message || err).split('\n')[0]}` : `index ready (${path.relative(ROOT, repoPath)})`);
   });
@@ -1809,7 +1862,7 @@ function spawnAnalyze(job) {
   job.logStream = fs.createWriteStream(path.join(job.meta.runDir, 'run.log.jsonl'), { flags: 'a' });
   job.emit('input', { argv: job.meta.argv, prompt: job.meta.prompt, runDir: path.relative(ROOT, job.meta.runDir) });
   const argv = job.meta.argv;
-  pipeProcess(job, spawn(argv[0], argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: isWindows }));
+  pipeProcess(job, spawnCli(argv[0], argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }));
 }
 
 // ---------------------------------------------------------------- recursive analysis (sessions)
@@ -2164,7 +2217,7 @@ function pumpAgentResolve() {
     job.onDone = () => { runningAgentResolve--; finishAgentResolve(job); pumpAgentResolve(); };
     job.setStatus('running');
     job.emit('input', { argv: job.meta.argv });
-    pipeProcess(job, spawn(job.meta.argv[0], job.meta.argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: isWindows }));
+    pipeProcess(job, spawnCli(job.meta.argv[0], job.meta.argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }));
   }
 }
 
@@ -2206,8 +2259,8 @@ function finishAgentResolve(job) {
 function testModel(model, cb) {
   model = model || settings.model;
   if (!model) return cb({ ok: false, error: 'no model specified' });
-  const child = spawn('opencode', ['run', '-m', model, 'reply with exactly the word: pong'],
-    { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: isWindows });
+  const child = spawnCli('opencode', ['run', '-m', model, 'reply with exactly the word: pong'],
+    { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '', err = '';
   const t0 = Date.now();
   child.stdout.on('data', (d) => (out += d));
@@ -2297,7 +2350,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && pathname === '/api/models')
-      return execFile('opencode', ['models'], { shell: isWindows, timeout: 15000 }, (e, out) =>
+      return execFileCli('opencode', ['models'], { timeout: 15000 }, (e, out) =>
         send(res, 200, { models: e ? [] : out.split('\n').map((s) => s.trim()).filter(Boolean) }));
 
     if (req.method === 'GET' && pathname === '/api/testmodel')
