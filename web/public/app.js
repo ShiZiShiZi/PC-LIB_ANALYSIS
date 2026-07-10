@@ -12,6 +12,20 @@ const withGroup = (obj) => ({ ...obj, group: activeGroup });  // for POST bodies
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const num = (n) => (n == null ? 0 : n).toLocaleString();
 const fmtTime = (s) => { try { return new Date(s).toLocaleString('zh-CN', { hour12: false }); } catch { return s || ''; } };
+// 时长 ms → 人类可读（1h02m / 2m13s / 45s）。非法/负值返回 ''。
+const fmtDuration = (ms) => {
+  if (ms == null || !isFinite(ms) || ms < 0) return '';
+  const s = Math.round(ms / 1000);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  if (h) return `${h}h${String(m).padStart(2, '0')}m`;
+  if (m) return `${m}m${String(sec).padStart(2, '0')}s`;
+  return `${sec}s`;
+};
+// 一次运行的耗时（endedAt - startedAt），任一缺失/非法返回 ''。
+const runDuration = (r) => {
+  if (!r || !r.startedAt || !r.endedAt) return '';
+  return fmtDuration(Date.parse(r.endedAt) - Date.parse(r.startedAt));
+};
 const ECO_LABELS = {
   python: 'Python库',
   java: 'Java库',
@@ -241,6 +255,7 @@ async function renderDashboard() {
         <select id="groupSelect"></select>
       </div>
       <button class="btn sm" id="newGroupBtn" title="新建分组">＋ 分组</button>
+      <button class="btn sm danger ghost" id="delGroupBtn" title="删除当前分组（连同其下全部库与记录）">🗑 分组</button>
       <div class="search"><input id="search" type="text" placeholder="搜索库名 / 描述…" /></div>
       <div class="filter">
         <select id="ecoFilter">
@@ -279,6 +294,7 @@ async function renderDashboard() {
       </div>
       <button class="btn sm primary" id="batchAnalyze" disabled>分析选中</button>
       <button class="btn sm" id="batchClone" disabled title="重新克隆选中的「有报告但源码仓已删」的库">克隆选中</button>
+      <button class="btn sm" id="batchMigrate" disabled title="把选中的库迁移到另一个分组">迁移选中</button>
       <button class="btn sm" id="refreshBtn">刷新</button>
     </div>
     <div id="jobsStrip" class="jobs-strip"></div>
@@ -294,12 +310,14 @@ async function renderDashboard() {
   $('#levelFilter').onchange = () => { page = 1; renderList(); };
   $('#batchAnalyze').onclick = batchAnalyze;
   $('#batchClone').onclick = batchClone;
+  $('#batchMigrate').onclick = openBatchMigrateModal;
   $('#groupSelect').onchange = () => {
     activeGroup = $('#groupSelect').value || 'default';
     localStorage.setItem('activeGroup', activeGroup);
     selected.clear(); page = 1; loadDash();
   };
   $('#newGroupBtn').onclick = newGroup;
+  $('#delGroupBtn').onclick = deleteGroup;
 
   await loadDash();
   const timer = setInterval(loadDash, 3000);
@@ -310,6 +328,23 @@ function renderGroupSelect(groups) {
   const sel = $('#groupSelect'); if (!sel) return;
   if (!groups.includes(activeGroup)) activeGroup = 'default';
   sel.innerHTML = groups.map((g) => `<option value="${esc(g)}" ${g === activeGroup ? 'selected' : ''}>分组：${esc(g)}</option>`).join('');
+  const del = $('#delGroupBtn'); if (del) del.disabled = (activeGroup === 'default');   // default 不可删
+}
+
+async function deleteGroup() {
+  if (activeGroup === 'default') return toast('default 分组不可删除', 'err');
+  if (!confirm(`确认删除分组「${activeGroup}」？\n将删除该分组下的全部库、克隆代码、分析记录与来源标签，不可恢复。`)) return;
+  let r;
+  try { r = await api('/api/groups/delete', { method: 'POST', headers: JSONH, body: JSON.stringify({ group: activeGroup }) }); }
+  catch { return toast('删除失败', 'err'); }
+  if (r && r.error) return toast(r.error, 'err');
+  const gone = activeGroup;
+  activeGroup = 'default';
+  localStorage.setItem('activeGroup', activeGroup);
+  selected.clear(); page = 1;
+  renderGroupSelect(r.groups || ['default']);
+  toast(`已删除分组 ${gone}`, 'ok');
+  loadDash();
 }
 
 async function newGroup() {
@@ -392,7 +427,8 @@ function renderList() {
       <th class="c-chk"><input type="checkbox" id="selAll" ${allSel ? 'checked' : ''} title="全选/取消" /></th>
       <th>名称</th><th class="c-st">状态</th><th>生态</th><th>语言</th>
       <th class="c-num">生产代码</th><th class="c-num">测试</th><th>协议</th>
-      <th class="c-st">移植分级</th><th class="c-st">运行前提</th><th class="c-st">难度等级</th><th class="c-act">操作</th>
+      <th class="c-st">移植分级</th><th class="c-st">运行前提</th><th class="c-st">难度等级</th>
+      <th class="c-time">最近分析</th><th class="c-act">操作</th>
     </tr></thead><tbody>${slice.map((lib) => {
       const st = libStatus(lib); const s = lib.summary || {};
       return `<tr data-name="${esc(lib.name)}">
@@ -410,6 +446,7 @@ function renderList() {
         <td class="c-st">${s.portingClass ? pclassBadge(s.portingClass) : '—'}</td>
         <td class="c-st">${s.functionalViability ? `<span class="badge ${FV_CLS[s.functionalViability] || 'gray'}">${FV_LABELS[s.functionalViability] || esc(s.functionalViability)}</span>` : '—'}</td>
         <td class="c-st">${s.difficultyLevel ? `<span class="badge ${LVL_CLS[s.difficultyLevel] || 'gray'}"${s.personDays ? ` title="${esc(fmtDays(s.personDays))}"` : ''}>${esc(LVL_LABELS[s.difficultyLevel] || s.difficultyLevel)}</span>` : '—'}</td>
+        <td class="c-time">${lib.analyzedAt ? esc(fmtTime(new Date(lib.analyzedAt))) : '—'}</td>
         <td class="c-act">
           <a class="btn sm ghost" href="#/lib/${enc(lib.name)}">详情</a>
           ${(!lib.cloned && lib.cloneUrl) ? `<button class="btn sm primary" data-act="reclone" data-name="${esc(lib.name)}" ${lib.active ? 'disabled' : ''} title="源码仓已删，从报告地址重新克隆">克隆</button>` : ''}
@@ -504,6 +541,9 @@ function updateBatchBtn() {
   if (ba) { ba.disabled = analyzeN === 0; ba.textContent = analyzeN ? `分析选中 (${analyzeN})` : '分析选中'; }
   const bc = $('#batchClone');
   if (bc) { bc.disabled = cloneN === 0; bc.textContent = cloneN ? `克隆选中 (${cloneN})` : '克隆选中'; }
+  const migrateN = [...selected].filter((n) => { const l = byName(n); return l && (l.cloned || l.cloneUrl); }).length;
+  const bm = $('#batchMigrate');
+  if (bm) { bm.disabled = migrateN === 0; bm.textContent = migrateN ? `迁移选中 (${migrateN})` : '迁移选中'; }
 }
 
 function renderJobsStrip(jobs) {
@@ -511,12 +551,15 @@ function renderJobsStrip(jobs) {
   const active = jobs.filter((j) => j.status === 'running' || j.status === 'queued');
   if (!active.length) { strip.innerHTML = ''; return; }
   strip.innerHTML = `<div class="card"><div class="section-title">进行中的任务 (${active.length})</div>` +
-    active.map((j) => `<div class="jobline">
+    active.map((j) => {
+      const el = j.startedAt ? fmtDuration(Date.now() - Date.parse(j.startedAt)) : '';
+      return `<div class="jobline">
       <span class="spin"></span>
       <span class="jname">${esc(j.name)}</span>
       <span class="badge ${j.status}">${j.type === 'clone' ? '克隆' : '分析'} · ${statusZh(j.status)}</span>
+      ${el ? `<span class="muted" title="已运行时长">⏱ ${el}</span>` : ''}
       <span class="spacer"></span>
-      <a href="#/lib/${enc(j.name)}">查看 →</a></div>`).join('') + '</div>';
+      <a href="#/lib/${enc(j.name)}">查看 →</a></div>`; }).join('') + '</div>';
 }
 
 async function analyzeOne(name) {
@@ -564,8 +607,52 @@ async function openMigrateModal(name) {
     try { r = await api('/api/library/migrate', { method: 'POST', headers: JSONH, body: JSON.stringify({ name, fromGroup: activeGroup, toGroup }) }); }
     catch { return toast('迁移失败', 'err'); }
     if (r && r.error) return toast(r.error, 'err');
+    const res0 = r && r.results && r.results[0];       // 单库结果在 results[0]
+    if (res0 && res0.error) return toast(res0.error, 'err');
     closeModal();
     toast(`已迁移到分组「${toGroup}」`, 'ok');
+    loadDash();
+  };
+}
+
+// 批量迁移选中的库到另一个分组（复用 /api/library/migrate 的 names[] 批量）。
+async function openBatchMigrateModal() {
+  const names = [...selected].filter((n) => { const l = libsCache.find((x) => x.name === n); return l && (l.cloned || l.cloneUrl); });
+  if (!names.length) return toast('请先勾选要迁移的库', 'err');
+  let groups;
+  try { ({ groups } = await api('/api/groups')); }
+  catch { return toast('获取分组列表失败', 'err'); }
+  const targets = groups.filter((g) => g !== activeGroup);
+  showModal(`<h2>批量迁移 ${names.length} 个库</h2>
+    <p class="hint">将选中库的克隆代码、全部分析记录和标签迁移到另一个分组。目标分组已存在同名库的会跳过。</p>
+    <div class="lsub" style="max-height:120px;overflow:auto;margin-bottom:12px">${names.map((n) => esc(n)).join('、')}</div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="width:80px;text-align:right">当前分组</span>
+      <span class="chip">${esc(activeGroup)}</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <span style="width:80px;text-align:right">目标分组</span>
+      ${targets.length
+        ? `<select id="mgTarget" class="sel">${targets.map((g) => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select>`
+        : `<span class="hint">暂无其他分组，请先创建分组</span>`}
+    </label>
+    <div class="actions">
+      <button class="btn" data-close>取消</button>
+      <button class="btn primary" id="mgConfirm" ${targets.length ? '' : 'disabled'}>确认迁移</button>
+    </div>`);
+  if (!targets.length) return;
+  $('#mgConfirm').onclick = async () => {
+    const toGroup = $('#mgTarget').value;
+    let r;
+    try { r = await api('/api/library/migrate', { method: 'POST', headers: JSONH, body: JSON.stringify({ names, fromGroup: activeGroup, toGroup }) }); }
+    catch { return toast('迁移失败', 'err'); }
+    if (r && r.error) return toast(r.error, 'err');
+    const results = (r && r.results) || [];
+    const okNames = results.filter((x) => x.ok).map((x) => x.name);
+    const failN = results.length - okNames.length;
+    okNames.forEach((n) => selected.delete(n));         // 成功的移出选择集
+    closeModal();
+    toast(`迁移到「${toGroup}」：${okNames.length} 成功${failN ? ` · ${failN} 失败` : ''}`, failN ? 'err' : 'ok');
     loadDash();
   };
 }
@@ -1195,6 +1282,7 @@ async function renderDetail(name) {
     <div class="detail-head">
       <h1>${esc(name)}</h1>
       <span id="dStatus"></span>
+      <span id="dElapsed" class="muted"></span>
       <label class="run-pick"><span class="muted">运行</span>
         <select id="runSelect" title="选择一次运行以查看报告"></select></label>
       <button class="btn sm ghost danger" id="runDel" title="删除当前选中的运行记录" disabled>🗑</button>
@@ -1248,10 +1336,12 @@ async function loadDetail(name) {
   const cw = $('#consoleWrap'); if (cw) cw.open = !!d.active;   // 展开日志仅当有正在进行的分析
   if (d.active) {
     setDStatus(d.active.status);
-    subscribe(d.active.id, name, () => loadDetail(name));   // live, reload on end
+    subscribe(d.active.id, name, () => loadDetail(name), d.active.startedAt);   // live, reload on end
   } else {
     const latest = d.runs[0];
     setDStatus(latest ? latest.status : '');
+    const de = $('#dElapsed');                         // 非进行中：显示最近一次耗时（若有）
+    if (de) { const dur = runDuration(latest); de.textContent = dur ? `⏱ 耗时 ${dur}` : ''; }
     if (latest) loadRun(name, latest.run);
   }
 }
@@ -1267,7 +1357,8 @@ function renderRuns(name, runs, active) {
   const hasLiveRow = runs.some((r) => r.status === 'running' || r.status === 'queued');
   if (active && !hasLiveRow) opts.push('<option value="">▶ 分析中…</option>');
   for (const r of runs) {
-    const lbl = `${statusZh(r.status)} · ${fmtTime(r.startedAt)}${r.reportAvailable ? ' · 📄' : ''}`;
+    const dur = runDuration(r);
+    const lbl = `${statusZh(r.status)} · ${fmtTime(r.startedAt)}${dur ? ' · ⏱ ' + dur : ''}${r.reportAvailable ? ' · 📄' : ''}`;
     opts.push(`<option value="${esc(r.run)}"${r.run === curRun ? ' selected' : ''}>${esc(lbl)}</option>`);
   }
   if (!opts.length) { sel.innerHTML = '<option value="">暂无运行记录</option>'; if (del) del.disabled = true; return; }
@@ -1294,14 +1385,20 @@ async function reAnalyze(name) {
   if (!job || !job.jobId) return toast((job && job.error) || '启动失败', 'err');
   toast('已开始分析', 'ok');
   setDStatus(job.status);
-  subscribe(job.jobId, name, () => loadDetail(name));
+  subscribe(job.jobId, name, () => loadDetail(name), Date.now());
   loadDetail(name);   // refresh run list to include the new run
 }
 
 // ---- SSE ------------------------------------------------------------------
-function subscribe(jobId, name, onEnd) {
+function subscribe(jobId, name, onEnd, startedAt) {
   if (es) es.close();
   clearConsole();
+  // 进行中实时计时：每秒刷新 #dElapsed（已运行时长），进程结束时定格为总耗时。
+  const startMs = startedAt ? Date.parse(startedAt) : Date.now();
+  const setElapsed = (txt) => { const de = $('#dElapsed'); if (de) de.textContent = txt; };
+  const tick = () => setElapsed(`⏱ 已运行 ${fmtDuration(Date.now() - startMs)}`);
+  tick();
+  const elapsedTimer = setInterval(tick, 1000);
   // heartbeat: surface liveness when the stream goes quiet (e.g. a long codegraph/Bash step)
   let lastEvt = Date.now(), hbEl = null;
   const bump = () => { lastEvt = Date.now(); if (hbEl) { hbEl.remove(); hbEl = null; } };
@@ -1313,7 +1410,7 @@ function subscribe(jobId, name, onEnd) {
     hbEl.textContent = `…仍在运行（已静默 ${Math.round(idle / 1000)}s，主 agent 可能在执行长任务）`;
     c.scrollTop = c.scrollHeight;
   }, 5000);
-  const stopHb = () => { clearInterval(hbTimer); if (hbEl) { hbEl.remove(); hbEl = null; } };
+  const stopHb = () => { clearInterval(hbTimer); clearInterval(elapsedTimer); if (hbEl) { hbEl.remove(); hbEl = null; } };
   es = new EventSource('/api/stream?job=' + jobId);
   es.addEventListener('input', (e) => { bump(); const d = JSON.parse(e.data).data; metaLine('$ ' + (d.argv ? d.argv.join(' ') : '')); });
   es.addEventListener('status', (e) => { bump(); const d = JSON.parse(e.data).data; setDStatus(d.status); sysLine('状态：' + statusZh(d.status)); });
@@ -1321,7 +1418,9 @@ function subscribe(jobId, name, onEnd) {
   es.addEventListener('end', (e) => {
     stopHb();
     const d = JSON.parse(e.data).data;
-    sysLine(`— 进程结束，退出码 ${d.code}（${statusZh(d.status)}）—`);
+    const total = fmtDuration(Date.now() - startMs);
+    setElapsed(total ? `⏱ 总耗时 ${total}` : '');
+    sysLine(`— 进程结束，退出码 ${d.code}（${statusZh(d.status)}）${total ? '，总耗时 ' + total : ''} —`);
     setDStatus(d.status);
     if (es) { es.close(); es = null; }
     if (onEnd) onEnd(d);

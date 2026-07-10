@@ -566,7 +566,7 @@ function activeJobFor(name, group) {
   const g = safeGroup(group);
   for (const j of jobs.values())
     if (j.meta.name === name && safeGroup(j.meta.group) === g && (j.status === 'running' || j.status === 'queued'))
-      return { id: j.id, type: j.type, status: j.status };
+      return { id: j.id, type: j.type, status: j.status, startedAt: j.startedAt };
   return null;
 }
 function reportSummary(name, run, group) {
@@ -2250,6 +2250,27 @@ const server = http.createServer(async (req, res) => {
       ensureGroupDirs(g);
       return send(res, 200, { groups: listGroups(), created: g });
     }
+    // 删除分组：连同其下全部仓库 + 分析记录 + 来源标签 + 递归会话一并清除。default 不可删。
+    if (req.method === 'POST' && pathname === '/api/groups/delete') {
+      const body = await readBody(req);
+      const g = safeGroup(body.group);
+      if (g === 'default') return send(res, 400, { error: 'default 分组不可删除' });
+      for (const j of jobs.values())                    // 组内有进行中任务则拒绝
+        if ((j.status === 'running' || j.status === 'queued') && safeGroup(j.meta.group) === g)
+          return send(res, 409, { error: '该分组有进行中的任务，请先停止/等待完成再删除' });
+      try {
+        fs.rmSync(path.join(REPOS, g), { recursive: true, force: true });
+        fs.rmSync(path.join(RUNS, g), { recursive: true, force: true });
+      } catch (e) { return send(res, 500, { error: '删除失败: ' + e.message }); }
+      const tags = loadTags();                          // 剥离 "<g>/*" 标签键
+      let tagsChanged = false;
+      for (const k of Object.keys(tags))
+        if (k.startsWith(g + '/')) { delete tags[k]; tagsChanged = true; }
+      if (tagsChanged) saveTags(tags);
+      for (const [id, s] of recursionSessions)          // 清该分组的递归会话
+        if (safeGroup(s.group) === g) recursionSessions.delete(id);
+      return send(res, 200, { ok: true, groups: listGroups() });
+    }
 
     if (req.method === 'GET' && pathname === '/api/libraries')
       return send(res, 200, { group: safeGroup(query.group), groups: listGroups(), libraries: listLibraries(query.group) });
@@ -2365,40 +2386,43 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true });
     }
 
-    // 将库（代码 + 分析记录 + 标签）迁移到另一个分组。
+    // 将库（代码 + 分析记录 + 标签）迁移到另一个分组。支持 names[] 批量（仿 reclone/analyze），
+    // 逐库 try/catch 收集 results；兼容单 name 调用（读 results[0] 即可）。
     if (req.method === 'POST' && pathname === '/api/library/migrate') {
       const body = await readBody(req);
-      const name = body.name;
+      const names = Array.isArray(body.names) ? body.names : (body.name ? [body.name] : []);
       const fromG = safeGroup(body.fromGroup);
       const toG = safeGroup(body.toGroup);
-      if (!name) return send(res, 400, { error: 'name required' });
-      if (/[\\/]|\.\./.test(name)) return send(res, 400, { error: 'invalid name' });
+      if (!names.length) return send(res, 400, { error: 'name(s) required' });
       if (fromG === toG) return send(res, 400, { error: 'fromGroup and toGroup must differ' });
-      if (activeJobFor(name, fromG)) return send(res, 409, { error: '该库有进行中的任务，请先停止/等待完成再迁移' });
-      const srcRepo = repoDir(fromG, name);
-      const srcRuns = runLibDir(fromG, name);
-      const hasSrcRepo = fs.existsSync(srcRepo);
-      const hasSrcRuns = fs.existsSync(srcRuns);
-      if (!hasSrcRepo && !hasSrcRuns) return send(res, 404, { error: '源库不存在' });
-      const dstRepo = repoDir(toG, name);
-      const dstRuns = runLibDir(toG, name);
-      if (fs.existsSync(dstRepo) || fs.existsSync(dstRuns))
-        return send(res, 409, { error: `目标分组「${toG}」中已存在同名库「${name}」` });
-      ensureGroupDirs(toG);
-      try {
-        if (hasSrcRepo) fs.renameSync(srcRepo, dstRepo);
-        if (hasSrcRuns) fs.renameSync(srcRuns, dstRuns);
-      } catch (e) { return send(res, 500, { error: '迁移失败: ' + e.message }); }
-      // 更新标签 key：fromG/name → toG/name
       const tags = loadTags();
-      const oldKey = fromG + '/' + name;
-      const newKey = toG + '/' + name;
-      if (tags[oldKey] !== undefined) {
-        tags[newKey] = tags[oldKey];
-        delete tags[oldKey];
-        saveTags(tags);
-      }
-      return send(res, 200, { ok: true, name, fromGroup: fromG, toGroup: toG });
+      let tagsChanged = false;
+      const results = names.map((name) => {
+        try {
+          if (/[\\/]|\.\./.test(name)) throw new Error('invalid name');
+          if (activeJobFor(name, fromG)) throw new Error('该库有进行中的任务，请先停止/等待完成再迁移');
+          const srcRepo = repoDir(fromG, name);
+          const srcRuns = runLibDir(fromG, name);
+          const hasSrcRepo = fs.existsSync(srcRepo);
+          const hasSrcRuns = fs.existsSync(srcRuns);
+          if (!hasSrcRepo && !hasSrcRuns) throw new Error('源库不存在');
+          const dstRepo = repoDir(toG, name);
+          const dstRuns = runLibDir(toG, name);
+          if (fs.existsSync(dstRepo) || fs.existsSync(dstRuns))
+            throw new Error(`目标分组「${toG}」中已存在同名库「${name}」`);
+          ensureGroupDirs(toG);
+          if (hasSrcRepo) fs.renameSync(srcRepo, dstRepo);
+          if (hasSrcRuns) fs.renameSync(srcRuns, dstRuns);
+          // 更新标签 key：fromG/name → toG/name
+          const oldKey = fromG + '/' + name;
+          const newKey = toG + '/' + name;
+          if (tags[oldKey] !== undefined) { tags[newKey] = tags[oldKey]; delete tags[oldKey]; tagsChanged = true; }
+          return { name, ok: true };
+        } catch (e) { return { name, error: String(e.message || e) }; }
+      });
+      if (tagsChanged) saveTags(tags);
+      const ok = results.every((r) => r.ok);
+      return send(res, ok ? 200 : 207, { ok, results, fromGroup: fromG, toGroup: toG });
     }
 
     if (req.method === 'POST' && pathname === '/api/analyze') {
