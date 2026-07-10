@@ -199,6 +199,41 @@ _OVERALL_LABELS = {"adaptable": "可适配", "adaptable_with_tailoring": "可适
 _VIABILITY_LABELS = {"viable": "前提齐备", "viable_with_work": "有条件可用",
                      "blocked_external": "功能受阻·依赖外部前提", "unverified": "前提未核实"}
 
+# ── 语义配色映射（列值 → _SEMANTIC_FILL 色键）─────────────────────────────────
+# 与面板 app.js 的 TOPO_STATUS / *_CLS 语义一致；未知值 .get()→None → 不上色。
+_PCLASS_FILL = {"no_adaptation": "blue", "recompile_only": "teal",
+                "needs_adaptation": "amber",
+                "needs_adaptation_platform_partial": "orange",
+                "needs_adaptation_core_partial": "red"}
+_OVERALL_FILL = {"adaptable": "green", "adaptable_with_tailoring": "amber",
+                 "core_blocked": "red"}
+_VIABILITY_FILL = {"viable": "green", "viable_with_work": "amber",
+                   "blocked_external": "red", "unverified": "gray"}
+_LEVEL_FILL = {"very_low": "green", "low": "green", "medium": "amber",
+               "high": "orange", "very_high": "red"}
+# target_assumptions.target_status —— 只对 required 项统计（元组顺序＝由严重到轻）
+_TGT_ORDER = ("unavailable", "partial", "unknown")   # available 视为无阻碍
+_TGT_FILL = {"unavailable": "red", "partial": "amber", "unknown": "gray"}
+_TGT_MARK = {"unavailable": "不支持", "partial": "部分", "unknown": "未核实"}
+# blockers.severity —— 先归一 high/medium/low → blocker/major/minor 再统计
+_SEV_NORM = {"blocker": "blocker", "major": "major", "minor": "minor",
+             "high": "blocker", "medium": "major", "low": "minor"}
+_SEV_ORDER = ("blocker", "major", "minor")
+_SEV_FILL = {"blocker": "red", "major": "orange", "minor": "gray"}
+_SEV_MARK = {"blocker": "🔴阻塞", "major": "🟠主要", "minor": "⚪次要"}
+# 富文本明细用：可适配性标签 + 目标状态 emoji/标签 + 圈号序号
+_ADAPT_LABELS = {"adaptable": "可适配", "partial": "部分可适配", "unadaptable": "不可适配"}
+_TGT_EMOJI = {"available": "🟢", "partial": "🟡", "unavailable": "🔴", "unknown": "⚪", "restricted": "🟠"}
+_TGT_STATUS_LABEL = {"available": "已支持", "partial": "部分支持", "unavailable": "不支持",
+                     "unknown": "未核实", "restricted": "受限"}
+# target_status 严重度排序（越小越严重；per-item 排序用）
+_TGT_SEV_RANK = {"unavailable": 0, "partial": 1, "restricted": 1, "unknown": 2, "available": 3}
+
+
+def _circled(i):
+    """①..⑳ 序号；超出范围回退 'N.'。"""
+    return chr(0x245F + i) if 1 <= i <= 20 else f"{i}."
+
 
 # ── per-column value functions ───────────────────────────────────────────────
 
@@ -321,22 +356,22 @@ def _v_pclass(name, r):
     # 移植分级 = 5 档派生 effective_class（回退到 3 值 porting_class）
     c = (_g(r, "harmony_adaptation", "adaptation_assessment", "effective_class", default="")
          or _g(r, "harmony_adaptation", "porting_class", default=""))
-    return _PCLASS_LABELS.get(c, c or "")
+    return _Styled(_PCLASS_LABELS.get(c, c or ""), _PCLASS_FILL.get(c))
 
 
 def _v_overall(name, r):
     o = _g(r, "harmony_adaptation", "adaptation_assessment", "overall", default="")
-    return _OVERALL_LABELS.get(o, o or "")
+    return _Styled(_OVERALL_LABELS.get(o, o or ""), _OVERALL_FILL.get(o))
 
 
 def _v_viability(name, r):
     v = _g(r, "harmony_adaptation", "functional_viability", default="")
-    return _VIABILITY_LABELS.get(v, v or "")
+    return _Styled(_VIABILITY_LABELS.get(v, v or ""), _VIABILITY_FILL.get(v))
 
 
 def _v_level(name, r):
     lv = _g(r, "harmony_adaptation", "effort", "level", default="")
-    return _LEVEL_ZH.get(lv, lv or "")
+    return _Styled(_LEVEL_ZH.get(lv, lv or ""), _LEVEL_FILL.get(lv))
 
 
 def _v_days(name, r):
@@ -350,6 +385,108 @@ def _v_days(name, r):
 
 def _v_summary(name, r):
     return _g(r, "harmony_adaptation", "summary", default="")
+
+
+def _v_target_assumptions(name, r):
+    """目标平台能力假设 —— required 阻碍分布 headline + 逐条完整明细；色＝最严重 required。"""
+    tas = [t for t in (_g(r, "harmony_adaptation", "target_assumptions", default=[]) or [])
+           if isinstance(t, dict)]
+    if not tas:
+        return _Styled("—", None)
+    req = [t for t in tas if t.get("required")]
+    counts = {k: 0 for k in _TGT_ORDER}
+    for t in req:
+        st = t.get("target_status")
+        if st in counts:
+            counts[st] += 1
+    head_parts = [f"{_TGT_EMOJI[k]}{_TGT_MARK[k]}{counts[k]}" for k in _TGT_ORDER if counts[k]]
+    head = " ".join(head_parts) if head_parts else ("🟢全部已支持" if req else "")
+    # required 优先、状态由重到轻（展示全部假设＝报告全集）
+    ordered = sorted(tas, key=lambda t: (0 if t.get("required") else 1,
+                                         _TGT_SEV_RANK.get(t.get("target_status"), 3)))
+    items = []
+    for i, t in enumerate(ordered, start=1):
+        st = t.get("target_status") or "unknown"
+        req_mark = "必需" if t.get("required") else "可选"
+        lines = [f"{_circled(i)} {t.get('capability', '')} <{req_mark}> "
+                 f"{_TGT_EMOJI.get(st, '⚪')}{_TGT_STATUS_LABEL.get(st, st)}"]
+        if t.get("impact"):
+            lines.append(f"   影响: {t['impact']}")
+        if t.get("capability_key"):
+            lines.append(f"   caps键: {t['capability_key']}")
+        items.append("\n".join(lines))
+    worst = next((k for k in _TGT_ORDER if counts[k]), None)
+    fill = _TGT_FILL[worst] if worst else ("green" if req else None)
+    body = (head + "\n──────\n" if head else "") + "\n".join(items)
+    return _Styled(body, fill)
+
+
+def _v_blockers(name, r):
+    """移植阻碍点 —— 严重度分布 headline + 逐条完整明细（问题/改造/证据）；色＝最严重。"""
+    bs = [b for b in (_g(r, "harmony_adaptation", "blockers", default=[]) or []) if isinstance(b, dict)]
+    if not bs:
+        return _Styled("无", "green")
+    counts = {k: 0 for k in _SEV_ORDER}
+    for b in bs:
+        counts[_SEV_NORM.get(b.get("severity"), "major")] += 1
+    head = " ".join(f"{_SEV_MARK[k]}{counts[k]}" for k in _SEV_ORDER if counts[k])
+    bs.sort(key=lambda b: _SEV_ORDER.index(_SEV_NORM.get(b.get("severity"), "major")))
+    items = []
+    for i, b in enumerate(bs, start=1):
+        sev = _SEV_NORM.get(b.get("severity"), "major")
+        head1 = _SEV_MARK[sev]
+        adapt = _ADAPT_LABELS.get(b.get("adaptability"))
+        if adapt:
+            head1 += "·" + adapt
+        meta = [str(b[k]) for k in ("category", "source_dimension") if b.get(k)]
+        if b.get("harmony_status"):
+            meta.append("鸿蒙:" + str(b["harmony_status"]))
+        lines = [f"{_circled(i)} {head1}" + (f"  [{'·'.join(meta)}]" if meta else "")]
+        if b.get("issue"):
+            lines.append(f"   问题: {b['issue']}")
+        if b.get("remediation"):
+            lines.append(f"   改造: {b['remediation']}")
+        ev = [str(x) for x in (b.get("evidence") or []) if x]
+        if ev:
+            lines.append("   证据: " + "、".join(ev))
+        items.append("\n".join(lines))
+    worst = next(k for k in _SEV_ORDER if counts[k])
+    return _Styled(head + "\n──────\n" + "\n".join(items), _SEV_FILL[worst])
+
+
+def _v_critical_deps(name, r):
+    """迁移关键路径依赖 —— 按 order 升序逐条（顺序/名称/人天/为何关键/关联）；中性无色。"""
+    cds = [c for c in (_g(r, "harmony_adaptation", "critical_dependencies", default=[]) or [])
+           if isinstance(c, dict) and c.get("name")]
+    if not cds:
+        return "—"
+
+    def _key(ic):
+        i, c = ic
+        o = c.get("order")
+        return (float(o) if isinstance(o, (int, float)) and o >= 1 else i + 1, i)
+
+    ordered = [c for _, c in sorted(enumerate(cds), key=_key)]
+    items = []
+    for n, c in enumerate(ordered, start=1):
+        o = c.get("order")
+        num = int(o) if isinstance(o, (int, float)) and o >= 1 else n
+        share = c.get("person_days_share")
+        share_txt = ""
+        if isinstance(share, list) and len(share) == 2:
+            try:
+                fmt = lambda x: (str(int(x)) if float(x).is_integer() else str(x))
+                share_txt = f"  ({fmt(share[0])}–{fmt(share[1])} 人天)"
+            except (TypeError, ValueError):
+                share_txt = ""
+        lines = [f"{num}. {c.get('name')}{share_txt}"]
+        if c.get("why"):
+            lines.append(f"   为何关键: {c['why']}")
+        refs = [str(x) for x in (c.get("refs") or []) if x]
+        if refs:
+            lines.append(f"   关联: {' '.join(refs)}")
+        items.append("\n".join(lines))
+    return "\n".join(items)
 
 
 # ── column spec (一级 → 二级) ────────────────────────────────────────────────
@@ -383,10 +520,17 @@ GROUPS = [
         ("移植分级", _v_pclass), ("代码适配", _v_overall), ("运行前提", _v_viability),
         ("难度", _v_level), ("工作量(人天)", _v_days), ("评估总结", _v_summary),
     ]),
+    ("鸿蒙移植·阻碍/假设/关键路径", [
+        ("目标能力假设(阻碍分布)", _v_target_assumptions),
+        ("移植阻碍点(严重度分布)", _v_blockers),
+        ("关键路径依赖(建议移植顺序)", _v_critical_deps),
+    ]),
 ]
 
 # per-column presentation overrides keyed by sub-title
-WRAP_WIDTH = {"描述": 58, "评估总结": 58, "源码仓地址": 42, "用途": 22}
+WRAP_WIDTH = {"描述": 58, "评估总结": 58, "源码仓地址": 42, "用途": 22,
+              "移植阻碍点(严重度分布)": 62, "目标能力假设(阻碍分布)": 50,
+              "关键路径依赖(建议移植顺序)": 46}
 
 # ── styling ──────────────────────────────────────────────────────────────────
 FONT_NAME = "微软雅黑"
@@ -394,12 +538,32 @@ _TOP_FILL = PatternFill("solid", fgColor="B7C9E2")   # 一级表头（深）
 _SUB_FILL = PatternFill("solid", fgColor="DDE6F0")    # 二级表头（浅）
 _PART_TOP_FILL = PatternFill("solid", fgColor="E8D9B5")  # 代码分区组用暖色区分
 _PART_SUB_FILL = PatternFill("solid", fgColor="F3ECD8")
+_PORT_TOP_FILL = PatternFill("solid", fgColor="F0D9D2")  # 鸿蒙移植·阻碍组用淡红区分
+_PORT_SUB_FILL = PatternFill("solid", fgColor="F7E9E4")
 _ZEBRA_FILL = PatternFill("solid", fgColor="F7F9FC")
+# 数据格语义软色（与面板 badge 底色一致）——由 _Styled.fill_key 选取
+_SEMANTIC_FILL = {
+    "green":  PatternFill("solid", fgColor="E3F6EA"),
+    "teal":   PatternFill("solid", fgColor="DCEFEF"),
+    "blue":   PatternFill("solid", fgColor="E4ECFB"),
+    "amber":  PatternFill("solid", fgColor="FBF0D9"),
+    "orange": PatternFill("solid", fgColor="FDEBD0"),
+    "red":    PatternFill("solid", fgColor="FBE6E4"),
+    "gray":   PatternFill("solid", fgColor="F0F3F7"),
+}
 _THIN = Side(style="thin", color="B0B8C4")
 _BORDER = Border(left=_THIN, right=_THIN, top=_THIN, bottom=_THIN)
 _H_ALIGN = Alignment(horizontal="center", vertical="center", wrap_text=True)
 _CELL_ALIGN = Alignment(horizontal="center", vertical="center", wrap_text=False)
 _WRAP_ALIGN = Alignment(horizontal="left", vertical="top", wrap_text=True)
+
+
+class _Styled(str):
+    """带语义色键的单元格值；作为 str 子类，可原样流经 _cell() 与列宽测量。"""
+    def __new__(cls, text, fill=None):
+        s = super().__new__(cls, "" if text is None else str(text))
+        s.fill_key = fill
+        return s
 
 
 def _flat_columns():
@@ -423,9 +587,12 @@ def build(entries, out_path):
 
     # header rows 1 (一级) + 2 (二级)
     for top, c1, c2 in spans:
-        is_part = top and top.startswith("代码分区")
-        top_fill = _PART_TOP_FILL if is_part else _TOP_FILL
-        sub_fill = _PART_SUB_FILL if is_part else _SUB_FILL
+        if top and top.startswith("代码分区"):
+            top_fill, sub_fill = _PART_TOP_FILL, _PART_SUB_FILL
+        elif top and top.startswith("鸿蒙移植"):
+            top_fill, sub_fill = _PORT_TOP_FILL, _PORT_SUB_FILL
+        else:
+            top_fill, sub_fill = _TOP_FILL, _SUB_FILL
         if top is None:                       # standalone → vertical merge over both header rows
             ws.merge_cells(start_row=1, start_column=c1, end_row=2, end_column=c1)
             cell = ws.cell(row=1, column=c1, value=cols[c1 - 1][0])
@@ -464,7 +631,10 @@ def build(entries, out_path):
             cell.font = Font(name=FONT_NAME, size=10)
             cell.border = _BORDER
             cell.alignment = _WRAP_ALIGN if sub in WRAP_WIDTH else _CELL_ALIGN
-            if ri % 2 == 1 and sub not in WRAP_WIDTH:
+            fill_key = getattr(val, "fill_key", None)      # _Styled 携带的语义色键
+            if fill_key in _SEMANTIC_FILL:
+                cell.fill = _SEMANTIC_FILL[fill_key]
+            elif ri % 2 == 1 and sub not in WRAP_WIDTH:
                 cell.fill = _ZEBRA_FILL
 
     ws.freeze_panes = "C3"                     # freeze both header rows + 名称/源码仓 两列

@@ -181,6 +181,7 @@ const DEFAULT_SETTINGS = {
   opencodeCmd: 'opencode run',
   promptTemplate: DEFAULT_PROMPT,
   maxConcurrent: 3,
+  maxConcurrentClone: 3,          // 并发克隆上限（批量克隆/重新克隆走 cloneQueue，镜像 maxConcurrent）
   printLogs: false,
   thinking: true,
   useCodegraph: true,
@@ -309,10 +310,12 @@ function loadSettings() {
 function saveSettings(patch) {
   settings = { ...settings, ...patch };
   if (!(settings.maxConcurrent >= 1)) settings.maxConcurrent = 1;
+  if (!(settings.maxConcurrentClone >= 1)) settings.maxConcurrentClone = 1;
   if (!(Number(settings.recompileLocPerDay) > 0)) settings.recompileLocPerDay = DEFAULT_SETTINGS.recompileLocPerDay;
   if (!(Number(settings.adaptationLocPerDay) > 0)) settings.adaptationLocPerDay = DEFAULT_SETTINGS.adaptationLocPerDay;
   try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2)); } catch (_) {}
   pumpAnalyze();
+  pumpClone();
   return settings;
 }
 
@@ -649,8 +652,15 @@ function listLibraries(group) {
       || birthtimeMs(runLibDir(g, name));
     // monorepo 子目录：即使尚未分析，也从 .identity.json 暴露 subpath 供 L1 chip 显示。
     const ident = repos.has(name) ? readIdentity(g, name) : null;
+    // 仅对「有报告但源码仓已删」的库恢复 clone URL（供前端行内/批量重新克隆）；.identity.json
+    // 随仓被删，唯一存活来源是报告的 library.source_url。已克隆的库无需重克隆，置 null 避免多读报告。
+    let cloneUrl = null;
+    if (!repos.has(name) && latest) {
+      const rep = latestReport(name, g);
+      cloneUrl = (rep && rep.library && rep.library.source_url) || null;
+    }
     return {
-      name, group: g, cloned: repos.has(name), runCount: runs.length,
+      name, group: g, cloned: repos.has(name), runCount: runs.length, cloneUrl,
       latest, active: activeJobFor(name, g), subpath: (ident && ident.subpath) || null,
       analyzedAt: analyzedAt || null, addedAt, tags: allTags[tagKey(g, name)] || [],
       summary: latest && latest.reportAvailable ? reportSummary(name, latest.run, g) : null,
@@ -1616,7 +1626,7 @@ function buildDepTopology(rootName, group, maxDepth = 6, maxNodes = 300) {
 }
 
 // ---------------------------------------------------------------- clone
-function startClone({ url: rawUrl, ref, overwrite, tag, group, subpath }) {
+function startClone({ url: rawUrl, ref, overwrite, tag, group, subpath, handle }) {
   // Monorepo: parse an optional subdir + branch out of the URL (…/tree/<ref>/<sub>).
   // An explicit `subpath` (panel field) wins over the URL-derived one; likewise ref.
   const parsed = parseRepoUrl(rawUrl);
@@ -1627,11 +1637,13 @@ function startClone({ url: rawUrl, ref, overwrite, tag, group, subpath }) {
   // Storage handle: the git basename (or the subdir leaf for a monorepo subunit),
   // disambiguated when it collides with a DIFFERENT upstream repo/subpath already in
   // this group (owner-qualified). Same repo+subpath (by identity) keeps its handle.
+  // `handle` forces an exact destination (re-clone must land back in the library's
+  // existing handle so its runs/report re-associate — never re-derive it).
   const ckey = canonicalRepoKey(gitUrl, sub);
   const baseHandle = sub
     ? (sub.replace(/\/+$/, '').split('/').pop() || repoNameFromUrl(gitUrl)).replace(/[^A-Za-z0-9._-]/g, '_')
     : repoNameFromUrl(gitUrl);
-  const name = pickCloneHandle(g, baseHandle, gitUrl, ckey);
+  const name = handle || pickCloneHandle(g, baseHandle, gitUrl, ckey);
   const dest = repoDir(g, name);
   if (fs.existsSync(dest)) {
     if (!overwrite) throw new Error(`repos/${g}/${name} already exists (enable overwrite to re-clone)`);
@@ -1647,12 +1659,35 @@ function startClone({ url: rawUrl, ref, overwrite, tag, group, subpath }) {
   // 来源标签：默认主软件；递归/待分析依赖传 'passive'。end 回调里克隆成功才落库。
   const job = new Job('clone', { name, group: g, argv: ['git', ...args], url: gitUrl, subpath: sub, ref: cloneRef, tag: TAG_VALUES.includes(tag) ? tag : 'primary' });
   job.emit('input', { argv: job.meta.argv });
-  // stdin 'ignore' (EOF): opencode/tools block on an open stdin pipe.
+  // Defer the actual git spawn to pumpClone so a batch clone/re-clone honours the
+  // maxConcurrentClone cap (mirror of the analyze queue). The create half stays
+  // synchronous so callers still get j.id/j.meta and catch the throws above.
+  job.setStatus('queued');
+  cloneQueue.push(job);
+  pumpClone();
+  return job;
+}
+
+// ---------------------------------------------------------------- clone queue
+const cloneQueue = [];
+let runningClone = 0;
+
+function pumpClone() {
+  while (runningClone < settings.maxConcurrentClone && cloneQueue.length) {
+    const job = cloneQueue.shift();
+    runningClone++;
+    job.onDone = () => { runningClone--; pumpClone(); };
+    spawnClone(job);
+  }
+}
+
+function spawnClone(job) {
+  job.setStatus('running');
+  // stdin 'ignore' (EOF): git blocks on an open stdin pipe.
   // GIT_TERMINAL_PROMPT=0: a private/auth-required URL fails fast instead of hanging
   // on a credential prompt the headless clone can never answer.
-  pipeProcess(job, spawn('git', args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'],
+  pipeProcess(job, spawn('git', job.meta.argv.slice(1), { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } }));
-  return job;
 }
 
 // ---------------------------------------------------------------- analyze (queued)
@@ -2258,6 +2293,31 @@ const server = http.createServer(async (req, res) => {
         try { const j = startClone({ url: u, ref: body.ref, overwrite: body.overwrite, tag: body.tag, group: body.group, subpath: explicitSub });
           return { url: u, jobId: j.id, name: j.meta.name, subpath: j.meta.subpath || undefined }; }
         catch (e) { return { url: u, error: String(e.message || e) }; }
+      });
+      return send(res, 200, { jobs: out });
+    }
+
+    // 重新克隆「有报告但源码仓已删」的库（name 批量，仿 /api/analyze）。URL 从最新报告的
+    // library.source_url 恢复（.identity.json 随仓被删），并强制 handle=库名落回原目录、
+    // 与既有 runs/报告重新关联；subpath 从 source_subpath 恢复以还原 monorepo 稀疏检出。
+    if (req.method === 'POST' && pathname === '/api/reclone') {
+      const body = await readBody(req);
+      const g = safeGroup(body.group);
+      const names = Array.isArray(body.names) ? body.names : (body.name ? [body.name] : []);
+      if (!names.length) return send(res, 400, { error: 'names required' });
+      const allTags = loadTags();
+      const out = names.map((name) => {
+        try {
+          if (activeJobFor(name, g)) throw new Error('该库有任务进行中');
+          const rep = latestReport(name, g);
+          const url = rep && rep.library && rep.library.source_url;
+          if (!url) throw new Error('无法从报告恢复源码仓地址（library.source_url 缺失）');
+          const sub = (rep.library.source_subpath && String(rep.library.source_subpath).trim()) || undefined;
+          const tags = allTags[tagKey(g, name)] || [];
+          const tag = tags.includes('primary') ? 'primary' : (tags[0] || 'primary');
+          const j = startClone({ url, subpath: sub, group: g, tag, handle: name, overwrite: true });
+          return { name, jobId: j.id };
+        } catch (e) { return { name, error: String(e.message || e) }; }
       });
       return send(res, 200, { jobs: out });
     }

@@ -406,12 +406,20 @@ and `opencode` with a configured model. Excel export additionally needs
   For dim 9: `scripts/harmony_adapted.js` (same module) stamps
   `dependencies[].harmony_adapted` so an adapted dep is **not** a blocker — this
   extends the earlier "ported runtimes" 口径 from language runtimes to individual libs.
-- **导出 Excel (`/api/export`):** dashboard 「导出 Excel」按钮 → server spawns
+- **导出 Excel (`/api/export`):** dashboard 「导出 Excel(定制表)」按钮 → server spawns
   `scripts/export_xlsx.py` (Python + **openpyxl**) which flattens every library's
-  latest `report.json` into one multi-sheet summary workbook (汇总 + 依赖/系统平台API/
-  动态加载库/鸿蒙阻碍点/不支持API清单/语言分布/… detail sheets, one row per nested item), streamed back
-  as a download. `?names=a,b` exports only selected libs. The script is standalone
-  (CI/offline) too; openpyxl is the **only** third-party dep (web/ stays zero-dep).
+  latest `report.json` into **一张宽表**「分析汇总」(两级表头, 每库一行), streamed back
+  as a download. 列组含 基本信息/开源协议/代码量/平台适配/代码分区/能力画像/云服务/鸿蒙适配评估,
+  外加 **鸿蒙移植·阻碍/假设/关键路径** 组三列——内容**和报告 dim-9 一样详细**(富文本多行单元格:
+  分布 headline + 逐条完整字段): `移植阻碍点(严重度分布)`(逐条 severity·adaptability·category·source·
+  鸿蒙状态 + `问题`/`改造`/`证据`, 按归一后 `severity` 整格上色)、`目标能力假设(阻碍分布)`(逐条
+  能力·必需性·`target_status` emoji + `影响`/caps键, required 优先·状态重→轻排, 按最严重 required 上色)、
+  `关键路径依赖(建议移植顺序)`(按 `critical_dependencies[].order` 升序逐条 名称·人天分担·`为何关键`·关联, 中性)。
+  数据格**按值语义配色**
+  (`_Styled` str 子类携 fill_key + `_SEMANTIC_FILL` 软色, 与面板 badge 一致): 移植分级/代码适配/运行前提/
+  难度 + 上述新列均随值上色, 未命中的普通格仍走斑马纹。**存量报告需重新分析才有 target_assumptions/
+  blockers/critical_dependencies**——缺失时新列优雅显示 `无`/`—` 不报错。`?names=a,b` exports only
+  selected libs. The script is standalone (CI/offline) too; openpyxl is the **only** third-party dep (web/ stays zero-dep).
 
 ## Gotchas (learned the hard way)
 

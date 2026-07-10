@@ -1,0 +1,1009 @@
+{
+  "languages": {
+    "primary": "Go",
+    "all": [
+      "Go",
+      "Markdown",
+      "YAML",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Go",
+        "files": 9,
+        "code": 427,
+        "pct": 89.52,
+        "production": {
+          "files": 7,
+          "code": 361
+        },
+        "test": {
+          "files": 2,
+          "code": 66
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 1,
+        "code": 26,
+        "pct": 5.45,
+        "production": {
+          "files": 1,
+          "code": 26
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "YAML",
+        "files": 1,
+        "code": 17,
+        "pct": 3.56,
+        "production": {
+          "files": 1,
+          "code": 17
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 1.47,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 12,
+      "code": 477,
+      "comment": 36,
+      "blank": 127,
+      "total_lines": 640
+    },
+    "production": {
+      "files": 10,
+      "code": 411,
+      "comment": 31,
+      "blank": 109,
+      "total_lines": 551
+    },
+    "test": {
+      "files": 2,
+      "code": 66,
+      "comment": 5,
+      "blank": 18,
+      "total_lines": 89
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 433,
+        "category": "production",
+        "by_category": {
+          "production": 367,
+          "test": 66
+        }
+      },
+      {
+        "dir": "cmd",
+        "code": 44,
+        "category": "production",
+        "by_category": {
+          "production": 44
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 8,
+        "code": 367
+      },
+      {
+        "dir": "cmd/gocopy",
+        "files": 1,
+        "code": 32
+      },
+      {
+        "dir": "cmd/gopaste",
+        "files": 1,
+        "code": 12
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和。仅 x86 有而无 arm 回退的部分是 arm64 鸿蒙 PC上的适配点，供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 2,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "Go": {
+        "files": 2,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "Go 语言跨平台剪贴板访问库，提供文本字符串的读取（粘贴）与写入（复制）功能。通过 Go build tag 按平台自动选择原生剪贴板后端：Windows 上用 Win32 API，macOS 上用 pbpaste/pbcopy，Linux/Unix 上用 xclip/xsel/wl-clipboard 等外部命令。附带 gocopy、gopaste 两个命令行工具用于 shell 管道操作。仅支持 UTF-8 纯文本，不处理富文本或二进制剪贴板内容。",
+    "categories": [
+      {
+        "name": "剪贴板读取",
+        "description": "从系统剪贴板读取文本内容，返回 UTF-8 字符串",
+        "evidence": [
+          "clipboard.go:9-11",
+          "clipboard_windows.go:54-92",
+          "clipboard_darwin.go:26-33",
+          "clipboard_unix.go:113-127"
+        ]
+      },
+      {
+        "name": "剪贴板写入",
+        "description": "将 UTF-8 文本写入系统剪贴板，供其他应用粘贴使用",
+        "evidence": [
+          "clipboard.go:14-16",
+          "clipboard_windows.go:94-157",
+          "clipboard_darwin.go:35-52",
+          "clipboard_unix.go:129-149"
+        ]
+      },
+      {
+        "name": "命令行工具",
+        "description": "提供 gocopy（标准输入→剪贴板）和 gopaste（剪贴板→标准输出）两个 CLI 命令，便于在 shell 管道中使用剪贴板",
+        "evidence": [
+          "cmd/gocopy/gocopy.go",
+          "cmd/gopaste/gopaste.go"
+        ]
+      }
+    ],
+    "domain": "桌面系统集成",
+    "target_users": "Go 应用开发者",
+    "ecosystem": "go"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件完整包含 BSD 3-Clause 条款（再发布须保留版权声明与免责声明、禁止用作者名义背书）；Go 源文件头部注释注明 'BSD-style license' 与 LICENSE 一致。",
+    "notes": "宽松许可，允许源码与二进制再发布，只需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "go.mod"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "go.mod 仅声明模块路径 github.com/atotto/clipboard，无第三方 Go 依赖。运行期依赖全为系统级工具或无依赖：Windows 平台通过 syscall 动态加载系统 DLL（user32.dll/kernel32.dll）调用 Win32 剪贴板 API；macOS 通过 os/exec 调用系统内置命令 pbpaste/pbcopy；Linux/Unix 通过 os/exec 调用 xclip/xsel/wl-clipboard/termux-clipboard 等外部命令。这些均为所在平台的系统组件，非第三方库依赖。"
+  },
+  "native_api": {
+    "summary": "跨平台设计：通过 Go build tag 为各平台分别实现剪贴板后端。Windows 上直接调用 Win32 DLL API，macOS/Linux 上通过 os/exec 调用外部命令，Plan9 上读写设备文件 /dev/snarf。无 FFI 桥接层（纯 Go）。",
+    "groups": [
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "IsClipboardFormatAvailable",
+            "purpose": "检查剪贴板是否包含指定格式数据",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:59"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "OpenClipboard",
+            "purpose": "打开剪贴板以获取排他访问",
+            "count": 2,
+            "evidence": [
+              "clipboard_windows.go:62",
+              "clipboard_windows.go:100"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CloseClipboard",
+            "purpose": "关闭剪贴板，释放互斥锁",
+            "count": 2,
+            "evidence": [
+              "clipboard_windows.go:87",
+              "clipboard_windows.go:152"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "EmptyClipboard",
+            "purpose": "清空剪贴板内容",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:105"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetClipboardData",
+            "purpose": "获取剪贴板指定格式数据句柄",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:67"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SetClipboardData",
+            "purpose": "将数据写入剪贴板",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:146"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GlobalAlloc",
+            "purpose": "分配全局可移动内存块",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:115"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GlobalFree",
+            "purpose": "释放全局内存块",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:122"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GlobalLock",
+            "purpose": "锁定全局内存以获取指针",
+            "count": 2,
+            "evidence": [
+              "clipboard_windows.go:73",
+              "clipboard_windows.go:126"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GlobalUnlock",
+            "purpose": "解锁全局内存",
+            "count": 2,
+            "evidence": [
+              "clipboard_windows.go:81",
+              "clipboard_windows.go:138"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "lstrcpyW",
+            "purpose": "拷贝宽字符串到全局内存",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:132"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "go_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "os/exec.Command",
+            "purpose": "执行外部剪贴板命令（xclip/xsel/pbpaste/pbcopy 等）",
+            "count": 8,
+            "evidence": [
+              "clipboard_darwin.go:19",
+              "clipboard_unix.go:103",
+              "clipboard_unix.go:110"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os/exec.LookPath",
+            "purpose": "查找外部命令是否存在",
+            "count": 6,
+            "evidence": [
+              "clipboard_unix.go:56-57",
+              "clipboard_unix.go:66"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "syscall.MustLoadDLL",
+            "purpose": "加载 Windows 系统 DLL（user32）",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:22"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "syscall.NewLazyDLL",
+            "purpose": "延迟加载 Windows 系统 DLL（kernel32）",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:30"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "syscall.StringToUTF16",
+            "purpose": "Go 字符串转 UTF-16 用于 Win32 剪贴板写入",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:111"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "syscall.UTF16ToString",
+            "purpose": "Win32 返回的 UTF-16 转 Go 字符串",
+            "count": 1,
+            "evidence": [
+              "clipboard_windows.go:79"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "runtime.LockOSThread",
+            "purpose": "锁定 Goroutine 在固定 OS 线程上执行剪贴板操作",
+            "count": 2,
+            "evidence": [
+              "clipboard_windows.go:57",
+              "clipboard_windows.go:97"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "runtime.UnlockOSThread",
+            "purpose": "解除 Goroutine 的 OS 线程锁定",
+            "count": 2,
+            "evidence": [
+              "clipboard_windows.go:58",
+              "clipboard_windows.go:98"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "unsafe.Pointer",
+            "purpose": "Win32 全局内存指针转换",
+            "count": 3,
+            "evidence": [
+              "clipboard_windows.go:79",
+              "clipboard_windows.go:115",
+              "clipboard_windows.go:132"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "os.Open/OpenFile",
+            "purpose": "读写 Plan9 /dev/snarf 设备文件",
+            "count": 2,
+            "evidence": [
+              "clipboard_plan9.go:15",
+              "clipboard_plan9.go:30"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "os.Getenv",
+            "purpose": "读取 WAYLAND_DISPLAY 环境变量判断窗口系统",
+            "count": 1,
+            "evidence": [
+              "clipboard_unix.go:52"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "plan9_device",
+        "category": "system",
+        "platform": "plan9",
+        "apis": [
+          {
+            "name": "devfs (/dev/snarf)",
+            "purpose": "经 os.Open/os.OpenFile 读写的 Plan9 剪贴板设备文件",
+            "count": 2,
+            "evidence": [
+              "clipboard_plan9.go:15",
+              "clipboard_plan9.go:30"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "user32.dll",
+        "mechanism": "syscall.MustLoadDLL",
+        "optional": false,
+        "acquisition": "system",
+        "source": "Windows 系统 DLL，提供剪贴板相关 Win32 API",
+        "description": "Windows 用户界面核心 DLL，提供 OpenClipboard/CloseClipboard/GetClipboardData/SetClipboardData 等剪贴板操作 API",
+        "evidence": [
+          "clipboard_windows.go:22-28"
+        ]
+      },
+      {
+        "name": "kernel32.dll",
+        "mechanism": "syscall.NewLazyDLL",
+        "optional": false,
+        "acquisition": "system",
+        "source": "Windows 系统 DLL，提供内存管理与字符串操作 API",
+        "description": "Windows 内核 DLL，提供 GlobalAlloc/GlobalLock/lstrcpyW 等全局内存分配与字符串拷贝 API，用于剪贴板数据传输",
+        "evidence": [
+          "clipboard_windows.go:30-35"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时无网络、无服务依赖；通过 os/exec 调用系统剪贴板命令完成实际操作；Unix 平台读取 WAYLAND_DISPLAY 环境变量选择 Wayland 后端。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "/dev/snarf (Plan9)",
+        "purpose": "Plan9 平台的剪贴板设备文件，读写操作系统剪贴板内容",
+        "evidence": [
+          "clipboard_plan9.go:15",
+          "clipboard_plan9.go:30"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "WAYLAND_DISPLAY",
+        "purpose": "Unix 平台检测是否在 Wayland 环境下运行，选择 wl-clipboard 作为剪贴板后端",
+        "evidence": [
+          "clipboard_unix.go:52"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "pbpaste",
+        "purpose": "macOS 平台读取系统剪贴板内容",
+        "evidence": [
+          "clipboard_darwin.go:14",
+          "clipboard_darwin.go:26-28"
+        ]
+      },
+      {
+        "command": "pbcopy",
+        "purpose": "macOS 平台写入内容到系统剪贴板",
+        "evidence": [
+          "clipboard_darwin.go:15",
+          "clipboard_darwin.go:35-37"
+        ]
+      },
+      {
+        "command": "xclip",
+        "purpose": "Linux X11 平台读写剪贴板（优先）",
+        "evidence": [
+          "clipboard_unix.go:37",
+          "clipboard_unix.go:63-66"
+        ]
+      },
+      {
+        "command": "xsel",
+        "purpose": "Linux X11 平台读写剪贴板（备选）",
+        "evidence": [
+          "clipboard_unix.go:33",
+          "clipboard_unix.go:70-73"
+        ]
+      },
+      {
+        "command": "wl-copy",
+        "purpose": "Linux Wayland 平台写入剪贴板",
+        "evidence": [
+          "clipboard_unix.go:20",
+          "clipboard_unix.go:56"
+        ]
+      },
+      {
+        "command": "wl-paste",
+        "purpose": "Linux Wayland 平台读取剪贴板",
+        "evidence": [
+          "clipboard_unix.go:21",
+          "clipboard_unix.go:57"
+        ]
+      },
+      {
+        "command": "termux-clipboard-get",
+        "purpose": "Android Termux 环境读取剪贴板",
+        "evidence": [
+          "clipboard_unix.go:22",
+          "clipboard_unix.go:80"
+        ]
+      },
+      {
+        "command": "termux-clipboard-set",
+        "purpose": "Android Termux 环境写入剪贴板",
+        "evidence": [
+          "clipboard_unix.go:23",
+          "clipboard_unix.go:80"
+        ]
+      },
+      {
+        "command": "powershell.exe",
+        "purpose": "WSL 环境读取 Windows 剪贴板（通过 Get-Clipboard）",
+        "evidence": [
+          "clipboard_unix.go:18",
+          "clipboard_unix.go:91"
+        ]
+      },
+      {
+        "command": "clip.exe",
+        "purpose": "WSL 环境写入 Windows 剪贴板",
+        "evidence": [
+          "clipboard_unix.go:19",
+          "clipboard_unix.go:90"
+        ]
+      }
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Go（go.mod 无 go 指令约束；.travis.yml 使用 go1.13.x 与 go1.x）",
+    "runtime_version": "Go >= 1.13（据 .travis.yml 最低测试版本）",
+    "build_system": "Go modules（go build / go install）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_windows.go // +build windows",
+          ".travis.yml os:windows"
+        ]
+      },
+      {
+        "os": "darwin",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_darwin.go // +build darwin",
+          ".travis.yml os:osx"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "clipboard_darwin.go // +build darwin（Go 交叉编译覆盖）"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_unix.go // +build linux",
+          ".travis.yml os:linux"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "arm64",
+        "evidence": [
+          "clipboard_unix.go // +build linux（Go 交叉编译覆盖）"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_unix.go // +build freebsd"
+        ]
+      },
+      {
+        "os": "netbsd",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_unix.go // +build netbsd"
+        ]
+      },
+      {
+        "os": "openbsd",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_unix.go // +build openbsd"
+        ]
+      },
+      {
+        "os": "solaris",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_unix.go // +build solaris"
+        ]
+      },
+      {
+        "os": "dragonfly",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_unix.go // +build dragonfly"
+        ]
+      },
+      {
+        "os": "plan9",
+        "arch": "amd64",
+        "evidence": [
+          "clipboard_plan9.go // +build plan9"
+        ]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "main",
+        "name": "gocopy",
+        "command": "从标准输入读取文本写入剪贴板，支持 -t 超时后自动清空",
+        "evidence": [
+          "cmd/gocopy/gocopy.go:12-38"
+        ]
+      },
+      {
+        "type": "main",
+        "name": "gopaste",
+        "command": "从剪贴板读取文本输出到标准输出",
+        "evidence": [
+          "cmd/gopaste/gopaste.go:9-16"
+        ]
+      }
+    ],
+    "packaging": "Go 库，通过 go get/import 使用；附带 gocopy/gopaste 两个 CLI 工具。无捆绑运行时。",
+    "notes": "依赖 go.mod 无 go 版本指令。.travis.yml 最低测试 go1.13.x。库通过 Go build tag 按编译目标平台自动选择剪贴板后端。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Go 1.24+ 运行时上；原生 Go 交叉编译 GOOS=ohos；arm64/x86_64；自研内核，非 Linux ABI）",
+    "porting_class": "needs_adaptation",
+    "effort": {
+      "person_days": [
+        2,
+        4
+      ],
+      "breakdown": [
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            1,
+            2
+          ],
+          "basis": "新增 clipboard_ohos.go 后端文件（约 50-80 行），通过 cgo 调用 OHOS NDK oh_pasteboard.h C API（OH_Pasteboard_Create/SetData/GetData）实现 ReadAll/WriteAll；当前目录下无平台 API 调用点（现有文件编译隔离），新增文件 ≈ 新代码量"
+        },
+        {
+          "component": "build_system",
+          "person_days": [
+            0,
+            1
+          ],
+          "basis": "cgo 链接 libpasteboard.so，go.mod 无需新增依赖；GOOS=ohos + CGO_ENABLED=1 编译"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            1,
+            1
+          ],
+          "basis": "在鸿蒙 PC Go 运行时上运行单元测试（clipboard_test.go 含 2 个 Test 函数、2 个 Benchmark），验证剪贴板读写正确性"
+        }
+      ],
+      "level": "medium"
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:go_runtime",
+        "capability": "Go 运行时已在鸿蒙 PC 移植",
+        "capability_key": "go",
+        "required": true,
+        "target_status": "available",
+        "impact": "Go 运行时可用则纯 Go 代码与 cgo 均可在鸿蒙上运行——这是本库可移植的根本前提",
+        "source": "references/harmony-pc-capabilities.json#runtimes.go",
+        "target_status_model": "available"
+      },
+      {
+        "id": "ta:dnd_clipboard",
+        "capability": "鸿蒙 PC 剪贴板/拖拽可用性",
+        "capability_key": "dnd_clipboard",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "鸿蒙 Pasteboard API 在 SDK 文档中标记为 PhonePC/2in1Tablet 支持（@ohos.pasteboard / oh_pasteboard.h），但 PC 形态实际可用性与权限授予待核实。若不可用则本库核心功能完全无法实现。",
+        "source": "references/harmony-pc-capabilities.json#desktop_integration.dnd_clipboard；SDK 文档: @ohos.pasteboard (剪贴板).md, oh_pasteboard.h.md",
+        "target_status_model": "unknown"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.READ_PASTEBOARD",
+        "reason": "读取剪贴板内容（ReadAll）需要此权限；写入操作（WriteAll）SDK 文档未标注需权限",
+        "source_capability": "clipboard",
+        "harmony_status": "unknown",
+        "evidence": [
+          "oh_pasteboard.h.md:719 标注 OH_Pasteboard_GetData 需要权限 ohos.permission.READ_PASTEBOARD"
+        ]
+      }
+    ],
+    "critical_dependencies": [],
+    "summary": "本库为 Go 语言剪贴板访问库，鸿蒙 PC 已移植 Go 运行时（caps: available），纯 Go 代码可直接编译运行。当前各平台后端文件通过 Go build tag 条件编译隔离，鸿蒙平台仅需新增一个 clipboard_ohos.go 后端文件（约 50-80 行），通过 cgo 调用 OHOS NDK 的 oh_pasteboard.h / libpasteboard.so C API 实现剪贴板读写。鸿蒙 SDK 文档已提供 @ohos.pasteboard (ArkTS) 与 oh_pasteboard.h (C) 双通道 API，PhonePC 标记支持，但 PC 形态实际可用性与 ohos.permission.READ_PASTEBOARD 权限授予待核实（caps 为 unknown），下调 confidence 至 medium。核心功能全部可适配，无不可适配 API。总体工作量约 2-4 人天。",
+    "blockers": [
+      {
+        "id": "bk:ohos_backend",
+        "issue": "当前无鸿蒙平台剪贴板后端实现，需新增 clipboard_ohos.go",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "platform_backend",
+        "source_dimension": "native_api",
+        "harmony_status": "replace_with_ohos",
+        "remediation": "新建 clipboard_ohos.go（//go:build ohos），用 cgo 调用 OHOS NDK C API：OH_Pasteboard_Create → OH_Pasteboard_GetData/OH_Pasteboard_SetData → OH_Pasteboard_Destroy（libpasteboard.so）。纯文本通过 OH_UdmfData + PASTEBOARD_MIMETYPE_TEXT_PLAIN 写入/读取。参考 SDK 文档 oh_pasteboard.h.md、@ohos.pasteboard (剪贴板).md。",
+        "caused_by": [
+          "ta:go_runtime",
+          "ta:dnd_clipboard"
+        ],
+        "evidence": [
+          "clipboard.go:9-16"
+        ]
+      },
+      {
+        "id": "bk:read_permission",
+        "issue": "读取剪贴板需要 ohos.permission.READ_PASTEBOARD（SDK 文档标注）",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "permission",
+        "source_dimension": "native_api",
+        "harmony_status": "needs_permission",
+        "remediation": "在应用打包/权限声明中申请 ohos.permission.READ_PASTEBOARD；写入操作（WriteAll）SDK 文档未标注权限需求，WriteAll 可率先实现无需权限框架。",
+        "caused_by": [
+          "ta:dnd_clipboard"
+        ],
+        "evidence": [
+          "oh_pasteboard.h.md:719"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "clipboard.go 公共 API 层（ReadAll/WriteAll 接口定义）",
+        "note": "纯 Go 接口，零改动",
+        "evidence": [
+          "clipboard.go:1-20"
+        ]
+      },
+      {
+        "aspect": "cmd/gocopy、cmd/gopaste CLI 工具",
+        "note": "纯 Go 标准库（flag/io/ioutil/os/fmt），交叉编译即用",
+        "evidence": [
+          "cmd/gocopy/gocopy.go",
+          "cmd/gopaste/gopaste.go"
+        ]
+      },
+      {
+        "aspect": "各平台后端文件（Windows/macOS/Unix/Plan9）",
+        "note": "通过 build tag 条件编译隔离，OHOS 平台不编译这些文件，现有文件零改动",
+        "evidence": [
+          "clipboard_windows.go:5",
+          "clipboard_darwin.go:5",
+          "clipboard_unix.go:5"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "新增 clipboard_ohos.go（//go:build ohos），用 cgo 调用 oh_pasteboard.h C API（libpasteboard.so）实现 readAll/writeAll",
+      "配置 cgo LDFLAGS 链接 libpasteboard.so，确保 GOOS=ohos CGO_ENABLED=1 编译通过",
+      "声明 ohos.permission.READ_PASTEBOARD 权限（读取操作必需）；WriteAll 可先实现无需权限",
+      "在鸿蒙 PC Go 运行时上运行 clipboard_test.go 验证读写正确性（含 UTF-8/多语言文本）"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Go 运行时上）。SDK 文档 (@ohos.pasteboard + oh_pasteboard.h) 已提供完整的剪贴板 C API（OH_Pasteboard_* 系列，API 13+），PhonePC 标记支持，但 PC 形态实际可用性 caps JSON 标记 unknown——下调 confidence 至 medium。归一将据 unadaptable_apis 为空派生 adaptation_assessment（核心+平台差异均全可适配，overall=adaptable）。若目标是 ArkTS 沙箱应用（模型 B）则 Go 运行时不可用，需整体换 ArkTS 实现，person_days 大幅上升。",
+    "porting_class_model": "needs_adaptation",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    },
+    "confidence_model": "medium",
+    "functional_viability": "unverified"
+  },
+  "library": {
+    "name": "clipboard",
+    "kind": "library",
+    "package_name": "github.com/atotto/clipboard",
+    "aliases": [],
+    "import_names": [
+      "github.com/atotto/clipboard"
+    ],
+    "source_url": "https://github.com/atotto/clipboard.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-09T04:00:03.915Z",
+    "commit": null,
+    "one_liner": "Go 语言跨平台剪贴板读写库，支持文本的复制与粘贴",
+    "ecosystem": "go",
+    "bindings": []
+  },
+  "meta": {
+    "observations": [
+      {
+        "dimension": "capability_profile",
+        "field": "scenarios",
+        "kind": "new_value",
+        "value": "clipboard",
+        "rationale": "剪贴板访问库的核心场景为剪贴板操作，不属于推荐的 gui/rendering_3d/media/hardware 四类。已在 scenarios 中 coin 'clipboard' key 描述。建议将 clipboard 加入推荐场景集。"
+      },
+      {
+        "dimension": "harmony_caps",
+        "field": "desktop_integration",
+        "kind": "caps_gap",
+        "value": "ohos.permission.READ_PASTEBOARD",
+        "rationale": "鸿蒙 pasteboard SDK 文档标注 OH_Pasteboard_GetData 需要 ohos.permission.READ_PASTEBOARD 权限，但 harmony-pc-capabilities.json 权限模型段未收录此权限。建议补入 permissions 段以支持剪贴板类库的权限评估。"
+      }
+    ],
+    "harmony_warnings_dismissed": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "normalized_version": 5,
+    "confidence_overall_model": null
+  },
+  "capability_profile": {
+    "summary": "本项目不涉及 GUI 渲染、3D 图形、媒体编解码或特定硬件加速场景。核心场景为跨平台剪贴板访问，通过各平台原生剪贴板机制实现。",
+    "scenarios": [
+      {
+        "key": "clipboard",
+        "present": true,
+        "kind": [
+          "win32_clipboard",
+          "osx_pasteboard",
+          "x11_clipboard",
+          "wayland_clipboard",
+          "plan9_snarf"
+        ],
+        "via": [
+          "user32.dll",
+          "pbpaste/pbcopy",
+          "xclip/xsel",
+          "wl-copy/wl-paste",
+          "/dev/snarf"
+        ],
+        "harmony_status": "unknown",
+        "adaptation": "该库的唯一功能为剪贴板访问，各平台通过不同的原生机制实现。鸿蒙 PC 的剪贴板/DnD 能力待核实（dnd_clipboard 状态 unknown），需使用鸿蒙 pasteboard API 或等效机制提供新后端。",
+        "evidence": [
+          "clipboard_windows.go:22-36",
+          "clipboard_darwin.go:14-24",
+          "clipboard_unix.go:33-49",
+          "clipboard_plan9.go:15-30"
+        ]
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "纯本地剪贴板访问库，无任何云端服务依赖。不涉及登录鉴权、云存储、数据库、推送、分析、崩溃上报等任何云厂商能力。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部生产代码为纯 Go，无 C 扩展或平台特定源码需改造。现有平台后端文件通过 build tag 条件编译互不干扰，鸿蒙化仅需新增一个后端文件，现有代码 100% 可直接复用。",
+    "coverage": {
+      "production_code": 411,
+      "partitioned_code": 411,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 411,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 367,
+            "reason": "仓库根目录：clipboard.go 定义公共 API（ReadAll/WriteAll），各平台后端文件通过 build tag 条件编译。Windows/macOS/Unix/Plan9 实现文件各自独立且均编译隔离，鸿蒙平台仅需新增一个 build-tag 守卫的后端文件即可，现有文件零改动。",
+            "evidence": [
+              "clipboard.go:9-16"
+            ]
+          },
+          {
+            "path": "cmd/gocopy",
+            "loc": 32,
+            "reason": "CLI 工具 gocopy：纯 Go 标准库逻辑（flag/io/ioutil/os/time），调用本库公共 API，完全可移植无需改动",
+            "evidence": [
+              "cmd/gocopy/gocopy.go:1-38"
+            ]
+          },
+          {
+            "path": "cmd/gopaste",
+            "loc": 12,
+            "reason": "CLI 工具 gopaste：纯 Go 标准库逻辑（fmt），调用本库公共 API，完全可移植无需改动",
+            "evidence": [
+              "cmd/gopaste/gopaste.go:1-16"
+            ]
+          }
+        ],
+        "basis": "所有 Go 代码仅使用 Go 标准库或通过 Go build tag 条件编译的系统调用。Go 运行时已在鸿蒙 PC 移植（caps: available），纯 Go 代码交叉编译即用。平台后端文件通过编译标签隔离，现有实现无需改动——鸿蒙适配是新增而非修改。"
+      }
+    ],
+    "notes": "README (26 行)、.travis.yml (17 行)、.identity.json (7 行) 等配置/文档文件也归入 reuse_direct 桶。鸿蒙化的实际工作量为新增一个 clipboard_ohos.go 后端文件（约 50-80 行），不在现有代码行数中体现。"
+  }
+}

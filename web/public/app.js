@@ -278,6 +278,7 @@ async function renderDashboard() {
         </select>
       </div>
       <button class="btn sm primary" id="batchAnalyze" disabled>分析选中</button>
+      <button class="btn sm" id="batchClone" disabled title="重新克隆选中的「有报告但源码仓已删」的库">克隆选中</button>
       <button class="btn sm" id="refreshBtn">刷新</button>
     </div>
     <div id="jobsStrip" class="jobs-strip"></div>
@@ -292,6 +293,7 @@ async function renderDashboard() {
   $('#portingFilter').onchange = () => { page = 1; renderList(); };
   $('#levelFilter').onchange = () => { page = 1; renderList(); };
   $('#batchAnalyze').onclick = batchAnalyze;
+  $('#batchClone').onclick = batchClone;
   $('#groupSelect').onchange = () => {
     activeGroup = $('#groupSelect').value || 'default';
     localStorage.setItem('activeGroup', activeGroup);
@@ -380,8 +382,10 @@ function renderList() {
   const pages = Math.max(1, Math.ceil(libs.length / pageSize));
   page = Math.min(page, pages);
   const slice = libs.slice((page - 1) * pageSize, page * pageSize);
-  const visCloned = libs.filter((l) => l.cloned).map((l) => l.name);
-  const allSel = visCloned.length && visCloned.every((n) => selected.has(n));
+  // 可勾选＝已克隆(可分析) 或 有报告地址的报告-only 库(可重新克隆)；全选只作用于当前分页。
+  const selectable = (l) => l.cloned || !!l.cloneUrl;
+  const pageSelectable = slice.filter(selectable).map((l) => l.name);
+  const allSel = pageSelectable.length && pageSelectable.every((n) => selected.has(n));
 
   box.innerHTML = `<table class="libtable">
     <thead><tr>
@@ -392,7 +396,7 @@ function renderList() {
     </tr></thead><tbody>${slice.map((lib) => {
       const st = libStatus(lib); const s = lib.summary || {};
       return `<tr data-name="${esc(lib.name)}">
-        <td class="c-chk"><input type="checkbox" data-sel="${esc(lib.name)}" ${selected.has(lib.name) ? 'checked' : ''} ${lib.cloned ? '' : 'disabled'} /></td>
+        <td class="c-chk"><input type="checkbox" data-sel="${esc(lib.name)}" ${selected.has(lib.name) ? 'checked' : ''} ${selectable(lib) ? '' : 'disabled'} /></td>
         <td><a class="lname" href="#/lib/${enc(lib.name)}">${esc(lib.name)}</a>
             ${(lib.tags || []).map((t) => `<span class="chip ${TAG_CLS[t] || ''}">${esc(TAG_LABELS[t] || t)}</span>`).join('')}
             ${(lib.subpath || s.subpath) ? `<span class="chip" title="monorepo 子目录">▸ ${esc(lib.subpath || s.subpath)}</span>` : ''}
@@ -408,16 +412,14 @@ function renderList() {
         <td class="c-st">${s.difficultyLevel ? `<span class="badge ${LVL_CLS[s.difficultyLevel] || 'gray'}"${s.personDays ? ` title="${esc(fmtDays(s.personDays))}"` : ''}>${esc(LVL_LABELS[s.difficultyLevel] || s.difficultyLevel)}</span>` : '—'}</td>
         <td class="c-act">
           <a class="btn sm ghost" href="#/lib/${enc(lib.name)}">详情</a>
-          ${lib.latest && lib.latest.reportAvailable ? `<a class="btn sm ghost" href="#/topology/${enc(lib.name)}" title="在依赖拓扑中查看">🕸 拓扑</a>` : ''}
-          <button class="btn sm ghost" data-act="tags" data-name="${esc(lib.name)}" title="编辑来源标签">🏷</button>
+          ${(!lib.cloned && lib.cloneUrl) ? `<button class="btn sm primary" data-act="reclone" data-name="${esc(lib.name)}" ${lib.active ? 'disabled' : ''} title="源码仓已删，从报告地址重新克隆">克隆</button>` : ''}
           <button class="btn sm primary" data-act="analyze" data-name="${esc(lib.name)}" ${lib.active || !lib.cloned ? 'disabled' : ''}>分析</button>
-          <button class="btn sm ghost" data-act="migrate" data-name="${esc(lib.name)}" ${lib.active ? 'disabled' : ''} title="迁移到其他分组">↗ 迁移</button>
-          <button class="btn sm danger ghost" data-act="del" data-name="${esc(lib.name)}" ${lib.active ? 'disabled' : ''} title="彻底删除该库（代码 + 分析记录 + 标签）">🗑 删除</button>
+          <button class="btn sm ghost" data-act="more" data-name="${esc(lib.name)}" title="更多操作（拓扑/标签/迁移/删除）">⋯</button>
         </td></tr>`;
     }).join('')}</tbody></table>`;
 
   $('#selAll').onchange = () => {
-    visCloned.forEach((n) => (allSel ? selected.delete(n) : selected.add(n)));
+    pageSelectable.forEach((n) => (allSel ? selected.delete(n) : selected.add(n)));
     renderList();
   };
   $$('[data-sel]', box).forEach((cb) => cb.onchange = () => {
@@ -425,9 +427,8 @@ function renderList() {
     updateBatchBtn();
   });
   $$('[data-act="analyze"]', box).forEach((b) => b.onclick = () => analyzeOne(b.dataset.name));
-  $$('[data-act="tags"]', box).forEach((b) => b.onclick = () => openTagsModal(b.dataset.name));
-  $$('[data-act="del"]', box).forEach((b) => b.onclick = () => deleteLib(b.dataset.name));
-  $$('[data-act="migrate"]', box).forEach((b) => b.onclick = () => openMigrateModal(b.dataset.name));
+  $$('[data-act="reclone"]', box).forEach((b) => b.onclick = () => recloneOne(b.dataset.name));
+  $$('[data-act="more"]', box).forEach((b) => b.onclick = () => openRowActions(b.dataset.name));
 
   $('#pager').innerHTML = `
     <div class="pager-nav">
@@ -455,6 +456,26 @@ function renderList() {
   updateBatchBtn();
 }
 
+// 「⋯」行操作面板：把次要操作（拓扑/标签/迁移/删除）收进弹窗，避免操作列过宽顶出屏幕。
+function openRowActions(name) {
+  const lib = libsCache.find((l) => l.name === name) || {};
+  const active = !!lib.active;
+  const hasReport = !!(lib.latest && lib.latest.reportAvailable);
+  showModal(`<h2>操作 · ${esc(name)}</h2>
+    <div class="rowacts">
+      ${hasReport ? '<button class="btn" data-ra="topo">🕸 依赖拓扑</button>' : ''}
+      <button class="btn" data-ra="tags">🏷 编辑来源标签</button>
+      <button class="btn" data-ra="migrate" ${active ? 'disabled' : ''}>↗ 迁移分组</button>
+      <button class="btn danger ghost" data-ra="del" ${active ? 'disabled' : ''}>🗑 删除该库</button>
+    </div>
+    <div class="actions"><button class="btn" data-close>关闭</button></div>`);
+  const bind = (k, fn) => { const el = $(`[data-ra="${k}"]`); if (el) el.onclick = () => { closeModal(); fn(); }; };
+  bind('topo', () => { location.hash = '#/topology/' + enc(name); });
+  bind('tags', () => openTagsModal(name));
+  bind('migrate', () => openMigrateModal(name));
+  bind('del', () => deleteLib(name));
+}
+
 // 编辑某库的来源标签（主软件/被动依赖，可同时勾选）
 function openTagsModal(name) {
   const lib = libsCache.find((l) => l.name === name);
@@ -476,10 +497,13 @@ function openTagsModal(name) {
 }
 
 function updateBatchBtn() {
-  const b = $('#batchAnalyze'); if (!b) return;
-  const n = selected.size;
-  b.disabled = n === 0;
-  b.textContent = n ? `分析选中 (${n})` : '分析选中';
+  const byName = (n) => libsCache.find((x) => x.name === n);
+  const analyzeN = [...selected].filter((n) => { const l = byName(n); return l && l.cloned; }).length;
+  const cloneN = [...selected].filter((n) => { const l = byName(n); return l && !l.cloned && l.cloneUrl; }).length;
+  const ba = $('#batchAnalyze');
+  if (ba) { ba.disabled = analyzeN === 0; ba.textContent = analyzeN ? `分析选中 (${analyzeN})` : '分析选中'; }
+  const bc = $('#batchClone');
+  if (bc) { bc.disabled = cloneN === 0; bc.textContent = cloneN ? `克隆选中 (${cloneN})` : '克隆选中'; }
 }
 
 function renderJobsStrip(jobs) {
@@ -856,14 +880,37 @@ async function promoteDep(url, key) {
 }
 
 async function batchAnalyze() {
-  const names = [...selected];
+  const names = [...selected].filter((n) => { const l = libsCache.find((x) => x.name === n); return l && l.cloned; });
   if (!names.length) return;
   const r = await api('/api/analyze', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ names })) });
   const ok = (r.jobs || []).filter((j) => j.jobId);
   const err = (r.jobs || []).filter((j) => j.error);
   toast(`已提交 ${ok.length} 个分析任务` + (err.length ? `，${err.length} 个失败` : ''), err.length ? 'err' : 'ok');
-  selected.clear();
+  names.forEach((n) => selected.delete(n));
   loadDash();
+}
+
+// 批量重新克隆选中的「有报告但源码仓已删」的库（cloneUrl 由后端从报告 library.source_url 恢复）。
+async function batchClone() {
+  const names = [...selected].filter((n) => {
+    const l = libsCache.find((x) => x.name === n);
+    return l && !l.cloned && l.cloneUrl;
+  });
+  if (!names.length) return;
+  const r = await api('/api/reclone', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ names })) });
+  const ok = (r.jobs || []).filter((j) => j.jobId);
+  const err = (r.jobs || []).filter((j) => j.error);
+  toast(`已开始克隆 ${ok.length} 个库` + (err.length ? `，${err.length} 个失败` : ''), err.length ? 'err' : 'ok');
+  err.forEach((e) => toast(`${e.name}：${e.error}`, 'err'));
+  names.forEach((n) => selected.delete(n));
+  loadDash();
+}
+
+async function recloneOne(name) {
+  const r = await api('/api/reclone', { method: 'POST', headers: JSONH, body: JSON.stringify(withGroup({ names: [name] })) });
+  const j = (r.jobs || [])[0];
+  if (j && j.jobId) { selected.delete(name); toast(`已开始克隆 ${name}`, 'ok'); loadDash(); }
+  else toast((j && j.error) || '克隆失败', 'err');
 }
 
 // ---- clone modal ----------------------------------------------------------
@@ -920,6 +967,7 @@ async function openSettings() {
       <div id="sTestR" class="hint"></div></label>
     <label>opencode 命令 <input id="sCmd" type="text" value="${esc(s.opencodeCmd)}" /></label>
     <label>最大并发分析数 <input id="sConc" type="number" min="1" max="10" value="${s.maxConcurrent}" /></label>
+    <label>最大并发克隆数 <input id="sConcClone" type="number" min="1" max="10" value="${s.maxConcurrentClone}" /></label>
     <div class="row" style="gap:10px">
       <label style="flex:1;margin:0">重编速率 行/天 <input id="sRecRate" type="number" min="1" step="100" value="${s.recompileLocPerDay}" />
         <span class="hint" style="display:block">工作量分项「重编/交叉编译」= 代码分区 recompile_reuse 桶 LOC ÷ 此值</span></label>
@@ -950,7 +998,8 @@ async function openSettings() {
   $('#sSave').onclick = async () => {
     await api('/api/settings', { method: 'POST', headers: JSONH, body: JSON.stringify({
       model: $('#sModel').value.trim(), opencodeCmd: $('#sCmd').value.trim(),
-      maxConcurrent: Number($('#sConc').value) || 3, printLogs: $('#sLogs').checked,
+      maxConcurrent: Number($('#sConc').value) || 3,
+      maxConcurrentClone: Number($('#sConcClone').value) || 3, printLogs: $('#sLogs').checked,
       useCodegraph: $('#sCodegraph').checked, pruneGitAfterAnalyze: $('#sPruneGit').checked,
       enableNetworkResolve: $('#sNetResolve').checked, enableHarmonyMirror: $('#sHarmonyMirror').checked,
       enableAgentResolve: $('#sAgentResolve').checked,
