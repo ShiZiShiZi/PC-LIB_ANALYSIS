@@ -1,0 +1,466 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 7,
+        "code": 247,
+        "pct": 100.0,
+        "production": {
+          "files": 6,
+          "code": 164
+        },
+        "test": {
+          "files": 1,
+          "code": 83
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 7,
+      "code": 247,
+      "comment": 0,
+      "blank": 55,
+      "total_lines": 302
+    },
+    "production": {
+      "files": 6,
+      "code": 164,
+      "comment": 0,
+      "blank": 42,
+      "total_lines": 206
+    },
+    "test": {
+      "files": 1,
+      "code": 83,
+      "comment": 0,
+      "blank": 13,
+      "total_lines": 96
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 107,
+        "category": "production",
+        "by_category": {
+          "production": 107
+        }
+      },
+      {
+        "dir": "test",
+        "code": 83,
+        "category": "test",
+        "by_category": {
+          "test": 83
+        }
+      },
+      {
+        "dir": "lib",
+        "code": 57,
+        "category": "production",
+        "by_category": {
+          "production": 57
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 3,
+        "code": 107
+      },
+      {
+        "dir": "lib",
+        "files": 3,
+        "code": 57
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 7,
+    "frameworks": [
+      "jest/mocha"
+    ],
+    "by_language": {
+      "JavaScript": {
+        "files": 1,
+        "cases": 7
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "uuid 是一个轻量级的 RFC4122 兼容 UUID 生成库，提供 v1（基于时间戳和 MAC/随机节点标识）和 v4（基于随机数）两种 UUID 生成方案。该库设计为在同构代码中运行——Node.js 端使用 crypto 模块的高质量随机数生成，浏览器端则通过特征检测自动回退到 crypto.getRandomValues 或 Math.random()。适合需要在 Node.js 和浏览器中一致生成唯一标识符的应用开发场景。",
+    "categories": [
+      {
+        "name": "UUID v1 生成（时间戳型）",
+        "description": "基于 100ns 精度的 Gregorion 历元时间戳和 48 位伪随机节点标识生成 RFC4122 v1 UUID，包含时钟序列机制以应对时钟回退。",
+        "evidence": [
+          "v1.js:28-101"
+        ]
+      },
+      {
+        "name": "UUID v4 生成（随机型）",
+        "description": "基于高质量随机数源生成 RFC4122 v4 UUID，采用 122 位随机数加版本/变种标志位。",
+        "evidence": [
+          "v4.js:4-27"
+        ]
+      },
+      {
+        "name": "跨平台随机数适配",
+        "description": "自动检测运行环境：Node.js 下使用 crypto.randomBytes 获取 CSPRNG，浏览器下优先使用 crypto.getRandomValues（Web Crypto API），回退到 Math.random()。",
+        "evidence": [
+          "lib/rng.js:4-7",
+          "lib/rng-browser.js:7-31"
+        ]
+      },
+      {
+        "name": "命令行工具",
+        "description": "通过 CLI 直接生成 v1 或 v4 UUID 输出到 stdout。",
+        "evidence": [
+          "bin/uuid:1-26"
+        ]
+      }
+    ],
+    "domain": "唯一标识符生成",
+    "target_users": "Node.js 和浏览器应用开发者，需要 UUID 作为主键、会话标识或分布式唯一 ID 的场景"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.md"
+    ],
+    "evidence": "LICENSE.md 含标准 MIT 许可文本（Copyright (c) 2010-2016 Robert Kieffer and other contributors），package.json license 字段为 MIT",
+    "notes": "宽松许可，无 copyleft 约束"
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "mocha"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "mocha",
+        "ecosystem": "nodejs",
+        "registry_name": "mocha",
+        "source_repo": null,
+        "import_names": null,
+        "aliases": null,
+        "scope": "dev",
+        "version": "3.1.2",
+        "purpose": "测试框架，仅开发/测试时使用",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ],
+        "used_symbols": null,
+        "harmony_adapted": null,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "无运行时依赖（零 dependencies），mocha 仅为 devDependency。纯 JS 代码，不依赖任何第三方包。"
+  },
+  "native_api": {
+    "summary": "纯 JavaScript 库，无原生模块或平台特定 API 调用。仅使用 Node.js core 的 crypto.randomBytes 和浏览器 W3C crypto API，均为标准跨平台接口。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "crypto.randomBytes",
+            "purpose": "获取 16 字节密码学安全随机数，用于 UUID 生成的随机源",
+            "count": 1,
+            "evidence": [
+              "lib/rng.js:4"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "lib/rng.js"
+        ]
+      },
+      {
+        "type": "browser_web_crypto",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "crypto.getRandomValues",
+            "purpose": "浏览器端 Web Crypto API 获取密码学安全随机数（替代 Node.js crypto 模块）",
+            "count": 1,
+            "evidence": [
+              "lib/rng-browser.js:12"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "lib/rng-browser.js"
+        ]
+      },
+      {
+        "type": "browser_fallback",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Math.random",
+            "purpose": "浏览器端兜底随机数生成（当 Web Crypto API 不可用时），质量无保证",
+            "count": 1,
+            "evidence": [
+              "lib/rng-browser.js:25"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "lib/rng-browser.js"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "无外部运行时依赖。纯纯函数式 UUID 生成，不访问网络、文件系统、环境变量、子进程或硬件设备。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "ES5 / CommonJS",
+    "runtime_version": "Node.js ≥ 0.12，浏览器需支持 crypto.getRandomValues 或 Math.random()",
+    "build_system": "无构建步骤（npm scripts: test 用 mocha）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "nodejs",
+        "arch": "any",
+        "evidence": [
+          "index.js:1-2 (CommonJS require)"
+        ]
+      },
+      {
+        "os": "browser",
+        "arch": "any",
+        "evidence": [
+          "package.json:20-22 (browser field 替换 rng.js 为 rng-browser.js)"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm 包，无原生二进制依赖",
+    "notes": "极简包，package.json browser 字段指示打包工具（webpack/browserify）在浏览器构建时自动替换 require('./lib/rng') 为 rng-browser.js。支持 Travis CI 上的 Node 0.12 / 4 / 6。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; 纯 JS 无原生扩展; arm64/x86_64)",
+    "porting_class": "no_adaptation",
+    "porting_class_model": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs",
+        "capability": "Node.js 运行时（鸿蒙 PC 已移植）",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "纯 JS 库运行的基础——已确认可用，不构成阻碍",
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [],
+    "compatible": [
+      {
+        "aspect": "全部 164 行生产代码为纯 JavaScript 逻辑（UUID 生成算法 + crypto 随机数调用）",
+        "note": "鸿蒙 PC 已移植 Node.js 24，crypto.randomBytes 等核心模块可用，零改动即可运行",
+        "evidence": [
+          "index.js",
+          "v1.js",
+          "v4.js",
+          "lib/rng.js",
+          "lib/rng-browser.js",
+          "lib/bytesToUuid.js"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC Node.js 上运行现有 mocha 测试套件验证功能完整性"
+    ],
+    "summary": "uuid 是纯 JavaScript 库（零运行时依赖、无原生扩展），使用 Node.js core crypto 模块的密码学随机数生成 UUID。鸿蒙 PC 已移植 Node.js 24 运行时，crypto 核心模块可用，因此该库可以零改动直接运行。唯一工作是在鸿蒙 PC 上执行 mocha 测试以验证 crypto.randomBytes 的行为一致性。",
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。浏览器端的 rng-browser.js 通过 package.json browser 字段供打包工具替换，不涉及额外适配。",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "uuid",
+    "kind": "library",
+    "package_name": "uuid",
+    "aliases": [
+      "node-uuid"
+    ],
+    "import_names": [
+      "uuid"
+    ],
+    "source_url": "https://github.com/broofa/node-uuid.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-11T15:54:10.357Z",
+    "commit": null,
+    "one_liner": "RFC4122 兼容的 UUID（v1 时间戳型 / v4 随机型）生成库，同时适用于 Node.js 和浏览器环境",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "domain",
+        "kind": "new_value",
+        "value": "唯一标识符生成",
+        "rationale": "轻量级 UUID 库，domain 词表若无 'uuid' 可归入此值"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯 JavaScript UUID 生成库，不涉及任何 GUI、3D 渲染、媒体或硬件相关场景。所有代码均为纯逻辑，在已移植的 Node.js 运行时上直接运行。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本项目为纯本地 UUID 生成库，不涉及任何云服务（无远程 API 调用、无云 SDK、无网络域名依赖）。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 164 行生产代码为纯 JavaScript（CommonJS），可直接在鸿蒙 PC 已移植的 Node.js 上运行，零改动。",
+    "coverage": {
+      "production_code": 164,
+      "partitioned_code": 164,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 164,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 107,
+            "reason": "顶层 JS 文件（index.js、v1.js、v4.js），纯逻辑/标准库调用",
+            "evidence": [
+              "index.js",
+              "v1.js:4",
+              "v4.js:1"
+            ]
+          },
+          {
+            "path": "lib",
+            "loc": 57,
+            "reason": "lib/rng.js 使用 crypto.randomBytes（Node.js core）、lib/rng-browser.js 使用 Web Crypto API / Math.random()——均为标准跨平台 API",
+            "evidence": [
+              "lib/rng.js:4",
+              "lib/rng-browser.js:7-12"
+            ]
+          }
+        ],
+        "basis": "code_metrics.dir_loc：两个目录（. 107 行 + lib 57 行）均为纯 JS，无 native_api 的 platform/system/hardware 调用点，platform_adaptation 为 0，platform_branches 为 0，arch_specific 为 0"
+      }
+    ],
+    "notes": "无测试/示例/构建脚本计入分区（测试 83 行在 test/，不计入生产分区）。"
+  }
+}

@@ -1,0 +1,582 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 10,
+        "code": 1162,
+        "pct": 100.0,
+        "production": {
+          "files": 2,
+          "code": 1041
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 8,
+          "code": 121
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 10,
+      "code": 1162,
+      "comment": 0,
+      "blank": 102,
+      "total_lines": 1264
+    },
+    "production": {
+      "files": 2,
+      "code": 1041,
+      "comment": 0,
+      "blank": 72,
+      "total_lines": 1113
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 8,
+      "code": 121,
+      "comment": 0,
+      "blank": 30,
+      "total_lines": 151
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 1041,
+        "category": "production",
+        "by_category": {
+          "production": 1041
+        }
+      },
+      {
+        "dir": "examples",
+        "code": 121,
+        "category": "example",
+        "by_category": {
+          "example": 121
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": [
+        "examples"
+      ]
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 2,
+        "code": 1041
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "cli 是一个面向 Node.js 开发者的命令行应用快速构建工具包。它提供完整的命令行参数/选项解析、可插拔的通用开关、带样式与颜色输出的状态消息、进度条与旋转动画等终端 UI 组件，以及命令自动补全功能。该库本身以 npm 包形式发布，由其他 Node.js 应用通过 require('cli') 引入使用。",
+    "categories": [
+      {
+        "name": "命令行参数解析",
+        "description": "提供完整的 opts/args 解析器，支持短选项（-f）和长选项（--file）的定义、类型校验（string/int/float/path/email/url/ip/bool）和默认值。",
+        "evidence": [
+          "cli.js:250-384（parse 方法）",
+          "cli.js:163-230（选项解析循环）"
+        ]
+      },
+      {
+        "name": "插件系统",
+        "description": "支持通过 enable/disable 方法启用或禁用内置插件，包括 --help、--version、--no-color/--debug（状态输出）、--timeout（超时退出）、--catch（未捕获异常捕获）和 glob 匹配。插件在与自定义选项冲突时自动禁用。",
+        "evidence": [
+          "cli.js:85-123（enable/disable 方法）",
+          "cli.js:329-357（插件选项处理）"
+        ]
+      },
+      {
+        "name": "终端输出与样式",
+        "description": "提供带 ANSI 颜色样式（info/ok/error/debug/fatal）的状态消息输出方法，支持 --no-color 关闭颜色、--debug 显示调试消息。fatal 级别输出后自动退出进程。",
+        "evidence": [
+          "cli.js:437-468（status 方法及快捷方法）",
+          "cli.js:510-528（parsePackageJson）"
+        ]
+      },
+      {
+        "name": "输入流处理",
+        "description": "提供多种读取标准输入/文件的方法：withStdin 读取全部输入、withStdinLines 按行分割读取、withInput 支持按行流式读取文件或标准输入。",
+        "evidence": [
+          "cli.js:833-920（withStdin/withStdinLines/withInput 方法）"
+        ]
+      },
+      {
+        "name": "进度与动画效果",
+        "description": "内置进度条（progress 方法，0~1 进度）和旋转动画（spinner 方法）输出到标准错误流。",
+        "evidence": [
+          "cli.js:1037-1112（progress 和 spinner 方法）"
+        ]
+      },
+      {
+        "name": "命令自动补全",
+        "description": "支持定义子命令列表，自动根据前缀匹配完成命令名补全（类似 npm 子命令），并在 --help 输出中展示命令列表。",
+        "evidence": [
+          "cli.js:393-422（autocompleteCommand 方法）",
+          "cli.js:370-381（命令解析）"
+        ]
+      }
+    ],
+    "domain": "命令行工具/开发者工具",
+    "target_users": "Node.js 命令行应用开发者",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [],
+    "evidence": "package.json 声明 'license: MIT'（第24行）；cli.js 头部包含完整 MIT 许可证文本（第1-21行）；README.md 底部包含 MIT 许可证文本与版权声明（第178-200行）。",
+    "notes": "MIT 宽松许可证。库代码中捆入了 kof/node-natives 和 creationix/stack 两个第三方片段，作者注明未找到其许可证信息（cli.js 第24-25行注释），使用者和分发者需注意该合规风险。"
+  },
+  "dependencies": {
+    "count": 3,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "glob",
+        "exit"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "glob",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^7.1.1",
+        "purpose": "文件路径匹配（glob 模式展开），用于插件中的 glob 功能，将命令行参数中的 glob 模式匹配为实际文件列表。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (glob)",
+        "declared_in": [
+          "package.json"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "used_symbols": [
+          "glob"
+        ]
+      },
+      {
+        "name": "exit",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "0.1.2",
+        "purpose": "进程退出工具，替代 process.exit()，在退出前确保标准输出流被清空。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (exit)",
+        "declared_in": [
+          "package.json"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "used_symbols": [
+          "exit"
+        ]
+      },
+      {
+        "name": "Node.js core (fs, path, child_process, http)",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Node.js 内置模块：文件操作（fs）、路径处理（path）、子进程管理（child_process）、HTTP 服务（http，供 createServer 使用）。是库的基础运行时依赖。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "Node.js 运行时内置",
+        "declined_in": [
+          "cli.js:51-64（accessor + process.binding）",
+          "cli.js:1016-1029（child_process.exec）",
+          "cli.js:68（exit 模块）"
+        ]
+      }
+    ],
+    "notes": "glob 为可选插件依赖（cli.glob = require('glob') 仅在 glob 插件启用时加载，cli.js:106）。exit 是硬依赖，在 cli.js:68 直接 require。已通过 harmony_adapted.js 脚本查询：glob 和 exit 在 OpenHarmony PC 官方源中均未预移植。由于均为纯 JavaScript 包，在鸿蒙 Node.js 运行时上可直接运行，不构成适配阻碍。"
+  },
+  "native_api": {
+    "summary": "纯 Node.js 库，仅通过 Node.js 核心 API（fs/path/child_process/http）及 npm 依赖（glob/exit）访问系统，无原生扩展或平台特有 API。平台无关。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "fs.readFileSync",
+            "purpose": "同步读取文件内容（package.json）",
+            "count": 1,
+            "evidence": [
+              "cli.js:500"
+            ]
+          },
+          {
+            "name": "fs.createReadStream",
+            "purpose": "创建文件读取流，用于 withInput 逐行读取文件",
+            "count": 1,
+            "evidence": [
+              "cli.js:886"
+            ]
+          },
+          {
+            "name": "fs.createWriteStream",
+            "purpose": "创建文件写入流",
+            "count": 1,
+            "evidence": [
+              "cli.js:46（示例）"
+            ]
+          },
+          {
+            "name": "child_process.exec",
+            "purpose": "在子进程中执行外部命令并捕获输出",
+            "count": 1,
+            "evidence": [
+              "cli.js:1017"
+            ]
+          },
+          {
+            "name": "http.createServer",
+            "purpose": "创建 HTTP 服务器（middleware stack 功能）",
+            "count": 1,
+            "evidence": [
+              "cli.js:1001"
+            ]
+          },
+          {
+            "name": "process.binding('natives')",
+            "purpose": "获取 Node.js 内置原生模块列表，用于惰性加载 cli.native.*",
+            "count": 1,
+            "evidence": [
+              "cli.js:62"
+            ]
+          },
+          {
+            "name": "process.openStdin()",
+            "purpose": "打开标准输入流",
+            "count": 2,
+            "evidence": [
+              "cli.js:838",
+              "cli.js:883"
+            ]
+          },
+          {
+            "name": "process.argv",
+            "purpose": "获取命令行参数",
+            "count": 1,
+            "evidence": [
+              "cli.js:155"
+            ]
+          },
+          {
+            "name": "process.env.TERM",
+            "purpose": "检测终端类型以决定是否启用 ANSI 颜色",
+            "count": 1,
+            "evidence": [
+              "cli.js:71"
+            ]
+          },
+          {
+            "name": "process.env.NODE_DISABLE_COLORS",
+            "purpose": "检测是否禁用颜色输出",
+            "count": 1,
+            "evidence": [
+              "cli.js:71"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "纯 Node.js 命令行库。不绑定网络服务；仅读取本地 package.json 文件；使用环境变量检测终端/颜色设置；可通过 cli.exec() 执行任意外部命令（由调用者决定）；无特殊设备依赖。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "读取 package.json（当前目录/上级/上上级）以获取应用名称和版本号",
+        "purpose": "自动检测应用元信息，供 --version 显示",
+        "evidence": [
+          "cli.js:520-524"
+        ]
+      },
+      {
+        "detail": "withInput(file) 读取指定文件或 stdin",
+        "purpose": "提供输入流处理能力",
+        "evidence": [
+          "cli.js:873-920"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "NODE_DISABLE_COLORS",
+        "purpose": "检测用户是否要求禁用 ANSI 颜色输出",
+        "evidence": [
+          "cli.js:71"
+        ]
+      },
+      {
+        "name": "TERM",
+        "purpose": "检测终端类型，dumb 终端自动禁用颜色",
+        "evidence": [
+          "cli.js:71"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "detail": "cli.exec(cmd) 通过 child_process.exec 执行外部命令",
+        "purpose": "提供通用子进程执行能力（调用者传入具体命令）",
+        "evidence": [
+          "cli.js:1016-1029"
+        ]
+      }
+    ],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "JavaScript (ES5+), CommonJS 模块",
+    "runtime_version": "Node.js >= 0.2.5",
+    "build_system": "npm (无构建步骤，仅发布/测试脚本可用)",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "Node.js 跨平台特性"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "cli.js:143 有 node.exe 特殊处理"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "Node.js 跨平台特性"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm publish（npm 包），无平台特定包装需求",
+    "notes": "纯 JavaScript 库，无原生编译需求。唯一平台相关代码是 cli.js:142-147 检测 process.argv[0] 是否为 node 或 node.exe（决定是否去掉 argv[0]），逻辑跨平台无关。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; 纯 JS 库无原生扩展; arm64/x86_64; 自研内核, 无 Linux ABI)",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "breakdown": [
+        {
+          "component": "packaging",
+          "person_days": [
+            0,
+            1
+          ],
+          "basis": "npm 包安装/验证基本运行（code_partition 全部为 reuse_direct，无代码改造）"
+        }
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "cli 为纯 Node.js 命令行库，无原生 C/C++ 扩展、无平台特有系统调用、不依赖特定硬件。鸿蒙 PC 已移植 Node.js 24 运行时，该库的全部生产代码（1041 行 JavaScript）可直接在鸿蒙 Node.js 上运行，无需任何源码改动。依赖的 npm 包 glob 和 exit 也是纯 JavaScript 包，同样可照常运行。唯一的鸿蒙化工作量是 npm install 后验证基本功能运行。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "Node.js 运行时在鸿蒙 PC 已移植可用",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "运行时已移植，纯 JS 库直接可用",
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "id": "ta:1",
+        "target_status_model": "available"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "全部生产代码（纯 JavaScript）",
+        "note": "仅使用 Node.js 标准库 fs/path/child_process/http，在鸿蒙 Node.js 运行时上直接可运行",
+        "evidence": []
+      },
+      {
+        "aspect": "npm 依赖 glob 和 exit",
+        "note": "均为纯 JavaScript 包，无原生扩展，在鸿蒙 Node.js 上照常可用",
+        "evidence": []
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Node.js 上执行 npm install 安装依赖",
+      "运行基本功能验证（参数解析、--help、--version）确保正常工作"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。库代码中捆入了 kof/node-natives 和 creationix/stack 第三方片段（许可证不明），运行期不影响，发布时需注意合规。",
+    "required_permissions": [],
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "cli",
+    "one_liner": "一个用于快速构建命令行应用的 Node.js 工具包，内含参数解析、插件系统、输入输出辅助与动画效果。",
+    "kind": "library",
+    "ecosystem": "nodejs",
+    "package_name": "cli",
+    "aliases": [],
+    "import_names": [
+      "cli"
+    ],
+    "bindings": [],
+    "source_url": "https://github.com/node-js-libs/cli.git",
+    "analyzed_at": "2026-07-11T23:03:02Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "license",
+        "field": "notes",
+        "kind": "ambiguity",
+        "value": "bundled_third_party_no_license",
+        "rationale": "cli.js 文件内捆入了 kof/node-natives（提供 cli.native.* 惰性加载）和 creationix/stack（提供 cli.createServer()）两个第三方代码片段，原作者称未找到其许可证（cli.js 第 24-25 行注释）。这些代码是库核心功能的一部分（native 模块访问 + HTTP middleware），合规性需注意。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯命令行工具库，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      },
+      {
+        "key": "cpu_simd",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "cli 是一个纯本地命令行工具库，不依赖任何第三方云服务（无认证/存储/数据库/推送/分析/崩溃上报等云功能）。"
+  },
+  "code_partition": {
+    "summary": "全部 1041 行生产代码均为纯 JavaScript，在鸿蒙 PC 已移植的 Node.js 运行时上可直接运行，无需任何改动。",
+    "coverage": {
+      "production_code": 1041,
+      "partitioned_code": 1041,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 1041,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 1041,
+            "reason": "纯 JavaScript 代码（cli.js + index.js），仅使用 Node.js 标准库（fs/path/child_process/http）和纯 JS npm 依赖（glob/exit），无原生扩展，无平台特有 API。鸿蒙 PC Node.js 运行时可直接运行。",
+            "evidence": []
+          }
+        ],
+        "basis": "code_metrics.dir_loc 中仅一个生产目录 '.'（1041 行）。native_api 中均为 Node.js 核心模块调用，无 platform/system/hardware 类别。platform_adaptation 与 platform_branches 均为零。"
+      }
+    ],
+    "notes": "无原生扩展。依赖的 npm 包 glob 和 exit 均为纯 JavaScript 包，可在鸿蒙 Node.js 运行时上照常运行。"
+  }
+}

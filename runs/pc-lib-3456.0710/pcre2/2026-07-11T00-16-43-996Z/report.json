@@ -1,0 +1,765 @@
+{
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "C/C++ Header",
+      "Python"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 42,
+        "code": 63677,
+        "pct": 78.02,
+        "production": {
+          "files": 40,
+          "code": 61212
+        },
+        "test": {
+          "files": 2,
+          "code": 2465
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 14,
+        "code": 16053,
+        "pct": 19.67,
+        "production": {
+          "files": 14,
+          "code": 16053
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 10,
+        "code": 1884,
+        "pct": 2.31,
+        "production": {
+          "files": 10,
+          "code": 1884
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 66,
+      "code": 81614,
+      "comment": 0,
+      "blank": 14582,
+      "total_lines": 96196
+    },
+    "production": {
+      "files": 64,
+      "code": 79149,
+      "comment": 0,
+      "blank": 14260,
+      "total_lines": 93409
+    },
+    "test": {
+      "files": 2,
+      "code": 2465,
+      "comment": 0,
+      "blank": 322,
+      "total_lines": 2787
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 78448,
+        "category": "production",
+        "by_category": {
+          "production": 75983,
+          "test": 2465
+        }
+      },
+      {
+        "dir": "maint",
+        "code": 3106,
+        "category": "production",
+        "by_category": {
+          "production": 3106
+        }
+      },
+      {
+        "dir": ".github",
+        "code": 51,
+        "category": "production",
+        "by_category": {
+          "production": 51
+        }
+      },
+      {
+        "dir": "vms",
+        "code": 9,
+        "category": "production",
+        "by_category": {
+          "production": 9
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "src",
+        "files": 49,
+        "code": 75983
+      },
+      {
+        "dir": "maint",
+        "files": 11,
+        "code": 3086
+      },
+      {
+        "dir": ".github/scripts",
+        "files": 1,
+        "code": 51
+      },
+      {
+        "dir": "maint/cmake-tests",
+        "files": 2,
+        "code": 20
+      },
+      {
+        "dir": "vms",
+        "files": 1,
+        "code": 9
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 7,
+          "code": 307,
+          "macros": [
+            "WIN32",
+            "_MSC_VER",
+            "_WIN32",
+            "_WIN64",
+            "__CYGWIN__"
+          ]
+        },
+        "linux": {
+          "files": 1,
+          "code": 3,
+          "macros": [
+            "__linux__"
+          ]
+        }
+      },
+      "total": 310,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 2,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "C": {
+        "files": 2,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "PCRE2 是一个用 C 语言编写的高性能正则表达式库，提供 Perl 5 兼容的正则表达式编译与匹配功能。核心由三个匹配引擎组成：回溯引擎（默认，功能最全但最坏情况指数级耗时）、JIT 编译器（将正则表达式编译为原生机器码以获得极致性能）、DFA 引擎（多项式时间保证，支持 POSIX 最长左匹配）。支持 8/16/32 位字符编码（含 UTF-8/16/32）与 EBCDIC。提供辅助功能：glob 模式转正则、POSIX BRE/ERE 转正则、搜索替换（replace）、兼容 POSIX regex.h 接口。库体自包含、无硬依赖，适用于桌面、服务器、嵌入式等几乎所有平台。",
+    "domain": "开发工具 / 文本处理底层库",
+    "target_users": "需要在其软件中嵌入正则表达式匹配能力的开发者；编译器/解释器/文本编辑器/IDE/网络爬虫/代码分析工具的下游项目",
+    "categories": [
+      {
+        "name": "正则表达式编译与匹配",
+        "description": "提供 pcre2_compile() 编译正则模式、pcre2_match() 执行回溯匹配、pcre2_dfa_match() 执行 DFA 匹配，支持丰富的 Perl 5 语法及其扩展（前向/后向断言、条件子模式、递归匹配、调用组、单词边界等）并可调整兼容 JavaScript/Python 方言。",
+        "evidence": [
+          "src/pcre2_compile.c 编译正则模式",
+          "src/pcre2_match.c 回溯匹配引擎",
+          "src/pcre2_dfa_match.c DFA 匹配引擎",
+          "pcre2.h.in 公开 API 头文件"
+        ]
+      },
+      {
+        "name": "JIT 编译加速",
+        "description": "基于 SLJIT（Simple Just-In-Time compiler）框架，将编译后的正则表达式转换为目标 CPU 原生机器码执行，大幅提升匹配速度。支持 x86、ARM（32/64）、RISC-V、PPC、S390x 等架构。",
+        "evidence": [
+          "src/pcre2_jit_compile.c JIT 编译器主实现",
+          "deps/sljit SLJIT 后端",
+          "src/pcre2_jit_simd_inc.h SIMD 加速代码",
+          "src/pcre2_jit_test.c JIT 测试"
+        ]
+      },
+      {
+        "name": "多编码与平台支持",
+        "description": "支持 8 位 ASCII/UTF-8、16 位 UTF-16、32 位 UTF-32 的独立库变体，可选 EBCDIC 模式。Unicode 类属性匹配（p{P} / p{Letter} 等），可在编译时裁剪不同位宽以减少体积。",
+        "evidence": [
+          "pcre2.h.in PCRE2_CODE_UNIT_WIDTH 条件编译选择",
+          "src/pcre2_ucd.c Unicode 字符数据库",
+          "src/pcre2_tables.c 字符表",
+          "CMakeLists.txt PCRE2_BUILD_PCRE2_8/16/32 选项"
+        ]
+      },
+      {
+        "name": "模式转换与实用工具",
+        "description": "提供 glob 模式与 POSIX BRE/ERE 到 PCRE2 正则的转换函数（pcre2_pattern_convert()），以及查找替换（pcre2_substitute()）功能，支持丰富的替换字符串语法。兼容 POSIX regex.h (regcomp/regexec)。",
+        "evidence": [
+          "src/pcre2_convert.c 模式转换",
+          "src/pcre2_substitute.c 替换功能",
+          "src/pcre2posix.c POSIX regex.h 兼容层"
+        ]
+      },
+      {
+        "name": "命令行工具",
+        "description": "附带 pcre2test 测试/调试工具和 pcre2grep 命令行程序（类似 grep 但使用 PCRE2 正则语法）。",
+        "evidence": [
+          "src/pcre2test.c 测试/调试工具",
+          "src/pcre2grep.c grep 风格命令行工具"
+        ]
+      }
+    ]
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENCE.md"
+    ],
+    "evidence": "LICENCE.md explicitly states BSD 3-clause licence with PCRE2 exception; JIT submodule (deps/sljit) uses BSD-2-Clause separately",
+    "notes": "PCRE2 exception permits binary redistribution without requiring licence notice in downstream binaries. JIT compiler (deps/sljit) uses BSD-2-Clause. Test data is public domain."
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": [
+      ".gitmodules",
+      "CMakeLists.txt"
+    ],
+    "by_ecosystem": {
+      "c": 1
+    },
+    "dependencies": [
+      {
+        "name": "sljit",
+        "ecosystem": "c",
+        "scope": "runtime",
+        "locality": "local",
+        "acquisition": "submodule",
+        "source": "git submodule at deps/sljit (https://github.com/zherczeg/sljit.git)",
+        "declared_in": [
+          ".gitmodules"
+        ],
+        "used_symbols": [
+          "sljit_emit_op0",
+          "sljit_emit_op1",
+          "sljit_emit_op2",
+          "sljit_emit_ijump",
+          "sljit_emit_custom",
+          "sljit_alloc_memory",
+          "sljit_free_memory"
+        ],
+        "harmony_adapted": false,
+        "purpose": "跨架构简易 JIT 编译后端，PCRE2 通过它将正则表达式编译为原生机器码。可选依赖——可通过 CMake PCRE2_SUPPORT_JIT=OFF 禁用。"
+      }
+    ],
+    "notes": "PCRE2 核心库无硬运行时依赖——C99 标准库即可。JIT 编译通过 vendored 子模块引入 SLJIT，为可选功能。命令行工具可选链接 zlib/bzip2/readline，不影响核心库。"
+  },
+  "native_api": {
+    "summary": "PCRE2 核心正则引擎不调用操作系统级 API——只使用 C99 标准库。所有平台相关调用均在可选 JIT 编译器（SLJIT）和命令行工具中，非核心功能。核心库可移植到任何有 C99 编译器与标准库的环境。",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "malloc/free/realloc",
+            "purpose": "标准 C 内存管理——核心正则引擎唯一系统依赖",
+            "count": 40,
+            "evidence": [
+              "src/pcre2_compile.c",
+              "src/pcre2_match.c",
+              "src/pcre2_context.c"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "memcpy/memset",
+            "purpose": "内存操作——模式编译与匹配过程中的缓冲区复制",
+            "count": 20,
+            "evidence": [
+              "src/pcre2_compile.c",
+              "src/pcre2_match.c"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "strlen/strncmp",
+            "purpose": "字符串长度与比较——模式解析与名称查找",
+            "count": 10,
+            "evidence": [
+              "src/pcre2_match.c",
+              "src/pcre2_compile.c"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "src/pcre2_compile.c",
+          "src/pcre2_match.c",
+          "src/pcre2_context.c",
+          "src/pcre2_serialize.c"
+        ]
+      },
+      {
+        "type": "posix_mmap",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "mmap",
+            "purpose": "JIT 编译器在 POSIX 系统上分配可执行内存页（通过 SLJIT W^X 分配器）",
+            "count": 1,
+            "evidence": [
+              "deps/sljit/sljit_src/sljitWXExecAllocatorPosix.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "munmap",
+            "purpose": "释放 JIT 编译器映射的内存页",
+            "count": 1,
+            "evidence": [
+              "deps/sljit/sljit_src/sljitWXExecAllocatorPosix.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "memfd_create",
+            "purpose": "Linux 匿名可执行内存文件描述符——JIT ExecAllocator 高级用法，非必需",
+            "count": 1,
+            "evidence": [
+              "src/pcre2_jit_compile.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "mkostemp",
+            "purpose": "JIT 编译器临时文件——ExecAllocator 备选方案",
+            "count": 1,
+            "evidence": [
+              "src/pcre2_jit_compile.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "fork/waitpid",
+            "purpose": "pcre2grep callout 功能通过 fork 执行外部脚本",
+            "count": 1,
+            "evidence": [
+              "src/pcre2grep.c"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "src/pcre2_match.c",
+          "src/pcre2grep.c",
+          "deps/sljit/sljit_src/sljitWXExecAllocatorPosix.c"
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "VirtualAlloc/VirtualFree",
+            "purpose": "Windows 上 SLJIT 分配可执行内存页面",
+            "count": 2,
+            "evidence": [
+              "deps/sljit/sljit_src/sljitWXExecAllocatorWindows.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "IsProcessorFeaturePresent",
+            "purpose": "Windows 上检测 CPU 指令集特性（SSE/AVX）",
+            "count": 1,
+            "evidence": [
+              "deps/sljit/sljit_src/sljit_simd.c"
+            ],
+            "conditional": true
+          }
+        ],
+        "evidence": [
+          "deps/sljit/sljit_src/sljitWXExecAllocatorWindows.c",
+          "deps/sljit/sljit_src/sljit_simd.c"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "PCRE2 核心库为纯计算库——不访问网络、不读写文件、不需要环境变量、不启动子进程、不依赖外部服务。JIT 编译器通过 SLJIT 分配可执行内存页。命令行工具 pcre2grep 读取输入文件且可选支持 gzip/bzip2 压缩文件。",
+    "filesystem": [
+      {
+        "detail": "命令行参数指定的输入文件",
+        "purpose": "pcre2grep 工具读取用户指定的文本文件或压缩文件",
+        "evidence": [
+          "src/pcre2grep.c"
+        ]
+      },
+      {
+        "detail": "临时文件（mkostemp 创建）",
+        "purpose": "JIT ExecAllocator 备选方案——创建临时文件存放可执行代码",
+        "evidence": [
+          "src/pcre2_jit_compile.c"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "PCRE2GREP_COLOUR",
+        "purpose": "pcre2grep 工具的颜色输出控制",
+        "evidence": [
+          "src/pcre2grep.c"
+        ]
+      }
+    ],
+    "subprocess": [
+      {
+        "command": "callout 脚本",
+        "purpose": "pcre2grep 可选 callout 功能——正则匹配过程中执行外部脚本",
+        "evidence": [
+          "src/pcre2grep.c"
+        ]
+      }
+    ],
+    "network": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99",
+    "runtime_version": "无需运行时——纯 C 编译为原生机器码；容器/语言运行时库（如 PHP/Python/Java 封装层）可动态链接 libpcre2",
+    "build_system": "CMake（Autoconf 备选，Bazel 与 zig build 实验性支持）",
+    "compiler_extensions": [
+      {
+        "name": "__attribute__((uninitialized))",
+        "purpose": "Clang/GCC 扩展——避免编译器对未初始化变量的假阳性警告（优化匹配性能相关代码）",
+        "evidence": [
+          "CMakeLists.txt"
+        ]
+      },
+      {
+        "name": "__attribute__((visibility(\"default\")))",
+        "purpose": "GCC/Clang 可见性控制——隐藏库内部符号，仅暴露公开 API",
+        "evidence": [
+          "CMakeLists.txt"
+        ]
+      },
+      {
+        "name": "__assume / __builtin_assume",
+        "purpose": "MSVC/GCC 扩展——提示编译优化器作特定假设以生成更优代码",
+        "evidence": [
+          "CMakeLists.txt"
+        ]
+      },
+      {
+        "name": "__builtin_mul_overflow",
+        "purpose": "GCC/Clang 溢出安全乘法，用于防止整数溢出导致的错误",
+        "evidence": [
+          "CMakeLists.txt"
+        ]
+      },
+      {
+        "name": "__builtin_unreachable",
+        "purpose": "GCC/Clang 扩展——标记不可达分支以辅助编译优化",
+        "evidence": [
+          "CMakeLists.txt"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86/x86_64/arm/arm64/riscv64/ppc64le/s390x",
+        "evidence": [
+          "README.md:platforms",
+          "CMakeLists.txt"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86/x86_64/arm64",
+        "evidence": [
+          "README.md:platforms",
+          "CMakeLists.txt"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64/arm64",
+        "evidence": [
+          "README.md:platforms"
+        ]
+      },
+      {
+        "os": "bsd",
+        "arch": "x86_64/arm64",
+        "evidence": [
+          "README.md:platforms"
+        ]
+      },
+      {
+        "os": "solaris",
+        "arch": "x86_64/sparc",
+        "evidence": [
+          "README.md:platforms"
+        ]
+      },
+      {
+        "os": "z/OS",
+        "arch": "s390x",
+        "evidence": [
+          "README.md:platforms"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "静态库 libpcre2-8.a / libpcre2-16.a / libpcre2-32.a 或动态库 .so/.dll/.dylib。提供 pkg-config 配置（libpcre2-8.pc 等）。可直接将 .c 文件嵌入项目中以避免链接依赖。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC (自研内核, ArkTS 应用层, OHOS NDK 原生层, Node-API 桥接)",
+    "porting_class": "recompile_only",
+    "porting_class_model": "recompile_only",
+    "porting_class_adjusted": {
+      "from": "recompile_only",
+      "to": "needs_adaptation"
+    },
+    "effort": {
+      "person_days": [
+        3,
+        8
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            1,
+            2
+          ],
+          "basis": "编译链适配: CMake 新增 OHOS NDK toolchain 支持。核心库 ~77k LOC 纯 C99, 编译通过即为零代码改动。"
+        },
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            1,
+            3
+          ],
+          "basis": "JIT exec allocator ~500 LOC 适配鸿蒙可执行内存 API。fork/memfd_create 路径由 #ifdef 保护，默认关闭无需适配。"
+        },
+        {
+          "component": "build_system",
+          "person_days": [
+            0.5,
+            1
+          ],
+          "basis": "CMakeLists.txt 新增 OHOS 平台条件分支（参考已有 MinGW/MSVC 分支模式）。"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0.5,
+            2
+          ],
+          "basis": "运行 pcre2test 测试套件验证编译与匹配正确性。JIT 测试需额外平台验证。"
+        }
+      ],
+      "level": "medium"
+    },
+    "confidence": "high",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:ohos_ndk_posix_mmap",
+        "capability": "OHOS NDK 提供兼容 POSIX 的 mmap 与 mprotect 系统调用",
+        "capability_key": null,
+        "required": false,
+        "target_status": "unknown",
+        "impact": "若有 mmap PROT_EXEC——JIT exec allocator 零改动通过；若无——需适配鸿蒙专属可执行内存接口或关闭 JIT（JIT 为可选加速特性，非核心必需）。",
+        "source": "OHOS NDK 文档（待核实）",
+        "target_status_model": "unknown"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [],
+    "summary": "PCRE2 整体可适配。核心正则引擎为纯 C99 代码——OHOS NDK 重编译即用。唯一需适配的是 JIT 编译器的可执行内存分配（~500 LOC），但 JIT 为可选特性——关闭 PCRE2_SUPPORT_JIT=OFF 后整个库退化为纯计算库、零代码改动移植。估工作量 3-8 人天（含编译链配置和 JIT 适配），关闭 JIT 后工作量降至 1-3 人天。",
+    "blockers": [
+      {
+        "id": "bk:jit_exec_alloc",
+        "issue": "JIT 编译器可执行内存分配需鸿蒙专属接口适配（mmap PROT_EXEC 未必直接可用）",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "posix_mmap",
+        "source_dimension": "native_api",
+        "remediation_status": "replace_with_ohos",
+        "remediation": "方案 A: 若 OHOS NDK 提供兼容 mmap/mprotect——零改动。方案 B: 关闭 JIT (PCRE2_SUPPORT_JIT=OFF)——核心库完整可用，仅失去 JIT 加速。方案 C: 适配鸿蒙原生可执行内存 API。优先尝试方案 A，失败则方案 B。",
+        "evidence": [
+          "deps/sljit/sljit_src/sljitWXExecAllocatorPosix.c",
+          "deps/sljit/sljit_src/sljitWXExecAllocatorWindows.c"
+        ]
+      },
+      {
+        "id": "bk:cmake_toolchain",
+        "issue": "CMake 构建系统需新增 OHOS NDK toolchain 配置",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "toolchain",
+        "source_dimension": "build_env",
+        "remediation_status": "replace_with_ohos",
+        "remediation": "CMakeLists.txt 新增 OHOS 平台 toolchain 分支，参考已有 MinGW/MSVC 分支模式。参考 OHOS NDK CMake 模板即可。",
+        "evidence": [
+          "CMakeLists.txt"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "核心正则引擎完全平台无关",
+        "note": "pcre2_compile/pcre2_match/pcre2_dfa_match 等 60k+ 行代码只依赖 C99 标准库，鸿蒙上直接重编译运行，正则匹配功能完整可用。",
+        "evidence": [
+          "src/pcre2_compile.c",
+          "src/pcre2_match.c",
+          "src/pcre2_dfa_match.c"
+        ]
+      },
+      {
+        "aspect": "JIT 可关闭",
+        "note": "JIT 编译器通过 CMake PCRE2_SUPPORT_JIT=OFF 禁用，核心功能不受影响，仅性能回落到解释引擎。",
+        "evidence": [
+          "CMakeLists.txt"
+        ]
+      },
+      {
+        "aspect": "无外部依赖",
+        "note": "核心库零依赖——不链接 zlib/bzip2/readline 等（仅命令行工具可选使用），编译链干净。",
+        "evidence": [
+          "CMakeLists.txt"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "配置 CMake OHOS NDK toolchain（新增平台 target triple、sysroot）",
+      "默认关闭 JIT (PCRE2_SUPPORT_JIT=OFF) 保证核心库完美移植",
+      "编译 pcre2-8 静态库，运行 pcre2test 测试套件验证所有正则匹配功能",
+      "验证 pcre2demo.c 示例在鸿蒙上运行正确"
+    ],
+    "notes": "评估基于核心正则引擎对系统调用的零依赖——这是移植性最强的软件品类（纯 C99 算法库）。JIT 可执行内存分配为唯一潜在适配点，但 JIT 已设计为可选模块（源码通过 #ifdef SUPPORT_JIT 隔离）。关闭 JIT 后整个移植简化为「更换编译器 target」级别的轻量工作。fork/waitpid/memfd_create/mkostemp 等 Linux 专有调用均受条件编译保护，不影响鸿蒙编译。",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "pcre2",
+    "source_url": "https://github.com/PCRE2Project/pcre2",
+    "kind": "library",
+    "package_name": "pcre2",
+    "one_liner": "PCRE2 (Perl-Compatible Regular Expressions 2) — 用 C 语言实现的高性能正则表达式匹配库，支持 Unicode、JIT 编译、多种字符编码，自包含且高度可移植",
+    "ecosystem": "cpp",
+    "bindings": [],
+    "analyzed_at": "2026-07-11T02:18:22Z"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "cloc and tokei not found; used crude builtin line counter",
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "harmony_warnings": [
+      {
+        "code": "pclass_adjusted",
+        "class": "info",
+        "message": "porting_class 模型原判 recompile_only，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation"
+      }
+    ],
+    "harmony_warnings_dismissed": [],
+    "normalized_version": 6,
+    "confidence_overall": "high",
+    "observations": [],
+    "confidence_overall_model": "high"
+  },
+  "capability_profile": {
+    "summary": "PCRE2 是纯计算型 C 语言正则表达式库——不涉及 GUI/桌面窗口、3D 图形渲染、音视频媒体处理、特定硬件（含 GPU）依赖。JIT 编译器通过 SLJIT 将正则编译为原生机器码，使用了 mmap/VirtualAlloc 等平台可执行内存 API，但 JIT 为可选功能，关闭后核心库退化为 C99 标准库即可运行的计算库。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "PCRE2 是纯本地计算库，不涉及任何云端服务（无网络请求、无远程认证、无云存储、无推送、无分析上报等）。",
+    "services": []
+  }
+}

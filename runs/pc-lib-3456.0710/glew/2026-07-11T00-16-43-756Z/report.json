@@ -1,0 +1,963 @@
+{
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "C/C++ Header"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 18,
+        "code": 2568,
+        "pct": 63.31,
+        "production": {
+          "files": 18,
+          "code": 2568
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 14,
+        "code": 1488,
+        "pct": 36.69,
+        "production": {
+          "files": 14,
+          "code": 1488
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 32,
+      "code": 4056,
+      "comment": 0,
+      "blank": 381,
+      "total_lines": 4437
+    },
+    "production": {
+      "files": 32,
+      "code": 4056,
+      "comment": 0,
+      "blank": 381,
+      "total_lines": 4437
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "auto",
+        "code": 2846,
+        "category": "production",
+        "by_category": {
+          "production": 2846
+        }
+      },
+      {
+        "dir": "src",
+        "code": 1210,
+        "category": "production",
+        "by_category": {
+          "production": 1210
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "auto/src",
+        "files": 31,
+        "code": 2846
+      },
+      {
+        "dir": "src",
+        "files": 1,
+        "code": 1210
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 9,
+          "code": 502,
+          "macros": [
+            "WIN32",
+            "_MSC_VER",
+            "_WIN32",
+            "_WIN64",
+            "__CYGWIN__",
+            "__MINGW32__",
+            "__MINGW64__"
+          ]
+        },
+        "macos": {
+          "files": 5,
+          "code": 123,
+          "macros": [
+            "__APPLE__",
+            "__MACH__"
+          ]
+        },
+        "linux": {
+          "files": 1,
+          "code": 4,
+          "macros": [
+            "__linux__"
+          ]
+        }
+      },
+      "total": 629,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "GLEW（The OpenGL Extension Wrangler Library）是一个跨平台 C/C++ 库，提供高效的运行时机制来检测目标平台上支持的 OpenGL 扩展，并通过单一头文件暴露所有 OpenGL 核心与扩展函数。它自动加载函数指针、查询 OpenGL 版本与扩展字符串，省去开发者手动管理 `wglGetProcAddress`/`glXGetProcAddress`/`eglGetProcAddress` 等平台差异的负担。适用于需要使用 OpenGL 3D 图形功能的 C/C++ 应用程序开发者。",
+    "categories": [
+      {
+        "name": "OpenGL 扩展检测与版本查询",
+        "description": "通过 `glewInit()` 初始化后，检测当前 OpenGL 上下文支持的版本与扩展集合，提供 `glewGetExtension()`、`glewIsSupported()` 等查询接口。",
+        "evidence": [
+          "auto/src/glew_init_gl.c:glewGetExtension",
+          "auto/src/glew_init_gl.c:glewContextInit"
+        ]
+      },
+      {
+        "name": "OpenGL 函数指针自动加载",
+        "description": "根据检测到的扩展集合，自动加载所有 OpenGL 核心函数与扩展函数的函数指针（通过 `__glewInit` 系列函数），避免手动调用平台相关的 `wglGetProcAddress`/`glXGetProcAddress`。",
+        "evidence": [
+          "auto/src/glew_head.c:__glewInit_GL_VERSION_1_1",
+          "auto/src/glew_init_wgl.c:wglewInit"
+        ]
+      },
+      {
+        "name": "多平台窗口系统扩展支持",
+        "description": "除核心 OpenGL 外，还支持 WGL（Windows）、GLX（X11/Linux）和 EGL（嵌入式/跨平台）等窗口系统扩展的检测与函数加载。",
+        "evidence": [
+          "auto/src/glew_init_wgl.c:wglewGetExtension",
+          "auto/src/glew_init_glx.c:glxewGetExtension",
+          "auto/src/glew_init_egl.c:eglewGetExtension"
+        ]
+      },
+      {
+        "name": "工具程序",
+        "description": "附带 `glewinfo`（列出所有 OpenGL 扩展与版本信息）和 `visualinfo`（列出所有可用的像素格式/visual）两个诊断工具。",
+        "evidence": [
+          "auto/src/glewinfo_tail.c:main",
+          "src/visualinfo.c"
+        ]
+      }
+    ],
+    "domain": "3D 图形 / OpenGL 开发工具",
+    "target_users": "C/C++ OpenGL 应用程序开发者",
+    "ecosystem": "cpp"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "LICENSE.txt 包含 BSD-3-Clause 样式的许可条款（版权声明、允许源代码和二进制形式再分发、禁止以作者名义背书、免责声明）；同时也包含 Mesa (MIT) 和 Khronos (MIT) 的第三方许可，表明 GLEW 本体为 BSD-3-Clause，部分第三方代码（如 GL/glew.h 中的 Khronos 头内容）为 MIT。",
+    "notes": "宽松许可，仅要求保留版权声明与免责声明。GLEW 本体 BSD-3-Clause；包含的 Khronos 头片段为 MIT；Mesa 3-D graphics library 片段也为 MIT。"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": [
+      "build/cmake/CMakeLists.txt"
+    ],
+    "by_ecosystem": {
+      "cpp": [
+        "OpenGL",
+        "X11"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "OpenGL",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "OpenGL 图形 API 运行时，提供 glGetString、glGetIntegerv 等核心函数，是 GLEW 加载扩展所必需的下层",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package(OpenGL REQUIRED)，需预装 OpenGL/GL 库)",
+        "declared_in": [
+          "build/cmake/CMakeLists.txt"
+        ],
+        "used_symbols": [
+          "glGetString",
+          "glGetIntegerv",
+          "glGetStringi"
+        ]
+      },
+      {
+        "name": "X11",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "X Window System 客户端库，提供 GLX 扩展的 X11 显示与窗口管理，仅在 Linux/Unix 平台且有 X11 时使用",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package(X11)，GLEW_X11 选项下、非 Windows/Apple 时要求；头文件 X11/Xlib.h、X11/Xutil.h)",
+        "declared_in": [
+          "build/cmake/CMakeLists.txt"
+        ],
+        "used_symbols": [
+          "glXGetCurrentDisplay",
+          "glXGetClientString",
+          "glXQueryVersion",
+          "glXGetProcAddress"
+        ]
+      }
+    ],
+    "notes": "GLEW 是轻量底层库，仅依赖系统 OpenGL 和可选的 X11/GLX。没有第三方库依赖。"
+  },
+  "native_api": {
+    "summary": "GLEW 直接调用 OpenGL、各平台窗口系统特有的函数指针加载 API 及 C 标准库。平台相关调用均受 #ifdef 守卫。",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "dlopen",
+            "purpose": "运行时动态加载共享库（用于 GLX 环境获取函数指针）",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_head.c:66"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "dlsym",
+            "purpose": "从已打开的动态库中获取函数指针",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_head.c:67",
+              "auto/src/glew_head.c:73"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "malloc",
+            "purpose": "动态内存分配",
+            "count": 1,
+            "evidence": [
+              "auto/src/glew_head.c:117"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "free",
+            "purpose": "释放已分配内存",
+            "count": 1,
+            "evidence": [
+              "auto/src/glew_head.c:128"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "strlen",
+            "purpose": "计算字符串长度",
+            "count": 3,
+            "evidence": [
+              "auto/src/glew_head.c:117"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "strcpy",
+            "purpose": "字符串复制",
+            "count": 1,
+            "evidence": [
+              "auto/src/glew_head.c:122"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fprintf",
+            "purpose": "格式化输出（诊断/工具程序使用）",
+            "count": 5,
+            "evidence": [
+              "auto/src/glewinfo_head.c:64"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "opengl",
+        "category": "hardware",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "glGetString",
+            "purpose": "获取 OpenGL 版本字符串（用于检测支持的 OpenGL 版本）",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_init_gl.c:84"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glGetIntegerv",
+            "purpose": "获取 OpenGL 整数值参数（如 GL_NUM_EXTENSIONS）",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_init_gl.c:146"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glGetStringi",
+            "purpose": "按索引获取单个扩展字符串（GL 3.0+ 按索引查询）",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_init_gl.c:155",
+              "auto/src/glew_init_gl.c:159"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "wgl",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "wglGetProcAddress",
+            "purpose": "获取 Windows OpenGL 扩展函数指针",
+            "count": 1,
+            "evidence": [
+              "auto/src/glew_head.c:glewGetProcAddress 约定"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "wglGetCurrentDC",
+            "purpose": "获取当前 OpenGL 设备上下文句柄",
+            "count": 1,
+            "evidence": [
+              "auto/src/glew_init_wgl.c:16"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "wglCreateContext",
+            "purpose": "创建 OpenGL 渲染上下文（工具程序 glewinfo 用）",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:374"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "wglMakeCurrent",
+            "purpose": "设置当前渲染上下文（工具程序用）",
+            "count": 2,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:376"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ChoosePixelFormat",
+            "purpose": "选择设备上下文的像素格式",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:368"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SetPixelFormat",
+            "purpose": "设置设备上下文的像素格式",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:372"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32_gdi",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "GetModuleHandle",
+            "purpose": "获取当前模块句柄",
+            "count": 3,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:350"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "RegisterClass",
+            "purpose": "注册窗口类（创建 OpenGL 诊断窗口）",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:353"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CreateWindow",
+            "purpose": "创建窗口用于 OpenGL 上下文",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:355"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "DefWindowProc",
+            "purpose": "默认窗口消息处理",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:351"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetDC",
+            "purpose": "获取窗口设备上下文",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:359"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ReleaseDC",
+            "purpose": "释放设备上下文",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:422"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "DestroyWindow",
+            "purpose": "销毁窗口",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:423"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "UnregisterClass",
+            "purpose": "注销窗口类",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:424"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "glx",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "glXGetCurrentDisplay",
+            "purpose": "获取当前 GLX 关联的 X 显示",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_init_glx.c:8"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "glXGetClientString",
+            "purpose": "获取 GLX 客户端能力字符串（含扩展列表）",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_init_glx.c:9"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "glXQueryVersion",
+            "purpose": "查询 GLX 协议版本",
+            "count": 1,
+            "evidence": [
+              "auto/src/glew_init_glx.c:33"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "glXQueryExtensionsString",
+            "purpose": "获取 GLX 扩展字符串",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:glx 工具路径"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "egl",
+        "category": "platform",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "eglGetProcAddress",
+            "purpose": "获取 EGL 扩展函数指针",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_head.c:运行时加载 EGL 符号"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "eglGetCurrentDisplay",
+            "purpose": "获取当前 EGL 显示连接",
+            "count": 1,
+            "evidence": [
+              "auto/src/glew_init_tail.c:45"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "eglQueryString",
+            "purpose": "查询 EGL 客户端/扩展字符串",
+            "count": 2,
+            "evidence": [
+              "auto/src/glew_init_egl.c:8"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "eglInitialize",
+            "purpose": "初始化 EGL 显示连接",
+            "count": 1,
+            "evidence": [
+              "auto/src/glew_init_egl.c:29"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "apple_cgl",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "CGLGetCurrentContext",
+            "purpose": "获取当前 CGL 上下文",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:macOS 路径"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CGLSetCurrentContext",
+            "purpose": "设置当前 CGL 上下文",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:478"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CGLReleaseContext",
+            "purpose": "释放 CGL 上下文",
+            "count": 1,
+            "evidence": [
+              "auto/src/glewinfo_tail.c:479"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libGL.so / OpenGL.framework",
+        "mechanism": "dlopen",
+        "optional": false,
+        "acquisition": "system",
+        "source": "系统 OpenGL 库，EGL 路径动态加载 GL 符号",
+        "description": "在 EGL 配置下通过 dlopen 加载 OpenGL 共享库以获取 glGetString 等符号",
+        "evidence": [
+          "auto/src/glew_head.c:66"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "GLEW 为库而非应用，无网络请求、无子进程、无环境变量依赖。运行时仅通过系统动态链接加载 OpenGL/GLX/EGL 库。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "运行时通过 dlopen/LoadLibrary 加载系统 OpenGL 共享库（libGL.so / OpenGL.framework / opengl32.dll），路径由系统动态链接器决定",
+        "purpose": "加载 OpenGL 运行时库以获取函数指针",
+        "evidence": [
+          "auto/src/glew_head.c:66"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99/C11",
+    "runtime_version": null,
+    "build_system": "CMake (主要) + GNU Make (传统 Makefile)",
+    "compiler_extensions": [
+      {
+        "detail": "GLEWAPIENTRY / GLAPIENTRY 等调用约定宏（__stdcall 在 Windows 上）",
+        "evidence": [
+          "auto/src/glew_init_gl.c:glewGetExtension"
+        ]
+      },
+      {
+        "detail": "GLEW_BUILD / GLEW_STATIC 等条件编译宏控制 DLL 导出与静态链接",
+        "evidence": [
+          "build/cmake/CMakeLists.txt"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "CMakeLists.txt WIN32 分支",
+          "#ifdef _WIN32 守卫代码"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "Makefile.linux",
+          "CMakeLists.txt GLEW_X11 分支"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "Makefile.darwin",
+          "#ifdef __APPLE__ 守卫代码"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "Makefile.darwin-arm64"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "GLEW 是纯 C 库，通过 CMake 或 Make 构建为静态库(.a)或共享库(.so/.dll)。支持 Windows (MSVC/MinGW)、Linux (GCC/Clang)、macOS、FreeBSD、Solaris、Haiku 等系统。无运行时依赖（除系统 OpenGL）。构建产出的 glewinfo/visualinfo 是诊断工具而非核心库产品。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (OHOS NDK/musl 交叉编译为 .so；arm64/x86_64；自研内核，非 Linux ABI；已移植 OpenGL ES/EGL 支持)",
+    "porting_class": "recompile_only",
+    "effort": {
+      "person_days": [
+        1.9,
+        2.4
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            1.4,
+            1.4
+          ],
+          "basis": "重编译复用 4056 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0.5,
+            1
+          ],
+          "basis": "在鸿蒙 PC GLES/EGL 环境下编译通过并验证扩展查询能正常返回可用扩展列表"
+        }
+      ],
+      "level": "low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "GLEW 为纯 C 库，已有内建 EGL 加载路径可直接适配鸿蒙 PC 的 OpenGL ES/EGL 环境。只需用 OHOS NDK 交叉编译、激活 EGL 目标即可，无需源码修改。WGL/GLX/CGL 等平台特定路径受条件编译保护，在鸿蒙目标下不会被激活。无外部依赖（仅需系统 OpenGL/GLES 头文件），无不可适配的 API。",
+    "blockers": [
+      {
+        "id": "bk:egl_partial",
+        "issue": "鸿蒙 PC 的 EGL/GLES 支持标记为 partial——部分 GLES 扩展可能缺失，但 GLEW 作为加载器只需运行时查询可用扩展列表，不影响库本身的编译与运行",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "platform_capability_gap",
+        "source_dimension": "capability_profile",
+        "remediation_status": "partial",
+        "remediation": "GLEW 本身无需修改；运行时因 GLES 扩展集可能不完整，调用者用到未提供的扩展函数时会得到空函数指针——这与在其他 GLES 平台的行为一致。",
+        "evidence": [
+          "references/harmony-pc-capabilities.json:rendering_3d/opengl partial"
+        ],
+        "caused_by": [
+          "cap:rendering_3d"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "EGL/OpenGL ES（鸿蒙 PC 已支持）",
+        "capability_key": "egl",
+        "required": true,
+        "target_status": "partial",
+        "impact": "EGL 和 GLES 部分扩展可用——GLEW 加载器正常工作，但运行时可用扩展集可能小于完整桌面 OpenGL",
+        "source": "harmony-pc-capabilities.json#graphics_3d.egl",
+        "id": "ta:1",
+        "target_status_model": "partial"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 C 语言核心（扩展查询、函数指针加载、字符串解析）",
+        "note": "标准 C 代码，musl libc 兼容，OHOS NDK 直接交叉编译",
+        "evidence": [
+          "auto/src/glew_init_gl.c",
+          "auto/src/glew_head.c"
+        ]
+      },
+      {
+        "aspect": "EGL 加载路径",
+        "note": "已内建 EGL 平台后端，与鸿蒙 PC 的 EGL/GLES 一致",
+        "evidence": [
+          "auto/src/glew_init_egl.c"
+        ]
+      },
+      {
+        "aspect": "条件编译平台抽象",
+        "note": "WGL/GLX/CGL 路径仅在对应平台激活，不影响鸿蒙目标",
+        "evidence": [
+          "auto/src/glew_init_wgl.c",
+          "auto/src/glew_init_glx.c"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "配置 OHOS NDK (ohos.toolchain.cmake/ clang + musl) 交叉编译环境，生成 arm64/x86_64 的 libGLEW.so",
+      "构建时激活 EGL 目标定义（GLEW_EGL 或类似条件），排除 WGL/GLX/CGL 路径",
+      "在鸿蒙 GLES/EGL 环境下验证 glewinfo 能正确列出可用扩展"
+    ],
+    "notes": "评估按模型 A（库，OHOS NDK 交叉编译）。纯 C 代码，零需要修改的源码行。GLEW 的 EGL 路径适合鸿蒙 PC 的 OpenGL ES/EGL 图形栈。唯一的注意事项是鸿蒙 PC 的 GLES 扩展集可能不完整（caps 记为 partial），但对 GLEW 加载器本身无影响——它只查询和加载，不要求特定扩展存在。",
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "GLEW",
+    "one_liner": "OpenGL 扩展加载库（C/C++），跨平台运行时检测并加载 OpenGL 扩展与核心函数",
+    "kind": "library",
+    "ecosystem": "cpp",
+    "package_name": "glew",
+    "aliases": [
+      "libglew",
+      "glew32",
+      "GLEW"
+    ],
+    "import_names": [
+      "GL/glew.h"
+    ],
+    "bindings": [],
+    "source_url": "https://github.com/nigels-com/glew",
+    "version": "2.3.1",
+    "analyzed_at": "2026-07-11T01:29:12Z"
+  },
+  "meta": {
+    "analyzed_at": "2026-07-11T00:16:43.756Z",
+    "source_url": "https://github.com/nigels-com/glew",
+    "source_commit": null,
+    "analysis_depth": "full",
+    "confidence_overall": "high",
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
+      {
+        "code": "blocker_ref:bk:egl_partial:cap:rendering_3d",
+        "class": "actionable",
+        "message": "blocker bk:egl_partial 的引用 cap:rendering_3d 不存在（悬空引用）"
+      }
+    ],
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "GLEW 是 OpenGL 扩展加载库，直接涉及 3D 渲染场景（OpenGL/EGL/GLX/WGL）。不涉及媒体编解码与特定硬件（如 CUDA/NPU）。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": true,
+        "kind": [
+          "opengl",
+          "egl",
+          "glx",
+          "wgl"
+        ],
+        "via": [
+          "libGL",
+          "libEGL",
+          "libX11",
+          "opengl32.dll"
+        ],
+        "harmony_status": "partial",
+        "adaptation": "GLEW 通过 OpenGL/GLX/WGL/EGL 加载 3D 渲染扩展。鸿蒙 PC 支持 OpenGL ES 与 EGL（partial），桌面级完整 OpenGL 与 GLX 覆盖情况待核实。",
+        "evidence": [
+          "auto/src/glew_head.c:dlopen GL 库",
+          "auto/src/glew_init_glx.c:glXQueryVersion",
+          "auto/src/glew_init_egl.c:eglInitialize"
+        ]
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "GLEW 是本地 OpenGL 扩展加载库，不涉及云端服务，无需网络连接。"
+  },
+  "code_partition": {
+    "summary": "GLEW 约 4056 行生产 C 代码均可通过 OHOS NDK 交叉编译复用。已有的 EGL 加载路径适配鸿蒙 PC 的 OpenGL ES/EGL 支持，无需源码修改。WGL/GLX/CGL 路径为条件编译，在新的 EGL 平台不会被激活。",
+    "coverage": {
+      "production_code": 4056,
+      "partitioned_code": 4056,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "recompile_reuse",
+        "loc": 4056,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "auto/src",
+            "loc": 2846,
+            "reason": "自动生成的扩展检测与函数指针加载代码，所有平台特定路径（WGL/GLX/EGL/CGL）均通过 #ifdef 条件编译，EGL 路径已覆盖鸿蒙 PC 场景",
+            "evidence": [
+              "auto/src/glew_init_egl.c:EGL 加载逻辑",
+              "auto/src/glew_init_gl.c:OpenGL 核心函数加载"
+            ]
+          },
+          {
+            "path": "src",
+            "loc": 1210,
+            "reason": "核心 glew.c 实现与 visualinfo 工具代码，纯 C + OpenGL/平台适配层，通过 EGL 路径兼容鸿蒙 PC",
+            "evidence": [
+              "src/visualinfo.c:像素格式查询"
+            ]
+          }
+        ],
+        "basis": "所有生产代码均为标准 C（无汇编），平台抽象层已内建 EGL 路径；鸿蒙 PC 支持 EGL/GLES，不需新增平台后端。平台守卫代码（_WIN32 502行 / __APPLE__ 123行 / __linux__ 4行）均在条件编译块内，在 EGL 目标不被激活，不影响交叉编译。"
+      }
+    ],
+    "notes": "GLEW 纯 C 库，无汇编、无 SIMD intrinsics、无需要适配的平台 API。已有的 EGL 路径可直接在鸿蒙 PC 工作；WGL/GLX/CGL 路径在其他平台激活但不影响鸿蒙构建。"
+  }
+}

@@ -562,7 +562,7 @@ def main() -> int:
     fragment = compute(repo)
     text = json.dumps(fragment, indent=2, ensure_ascii=False)
     if args.out:
-        with open(args.out, "w") as fh:
+        with open(args.out, "w", encoding="utf-8") as fh:
             fh.write(text)
         m = fragment["code_metrics"]
         print(f"Wrote {args.out}")

@@ -1,0 +1,400 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 2,
+        "code": 319,
+        "pct": 100.0,
+        "production": {
+          "files": 1,
+          "code": 202
+        },
+        "test": {
+          "files": 1,
+          "code": 117
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 2,
+      "code": 319,
+      "comment": 0,
+      "blank": 18,
+      "total_lines": 337
+    },
+    "production": {
+      "files": 1,
+      "code": 202,
+      "comment": 0,
+      "blank": 12,
+      "total_lines": 214
+    },
+    "test": {
+      "files": 1,
+      "code": 117,
+      "comment": 0,
+      "blank": 6,
+      "total_lines": 123
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 202,
+        "category": "production",
+        "by_category": {
+          "production": 202
+        }
+      },
+      {
+        "dir": "test",
+        "code": 117,
+        "category": "test",
+        "by_category": {
+          "test": 117
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 1,
+        "code": 202
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 8,
+    "frameworks": [
+      "jest/mocha"
+    ],
+    "by_language": {
+      "JavaScript": {
+        "files": 1,
+        "cases": 8
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "一个纯 JavaScript 实用工具库，为构建 N-API（Node-API）原生 Node.js 插件的开发者工具提供版本检测与验证功能。它帮助工具作者判断当前 Node 实例支持的 N-API 版本、验证插件声明支持的版本列表，并在版本不匹配时输出控制台警告。",
+    "categories": [
+      {
+        "name": "N-API 版本检测",
+        "description": "检测当前 Node 实例支持的最高 N-API 版本，包括对较早 Node 版本的回退推断（Node 9.3+ → N-API v2，Node 8+ → N-API v1）。",
+        "evidence": [
+          "index.js:getNapiVersion()"
+        ]
+      },
+      {
+        "name": "版本兼容性验证",
+        "description": "查验指定 N-API 版本是否同时被当前 Node 实例与插件的 package.json（binary.napi_versions）支持；判定某个版本是否可构建。",
+        "evidence": [
+          "index.js:isSupportedVersion()",
+          "index.js:packageSupportsVersion()"
+        ]
+      },
+      {
+        "name": "构建版本优选",
+        "description": "在 Node 支持的版本与插件声明的版本之间取最大值，给出最适合构建的 N-API 版本号（best build version）。",
+        "evidence": [
+          "index.js:getBestNapiBuildVersion()",
+          "index.js:getNapiBuildVersions()"
+        ]
+      },
+      {
+        "name": "版本警告输出",
+        "description": "对不支持的 N-API 版本向日志对象输出警告信息；针对 prebuild 构建配置批量检查缺失版本。",
+        "evidence": [
+          "index.js:logUnsupportedVersion()",
+          "index.js:logMissingNapiVersions()"
+        ]
+      }
+    ],
+    "domain": "Node.js 开发工具 / 原生插件构建辅助",
+    "target_users": "构建 N-API 原生 Node.js 插件的工具作者（如 prebuild、node-gyp 等构建工具链的开发者）",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件内容与标准 MIT 许可文本一致；package.json license 字段为 MIT。",
+    "notes": "宽松许可，允许自由使用、修改、分发，仅需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "无运行时依赖（npm package.json 中 dependencies 为空）。仅有开发期依赖：chai（测试断言）、jsdoc-to-markdown（文档生成）、mocha（测试框架）、standard（代码风格检查）。这些 devDependencies 不影响运行期功能与移植性。"
+  },
+  "native_api": {
+    "summary": "纯 JavaScript 库，通过 Node.js 标准模块（process.versions.napi、process.version）读取 N-API 版本信息，不涉及任何平台特定 API 或 FFI。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "process.versions.napi",
+            "purpose": "读取当前 Node 实例支持的 N-API 版本号",
+            "evidence": [
+              "index.js:207-213"
+            ]
+          },
+          {
+            "name": "process.version",
+            "purpose": "获取 Node.js 运行时版本，用于 N-API 版本回退推断（Node 9.3+→v2，Node 8+→v1）",
+            "evidence": [
+              "index.js:7-13"
+            ]
+          },
+          {
+            "name": "require('path')",
+            "purpose": "解析 package.json 路径",
+            "evidence": [
+              "index.js:4"
+            ]
+          },
+          {
+            "name": "require(path.resolve('package.json'))",
+            "purpose": "加载宿主插件的 package.json 以读取 binary.napi_versions",
+            "evidence": [
+              "index.js:5"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "纯 JS 库，无网络/文件系统/子进程/设备访问；仅读取宿主的 package.json。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "读取宿主插件的 package.json（通过 path.resolve）",
+        "purpose": "获取插件声明的 binary.napi_versions 版本列表",
+        "evidence": [
+          "index.js:4-5"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "JavaScript (Node.js)",
+    "runtime_version": "Node.js >= 8.0.0（支持 N-API 的最低版本）",
+    "build_system": "npm（CI 通过 npm test 运行 mocha + standard）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/run-npm-tests.yml 在 ubuntu-latest 上测试 Node 22/23"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "纯 JS 库，无原生编译环节。CI 仅在 Linux 测试，但作为纯 JS 代码理论上跨平台兼容（Node.js 支持的所有平台）。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Node.js 24.13 运行时上；纯 JS 库，无原生编译需求；arm64/x86_64）",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "本库为纯 JavaScript 工具库，零运行时依赖，仅使用 Node.js 标准模块（process.versions.napi、process.version）。鸿蒙 PC 已移植 Node.js 24.13 运行时，该库可直接在鸿蒙 PC 的 Node.js 上运行，无需任何代码修改或编译。唯一的工作量可能在于将库安装到鸿蒙 PC Node.js 环境并验证版本读取功能正常。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "Node.js 运行时",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "运行时可用则库直接可跑；不可用则全库无法运行",
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "id": "ta:1",
+        "target_status_model": "available"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯 JS 逻辑（process.versions 版本读取、数值比较、警告输出）",
+        "note": "仅依赖 Node 核心 API，鸿蒙 Node.js 完全支持",
+        "evidence": [
+          "index.js:1-214"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC Node.js 环境安装本库（npm install），验证版本读取与警告输出功能正常"
+    ],
+    "notes": "作为纯 JS 工具库，鸿蒙 PC 移植成本为零。唯一前提是目标鸿蒙 PC 安装了 Node.js（已确认可用）。基于代码分析，该库仅通过 process.versions.napi 读取 N-API 版本号并对此做数值比较与日志输出，不依赖文件系统、网络、进程或其他平台特性。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "napi-build-utils",
+    "kind": "library",
+    "package_name": "napi-build-utils",
+    "aliases": [],
+    "import_names": [
+      "napi-build-utils"
+    ],
+    "source_url": "https://github.com/inspiredware/napi-build-utils.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-11T13:54:36.947Z",
+    "commit": "158e6b6bd7469f8cba35a8ce70e0b45b754f56cf",
+    "one_liner": "供构建 N-API 原生 Node.js 插件的开发工具使用的纯 JS 版本检测实用库",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "harmony_warnings_dismissed": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯 JavaScript 工具库，不涉及 GUI、3D 渲染、媒体或硬件依赖场景。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "纯本地 JS 工具库，不涉及任何云端服务——无网络请求、无第三方云 SDK 依赖、无登录/存储/数据库/推送/分析等云功能。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 202 行生产代码为纯 JavaScript，可直接在鸿蒙 Node.js 运行时上复用（零原生/平台依赖），无重编或适配需求。",
+    "coverage": {
+      "production_code": 202,
+      "partitioned_code": 202,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 202,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 202,
+            "reason": "纯 JS 代码，仅用 Node 标准模块（process.versions.napi、process.version），无原生依赖或平台特有 API",
+            "evidence": []
+          }
+        ],
+        "basis": "native_api 仅含 standard 类、无 platform/system/hardware/ffi 调用点；platform_adaptation 与 platform_branches 均为 0；无 C 扩展或原生编译需求"
+      }
+    ],
+    "notes": "无 src/lib/bin 等子目录结构，全部代码位于根目录单文件。"
+  }
+}

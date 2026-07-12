@@ -1,0 +1,1138 @@
+{
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "C/C++ Header"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 35,
+        "code": 32666,
+        "pct": 74.88,
+        "production": {
+          "files": 12,
+          "code": 29627
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 23,
+          "code": 3039
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 18,
+        "code": 10959,
+        "pct": 25.12,
+        "production": {
+          "files": 14,
+          "code": 10831
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 4,
+          "code": 128
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 53,
+      "code": 43625,
+      "comment": 0,
+      "blank": 4292,
+      "total_lines": 47917
+    },
+    "production": {
+      "files": 26,
+      "code": 40458,
+      "comment": 0,
+      "blank": 3928,
+      "total_lines": 44386
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 27,
+      "code": 3167,
+      "comment": 0,
+      "blank": 364,
+      "total_lines": 3531
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 39762,
+        "category": "production",
+        "by_category": {
+          "production": 39762
+        }
+      },
+      {
+        "dir": "examples",
+        "code": 3167,
+        "category": "example",
+        "by_category": {
+          "example": 3167
+        }
+      },
+      {
+        "dir": "util",
+        "code": 624,
+        "category": "production",
+        "by_category": {
+          "production": 624
+        }
+      },
+      {
+        "dir": "doc",
+        "code": 72,
+        "category": "production",
+        "by_category": {
+          "production": 72
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": [
+        "examples"
+      ]
+    },
+    "dir_loc": [
+      {
+        "dir": "src",
+        "files": 22,
+        "code": 39762
+      },
+      {
+        "dir": "util",
+        "files": 2,
+        "code": 624
+      },
+      {
+        "dir": "doc",
+        "files": 2,
+        "code": 72
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 2,
+          "code": 10,
+          "macros": [
+            "_MSC_VER",
+            "__WIN32__"
+          ]
+        },
+        "macos": {
+          "files": 1,
+          "code": 1,
+          "macros": [
+            "__APPLE__"
+          ]
+        }
+      },
+      "total": 11,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "libmtp 是一个 C 语言实现的 MTP (Media Transfer Protocol) 发起端协议库，通过 libusb 与 USB 主机控制器通信，实现与 MTP 设备（MP3 播放器、手机、相机等便携媒体设备）的互操作。它提供文件传输、设备属性查询、播放列表管理、固件升级等完整功能，是 Linux 桌面环境中 MTP 设备支持的底层依赖（如 GVFS MTP 后端、Rhythmbox、Amarok 等均依赖它）。",
+    "categories": [
+      {
+        "name": "MTP 协议核心",
+        "description": "PTP/MTP 协议栈的完整实现，基于 libgphoto2 的 PTP 层，支持设备枚举、会话管理、命令/响应/数据传输事务",
+        "evidence": [
+          "src/ptp.c",
+          "src/ptp.h",
+          "src/ptp-pack.c",
+          "src/libmtp.c"
+        ]
+      },
+      {
+        "name": "USB 设备通信",
+        "description": "通过 libusb 1.0（兼容 libusb 0.x 和 libopenusb）进行底层 USB 通信，包含设备检测、端点管理、批量传输等",
+        "evidence": [
+          "src/libusb1-glue.c",
+          "src/libusb-glue.c",
+          "src/libopenusb1-glue.c",
+          "src/libusb-glue.h"
+        ]
+      },
+      {
+        "name": "文件与存储管理",
+        "description": "设备上文件/文件夹的读写、删除、属性查询，支持按存储区域(内部/外部存储)划分",
+        "evidence": [
+          "src/libmtp.c",
+          "examples/files.c",
+          "examples/sendfile.c",
+          "examples/getfile.c"
+        ]
+      },
+      {
+        "name": "元数据与轨道管理",
+        "description": "音乐/视频文件的轨道元数据读取写入，播放列表的创建和编辑，支持 Creative 设备特殊格式（.zpl）和三星.prop 格式",
+        "evidence": [
+          "src/playlist-spl.c",
+          "src/playlist-spl.h",
+          "examples/tracks.c",
+          "examples/playlists.c"
+        ]
+      },
+      {
+        "name": "固件与设备管理",
+        "description": "设备固件升级、格式化存储、重置设备等高级管理功能",
+        "evidence": [
+          "src/libmtp.c",
+          "examples/format.c",
+          "examples/reset.c"
+        ]
+      },
+      {
+        "name": "Unicode 编码处理",
+        "description": "设备 UCS-2 编码与主机 UTF-8 之间的双向转换，处理多语言文件名和元数据",
+        "evidence": [
+          "src/unicode.c",
+          "src/unicode.h"
+        ]
+      },
+      {
+        "name": "MTPZ 加密支持",
+        "description": "支持 Microsoft Zune 和早期 Windows Phone 设备的 MTPZ 加密协议，需用户自行提供解密密钥",
+        "evidence": [
+          "src/mtpz.c",
+          "src/mtpz.h"
+        ]
+      }
+    ],
+    "domain": "device-communication",
+    "target_users": "桌面环境开发者（GVFS/文件管理器集成）、媒体播放器开发者、Linux 发行版打包者"
+  },
+  "license": {
+    "spdx": "LGPL-2.1-or-later",
+    "name": "GNU Lesser General Public License v2.1 or later",
+    "confidence": "high",
+    "category": "weak_copyleft",
+    "is_dual_licensed": false,
+    "license_files": [
+      "COPYING"
+    ],
+    "evidence": "COPYING contains full LGPL-2.1 text; source headers in src/*.c and src/*.h state 'either version 2 of the License, or (at your option) any later version'",
+    "notes": "LGPL v2.1 弱传染性协议，链接使用不受限制，修改库源码需开源"
+  },
+  "dependencies": {
+    "count": 5,
+    "manifests": [
+      "configure.ac"
+    ],
+    "by_ecosystem": {
+      "cpp": [
+        "libusb-1.0",
+        "libgcrypt",
+        "libiconv",
+        "libxml2",
+        "libopenusb"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "libusb-1.0",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">= 1.0.0",
+        "purpose": "跨平台 USB 设备访问，枚举 MTP 设备并进行批量/控制传输",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package/pkg-config，需预装)",
+        "declared_in": [
+          "configure.ac"
+        ],
+        "used_symbols": [
+          "libusb_init",
+          "libusb_open",
+          "libusb_get_device_list",
+          "libusb_bulk_transfer",
+          "libusb_control_transfer",
+          "libusb_get_device_descriptor"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "libgcrypt",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "为 MTPZ 协议提供加密/解密支持（Zune/Windows Phone 设备），可选编译",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(configure 自动检测，未安装则禁用 MTPZ)",
+        "declared_in": [
+          "configure.ac",
+          "src/mtpz.c"
+        ],
+        "used_symbols": [
+          "gcry_check_version",
+          "gcry_cipher_open",
+          "gcry_cipher_setkey",
+          "gcry_cipher_decrypt"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "libiconv",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "字符编码转换，处理设备 UCS-2/UTF-16 与主机 UTF-8 之间的双向转换",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(configure 自动检测，一般为系统自带或需安装 libiconv)",
+        "declared_in": [
+          "configure.ac",
+          "src/unicode.c"
+        ],
+        "used_symbols": [
+          "iconv_open",
+          "iconv",
+          "iconv_close"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "libxml2",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": null,
+        "purpose": "解析 MTPZ 设备信息 XML 响应，辅助 MTPZ 加密协商，可选编译",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(configure 自动检测，未安装时 MTPZ 功能降级)",
+        "declared_in": [
+          "configure.ac"
+        ],
+        "used_symbols": [
+          "xmlParseMemory"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)"
+      },
+      {
+        "name": "libopenusb",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">= 1.0",
+        "purpose": "libusb 1.0 的替代 USB 库，在无 libusb-1.0 时作为备选后端",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(configure 在 libusb-1.0 不可用时尝试检测 libopenusb)",
+        "declared_in": [
+          "configure.ac",
+          "src/libopenusb1-glue.c"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "libiconv 在大多数 Linux 发行版中由 glibc 内建提供；libgcrypt 和 libxml2 仅 MTPZ 功能需要，非核心强制依赖。libusb-1.0 是核心运行时依赖。历史兼容 libusb 0.x 版本，但推荐 libusb-1.0"
+  },
+  "native_api": {
+    "summary": "跨平台库，核心通过 libusb 做 USB 设备通信，依赖 POSIX 标准文件 I/O 和少量平台条件编译路径（Windows/MinGW/Apple IOKit）。主要平台 API 为 POSIX 文件/目录操作，少量 Win32 和 macOS IOKit 特定路径",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "fopen",
+            "purpose": "打开文件读取 MTPZ 密钥数据",
+            "count": 1,
+            "evidence": [
+              "src/mtpz.c:139"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fclose",
+            "purpose": "关闭文件句柄",
+            "count": 1,
+            "evidence": [
+              "src/mtpz.c:216"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fread",
+            "purpose": "读取 MTPZ 数据块",
+            "count": 1,
+            "evidence": [
+              "src/ptp.c:5490"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "malloc",
+            "purpose": "动态内存分配（多处使用）",
+            "count": 50,
+            "evidence": [
+              "src/libmtp.c",
+              "src/ptp.c"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "free",
+            "purpose": "释放动态内存",
+            "count": 50,
+            "evidence": [
+              "src/libmtp.c",
+              "src/ptp.c"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "open",
+            "purpose": "创建/打开文件用于读写 MTP 设备文件",
+            "count": 4,
+            "evidence": [
+              "src/libmtp.c:5355",
+              "src/libmtp.c:5658",
+              "src/libmtp.c:5994"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "close",
+            "purpose": "关闭文件描述符",
+            "count": 4,
+            "evidence": [
+              "src/libmtp.c:5367",
+              "src/libmtp.c:5675",
+              "src/playlist-spl.c:148"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "read",
+            "purpose": "从文件描述符读取数据块",
+            "count": 2,
+            "evidence": [
+              "src/playlist-spl.c:356"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "write",
+            "purpose": "写入数据到文件描述符（播放列表）",
+            "count": 3,
+            "evidence": [
+              "src/playlist-spl.c:456",
+              "src/playlist-spl.c:473",
+              "src/playlist-spl.c:485"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "lseek",
+            "purpose": "定位文件读写偏移",
+            "count": 4,
+            "evidence": [
+              "src/playlist-spl.c:228",
+              "src/playlist-spl.c:235",
+              "src/playlist-spl.c:345",
+              "src/playlist-spl.c:351"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "unlink",
+            "purpose": "删除临时文件",
+            "count": 2,
+            "evidence": [
+              "src/playlist-spl.c:143",
+              "src/playlist-spl.c:202",
+              "src/libmtp.c:5371"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "mkstemp",
+            "purpose": "创建安全的临时文件（Windows 条件替换为 _open(_mktemp)）",
+            "count": 2,
+            "evidence": [
+              "src/playlist-spl.c:102",
+              "src/libmtp.c"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "iconv_open",
+            "purpose": "初始化字符编码转换器（UCS-2/UTF-16 与 UTF-8）",
+            "count": 2,
+            "evidence": [
+              "src/libmtp.c:1968",
+              "src/libmtp.c:1969"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "iconv",
+            "purpose": "执行字符编码转换",
+            "count": 2,
+            "evidence": [
+              "src/unicode.c:90"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "iconv_close",
+            "purpose": "关闭编码转换器",
+            "count": 4,
+            "evidence": [
+              "src/libmtp.c:1988",
+              "src/libmtp.c:2529"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "usleep",
+            "purpose": "微秒级延迟等待设备响应",
+            "count": 5,
+            "evidence": [
+              "src/libusb1-glue.c"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "_open (MSVC)",
+            "purpose": "MSVC 特定文件打开 API，替代 POSIX open（_WIN32 条件编译）",
+            "count": 3,
+            "evidence": [
+              "src/libmtp.c:5353",
+              "src/libmtp.c:5658",
+              "src/libmtp.c:5994"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "_close (MSVC)",
+            "purpose": "MSVC 特定文件关闭",
+            "count": 2,
+            "evidence": [
+              "src/libmtp.c:5673",
+              "src/libmtp.c:6009"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "_O_BINARY|_O_RDWR|_O_CREAT|_O_TRUNC (MSVC)",
+            "purpose": "MSVC 二进制模式文件标志",
+            "count": 6,
+            "evidence": [
+              "src/libmtp.c:5353",
+              "src/libmtp.c:5658",
+              "src/libmtp.c:5994"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "libusb",
+        "category": "platform",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "libusb_init",
+            "purpose": "初始化 libusb 会话",
+            "count": 1,
+            "evidence": [
+              "src/libusb1-glue.c:158"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "libusb_get_device_list",
+            "purpose": "枚举 USB 设备列表",
+            "count": 1,
+            "evidence": [
+              "src/libusb1-glue.c:528"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "libusb_get_device_descriptor",
+            "purpose": "获取 USB 设备描述符",
+            "count": 8,
+            "evidence": [
+              "src/libusb1-glue.c:249",
+              "src/libusb1-glue.c:533",
+              "src/libusb-glue.c"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "libusb_open",
+            "purpose": "打开 USB 设备句柄",
+            "count": 2,
+            "evidence": [
+              "src/libusb1-glue.c:272",
+              "src/libusb1-glue.c:1923"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "libusb_close",
+            "purpose": "关闭 USB 设备句柄",
+            "count": 10,
+            "evidence": [
+              "src/libusb1-glue.c:336",
+              "src/libusb1-glue.c:2113"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "libusb_bulk_transfer",
+            "purpose": "USB 批量端点数据传输（主力 I/O）",
+            "count": 20,
+            "evidence": [
+              "src/libusb1-glue.c"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "libusb_control_transfer",
+            "purpose": "USB 控制端点传输（命令/状态/描述符）",
+            "count": 5,
+            "evidence": [
+              "src/libusb1-glue.c:425"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "libusb_kernel_driver_active",
+            "purpose": "检测内核驱动是否已占用设备",
+            "count": 2,
+            "evidence": [
+              "src/libusb1-glue.c:363",
+              "src/libusb1-glue.c:729"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "libusb_detach_kernel_driver",
+            "purpose": "分离内核驱动以占用设备（Linux/macOS）",
+            "count": 3,
+            "evidence": [
+              "src/libusb1-glue.c",
+              "src/libusb-glue.c:1691"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "macos_iokit",
+        "category": "platform",
+        "platform": "macos",
+        "apis": [
+          {
+            "name": "IOKit Framework (link: -framework IOKit)",
+            "purpose": "Apple IOKit USB 通信框架，macOS 条件编译路径",
+            "count": 1,
+            "evidence": [
+              "configure.ac:148"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libusb-1.0.so",
+        "mechanism": "dlopen",
+        "acquisition": "system",
+        "source": "系统 libusb-1.0，通过 pkg-config 查找并链接",
+        "description": "跨平台 USB 库，libmtp 核心依赖，运行时动态或静态加载提供 USB 设备枚举/打开/批量传输/控制传输",
+        "optional": false,
+        "evidence": [
+          "configure.ac:185",
+          "src/libusb1-glue.c:158"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期通过 libusb 访问 USB 设备，读写用户文件系统中的文件（MTP 设备文件传输），读取用户主目录下的 MTPZ 密钥配置文件 (~/.mtpz-data)；无网络访问",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "MTPZ 密钥配置文件 (~/.mtpz-data)，用户主目录下的自定义数据",
+        "purpose": "读取用户提供的 Zune/Windows Phone 设备解密密钥，用于 MTPZ 加密协议",
+        "evidence": [
+          "src/mtpz.c:139"
+        ]
+      },
+      {
+        "detail": "临时文件（mkstemp/mktemp 创建）",
+        "purpose": "播放列表编辑期间的临时存储",
+        "evidence": [
+          "src/playlist-spl.c:102",
+          "src/libmtp.c"
+        ]
+      },
+      {
+        "detail": "用户指定路径的文件读写（通过 libmtp API 导出）",
+        "purpose": "从/向 MTP 设备传输文件到主机文件系统",
+        "evidence": [
+          "src/libmtp.c"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "LIBMTP_DEBUG",
+        "purpose": "控制 libmtp 的调试输出级别（0x01 PTP/0x02 播放列表/0x04 USB/0x08 USB数据），开发者调试用",
+        "evidence": [
+          "README:531-553",
+          "src/libmtp.c"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [
+      {
+        "detail": "USB 设备（通过 libusb 枚举和访问）",
+        "purpose": "枚举并访问各类 MTP USB 设备（MP3 播放器、手机、相机等便携媒体设备）；需适当的 USB 访问权限",
+        "evidence": [
+          "src/libusb1-glue.c:528",
+          "src/libusb-glue.c"
+        ]
+      }
+    ],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99",
+    "runtime_version": "需 libusb-1.0 >= 1.0.0（推荐）或 libusb 0.x / libopenusb；可选 libgcrypt、libiconv、libxml2",
+    "build_system": "autotools (autoconf + automake + libtool)",
+    "compiler_extensions": [
+      {
+        "detail": "__GNUC__ 检查（GCC 特有代码路径）",
+        "evidence": [
+          "src/libmtp.c:1803",
+          "src/libmtp.c:1820"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "configure.ac:154"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "aarch64",
+        "evidence": [
+          "configure.ac 通用 configure 脚本"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86",
+        "evidence": [
+          "configure.ac:168",
+          "README.windows.txt",
+          "src/libmtp.c:5351 #ifdef __WIN32__"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "configure.ac:144 USE_DARWIN",
+          "src/libusb-glue.c:1737 #ifndef __APPLE__"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "标准 autotools 产物（make install 安装 libmtp.so + libmtp.h + libmtp.pc），各发行版打包为 libmtp-dev 等包；examples/ 目录下的命令行工具为示例用途",
+    "notes": "通过 autotools 的 configure 脚本检测依赖可用性，可选功能（MTPZ）在依赖缺失时自动禁用；mingw 交叉编译支持 Windows 目标"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（OHOS NDK/musl，arm64/x86_64；无 Linux ABI；库级模型 A——经 OHOS NDK 交叉编译为 .so，核心依赖 libusb-1.0）",
+    "porting_class": "needs_adaptation",
+    "effort": {
+      "person_days": [
+        25.6,
+        26.6
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            11.5,
+            11.5
+          ],
+          "basis": "重编译复用 34400 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            12.1,
+            12.1
+          ],
+          "basis": "需适配 6058 行 ÷ 500 行/天"
+        },
+        {
+          "component": "deps_porting",
+          "person_days": [
+            1,
+            2
+          ],
+          "basis": "libusb-1.0 本身需要 OHOS NDK 交叉编译（开源、跨平台）；libgcrypt/libiconv/libxml2 已在鸿蒙 cmd-pkgs 适配，直接链接"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            1,
+            1
+          ],
+          "basis": "在鸿蒙 PC 环境下验证 MTP 设备枚举/文件传输/播放列表功能（无自动化测试套件可见，需手动功能验证）"
+        }
+      ],
+      "level": "high"
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:libusb",
+        "capability": "libusb-1.0 在鸿蒙 PC 的可用性（OHOS NDK 可编译、有 USB 设备访问权限）",
+        "capability_key": null,
+        "required": true,
+        "target_status": "unknown",
+        "impact": "libusb 是 libmtp 访问 MTP USB 设备的唯一通道；若不可用，需用 @ohos.usbManager 替代整个 libusb 封装层（约 6k 行重写），否则 MTP 通信完全失效",
+        "source": "harmony-pc-capabilities.json 暂无 USB 设备访问 API 矩阵记录",
+        "target_status_model": "unknown"
+      }
+    ],
+    "required_permissions": [
+      {
+        "permission": "ohos.permission.USB_PERMISSION (推测)",
+        "reason": "MTP 协议库通过 USB 设备枚举和批量/控制传输与 MTP 设备通信，需 USB 设备访问权限",
+        "source_capability": "hardware",
+        "grantability": "unknown",
+        "evidence": [
+          "src/libusb1-glue.c:272"
+        ]
+      }
+    ],
+    "critical_dependencies": [
+      {
+        "name": "libusb-1.0",
+        "order": 1,
+        "why": "libmtp 所有 USB 操作经过 libusb-1.0 封装层；不先移植 libusb 则 MTP 通信完全不可用",
+        "refs": [
+          "bk:libusb",
+          "ta:libusb"
+        ]
+      },
+      {
+        "name": "libiconv",
+        "order": 2,
+        "why": "字符编码转换是 MTP 操作的基础（设备名/文件名/元数据），已在鸿蒙 cmd-pkgs 中适配，交叉编译即可",
+        "refs": []
+      }
+    ],
+    "summary": "libmtp C 语言 MTP 协议库在鸿蒙 PC 上的可用性取决于 libusb-1.0 是否已移植。协议核心（约 85% 代码）为纯 C 逻辑 + 标准 POSIX I/O，可在 OHOS NDK 下交叉编译；MTPZ 依赖的 libgcrypt/libiconv/libxml2 已在鸿蒙 cmd-pkgs 中适配。关键瓶颈是 libusb-1.0 封装层（约 6k 行），若 libusb 已移植则整体迁移成本低（仅交叉编译+验证），若未移植则需用 @ohos.usbManager 重写 USB 设备访问层。未确认 libusb 或等价 USB API 在鸿蒙上的可用性，故置信度为中。",
+    "blockers": [
+      {
+        "id": "bk:libusb",
+        "issue": "libmtp 的 USB 设备访问完全依赖 libusb-1.0；其在鸿蒙 PC 上的可用性未核实",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "remediation_status": "partial",
+        "remediation": "验证 libusb-1.0 是否已在鸿蒙 PC 移植（OHOS NDK 交叉编译成功 + USB 设备访问权限可用）。若已可用则直接交叉编译复用；若不可用则用 @ohos.usbManager/@ohos.usbV9 替换 libusb 封装层（约 6k 行的 USB 设备枚举、批量/控制传输逻辑需重写）",
+        "evidence": [
+          "configure.ac:185",
+          "src/libusb1-glue.c:158",
+          "src/libusb1-glue.c:272"
+        ]
+      },
+      {
+        "id": "bk:usb-permission",
+        "issue": "鸿蒙 PC 的 USB 设备访问权限模型未确认",
+        "severity": "minor",
+        "adaptability": "partial",
+        "category": "platform_model",
+        "source_dimension": "runtime_surface",
+        "remediation_status": "partial",
+        "remediation": "确认鸿蒙 PC 的 USB 设备访问权限（ohos.permission.USB_PERMISSION）是否对三方 .so 库开放，或需经 @ohos.usbManager 权限声明",
+        "evidence": [
+          "src/libusb1-glue.c:272"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "PTP/MTP 协议栈（ptp.c / ptp-pack.c）",
+        "note": "纯协议编解码和状态机逻辑，无平台依赖，直接交叉编译",
+        "evidence": [
+          "src/ptp.c"
+        ]
+      },
+      {
+        "aspect": "Unicode 编码转换层（unicode.c）",
+        "note": "依赖 libiconv，在鸿蒙 cmd-pkgs 中已适配，交叉编译即可",
+        "evidence": [
+          "src/unicode.c"
+        ]
+      },
+      {
+        "aspect": "MTPZ 加密层（mtpz.c）",
+        "note": "依赖 libgcrypt，在鸿蒙 cmd-pkgs 中已适配，交叉编译即可",
+        "evidence": [
+          "src/mtpz.c"
+        ]
+      },
+      {
+        "aspect": "播放列表处理（playlist-spl.c）",
+        "note": "标准文件 I/O 操作，无平台依赖",
+        "evidence": [
+          "src/playlist-spl.c"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "验证 libusb-1.0 在鸿蒙 PC 的可用性（OHOS NDK 交叉编译 + USB 设备访问权限）",
+      "若 libusb 可用：用 OHOS NDK 交叉编译 libmtp 为 arm64/x86_64 .so，链接鸿蒙版 libiconv/libgcrypt/libxml2",
+      "若 libusb 不可用：用 @ohos.usbManager/@ohos.usbV9 替换 libusb 封装层（libusb1-glue.c 等约 6k 行），重新实现设备枚举/批量传输/控制传输",
+      "验证 MTP 设备基本操作（设备枚举、文件传输、播放列表管理）在鸿蒙 PC 上的功能正确性"
+    ],
+    "notes": "评估按模型 A（库经 OHOS NDK 交叉编译）；关键瓶颈是 libusb-1.0 在鸿蒙 PC 的可用性，这是开源库交叉编译风险可控项。libgcrypt/libiconv/libxml2 已在鸿蒙 cmd-pkgs 中适配。若 libusb 已移植，实际迁移成本可降为仅交叉编译 + 验证（3-5 人天）。未核实 libusb 状态故置信度为中。",
+    "porting_class_model": "needs_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "libmtp",
+    "kind": "library",
+    "package_name": "libmtp",
+    "source_url": "https://github.com/libmtp/libmtp.git",
+    "commit": "a03f5316a071c5a85b6c203e0529dde310b27f6f",
+    "one_liner": "C 语言编写的跨平台 MTP (Media Transfer Protocol) 协议库，用于与便携设备通信",
+    "ecosystem": "cpp",
+    "bindings": [],
+    "analyzed_at": "2026-07-11T02:19:53Z"
+  },
+  "meta": {
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "capability_profile",
+        "field": "hardware",
+        "kind": "gap",
+        "value": "USB 设备访问（libusb-1.0 在鸿蒙的可用性）",
+        "rationale": "harmony-pc-capabilities.json 中设有 USB/串口行（device_access_usb），但 libusb-1.0 作为三方 USB 库在鸿蒙 PC 的具体编译与权限可行性尚未核实"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "medium",
+    "harmony_warnings": [
+      {
+        "code": "critical_dep_adapted:libiconv",
+        "class": "actionable",
+        "message": "critical_dependencies 列出了已鸿蒙化依赖 libiconv（官方源已有移植产物，不应列入关键路径）"
+      }
+    ],
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "本项目为 C 语言 MTP 协议库，不涉及 GUI 界面、3D 渲染或音视频媒体编解码；仅涉及通过 libusb 进行 USB 设备访问，属于通用 USB 通信（非特定不可替代硬件）",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": true,
+        "kind": [
+          "usb"
+        ],
+        "specific_hardware": false,
+        "via": [
+          "libusb-1.0",
+          "libusb-1.0.so"
+        ],
+        "harmony_status": "unknown",
+        "adaptation": "通过 libusb-1.0 进行 USB 设备枚举和批量/控制传输，libusb 在鸿蒙 PC 上的可用性待核实；非特定硬件依赖，USB 为通用总线",
+        "evidence": [
+          "src/libusb1-glue.c:158",
+          "src/libusb1-glue.c:272"
+        ]
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本项目为纯本地 MTP 协议库，通过 USB 总线直接与设备通信，不涉及任何云端服务或远程 API",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "约 85% 代码可直接重编译复用（纯 C 协议逻辑 + POSIX 兼容 I/O），约 15% 需适配核实（libusb 后端的 USB 设备访问层，取决于 libusb-1.0 在鸿蒙 PC 的可用性），无无法适配代码",
+    "coverage": {
+      "production_code": 40458,
+      "partitioned_code": 40458,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "recompile_reuse",
+        "loc": 34400,
+        "pct": 85.0,
+        "modules": [
+          {
+            "path": "src",
+            "loc": 33704,
+            "reason": "核心 PTP/MTP 协议栈（ptp.c, ptp-pack.c, libmtp.c 主逻辑）、Unicode 编码转换（unicode.c）、MTPZ 加密（mtpz.c）、播放列表处理（playlist-spl.c），纯 C 协议逻辑和标准 POSIX 文件 I/O，无平台特有 API；依赖的 libgcrypt/libiconv/libxml2 在鸿蒙 cmd-pkgs 中已有适配",
+            "evidence": [
+              "src/ptp.c",
+              "src/libmtp.c",
+              "src/unicode.c",
+              "src/mtpz.c",
+              "src/playlist-spl.c"
+            ]
+          },
+          {
+            "path": "util",
+            "loc": 624,
+            "reason": "通用工具函数，纯逻辑无平台依赖",
+            "evidence": [
+              "src/util.c"
+            ]
+          },
+          {
+            "path": "doc",
+            "loc": 72,
+            "reason": "文档文件",
+            "evidence": [
+              "doc/"
+            ]
+          }
+        ],
+        "basis": "这些模块仅使用标准 C 库和 POSIX 文件 I/O（open/close/read/write），皆可在 OHOS NDK musl libc 下编译；依赖的 libgcrypt、libiconv、libxml2 在鸿蒙 cmd-pkgs 中已适配（harmony_adapted: true），交叉编译即可"
+      },
+      {
+        "class": "needs_adaptation",
+        "loc": 6058,
+        "pct": 15.0,
+        "modules": [
+          {
+            "path": "src",
+            "loc": 6058,
+            "reason": "libusb 后端适配层（libusb1-glue.c ~2.4k + libusb-glue.c ~2.1k + libopenusb1-glue.c ~1.4k + libusb-glue.h），封装 libusb-1.0/libusb 0.x/libopenusb 的 USB 设备操作；鸿蒙 PC 上需确认 libusb-1.0 可用性或换为 @ohos.usbManager / @ohos.usbV9 USB 设备管理 API",
+            "evidence": [
+              "src/libusb1-glue.c",
+              "src/libusb-glue.c",
+              "src/libopenusb1-glue.c"
+            ]
+          }
+        ],
+        "basis": "capability_profile hardware(usb) 场景 harmony_status=unknown；libusb-1.0 是 libmtp 的核心功能依赖——所有 MTP 操作最终都经过这里，若鸿蒙 PC 无 libusb 移植则需重写此层"
+      }
+    ],
+    "notes": "libusb 适配层是 MTP 功能的基础；若鸿蒙 PC 已有 libusb-1.0 移植（OHOS NDK 可编译），则整个项目降为 recompile_reuse 级；libusb 开源且跨平台，移植难度可控。examples/ 已被 code-metrics 归为 example 不进分区"
+  }
+}

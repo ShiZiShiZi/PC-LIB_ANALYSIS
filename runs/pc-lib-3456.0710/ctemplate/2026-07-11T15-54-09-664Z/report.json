@@ -1,0 +1,783 @@
+{
+  "languages": {
+    "primary": "C++",
+    "all": [
+      "C++",
+      "C/C++ Header",
+      "C",
+      "Python"
+    ],
+    "breakdown": [
+      {
+        "language": "C++",
+        "files": 26,
+        "code": 15638,
+        "pct": 64.43,
+        "production": {
+          "files": 16,
+          "code": 9332
+        },
+        "test": {
+          "files": 10,
+          "code": 6306
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 33,
+        "code": 7082,
+        "pct": 29.18,
+        "production": {
+          "files": 31,
+          "code": 6789
+        },
+        "test": {
+          "files": 2,
+          "code": 293
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 3,
+        "code": 1130,
+        "pct": 4.66,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 3,
+          "code": 1130
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 2,
+        "code": 423,
+        "pct": 1.74,
+        "production": {
+          "files": 2,
+          "code": 423
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 64,
+      "code": 24273,
+      "comment": 0,
+      "blank": 3199,
+      "total_lines": 27472
+    },
+    "production": {
+      "files": 49,
+      "code": 16544,
+      "comment": 0,
+      "blank": 2176,
+      "total_lines": 18720
+    },
+    "test": {
+      "files": 15,
+      "code": 7729,
+      "comment": 0,
+      "blank": 1023,
+      "total_lines": 8752
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 24273,
+        "category": "production",
+        "by_category": {
+          "production": 16544,
+          "test": 7729
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "src",
+        "files": 13,
+        "code": 7197
+      },
+      {
+        "dir": "src/htmlparser",
+        "files": 9,
+        "code": 3333
+      },
+      {
+        "dir": "src/windows",
+        "files": 17,
+        "code": 3030
+      },
+      {
+        "dir": "src/base",
+        "files": 10,
+        "code": 2984
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 10,
+          "code": 116,
+          "macros": [
+            "_MSC_VER",
+            "_WIN32",
+            "__MINGW32__",
+            "__MINGW64__"
+          ]
+        },
+        "macos": {
+          "files": 1,
+          "code": 3,
+          "macros": [
+            "__APPLE__"
+          ]
+        },
+        "linux": {
+          "files": 1,
+          "code": 2,
+          "macros": [
+            "__linux__"
+          ]
+        }
+      },
+      "total": 121,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 15,
+    "test_cases": 89,
+    "frameworks": [
+      "googletest"
+    ],
+    "by_language": {
+      "C++": {
+        "files": 10,
+        "cases": 89
+      },
+      "C/C++ Header": {
+        "files": 2,
+        "cases": 0
+      },
+      "C": {
+        "files": 3,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "ctemplate（原名 Google Templates）是一个 C++ 文本模板引擎，采用字典与模板完全分离的设计：HTML/文本模板使用标记定界符嵌入占位符，程序通过字典填充数据完成渲染。提供自动 HTML 转义、节（section）迭代、子模板包含、修饰符管道等功能，适用于生成网页、配置文件、邮件等文本输出。最初为 Google 搜索结果页面设计，现为社区维护的轻量独立库。",
+    "categories": [
+      {
+        "name": "模板加载与缓存",
+        "description": "从文件系统或字符串加载模板，支持模板包含（include）与自动重载。提供线程安全的 TemplateCache 缓存管理，检测文件修改后自动重新解析。",
+        "evidence": [
+          "src/template_cache.cc",
+          "src/template.cc:Template::GetTemplate"
+        ]
+      },
+      {
+        "name": "字典展开与变量替换",
+        "description": "TemplateDictionary 提供层级字典树，支持普通变量、隐藏节、show/hide 节、子节迭代（section marker）。字典可动态创建子字典用于循环输出。",
+        "evidence": [
+          "src/template_dictionary.cc",
+          "src/template_dictionary.cc:TemplateDictionary::SetValue"
+        ]
+      },
+      {
+        "name": "自动转义与安全输出",
+        "description": "内置 HTML、JavaScript、CSS、XML 等多种上下文的自动转义，可通过修饰符管道自定义转义逻辑，防止 XSS。",
+        "evidence": [
+          "src/template_modifiers.cc",
+          "src/template.cc:TemplateAnnotator"
+        ]
+      },
+      {
+        "name": "模板修饰符管道",
+        "description": "支持在模板占位符上应用修饰符链，如大小写转换、编码解码、字符串截断等内置修饰符，并允许扩展自定义修饰符。",
+        "evidence": [
+          "src/template_modifiers_internal.h",
+          "src/template_modifiers.cc"
+        ]
+      },
+      {
+        "name": "模板注释与诊断",
+        "description": "TemplateAnnotator 可在展开输出中嵌入模板调试信息，帮助定位输出片段对应的模板位置；支持模板展开过程中的错误报告。",
+        "evidence": [
+          "src/template_annotator.cc"
+        ]
+      }
+    ],
+    "domain": "模板引擎 / 文本生成",
+    "target_users": "C++ 后端开发者，用于服务器端 HTML 页面渲染或配置文件生成"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "COPYING"
+    ],
+    "evidence": "COPYING 文件内容为标准的 BSD 3-Clause 许可证文本，版权声明为 Google Inc. 2005；包含再发布需保留版权声明与免责声明的条款。",
+    "notes": "原始 Google 版权所有。宽松许可，适合商用与闭源使用，仅需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": [
+      "configure.ac",
+      "Makefile.am"
+    ],
+    "by_ecosystem": {
+      "system": [
+        "pthread",
+        "getopt"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "pthread",
+        "ecosystem": "system",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "POSIX 线程库，提供读写锁 (pthread_rwlock_t) 保障 TemplateCache 和其他数据结构的线程安全。库也提供不依赖线程的 ctemplate_nothreads 版本。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（libpthread，GNU/Linux 内置；macOS/FreeBSD 等同提供）",
+        "declared_in": [
+          "Makefile.am",
+          "configure.ac"
+        ]
+      },
+      {
+        "name": "getopt",
+        "ecosystem": "system",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "命令行参数解析，用于 make_tpl_varnames_h 和 diff_tpl_auto_escape 这两个辅助工具（非核心库功能）。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（GNU libc getopt / BSD getopt；Windows MinGW 可用）",
+        "declared_in": [
+          "configure.ac"
+        ]
+      }
+    ],
+    "notes": "ctemplate 的核心库仅依赖 C 标准库和 pthread。工具也仅依赖 getopt。整体是无外部第三方库依赖的独立 C++ 库。不依赖任何包管理器，传统的 autoconf/automake 构建。"
+  },
+  "native_api": {
+    "summary": "ctemplate 是跨平台 C++ 库，通过条件编译适配 POSIX/Windows。核心依赖 C++ STL 和 POSIX 标准库。线程安全使用 pthread 读写锁，文件系统访问使用 POSIX stat/getcwd 等标准接口，Windows 端有薄适配层。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::string",
+            "purpose": "字符串操作与模板文本存储",
+            "count": 15,
+            "evidence": [
+              "src/template_string.cc:30",
+              "src/template.cc:41"
+            ]
+          },
+          {
+            "name": "std::vector",
+            "purpose": "动态数组，存储字典子节点与模板节点列表",
+            "count": 10,
+            "evidence": [
+              "src/template_dictionary.cc:36",
+              "src/template.cc:41"
+            ]
+          },
+          {
+            "name": "std::unordered_set",
+            "purpose": "哈希集合，用于模板 ID 去重与 TemplateString 全局注册表",
+            "count": 5,
+            "evidence": [
+              "src/template_string.cc:45"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "stat",
+            "purpose": "获取文件修改时间，用于 TemplateCache 检测模板文件变更并自动重载",
+            "count": 2,
+            "evidence": [
+              "src/template.cc:41",
+              "src/template_namelist.cc:172"
+            ]
+          },
+          {
+            "name": "getcwd",
+            "purpose": "获取当前工作目录，用于解析模板的绝对路径",
+            "count": 1,
+            "evidence": [
+              "src/template_cache.cc:491"
+            ]
+          },
+          {
+            "name": "mkdir",
+            "purpose": "创建测试模板目录（仅测试用途，非核心库功能）",
+            "count": 0,
+            "evidence": [
+              "src/tests/template_test_util.cc:95"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "pthread",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "pthread_rwlock_init",
+            "purpose": "初始化读写锁，保护 TemplateCache 等全局共享数据结构",
+            "count": 3,
+            "evidence": [
+              "src/base/mutex.h:305"
+            ]
+          },
+          {
+            "name": "pthread_rwlock_wrlock",
+            "purpose": "获取写锁，保护数据更新操作",
+            "count": 3,
+            "evidence": [
+              "src/base/mutex.h:312"
+            ]
+          },
+          {
+            "name": "pthread_rwlock_rdlock",
+            "purpose": "获取读锁，允许多线程并发读取",
+            "count": 3,
+            "evidence": [
+              "src/base/mutex.h:318"
+            ]
+          },
+          {
+            "name": "pthread_rwlock_unlock",
+            "purpose": "释放读写锁",
+            "count": 3,
+            "evidence": [
+              "src/base/mutex.h:313"
+            ]
+          },
+          {
+            "name": "pthread_once",
+            "purpose": "一次性初始化，保护全局字典单例创建",
+            "count": 2,
+            "evidence": [
+              "src/base/mutex.h:326",
+              "src/base/mutex.h:358"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "posix_file",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "fwrite",
+            "purpose": "将渲染后模板内容写入标准输出",
+            "count": 2,
+            "evidence": [
+              "src/template.cc:2293",
+              "src/template_dictionary.cc:869"
+            ]
+          },
+          {
+            "name": "fopen / fclose",
+            "purpose": "文件打开与关闭（工具程序使用）",
+            "count": 3,
+            "evidence": [
+              "src/make_tpl_varnames_h.cc:287"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "GetTempPathA",
+            "purpose": "获取 Windows 临时目录路径，用于模板测试路径初始化",
+            "count": 1,
+            "evidence": [
+              "src/windows/port.cc:76"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "FindFirstFileA / FindNextFileA / FindClose",
+            "purpose": "Windows 文件枚举，用于扫描测试模板文件列表",
+            "count": 4,
+            "evidence": [
+              "src/windows/port.cc:88-114"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "Sleep",
+            "purpose": "毫秒级 sleep 替代 POSIX sleep，用于 Windows spinlock 等待",
+            "count": 2,
+            "evidence": [
+              "src/windows/port.h:97"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "InterlockedCompareExchange / InterlockedExchange",
+            "purpose": "Windows 原子操作，用于 Once/单例初始化",
+            "count": 2,
+            "evidence": [
+              "src/windows/port.h:282-287"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期仅读取模板文件并输出渲染结果；无私建网络、无子进程调用、无设备访问，为纯文件系统+标准输出的本地库。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "模板文件目录（通过 TemplateCache 或直接路径指定）",
+        "purpose": "加载 .tpl 模板文件并监控 mtime 变化以自动热重载",
+        "evidence": [
+          "src/template.cc:41 (stat)",
+          "src/template_cache.cc:491 (getcwd)"
+        ]
+      },
+      {
+        "detail": "标准输出 (stdout)",
+        "purpose": "通过 Template::Expand 将渲染后的文本写入 stdout",
+        "evidence": [
+          "src/template.cc:2293 (fwrite)",
+          "src/template_dictionary.cc:869 (fwrite)"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++11 或更高（使用 <cstdint>、std::unordered_set 等 C++11 特性）",
+    "runtime_version": "POSIX 兼容系统（Linux/macOS/FreeBSD/Solaris）或 Windows（MSVC/MinGW）",
+    "build_system": "autoconf/automake + Make",
+    "compiler_extensions": [
+      {
+        "detail": "__attribute__((weak)) 用于链接器弱符号（检测只读数据段）",
+        "evidence": [
+          "configure.ac:99"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "configure.ac 兼容性检测",
+          "Makefile.am GCC 条件分支"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "configure.ac 系统检测包含 __APPLE__"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86",
+        "evidence": [
+          "src/windows/port.h 和 port.cc Win32 适配层",
+          "README_windows.txt 说明 VC++7/8 支持"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86_64",
+        "evidence": [
+          "configure.ac 检测 FreeBSD 头文件 sys/endian.h"
+        ]
+      },
+      {
+        "os": "solaris",
+        "arch": "x86",
+        "evidence": [
+          "configure.ac 检测 Solaris 头文件 sys/byteorder.h 和 sys/isa_defs.h"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "构建系统产出 libctemplate.a / libctemplate.so 和 libctemplate_nothreads.a；无包管理器分发，通过 autoconf ./configure && make install 安装到系统路径。",
+    "notes": "虽然 head 使用 C++11 特性，但设计上兼容较老编译器（VC++7/8 即 VS2003/2005）。Windows 上有独立的 port.h/port.cc 适配层处理 POSIX 与 Win32 API 差异。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（Libc 复用层 + OHOS NDK (musl)，无 Linux ABI；POSIX 路径在鸿蒙可编译；arm64 / x86_64）",
+    "porting_class": "recompile_only",
+    "effort": {
+      "person_days": [
+        6.5,
+        8.5
+      ],
+      "breakdown": [
+        {
+          "component": "build_system",
+          "person_days": [
+            0.5,
+            1
+          ],
+          "basis": "从 autoconf/automake 切换到 OHOS NDK CMake（ohos.toolchain.cmake + clang + musl），或者手动编写 Makefile 适配鸿蒙交叉编译。构建系统简单（单库、无依赖链），量极小。"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0.5,
+            2
+          ],
+          "basis": "89 个测试用例在鸿蒙 NDK 下编译运行验证，确保 pthread 读写锁、文件操作等 musl 实现正确。"
+        },
+        {
+          "component": "recompile",
+          "person_days": [
+            5.5,
+            5.5
+          ],
+          "basis": "重编译复用 16544 行 ÷ 3000 行/天"
+        }
+      ],
+      "level": "medium"
+    },
+    "confidence": "high",
+    "unadaptable_apis": [],
+    "target_assumptions": [],
+    "required_permissions": [],
+    "critical_dependencies": [],
+    "summary": "ctemplate 是纯 C++ 库，无图形、无媒体、无硬件依赖。在鸿蒙 OHOS NDK (musl + POSIX 子集) 下可直接交叉编译——核心算法层和 HTML 解析器仅为 STL/标准 C 调用，pthread 读写锁在 musl 中可用。src/windows 目录为 Windows 专有适配层，在鸿蒙 POSIX 路径下自然排除不编译。移植实验室工作量约 1–3 人天，主要为构建系统适配与测试验证。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "核心模板引擎逻辑",
+        "note": "纯 C++ 代码，仅依赖 STL 和标准 C 库，musl 完全支持",
+        "evidence": [
+          "src/template.cc"
+        ]
+      },
+      {
+        "aspect": "HTML/JS 自动转义解析器",
+        "note": "纯算法实现，无平台依赖",
+        "evidence": [
+          "src/htmlparser/htmlparser.cc"
+        ]
+      },
+      {
+        "aspect": "pthread 并发安全",
+        "note": "OHOS NDK (musl) 提供 pthread_rwlock 系列，可直接使用",
+        "evidence": [
+          "src/base/mutex.h:305-319"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "用 OHOS NDK (ohos.toolchain.cmake) 交叉编译 ctemplate，排除 src/windows 目录",
+      "在鸿蒙模拟器/设备上运行 89 个测试用例，验证模板加载、展开、缓存线程安全"
+    ],
+    "notes": "ctemplate 是极为干净的 C++ 库，唯一的平台差异在 src/windows——它本身就是条件编译隔离的，鸿蒙走 POSIX 路径无需此层。实际移植工作量极小（1 人天以内即可完成编译验证）。",
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "ctemplate",
+    "kind": "library",
+    "package_name": null,
+    "aliases": [],
+    "import_names": [],
+    "source_url": "https://github.com/OlafvdSpek/ctemplate.git",
+    "monorepo": false,
+    "one_liner": "一个 C++ 文本模板引擎，最初用于 Google 搜索结果页面生成，提供快速、易用的字典-模板分离渲染。",
+    "ecosystem": "cpp",
+    "bindings": [],
+    "analyzed_at": "2026-07-11T19:51:33Z"
+  },
+  "meta": {
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "confidence_overall": "high",
+    "observations": [],
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "ctemplate 是一个纯 C++ 文本模板引擎，无 GUI、无 3D 渲染、无音视频媒体处理、无硬件设备依赖，为纯计算型库。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "ctemplate 不涉及任何云端服务。这是一个纯本地文本模板引擎，代码仅包含模板文件读取、内存展开和文本输出，无网络调用、无远程 API、无遥测/崩溃上报。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 16544 行生产代码均可用 OHOS NDK 重编译复用：核心逻辑为纯 C++ STL/POSIX（musl 支持），src/windows 为条件编译的 Windows 适配层，鸿蒙 POSIX 路径下自然排除不编译。无不可适配代码。",
+    "coverage": {
+      "production_code": 16544,
+      "partitioned_code": 16544,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "recompile_reuse",
+        "loc": 16544,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "src",
+            "loc": 7197,
+            "reason": "核心模板引擎逻辑（Template 解析、展开、缓存）：纯 C++ STL + 标准 POSIX 文件 API（stat/getcwd），OHOS NDK 的 musl 均支持，零源码改动可重编译。",
+            "evidence": [
+              "src/template.cc",
+              "src/template_dictionary.cc"
+            ]
+          },
+          {
+            "path": "src/htmlparser",
+            "loc": 3333,
+            "reason": "HTML/JS 解析器用于自动转义判定：纯 C++ 解析逻辑，无平台 API 调用。",
+            "evidence": [
+              "src/htmlparser/htmlparser.cc",
+              "src/htmlparser/jsparser.cc"
+            ]
+          },
+          {
+            "path": "src/base",
+            "loc": 2984,
+            "reason": "Arena 内存分配器、Mutex（pthread_rwlock）封装、文件工具：pthread 在 OHOS NDK (musl) 可用，直接重编译。",
+            "evidence": [
+              "src/base/arena.cc",
+              "src/base/mutex.h"
+            ]
+          },
+          {
+            "path": "src/windows",
+            "loc": 3030,
+            "reason": "Windows 平台适配层（port.h/port.cc），含 Win32 API 调用。鸿蒙 OHOS 走 POSIX #else 分支，此层通过 configure/Makefile 条件编译排除，不会编入。",
+            "evidence": [
+              "src/windows/port.h:49 (#include <windows.h>)"
+            ]
+          }
+        ],
+        "basis": "native_api 在这些目录仅使用 POSIX 标准 + pthread（musl 均支持）；platform_adaptation.windows 的 116 行仅在 Windows 条件分支，鸿蒙不编译"
+      }
+    ],
+    "notes": "src/windows 目录在 Linux/macOS/FreeBSD 下本就不编译（通过 configure.ac 的 __MINGW32__/__MINGW64__ 条件排除），鸿蒙同理。100% 代码可用 OHOS NDK 直接重编译，零源码改动。"
+  }
+}

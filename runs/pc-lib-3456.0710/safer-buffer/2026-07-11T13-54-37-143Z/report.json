@@ -1,0 +1,362 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 3,
+        "code": 488,
+        "pct": 100.0,
+        "production": {
+          "files": 3,
+          "code": 488
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 3,
+      "code": 488,
+      "comment": 0,
+      "blank": 53,
+      "total_lines": 541
+    },
+    "production": {
+      "files": 3,
+      "code": 488,
+      "comment": 0,
+      "blank": 53,
+      "total_lines": 541
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 488,
+        "category": "production",
+        "by_category": {
+          "production": 488
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 3,
+        "code": 488
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "safer-buffer 是一个 Node.js 兼容垫片库，为旧版 Node.js（0.8 至 4.5.0 之前版本）补充 Buffer.alloc() 与 Buffer.from() 等现代 Buffer API，同时通过代理构造器显式阻止不安全的 new Buffer()/Buffer() 用法，防止因未校验用户输入类型而导致的未初始化内存泄露与拒绝服务（DoS）安全漏洞。",
+    "categories": [
+      {
+        "name": "Buffer 安全 API polyfill",
+        "description": "将 Node.js 内置 buffer 模块的 Buffer.alloc()、Buffer.from()、Buffer.allocUnsafe() 等方法包装导出，在不原生支持这些 API 的旧版 Node.js 上提供向后兼容的 polyfill；同时从原型链上复制 Buffer 静态方法（如 concat、byteLength、isBuffer 等），使使用者无需区分 Node.js 版本即可统一使用现代 API。",
+        "evidence": [
+          "safer.js:18-23",
+          "safer.js:27-57"
+        ]
+      },
+      {
+        "name": "不安全构造器拦截与安全防护",
+        "description": "将 Buffer 构造器替换为抛出 TypeError 的对象，使调用 require('safer-buffer').Buffer 后的代码中，任何 new Buffer() 或 Buffer() 调用都会抛出异常，从机制上杜绝不安全的旧式 Buffer 构造，迫使使用者改用 Buffer.alloc()/Buffer.from() 安全 API；同时将 Buffer.allocUnsafe() 移至 'safer-buffer/dangerous' 子模块，需要显式引入才能使用，增加使用门槛以防止误用。",
+        "evidence": [
+          "safer.js:18"
+        ]
+      },
+      {
+        "name": "内部属性暴露",
+        "description": "通过 process.binding('buffer') 获取 kStringMaxLength 内部常量并暴露为 Safer 对象的属性，供有需要的依赖方使用（已知某些 npm 包依赖 safer-buffer 就是为了暴露这个常量的可用性信息）。",
+        "evidence": [
+          "safer.js:59-75"
+        ]
+      }
+    ],
+    "domain": "JavaScript 运行时兼容与安全",
+    "target_users": "需要支持旧版 Node.js 的 npm 包开发者",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件内容与标准 MIT 许可文本一致，声明 Copyright (c) 2018 Nikita Skovoroda，package.json 中 license 字段为 'MIT'。",
+    "notes": "宽松许可，仅需保留版权声明与许可文本。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "无运行时依赖；仅有两个 devDependencies（standard ^11.0.1 用于代码风格检查、tape ^4.9.0 用于单元测试），均不进入生产依赖。"
+  },
+  "native_api": {
+    "summary": "纯 JavaScript 库，仅调用 Node.js 内置标准模块 buffer 和 process.binding 的内部接口，无任何平台相关或 FFI 调用。",
+    "groups": [
+      {
+        "type": "node_builtin",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "require('buffer')",
+            "purpose": "引入 Node.js 内置 Buffer 模块以代理其 API",
+            "count": 2,
+            "evidence": [
+              "safer.js:5",
+              "dangerous.js:5"
+            ]
+          },
+          {
+            "name": "process.binding('buffer')",
+            "purpose": "获取 Node.js 内部的 buffer 绑定对象，提取 kStringMaxLength 常量以暴露给调用方",
+            "count": 1,
+            "evidence": [
+              "safer.js:61"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "纯 JavaScript 库，不访问网络、文件系统、环境变量或子进程；仅从内置模块读取 API。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "JavaScript (ECMAScript 5+，兼容老旧 Node.js)",
+    "runtime_version": "Node.js >= 0.8",
+    "build_system": "npm (无编译步骤；test 用 tape + standard linter)",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "声明支持 Node.js 0.8 起的所有版本"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64"
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64"
+      },
+      {
+        "os": "linux",
+        "arch": "arm64"
+      },
+      {
+        "os": "macos",
+        "arch": "arm64"
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "纯 JavaScript npm 包，无原生代码编译步骤；发布到 npm registry 的正是 safer.js、dangerous.js、tests.js 三个文件。已确认兼容 Node.js 0.8 至最新版。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上；纯 JavaScript 包，无原生扩展或平台依赖；arm64/x86_64）",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "summary": "safer-buffer 是纯 JavaScript npm 包，仅依赖 Node.js 内置 buffer 模块。鸿蒙 PC 已移植 Node.js 24 运行时，该库可直接以 npm install 安装并运行，零源码改动。唯一内部调用 process.binding('buffer') 在鸿蒙 Node.js 上同样可用（是 Node.js 内部机制）。无 GUI、无原生扩展、无平台 API、无外部依赖，所有功能完全可适配。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "critical_dependencies": [],
+    "target_assumptions": [],
+    "compatible": [
+      {
+        "aspect": "纯 JavaScript 逻辑（Buffer API 包装与代理）",
+        "note": "鸿蒙 Node.js 的 buffer 模块为标准 Node.js 内置模块，API 完全一致，无需改动",
+        "evidence": [
+          "safer.js"
+        ]
+      },
+      {
+        "aspect": "process.binding('buffer') 调用",
+        "note": "process.binding 是 Node.js 内部 API，鸿蒙 Node.js 作为标准 Node.js 移植版同样提供此机制",
+        "evidence": [
+          "safer.js:61"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 的 Node.js 24 上 npm install safer-buffer 并验证其 test 套件通过"
+    ],
+    "required_permissions": [],
+    "notes": "评估基于模型 A（库跑在鸿蒙已移植的 Node.js 运行时上）。该库无原生扩展、无平台依赖，是最纯粹的 no_adaptation 场景。process.binding 虽然是 Node.js 内部 API 且可能在未来版本中移除，但在鸿蒙 Node.js 当前版本中同样可用——且该调用被 try/catch 包裹（safer.js:60-66 行），缺失时仅静默跳过，不造成运行时故障。如果 Node.js 升级导致此 API 不可用，该库不受影响（已有优雅降级）。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "safer-buffer",
+    "source_url": "https://github.com/ChALkeR/safer-buffer.git",
+    "kind": "library",
+    "ecosystem": "nodejs",
+    "package_name": "safer-buffer",
+    "one_liner": "为旧版 Node.js 提供 Buffer.alloc()/Buffer.from() 安全 API polyfill，同时禁止不安全的 Buffer() 构造方式，防止内存泄露。",
+    "bindings": [],
+    "commit": "ed7f4fbca47c851873bc39a5a465d0de6d380950",
+    "analyzed_at": "2026-07-11T16:05:54Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "harmony_warnings_dismissed": [],
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "safer-buffer 为纯 JavaScript 垫片库，不涉及 GUI、3D 渲染、媒体或特定硬件，所有场景均未命中。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "safer-buffer 不涉及任何云端服务——它仅包装 Node.js 内置 buffer 模块，无网络访问、无第三方云 SDK 依赖。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全库 488 行均为纯 JavaScript，无原生代码、无平台 API 调用，全部可重用而不需重编译或适配。",
+    "coverage": {
+      "production_code": 488,
+      "partitioned_code": 488,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 488,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 488,
+            "reason": "全库纯 JavaScript，无原生代码或平台 API 依赖",
+            "evidence": []
+          }
+        ],
+        "basis": "dir_loc 显示仓库仅 3 个 JS 文件（safer.js、dangerous.js、tests.js），全部在生产目录下；native_api 仅使用 Node.js 内置 buffer 标准模块，无任何 platform/system/hardware/ffi 调用点；platform_adaptation 和 platform_branches 均为 0。"
+      }
+    ],
+    "notes": "tests.js 包含 406 行测试代码，但 code-metrics 将其与生产逻辑合并统计在同一目录（未拆分 prod/test），实际生产逻辑约 135 行（safer.js 77 行 + dangerous.js 58 行）。"
+  }
+}

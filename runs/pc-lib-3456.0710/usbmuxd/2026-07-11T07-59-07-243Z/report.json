@@ -1,0 +1,1342 @@
+{
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "C/C++ Header"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 8,
+        "code": 4717,
+        "pct": 92.85,
+        "production": {
+          "files": 8,
+          "code": 4717
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 8,
+        "code": 363,
+        "pct": 7.15,
+        "production": {
+          "files": 8,
+          "code": 363
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 16,
+      "code": 5080,
+      "comment": 0,
+      "blank": 657,
+      "total_lines": 5737
+    },
+    "production": {
+      "files": 16,
+      "code": 5080,
+      "comment": 0,
+      "blank": 657,
+      "total_lines": 5737
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 5080,
+        "category": "production",
+        "by_category": {
+          "production": 5080
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "src",
+        "files": 16,
+        "code": 5080
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 2,
+          "code": 47,
+          "macros": [
+            "WIN32",
+            "__CYGWIN__"
+          ]
+        },
+        "macos": {
+          "files": 2,
+          "code": 2,
+          "macros": [
+            "__APPLE__"
+          ]
+        }
+      },
+      "total": 49,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "usbmuxd 是一个系统级守护进程（daemon），负责在主机与 iOS 设备之间通过 USB 进行连接多路复用。它作为 libimobiledevice 生态系统的中间层运行——上层应用程序通过 Unix 域套接字 `/var/run/usbmuxd` 连接到该守护进程，守护进程则将请求代理到通过 USB 连接的 iOS 设备。主要功能包括：USB 设备的自动发现与热插拔响应（通过 udev 或 systemd）、设备配对记录管理、多路并发连接的代理转发，以及配对前安全检查（preflight）。它是 iOS 设备与主机通信管道中的关键基础设施。",
+    "categories": [
+      {
+        "name": "USB 设备发现与热插拔",
+        "description": "通过 udev 或 systemd 监听 USB 设备的热插拔事件，自动检测并连接新接入的 iOS 设备，设备拔出时清理连接。支持轮询和事件驱动的两种自动发现模式。"
+      },
+      {
+        "name": "连接多路复用与代理",
+        "description": "在主机端提供 Unix 域套接字接口（兼容 macOS 的 usbmuxd 协议），将多个客户端应用对 iOS 设备的并发 TCP 连接请求通过单一 USB 通道多路复用转发，支持双向数据传输。"
+      },
+      {
+        "name": "设备配对与安全预检（Preflight）",
+        "description": "管理主机与 iOS 设备的配对记录（存储在 `/var/lib/lockdown`），在设备首次连接时执行 lockdownd 预检流程，触发信任对话框并完成配对验证。"
+      }
+    ],
+    "domain": "系统工具 / 设备管理",
+    "target_users": "iOS 设备开发者、使用 libimobiledevice 工具链的最终用户、需要与 iOS 设备进行 USB 通信的桌面应用开发者"
+  },
+  "license": {
+    "spdx": "GPL-2.0-only OR GPL-3.0-only",
+    "name": "GNU General Public License v2.0 or v3.0",
+    "confidence": "high",
+    "category": "strong_copyleft",
+    "is_dual_licensed": true,
+    "notes": "源代码头部和 README 均声明 'either version 2 or version 3' 的双许可模式。由于 GPL v2/v3 均为强传染许可证，此处如实归类为 strong_copyleft。使用者可任选 GPL-2.0-only 或 GPL-3.0-only 条款。",
+    "evidence": "src/main.c:9-11；src/usb.c:9-11；src/device.c:9-11；src/client.c:9-11；src/preflight.c:9-11；src/conf.c:9-11；README.md:146-147；COPYING.GPLv2；COPYING.GPLv3"
+  },
+  "dependencies": {
+    "manifests": [
+      "configure.ac",
+      "src/Makefile.am"
+    ],
+    "dependencies": [
+      {
+        "name": "libusb-1.0",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">= 1.0.9",
+        "purpose": "USB 设备访问——提供底层 USB 设备枚举、打开、控制传输和批量传输接口",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "通过 pkg-config 查找系统安装的 libusb-1.0",
+        "declared_in": [
+          "configure.ac:23"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs)",
+        "used_symbols": [
+          "libusb_init",
+          "libusb_exit",
+          "libusb_open",
+          "libusb_close",
+          "libusb_get_device_list",
+          "libusb_free_device_list",
+          "libusb_get_device_descriptor",
+          "libusb_get_config_descriptor_by_value",
+          "libusb_free_config_descriptor",
+          "libusb_get_configuration",
+          "libusb_set_configuration",
+          "libusb_kernel_driver_active",
+          "libusb_detach_kernel_driver",
+          "libusb_claim_interface",
+          "libusb_release_interface",
+          "libusb_get_max_packet_size",
+          "libusb_get_device_speed",
+          "libusb_alloc_transfer",
+          "libusb_free_transfer",
+          "libusb_fill_bulk_transfer",
+          "libusb_fill_control_transfer",
+          "libusb_fill_control_setup",
+          "libusb_submit_transfer",
+          "libusb_cancel_transfer",
+          "libusb_handle_events_timeout",
+          "libusb_get_pollfds",
+          "libusb_get_bus_number",
+          "libusb_get_device_address",
+          "libusb_has_capability",
+          "libusb_hotplug_register_callback",
+          "libusb_hotplug_deregister_callback",
+          "libusb_set_option",
+          "libusb_set_debug",
+          "libusb_get_version",
+          "libusb_error_name",
+          "libusb_control_transfer_get_data"
+        ]
+      },
+      {
+        "name": "libplist-2.0",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">= 2.6.0",
+        "purpose": "Apple Property List 解析——用于读取和写入 iOS 配对记录等 plist 格式数据",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "通过 pkg-config 查找系统安装的 libplist-2.0",
+        "declared_in": [
+          "configure.ac:24"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "used_symbols": [
+          "plist_new_dict",
+          "plist_new_array",
+          "plist_new_string",
+          "plist_new_uint",
+          "plist_new_data",
+          "plist_dict_set_item",
+          "plist_dict_get_item",
+          "plist_dict_copy_item",
+          "plist_dict_remove_item",
+          "plist_array_append_item",
+          "plist_get_string_val",
+          "plist_get_uint_val",
+          "plist_get_data_val",
+          "plist_get_node_type",
+          "plist_to_xml",
+          "plist_from_xml",
+          "plist_from_memory",
+          "plist_write_to_file",
+          "plist_read_from_file",
+          "plist_free"
+        ]
+      },
+      {
+        "name": "libimobiledevice-1.0",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">= 1.3.0",
+        "purpose": "iOS 设备通信库——提供 lockdownd 服务连接、设备配对、通知代理等高层 iOS 设备交互功能（仅 preflight 模块使用，为可选依赖）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "通过 pkg-config 查找系统安装的 libimobiledevice-1.0（可选，可通过 --without-preflight 禁用）",
+        "declared_in": [
+          "configure.ac:25"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "used_symbols": [
+          "lockdownd_client_new",
+          "lockdownd_client_free",
+          "lockdownd_query_type",
+          "lockdownd_start_session",
+          "lockdownd_pair",
+          "lockdownd_validate_pair",
+          "lockdownd_set_value",
+          "lockdownd_get_value",
+          "lockdownd_start_service",
+          "lockdownd_service_descriptor_free",
+          "np_client_new",
+          "np_client_free",
+          "np_set_notify_callback",
+          "np_observe_notifications",
+          "idevice_free"
+        ]
+      },
+      {
+        "name": "libimobiledevice-glue-1.0",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">= 1.0.0",
+        "purpose": "libimobiledevice 工具库——提供集合数据结构（collection）和线程工具",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "通过 pkg-config 查找系统安装的 libimobiledevice-glue-1.0",
+        "declared_in": [
+          "configure.ac:26"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null,
+        "used_symbols": [
+          "collection_init",
+          "collection_free",
+          "collection_add",
+          "collection_count",
+          "collection_remove",
+          "collection_copy",
+          "FOREACH/ENDFOREACH",
+          "mutex_init",
+          "mutex_lock",
+          "mutex_unlock",
+          "mutex_destroy",
+          "thread_new",
+          "thread_detach"
+        ]
+      },
+      {
+        "name": "libpthread",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "POSIX 线程库——守护进程的多线程支持",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "通过编译标志 -lpthread 链接系统 libpthread",
+        "declared_in": [
+          "src/Makefile.am:17"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OHOS NDK (musl) 内置 pthread 支持",
+        "used_symbols": null
+      }
+    ],
+    "notes": "libimobiledevice-1.0 为可选依赖，仅在启用 preflight 功能时需要（configure.ac:25 通过 have_limd 变量控制）。可通过 --without-preflight 禁用。其余三个依赖（libusb、libplist、libimobiledevice-glue）为运行时必需。"
+  },
+  "native_api": {
+    "groups": [
+      {
+        "category": "standard",
+        "platform": "portable",
+        "type": "POSIX C 标准库",
+        "apis": [
+          {
+            "name": "open/read/write/close",
+            "purpose": "文件描述符操作——读取配置文件、写入日志",
+            "count": 20,
+            "evidence": [
+              "src/log.c:81-96",
+              "src/main.c:125"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "malloc/realloc/free",
+            "purpose": "动态内存管理",
+            "count": 30,
+            "evidence": [
+              "src/main.c:94",
+              "src/device.c:371-372"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "strdup/strndup/strstr/strrchr/strcasecmp",
+            "purpose": "字符串操作与路径解析",
+            "count": 15,
+            "evidence": [
+              "src/main.c:90",
+              "src/conf.c:168"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "snprintf/sprintf/vasprintf/strftime",
+            "purpose": "格式化字符串与日志时间戳格式化",
+            "count": 10,
+            "evidence": [
+              "src/log.c:75-89",
+              "src/main.c:231"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "getopt/getopt_long",
+            "purpose": "命令行参数解析",
+            "count": 2,
+            "evidence": [
+              "src/main.c:573"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "opendir/readdir/closedir",
+            "purpose": "目录遍历——枚举配对记录文件",
+            "count": 4,
+            "evidence": [
+              "src/conf.c:33"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "stat/fstat",
+            "purpose": "获取文件信息——检查配置文件是否存在及权限",
+            "count": 8,
+            "evidence": [
+              "src/main.c:199-201",
+              "src/conf.c:185"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fcntl (F_GETFL/F_SETFL)",
+            "purpose": "设置文件描述符为非阻塞模式",
+            "count": 4,
+            "evidence": [
+              "src/main.c:234-240",
+              "src/client.c:194-200"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "signal/sigaction/sigprocmask",
+            "purpose": "信号处理——处理 SIGUSR1/SIGUSR2/SIGTERM 实现进程控制和优雅退出",
+            "count": 10,
+            "evidence": [
+              "src/main.c:282-300"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "getpid/getuid/geteuid/setuid/setgid",
+            "purpose": "进程身份管理——守护进程降权到非 root 用户",
+            "count": 8,
+            "evidence": [
+              "src/main.c:834-883"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "category": "platform",
+        "platform": "posix",
+        "type": "POSIX 系统调用与专有 API",
+        "apis": [
+          {
+            "name": "fork",
+            "purpose": "创建子进程——守护进程的 daemonize 双 fork 模式",
+            "count": 2,
+            "evidence": [
+              "src/main.c:415-416",
+              "src/main.c:448-449"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "setsid",
+            "purpose": "创建新会话——守护进程脱离控制终端",
+            "count": 1,
+            "evidence": [
+              "src/main.c:443"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "chdir",
+            "purpose": "切换工作目录——守护进程切换到 / 根目录",
+            "count": 1,
+            "evidence": [
+              "src/main.c:461"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "unlink",
+            "purpose": "删除套接字文件——清理旧的 Unix 域套接字",
+            "count": 2,
+            "evidence": [
+              "src/main.c:209",
+              "src/main.c:756"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "chmod",
+            "purpose": "设置套接字文件权限为 0666 以便所有用户可连接",
+            "count": 1,
+            "evidence": [
+              "src/main.c:229"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "getpwnam/initgroups",
+            "purpose": "获取用户信息并设置补充组——守护进程降权时获取目标用户的 UID/GID",
+            "count": 2,
+            "evidence": [
+              "src/main.c:841-859"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "ppoll",
+            "purpose": "带信号掩码的多路 IO 复用——主事件循环监听套接字和 USB fd",
+            "count": 1,
+            "evidence": [
+              "src/main.c:303-316"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "getrlimit/setrlimit",
+            "purpose": "获取/设置进程资源限制——调高文件描述符数量上限",
+            "count": 2,
+            "evidence": [
+              "src/main.c:798-800"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "syslog/openlog/closelog/vsyslog",
+            "purpose": "系统日志——守护进程日志输出到 syslog",
+            "count": 4,
+            "evidence": [
+              "src/log.c:40-52",
+              "src/log.c:94"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "clock_gettime",
+            "purpose": "高精度时间戳——获取毫秒级时间用于超时计算",
+            "count": 2,
+            "evidence": [
+              "src/utils.c:83-107"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "getaddrinfo/freeaddrinfo/gai_strerror",
+            "purpose": "地址解析——支持 TCP 监听模式下的主机名解析",
+            "count": 3,
+            "evidence": [
+              "src/main.c:109-111"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "category": "platform",
+        "platform": "linux",
+        "type": "Linux 专有 API",
+        "apis": [
+          {
+            "name": "socket/bind/listen/accept (AF_UNIX)",
+            "purpose": "Unix 域套接字——创建 /var/run/usbmuxd 套接字供客户端连接",
+            "count": 4,
+            "evidence": [
+              "src/main.c:214",
+              "src/main.c:225-245"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "socket/bind (AF_INET)",
+            "purpose": "TCP 网络套接字——可选的网络监听模式",
+            "count": 2,
+            "evidence": [
+              "src/main.c:104-155"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "setsockopt (SO_REUSEADDR/SO_NOSIGPIPE/IPV6_V6ONLY)",
+            "purpose": "套接字选项配置——地址重用和 IPV6 支持",
+            "count": 3,
+            "evidence": [
+              "src/main.c:123-145"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "send/recv",
+            "purpose": "套接字数据收发——客户端连接的数据通信",
+            "count": 4,
+            "evidence": [
+              "src/client.c:119",
+              "src/client.c:140"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "SO_PEERCRED",
+            "purpose": "获取客户端进程身份——通过 Unix 套接字查询连接客户端的 PID",
+            "count": 2,
+            "evidence": [
+              "src/client.c:83-101"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "category": "platform",
+        "platform": "windows",
+        "type": "Windows 专有 API",
+        "apis": [
+          {
+            "name": "SHGetSpecialFolderLocation",
+            "purpose": "获取 Windows 特殊目录路径（配置目录定位）",
+            "count": 1,
+            "evidence": [
+              "src/conf.c:119"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SHGetPathFromIDListW",
+            "purpose": "将 Windows PIDL 转换为文件系统路径",
+            "count": 1,
+            "evidence": [
+              "src/conf.c:121"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CoTaskMemFree",
+            "purpose": "释放 COM 分配的内存——配合 SHGetSpecialFolderLocation 清理资源",
+            "count": 1,
+            "evidence": [
+              "src/conf.c:123"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "category": "platform",
+        "platform": "macos",
+        "type": "macOS 专有 API",
+        "apis": [
+          {
+            "name": "mach_absolute_time/mach_timebase_info",
+            "purpose": "Mach 内核高精度计时——在 macOS 上替代 clock_gettime 提供单调时钟",
+            "count": 2,
+            "evidence": [
+              "src/utils.c:87-91"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "category": "system",
+        "platform": "portable",
+        "type": "系统设备接口",
+        "apis": [
+          {
+            "name": "/var/run/usbmuxd (Unix 域套接字路径)",
+            "purpose": "守护进程服务端点——主机应用程序通过此路径连接守护进程",
+            "count": 2,
+            "evidence": [
+              "src/main.c:56",
+              "main.c 多处"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "/var/run/usbmuxd.pid (PID 文件)",
+            "purpose": "守护进程 PID 锁文件——防止重复启动",
+            "count": 2,
+            "evidence": [
+              "src/main.c:57-58"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "/var/lib/lockdown (配置目录 Linux)",
+            "purpose": "配对记录存储目录——Linux 上存储 iOS 设备配对数据",
+            "count": 2,
+            "evidence": [
+              "src/conf.c:130-133"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "/var/db/lockdown (配置目录 macOS)",
+            "purpose": "配对记录存储目录——macOS 上存储 iOS 设备配对数据",
+            "count": 1,
+            "evidence": [
+              "src/conf.c:128-129"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libusb-1.0",
+        "load_mechanism": "构建时链接（configure.ac: pkg-config + -lusb-1.0），运行时动态链接器自动加载",
+        "purpose": "USB 设备枚举与数据传输——是守护进程与 iOS 设备通信的核心底层库",
+        "evidence": [
+          "configure.ac:23",
+          "src/usb.c:32 (#include <libusb.h>)"
+        ]
+      },
+      {
+        "name": "libplist-2.0",
+        "load_mechanism": "构建时链接（configure.ac: pkg-config + -lplist-2.0）",
+        "purpose": "Apple Property List 格式解析——读写 iOS 设备的 plist 配置文件",
+        "evidence": [
+          "configure.ac:24",
+          "src/client.c:40 (#include <plist/plist.h>)",
+          "src/conf.c:40 (#include <plist/plist.h>)"
+        ]
+      },
+      {
+        "name": "libimobiledevice-1.0",
+        "load_mechanism": "构建时可选链接（configure.ac: 通过 --without-preflight 控制）",
+        "purpose": "iOS 设备高级通信——lockdownd 连接与设备安全配对",
+        "evidence": [
+          "configure.ac:25",
+          "src/preflight.c:32-34 (#include <libimobiledevice/libimobiledevice.h>)"
+        ]
+      }
+    ],
+    "notes": "守护进程核心依赖 libusb (USB 通信) 和 libplist (配置解析)。libimobiledevice 仅在 preflight 功能中可选使用。所有依赖均为系统级 C 动态库。跨平台通过 #ifdef 条件编译实现（_WIN32/__APPLE__/配置路径分支）。"
+  },
+  "runtime_surface": {
+    "summary": "守护进程运行期依赖 Unix 域套接字（/var/run/usbmuxd）和 PID 锁文件、需要 USB 设备访问权限、读取 /var/lib/lockdown 或 /var/db/lockdown 中的配对记录文件，并监听系统信号（SIGUSR1/SIGUSR2/SIGTERM）进行优雅退出。",
+    "network": [
+      {
+        "interface": "Unix 域套接字 (AF_UNIX)",
+        "port_or_path": "/var/run/usbmuxd",
+        "direction": "listen",
+        "purpose": "与其他应用通信的服务端点",
+        "evidence": [
+          "src/main.c:56",
+          "src/main.c:214-229"
+        ]
+      },
+      {
+        "interface": "TCP 套接字 (AF_INET)",
+        "port_or_path": "可通过 -S 参数指定",
+        "direction": "listen",
+        "purpose": "可选的网络监听模式（默认不使用）",
+        "evidence": [
+          "src/main.c:86-196"
+        ]
+      }
+    ],
+    "filesystem": [
+      {
+        "path": "/var/run/usbmuxd",
+        "access": "read/write",
+        "purpose": "Unix 域套接字文件和 PID 锁文件",
+        "evidence": [
+          "src/main.c:56-58"
+        ]
+      },
+      {
+        "path": "/var/lib/lockdown/ (Linux) 或 /var/db/lockdown/ (macOS)",
+        "access": "read/write",
+        "purpose": "存储和读取 iOS 设备配对记录文件（*.plist）",
+        "evidence": [
+          "src/conf.c:128-133"
+        ]
+      },
+      {
+        "path": "/dev/null",
+        "access": "write",
+        "purpose": "守护进程化时重定向标准 IO",
+        "evidence": [
+          "src/main.c:466-473"
+        ]
+      },
+      {
+        "path": "/proc/<pid>/cmdline (Linux)",
+        "access": "read",
+        "purpose": "获取连接客户端进程名进行日志记录",
+        "evidence": [
+          "src/client.c:88-93"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "USBMUXD_DEFAULT_DEVICE_MODE",
+        "purpose": "指定 iOS 设备的默认工作模式（影响 USB 配置选择）",
+        "evidence": [
+          "src/usb.c:53",
+          "src/usb.c:706"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [
+      {
+        "path": "/proc/<pid>/cmdline",
+        "class": "procfs",
+        "purpose": "读取连接到守护进程的客户端进程命令行信息",
+        "evidence": [
+          "src/client.c:88"
+        ]
+      }
+    ],
+    "services": [
+      {
+        "name": "udev (Linux)",
+        "class": "system_service",
+        "purpose": "设备热插拔事件触发——检测 iOS 设备的插拔并自动启动守护进程",
+        "evidence": [
+          "src/main.c:515-516",
+          "configure.ac:67-73"
+        ]
+      },
+      {
+        "name": "systemd (Linux)",
+        "class": "system_service",
+        "purpose": "systemd 套接字激活——由 systemd 管理守护进程的生命周期和套接字传递",
+        "evidence": [
+          "src/main.c:518-519",
+          "configure.ac:75-90"
+        ]
+      },
+      {
+        "name": "lockdownd (iOS 设备)",
+        "class": "device_service",
+        "purpose": "iOS 设备上的系统服务——用于设备配对验证和 preflight 安全检查",
+        "evidence": [
+          "src/preflight.c:32-34"
+        ]
+      }
+    ]
+  },
+  "build_env": {
+    "language_standard": "C99/C11（autotools 构建系统，使用 AC_PROG_CC 标准 C 编译器检测）",
+    "runtime_version": null,
+    "build_system": "autotools (autoconf + automake + libtool)",
+    "compiler_extensions": [
+      "GCC/Clang: __attribute__((__packed__)) 用于紧凑结构体（网络协议头）",
+      "GCC/Clang/MSVC: #ifdef 条件编译（_WIN32/HAVE_SYSTEMD/HAVE_UDEV/HAVE_LIBUSB_HOTPLUG_API）",
+      "GCC/Clang: -Wall -Wextra -Wmissing-declarations 等编译警告选项"
+    ],
+    "platforms": [
+      {
+        "runtime_os": [
+          "Linux",
+          "macOS",
+          "Windows",
+          "Android"
+        ],
+        "arch": "x86_64；arm64；armv7；armv8",
+        "notes": "README.md:21 声明跨平台支持（Linux、macOS、Windows、Android）"
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "executable",
+        "name": "usbmuxd (C 守护进程)",
+        "description": "编译产物为 sbin_PROGRAMS 即系统守护进程 usbmuxd——由 udev/systemd 触发或手动启动（-f 前台模式）",
+        "evidence": [
+          "src/Makefile.am:19",
+          "src/main.c:675"
+        ]
+      },
+      {
+        "type": "systemd_service",
+        "name": "usbmuxd.service",
+        "description": "systemd 服务单元文件，由 udev 规则触发或套接字激活",
+        "evidence": [
+          "systemd/",
+          "configure.ac:75-90"
+        ]
+      },
+      {
+        "type": "udev_rule",
+        "name": "usbmuxd udev rules",
+        "description": "udev 规则文件，设备热插拔时自动调用守护进程",
+        "evidence": [
+          "udev/",
+          "configure.ac:61-73"
+        ]
+      }
+    ],
+    "packaging": "format: 源码 tarball (autotools make dist) + 系统包管理器 (apt/rpm/pacman)；description: 通过 autotools 标准流程 ./autogen.sh && ./configure && make && make install 安装为系统守护进程。各发行版也可通过包管理器安装预编译版本。不捆绑额外运行时。",
+    "notes": "configure.ac 脚本检测操作系统类型（${host_os}）以条件编译 Linux 专有（udev/systemd）、macOS（mach_absolute_time）和 Windows 的代码路径。"
+  },
+  "harmony_adaptation": {
+    "porting_class": "needs_adaptation",
+    "porting_class_model": "needs_adaptation",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    },
+    "difficulty": null,
+    "person_days": [
+      30,
+      60
+    ],
+    "confidence": "medium",
+    "target_assumptions": [
+      {
+        "capability": "USB 设备访问 (libusb)",
+        "capability_key": "usb_serial",
+        "required": true,
+        "target_status": "unknown",
+        "impact": "libusb 在 cmd-pkgs 中标记为已适配，但 USB bulk transfer 和 control transfer 能力在鸿蒙 PC 上的等价性仍需验证",
+        "source": "capability_profile.scenarios.hardware",
+        "id": "ta:1",
+        "target_status_model": "unknown"
+      },
+      {
+        "capability": "POSIX 进程模型 (fork/setsid/signal)",
+        "capability_key": null,
+        "required": true,
+        "target_status": "unknown",
+        "impact": "鸿蒙 NDK (musl) 提供 fork/setsid/signal API，但 fork 在鸿蒙安全沙箱中受限——需评估替代方案（如实现为 OHOS Service Ability）",
+        "source": "native_api (platform/posix)",
+        "id": "ta:2",
+        "target_status_model": "unknown"
+      },
+      {
+        "capability": "Unix 域套接字 (AF_UNIX)",
+        "capability_key": null,
+        "required": true,
+        "target_status": "unknown",
+        "impact": "AF_UNIX 套接字在鸿蒙环境中的可用性待核实——替代方案可能为 Ohos IPC 或其他 IPC 机制",
+        "source": "native_api (platform/linux)",
+        "id": "ta:3",
+        "target_status_model": "unknown"
+      },
+      {
+        "capability": "libimobiledevice (可选依赖)",
+        "capability_key": null,
+        "required": false,
+        "target_status": "unknown",
+        "impact": "libimobiledevice 尚未鸿蒙适配——可通过 --without-preflight 禁用，核心功能不受影响",
+        "source": "dependency: libimobiledevice-1.0",
+        "id": "ta:4",
+        "target_status_model": "unknown"
+      }
+    ],
+    "unadaptable_apis": [],
+    "blockers": [
+      {
+        "id": "bk:critical-process-model",
+        "category": "process_model",
+        "severity": "critical",
+        "adaptability": "adaptable",
+        "description": "核心守护进程依赖 POSIX 进程二元操作（fork/setsid/setuid/setgid）实现后台化和权限降级——这些在鸿蒙安全沙箱中受限",
+        "detail": "main.c 中的 daemonize() 函数使用双 fork 模式脱离终端、setsid 创建新会话、setuid/setgid 切换权限到专用用户——鸿蒙应用模型不直接支持这些传统 UNIX 守护进程操作",
+        "remediation": "将守护进程重构为鸿蒙 Service 扩展能力（ServiceExtensionAbility），利用鸿蒙生命周期管理替代手动进程控制；权限模型适配鸿蒙沙箱体系；或保留 fork 路径依赖 NDK musl 支持但经测试验证",
+        "evidence": [
+          "src/main.c:399-476 (daemonize() 函数)"
+        ],
+        "source_dimension": "native_api (platform/posix)",
+        "caused_by": null,
+        "remediation_status": "open"
+      },
+      {
+        "id": "bk:signal-handling",
+        "category": "process_model",
+        "severity": "high",
+        "adaptability": "adaptable",
+        "description": "使用 SIGUSR1/SIGUSR2/SIGTERM 信号实现进程间通信和优雅退出——鸿蒙信号处理模型可能与标准 POSIX 有差异",
+        "detail": "handle_signal() 节点 SIGUSR1 触发退出检查、SIGUSR2 触发设备重新发现——这些信号控制逻辑需要验证鸿蒙兼容性",
+        "remediation": "验证鸿蒙 NDK 对 SIGUSR1/SIGUSR2/SIGTERM 的支持；若受限，改用 鸿蒙系统能力（Service 生命周期回调）代替信号通信",
+        "evidence": [
+          "src/main.c:254-301 (信号处理函数和掩码设置)"
+        ],
+        "source_dimension": "native_api (platform/posix)",
+        "caused_by": null,
+        "remediation_status": "open"
+      },
+      {
+        "id": "bk:unix-domain-socket",
+        "category": "ipc",
+        "severity": "high",
+        "adaptability": "adaptable",
+        "description": "使用 Unix 域套接字 (AF_UNIX) 作为客户端通信接口——鸿蒙是否支持 AF_UNIX 或需改用鸿蒙原生 IPC",
+        "detail": "create_socket() 创建 AF_UNIX 套接字并监听在 /var/run/usbmuxd，所有客户端通过此路径通信——是守护进程的核心接口",
+        "remediation": "核实鸿蒙 NDK 对 AF_UNIX 套接字的支持级别（套接字路径限制/bind 权限）；备选方案为使用 OHOS IPC（RPC/Ability Connect）做客户端通信层，或改用 TCP localhost 套接字（已备支持但非默认路径）",
+        "evidence": [
+          "src/main.c:80-252 (create_socket 函数)",
+          "src/client.c:183-252 (client_accept 函数)"
+        ],
+        "source_dimension": "native_api (platform/linux)",
+        "caused_by": null,
+        "remediation_status": "open"
+      },
+      {
+        "id": "bk:hardcoded-path",
+        "category": "filesystem",
+        "severity": "medium",
+        "adaptability": "adaptable",
+        "description": "硬编码 /var/run/usbmuxd、/var/lib/lockdown 等 Linux 文件系统路径——鸿蒙文件系统路径布局不同",
+        "detail": "多个路径常量硬编码：/var/run/usbmuxd、/var/run/usbmuxd.pid、/var/lib/lockdown、/var/db/lockdown——这些在鸿蒙环境下不存在",
+        "remediation": "将所有路径改为可配置项（环境变量或构建参数），默认路径适配鸿蒙应用沙箱内的目录（如应用私有目录），平台差异文件路径使用条件编译",
+        "evidence": [
+          "src/main.c:56-57",
+          "src/conf.c:128-133"
+        ],
+        "source_dimension": "native_api (platform/linux)",
+        "caused_by": null,
+        "remediation_status": "open"
+      },
+      {
+        "id": "bk:libimobiledevice-optional",
+        "category": "dependency",
+        "severity": "low",
+        "adaptability": "partial",
+        "description": "可选依赖 libimobiledevice 尚未鸿蒙适配——preflight 功能不可用但核心代理功能不受影响",
+        "detail": "preflight 功能依赖 libimobiledevice 的 lockdownd 和 notification_proxy API——该库未在鸿蒙社区适配列表中",
+        "remediation": "在鸿蒙移植中通过 --without-preflight 禁用此可选功能，核心守护进程正常运行；后续若 libimobiledevice 被移植再重新启用",
+        "evidence": [
+          "src/preflight.c:32-34 (#include <libimobiledevice/libimobiledevice.h>)",
+          "configure.ac:25"
+        ],
+        "source_dimension": "dependency",
+        "caused_by": null,
+        "remediation_status": "open"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [
+      {
+        "name": "libplist-2.0",
+        "reason": "设备配对记录读写依赖 libplist 解析 Apple Plist 格式——该库尚未鸿蒙移植，但阻塞核心功能（无配对记录则设备连接失败）",
+        "refs": [],
+        "order": 1
+      }
+    ],
+    "effort": {
+      "person_days": [
+        30,
+        52
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            0.4,
+            0.4
+          ],
+          "note": "重编译复用模块约 1300 行：utils/log/client/device/usb/usbmuxd-proto/preflight 结构，按 3000 行/天",
+          "basis": "重编译复用 1300 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            7.6,
+            7.6
+          ],
+          "note": "POSIX API 适配约 3780 行：fork/signal/socket/path/systemd——按 500 行/天",
+          "basis": "需适配 3780 行 ÷ 500 行/天"
+        },
+        {
+          "component": "gui",
+          "person_days": [
+            0,
+            0
+          ],
+          "note": "无 GUI 组件"
+        },
+        {
+          "component": "deps_porting",
+          "person_days": [
+            10,
+            20
+          ],
+          "note": "libplist-2.0 移植到鸿蒙 NDK（需 CMake/musl 适配和测试）"
+        },
+        {
+          "component": "build_system",
+          "person_days": [
+            5,
+            10
+          ],
+          "note": "autotools 到鸿蒙 NDK cmake 转换或保持 autotools 配置交叉编译工具链"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            5,
+            10
+          ],
+          "note": "在鸿蒙设备上的 USB 兼容性测试和守护进程稳定性验证"
+        },
+        {
+          "component": "packaging",
+          "person_days": [
+            2,
+            4
+          ],
+          "note": "鸿蒙 HAP 包或 native 进程打包"
+        }
+      ],
+      "level": "very_high"
+    },
+    "notes": "守护进程模型在鸿蒙上需要架构调整（Service 扩展能力替代传统 UNIX 守护进程），工作量评估考虑了这种重构。libusb 已适配降低了风险，libplist 仍需移植。可选 preflight 功能可通过禁用来简化适配范围。",
+    "confidence_model": "medium",
+    "functional_viability": "unverified"
+  },
+  "library": {
+    "kind": "application",
+    "name": "usbmuxd",
+    "one_liner": "USB 多路复用守护进程，负责在主机应用程序和 iOS 设备之间通过 USB 代理连接。",
+    "package_name": "usbmuxd",
+    "aliases": [],
+    "import_names": [],
+    "bindings": [],
+    "ecosystem": "cpp",
+    "source_url": "https://github.com/libimobiledevice/usbmuxd.git",
+    "analyzed_at": "2026-07-11T07:59:07.243Z"
+  },
+  "meta": {
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "harmony_adaptation",
+        "field": null,
+        "kind": "data_gap",
+        "value": "鸿蒙 PC 上 AF_UNIX 套接字与 fork 的完整支持程度未经验证——当前基于 musl 理论兼容推断",
+        "rationale": "鸿蒙 NDK 文档中对 fork 有严格限制说明，需实际设备验证"
+      },
+      {
+        "dimension": "harmony_adaptation",
+        "field": null,
+        "kind": "data_gap",
+        "value": "libimobiledevice 是可选依赖，建议在鸿蒙移植中禁用 preflight 以隔离风险",
+        "rationale": "减少上游库移植依赖"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter.",
+      "shape coerced: license.evidence array→string",
+      "shape coerced: build_env.platforms object→array",
+      "shape coerced: build_env.platforms[0].arch array→string",
+      "shape coerced: build_env.packaging object→string"
+    ],
+    "confidence_overall_model": "medium",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "本守护进程涉及硬件（USB 设备访问）类别，依赖 libusb 进行 iOS 设备通信。不涉及 GUI、3D 渲染或媒体处理。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": true,
+        "kind": [
+          "usb_device"
+        ],
+        "specific_hardware": false,
+        "via": [
+          "libusb-1.0"
+        ],
+        "harmony_status": "available",
+        "adaptation": "通过 libusb 访问 USB 设备以实现 iOS 设备通信。libusb 已在鸿蒙 PC 社区适配（cmd-pkgs 收录），但需验证鸿蒙 PC 上的 USB 设备访问权限与驱动模型是否支持 USB bulk transfer 和 control transfer 的全量功能。",
+        "evidence": [
+          "src/usb.c:32 (#include <libusb.h>)",
+          "src/usb.c:104-106 (libusb_get_device_list)",
+          "src/usb.c:176-201 (libusb_fill_bulk_transfer / libusb_submit_transfer)"
+        ]
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本守护进程为纯本地系统服务，不依赖任何第三方云端服务。所有功能（USB 设备通信、设备配对记录管理、多路连接代理）均在本地主机完成，无需网络访问云端 API。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 5080 行生产代码位于 src/ 目录。基于 POSIX 的系统守护进程架构决定了大部分代码属于需适配或重编译复用类别，无不可适配模块。",
+    "total_loc": 5080,
+    "coverage": {
+      "pct": 100.0,
+      "note": "桶和等于 production.code，覆盖完整"
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 0,
+        "pct": 0.0,
+        "modules": [],
+        "reason": "无纯标准 C 独立模块——所有模块均依赖 POSIX 或第三方库"
+      },
+      {
+        "class": "recompile_reuse",
+        "loc": 1300,
+        "pct": 25.6,
+        "modules": [
+          {
+            "name": "utils",
+            "loc_breakdown": 131,
+            "note": "纯 C 内存管理、宏和简单辅助函数可直接重用",
+            "path": "utils",
+            "reason": "纯 C 内存管理、宏和简单辅助函数可直接重用"
+          },
+          {
+            "name": "log (格式化逻辑)",
+            "loc_breakdown": 101,
+            "note": "日志格式化部分逻辑可重用，syslog 接口需适配",
+            "path": "log (格式化逻辑)",
+            "reason": "日志格式化部分逻辑可重用，syslog 接口需适配"
+          },
+          {
+            "name": "client (协议处理)",
+            "loc_breakdown": 350,
+            "note": "usbmuxd 协议处理逻辑和 plist 序列化逻辑可重编译",
+            "path": "client (协议处理)",
+            "reason": "usbmuxd 协议处理逻辑和 plist 序列化逻辑可重编译"
+          },
+          {
+            "name": "device (多路复用状态机)",
+            "loc_breakdown": 350,
+            "note": "协议多路复用状态机可重编译",
+            "path": "device (多路复用状态机)",
+            "reason": "协议多路复用状态机可重编译"
+          },
+          {
+            "name": "usb (libusb 调用层)",
+            "loc_breakdown": 200,
+            "note": "基于已鸿蒙适配的 libusb 的调用代码可重编译",
+            "path": "usb (libusb 调用层)",
+            "reason": "基于已鸿蒙适配的 libusb 的调用代码可重编译"
+          },
+          {
+            "name": "usbmuxd-proto.h (协议头)",
+            "loc_breakdown": 95,
+            "note": "协议定义头文件可重用",
+            "path": "usbmuxd-proto.h (协议头)",
+            "reason": "协议定义头文件可重用"
+          },
+          {
+            "name": "preflight (数据类型定义)",
+            "loc_breakdown": 73,
+            "note": "数据结构和线程工具定义可重用",
+            "path": "preflight (数据类型定义)",
+            "reason": "数据结构和线程工具定义可重用"
+          }
+        ],
+        "reason": "这些代码本身不依赖 POSIX 专属系统调用，仅使用已适配的 libusb/libplist 或纯 C 标准库，在鸿蒙 NDK 下重编译即可"
+      },
+      {
+        "class": "needs_adaptation",
+        "loc": 3780,
+        "pct": 74.4,
+        "modules": [
+          {
+            "name": "main.c",
+            "loc_breakdown": 931,
+            "note": "守护进程启停逻辑：Unix 域套接字、信号处理、fork/setsid、setuid/setgid 降权——均需适配鸿蒙进程模型",
+            "path": "main.c",
+            "reason": "守护进程启停逻辑：Unix 域套接字、信号处理、fork/setsid、setuid/setgid 降权——均需适配鸿蒙进程模型"
+          },
+          {
+            "name": "usb.c (部分)",
+            "loc_breakdown": 897,
+            "note": "USB 设备枚举控制逻辑——需确认鸿蒙 USB 驱动栈等价性",
+            "path": "usb.c (部分)",
+            "reason": "USB 设备枚举控制逻辑——需确认鸿蒙 USB 驱动栈等价性"
+          },
+          {
+            "name": "client.c (部分)",
+            "loc_breakdown": 688,
+            "note": "Unix 域套接字 accept/send/recv——需适配鸿蒙 IPC 机制",
+            "path": "client.c (部分)",
+            "reason": "Unix 域套接字 accept/send/recv——需适配鸿蒙 IPC 机制"
+          },
+          {
+            "name": "device.c (部分)",
+            "loc_breakdown": 687,
+            "note": "设备管理状态迁移——需确认信号处理等价性",
+            "path": "device.c (部分)",
+            "reason": "设备管理状态迁移——需确认信号处理等价性"
+          },
+          {
+            "name": "preflight.c",
+            "loc_breakdown": 333,
+            "note": "libimobiledevice 调用——该库未鸿蒙适配，需评估移植或禁用",
+            "path": "preflight.c",
+            "reason": "libimobiledevice 调用——该库未鸿蒙适配，需评估移植或禁用"
+          },
+          {
+            "name": "conf.c",
+            "loc_breakdown": 244,
+            "note": "配置文件路径（/var/lib/lockdown）和文件操作——需适配",
+            "path": "conf.c",
+            "reason": "配置文件路径（/var/lib/lockdown）和文件操作——需适配"
+          }
+        ],
+        "reason": "这些模块直接使用 POSIX 专属 API（fork/setsid/signal/Unix 域套接字/uid 管理/syslog），需要针对性适配鸿蒙的进程模型、IPC 机制和文件系统约定"
+      },
+      {
+        "class": "unadaptable",
+        "loc": 0,
+        "pct": 0.0,
+        "modules": [],
+        "reason": "无不可适配模块——核心 POSIX API（fork/signal/socket）在鸿蒙 NDK 的 musl 中有对应实现或替代方案，libusb 已适配，libimobiledevice 可通过 --without-preflight 禁用"
+      }
+    ]
+  }
+}

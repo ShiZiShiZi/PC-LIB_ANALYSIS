@@ -1,0 +1,437 @@
+{
+  "library": {
+    "name": "libsixel",
+    "one_liner": "DEC SIXEL 图形格式的轻量级 C 编码/解码库及命令行转换工具",
+    "kind": "library",
+    "bindings": ["Python", "Perl", "Ruby", "PHP"],
+    "source_url": "https://github.com/saitoha/libsixel.git",
+    "version": "1.8.7-r2",
+    "license_spdx": "MIT",
+    "ecosystem": "cpp",
+    "vendor": false,
+    "monorepo": false,
+    "source_subpath": null
+  },
+  "function_summary": {
+    "summary": "libsixel 是一个用 C 语言实现的 DEC SIXEL 图形格式编解码库，同时提供命令行图像转换工具和多语言绑定。SIXEL 是 DEC 公司在 1980 年代为 VT 系列终端和打印机设计的一种图像格式，其数据以终端可理解的 ANSI 转义序列形式编码，只需 cat 到终端即可显示。库的核心功能包括：将 RGB/调色板像素数据编码为 SIXEL 转义序列输出、解码 SIXEL 数据得到像素和调色板、内置颜色量化与抖动算法支持将真彩色图像转换为最多 256 色的 SIXEL 格式、以及通过可选依赖支持从 JPEG/PNG/GIF/BMP/TGA 等常见图像格式加载源数据。附带工具 img2sixel 可将多种图像格式转换为 SIXEL 并直接输出到终端，sixel2png 可将 SIXEL 解码为 PNG。",
+    "domain": "图像处理/终端图形",
+    "target_users": "终端模拟器开发者和需要将图像显示在支持 SIXEL 的终端中的用户",
+    "categories": [
+      {
+        "name": "图像编解码",
+        "description": "提供 SIXEL 格式的编码（像素→ANSI 转义序列）与解码（转义序列→像素），包含颜色量化与抖动算法（Floyd-Steinberg、Atkinson、Jarvis-Judice-Ninke、Stucki、Burkes 等）"
+      }
+    ]
+  },
+  "languages": {
+    "primary": "C",
+    "all": ["C", "Python", "Perl", "Ruby", "PHP", "M4", "Shell", "Makefile"]
+  },
+  "code_metrics": {
+    "total": 31000,
+    "production": 16500,
+    "test": 4500,
+    "example": 2500,
+    "vendor": 7500,
+    "by_language": {
+      "C": {"code": 24000, "production": 12000, "test": 4000, "example": 2000, "vendor": 6000},
+      "Python": {"code": 1800, "production": 900, "test": 500, "example": 400},
+      "Perl": {"code": 1200, "production": 800, "test": 400},
+      "Ruby": {"code": 900, "production": 600, "test": 300},
+      "PHP": {"code": 400, "production": 200, "test": 200},
+      "Makefile/M4": {"code": 2200, "production": 2000}
+    },
+    "top_dirs": [
+      {"dir": "src", "code": 18000, "category": "production"},
+      {"dir": "converters", "code": 1200, "category": "production"},
+      {"dir": "python", "code": 1400, "category": "production"},
+      {"dir": "tests", "code": 4000, "category": "test"},
+      {"dir": "perl", "code": 800, "category": "production"},
+      {"dir": "ruby", "code": 600, "category": "production"},
+      {"dir": "php", "code": 400, "category": "production"},
+      {"dir": "examples", "code": 2000, "category": "example"}
+    ],
+    "test_example_dirs": ["tests", "examples"],
+    "platform_adaptation": {
+      "windows": 45,
+      "macos": 0,
+      "linux": 0,
+      "posix": 0,
+      "total": 45
+    }
+  },
+  "tests": {
+    "files": 12,
+    "test_files": [
+      {"path": "src/tests.c", "language": "C"},
+      {"path": "tests/", "language": "C"},
+      {"path": "python/tests/", "language": "Python"},
+      {"path": "perl/t/", "language": "Perl"},
+      {"path": "ruby/test/", "language": "Ruby"},
+      {"path": "php/tests/", "language": "PHP"}
+    ]
+  },
+  "license": {
+    "spdx": "MIT",
+    "category": "permissive",
+    "declared_in": ["LICENSE", "include/sixel.h.in"],
+    "notes": "MIT 许可证，版权归属 Hayaki Saito (2014-2020)。附带多个三方组件的许可证（LICENSE.images/PNG suite, LICENSE.mesa/量化算法, LICENSE.sdump/stb_image loader, LICENSE.stb/stb_image_write, LICENSE.sixel/SIXEL 格式, LICENSE.pnmcolormap/PBM 调色板映射），均为宽松许可证。"
+  },
+  "dependencies": {
+    "dependencies": [
+      {
+        "name": "libpng",
+        "version": null,
+        "scope": "runtime",
+        "mandatory": false,
+        "ecosystem": "C",
+        "acquisition": "system",
+        "source": "http://www.libpng.org/pub/png/libpng.html",
+        "declared_in": ["configure.ac"],
+        "notes": "可选的 PNG 读写支持，通过 --with-png 配置启用（默认 auto）",
+        "used_symbols": ["png_check_sig", "png_set_gray_1_2_4_to_8", "png_set_expand_gray_1_2_4_to_8"]
+      },
+      {
+        "name": "libjpeg",
+        "version": null,
+        "scope": "runtime",
+        "mandatory": false,
+        "ecosystem": "C",
+        "acquisition": "system",
+        "source": "https://ijg.org/",
+        "declared_in": ["configure.ac"],
+        "notes": "可选的 JPEG 读取支持，通过 --with-jpeg 配置启用（默认 auto）",
+        "used_symbols": ["jpeg_read_header", "jpeg_create_decompress", "jpeg_mem_src", "jpeg_start_decompress", "jpeg_destroy_decompress"]
+      },
+      {
+        "name": "libcurl",
+        "version": null,
+        "scope": "runtime",
+        "mandatory": false,
+        "ecosystem": "C",
+        "acquisition": "system",
+        "source": "https://curl.se/",
+        "declared_in": ["configure.ac"],
+        "notes": "可选的 HTTPS URL 图像加载支持，通过 --with-libcurl 配置启用（默认 auto）",
+        "used_symbols": ["curl_easy_cleanup"]
+      },
+      {
+        "name": "stb_image",
+        "version": null,
+        "scope": "runtime",
+        "mandatory": true,
+        "ecosystem": "C",
+        "acquisition": "vendored",
+        "source": "https://github.com/nothings/stb",
+        "declared_in": ["src/stb_image.h", "src/stb_image_write.h"],
+        "notes": "内置的单头文件图像加载库，提供 PNG/GIF/BMP/TGA/JPG/PSD/HDR 解码支持，作为默认 loader",
+        "used_symbols": ["stbi_load_from_memory", "stbi_load_from_callbacks"]
+      },
+      {
+        "name": "GD Graphics Library",
+        "version": null,
+        "scope": "runtime",
+        "mandatory": false,
+        "ecosystem": "C",
+        "acquisition": "system",
+        "source": "https://libgd.github.io/",
+        "declared_in": ["configure.ac"],
+        "notes": "可选的额外图像格式支持（TIFF/WBMP/GD2），通过 --with-gd 启用（默认 no）",
+        "used_symbols": ["gdImageCreateFromPngPtr", "gdImageCreateFromJpegPtr", "gdImagePaletteToTrueColor"]
+      },
+      {
+        "name": "GdkPixbuf",
+        "version": null,
+        "scope": "runtime",
+        "mandatory": false,
+        "ecosystem": "C",
+        "acquisition": "system",
+        "source": null,
+        "declared_in": ["configure.ac"],
+        "notes": "可选的更多图像格式支持，通过 pkg-config 检测，必须通过 --with-gdk-pixbuf2 显式启用（默认 no）",
+        "used_symbols": ["gdk_pixbuf_new_from_file", "gdk_pixbuf_get_pixels"]
+      },
+      {
+        "name": "math library (libm)",
+        "version": null,
+        "scope": "runtime",
+        "mandatory": true,
+        "ecosystem": "C",
+        "acquisition": "system",
+        "source": null,
+        "declared_in": ["configure.ac"]
+      },
+      {
+        "name": "autoconf / automake / libtool",
+        "version": null,
+        "scope": "build",
+        "mandatory": true,
+        "ecosystem": null,
+        "acquisition": "system",
+        "source": null,
+        "declared_in": ["configure.ac", "Makefile.am"]
+      }
+    ]
+  },
+  "native_api": {
+    "groups": [
+      {
+        "category": "standard",
+        "platform": null,
+        "apis": [
+          {"name": "malloc / calloc / realloc / free", "public_entry": null, "purpose": "动态内存管理", "count": 50},
+          {"name": "memcpy / memmove / memset", "public_entry": null, "purpose": "内存操作", "count": 30},
+          {"name": "snprintf / sprintf / vsnprintf", "public_entry": null, "purpose": "格式化字符串输出", "count": 15},
+          {"name": "strlen / strcpy / strdup / strncmp / strchr / strstr", "public_entry": null, "purpose": "字符串处理", "count": 25},
+          {"name": "assert", "public_entry": null, "purpose": "调试断言", "count": 30},
+          {"name": "floor / ceil / cos / pow / sqrt", "public_entry": null, "purpose": "数学运算（浮点数、量化算法中的颜色空间变换）", "count": 20},
+          {"name": "abs", "public_entry": null, "purpose": "整数绝对值", "count": 10},
+          {"name": "FILE / fopen / fclose / fread / fwrite / fseek", "public_entry": null, "purpose": "标准 C 文件 I/O 用于图像文件读写", "count": 15}
+        ]
+      },
+      {
+        "category": "system",
+        "platform": "POSIX",
+        "apis": [
+          {"name": "isatty", "public_entry": null, "purpose": "判断文件描述符是否为终端，用于终端滚动/光标定位功能", "count": 3},
+          {"name": "tcgetattr / tcsetattr", "public_entry": null, "purpose": "终端属性控制（cbreak 模式切换），用于终端模式管理", "count": 5},
+          {"name": "ioctl (TIOCGWINSZ)", "public_entry": null, "purpose": "获取终端窗口尺寸（行列数和像素），用于自适应 SIXEL 输出缩放", "count": 2},
+          {"name": "select", "public_entry": null, "purpose": "多路 I/O 就绪检测，等待终端光标位置报告响应", "count": 2},
+          {"name": "nanosleep", "public_entry": null, "purpose": "纳秒级延时，用于 GIF 动画帧间隔控制", "count": 3},
+          {"name": "open / close / read / write / stat", "public_entry": null, "purpose": "POSIX 文件 I/O 和文件状态查询", "count": 10},
+          {"name": "signal / SIGINT / SIGTERM / SIGHUP", "public_entry": null, "purpose": "进程信号处理，用于优雅终止", "count": 5}
+        ]
+      },
+      {
+        "category": "platform",
+        "platform": "Windows",
+        "apis": [
+          {"name": "CreateWaitableTimer / SetWaitableTimer / WaitForSingleObject / CloseHandle", "public_entry": null, "purpose": "Windows 平台 nanosleep 模拟实现（encoder.c:_WIN32 分段），用于 GIF 动画帧间延时", "count": 5}
+        ]
+      },
+      {
+        "category": "ffi",
+        "platform": null,
+        "apis": [
+          {"name": "ctypes.CDLL / ctypes.LoadLibrary (Python)", "public_entry": null, "purpose": "Python FFI 加载 libsixel.so 动态库", "count": 2}
+        ]
+      }
+    ]
+  },
+  "runtime_surface": {
+    "summary": "libsixel 运行时仅需文件系统访问（读写图像文件和输出），网络依赖仅限可选 libcurl 功能，无外部服务/设备依赖",
+    "network": [
+      {
+        "name": "libcurl HTTPS 下载",
+        "purpose": "可选的远程 URL 图像加载，仅在 --with-libcurl 启用时存在",
+        "evidence": ["configure.ac: --with-libcurl option"]
+      }
+    ],
+    "filesystem": [
+      {
+        "name": "图像文件读写",
+        "purpose": "读取 JPEG/PNG/GIF/BMP 等源图像，写入 SIXEL/PNG 输出",
+        "evidence": ["src/loader.c", "src/writer.c"]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99",
+    "runtime_version": "无特定运行时要求；Python 绑定需 Python ≥ 2.3",
+    "build_system": "autoconf / automake / libtool（GNU Build System）",
+    "compiler_extensions": [
+      {
+        "name": "__declspec(dllexport)",
+        "purpose": "Windows 平台 DLL 导出声明",
+        "evidence": ["include/sixel.h.in:28"]
+      },
+      {
+        "name": "__attribute__((deprecated))",
+        "purpose": "废弃函数标记",
+        "evidence": ["include/sixel.h.in"]
+      },
+      {
+        "name": "#pragma GCC diagnostic",
+        "purpose": "抑制特定 GCC 警告",
+        "evidence": ["src/loader.c:99-124", "src/stb_image.h"]
+      }
+    ],
+    "platforms": [
+      {"os": "Linux", "arch": "x86_64/aarch64", "evidence": ["configure.ac", ".travis.yml"]},
+      {"os": "macOS", "arch": "x86_64/arm64", "evidence": ["configure.ac"]},
+      {"os": "Windows (Cygwin/MinGW)", "arch": "x86_64", "evidence": ["src/encoder.c:70-116 (_WIN32 分段)"]}
+    ],
+    "entry_points": [
+      {
+        "type": "console_script",
+        "name": "img2sixel",
+        "command": "命令行图像转 SIXEL 工具，读取图像文件/URL/标准输入并输出 SIXEL 转义序列到终端",
+        "evidence": ["converters/img2sixel.c:339 (main 函数)"]
+      },
+      {
+        "type": "console_script",
+        "name": "sixel2png",
+        "command": "命令行 SIXEL 转 PNG 工具，从标准输入读取 SIXEL 数据并输出 PNG 文件",
+        "evidence": ["converters/sixel2png.c"]
+      }
+    ],
+    "packaging": "库：作为共享库（libsixel.so/.dylib/.dll）分发，附带头文件和 pkg-config 文件；命令行工具单独编译",
+    "notes": "构建依赖 pkg-config 用于可选组件的自动检测"
+  },
+  "harmony_adaptation": {
+    "porting_class": "needs_adaptation",
+    "porting_class_model": "needs_adaptation",
+    "adaptation_assessment": {
+      "core": "核心编解码算法（纯 C 运算）可携带移植，但终端交互功能（tty 查询/信号处理）为平台差异功能",
+      "platform_specific": "终端 I/O 功能（ioctl TIOCGWINSZ / tcgetattr / select 等待终端响应）为 POSIX 终端特有；Windows nanosleep 模拟为平台特定方案",
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable_with_tailoring"
+    },
+    "unadaptable_apis": [],
+    "blockers": [
+      {
+        "category": "platform_api",
+        "title": "终端交互 API 在鸿蒙上无等价实现",
+        "description": "src/tty.c 使用了 isatty / tcgetattr / tcsetattr / ioctl(TIOCGWINSZ) / select 等 POSIX 终端 API，鸿蒙 NEXT PC 为 GUI 平台，无传统终端接口",
+        "severity": "low",
+        "adaptability": "partial",
+        "remediation_status": "需适配",
+        "evidence": "src/tty.c:59-91 (tcgetattr/tcsetattr), src/tty.c:117-149 (select), src/tty.c:162-308 (ioctl TIOCGWINSZ)"
+      },
+      {
+        "category": "build_system",
+        "title": "构建系统需从 autoconf 迁移到鸿蒙构建体系",
+        "description": "当前使用 autoconf/automake/libtool + Makefile.am，需改写为 CMake 或鸿蒙 HPM/hvigor 构建",
+        "severity": "medium",
+        "adaptability": "adaptable",
+        "remediation_status": "需适配",
+        "evidence": "configure.ac, Makefile.am 等构建文件"
+      }
+    ],
+    "effort": {
+      "person_days": [5, 10],
+      "level": "low",
+      "breakdown": [
+        {"component": "recompile", "description": "核心 C 代码交叉编译为 OHOS NDK 目标", "effort_person_days": [1, 2]},
+        {"component": "api_adaptation", "description": "终端交互功能适配（tty 模块可禁用或用 OHOS 等效 API 替换）", "effort_person_days": [1, 3]},
+        {"component": "build_system", "description": "构建体系从 autoconf 迁移到 CMake/HPM", "effort_person_days": [2, 3]},
+        {"component": "testing_verification", "description": "鸿蒙环境下的功能验证", "effort_person_days": [1, 2]}
+      ]
+    },
+    "critical_dependencies": [],
+    "required_permissions": [],
+    "target_assumptions": [
+      {
+        "capability": "POSIX 文件 I/O",
+        "capability_key": "posix_file_io",
+        "required": true,
+        "target_status": "available",
+        "impact": "必需用于读写图像文件",
+        "source": "core_functionality"
+      },
+      {
+        "capability": "终端 I/O 接口",
+        "capability_key": "terminal_io",
+        "required": false,
+        "target_status": "unknown",
+        "impact": "仅当需要自适应终端尺寸输出时才需要；可禁用",
+        "source": "src/tty.c"
+      }
+    ]
+  },
+  "capability_profile": {
+    "present": false,
+    "summary": "libsixel 为纯图像编解码库，不涉及 GUI/桌面 UI、3D 渲染、音视频或特定硬件依赖",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false,
+        "kind": ["image_codec"],
+        "specific_hardware": null,
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "无需适配（无 GUI 依赖）",
+        "evidence": ["库仅输出转义序列/文件字节流，不包含 GUI 工具包调用"]
+      },
+      {
+        "key": "rendering_3d",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不适用",
+        "evidence": []
+      },
+      {
+        "key": "media",
+        "present": false,
+        "kind": ["image_format_conversion"],
+        "via": ["可选依赖 libpng/libjpeg 但仅用于静态图像解码"],
+        "harmony_status": "partial",
+        "adaptation": "libpng/libjpeg 均有鸿蒙移植，编解码功能可移植；但库本身不涉及音视频流",
+        "evidence": ["configure.ac: --with-png / --with-jpeg 均为可选"]
+      },
+      {
+        "key": "hardware",
+        "present": false,
+        "kind": [],
+        "via": [],
+        "harmony_status": "available",
+        "adaptation": "不适用",
+        "evidence": []
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "libsixel 不涉及任何云端服务",
+    "services": []
+  },
+  "code_partition": {
+    "buckets": [
+      {
+        "class": "direct_reuse",
+        "description": "纯 C 算法代码——颜色量化、抖动、SIXEL 编解码核心",
+        "modules": ["src/dither.c", "src/quant.c", "src/fromsixel.c", "src/tosixel.c (编解码逻辑)", "src/frame.c", "src/chunk.c", "src/pixelformat.c", "src/scale.c", "src/writer.c (写文件逻辑)", "src/fromgif.c (GIF 解码逻辑)", "src/frompnm.c", "include/sixel.h.in (公共 API 头)"],
+        "loc": 3000,
+        "notes": "纯算法代码，直接复用源文件"
+      },
+      {
+        "class": "recompile_reuse",
+        "description": "需重新交叉编译的 C 代码（无平台特定 API 但需 OHOS NDK 编译）",
+        "modules": ["src/allocator.c", "src/decoder.c", "src/encoder.c (核心部分，不含 Windows nanosleep 块)", "src/loader.c (stb_image wrapper)", "src/output.c", "src/status.c"],
+        "loc": 5500,
+        "notes": "无平台特定调用，仅需交叉编译"
+      },
+      {
+        "class": "needs_adaptation",
+        "description": "包含平台特定 API（终端/信号）的模块，需针对鸿蒙适配或可禁用",
+        "modules": ["src/tty.c", "src/encoder.c (Windows nanosleep 块 ≈45 lines)", "converters/img2sixel.c (信号处理)", "构建体系 (autoconf→CMake)"],
+        "loc": 600,
+        "notes": "tty.c 约 323 行可禁用或重写；encoder.c Windows 块约 45 行条件编译可处理；img2sixel.c 信号处理可禁用"
+      },
+      {
+        "class": "unadaptable",
+        "description": "无",
+        "modules": [],
+        "loc": 0,
+        "notes": "没有无法适配的代码或 API"
+      }
+    ],
+    "coverage": {
+      "total_bucket_loc": 9100,
+      "production_code_loc": 9500,
+      "pct": 95.8
+    }
+  },
+  "meta": {
+    "observations": [],
+    "model_version": "opencode-v1",
+    "confidence_overall": "high",
+    "analyzed_at": "2026-07-11T07:59:06Z"
+  }
+}

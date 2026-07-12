@@ -1,0 +1,566 @@
+{
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 1,
+        "code": 129,
+        "pct": 55.36,
+        "production": {
+          "files": 1,
+          "code": 129
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JavaScript",
+        "files": 3,
+        "code": 104,
+        "pct": 44.64,
+        "production": {
+          "files": 2,
+          "code": 37
+        },
+        "test": {
+          "files": 1,
+          "code": 67
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 4,
+      "code": 233,
+      "comment": 0,
+      "blank": 63,
+      "total_lines": 296
+    },
+    "production": {
+      "files": 3,
+      "code": 166,
+      "comment": 0,
+      "blank": 44,
+      "total_lines": 210
+    },
+    "test": {
+      "files": 1,
+      "code": 67,
+      "comment": 0,
+      "blank": 19,
+      "total_lines": 86
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 129,
+        "category": "production",
+        "by_category": {
+          "production": 129
+        }
+      },
+      {
+        "dir": "test",
+        "code": 67,
+        "category": "test",
+        "by_category": {
+          "test": 67
+        }
+      },
+      {
+        "dir": ".",
+        "code": 37,
+        "category": "production",
+        "by_category": {
+          "production": 37
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "src",
+        "files": 1,
+        "code": 129
+      },
+      {
+        "dir": ".",
+        "files": 2,
+        "code": 37
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 5,
+    "frameworks": [
+      "jest/mocha"
+    ],
+    "by_language": {
+      "JavaScript": {
+        "files": 1,
+        "cases": 5
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "bufferutil 是一个 Node.js 库，为 WebSocket 帧数据提供高效的掩码（mask）和去掩码（unmask）操作。它是 ws（Node.js 最流行的 WebSocket 实现）的核心依赖，通过 C 原生插件（N-API）实现 XOR 位运算加速，同时提供纯 JavaScript 回退实现。库体积极小（生产代码仅 166 行），专注于将指定掩码键按 WebSocket 协议应用到数据缓冲区的单一任务。",
+    "categories": [
+      {
+        "name": "WebSocket 帧掩码/去掩码",
+        "description": "提供 mask(source, mask, output, offset, length) 和 unmask(buffer, mask) 两个导出函数，按 WebSocket 协议（RFC 6455 §5.3）将 4 字节掩码键循环 XOR 到数据上。",
+        "evidence": [
+          "src/bufferutil.c (Mask/Unmask N-API 实现)",
+          "fallback.js (纯 JS 回退)",
+          "index.js (module 入口)"
+        ]
+      }
+    ],
+    "domain": "网络协议工具（WebSocket）",
+    "target_users": "Node.js WebSocket 库/框架开发者（被 ws 等库作为依赖引用）",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件为标准 MIT License 全文；package.json license 字段标注 MIT。",
+    "notes": "宽松许可，仅需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "node-gyp-build"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "node-gyp-build",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "^4.3.0",
+        "purpose": "在安装时选择并加载当前平台适用的预编译原生插件（.node binary），失败则回退到 JS 实现。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry (npmjs.com/package/node-gyp-build)",
+        "declared_in": [
+          "package.json"
+        ],
+        "used_symbols": [
+          "node-gyp-build"
+        ]
+      },
+      {
+        "name": "mocha",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^11.0.1",
+        "purpose": "测试框架",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "node-gyp",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^13.0.1",
+        "purpose": "原生插件编译工具，用于本地构建 bufferutil.node",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "prebuildify",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^6.0.0",
+        "purpose": "构建工具，为各平台预编译原生 .node 二进制文件供 node-gyp-build 分发加载。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      }
+    ],
+    "notes": "核心运行时依赖仅 node-gyp-build（加载原生插件）；mocha/node-gyp/prebuildify 为开发/构建/测试工具。"
+  },
+  "native_api": {
+    "summary": "仅使用 N-API（Node 原生插件接口）导出两个 C 函数，纯 CPU 计算，无平台/系统/硬件 API。",
+    "groups": [
+      {
+        "type": "n-api",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "napi_get_cb_info",
+            "purpose": "获取 JS 调用的参数列表",
+            "count": 2,
+            "evidence": [
+              "src/bufferutil.c:10,89"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "napi_get_buffer_info",
+            "purpose": "将 JS Buffer 转换为原生 uint8_t* 指针",
+            "count": 3,
+            "evidence": [
+              "src/bufferutil.c:19,22,25,96,99"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "napi_get_value_int64",
+            "purpose": "从 JS Number 参数提取 int64 值",
+            "count": 2,
+            "evidence": [
+              "src/bufferutil.c:28,31"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "napi_create_function",
+            "purpose": "创建 JS 可调用的 N-API 函数对象",
+            "count": 2,
+            "evidence": [
+              "src/bufferutil.c:154,157"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "napi_set_named_property",
+            "purpose": "将原生函数绑定到模块 exports 对象",
+            "count": 2,
+            "evidence": [
+              "src/bufferutil.c:160,163"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "assert",
+            "purpose": "断言 N-API 调用返回值，仅调试期启用",
+            "count": 9,
+            "evidence": [
+              "src/bufferutil.c:11,16,20,23,26,29,32,91,97"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "纯 CPU 计算，不访问文件系统、网络、环境变量、子进程或外部服务。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99",
+    "runtime_version": "Node.js >= 6.14.2",
+    "build_system": "node-gyp (binding.gyp)",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/ci.yml (ubuntu-latest x64)"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "arm64",
+        "evidence": [
+          ".github/workflows/ci.yml (ubuntu-latest arm64)"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/ci.yml (macos-15-intel x64)"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          ".github/workflows/ci.yml (macos-latest arm64)"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/ci.yml (windows-latest x64)"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86",
+        "evidence": [
+          ".github/workflows/ci.yml (windows-latest x86)"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "跨平台 C99 + N-API 原生插件，node-gyp 构建。CI 覆盖 linux/macos/windows + x64/arm64/x86。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; 129 行 C99+N-API 原生插件经 OHOS NDK/musl 重编译; 37 行 JS 直接可用; arm64/x86_64)",
+    "porting_class": "recompile_only",
+    "effort": {
+      "person_days": [
+        0.6,
+        2.1
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            0.1,
+            0.1
+          ],
+          "basis": "重编译复用 129 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "build_system",
+          "person_days": [
+            0.25,
+            0.5
+          ],
+          "basis": "配置 node-gyp OHOS 目标平台（设置 CC/clang + 目标 triple）"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0.25,
+            1.5
+          ],
+          "basis": "在鸿蒙 Node.js 上运行 5 个测试用例"
+        }
+      ],
+      "level": "low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "bufferutil 为 Node.js 库，鸿蒙 PC 已移植 Node.js 24 运行时。37 行纯 JavaScript 入口与回退逻辑直接可用，129 行 C99+N-API 原生插件（XOR 掩码运算）仅需经 OHOS NDK/musl 交叉编译为 .so，零源码修改。无平台特定 API、无外部依赖（仅 node-gyp-build 也要适配）、无硬件/系统调用。移植工作量约 1–3 人天，风险极低。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [],
+    "compatible": [
+      {
+        "aspect": "纯 JS 入口与回退（index.js + fallback.js）",
+        "note": "鸿蒙 Node.js 直接运行，无需改动",
+        "evidence": []
+      },
+      {
+        "aspect": "N-API 原生插件（src/bufferutil.c）",
+        "note": "C99 + N-API（Node-API 是鸿蒙 Node.js 支持的 ABI 标准），仅 CPU XOR，零平台依赖",
+        "evidence": []
+      }
+    ],
+    "key_tasks": [
+      "配置 node-gyp OHOS 目标平台（toolchain 指向 clang + musl + 目标 triple）",
+      "交叉编译 src/bufferutil.c → bufferutil.node（arm64/x86_64 双架构）",
+      "在鸿蒙 Node.js 上运行 npm test 验证功能完整性"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时）。node-gyp-build（唯一运行时依赖）需一并适配 OHOS 平台编译逻辑，但属于成熟的 npm 包且有社区维护。N-API 是鸿蒙 Node.js 的一等公民（OHOS NDK 支持标准 Node-API ABI）。",
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "bufferutil",
+    "one_liner": "WebSocket 缓冲区掩码/去掩码工具库，为 ws 提供高效的 XOR 帧处理",
+    "kind": "library",
+    "ecosystem": "nodejs",
+    "package_name": "bufferutil",
+    "version": "4.1.0",
+    "source_repo": "https://github.com/websockets/bufferutil.git",
+    "source_url": "https://github.com/websockets/bufferutil.git",
+    "source_subpath": null,
+    "monorepo": false,
+    "aliases": [],
+    "import_names": [
+      "bufferutil"
+    ],
+    "bindings": [
+      "cpp"
+    ],
+    "commit": null,
+    "analyzed_at": "2026-07-11T23:11:52Z"
+  },
+  "meta": {
+    "dimension": "meta",
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": null,
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯 CPU XOR 位运算库，不涉及 GUI、3D 渲染、媒体或特定硬件。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "纯本地 CPU 计算库，不涉及任何云端服务。"
+  },
+  "code_partition": {
+    "summary": "100% 代码可直接复用或重编译复用：37 行 JS 直接复用，129 行 C 经 OHOS NDK 重编译即可，无需适配或删除任何代码。",
+    "coverage": {
+      "production_code": 166,
+      "partitioned_code": 166,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 37,
+        "pct": 22.3,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 37,
+            "reason": "纯 JavaScript（index.js + fallback.js），在鸿蒙 Node.js 上零改动直接运行",
+            "evidence": []
+          }
+        ],
+        "basis": "纯 JS 代码，不依赖任何平台特定 API，鸿蒙 Node.js 已移植可用"
+      },
+      {
+        "class": "recompile_reuse",
+        "loc": 129,
+        "pct": 77.7,
+        "modules": [
+          {
+            "path": "src",
+            "loc": 129,
+            "reason": "纯 C99 + N-API XOR 位运算，无平台/系统 API，OHOS NDK 交叉编译即可",
+            "evidence": []
+          }
+        ],
+        "basis": "native_api 仅 N-API（跨平台标准）和 C assert；platform_adaptation 为 0；arch_specific 为 0"
+      }
+    ],
+    "notes": ""
+  }
+}

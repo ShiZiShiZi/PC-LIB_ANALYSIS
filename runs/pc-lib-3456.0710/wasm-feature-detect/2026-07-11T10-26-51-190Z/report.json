@@ -1,0 +1,441 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 18,
+        "code": 633,
+        "pct": 100.0,
+        "production": {
+          "files": 18,
+          "code": 633
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 18,
+      "code": 633,
+      "comment": 0,
+      "blank": 47,
+      "total_lines": 680
+    },
+    "production": {
+      "files": 18,
+      "code": 633,
+      "comment": 0,
+      "blank": 47,
+      "total_lines": 680
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 274,
+        "category": "production",
+        "by_category": {
+          "production": 274
+        }
+      },
+      {
+        "dir": "rollup-plugins",
+        "code": 241,
+        "category": "production",
+        "by_category": {
+          "production": 241
+        }
+      },
+      {
+        "dir": ".",
+        "code": 118,
+        "category": "production",
+        "by_category": {
+          "production": 118
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "src/detectors",
+        "files": 10,
+        "code": 260
+      },
+      {
+        "dir": "rollup-plugins",
+        "files": 4,
+        "code": 241
+      },
+      {
+        "dir": ".",
+        "files": 3,
+        "code": 118
+      },
+      {
+        "dir": "src",
+        "files": 1,
+        "code": 14
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "wasm-feature-detect 是一个轻量级 JavaScript 库，用于检测当前运行环境（浏览器、Node.js、Deno）支持的 WebAssembly 特性。它通过尝试编译和验证 WAT 格式的 WebAssembly 模块或运行配套的 JS 测试代码来判断各特性是否可用，每个检测函数返回 Promise<boolean>。",
+    "categories": [
+      {
+        "name": "WebAssembly 特性检测",
+        "description": "提供 21 个细粒度的异步检测函数，覆盖 WebAssembly 规范的各个提案特性，包括 SIMD、线程、尾调用、垃圾回收、异常处理、多值返回、内存 64 等。每个检测函数返回 Promise<boolean>，支持 tree-shaking 按需引入。",
+        "evidence": [
+          "src/detectors/simd/module.wat",
+          "src/detectors/threads/index.js",
+          "src/detectors/big-int/index.js",
+          "src/detectors/bulk-memory/module.wat",
+          "src/detectors/gc/index.js"
+        ]
+      }
+    ],
+    "domain": "WebAssembly 运行时环境检测",
+    "target_users": "Web 前端开发者、Node.js/Deno 应用开发者、WebAssembly 工具链开发者",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 包含完整 Apache-2.0 许可证正文；package.json license 字段为 \"Apache-2.0\"；README 末尾标注 Apache-2.0。",
+    "notes": ""
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "dev_dependencies_summary": {
+      "count": 10,
+      "by_ecosystem": {
+        "nodejs": [
+          "@rollup/plugin-commonjs",
+          "@rollup/plugin-terser",
+          "binaryen",
+          "ejs",
+          "highlight.js",
+          "magic-string",
+          "markdown-it",
+          "prettier",
+          "rollup",
+          "wabt"
+        ]
+      }
+    },
+    "notes": "本库为纯 JavaScript 库，无运行时依赖（package.json 无 dependencies 字段）。构建期依赖（devDependencies）包括 rollup 打包工具链与 wabt/binaryen 用于编译 .wat 测试模块，仅在构建时使用。"
+  },
+  "native_api": {
+    "summary": "纯 JavaScript 库，仅使用 WebAssembly 标准 Web API（WebAssembly.validate / instantiate / Module）和 ECMAScript 标准 API（BigInt、SharedArrayBuffer、MessageChannel）进行 WASM 特性探测，无平台特有或系统级调用。",
+    "groups": [
+      {
+        "type": "webassembly_api",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "WebAssembly.validate",
+            "purpose": "验证编译后的 WASM 模块二进制是否合法，以此判断特性支持",
+            "count": 14,
+            "evidence": [
+              "src/detectors/simd/module.wat -> src/index.js",
+              "src/detectors/bulk-memory/module.wat -> src/index.js"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "WebAssembly.instantiate",
+            "purpose": "实例化 WASM 模块以执行导出函数进行特性验证",
+            "count": 1,
+            "evidence": [
+              "src/detectors/big-int/index.js:20"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "WebAssembly.Module",
+            "purpose": "直接构造 WASM 模块对象以检测异常处理等特性",
+            "count": 1,
+            "evidence": [
+              "src/detectors/exceptions-final/index.js:22"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "ecmascript_api",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "BigInt",
+            "purpose": "使用 BigInt 构造器检测 JS BigInt 集成到 WASM 的支持",
+            "count": 3,
+            "evidence": [
+              "src/detectors/big-int/index.js:21"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "SharedArrayBuffer",
+            "purpose": "检测 SharedArrayBuffer 的跨线程传递能力（Firefox 线程检测必需）",
+            "count": 1,
+            "evidence": [
+              "src/detectors/threads/index.js:19"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "MessageChannel",
+            "purpose": "用于测试 SharedArrayBuffer 的 postMessage 传输能力",
+            "count": 1,
+            "evidence": [
+              "src/detectors/threads/index.js:19"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期无需访问文件系统、网络、环境变量、子进程或设备；仅调用浏览器/Node.js/Deno 内置 WebAssembly API 进行特性检测。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "ES6+",
+    "runtime_version": "浏览器/Node.js/Deno 当前版本（支持 WebAssembly）",
+    "build_system": "rollup (npm)",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "所有平台（浏览器/Node.js/Deno - 纯 JS，无平台特定代码）",
+        "arch": "不适用",
+        "evidence": [
+          "package.json",
+          "README.md"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm 包发布，ESM/CJS/UMD 多格式",
+    "notes": "纯 JavaScript 库，无原生编译步骤；rollup 打包 + wabt/binaryen 仅用于构建期将 .wat 转为二进制 WASM 内联到输出文件。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Node.js 24.13.0 运行时上；arm64/x86_64；自研内核，非 Linux ABI）",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "compatible": [
+      {
+        "aspect": "全部 21 个 WASM 特性检测函数",
+        "note": "纯 JavaScript，仅使用 WebAssembly.validate / instantiate / Module 等标准 Web API，鸿蒙 Node.js 24 完全支持，无需修改",
+        "evidence": [
+          "src/detectors/simd/module.wat",
+          "src/detectors/big-int/index.js"
+        ]
+      },
+      {
+        "aspect": "ESM/CJS/UMD 多模块格式",
+        "note": "标准 JavaScript 模块格式，Node.js 24 原生支持",
+        "evidence": [
+          "package.json"
+        ]
+      }
+    ],
+    "summary": "wasm-feature-detect 为纯 JavaScript 库，零依赖、零原生扩展。鸿蒙 PC 已移植 Node.js 24.13.0 运行时，所有 WebAssembly 标准 API 均可用，源码无需修改即可直接在鸿蒙 Node.js 上运行。npm 包格式标准，可直接 npm install 使用。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [],
+    "key_tasks": [
+      "在鸿蒙 Node.js 24.13.0 上 npm install wasm-feature-detect 并验证各检测函数输出正确"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）；纯 JS、零原生扩展、零平台耦合，porting_class: no_adaptation。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "wasm-feature-detect",
+    "one_liner": "检测当前环境支持的 WebAssembly 特性的轻量级 JavaScript 库",
+    "kind": "library",
+    "ecosystem": "nodejs",
+    "package_name": "wasm-feature-detect",
+    "bindings": [],
+    "source_repo": "https://github.com/GoogleChromeLabs/wasm-feature-detect",
+    "source_url": "https://github.com/GoogleChromeLabs/wasm-feature-detect.git",
+    "aliases": [],
+    "import_names": [
+      "wasm-feature-detect"
+    ],
+    "analyzed_at": "2026-07-11T11:10:18Z"
+  },
+  "meta": {
+    "observations": [],
+    "harmony_warnings_dismissed": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": null,
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "wasm-feature-detect 为纯 JavaScript 库，仅使用 WebAssembly 标准 Web API 进行特性检测，无 GUI 界面、无 3D 渲染、无媒体处理、无特定硬件依赖，不触及鸿蒙适配重点场景。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "wasm-feature-detect 为纯本地库，在浏览器/Node.js/Deno 运行时内执行 WASM 特性检测，无需网络通信、不依赖任何云服务后端。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "纯 JavaScript 库，全部 633 行生产代码可直接在鸿蒙平台已移植的 Node.js 运行时上运行，无需重编译或适配。",
+    "coverage": {
+      "production_code": 633,
+      "partitioned_code": 633,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 633,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "src/detectors",
+            "loc": 260,
+            "reason": "WebAssembly 特性检测函数（21 个检测器），均为纯 JS + 内联 WASM 二进制，无原生模块",
+            "evidence": [
+              "src/detectors/simd/module.wat",
+              "src/detectors/threads/index.js"
+            ]
+          },
+          {
+            "path": "src",
+            "loc": 14,
+            "reason": "入口占位文件，实际内容由构建工具生成",
+            "evidence": [
+              "src/index.js"
+            ]
+          },
+          {
+            "path": "rollup-plugins",
+            "loc": 241,
+            "reason": "Rollup 构建插件，纯 JS，仅构建期使用不发布",
+            "evidence": [
+              "rollup-plugins/index-generator.js"
+            ]
+          },
+          {
+            "path": ".",
+            "loc": 118,
+            "reason": "项目根目录配置文件（package.json 等），构建/元数据用途",
+            "evidence": [
+              "package.json"
+            ]
+          }
+        ],
+        "basis": "全项目为纯 JavaScript，无原生编译依赖；native_api 仅使用 WebAssembly/ECMAScript 标准 API；运行时目标为已移植的 Node.js"
+      }
+    ],
+    "notes": "rollup-plugins 目录为构建期工具链，最终 npm 包仅发布 dist/（经 rollup 构建后的输出）；所有生产代码均为纯 JS，在已移植的 Node.js 运行时零改动运行。"
+  }
+}

@@ -1,0 +1,475 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 14,
+        "code": 1363,
+        "pct": 100.0,
+        "production": {
+          "files": 10,
+          "code": 623
+        },
+        "test": {
+          "files": 4,
+          "code": 740
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 14,
+      "code": 1363,
+      "comment": 0,
+      "blank": 204,
+      "total_lines": 1567
+    },
+    "production": {
+      "files": 10,
+      "code": 623,
+      "comment": 0,
+      "blank": 151,
+      "total_lines": 774
+    },
+    "test": {
+      "files": 4,
+      "code": 740,
+      "comment": 0,
+      "blank": 53,
+      "total_lines": 793
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "test",
+        "code": 740,
+        "category": "test",
+        "by_category": {
+          "test": 740
+        }
+      },
+      {
+        "dir": "lib",
+        "code": 623,
+        "category": "production",
+        "by_category": {
+          "production": 623
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "test"
+      ],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "lib/hash",
+        "files": 5,
+        "code": 333
+      },
+      {
+        "dir": "lib",
+        "files": 5,
+        "code": 290
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 4,
+    "test_cases": 11,
+    "frameworks": [
+      "jest/mocha"
+    ],
+    "by_language": {
+      "JavaScript": {
+        "files": 4,
+        "cases": 11
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "loader-utils 是 webpack 构建生态的核心工具库，为 webpack loader 开发者提供三个关键实用函数：资源 URL 转模块请求（urlToRequest）、基于内容哈希与多占位符的文件名插值（interpolateName）、以及通用的哈希摘要生成（getHashDigest）。通过内嵌 WebAssembly 优化的 xxhash64/md4 实现高速哈希计算，并兼容 Node.js crypto 模块作为 fallback。",
+    "categories": [
+      {
+        "name": "文件名插值与哈希命名",
+        "description": "根据 loader 上下文、内容缓冲区与模板占位符（[hash]、[contenthash]、[ext]、[name]、[path] 等）动态生成输出文件名，支持 xxhash64/sha1/md5/sha256/sha512 等多种哈希算法及 hex/base32/base64/base64safe 编码格式。",
+        "evidence": [
+          "lib/interpolateName.js",
+          "lib/getHashDigest.js"
+        ]
+      },
+      {
+        "name": "webpack 资源 URL 处理",
+        "description": "将各种资源 URL 格式转换为 webpack 可识别的模块请求路径，支持模块前缀（~）、根相对路径（/）与 root 拼合、相对路径保留等规则。",
+        "evidence": [
+          "lib/urlToRequest.js",
+          "lib/isUrlRequest.js"
+        ]
+      },
+      {
+        "name": "高性能哈希摘要",
+        "description": "通过 WebAssembly 实现 xxhash64 和 md4 的高性能哈希计算，同时兼容 Node.js crypto 模块作为通用哈希后端，提供统一的 getHashDigest 接口。包含缓存优化（BulkUpdateDecorator）和批处理（BatchedHash）策略。",
+        "evidence": [
+          "lib/hash/xxhash64.js",
+          "lib/hash/md4.js",
+          "lib/hash/wasm-hash.js",
+          "lib/hash/BulkUpdateDecorator.js",
+          "lib/hash/BatchedHash.js"
+        ]
+      }
+    ],
+    "domain": "前端构建工具",
+    "target_users": "webpack loader 开发者"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "项目根目录 LICENSE 文件为 MIT 许可证全文，package.json 中 license 字段确认为 MIT",
+    "notes": null
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "loader-utils 无任何生产依赖（package.json 中 \"dependencies\": {}），仅使用 Node.js 内置模块（path、crypto）和浏览器/Node 内置 WebAssembly API。开发依赖（jest、eslint、prettier、standard-version、coveralls）不含在报告中。"
+  },
+  "native_api": {
+    "summary": "loader-utils 仅使用 Node.js 内置模块（path、crypto、Buffer）和 WebAssembly API，均为跨平台标准/语言运行时 API，无平台专有系统调用。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "path.parse",
+            "purpose": "解析文件路径，提取目录、文件名、扩展名等组件",
+            "count": 1,
+            "evidence": [
+              "lib/interpolateName.js:32"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "path.relative",
+            "purpose": "计算相对路径",
+            "count": 1,
+            "evidence": [
+              "lib/interpolateName.js:46"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "path.sep",
+            "purpose": "平台路径分隔符",
+            "count": 1,
+            "evidence": [
+              "lib/interpolateName.js:41"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "path.basename",
+            "purpose": "提取路径最后一段",
+            "count": 1,
+            "evidence": [
+              "lib/interpolateName.js:58"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "path.win32.isAbsolute",
+            "purpose": "判断 Windows 风格绝对路径（区分 C:\\dir 与 URL scheme）",
+            "count": 1,
+            "evidence": [
+              "lib/isUrlRequest.js:14"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "crypto.createHash",
+            "purpose": "创建哈希对象（md4/sha1/md5/sha256/sha512 等）",
+            "count": 2,
+            "evidence": [
+              "lib/getHashDigest.js:98",
+              "lib/getHashDigest.js:109"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Buffer",
+            "purpose": "二进制数据缓冲区，用于哈希输入与输出",
+            "count": 5,
+            "evidence": [
+              "lib/getHashDigest.js:46",
+              "lib/hash/wasm-hash.js:27",
+              "lib/hash/md4.js:12",
+              "lib/hash/xxhash64.js:12"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "WebAssembly.Module",
+            "purpose": "编译内嵌的 xxhash64 和 md4 WASM 模块",
+            "count": 2,
+            "evidence": [
+              "lib/hash/xxhash64.js:11",
+              "lib/hash/md4.js:11"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "WebAssembly.Instance",
+            "purpose": "实例化已编译的 WASM 模块用于哈希计算",
+            "count": 1,
+            "evidence": [
+              "lib/hash/wasm-hash.js:199"
+            ],
+            "conditional": false
+          }
+        ],
+        "evidence": [
+          "lib/interpolateName.js",
+          "lib/getHashDigest.js",
+          "lib/hash/wasm-hash.js",
+          "lib/hash/xxhash64.js",
+          "lib/hash/md4.js"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时仅依赖 Node.js 内置模块（path、crypto、Buffer）和 WebAssembly API，无文件系统读写、无网络请求、无环境变量、无子进程调用、无设备访问或外部服务集成。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "JavaScript (CommonJS, Node.js ≥12.13.0)",
+    "runtime_version": "Node.js ≥ 12.13.0（需支持 WebAssembly 基本功能）",
+    "build_system": "yarn + jest（测试）/ eslint（代码规范）/ prettier（格式化）/ standard-version（发布）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "cross-platform",
+        "arch": "x64/arm64",
+        "evidence": [
+          "package.json engines.node>=12.13.0 无平台限制，npm 包无原生依赖，WebAssembly 跨平台"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm 包，通过 package.json main 字段（lib/index.js）对外暴露，无原生扩展、无二进制依赖",
+    "notes": "WebAssembly 模块以 base64 内嵌于 JS 源码（lib/hash/md4.js、lib/hash/xxhash64.js），无需外部 .wasm 文件，运行时通过 new WebAssembly.Module() / new WebAssembly.Instance() 加载。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（已移植 Node.js 运行时）",
+    "porting_class": "no_adaptation",
+    "porting_class_model": "no_adaptation",
+    "summary": "loader-utils 为纯 JavaScript 库，零原生扩展、零平台专有 API、无外部依赖。所有功能（URL 字符串处理、文件名插值、哈希摘要）仅使用 Node.js 内置模块（path、crypto、Buffer）和 WebAssembly 标准 API。在已移植到鸿蒙 PC 的 Node.js 运行时上可直接零改动运行，无需任何适配。",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_runtime",
+        "capability": "Node.js 运行时在鸿蒙 PC 的可用性",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "本项目唯一运行依赖，Node.js 不可用则整个库无法执行",
+        "source": "references/harmony-pc-capabilities.md — Node.js runtime 已知已移植",
+        "target_status_model": "available"
+      },
+      {
+        "id": "ta:wasm",
+        "capability": "WebAssembly 在鸿蒙 PC Node.js 中的支持",
+        "capability_key": "wasm",
+        "required": true,
+        "target_status": "available",
+        "impact": "内嵌 WASM 哈希模块依赖 WebAssembly API，不支持则退化为纯 Node crypto",
+        "source": "WebAssembly 为 JavaScript 标准 API，Node.js 沿浏览器兼容",
+        "target_status_model": "available"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [],
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "纯 JavaScript 实现",
+        "note": "无原生编译、无平台绑定，Node.js 运行时移植后即可运行",
+        "evidence": [
+          "lib/ 下所有文件均为 .js"
+        ]
+      },
+      {
+        "aspect": "WebAssembly 内嵌为 base64 字面量",
+        "note": "无外部 .wasm 文件依赖，无需额外资源打包",
+        "evidence": [
+          "lib/hash/md4.js:11-16",
+          "lib/hash/xxhash64.js:11-17"
+        ]
+      },
+      {
+        "aspect": "零外部依赖",
+        "note": "仅使用 Node.js 内置 API，无 npm 依赖树阻塞",
+        "evidence": [
+          "package.json dependencies 字段为空"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "确认鸿蒙 PC Node.js 运行时 WebAssembly 支持（若不支持，WASM 哈希模块退回 Node crypto 即可，性能稍有折损）",
+      "安装 Node.js 并在鸿蒙 PC 环境运行现有测试套件（jest）验证通过"
+    ],
+    "notes": "唯一风险点是 WebAssembly API 在鸿蒙 PC Node.js 中的支持程度——但 WASM 是 JavaScript 标准，主流 Node.js 移植均包含；即便缺失，代码中已有 Node crypto fallback 路径（getHashDigest 在 WASM 不可用时自动走 crypto.createHash）。",
+    "effort": {
+      "level": "very_low"
+    },
+    "confidence_model": null,
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "loader-utils",
+    "kind": "library",
+    "package_name": "loader-utils",
+    "aliases": [],
+    "import_names": [
+      "loader-utils"
+    ],
+    "source_url": "https://github.com/webpack/loader-utils.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-11T13:54:36.784Z",
+    "commit": null,
+    "one_liner": "webpack loader 工具集（URL 转换、文件名插值、哈希摘要生成）",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "本项目为纯 Node.js 工具库（算数/字符串操作），不涉及 GUI、3D 渲染、媒体处理或特定硬件等鸿蒙适配重点场景。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "loader-utils 不涉及任何第三方云端服务，所有功能均为纯本地计算（URL 字符串处理、文件名插值、哈希摘要）。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 623 行生产代码为纯 JavaScript（仅使用 Node.js 内置 path/crypto/Buffer 和 WebAssembly API），在已移植的 Node.js 运行时上可直接复用，无需重编译或适配。",
+    "coverage": {
+      "production_code": 623,
+      "partitioned_code": 623,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 623,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "lib",
+            "loc": 290,
+            "reason": "纯 JavaScript 工具函数（URL 转换、文件名插值），仅依赖 Node.js 内置 API（path/crypto/Buffer），在已移植的 Node.js 运行时上零改动运行",
+            "evidence": [
+              "lib/interpolateName.js:3",
+              "lib/isUrlRequest.js:3",
+              "lib/getHashDigest.js:91"
+            ]
+          },
+          {
+            "path": "lib/hash",
+            "loc": 333,
+            "reason": "纯 JavaScript 哈希实现（WASM 内嵌为 base64 字面量 + Node.js crypto 兼容），WebAssembly 为跨平台标准，在已移植的 Node.js 运行时上零改动运行",
+            "evidence": [
+              "lib/hash/wasm-hash.js:11-13",
+              "lib/hash/md4.js:11",
+              "lib/hash/xxhash64.js:11"
+            ]
+          }
+        ],
+        "basis": "code_metrics.dir_loc 显示 lib/290 行 + lib/hash/333 行 = 623 行全部为纯 JS 无原生扩展，native_api 确认仅使用 Node.js 跨平台内置模块和 WebAssembly 标准 API"
+      }
+    ],
+    "notes": "WebAssembly 模块以内嵌 base64 字面量形式存在于源码中，非外部 .wasm 文件，无编译/打包步骤，Node.js 内置 wasm 支持即够。"
+  }
+}

@@ -1,0 +1,489 @@
+{
+  "languages": {
+    "primary": "C/C++ Header",
+    "all": [
+      "C/C++ Header",
+      "C++"
+    ],
+    "breakdown": [
+      {
+        "language": "C/C++ Header",
+        "files": 28,
+        "code": 19504,
+        "pct": 69.05,
+        "production": {
+          "files": 23,
+          "code": 4422
+        },
+        "test": {
+          "files": 5,
+          "code": 15082
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C++",
+        "files": 44,
+        "code": 8742,
+        "pct": 30.95,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 44,
+          "code": 8742
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 72,
+      "code": 28246,
+      "comment": 0,
+      "blank": 6076,
+      "total_lines": 34322
+    },
+    "production": {
+      "files": 23,
+      "code": 4422,
+      "comment": 0,
+      "blank": 981,
+      "total_lines": 5403
+    },
+    "test": {
+      "files": 49,
+      "code": 23824,
+      "comment": 0,
+      "blank": 5095,
+      "total_lines": 28919
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "tests",
+        "code": 23824,
+        "category": "test",
+        "by_category": {
+          "test": 23824
+        }
+      },
+      {
+        "dir": "include",
+        "code": 4422,
+        "category": "production",
+        "by_category": {
+          "production": 4422
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tests"
+      ],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "include/eventpp",
+        "files": 23,
+        "code": 4422
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 49,
+    "test_cases": 241,
+    "frameworks": [
+      "Catch2 BDD",
+      "Catch2/doctest"
+    ],
+    "by_language": {
+      "C++": {
+        "files": 44,
+        "cases": 235
+      },
+      "C/C++ Header": {
+        "files": 5,
+        "cases": 6
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "eventpp 是一个 C++ 事件库，提供回调列表（CallbackList）、事件分发器（EventDispatcher）和事件队列（EventQueue）三类核心组件。通过它可以方便地实现信号与槽机制、发布/订阅模式和观察者模式，适用于各类 C++ 应用中需要松耦合事件通信的场景。库为纯头文件、零依赖，仅需 C++11。",
+    "categories": [
+      {
+        "name": "回调列表（CallbackList）",
+        "description": "管理一组回调函数，支持添加/移除/追加/前插回调，支持嵌套调用、多线程安全、异常安全。适用于信号/槽模式。",
+        "evidence": [
+          "include/eventpp/callbacklist.h",
+          "include/eventpp/internal/typeutil_i.h"
+        ]
+      },
+      {
+        "name": "事件分发器（EventDispatcher）",
+        "description": "基于事件类型+事件参数的事件分发机制，支持同步分发。事件和监听器可为任意类型，无需继承基类。支持事件过滤 mixin 扩展。",
+        "evidence": [
+          "include/eventpp/eventdispatcher.h"
+        ]
+      },
+      {
+        "name": "事件队列（EventQueue）",
+        "description": "异步事件队列，支持事件入队与批量处理。可配置内部分配策略，支持 AnyData 零堆分配事件数据。10M events/sec 性能。",
+        "evidence": [
+          "include/eventpp/eventqueue.h",
+          "include/eventpp/internal/eventqueue_i.h"
+        ]
+      },
+      {
+        "name": "可配置策略与 Mixin 扩展",
+        "description": "通过模板策略（Policies）配置线程模型、内存管理、回调类型；通过 Mixin 机制注入事件过滤、异构回调等扩展行为。",
+        "evidence": [
+          "include/eventpp/eventpolicies.h",
+          "include/eventpp/mixins/mixinfilter.h",
+          "include/eventpp/mixins/mixinheterfilter.h"
+        ]
+      },
+      {
+        "name": "工具/辅助类",
+        "description": "提供 AnyData 零堆分配数据容器、argumentAdapter 参数适配、conditionalFunctor 条件执行、CounterRemover/ScopedRemover 自动移除回调等辅助工具。",
+        "evidence": [
+          "include/eventpp/utilities/anydata.h",
+          "include/eventpp/utilities/argumentadapter.h",
+          "include/eventpp/utilities/conditionalfunctor.h",
+          "include/eventpp/utilities/counterremover.h",
+          "include/eventpp/utilities/scopedremover.h"
+        ]
+      }
+    ],
+    "domain": "event-handling",
+    "target_users": "C++ 应用程序与库开发者"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License, Version 2.0",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "license"
+    ],
+    "evidence": "项目根目录 license 文件明确声明 Apache License, Version 2.0；README readme.md 中也注明 Apache License, Version 2.0。",
+    "notes": "宽松许可，使用需保留 NOTICE。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "CMakeLists.txt"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "eventpp 是纯头文件库，仅依赖 C++ 标准库（<functional>、<mutex>、<atomic>、<condition_variable>、<chrono>、<map>、<unordered_map>、<list>、<vector>、<memory> 等）。CMakeLists.txt 中无 find_package/FetchContent/ExternalProject 等外部依赖声明。零三方依赖。"
+  },
+  "native_api": {
+    "summary": "eventpp 仅使用 C++ 标准库，无平台特有 API，无 FFI，无硬件加速 API。纯跨平台头文件库。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::function",
+            "purpose": "类型擦除的可调用对象存储，回调列表与事件分发的核心机制",
+            "count": 8,
+            "evidence": [
+              "include/eventpp/callbacklist.h:50",
+              "include/eventpp/eventdispatcher.h:100"
+            ]
+          },
+          {
+            "name": "std::mutex",
+            "purpose": "互斥锁，线程安全保护回调列表访问",
+            "count": 5,
+            "evidence": [
+              "include/eventpp/callbacklist.h:20"
+            ]
+          },
+          {
+            "name": "std::atomic",
+            "purpose": "原子操作，无锁计数器与自旋锁实现",
+            "count": 4,
+            "evidence": [
+              "include/eventpp/eventpolicies.h:19",
+              "include/eventpp/eventpolicies.h:50"
+            ]
+          },
+          {
+            "name": "std::condition_variable",
+            "purpose": "条件变量，事件队列的等待/通知机制",
+            "count": 3,
+            "evidence": [
+              "include/eventpp/eventpolicies.h:20",
+              "include/eventpp/internal/eventqueue_i.h"
+            ]
+          },
+          {
+            "name": "std::chrono",
+            "purpose": "时间相关类型，事件队列的延迟处理",
+            "count": 2,
+            "evidence": [
+              "include/eventpp/eventqueue.h:21"
+            ]
+          },
+          {
+            "name": "std::map",
+            "purpose": "有序关联容器，按事件类型索引回调映射",
+            "count": 2,
+            "evidence": [
+              "include/eventpp/eventpolicies.h:21"
+            ]
+          },
+          {
+            "name": "std::unordered_map",
+            "purpose": "哈希表，事件类型到回调的快速映射",
+            "count": 2,
+            "evidence": [
+              "include/eventpp/eventpolicies.h:22"
+            ]
+          },
+          {
+            "name": "std::list",
+            "purpose": "双向链表，回调列表的内部存储，支持 O(1) 插入删除",
+            "count": 3,
+            "evidence": [
+              "include/eventpp/eventpolicies.h:23"
+            ]
+          },
+          {
+            "name": "std::vector",
+            "purpose": "动态数组，辅助容器",
+            "count": 2,
+            "evidence": [
+              "include/eventpp/utilities/scopedremover.h:19"
+            ]
+          },
+          {
+            "name": "std::shared_ptr",
+            "purpose": "共享指针，内存管理",
+            "count": 3,
+            "evidence": [
+              "include/eventpp/utilities/anydata.h:21"
+            ]
+          },
+          {
+            "name": "std::cassert",
+            "purpose": "断言宏，调试时参数校验",
+            "count": 3,
+            "evidence": [
+              "include/eventpp/callbacklist.h:21"
+            ]
+          }
+        ],
+        "evidence": [
+          "include/eventpp/callbacklist.h",
+          "include/eventpp/eventpolicies.h",
+          "include/eventpp/eventqueue.h"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "eventpp 为纯头文件库，运行时仅依赖宿主 C++ 标准库实现，无网络访问，无文件系统操作，无子进程调用，无环境变量读取，无设备访问。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++11",
+    "runtime_version": "C++11 兼容编译器（GCC 5+, Clang 3.3+, MSVC 2015+）",
+    "build_system": "CMake（≥3.5）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "README 提及 MSVC 支持",
+          "CMakeLists.txt 通用配置无平台限定"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "README 提及 GCC 支持",
+          "CMakeLists.txt 通用配置"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "README 提及 MacOS GCC 支持"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "纯头文件库，无需编译产物。通过 Vcpkg / Conan / Hunter / Homebrew 包管理器分发，也可直接引用 include 目录。",
+    "notes": "纯头文件库，不产生 .so/.dll 产物。CMake 提供 INTERFACE 库，仅用于头文件路径配置与可选的测试构建。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（OHOS NDK 交叉编译，musl libc + POSIX 子集，clang 编译器，arm64/x86_64）",
+    "porting_class": "recompile_only",
+    "effort": {
+      "person_days": [
+        1,
+        3
+      ],
+      "level": "low"
+    },
+    "confidence": "high",
+    "unadaptable_apis": [],
+    "target_assumptions": [],
+    "required_permissions": [],
+    "critical_dependencies": [],
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "全部生产代码（纯 C++ 标准库头文件）",
+        "note": "仅使用 C++ 标准库（<functional>、<mutex>、<atomic>、<condition_variable> 等），标准库接口在 OHOS NDK musl 环境中完全可用。零平台特有 API，零系统调用，零架构特定代码。直接交叉编译即可。"
+      }
+    ],
+    "key_tasks": [
+      "使用 OHOS NDK CMake 工具链（ohos.toolchain.cmake）将头文件库编译通过验证",
+      "在鸿蒙目标设备上运行项目自带单元测试（241 个测试用例），验证功能完整"
+    ],
+    "summary": "eventpp 是纯 C++ 头文件库，仅依赖 C++ 标准库，零平台特有 API，零第三方依赖。鸿蒙 PC 上仅需用 OHOS NDK 交叉编译通过即可复用，无需任何源码修改。移植风险极低。",
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 C/C++ 运行时上）。纯头文件库无编译产物，只需 include 即可使用，移植仅为验证编译通过与功能测试。",
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "eventpp",
+    "kind": "library",
+    "package_name": "eventpp",
+    "aliases": [
+      "wqking/eventpp"
+    ],
+    "import_names": [
+      "eventpp"
+    ],
+    "source_url": "https://github.com/wqking/eventpp.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "commit": "1224dd6c9bd4577d686ac42334fc545997f5ece1",
+    "one_liner": "C++ 事件库，提供回调列表、事件分发器与事件队列，支持信号/槽与发布订阅模式",
+    "ecosystem": "cpp",
+    "bindings": [],
+    "analyzed_at": "2026-07-11T21:18:12Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "harmony_warnings_dismissed": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "eventpp 为纯 C++ 标准库头文件库，无 GUI、无 3D 渲染、无媒体处理、无特定硬件依赖。纯事件分发逻辑。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "eventpp 为纯本地 C++ 事件库，不涉及任何第三方云端服务。无网络依赖，无云 SDK，无在线后端。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "eventpp 生产代码 4422 行全部为可移植 C++ 标准库头文件，无平台特有 API，直接重编译复用（recompile_reuse 100%）。",
+    "coverage": {
+      "production_code": 4422,
+      "partitioned_code": 4422,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "recompile_reuse",
+        "loc": 4422,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "include/eventpp",
+            "loc": 4422,
+            "reason": "纯 C++ 标准库头文件，仅使用 <functional>、<mutex>、<atomic>、<condition_variable>、<chrono>、<map>、<unordered_map>、<list>、<vector>、<memory>、<cassert>、<array>、<utility>、<tuple>、<type_traits>、<cstdint>、<algorithm>。零平台特有 API，零 FFI，零系统调用。OHOS NDK 直接重编译即可。",
+            "evidence": [
+              "include/eventpp/callbacklist.h",
+              "include/eventpp/eventpolicies.h",
+              "include/eventpp/eventdispatcher.h",
+              "include/eventpp/eventqueue.h"
+            ]
+          }
+        ],
+        "basis": "native_api 仅有 cpp_stl（标准库组），platform_adaptation 为零（无编译宏守卫），platform_branches 为零（无运行时平台分支），arch_specific 为零（无汇编/SIMD）。全部代码可直接用 OHOS NDK（musl + clang）重编译。"
+      }
+    ],
+    "notes": "全部生产代码为 C++ 标准库头文件，无 platform/system/hardware/ffi 调用，无条件编译，无架构特定代码。100% 归入 recompile_reuse。"
+  }
+}

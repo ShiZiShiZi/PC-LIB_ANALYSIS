@@ -1,0 +1,641 @@
+{
+  "languages": {
+    "primary": "C/C++ Header",
+    "all": [
+      "C/C++ Header",
+      "C",
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "C/C++ Header",
+        "files": 1,
+        "code": 215,
+        "pct": 93.89,
+        "production": {
+          "files": 1,
+          "code": 215
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C",
+        "files": 1,
+        "code": 11,
+        "pct": 4.8,
+        "production": {
+          "files": 0,
+          "code": 0
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 11
+        }
+      },
+      {
+        "language": "JavaScript",
+        "files": 2,
+        "code": 3,
+        "pct": 1.31,
+        "production": {
+          "files": 1,
+          "code": 1
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 1,
+          "code": 2
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 4,
+      "code": 229,
+      "comment": 0,
+      "blank": 45,
+      "total_lines": 274
+    },
+    "production": {
+      "files": 2,
+      "code": 216,
+      "comment": 0,
+      "blank": 40,
+      "total_lines": 256
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 2,
+      "code": 13,
+      "comment": 0,
+      "blank": 5,
+      "total_lines": 18
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 216,
+        "category": "production",
+        "by_category": {
+          "production": 216
+        }
+      },
+      {
+        "dir": "example",
+        "code": 13,
+        "category": "example",
+        "by_category": {
+          "example": 13
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": [
+        "example"
+      ]
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 2,
+        "code": 216
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "napi-macros 是一组 C 预处理器宏，封装 N-API 调用中的样板代码，使 Node.js 原生扩展模块的开发更简洁易读。它以纯头文件形式提供，无需额外编译或链接。",
+    "categories": [
+      {
+        "name": "方法定义与参数提取",
+        "description": "提供 NAPI_METHOD 宏定义方法入口模板，NAPI_ARGV 系列宏（NAPI_ARGV_INT32/UINT32/BUFFER/UTF8 等）自动从 napi_callback_info 中提取并校验参数类型。",
+        "evidence": [
+          "napi-macros.h:26-66",
+          "napi-macros.h:83-92",
+          "napi-macros.h:232-253"
+        ]
+      },
+      {
+        "name": "返回值生成",
+        "description": "NAPI_RETURN_INT32/UINT32/UTF8/STRING 等宏自动构建 napi_value 并返回，减少手写 napi_create_* 的重复。",
+        "evidence": [
+          "napi-macros.h:170-186"
+        ]
+      },
+      {
+        "name": "模块导出与初始化",
+        "description": "NAPI_INIT 宏封装模块注册模板，NAPI_EXPORT_FUNCTION 等宏简化函数/常量/结构体大小的导出。",
+        "evidence": [
+          "napi-macros.h:4-11",
+          "napi-macros.h:139-168"
+        ]
+      },
+      {
+        "name": "错误处理与辅助",
+        "description": "NAPI_STATUS_THROWS 宏检查 napi_status 并自动抛出错误；NAPI_MAKE_CALLBACK 包装异步回调；NAPI_FOR_EACH 简化 JS 数组遍历。",
+        "evidence": [
+          "napi-macros.h:46-56",
+          "napi-macros.h:226-230",
+          "napi-macros.h:39-44"
+        ]
+      }
+    ],
+    "domain": "Node.js 原生扩展开发",
+    "target_users": "Node.js N-API C/C++ 原生模块开发者"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件与 package.json 中 license 字段均为 MIT；LICENSE 文本匹配标准 MIT 条款。",
+    "notes": "宽松许可，允许商用、修改、再发布，仅需保留版权声明与免责条款。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "纯 C 头文件，无运行时或编译期外部依赖。N-API 头文件 node_api.h 由 Node.js 运行时提供，属于平台标准头。"
+  },
+  "native_api": {
+    "summary": "纯 N-API 宏封装头文件，调用大量 napi_* 标准接口（node_api.h），无 POSIX/Win32/内核级直接系统调用。",
+    "groups": [
+      {
+        "type": "napi_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "NAPI_MODULE",
+            "purpose": "注册原生模块入口",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:10"
+            ]
+          },
+          {
+            "name": "napi_create_string_utf8",
+            "purpose": "创建 JS 字符串",
+            "count": 3,
+            "evidence": [
+              "napi-macros.h:19",
+              "napi-macros.h:28",
+              "napi-macros.h:30"
+            ]
+          },
+          {
+            "name": "napi_run_script",
+            "purpose": "执行 JS 脚本片段",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:20"
+            ]
+          },
+          {
+            "name": "napi_get_cb_info",
+            "purpose": "获取函数调用参数信息",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:235"
+            ]
+          },
+          {
+            "name": "napi_get_value_int32",
+            "purpose": "提取 int32 参数值",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:213"
+            ]
+          },
+          {
+            "name": "napi_get_value_uint32",
+            "purpose": "提取 uint32 参数值",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:206"
+            ]
+          },
+          {
+            "name": "napi_get_value_string_utf8",
+            "purpose": "提取 UTF-8 字符串参数",
+            "count": 2,
+            "evidence": [
+              "napi-macros.h:191",
+              "napi-macros.h:201"
+            ]
+          },
+          {
+            "name": "napi_get_buffer_info",
+            "purpose": "提取 Buffer 参数数据指针与长度",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:221"
+            ]
+          },
+          {
+            "name": "napi_get_array_length",
+            "purpose": "获取 JS 数组长度",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:226"
+            ]
+          },
+          {
+            "name": "napi_get_element",
+            "purpose": "获取 JS 数组元素",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:230"
+            ]
+          },
+          {
+            "name": "napi_create_int32",
+            "purpose": "创建 JS int32 返回值",
+            "count": 2,
+            "evidence": [
+              "napi-macros.h:33",
+              "napi-macros.h:172"
+            ]
+          },
+          {
+            "name": "napi_create_uint32",
+            "purpose": "创建 JS uint32 返回值",
+            "count": 5,
+            "evidence": [
+              "napi-macros.h:75",
+              "napi-macros.h:86",
+              "napi-macros.h:98",
+              "napi-macros.h:109",
+              "napi-macros.h:128",
+              "napi-macros.h:177"
+            ]
+          },
+          {
+            "name": "napi_create_string_utf8",
+            "purpose": "创建 JS 字符串返回值",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:163"
+            ]
+          },
+          {
+            "name": "napi_create_function",
+            "purpose": "创建 JS 函数对象用于导出",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:156"
+            ]
+          },
+          {
+            "name": "napi_set_named_property",
+            "purpose": "向 exports 对象添加导出项",
+            "count": 4,
+            "evidence": [
+              "napi-macros.h:76",
+              "napi-macros.h:87",
+              "napi-macros.h:99",
+              "napi-macros.h:109",
+              "napi-macros.h:122",
+              "napi-macros.h:129",
+              "napi-macros.h:135",
+              "napi-macros.h:157"
+            ]
+          },
+          {
+            "name": "napi_create_array",
+            "purpose": "创建 JS 数组",
+            "count": 2,
+            "evidence": [
+              "napi-macros.h:25",
+              "napi-macros.h:26"
+            ]
+          },
+          {
+            "name": "napi_set_element",
+            "purpose": "向 JS 数组添加元素",
+            "count": 4,
+            "evidence": [
+              "napi-macros.h:29",
+              "napi-macros.h:32",
+              "napi-macros.h:34",
+              "napi-macros.h:36"
+            ]
+          },
+          {
+            "name": "napi_throw_error",
+            "purpose": "抛出 JS 异常",
+            "count": 5,
+            "evidence": [
+              "napi-macros.h:48",
+              "napi-macros.h:54",
+              "napi-macros.h:192",
+              "napi-macros.h:207",
+              "napi-macros.h:214"
+            ]
+          },
+          {
+            "name": "napi_open_handle_scope",
+            "purpose": "打开句柄作用域",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:16"
+            ]
+          },
+          {
+            "name": "napi_close_handle_scope",
+            "purpose": "关闭句柄作用域",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:21"
+            ]
+          },
+          {
+            "name": "napi_get_and_clear_last_exception",
+            "purpose": "捕获未处理异常",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:42"
+            ]
+          },
+          {
+            "name": "napi_fatal_exception",
+            "purpose": "触发未捕获异常回调",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:43"
+            ]
+          },
+          {
+            "name": "napi_make_callback",
+            "purpose": "从 C 侧调用 JS 回调",
+            "count": 1,
+            "evidence": [
+              "napi-macros.h:40"
+            ]
+          }
+        ],
+        "evidence": [
+          "napi-macros.h"
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "纯头文件宏，无网络、文件系统、环境变量、子进程或设备等运行时宿主交互。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99+",
+    "runtime_version": "Node.js 支持 N-API 的版本（Node 8.6+）",
+    "build_system": "无需编译（仅头文件），通过 binding.gyp 的 include_dirs 引用",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "N-API 跨平台，宏仅在预处理阶段展开"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "N-API 跨平台"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "N-API 跨平台"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm 包，仅包含 napi-macros.h 和 index.js 两个文件",
+    "notes": "纯头文件，在任何支持 N-API 的平台均可使用；无编译要求，include 后由编译器预处理展开。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（Node.js 24 运行时已移植；N-API 原生扩展经 OHOS NDK/musl 编译；arm64/x86_64）",
+    "porting_class": "recompile_only",
+    "effort": {
+      "person_days": [
+        0.1,
+        1.1
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            0.1,
+            0.1
+          ],
+          "basis": "重编译复用 216 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0,
+            1
+          ],
+          "basis": "在鸿蒙 PC Node.js 上用 OHOS NDK 编译一个使用 napi-macros 的简单 addon 验证宏展开正常；无独立测试用例"
+        }
+      ],
+      "level": "low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "纯 C 头文件预处理器宏，仅封装标准 N-API 调用，无任何平台特有 API、系统调用或外部依赖。鸿蒙 PC 的 Node.js 24 已完整支持 N-API，在 OHOS NDK 下编译的 addon 中 include 本头文件即可正常使用，无需任何源码修改。零阻碍。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_runtime",
+        "capability": "Node.js 运行时（含 N-API 支持）",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "如不可用则无法运行任何 N-API addon，但由于鸿蒙 PC 已移植 Node.js 24，此前提已满足。",
+        "source": "references/harmony-pc-capabilities.json#runtimes.nodejs",
+        "target_status_model": "available"
+      }
+    ],
+    "required_permissions": [],
+    "compatible": [
+      {
+        "aspect": "全部 216 行 C 预处理器宏",
+        "note": "仅展开为标准 napi_* 调用（napi_create_int32、napi_get_cb_info 等），这些接口在鸿蒙 PC Node.js 24 的 N-API 层完整可用，零修改即可工作。",
+        "evidence": [
+          "napi-macros.h"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 上以 OHOS NDK 编译任意 N-API addon 并 include napi-macros.h，验证其宏展开无编译错误。"
+    ],
+    "notes": "评估按模型 A（N-API addon 经 OHOS NDK 编译后在鸿蒙 Node.js 上运行）。本库为纯头文件，无编译产物，移植工作为零。",
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "napi-macros",
+    "kind": "library",
+    "package_name": "napi-macros",
+    "source_url": "https://github.com/mafintosh/napi-macros.git",
+    "one_liner": "一套让编写 N-API 原生模块更简便的 C 语言宏工具集，仅头文件依赖",
+    "ecosystem": "nodejs",
+    "bindings": [],
+    "analyzed_at": "2026-07-11T22:29:36Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "harmony_warnings": [
+      {
+        "code": "recompile_no_native",
+        "class": "info",
+        "message": "porting_class=recompile_only 但主生态为 nodejs（已移植运行时）且无原生调用面，疑似应为 no_adaptation"
+      }
+    ],
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯 N-API 头文件宏，不涉及 GUI、3D 渲染、音视频媒体或特定硬件场景。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "纯本地头文件宏，不涉及任何云端服务或第三方云 API。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 216 行生产代码为纯 C 预处理器宏，仅展开为标准 N-API 调用。OHOS NDK 重新编译即可，无需任何源码修改。",
+    "coverage": {
+      "production_code": 216,
+      "partitioned_code": 216,
+      "pct": 100
+    },
+    "buckets": [
+      {
+        "class": "recompile_reuse",
+        "loc": 216,
+        "pct": 100,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 216,
+            "reason": "纯 C 预处理器宏，仅封装 napi_* 标准 N-API 调用，无平台特有/内核/硬件 API，任何支持 N-API 的 C 编译器预处理后均可使用。",
+            "evidence": [
+              "napi-macros.h"
+            ]
+          }
+        ],
+        "basis": "native_api 组仅 napi_core（标准 N-API）；platform_adaptation 为零；arch_specific 为零。C 头文件在 OHOS NDK 下重编译即可，宏展开无平台依赖。"
+      }
+    ],
+    "notes": "纯头文件，通过 npm 分发后由 addon 作者的 binding.gyp 引入 include_dirs。鸿蒙 PC 的 Node.js 24 已支持 N-API，宏展开后的 napi_* 调用在 OHOS NDK 编译的 addon 中正常工作。"
+  }
+}

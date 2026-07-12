@@ -1,0 +1,565 @@
+{
+  "languages": {
+    "primary": null,
+    "all": [],
+    "breakdown": []
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "@vscode/tree-sitter-wasm 是 Microsoft/VS Code 团队维护的 npm 包，它将 Tree-Sitter 核心解析引擎和多达 14 种编程语言的语法（bash/css/c-sharp/cpp/go/ini/java/javascript/php/powershell/python/regex/ruby/rust/tsx/typescript）的语法解析器编译为 WebAssembly（WASM）文件，供 VS Code 编辑器的语法高亮和增量解析功能使用。包本身不包含运行时 JS/TS 逻辑，仅提供预编译的 .wasm 文件和一个 Web Tree-Sitter 的类型定义文件 (web-tree-sitter.d.ts)。",
+    "categories": [
+      {
+        "name": "WebAssembly 多语言语法解析文件",
+        "description": "将 Tree-Sitter 的增量解析器和各语言的语法（grammar）编译为独立的 .wasm 文件，供 VS Code 在 Web/桌面环境中通过 web-tree-sitter 库加载使用，实现快速语法高亮和结构化编辑。",
+        "evidence": [
+          "build/compileGrammarWasm.ts:11-83",
+          "build/compileTreeSitterWasm.ts:39-76"
+        ]
+      },
+      {
+        "name": "WASM 构建工具链脚本",
+        "description": "提供从源码编译 Tree-Sitter 及其语法为 WASM 的构建流程脚本，包括克隆 tree-sitter 仓库、通过 emscripten 编译 WASM、生成 UMD 包装的 JS 胶水代码。",
+        "evidence": [
+          "build/main.ts:10-104",
+          "build/compileTreeSitterWasm.ts:11-126",
+          "build/git.ts:10-43"
+        ]
+      }
+    ],
+    "domain": "开发工具",
+    "target_users": "VS Code 编辑器和广大开发者（通过 VS Code 内置使用）",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件为标准 MIT 许可全文；package.json 中 \"license\": \"MIT\" 一致确认。",
+    "notes": "宽松许可，仅需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": [
+      "package.json",
+      "cgmanifest.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "tree-sitter-bash",
+        "tree-sitter-cli",
+        "tree-sitter-css",
+        "tree-sitter-go",
+        "tree-sitter-java",
+        "tree-sitter-javascript",
+        "tree-sitter-php",
+        "tree-sitter-python",
+        "tree-sitter-regex",
+        "tree-sitter-ruby",
+        "tree-sitter-typescript",
+        "ts-node"
+      ],
+      "other": [
+        "tree-sitter (source)",
+        "emscripten"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "tree-sitter-bash",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.25.0",
+        "purpose": "Bash 语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry, 构建时下载语法 JS/WASM 作为编译输入",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-cli",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.25.10",
+        "purpose": "Tree-Sitter CLI 工具，构建时将语法编译为 WASM",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry, 提供 tree-sitter build --wasm 命令",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-css",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.25.0",
+        "purpose": "CSS 语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-c-sharp",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": null,
+        "purpose": "C# 语法解析器 WASM 构建源（从 git 拉取而非 npm）",
+        "acquisition": "git",
+        "locality": "remote",
+        "source": "https://github.com/tree-sitter/tree-sitter-c-sharp (commit 485f0ba)",
+        "declared_in": [
+          "build/main.ts"
+        ],
+        "source_repo": "https://github.com/tree-sitter/tree-sitter-c-sharp"
+      },
+      {
+        "name": "tree-sitter-cpp",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": null,
+        "purpose": "C++ 语法解析器 WASM 构建源（从 git 拉取而非 npm）",
+        "acquisition": "git",
+        "locality": "remote",
+        "source": "https://github.com/tree-sitter/tree-sitter-cpp (commit 12bd6f7)",
+        "declared_in": [
+          "build/main.ts"
+        ],
+        "source_repo": "https://github.com/tree-sitter/tree-sitter-cpp"
+      },
+      {
+        "name": "tree-sitter-go",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.25.0",
+        "purpose": "Go 语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-ini",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": null,
+        "purpose": "INI 语法解析器 WASM 构建源（从 git 拉取）",
+        "acquisition": "git",
+        "locality": "remote",
+        "source": "https://github.com/justinmk/tree-sitter-ini (commit f0285fe)",
+        "declared_in": [
+          "build/main.ts"
+        ],
+        "source_repo": "https://github.com/justinmk/tree-sitter-ini"
+      },
+      {
+        "name": "tree-sitter-java",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.23.5",
+        "purpose": "Java 语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-javascript",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.25.0",
+        "purpose": "JavaScript/JSX 语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-php",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "0.24.2",
+        "purpose": "PHP 语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-powershell",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": null,
+        "purpose": "PowerShell 语法解析器 WASM 构建源（从 git 拉取）",
+        "acquisition": "git",
+        "locality": "remote",
+        "source": "https://github.com/airbus-cert/tree-sitter-powershell (commit 9379c77)",
+        "declared_in": [
+          "build/main.ts"
+        ],
+        "source_repo": "https://github.com/airbus-cert/tree-sitter-powershell"
+      },
+      {
+        "name": "tree-sitter-python",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.25.0",
+        "purpose": "Python 语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-regex",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.25.0",
+        "purpose": "正则表达式语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-ruby",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.23.1",
+        "purpose": "Ruby 语法解析器 WASM 构建源",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter-rust",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": null,
+        "purpose": "Rust 语法解析器 WASM 构建源（从 git 拉取）",
+        "acquisition": "git",
+        "locality": "remote",
+        "source": "https://github.com/tree-sitter/tree-sitter-rust (commit 261b202)",
+        "declared_in": [
+          "build/main.ts"
+        ],
+        "source_repo": "https://github.com/tree-sitter/tree-sitter-rust"
+      },
+      {
+        "name": "tree-sitter-typescript",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^0.23.2",
+        "purpose": "TypeScript 语法解析器 WASM 构建源（含 tsx 子目录）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "tree-sitter (source)",
+        "ecosystem": "other",
+        "scope": "dev",
+        "version": "0.25.10",
+        "purpose": "Tree-Sitter C 运行时源码，构建时克隆并编译为 WASM（web-tree-sitter 绑定）",
+        "acquisition": "git",
+        "locality": "remote",
+        "source": "https://github.com/tree-sitter/tree-sitter (tag v0.25.10)",
+        "declared_in": [
+          "build/main.ts:93-94"
+        ],
+        "source_repo": "https://github.com/tree-sitter/tree-sitter"
+      },
+      {
+        "name": "emscripten",
+        "ecosystem": "other",
+        "scope": "dev",
+        "version": "3.1.64",
+        "purpose": "C/C++ 到 WebAssembly 编译器，构建 Tree-Sitter C 运行为 WASM",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统/构建环境预装（通过 emsdk 安装）",
+        "declared_in": [
+          "build/setup-emsdk.sh"
+        ]
+      },
+      {
+        "name": "@types/node",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^20.14.6",
+        "purpose": "TypeScript 类型定义",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "ts-node",
+        "ecosystem": "nodejs",
+        "scope": "dev",
+        "version": "^10.9.2",
+        "purpose": "TypeScript 直执行器，运行构建脚本",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm registry",
+        "declared_in": [
+          "package.json"
+        ]
+      }
+    ],
+    "notes": "本包无运行时依赖（仅分发预编译 .wasm 文件 + 类型定义），所有依赖均为构建时 dev 依赖。tree-sitter-c-sharp、tree-sitter-cpp、tree-sitter-ini、tree-sitter-powershell、tree-sitter-rust 从 git URL 直接克隆而非 npm 包。emscripten 为系统级构建工具链，不在 package.json 中。"
+  },
+  "native_api": {
+    "summary": "本包为纯 WebAssembly 文件 + 类型定义的预编译产物集合，生产代码仅包含 .wasm 和 .d.ts 文件，无运行时 JS/TS 逻辑——不对任何系统/平台 API 做调用。构建脚本（dev 工具）使用 Node.js 的 child_process 和 fs 模块，但属构建工具链不纳入生产 native_api。",
+    "groups": [],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "本包仅分发预编译 .wasm 文件和 TypeScript 类型定义，运行时无网络、文件系统、环境变量、子进程、设备访问或服务交互——.wasm 由宿主（VS Code）加载，加载逻辑不在本包内。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "TypeScript",
+    "runtime_version": "Node.js >= 18 (构建脚本运行时)",
+    "build_system": "npm",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "build/setup-emsdk.sh 使用 Linux bash; README 要求 WSL/Docker 用于 Windows 构建"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "构建需 emscripten 3.1.64（通过 emsdk 安装）、Git、Node.js 及 npm。Windows 下须通过 WSL 构建（README 明确）。产出的 .wasm 文件平台无关（WebAssembly），各平台均可使用。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; WASM 为平台无关字节码; arm64/x86_64; 自研内核, 无 Linux ABI)",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        0.5
+      ],
+      "breakdown": [
+        {
+          "component": "packaging",
+          "person_days": [
+            0,
+            0.5
+          ],
+          "basis": "将 npm 包安装至鸿蒙 Node.js 环境，验证 WASM 加载正常即可"
+        }
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "本包为纯 WebAssembly 二进制文件 + TypeScript 类型定义的静态分发包，无运行时 JS/TS 逻辑，不调用任何平台/系统 API。WASM 是平台无关字节码规范，在鸿蒙 PC 的 Node.js 运行时（已移植）上可直接加载使用，无需任何源码改动或重新编译。唯一的适配工作是将包安装到鸿蒙 Node.js 环境并验证 WASM 加载功能正常。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "Node.js 运行时是否移植",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "WASM 由 Node.js 加载运行，Node.js 已移植则直接可用",
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "id": "ta:1",
+        "target_status_model": "available"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "全部 .wasm 文件（Tree-Sitter 核心 + 14 种语言语法）",
+        "note": "WebAssembly 平台无关字节码，任何标准 WASM 运行时均可加载执行",
+        "evidence": []
+      },
+      {
+        "aspect": "TypeScript 类型定义（web-tree-sitter.d.ts）",
+        "note": "纯类型声明，无运行时依赖",
+        "evidence": []
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Node.js 环境安装此 npm 包并验证 .wasm 文件可正常加载",
+      "抽样验证多语言语法解析功能正确（通过 web-tree-sitter 接口加载几个 .wasm 文件）"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。本包极为特殊——生产代码全是 .wasm 二进制 + .d.ts 声明文件，无任何运行时代码，因此 porting_class 为 no_adaptation（无需适配）。构建脚本（build/）属 dev 工具链，不计入生产适配。",
+    "required_permissions": [],
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "kind": "library",
+    "name": "@vscode/tree-sitter-wasm",
+    "package_name": "@vscode/tree-sitter-wasm",
+    "one_liner": "VS Code 使用的 Tree-Sitter 及多语言语法高亮预编译 WASM 文件包",
+    "ecosystem": "nodejs",
+    "bindings": [],
+    "aliases": [
+      "vscode-tree-sitter-wasm"
+    ],
+    "import_names": [
+      "@vscode/tree-sitter-wasm"
+    ],
+    "analyzed_at": "2026-07-11T10:26:51.517Z",
+    "source_url": "https://github.com/Microsoft/vscode-tree-sitter-wasm",
+    "source_subpath": null,
+    "monorepo": false
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "本包为预编译 WASM 文件和类型定义的静态集合，不涉及 GUI/3D/媒体/硬件场景。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本包不依赖任何第三方云服务——它仅是预编译 WASM 文件集合，运行时由 VS Code 本地加载。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "生产代码均为预编译的 WebAssembly 二进制文件和 TypeScript 类型定义，在鸿蒙 PC 上可通过标准 WASM 运行时直接复用，无需适配。构建脚本属 dev 工具链不计入。",
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "description": "预编译 .wasm 文件（Tree-Sitter 核心及各语言语法）和 TypeScript 类型定义 (.d.ts) 直接复用——WebAssembly 为平台无关字节码",
+        "loc": 0,
+        "modules": [
+          "wasm/*.wasm",
+          "wasm/*.js (胶水代码)",
+          "wasm/*.d.ts"
+        ]
+      }
+    ],
+    "total_annotated_loc": 0
+  }
+}

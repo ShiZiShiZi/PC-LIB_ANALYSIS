@@ -1,0 +1,445 @@
+{
+  "languages": {
+    "primary": "TypeScript",
+    "all": [
+      "TypeScript"
+    ],
+    "breakdown": [
+      {
+        "language": "TypeScript",
+        "files": 3,
+        "code": 285,
+        "pct": 100.0,
+        "production": {
+          "files": 3,
+          "code": 285
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 3,
+      "code": 285,
+      "comment": 0,
+      "blank": 50,
+      "total_lines": 335
+    },
+    "production": {
+      "files": 3,
+      "code": 285,
+      "comment": 0,
+      "blank": 50,
+      "total_lines": 335
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 285,
+        "category": "production",
+        "by_category": {
+          "production": 285
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "src",
+        "files": 3,
+        "code": 285
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "zstddec 是一个用于 Web 浏览器和 Node.js 环境的 Zstandard (ZSTD) 压缩数据解码器。它将 Facebook 的 ZSTD C 解码器编译为 WebAssembly，对外提供简洁的 JavaScript API，支持单次解压和流式解压两种模式。面向需要在 JavaScript 运行时中解压 ZSTD 格式数据的开发者（如 3D 模型加载、网络传输数据解压等场景）。",
+    "categories": [
+      {
+        "name": "ZSTD 数据解压",
+        "description": "将 ZSTD 压缩的字节数据解压为未压缩的原始字节数组，支持已知/未知解压后大小的两种模式，内部通过 WASM 调用 ZSTD_decompress / ZSTD_findDecompressedSize 实现。",
+        "evidence": [
+          "src/zstddec.ts:44-70 (decode method)",
+          "src/zstddec-stream.ts:61-111 (decode method with unknown size fallback)"
+        ]
+      },
+      {
+        "name": "流式解压",
+        "description": "对分块到达的 ZSTD 压缩数据支持流式解压（Generator 迭代器），内部维持 ZSTD 流上下文 (ZSTD_DCtx*)，适合处理大文件或分片传输的压缩数据。",
+        "evidence": [
+          "src/zstddec-stream.ts:113-169 (decodeStreaming method, ZSTD_createDCtx/ZSTD_decompressStream/ZSTD_freeDCtx)"
+        ]
+      },
+      {
+        "name": "WASM 内存管理",
+        "description": "库内嵌 WASM 模块，提供初始化（init）和内部内存分配/释放（malloc/free），将 JS 端数据写入 WASM 线性内存、从 WASM 线性内存读出解压结果。",
+        "evidence": [
+          "src/zstddec.ts:19-42 (init, _init)",
+          "src/zstddec.ts:104-107 (embedded WASM base64)"
+        ]
+      }
+    ],
+    "domain": "压缩/解压",
+    "target_users": "Web 前端开发者、Node.js 应用开发者（需要在 JavaScript 运行时中解压 ZSTD 格式数据的场景，如加载 glTF/3D Tiles 等 ZSTD 压缩资源）",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "MIT AND BSD-3-Clause",
+    "name": "MIT License AND BSD 3-Clause License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "package.json declares 'MIT AND BSD-3-Clause'; LICENSE file contains both MIT (Don McCurdy) and BSD-3-Clause (Facebook) texts; README confirms: JavaScript wrapper under MIT, WASM decoder under BSD-3-Clause (by Facebook).",
+    "notes": "双许可证结构：JS 包装代码为 MIT，内嵌的 ZSTD WASM 解码器二进制为 BSD-3-Clause（来自 Facebook/zstd）。两者均为宽松许可，无 copyleft 风险。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "zstddec has zero runtime dependencies. It bundles ZSTD as an inlined WASM binary (Base64-encoded in source code, built from Facebook/zstd v1.5.7 via Emscripten). It has no npm/manifest-level dependencies beyond devDependencies (microbundle, biome, browserify, tape, tap-spec, tape-run) which are build/test only and not tracked as runtime deps."
+  },
+  "native_api": {
+    "summary": "纯 JS/TS 库，通过 WebAssembly (WASM) 调用编译后的 C ZSTD 解码器。跨平台运行于浏览器和 Node.js，通过条件分支（typeof fetch）选择 fetch 或 Buffer API 加载 WASM 二进制。",
+    "groups": [
+      {
+        "type": "wasm",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "WebAssembly.instantiate",
+            "purpose": "实例化内嵌的 ZSTD WASM 模块，获取导出的解码/内存管理函数",
+            "count": 2,
+            "evidence": [
+              "src/zstddec.ts:27",
+              "src/zstddec-stream.ts:44"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "web_api",
+        "category": "platform",
+        "platform": "browser",
+        "apis": [
+          {
+            "name": "fetch",
+            "purpose": "浏览器端通过 data: URI 加载 Base64 编码的 WASM 二进制",
+            "count": 1,
+            "evidence": [
+              "src/zstddec.ts:25"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "nodejs",
+        "category": "platform",
+        "platform": "nodejs",
+        "apis": [
+          {
+            "name": "Buffer.from",
+            "purpose": "Node.js 端将 Base64 字符串解码为 ArrayBuffer 以加载 WASM",
+            "count": 1,
+            "evidence": [
+              "src/zstddec.ts:32"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "js_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "DataView.setInt32/getUint32",
+            "purpose": "流式解压时读写 WASM 线性内存中的 ZSTD_inBuffer/ZSTD_outBuffer 结构体字段",
+            "count": 8,
+            "evidence": [
+              "src/zstddec-stream.ts:137-143",
+              "src/zstddec-stream.ts:147-154"
+            ]
+          },
+          {
+            "name": "Uint8Array",
+            "purpose": "JS 与 WASM 内存之间的数据传递 (heap.set / heap.slice)",
+            "count": 10,
+            "evidence": [
+              "src/zstddec.ts:10",
+              "src/zstddec.ts:50",
+              "src/zstddec.ts:64",
+              "src/zstddec-stream.ts:26-27"
+            ]
+          },
+          {
+            "name": "Generator/function*",
+            "purpose": "流式解压接口，以 Generator 逐个产出解压块",
+            "count": 1,
+            "evidence": [
+              "src/zstddec-stream.ts:113"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期无外部资源依赖。WASM 二进制以 Base64 字符串内嵌在源码中，初始化时从内存解码加载，不读取文件系统、不发起网络请求、不创建子进程。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "ES2015 (ES6), TypeScript",
+    "runtime_version": "Node.js >= 22.x (CI target); any modern browser with WebAssembly support",
+    "build_system": "microbundle",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "any",
+        "arch": "wasm32",
+        "evidence": [
+          "package.json exports (modern/esm/cjs)",
+          "tsconfig.json lib: es6,dom"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "npm 包，发布到 npm registry（npm install zstddec）。构建产物（dist/）包含 modern/esm/cjs 三种格式。",
+    "notes": "依赖 WASM 运行时（浏览器或 Node.js 均原生支持）；通过 typeof fetch !== 'undefined' 分支判断浏览器 vs Node 环境选择不同的 WASM 加载路径。CI 仅在 ubuntu-latest + Node.js 22 上测试。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13.0 运行时上；纯 JS/TS 库无需重编；arm64 / x86_64；自研内核，非 Linux ABI)",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "breakdown": [
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0,
+            1
+          ],
+          "basis": "在鸿蒙 Node.js 上跑通解压测试（纯 JS，WASM 跨平台）"
+        }
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "zstddec 是纯 JS/TS ZSTD 解压库，WASM 二进制内嵌，无原生扩展，无平台特有 API，零外部运行时依赖。鸿蒙 PC 已移植 Node.js 24.13.0（caps 确认 available），该库无需任何代码修改即可在鸿蒙 Node.js 上直接加载运行。唯一可能的验证工作是在鸿蒙 Node.js 上跑通解压测试。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "Node.js（JS/TS 运行时）",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "鸿蒙 PC 已移植 Node.js 24.13.0（已回合主社区），JS/TS 可直接跑，运行时本身不是阻碍",
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "id": "ta:1",
+        "target_status_model": "available"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "WASM 加载与初始化（WebAssembly.instantiate）",
+        "note": "WASM 是 JS 引擎标准特性，鸿蒙 Node.js 的 V8 完全支持",
+        "evidence": [
+          "src/zstddec.ts:27"
+        ]
+      },
+      {
+        "aspect": "ZSTD 解压逻辑（decode/decodeStreaming）",
+        "note": "纯算法通过 WASM 调用，跨平台无差",
+        "evidence": [
+          "src/zstddec.ts:44-69",
+          "src/zstddec-stream.ts:61-168"
+        ]
+      },
+      {
+        "aspect": "平台环境检测（typeof fetch）",
+        "note": "Node.js 环境下走 Buffer.from 分支，鸿蒙 Node.js 完全支持",
+        "evidence": [
+          "src/zstddec.ts:25-33"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Node.js 上运行 yarn install 并执行 yarn test 验证解压功能正常"
+    ],
+    "required_permissions": [],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。WASM 二进制内嵌于源码（Base64），无网络加载依赖。需要 `typeof fetch` 在 Node.js 下为 undefined，走 Buffer.from 分支——鸿蒙 Node.js 的 Buffer API 与社区版本一致，兼容无虞。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "zstddec",
+    "one_liner": "ZSTD (Zstandard) 解码器，面向 Web 与 Node.js，通过 WebAssembly 实现压缩数据解压",
+    "kind": "library",
+    "ecosystem": "nodejs",
+    "package_name": "zstddec",
+    "aliases": [],
+    "import_names": [
+      "zstddec"
+    ],
+    "bindings": [],
+    "source_url": "https://github.com/donmccurdy/zstddec",
+    "commit": "73ed47a2c02e9e511600c8ee7c21eb0acff3ec49",
+    "analyzed_at": "2026-07-11T11:02:15Z"
+  },
+  "meta": {
+    "analyzed_at": "2026-07-11T10:26:51.168Z",
+    "model": "deepseek-v4-pro",
+    "tools": [
+      "codegraph"
+    ],
+    "observations": [],
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "confidence_overall_model": null,
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "zstddec 为纯 JS/TS 库，通过 WASM 运行 ZSTD 解压算法，不涉及 GUI 界面、3D 渲染、音视频媒体或特定硬件。无需鸿蒙适配重点关注场景。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "zstddec 是纯本地 ZSTD 解压库，WASM 二进制内嵌源码，无任何网络请求或云服务依赖。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 285 行 TypeScript 生产代码可直接在鸿蒙 PC 上复用（Node.js 运行时已移植，WASM 原生支持），无原生代码，无需重编译或适配。",
+    "coverage": {
+      "production_code": 285,
+      "partitioned_code": 285,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 285,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "src",
+            "loc": 285,
+            "reason": "纯 TypeScript/JS，不依赖平台 API，WASM 二进制内嵌且跨平台兼容，在鸿蒙 Node.js 上可直接加载运行",
+            "evidence": [
+              "src/zstddec.ts:25-32 (平台分支仅选择 fetch/Buffer API，均为标准 API，鸿蒙均支持)"
+            ]
+          }
+        ],
+        "basis": "library.ecosystem=nodejs（纯 JS/TS，WASM 载荷）；native_api 中仅有 WebAssembly.instantiate/fetch/Buffer.from/DataView，均为跨平台标准 API；platform_adaptation 和 arch_specific 均为 0。"
+      }
+    ],
+    "notes": "生产代码仅 src/ 下 3 个 TS 文件共 285 行。无测试/示例代码（metrics 报告 test 0 行）。WASM 二进制通过 platform_detect (typeof fetch) 在浏览器和 Node.js 间选择加载路径，该分支逻辑在鸿蒙 Node.js 上自然走 Node 路径。"
+  }
+}

@@ -1,0 +1,770 @@
+{
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "C/C++ Header"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 35,
+        "code": 7544,
+        "pct": 96.71,
+        "production": {
+          "files": 19,
+          "code": 4142
+        },
+        "test": {
+          "files": 11,
+          "code": 3183
+        },
+        "example": {
+          "files": 5,
+          "code": 219
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 7,
+        "code": 257,
+        "pct": 3.29,
+        "production": {
+          "files": 7,
+          "code": 257
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 42,
+      "code": 7801,
+      "comment": 0,
+      "blank": 1268,
+      "total_lines": 9069
+    },
+    "production": {
+      "files": 26,
+      "code": 4399,
+      "comment": 0,
+      "blank": 862,
+      "total_lines": 5261
+    },
+    "test": {
+      "files": 11,
+      "code": 3183,
+      "comment": 0,
+      "blank": 355,
+      "total_lines": 3538
+    },
+    "example": {
+      "files": 5,
+      "code": 219,
+      "comment": 0,
+      "blank": 51,
+      "total_lines": 270
+    },
+    "top_dirs": [
+      {
+        "dir": "lib",
+        "code": 3754,
+        "category": "production",
+        "by_category": {
+          "production": 3754
+        }
+      },
+      {
+        "dir": "tests",
+        "code": 3183,
+        "category": "test",
+        "by_category": {
+          "test": 3183
+        }
+      },
+      {
+        "dir": "fuzz",
+        "code": 433,
+        "category": "production",
+        "by_category": {
+          "production": 433
+        }
+      },
+      {
+        "dir": "examples",
+        "code": 219,
+        "category": "example",
+        "by_category": {
+          "example": 219
+        }
+      },
+      {
+        "dir": "src",
+        "code": 212,
+        "category": "production",
+        "by_category": {
+          "production": 212
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tests"
+      ],
+      "example": [
+        "examples"
+      ]
+    },
+    "dir_loc": [
+      {
+        "dir": "lib",
+        "files": 20,
+        "code": 3754
+      },
+      {
+        "dir": "fuzz",
+        "files": 5,
+        "code": 433
+      },
+      {
+        "dir": "src",
+        "files": 1,
+        "code": 212
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 11,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "C": {
+        "files": 11,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "GNU Libidn2 是一个用 C 语言实现的 IDNA2008（国际化域名应用 2008）标准库，用于将国际化域名（包含非 ASCII 字符的域名如中文、阿拉伯文）编码为 ASCII 兼容编码（Punycode/ACE）以便 DNS 传输，或逆向解码回 Unicode 形式。同时实现了 Unicode TR46（IDNA 兼容处理）扩展规则。面向需要域名国际化处理的网络应用或底层网络库（如 GnuTLS、Wget）开发者。",
+    "categories": [
+      {
+        "name": "域名 ASCII 编码 (ToASCII)",
+        "description": "将 UTF-8 或 UCS-4 编码的国际化域名转换为可用于 DNS 查询的 ASCII 兼容编码（ACE/Punycode），支持单标签或完整域名（含多标签+点号分割）",
+        "evidence": [
+          "lib/idn2.h.in",
+          "lib/idna.c",
+          "lib/lookup.c"
+        ]
+      },
+      {
+        "name": "域名 Unicode 解码 (ToUnicode)",
+        "description": "将 ACE/Punycode 编码的域名逆向解码为 Unicode 形式（UTF-8 或 UCS-4），用于显示",
+        "evidence": [
+          "lib/decode.c",
+          "lib/idn2.h.in"
+        ]
+      },
+      {
+        "name": "Punycode 编解码",
+        "description": "实现 RFC 3492 Punycode 算法，将任意 Unicode 序列转为 ASCII 可打印字符序列（及反向），是 IDNA 的基础编码层",
+        "evidence": [
+          "lib/punycode.c"
+        ]
+      },
+      {
+        "name": "域名注册验证",
+        "description": "实现 RFC 5891 Section 4 规定的域名注册验证逻辑：同时验证 U-label 与 A-label 的一致性，确保注册域名的双向映射正确",
+        "evidence": [
+          "lib/register.c",
+          "lib/idna.h"
+        ]
+      },
+      {
+        "name": "Unicode 规范化与属性检查",
+        "description": "Unicode NFC 规范化、双向文本 (Bidi) 校验、上下文规则 (CONTEXTJ/CONTEXTO) 检查等 IDNA2008 规定的前置验证步骤",
+        "evidence": [
+          "lib/idna.c",
+          "lib/bidi.c",
+          "lib/context.c",
+          "lib/tables.c",
+          "lib/tr46map.c"
+        ]
+      },
+      {
+        "name": "libidn 兼容层",
+        "description": "提供与旧版 libidn (IDNA2003) 兼容的宏定义与函数映射，使旧应用只需替换头文件即可迁移到 IDNA2008",
+        "evidence": [
+          "lib/idn2.h.in"
+        ]
+      }
+    ],
+    "domain": "网络协议（国际化域名处理）",
+    "target_users": "网络库与应用开发者（如 curl、wget、GnuTLS 等需要域名国际化支持的底层网络组件）",
+    "ecosystem": "cpp"
+  },
+  "license": {
+    "spdx": "LGPL-3.0-or-later OR GPL-2.0-or-later",
+    "name": "GNU Lesser General Public License v3.0 or later OR GNU General Public License v2.0 or later",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": true,
+    "license_files": [
+      "COPYING",
+      "COPYING.LESSERv3",
+      "COPYINGv2",
+      "COPYING.unicode"
+    ],
+    "evidence": "libidn2.pc.in 声明 'License: LGPL-3.0-or-later OR GPL-2.0-or-later'；README.md 与 COPYING 文件说明：C 库本体双许可（LGPLv3+ 或 GPLv2+），命令行工具/测试/示例为 GPLv3+，Unicode 数据文件另有 Unicode 许可证",
+    "notes": "双许可（用户可选 LGPLv3+ 或 GPLv2+），按对使用者最宽松的许可归为 permissive。Unicode 字符数据文件遵循 Unicode 许可证，详见 COPYING.unicode。命令行工具/测试等为 GPLv3+。"
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": [
+      "configure.ac",
+      "DEPENDENCIES.md"
+    ],
+    "by_ecosystem": {
+      "cpp": [
+        "gnulib (libunistring 内嵌子集)",
+        "libiconv"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "libiconv",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "区域设置编码到 UTF-8 的转码（非 glibc 系统需要）",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装)；见 configure.ac 和 DEPENDENCIES.md 中的 @LTLIBICONV@",
+        "declared_in": [
+          "configure.ac",
+          "DEPENDENCIES.md"
+        ],
+        "harmony_adapted": false
+      }
+    ],
+    "notes": "主要依赖 UNICODE 字符属性表（编译期静态嵌入），无运行时包管理依赖。libiconv 在 glibc 系统上透明（不实际链接）。libunistring 为可选依赖——未装时使用内嵌子集（编入 libidn2）。依赖均为系统级库，无上游远程包。"
+  },
+  "native_api": {
+    "summary": "纯标准 C 库与 libunistring 调用，无平台特定系统 API，无摄像头/DirectX/Win32 等硬件或系统层调用。跨平台可移植性高。",
+    "groups": [
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "malloc",
+            "purpose": "动态内存分配",
+            "count": 5,
+            "evidence": [
+              "lib/lookup.c:494",
+              "lib/decode.c:35"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "free",
+            "purpose": "释放动态内存",
+            "count": 5,
+            "evidence": [
+              "lib/lookup.c:248",
+              "lib/register.c:126"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "memcpy",
+            "purpose": "内存块拷贝",
+            "count": 3,
+            "evidence": [
+              "lib/lookup.c:176",
+              "lib/decode.c:35"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "memmove",
+            "purpose": "重叠内存块拷贝",
+            "count": 1,
+            "evidence": [
+              "lib/punycode.c:392"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "strcmp",
+            "purpose": "字符串比较",
+            "count": 5,
+            "evidence": [
+              "lib/register.c:117",
+              "lib/register.c:125"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "strchrnul",
+            "purpose": "查找字符（含末尾空指针），按 '.' 分割域名标签",
+            "count": 3,
+            "evidence": [
+              "lib/lookup.c:561"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "unistring",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "u8_to_u32",
+            "purpose": "UTF-8 到 UCS-4 转换（字符码点），用于域名规范化计算",
+            "count": 8,
+            "evidence": [
+              "lib/idna.c:94",
+              "lib/decode.c:35",
+              "lib/decode.c:35"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "u32_to_u8",
+            "purpose": "UCS-4 到 UTF-8 转换",
+            "count": 6,
+            "evidence": [
+              "lib/lookup.c:161",
+              "lib/register.c:111"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "u8_strlen",
+            "purpose": "UTF-8 字符串字节数计算",
+            "count": 4,
+            "evidence": [
+              "lib/register.c:141"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "u32_cmp",
+            "purpose": "UCS-4 两个数组比较",
+            "count": 2,
+            "evidence": [
+              "lib/lookup.c:238"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "u32_cpy",
+            "purpose": "UCS-4 数组拷贝",
+            "count": 2,
+            "evidence": [
+              "lib/decode.c:35"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "uniconv",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "u8_strconv_from_encoding",
+            "purpose": "区域设置编码→UTF-8 转码，用于接收非 UTF-8 输入字符串",
+            "count": 3,
+            "evidence": [
+              "lib/lookup.c:664",
+              "lib/register.c:246",
+              "src/idn2.c:116"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "locale_charset",
+            "purpose": "获取当前运行环境的区域设置编码名称",
+            "count": 3,
+            "evidence": [
+              "lib/lookup.c:662",
+              "lib/register.c:244",
+              "src/idn2.c:110"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "uninorm",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "u32_normalize (UNINORM_NFC)",
+            "purpose": "UCS-4 字符串 NFC 规范化（Unicode 规范化形式 C），确保域名编码前格式一致",
+            "count": 3,
+            "evidence": [
+              "lib/idna.c:105",
+              "lib/lookup.c:395"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "unictype",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "uc_combining_class",
+            "purpose": "查询码点的规范化组合类，用于 Bidi/上下文规则检查",
+            "count": 3,
+            "evidence": [
+              "lib/idna.c:70",
+              "lib/context.c:56"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "uc_is_general_category",
+            "purpose": "查询码点通用类别（如 UC_CATEGORY_M 组合标记），用于前导组合字符检查",
+            "count": 1,
+            "evidence": [
+              "lib/idna.c:170"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "uc_joining_type",
+            "purpose": "查询码点的连接类型（JOINING_TYPE_L/R/D/T），用于 ZWJ/ZWNJ 上下文规则检查",
+            "count": 4,
+            "evidence": [
+              "lib/context.c:74",
+              "lib/context.c:87"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "uc_script",
+            "purpose": "查询码点所属文字系统（希腊/希伯来/假名→汉），用于 CONTEXTO 规则判定",
+            "count": 3,
+            "evidence": [
+              "lib/context.c:118"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "无网络/外部服务访问，无子进程调用，仅在特定系统上需 locale 环境变量与外部字符转换库。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "区域设置编码转换依赖 libiconv（非 glibc 系统）",
+        "purpose": "locale 编码到 UTF-8 转码所需的外部动态库",
+        "evidence": [
+          "lib/context.c",
+          "lib/register.c"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "LC_ALL",
+        "purpose": "设置区域编码（仅命令行工具／测试中通过 setlocale(3) 使用，库自身不读取环境变量）",
+        "evidence": [
+          "src/idn2.c:186"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99 (含部分 GCC 扩展如 visibility 属性)",
+    "runtime_version": null,
+    "build_system": "GNU Autotools (autoconf + automake + libtool)",
+    "compiler_extensions": [
+      {
+        "detail": "__attribute__((visibility(\"default\"))) 用于共享库符号可见性控制",
+        "evidence": [
+          "lib/idn2.h.in:44"
+        ]
+      },
+      {
+        "detail": "__attribute__((pure)) / __attribute__((const)) 用于函数优化提示",
+        "evidence": [
+          "lib/idna.h:64",
+          "lib/punycode.c:118"
+        ]
+      },
+      {
+        "detail": "__declspec(dllexport/dllimport) 用于 Windows DLL 导出",
+        "evidence": [
+          "lib/idn2.h.in:46-48"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "configure.ac:55-58 (GNU/Linux 检测)"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "lib/idn2.h.in:46 (#ifdef _MSC_VER)，configure.ac:50 (LT_INIT win32-dll)"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "configure.ac 无显式 macOS 专项，但 autotools 默认跨 UNIX 平台"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "GNU Autotools 构建，跨 UNIX/Windows 双平台。Windows 走 mingw/DLL 模式。无特殊运行时依赖。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（库部署模型：运行在已移植运行时上——但 libidn2 为原生 C 库，不走语言运行时；需以 OHOS NDK/musl 交叉编译为 .so；arm64/x86_64；自研内核，非 Linux ABI）",
+    "porting_class": "recompile_only",
+    "effort": {
+      "person_days": [
+        3.5,
+        5.5
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            1.5,
+            1.5
+          ],
+          "basis": "重编译复用 4399 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "build_system",
+          "person_days": [
+            1,
+            2
+          ],
+          "basis": "适配 autotools 到 OHOS NDK 工具链（ohos.toolchain.cmake 或手动 clang + musl sysroot）；或直接提取核心 .c 文件用 CMake 构建"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            1,
+            2
+          ],
+          "basis": "在鸿蒙 PC 上链接编译产物并跑通基础功能测试"
+        }
+      ],
+      "level": "medium"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "该库为纯 C 标准库（依赖 libunistring 的可移植字符串处理），无任何平台特有 API、无硬件/SIMD 代码、无闭源二进制。唯一工作是用 OHOS NDK（clang/musl）将其交叉编译为 .so。libiconv 依赖非必需（仅非 glibc 系统需，musl 环境可配置构建为使用内嵌 libunistring 子集替代）。全部核心功能可适配，零源码改动。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "musl libc（C 标准库）",
+        "capability_key": null,
+        "required": true,
+        "target_status": "available",
+        "impact": "C 标准库（malloc/free/memcpy/strcmp...）在 OHOS NDK musl 中均可用，无阻碍",
+        "source": "OHOS NDK/musl 文档",
+        "id": "ta:1",
+        "target_status_model": "available"
+      },
+      {
+        "capability": "libiconv（区域编码转 UTF-8）",
+        "capability_key": null,
+        "required": false,
+        "target_status": "unknown",
+        "impact": "仅非 glibc/NetBSD 系统需要；musl 环境可配置为不使用 libiconv（用内嵌 libunistring 子集替代）；非阻断。",
+        "source": "DEPENDENCIES.md",
+        "id": "ta:2",
+        "target_status_model": "unknown"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "纯文本算法与 Unicode 码点计算：Punycode 编解码、NFC 规范化、Bidi 检查、上下文规则计算等",
+        "note": "均为纯计算，无外部依赖（仅依赖内嵌 Unicdoe 数据表），OHOS NDK musl libc 完全支持",
+        "evidence": [
+          "lib/punycode.c",
+          "lib/idna.c",
+          "lib/bidi.c",
+          "lib/context.c"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "以 OHOS NDK（clang + musl / ohos.toolchain.cmake）交叉编译 libidn2 所有源文件为 arm64/x86_64 .so 共享库",
+      "编译配置：禁用 libiconv（--without-libiconv-prefix），使用内嵌 libunistring 子集；或配置 musl 环境下的 libreplacement 自动检测",
+      "在鸿蒙 PC 上验证 idn2_to_ascii_8z / idn2_to_unicode_8z8z / idn2_punycode_decode 等核心 API 正常工作"
+    ],
+    "notes": "评估按 recompile_only——零源码改动仅需 OHOS NDK 交叉编译。代码行仅 4399 行，无平台/架构杂质（platform_adaptation=0, arch_specific=0, platform_branches=0），从代码层面确认无需适配。libiconv 可选依赖在 musl 环境下可通过构建开关规避。",
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "libidn2",
+    "one_liner": "GNU IDNA2008 国际化域名编码与解码库（支持 Punycode 与 Unicode TR46）",
+    "kind": "library",
+    "ecosystem": "cpp",
+    "package_name": "libidn2",
+    "version": null,
+    "commit": "cb9f912449ee37f1fbc5a87a7955943d03ea7c83",
+    "source_url": "https://gitlab.com/libidn/libidn2",
+    "source_subpath": null,
+    "bindings": [],
+    "analyzed_at": "2026-07-11T19:55:12Z"
+  },
+  "meta": {
+    "observations": [],
+    "harmony_warnings": [
+      {
+        "code": "license_category_mismatch",
+        "class": "actionable",
+        "message": "license.category(permissive) 与依据 SPDX(LGPL-3.0-or-later OR GPL-2.0-or-later) 派生的性质(strong_copyleft) 不一致，请核对"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": null,
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "本项目为纯文本处理的 C 库，不涉及 GUI、3D 渲染、媒体或特定硬件，适配重点场景均不适用。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "本项目为本地 C 库（纯域名字符串编解码），不涉及任何远程云服务、认证、存储、推送等云端依赖。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 4399 行生产代码均可零改动用 OHOS NDK 交叉编译为鸿蒙 PC 库；无平台特有 API、SIMD/内联汇编或闭源二进制依赖。",
+    "coverage": {
+      "production_code": 4399,
+      "partitioned_code": 4399,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "recompile_reuse",
+        "loc": 4399,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "lib",
+            "loc": 3754,
+            "reason": "纯 C 标准库 + libunistring，无平台特有系统调用；仅用 malloc/free/memcpy/strcmp/u8_to_u32 等可移植 API，OHOS NDK 交叉编译零改动",
+            "evidence": []
+          },
+          {
+            "path": "src",
+            "loc": 212,
+            "reason": "命令行工具入口，仅用标准 C + locale_charset/u8_strconv_from_encoding（libunistring），无平台依赖",
+            "evidence": []
+          },
+          {
+            "path": "fuzz",
+            "loc": 433,
+            "reason": "Fuzzing 测试框架（生产质量验证代码），纯 C 标准库，交叉编译零改动",
+            "evidence": []
+          }
+        ],
+        "basis": "platform_adaptation 总量 0；arch_specific 总量 0（无 SIMD/内联汇编/独立汇编文件）；platform_branches 总量 0；native_api 无 platform/system/hardware 类 API。全量代码均为可移植 C。"
+      }
+    ],
+    "notes": "fuzz/ 文件被 code-metrics 归为生产代码（非 tests/），一并列入 recompile_reuse。无 needs_adaptation 或 unadaptable 桶——代码确认无平台分支、无 arch 相关代码。"
+  }
+}
