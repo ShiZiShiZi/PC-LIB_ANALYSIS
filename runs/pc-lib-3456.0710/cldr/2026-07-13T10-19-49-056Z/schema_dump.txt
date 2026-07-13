@@ -1,0 +1,1068 @@
+### library
+{
+ "type": "object",
+ "required": [
+  "name",
+  "source_url"
+ ],
+ "properties": {
+  "name": {
+   "type": "string"
+  },
+  "kind": {
+   "type": "string",
+   "description": "model: 被分析对象的性质。推荐取值（开放，可扩并记入 meta.observations）：library（被 API 调用的三方库）/ application（终端用户启动运行的应用，如桌面/CLI）/ framework / tool / cli / service / plugin / other。缺省/旧报告按 library 处理。决定 dim-9 鸿蒙口径：library→模型A/B（重编+链接/桥接），application→模型C（整包应用打包并启动）。"
+  },
+  "package_name": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "description": "model: distribution/package name from the manifest (PyPI/npm/Maven artifact/crate name), may differ from the repo dir name. Used to link this library into other libraries' dependency trees. Null if none/uncertain."
+  },
+  "aliases": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   },
+   "description": "model: 该库的其它已知名称（旧名/别名/常见拼写/CMake find_package 名/Maven groupId:artifactId 等），用于被别的库的依赖按名匹配上。无则省略或 []。"
+  },
+  "import_names": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   },
+   "description": "model: 实际 import/引入时用的名字（如 PyPI Pillow → import PIL；包名≠导入名时尤其有用）。无则省略或 []。"
+  },
+  "source_url": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "monorepo": {
+   "type": "boolean",
+   "description": "model: 被分析对象是 monorepo 的一个子目录时为 true。此时 source_url 仍为仓库根 URL，具体子目录见 source_subpath。缺省 false（整仓）。"
+  },
+  "source_subpath": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "description": "model: monorepo 子目录分析时，被分析子目录相对仓库根的路径（如 \"components/cronet\"）。整仓分析为 null/省略。"
+  },
+  "analyzed_at": {
+   "type": "string",
+   "description": "ISO-8601 UTC"
+  },
+  "commit": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "one_liner": {
+   "type": "string",
+   "description": "model: <=120 char tagline"
+  },
+  "ecosystem": {
+   "type": "string",
+   "enum": [
+    "python",
+    "java",
+    "nodejs",
+    "cpp",
+    "rust",
+    "go",
+    "dotnet",
+    "other"
+   ],
+   "description": "库的核心语言生态，由模型根据 manifest 与主语言判断。取值：python / java / nodejs / cpp / rust / go / dotnet / other"
+  },
+  "bindings": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "enum": [
+     "python",
+     "java",
+     "nodejs",
+     "cpp",
+     "rust",
+     "go",
+     "dotnet",
+     "other"
+    ]
+   },
+   "description": "model: 该库在核心生态之外对外提供绑定/包装的语言生态（如 C++ 核心 + Python/Java/C# 绑定 → [python, java, dotnet]）。无则 []。用于多语言库的生态展示。"
+  }
+ }
+}
+
+### function_summary
+{
+ "type": "object",
+ "description": "Dimension 1 — MODEL (skill: function-summary). All prose fields here (summary, category name/description, domain, target_users) and library.one_liner are written in Simplified Chinese (简体中文).",
+ "required": [
+  "summary",
+  "categories"
+ ],
+ "properties": {
+  "summary": {
+   "type": "string",
+   "description": "2-4 sentences: what it does, for whom."
+  },
+  "categories": {
+   "type": "array",
+   "description": "Capability groups the library provides.",
+   "items": {
+    "type": "object",
+    "required": [
+     "name",
+     "description"
+    ],
+    "properties": {
+     "name": {
+      "type": "string"
+     },
+     "description": {
+      "type": "string"
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "files/symbols/docs that support this category"
+     }
+    }
+   }
+  },
+  "domain": {
+   "type": "string",
+   "description": "e.g. networking, graphics, ML, crypto"
+  },
+  "target_users": {
+   "type": "string"
+  }
+ }
+}
+
+### license
+{
+ "type": "object",
+ "description": "Dimension 5 — MODEL (skill: license-detect).",
+ "required": [
+  "spdx",
+  "confidence"
+ ],
+ "properties": {
+  "spdx": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "description": "SPDX id, 'NOASSERTION', or null"
+  },
+  "name": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "confidence": {
+   "type": "string",
+   "enum": [
+    "high",
+    "medium",
+    "low"
+   ]
+  },
+  "category": {
+   "type": "string",
+   "enum": [
+    "commercial",
+    "strong_copyleft",
+    "weak_copyleft",
+    "permissive",
+    "undeclared"
+   ],
+   "description": "闭轴（严格，只能映射不能新增）：协议性质。commercial 商业协议（专有/商业 EULA/SSPL·BUSL·Elastic 等源码可见非自由）/ strong_copyleft 强传染（GPL·AGPL·EUPL·OSL 家族）/ weak_copyleft 弱传染（LGPL·MPL·EPL·CDDL·CPL）/ permissive 友好（MIT·BSD·Apache·ISC·Zlib·BSL·Unlicense）/ undeclared 未声明（无 LICENSE / null / NOASSERTION）。server 可据 spdx/name 回填。"
+  },
+  "is_dual_licensed": {
+   "type": "boolean"
+  },
+  "license_files": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  },
+  "evidence": {
+   "type": "string",
+   "description": "what the call is based on"
+  },
+  "notes": {
+   "type": "string",
+   "description": "caveats, copyleft, exceptions"
+  }
+ }
+}
+
+### dependencies
+{
+ "type": "object",
+ "description": "Dimension 6 — MODEL (skill: dependency-analysis).",
+ "properties": {
+  "count": {
+   "type": "integer"
+  },
+  "manifests": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  },
+  "by_ecosystem": {
+   "type": "object"
+  },
+  "dependencies": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "name",
+     "ecosystem"
+    ],
+    "properties": {
+     "name": {
+      "type": "string"
+     },
+     "ecosystem": {
+      "type": "string",
+      "description": "LANGUAGE ecosystem only: cpp/c/python/java/nodejs/rust/go/dotnet/other. Use 'other' for non-language deps (data files, generic tools); do NOT put role values like 'tool'/'data' here — a dependency's build-tool nature belongs in scope:build."
+     },
+     "registry_name": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "model: 该依赖的规范/注册表包名（PyPI/npm/Maven artifact/crate；或 CMake find_package 的真实包名），当 `name` 是别名/接口名/缩写时填它，便于按名关联到已分析库。不确定则 null。"
+     },
+     "source_repo": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "model (best-effort): 该依赖的上游源码仓库 URL（github/gitlab/gitee/自托管均可）。是把依赖关联到已分析库的最强键——能从 manifest/lock/已知常识判断就填，含 `find_package(PNG)`→glennrp/libpng 这类名≠仓的情形。不确定则 null。"
+     },
+     "import_names": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "model: 实际 import 名（如依赖 Pillow → 代码里 import PIL）。无则省略。"
+     },
+     "aliases": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "model: 该依赖的其它已知名称/拼写。无则省略。"
+     },
+     "scope": {
+      "type": "string",
+      "description": "runtime/dev/test/optional/build"
+     },
+     "version": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "purpose": {
+      "type": "string",
+      "description": "model: why it's used"
+     },
+     "acquisition": {
+      "type": "string",
+      "description": "OPEN vocabulary — how the build OBTAINS this dependency. Recommended values: system (find_package/expected pre-installed), vendored (source copied into the tree), fetchcontent (CMake FetchContent), download_build (ExternalProject/custom download-source-and-build), submodule (git submodule), package_manager (vcpkg/conan/pip/npm/maven), prebuilt_binary (binary shipped in repo). If none fits, coin a concise lowercase token (e.g. conda, apt, cpm, git_subtree, runtime_download) AND record it in meta.observations. Also set the closed `locality` field accordingly."
+     },
+     "locality": {
+      "type": "string",
+      "enum": [
+       "local",
+       "remote",
+       "system",
+       "runtime",
+       "unknown"
+      ],
+      "description": "STABLE axis (model-set): local=already in repo (vendored/prebuilt); remote=pulled from outside (fetchcontent/download/submodule/registry); system=expected pre-installed via find_package; runtime=loaded at runtime; unknown"
+     },
+     "source": {
+      "type": "string",
+      "description": "model: WHERE it is obtained from — download URL / registry / 'system (find_package, must be pre-installed)' / in-tree path, 简体中文"
+     },
+     "declared_in": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "model: repo file(s) that declare how this dependency is integrated, e.g. the CMakeLists.txt with find_package/FetchContent_Declare/ExternalProject_Add/target_link_libraries, a .gitmodules entry, or a requirements/manifest line"
+     }
+
+### native_api
+{
+ "type": "object",
+ "description": "Dimension 7 — MODEL (skill: native-api-analysis).",
+ "properties": {
+  "summary": {
+   "type": "string"
+  },
+  "groups": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "type"
+    ],
+    "properties": {
+     "type": {
+      "type": "string",
+      "description": "API family, e.g. win32, posix, cpp_stl, python_stdlib, java_std, node_core, syscall, ctypes_ffi, jni, opengl, directx, arch_simd"
+     },
+     "category": {
+      "type": "string",
+      "enum": [
+       "standard",
+       "platform",
+       "system",
+       "ffi",
+       "hardware"
+      ],
+      "description": "按可移植性分类。standard=语言标准库/运行时,到处可用(C++ STL、Python stdlib、JDK标准包、Node内置); platform=某OS专有,换平台即没有(Win32 与 POSIX-only 如 mmap/fork/epoll/<unistd.h> 都属此,再用 platform 字段标 windows/posix/macos); system=内核/系统调用层(裸 syscall、ioctl、/proc、/sys、注册表、WMI、设备); ffi=互操作桥(ctypes/cffi/JNI/N-API); hardware=GPU/SIMD/加速器"
+     },
+     "platform": {
+      "type": "string",
+      "enum": [
+       "windows",
+       "posix",
+       "linux",
+       "macos",
+       "portable",
+       "unknown"
+      ],
+      "description": "该组 API 所属平台；portable=跨平台(标准库)"
+     },
+     "apis": {
+      "type": "array",
+      "description": "逐个具体 API（代表性，非穷举）",
+      "items": {
+       "type": "object",
+       "required": [
+        "name"
+       ],
+       "properties": {
+        "name": {
+         "type": "string",
+         "description": "单个具体 API/符号名（如 mmap、CreateFileMapping、std::filesystem）。不要把多个调用并进一个 name（如 'mmap / munmap'），否则 count 失去意义"
+        },
+        "purpose": {
+         "type": "string",
+         "description": "中文：该 API 的作用"
+        },
+        "count": {
+         "type": "integer",
+         "description": "调用次数/出现次数（代表性近似，grep -c 或 codegraph callers）"
+        },
+        "evidence": {
+         "type": "array",
+         "items": {
+          "type": "string"
+         },
+         "description": "调用位置 file:line（代表性 1-3 处）"
+        },
+        "conditional": {
+         "type": "boolean",
+         "description": "是否被 #ifdef / 平台条件守卫"
+        }
+       }
+      }
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "group-level files / includes (optional; prefer per-api evidence)"
+     }
+    }
+   }
+  },
+  "dynamic_libraries": {
+   "type": "array",
+   "description": "Libraries loaded at RUNTIME via dynamic loading (not declared in package manifests). Model resolves the loaded library name and infers its purpose.",
+   "items": {
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "loaded library name, e.g. 'libssl.so', 'kernel32.dll', 'libcudart' (keep as written; '<dynamic>' if computed at runtime)"
+     },
+     "mechanism": {
+      "type": "string",
+      "description": "how it is loaded: dlopen / LoadLibrary / ctypes.CDLL / ctypes.WinDLL / cffi.dlopen / JNI System.loadLibrary / node N-API addon"
+     },
+     "acquisition": {
+      "type": "string",
+      "description": "OPEN vocab — HOW the loaded lib is obtained: self_build (built from THIS repo, e.g. a CFFI/JNI/SWIG wrapper), system (external/OS-provided), bundled (shipped in repo), third_party, unknown"
+     },
+     "source": {
+      "type": "string",
+      "description": "中文：是什么库 / 出处（身份与来源），如「本仓 MinimalLib 的 CFFI 构建产物」「外部专有 DLL，需 COMBICHEM_ROOT 提供」"
+     },
+     "description": {
+      "type": "string",
+      "description": "model-inferred purpo
+
+### runtime_surface
+{
+ "type": "object",
+ "description": "Dimension 8a — MODEL (skill: runtime-environment). What the code reaches for in the HOST environment at runtime (beyond linked libraries). Descriptive only. Each array uses [] when empty; prose in 简体中文.",
+ "properties": {
+  "summary": {
+   "type": "string",
+   "description": "中文：运行时对宿主环境依赖的概述"
+  },
+  "network": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/surfaceItem"
+   },
+   "description": "sockets / HTTP clients / bound ports / hard-coded hosts"
+  },
+  "filesystem": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/surfaceItem"
+   },
+   "description": "config/data files, temp dirs, absolute paths read/written at runtime"
+  },
+  "env_vars": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "properties": {
+     "name": {
+      "type": "string"
+     },
+     "purpose": {
+      "type": "string",
+      "description": "中文"
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  },
+  "subprocess": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "command": {
+      "type": "string"
+     },
+     "purpose": {
+      "type": "string",
+      "description": "中文"
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  },
+  "devices": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/surfaceItem"
+   },
+   "description": "/dev nodes, GPU, other hardware/device access"
+  },
+  "services": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/surfaceItem"
+   },
+   "description": "外部服务/守护进程的集成（多见于应用）：attach 其他 JVM、JMX、jstatd、数据库/消息队列/IPC 等。[] when none"
+  }
+ }
+}
+
+### build_env
+{
+ "type": "object",
+ "description": "Dimension 8b — MODEL (skill: runtime-environment). Toolchain / language-standard requirements and the supported OS/arch matrix. Descriptive only; prose in 简体中文.",
+ "properties": {
+  "language_standard": {
+   "type": "string",
+   "description": "e.g. C++17 / Python>=3.8 / Java 11"
+  },
+  "runtime_version": {
+   "type": "string",
+   "description": "中文：运行时/解释器版本要求"
+  },
+  "build_system": {
+   "type": "string",
+   "description": "e.g. CMake / setuptools / Maven / Cargo"
+  },
+  "compiler_extensions": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/surfaceItem"
+   },
+   "description": "__attribute__ / #pragma / __declspec / GCC|Clang|MSVC-specific features"
+  },
+  "platforms": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "os": {
+      "type": "string"
+     },
+     "arch": {
+      "type": "string"
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "description": "supported OS/arch matrix inferred from #ifdef / CI / wheels / manifests"
+  },
+  "entry_points": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "properties": {
+     "type": {
+      "type": "string",
+      "description": "launcher / main / console_script / service / framework_startup"
+     },
+     "name": {
+      "type": "string",
+      "description": "启动器脚本/可执行/main 类/控制台脚本名，如 launcher/visualvm、visualvm.exe、org.x.Main"
+     },
+     "command": {
+      "type": "string",
+      "description": "中文：如何启动/作用"
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "description": "应用如何被启动（启动器脚本、原生 launcher、main 类、框架托管启动、console_scripts）。库通常为 []"
+  },
+  "packaging": {
+   "type": "string",
+   "description": "中文：如何构建/打包/分发给终端用户——installer / zip / AppImage / 容器镜像 / 应用商店包 / 无（库）；含是否捆绑运行时（JRE/Node）。"
+  },
+  "notes": {
+   "type": "string",
+   "description": "中文"
+  }
+ }
+}
+
+### capability_profile
+{
+ "type": "object",
+ "description": "Dimension 10 — MODEL (skill: capability-profile). SYNTHESIS-lite：复用已算出的 native_api / runtime_surface / dependencies / function_summary 证据，把项目触及的鸿蒙适配重点场景结构化标出（是否涉及 GUI/3D 渲染/媒体/特定硬件）。回答\"是否涉及 X\"；dim-9 据此判\"改多少/能否移植\"。prose 简体中文。",
+ "properties": {
+  "summary": {
+   "type": "string",
+   "description": "中文：本项目触及的鸿蒙适配重点场景概览"
+  },
+  "scenarios": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "key",
+     "present"
+    ],
+    "properties": {
+     "key": {
+      "type": "string",
+      "description": "闭轴（推荐集，开放可扩并记 meta.observations）：gui（桌面界面/窗口）/ rendering_3d（OpenGL/Vulkan/DirectX/Metal 等 3D 图形）/ media（音视频编解码/播放/采集）/ hardware（GPU 计算/USB/串口/蓝牙/传感器/摄像头/NPU 等设备）。"
+     },
+     "present": {
+      "type": "boolean",
+      "description": "本项目是否触及该场景"
+     },
+     "kind": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "开放词：该场景的具体技术。gui→工具包/窗口栈(qt6/gtk/win32/swing/electron/tk/wayland/x11)；rendering_3d→opengl/vulkan/directx/metal/webgpu；media→video_decode/audio_capture/ffmpeg/gstreamer/codec；hardware→gpu_cuda/opencl/usb_serial/bluetooth/camera/sensor/npu/fpga。"
+     },
+     "specific_hardware": {
+      "type": "boolean",
+      "description": "仅 hardware：是否依赖特定/不可替代硬件（CUDA/NPU/FPGA 等）——常直接决定 core_blocked（核心不可适配）。"
+     },
+     "via": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "交叉引用来源：dependencies[].name / native_api group.type / native_api.dynamic_libraries[].name（说明该场景由谁引入）"
+     },
+     "harmony_status": {
+      "type": "string",
+      "enum": [
+       "available",
+       "partial",
+       "unavailable",
+       "unknown"
+      ],
+      "description": "闭轴：该场景在鸿蒙 PC 的支持状态，对照 references/harmony-pc-capabilities.json（GUI/3D/媒体/硬件 段）"
+     },
+     "adaptation": {
+      "type": "string",
+      "description": "开放/中文：修改量与路径（如 ArkUI 重写界面层、换 @ohos.multimedia、无解需放弃）"
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "复用来源维度的 file:line（代表性）"
+     }
+    }
+   },
+   "description": "场景清单。未触及的场景可省略或 present:false。空数组表示纯计算/无这些场景。"
+  }
+ }
+}
+
+### cloud_services
+{
+ "type": "object",
+ "description": "Dimension 11 — MODEL (skill: cloud-service-analysis). SYNTHESIS-lite：复用已算出的 dependencies / runtime_surface.network（硬编码 host/域名）/ native_api.dynamic_libraries / function_summary 证据，判断项目是否涉及云端服务（登录鉴权/云存储/云数据库/云函数/推送/消息/Analytics/崩溃上报/远程配置/地图/AI 云推理/广告等，含 REST 直连云端域名），若涉及则推测云服务厂商。轻度喂给 dim-9（涉及云端⇒需 ohos.permission.INTERNET；未移植的厂商原生 SDK 记假设/阻碍）。prose 简体中文。",
+ "properties": {
+  "present": {
+   "type": "boolean",
+   "description": "本项目生产代码是否涉及任何云端服务"
+  },
+  "summary": {
+   "type": "string",
+   "description": "中文：涉及的云端服务与厂商概览；不涉及则说明并 present:false"
+  },
+  "services": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "vendor"
+    ],
+    "properties": {
+     "vendor": {
+      "type": "string",
+      "description": "开放小写词（推荐集，可扩并记 meta.observations）：google_firebase / aws / gcp / azure / alibaba_cloud / tencent_cloud / huawei_cloud / supabase / sentry / cloudflare …。推不准厂商但确有云端后端 → 记 vendor:\"unknown\" + confidence:low。"
+     },
+     "categories": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "开放小写词（推荐集，非穷举）：auth / cloud_storage / database / cloud_functions / push / messaging / analytics / crash_reporting / remote_config / maps / ml_ai / ads / hosting。"
+     },
+     "confidence": {
+      "type": "string",
+      "enum": [
+       "high",
+       "medium",
+       "low"
+      ],
+      "description": "闭轴：厂商/用途推测置信。厂商 SDK 明确=high；仅硬编码域名/间接线索=medium/low。"
+     },
+     "via": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "交叉引用来源：dependencies[].name / native_api.dynamic_libraries[].name（说明该云服务由谁引入）"
+     },
+     "endpoints": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "开放：硬编码云端主机/域名（来自 runtime_surface.network），如 firebaseio.com / amazonaws.com / sentry.io"
+     },
+     "evidence": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "复用来源维度的 file:line（代表性）"
+     }
+    }
+   },
+   "description": "云服务清单。不涉及云端时 present:false 且 services 可为 []。"
+  }
+ }
+}
+
+### code_partition
+{
+ "type": "object",
+ "description": "Dimension 12 — MODEL (skill: code-partition). SYNTHESIS-lite：把生产代码按鸿蒙迁移复用性分桶（模块/目录粒度 + LOC），回答\"哪些代码直接复用、哪些重编译即可、哪些要适配、哪些无法适配\"。LOC 必须引用 code_metrics.dir_loc 的机械数字（对账：桶和 ≈ production.code）；综合 code_metrics(dir_loc/platform_adaptation/platform_branches/arch_specific) + native_api 调用点 + capability_profile + dependencies，不重扫源码。dim-9 据此定 effort.person_days/breakdown。生产范围口径（测试/示例不进分区）。prose 简体中文。",
+ "properties": {
+  "summary": {
+   "type": "string",
+   "description": "中文：分区结论概览（多少直接复用/重编译/需适配/无法适配）"
+  },
+  "coverage": {
+   "type": "object",
+   "description": "对账：production_code=code_metrics.production.code；partitioned_code=各桶 loc 之和；pct=覆盖率（应 ≥90%，长尾并入主桶并在 notes 说明）",
+   "properties": {
+    "production_code": {
+     "type": "integer"
+    },
+    "partitioned_code": {
+     "type": "integer"
+    },
+    "pct": {
+     "type": "number"
+    }
+   }
+  },
+  "buckets": {
+   "type": "array",
+   "description": "4 桶分区（class 闭轴）。桶缺省表示该类为 0 行（可省略或 loc:0）。",
+   "items": {
+    "type": "object",
+    "required": [
+     "class",
+     "loc"
+    ],
+    "properties": {
+     "class": {
+      "type": "string",
+      "enum": [
+       "reuse_direct",
+       "recompile_reuse",
+       "needs_adaptation",
+       "unadaptable"
+      ],
+      "description": "闭轴：reuse_direct=直接复用（纯脚本/纯逻辑/标准库，跑已移植运行时零改动）；recompile_reuse=重编译复用（C/C++ 无平台 API，OHOS NDK 重编即可）；needs_adaptation=需适配（能用鸿蒙 API/自行实现重建、只是换方案：平台 API 调用点/平台分支/GUI 层重写/事件循环后端/x86-only asm 换 NEON 等）；unadaptable=无法适配（机制/硬件/闭源层无任何鸿蒙等价与回退：CUDA/专有 GPU、闭源二进制库、专有内核特性，模块须与 dim-9 unadaptable_apis 交叉引用）。判据：能否用鸿蒙可用 API 或自行实现重建功能？能→needs_adaptation，不能→unadaptable"
+     },
+     "loc": {
+      "type": "integer",
+      "description": "该桶生产代码行数（引用 dir_loc 机械数字之和）。字段名必须为 loc，不是 total_loc（面板/xlsx 只认 loc）"
+     },
+     "pct": {
+      "type": "number",
+      "description": "占 production.code 百分比"
+     },
+     "modules": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "required": [
+        "path"
+       ],
+       "properties": {
+        "path": {
+         "type": "string",
+         "description": "目录/模块路径（尽量与 dir_loc 的 dir 对齐；子目录拆分时在 reason 说明估算依据）。字段名必须为 path，不是 dir/module/name"
+        },
+        "loc": {
+         "type": "integer"
+        },
+        "reason": {
+         "type": "string",
+         "description": "中文：为何归入此桶（GUI 层重写/含 Win32 调用点/纯算法…）；unadaptable 模块引用 ua:* id 而不重述。字段名必须为 reason，不是 note"
+        },
+        "evidence": {
+         "type": "array",
+         "items": {
+          "type": "string"
+         },
+         "description": "复用来源维度的 file:line（native_api 调用点/platform_branches samples 等，代表性）"
+        }
+       }
+      }
+     },
+     "basis": {
+      "type": "string",
+      "description": "中文：本桶归类依据（引用了哪些机械信号/维度证据）"
+     }
+    }
+   }
+  },
+  "notes": {
+   "type": "string",
+   "description": "中文：未覆盖长尾、估算口径、局限"
+  }
+ }
+}
+
+### harmony_adaptation
+{
+ "type": "object",
+ "description": "Dimension 9 — MODEL (skill: harmony-adaptation). SYNTHESIS dimension: HarmonyOS NEXT PC 移植分级（核心功能 vs 平台差异功能两维可适配性）+ 工作量 of porting the library to HarmonyOS NEXT PC (self-kernel, ArkTS app layer, OHOS NDK native layer, Node-API bridge — NO Linux ABI). Derived by reasoning over the already-filled native_api / runtime_surface / dependencies / build_env / library blocks, reusing their evidence. Prose in 简体中文.",
+ "properties": {
+  "target": {
+   "type": "string",
+   "description": "中文/英文：评估所针对的鸿蒙平台口径（HarmonyOS NEXT PC 等）"
+  },
+  "porting_class": {
+   "type": "string",
+   "enum": [
+    "no_adaptation",
+    "recompile_only",
+    "needs_adaptation"
+   ],
+   "description": "★唯一权威机器轴（3 值顶层移植分级）。**由 scripts/report_normalize.py 组装时确定性归一并落盘**（web/server.js 为等价镜像）：模型给出整体判断作“下限”，归一据 dim-12 code_partition 的 needs_adaptation/unadaptable 桶与 dim-9 unadaptable_apis 把它**只升不降**。语义：no_adaptation=无需适配（纯脚本/纯 Go/纯 Rust 跑已移植运行时、无原生扩展无平台 API，交叉编译属工具链重定向≠适配）；recompile_only=仅交叉编译（C/C++ 原生、仅 OHOS NDK 重编、零源码改动、无平台 API）；needs_adaptation=需适配（需真正改源码/换鸿蒙方案）。硬约束（归一保证，非模型自查）：unadaptable_apis 非空、任一 blocker adaptability=unadaptable/partial、或 dim-12 有 needs_adaptation 桶 ⇒ 至少 needs_adaptation。**needs_adaptation 内部的核心功能/平台差异功能两维细分与总判见派生字段 adaptation_assessment。**"
+  },
+  "porting_class_model": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "description": "归一前模型给出的 porting_class 原值（advisory，单次记录、跨重归一稳定；模型省略则 null）。与归一后的 porting_class 不同则同时记 porting_class_adjusted 并进 meta.harmony_warnings。"
+  },
+  "porting_class_adjusted": {
+   "type": "object",
+   "description": "归一把模型原判校正为更严格类别时记录 {from,to}，供面板/校验透明展示。",
+   "properties": {
+    "from": {
+     "type": "string"
+    },
+    "to": {
+     "type": "string"
+    }
+   }
+  },
+  "adaptation_assessment": {
+   "type": "object",
+   "description": "★派生字段（由 scripts/report_normalize.py 组装时据 porting_class + unadaptable_apis[].functionality_class 确定性算出并落盘，web/server.js 镜像 serve-time 升级；模型无需填）。把 needs_adaptation 沿「核心功能 vs 平台差异功能」两维细分，并派生拓扑上色用的 5 档 effective_class 与「是否可适配」总判 overall。核心功能=Windows/Linux/macOS 平台功能的交集；平台差异功能=平台特有（非交集）。",
+   "properties": {
+    "effective_class": {
+     "type": "string",
+     "enum": [
+      "no_adaptation",
+      "recompile_only",
+      "needs_adaptation",
+      "needs_adaptation_platform_partial",
+      "needs_adaptation_core_partial"
+     ],
+     "description": "闭轴（派生，依赖拓扑图上色 + 难度 floor + rollup 用）：no_adaptation / recompile_only / needs_adaptation（核心+平台均全部可适配）/ needs_adaptation_platform_partial（平台差异功能有不可适配点、核心全可适配）/ needs_adaptation_core_partial（核心功能有不可适配点——最重）。worst-wins：核心不可适配 > 平台不可适配。"
+    },
+    "overall": {
+     "type": "string",
+     "enum": [
+      "adaptable",
+      "adaptable_with_tailoring",
+      "core_blocked"
+     ],
+     "description": "闭轴（派生，替代旧 feasibility 的「是否可适配」总判）：adaptable=可适配；adaptable_with_tailoring=可适配（部分平台特性需裁剪，即 platform_partial）；core_blocked=核心功能不完全可适配（core_partial）。"
+    },
+    "core": {
+     "type": "object",
+     "description": "核心功能维度评估。",
+     "properties": {
+      "adaptable": {
+       "type": "boolean",
+       "description": "核心功能是否全部可适配（无不可适配点）"
+      },
+      "unadaptable": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "description": "核心功能中不可适配点的 unadaptable_apis[].id 列表（单一登记源，明细在 unadaptable_apis）"
+      }
+     }
+    },
+    "platform_specific": {
+     "type": "object",
+     "description": "平台差异功能维度评估。",
+     "properties": {
+      "adaptable": {
+       "type": "boolean",
+       "description": "平台差异功能是否全部
+
+### meta
+{
+ "type": "object",
+ "properties": {
+  "schema_version": {
+   "type": "string"
+  },
+  "analyzer": {
+   "type": "string"
+  },
+  "counter_tool": {
+   "type": "string"
+  },
+  "warnings": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
+  },
+  "harmony_warnings": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "code": {
+      "type": "string",
+      "description": "稳定 slug（cap_miss:<key>/cloud_miss:<vendor>/scenario_no_evidence:<key>/…），模型自我复核据此驳回；同一条告警跨重归一稳定。"
+     },
+     "class": {
+      "type": "string",
+      "enum": [
+       "actionable",
+       "info"
+      ],
+      "description": "actionable=召回/漏判启发式，模型自我复核可带证据修复或驳回为误报；info=归一器已确定性修好的审计留痕，不可驳回。"
+     },
+     "message": {
+      "type": "string",
+      "description": "中文提示原文。"
+     }
+    },
+    "required": [
+     "code",
+     "class",
+     "message"
+    ]
+   },
+   "description": "跨维一致性提示（归一时由 validateHarmony/validateReport/validateLicense 产出，落盘/serve-time 皆有；面板「数据一致性提示」展示）。被模型自我复核驳回为误报的条目移入 harmony_warnings_reviewed。"
+  },
+  "harmony_warnings_reviewed": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "code": {
+      "type": "string"
+     },
+     "message": {
+      "type": "string"
+     },
+     "rationale": {
+      "type": "string",
+      "description": "模型判定为误报的中文理由（test-only/注释/命名巧合/他处已覆盖…）。"
+     }
+    },
+    "required": [
+     "code",
+     "message",
+     "rationale"
+    ]
+   },
+   "description": "模型自我复核判为误报、已从 active 抑制的一致性告警；面板「已复核」折叠区展示（附理由）。"
+  },
+  "harmony_warnings_dismissed": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "code": {
+      "type": "string",
+      "description": "要驳回的 actionable 告警 code（须与 harmony_warnings[].code 逐字一致）。"
+     },
+     "rationale": {
+      "type": "string",
+      "description": "为何是误报的中文理由。"
+     }
+    },
+    "required": [
+     "code",
+     "rationale"
+    ]
+   },
+   "description": "模型自我复核的输入（写在 blocks/meta.json，经 assemble 透传）：列出判为误报的 actionable 告警 code + 理由；归一据此把对应告警从 harmony_warnings 移入 harmony_warnings_reviewed。仅 actionable 可驳，info 驳回被忽略。"
+  },
+  "normalized_version": {
+   "type": "integer",
+   "description": "报告经 scripts/report_normalize.py 归一并落盘的版本号（单一事实源：porting_class/adaptation_assessment/effort.level/code_partition 已确定性算好）。存在且≥当前版 ⇒ server 直接读服务；缺失/更旧 ⇒ serve-time 用等价的 JS 镜像补归一（存量不重跑即升级）。派生逻辑变更时与 report_normalize.NORMALIZED_VERSION 同步 bump。"
+  },
+  "confidence_overall": {
+   "type": "string",
+   "enum": [
+    "high",
+    "medium",
+    "low"
+   ]
+  },
+  "observations": {
+   "type": "array",
+   "description": "Self-capture for skill feedback (反哺): novel values the model coined, gaps in the recommended taxonomy, or classification ambiguities it hit. Reviewed in the panel's 模型观察 page and used to improve skills over time.",
+   "items": {
+    "type": "object",
+    "required": [
+     "dimension",
+     "kind"
+    ],
+    "properties": {
+     "dimension": {
+      "type": "string",
+      "description": "which dimension/skill, e.g. dependencies, native_api, license"
+     },
+     "field": {
+      "type": "string",
+      "description": "the field the observation is about, e.g. acquisition, type"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "new_value",
+       "gap",
+       "ambiguity"
+      ]
+     },
+     "value": {
+      "type": "string",
+      "description": "the coined value or short tag"
+     },
+     "rationale": {
+      "type": "string",
+      "description": "中文：为什么这样判断 / 现有取值为何不够"
+     }
+    }
+   }
+  }
+ 
+

@@ -1499,9 +1499,9 @@
       {
         "id": "ta:pytorch_ohos",
         "capability": "PyTorch 已移植到鸿蒙 PC（含 Python 绑定）",
-        "capability_key": null,
+        "capability_key": "pytorch",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "FBGEMM_GPU 的 Python 端依赖 PyTorch 的 Tensor/CUDA/autograd 接口——如 PyTorch 未移植，整个 Python 绑定层无法运行，FBGEMM 在鸿蒙的价值仅为 CPU C 库形态。",
         "source": "需核实 PyTorch ONNX/HarmonyOS 移植进度",
         "target_status_model": "unknown"
@@ -1602,7 +1602,14 @@
       "Neither cloc nor tokei found; using crude builtin line counter."
     ],
     "confidence_overall_model": "medium",
-    "normalized_version": 6
+    "normalized_version": 6,
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:pytorch_ohos",
+        "class": "actionable",
+        "message": "target_assumption ta:pytorch_ohos 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "FBGEMM 的核心硬件依赖是 NVIDIA CUDA/AMD ROCm GPU 计算和 x86/ARM CPU SIMD 加速指令集。纯 CPU 的 FBGEMM 核心库仅依赖 SIMD（可通过 ARM NEON 适配）。FBGEMM_GPU 强烈依赖 CUDA/cuDNN/cuBLAS/CUTLASS/NCCL GPU 计算栈——这在鸿蒙 PC 上完全不可用。项目无 GUI、无 3D 渲染、无音视频媒体处理。",

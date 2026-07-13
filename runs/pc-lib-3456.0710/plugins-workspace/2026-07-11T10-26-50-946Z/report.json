@@ -1683,9 +1683,9 @@
       {
         "id": "ta:tauri_webview",
         "capability": "tauri crate 在鸿蒙 PC 的 webview/窗口管理/事件循环支持",
-        "capability_key": null,
+        "capability_key": "tauri",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "若 tauri 不支持鸿蒙 PC（webview 无法嵌入、窗口系统不兼容），整个工作区的所有 30 个插件均无法运行，必须整体改用鸿蒙原生方案取代 tauri 架构",
         "source": "harmony-pc-capabilities.json 未登记 tauri/webview 状态，需人工核实",
         "target_status_model": "unknown"
@@ -1728,7 +1728,7 @@
     "notes": "置信度设为 low，因核心前提 tauri crate 的鸿蒙 PC 可用状态未在 harmony-pc-capabilities.json 登记（unknown）。若 tauri 已鸿蒙化，适配量约 18-25 人天（主要在新平台后端实现和测试验证）；若 tauri 不可用，适配量将远超 40 人天（需整体用鸿蒙原生方案取代 tauri 架构）。此评估按模型 A（库跑在已移植 Rust 运行时上）进行，假设 tauri 可用。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "low",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1765,13 +1765,6 @@
         "kind": "classification",
         "value": "library",
         "rationale": "该工作区为 Tauri 插件的 monorepo，各插件以 crate 形式发布到 crates.io 供其他 Tauri 应用依赖使用，主要通过 API（tauri plugin hooks）被调用，因此判为 library。"
-      },
-      {
-        "dimension": "harmony_caps",
-        "field": "gui",
-        "kind": "caps_gap",
-        "value": "tauri webview/窗口管理鸿蒙 PC 支持状态",
-        "rationale": "harmony-pc-capabilities.json 未登记 Tauri/webview 是否支持鸿蒙 PC，而 tauri 是此工作区所有 30 个插件的核心前提。建议在 caps 的 gui 段新增 tauri/webview 条目。"
       }
     ],
     "schema_version": "1.0",
@@ -1781,7 +1774,14 @@
       "Neither cloc nor tokei found; using crude builtin line counter."
     ],
     "confidence_overall_model": "low",
-    "normalized_version": 6
+    "normalized_version": 6,
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:tauri_webview",
+        "class": "actionable",
+        "message": "target_assumption ta:tauri_webview 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本工作区为 Tauri v2 桌面应用框架的后端系统能力插件集，自身不涉及 GUI 渲染、3D 图形、音视频媒体或特定硬件。插件通过 tauri 运行时框架与系统交互，平台依赖由 tauri 核心和各插件的平台抽象层封装。",
@@ -1814,13 +1814,13 @@
     "coverage": {
       "production_code": 32969,
       "partitioned_code": 32969,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "recompile_reuse",
         "loc": 29672,
-        "pct": 90.0,
+        "pct": 90,
         "modules": [
           {
             "path": "plugins/fs",
@@ -2028,7 +2028,7 @@
       {
         "class": "needs_adaptation",
         "loc": 3297,
-        "pct": 10.0,
+        "pct": 10,
         "modules": [
           {
             "path": "plugins/single-instance",

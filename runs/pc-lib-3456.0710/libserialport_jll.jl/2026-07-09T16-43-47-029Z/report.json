@@ -444,15 +444,15 @@
       ],
       "level": "very_low"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
         "id": "ta:libserialport_ohos",
         "capability": "libserialport C 库的 OHOS NDK 可编译性（需 Yggdrasil 构建树新增 ohos target）",
-        "capability_key": null,
+        "capability_key": "usb_serial",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "本 JLL 包仅声明并加载预编译共享库；若无 ohos 平台的 libserialport artifact，则用户无法在鸿蒙 Julia 中通过此包使用 libserialport",
         "source": "harmony-pc-capabilities.json 未收录 libserialport；其底层 POSIX API（termios/ioctl 等）在 OHOS NDK 的可用性需逐一核实",
         "target_status_model": "unknown"
@@ -494,7 +494,7 @@
     "notes": "本包自身的 352 行代码全部为 JLLWrappers 宏自动生成，denoted platform-specific filenames（如 x86_64-linux-gnu.jl）仅描述预编译二进制覆盖的平台——鸿蒙 Julia 上运行时只需新增对应的 wrapper 文件生成。HarmonyOS PC 评估按模型 A（库跑在已移植 Julia 运行时）。底层 libserialport C 库的移植难度取决于其所用 POSIX API（termios/ioctl/tcsetattr 等串口相关系统调用）在 OHOS NDK musl/POSIX 子集的可用性——这与本 JLL 包的适配是两个层面。",
     "porting_class_model": "no_adaptation",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "no_adaptation",
       "overall": "adaptable",
@@ -519,20 +519,13 @@
     "analyzed_at": "2026-07-09T16:43:47.029Z"
   },
   "meta": {
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "high",
-    "harmony_warnings": [
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      }
-    ],
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "本项目为 Julia JLL 自动生成包，仅通过 JLLWrappers 宏加载预编译 libserialport 共享库，本身无 GUI、3D 渲染、媒体编解码或硬件直接访问代码。",
@@ -548,13 +541,13 @@
     "coverage": {
       "production_code": 352,
       "partitioned_code": 352,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "reuse_direct",
         "loc": 352,
-        "pct": 100.0,
+        "pct": 100,
         "modules": [
           {
             "path": "src",

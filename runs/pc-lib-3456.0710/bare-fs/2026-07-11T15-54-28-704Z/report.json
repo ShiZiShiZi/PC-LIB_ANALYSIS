@@ -864,16 +864,16 @@
       ],
       "level": "low"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "confidence_model": "high",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
         "id": "ta:bare_runtime",
         "capability": "Bare 运行时在鸿蒙 PC 上可用",
-        "capability_key": null,
+        "capability_key": "bare_runtime",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "bare-fs 的 C 原生插件依赖 Bare 的 JS 引擎接口（<bare.h>/<js.h>）；若 Bare 未移植鸿蒙，整个库无法运行——但适配 Bare 运行时本身非本库职责",
         "source": "Bare 运行时未列入 harmony-pc-capabilities.json 已移植运行时清单；目前已知 Node.js/Python/Rust/Go 可用但 Bare 待确认",
         "target_status_model": "unknown"
@@ -904,7 +904,7 @@
     ],
     "summary": "bare-fs 本身为跨平台设计——C 层仅用 libuv 文件系统 API（已跨平台含 OHOS），JS 层仅做接口封装。主要不确定性来自依赖的 Bare 运行时是否已移植鸿蒙：若已移植，仅需 OHOS NDK 重编译即可运行（porting_class=recompile_only）；若未移植，需先适配 Bare 运行时或评估改用 Node.js 方案。本库自身无任何平台特定功能、无 GUI、无硬件依赖。",
     "notes": "Bare 运行时不在已知鸿蒙移植列表（Node.js/Python/Rust/Go/Julia）中，是最大未知因素。若 Bare 已被社区移植或可用，此库仅需 OHOS NDK 重编译。若未移植，可考虑将 binding.c 接口从 Bare JS 引擎改为 N-API 标准以适配 Node.js——这将提升工作量为 needs_adaptation（约 3-5 人天）。ar 环境下文件系统操作语义有差异（如权限模型），需在 test.js 测试中重点验证 chmod/chown 的行为。",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "recompile_only",
       "overall": "adaptable",
@@ -937,7 +937,7 @@
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [],
     "counter_tool": "builtin",
     "warnings": [
@@ -946,9 +946,9 @@
     "confidence_overall_model": "high",
     "harmony_warnings": [
       {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
+        "code": "ta_unref:ta:bare_runtime",
+        "class": "actionable",
+        "message": "target_assumption ta:bare_runtime 为 required+unavailable 但无对应 blocker/unadaptable_api"
       }
     ],
     "normalized_version": 6
@@ -967,7 +967,7 @@
     "coverage": {
       "production_code": 6868,
       "partitioned_code": 6868,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

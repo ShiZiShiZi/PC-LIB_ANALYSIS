@@ -503,9 +503,9 @@
       },
       {
         "capability": "System.ComponentModel 基础库",
-        "capability_key": null,
+        "capability_key": "dotnet",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "该依赖为 .NET 系统库的一部分，随 CLR 运行时提供。若 CLR 已移植，此库应可用。",
         "source": "NuGet 包 System.ComponentModel 4.3.0，netstandard1.0 目标依赖",
         "id": "ta:2",
@@ -543,7 +543,7 @@
     "notes": "评估基于 .NET CLR 运行时已在鸿蒙 PC 可用的假设（当前标记为 unknown）；CLR 作为核心前置条件决定 porting_class 的最终有效性。若 CLR 不可用则该库无法运行，需完全重写为其他语言。库本身 288 行纯托管 C#，零平台耦合，无任何需要适配的底层 API。NetStandard 1.0 目标仅需要 System.ComponentModel（.NET 系统库包），不依赖第三方包。",
     "porting_class_model": "no_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "no_adaptation",
       "overall": "adaptable",
@@ -586,7 +586,14 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": null,
-    "normalized_version": 5
+    "normalized_version": 6,
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:2",
+        "class": "actionable",
+        "message": "target_assumption ta:2 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "纯接口抽象库，不涉及 GUI、3D 渲染、媒体或特定硬件。仅在 CLR 运行时上执行纯内存操作。",
@@ -619,13 +626,13 @@
     "coverage": {
       "production_code": 544,
       "partitioned_code": 544,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "reuse_direct",
         "loc": 544,
-        "pct": 100.0,
+        "pct": 100,
         "modules": [
           {
             "path": "src",

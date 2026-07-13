@@ -521,9 +521,9 @@
       {
         "id": "ta:supersocket_deps",
         "capability": "SuperSocket.Client 和 SuperSocket.WebSocket 依赖在鸿蒙 PC 的可用性",
-        "capability_key": null,
+        "capability_key": "dotnet",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "target_status_model": "unknown",
         "impact": "库的两个运行时依赖（纯 .NET NuGet 包）需能通过 nuget 还原并在鸿蒙 .NET 上加载运行；两者自身均为托管代码，受同一 .NET 运行时可用性制约",
         "source": "NuGet 包分析"
@@ -575,7 +575,7 @@
     "notes": "评估按模型 A（库跑在已移植运行时上）完成，但 .NET 运行时在鸿蒙 PC 的可用性为 unknown，因此 confidence 下调至 low。库自身是完全的「零改动」候选——代码层面无任何阻碍；阻碍仅在于运行环境是否存在。若目标为 ArkTS 沙箱应用，.NET 不可用，则需整体用 ArkTS 重实现，工作量陡增。",
     "porting_class_model": "no_adaptation",
     "confidence_model": "low",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "no_adaptation",
       "overall": "adaptable",
@@ -613,7 +613,14 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "low",
-    "normalized_version": 5
+    "normalized_version": 6,
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:supersocket_deps",
+        "class": "actionable",
+        "message": "target_assumption ta:supersocket_deps 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "纯 .NET 托管 WebSocket 客户端库，不涉及 GUI/桌面界面、3D 渲染、音视频媒体或特定硬件依赖。仅通过 BCL 进行标准 TCP 网络通信。",

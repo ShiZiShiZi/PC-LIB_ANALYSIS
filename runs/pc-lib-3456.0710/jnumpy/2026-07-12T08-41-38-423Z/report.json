@@ -1325,9 +1325,9 @@
       {
         "id": "ta:libjulia_embed",
         "capability": "可嵌入的 libjulia 共享库 + Julia C 嵌入 API（jl_init_with_image/jl_parse_opts/jl_eval_string/jl_exception_*）随鸿蒙 Julia 移植提供",
-        "capability_key": null,
+        "capability_key": "libjulia_embed",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "不支持则无法在 Python 进程内内嵌 Julia，整个桥不成立（核心功能受阻）。caps 的 julia 行仅表语言运行时已移植，未覆盖可嵌入共享库形态",
         "source": "references/harmony-pc-capabilities.json（无对应行，caps_gap 已记）",
         "target_status_model": "unknown"
@@ -1345,9 +1345,9 @@
       {
         "id": "ta:two_runtime_coexist",
         "capability": "两个带 GC 的运行时（CPython + Julia）在同一进程内共存：dlopen/RTLD_GLOBAL 符号插装可用 + 信号处理（Julia 用 SIGSEGV 做 GC safepoint，需 --handle-signals 协调）",
-        "capability_key": null,
+        "capability_key": "libjulia_embed",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "鸿蒙 musl/自研内核下的动态链接与信号语义若与 Linux 不同，双运行时嵌入可能崩溃；需实测验证",
         "source": "references/harmony-pc-capabilities.json（无对应行，caps_gap 已记）",
         "target_status_model": "unknown"
@@ -1443,7 +1443,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙已移植运行时上）。但本库是 FFI/ctypes 型桥，按 harmony-adaptation SKILL『对 FFI/ctypes 型库，动态加载的平台库是否有鸿蒙等价才是定 person_days 与可适配性的主因』——故决定因素是可嵌入 libjulia/libpython 的可用性（target_assumptions 三条 required+unknown），而非语言运行时本身（已移植）。confidence=medium：语言运行时确认可用，但三个核心深层能力未核实，任何一条不成立都会使核心功能受阻；若核实可用则置信可升、工作量落在区间下沿，若不可用则降为核心受阻、需整体换方案（如放弃进程内嵌入、改为进程间 IPC 或纯 Python 重写数值核）。INTERNET 权限：本库在首次配置时需联网下载 Julia（jill）与 Julia 包（镜像），但该网络用途属包/运行时下载、非 capability_profile 场景或云服务，故未登记 required_permissions（其 source_capability 无对应场景可指），且 caps 中 PC 形态 INTERNET 可授予性为 unknown。迁移关键路径不在任何 manifest 依赖（numpy 已鸿蒙化），而在上述运行时 FFI 基础，故 critical_dependencies 为空。code_partition 无 C/C++（recompile_reuse=0）、无不可适配模块；needs_adaptation 桶（约 910 行）含 CPython C API 绑定层——该层跨平台，但不能据 unknown 臆断零改动可跑，须按目标 ABI 重验证。若目标是 ArkTS 沙箱应用（模型 B），则 Python/Julia 运行时均不可用，须整体重写，person_days 大幅上升。鸿蒙文档技能（harmonyos-sdk-api-lookup）本评估未触发检索：未产出 @ohos 替代 API 名/权限精确名/不可适配 API 断言（阻碍均在 POSIX/musl 与运行时嵌入层面，非 @ohos 替换）。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1491,20 +1491,6 @@
         "rationale": "按 LOC 主语言是 Julia（约 69%），但分发/消费生态是 Python（PyPI 包 julia-numpy，import jnumpy，pyproject.toml 为唯一 Python manifest），故 ecosystem 取 python。本库实为 Python↔Julia 双向 FFI 桥：用户写 Julia、产出 Python 扩展——这一『反向绑定』关系 bindings 字段无法表达（bindings 指『核心生态之外对外提供绑定的语言』，而此处 Julia 是实现/被嵌入侧而非被绑定的目标），故 bindings 留空并记此歧义。"
       },
       {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "可嵌入 libjulia 共享库 + Julia C 嵌入 API",
-        "rationale": "caps 的 julia 行仅表『Julia 语言运行时已移植(1.10.6)』，未覆盖『libjulia 是否作为可嵌入共享库随附、是否暴露 jl_init_with_image/jl_eval_string 等 C 嵌入 API』——这是 JNumPy 在 Python 进程内内嵌 Julia 的核心前提。建议补入 runtimes 段或新增『语言运行时嵌入/FFI 形态』子段。"
-      },
-      {
-        "dimension": "harmony_caps",
-        "field": "process_security",
-        "kind": "caps_gap",
-        "value": "双 GC 运行时进程内共存（dlopen/RTLD_GLOBAL 符号插装 + 信号处理）",
-        "rationale": "JNumPy 需 CPython 与 Julia 两个带 GC 的运行时同进程共存，依赖动态链接符号插装与信号协调（Julia 用 SIGSEGV 做 GC safepoint，--handle-signals）；鸿蒙 musl/自研内核的相应语义未在 caps 覆盖，建议作为进程/安全模型的一行补入。"
-      },
-      {
         "dimension": "harmony_adaptation",
         "field": "effort.breakdown.component",
         "kind": "gap",
@@ -1516,7 +1502,19 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "medium",
-    "normalized_version": 6
+    "normalized_version": 6,
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:libjulia_embed",
+        "class": "actionable",
+        "message": "target_assumption ta:libjulia_embed 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      },
+      {
+        "code": "ta_unref:ta:two_runtime_coexist",
+        "class": "actionable",
+        "message": "target_assumption ta:two_runtime_coexist 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "JNumPy 是纯计算/多语言互操作库，不触及鸿蒙适配的四大重点场景：无 GUI/窗口（无 Qt/GTK/Swing/Electron 等依赖），无 3D 渲染（无 OpenGL/Vulkan/DirectX），无音视频媒体（无 FFmpeg/GStreamer/编解码），也不直接访问 GPU/USB/串口/蓝牙/传感器等特定硬件。code_metrics.arch_specific 全为 0（无 SIMD intrinsics、无内联汇编、无独立汇编文件）——数值计算完全委托给被内嵌的 Julia 运行时与 NumPy，库自身代码不含任何硬件/平台加速路径。故四大场景均 present:false，capability_profile 不产生 GUI/3D/媒体/硬件类 blocker。",

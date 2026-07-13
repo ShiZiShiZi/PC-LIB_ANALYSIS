@@ -1011,9 +1011,9 @@
       {
         "id": "ta:ohos_text_api",
         "capability": "鸿蒙 PC 文本排版与字体管理 API（@ohos.graphics.text 或等价）",
-        "capability_key": null,
+        "capability_key": "font_ime",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "CoreText 绑定需将全部 CTFont*/CTFrame*/CTLine*/CTRun* 等 API 映射到鸿蒙文本 API——若无等价 API 则整个库的功能无法替代",
         "source": "model analysis: @ohos.graphics.text 在鸿蒙设备上存在，但 PC 形态下的文本排版 API 完整性与可用性未在 harmony-pc-capabilities.json 核实",
         "target_status_model": "unknown"
@@ -1021,9 +1021,9 @@
       {
         "id": "ta:quartz_port",
         "capability": "pyobjc-framework-Quartz（CoreGraphics 绑定）或等价几何类型系统在鸿蒙 PC 可用",
-        "capability_key": null,
+        "capability_key": "macos_objc_bridge",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "CoreText 依赖 CGPoint/CGSize/CGRect/CGAffineTransform 等 Core Graphics 几何类型作为函数参数和返回值——无等价则 CoreText 函数签名无法定义",
         "source": "model analysis: pyobjc-framework-Quartz 为 Apple CoreGraphics 框架绑定，未在 OpenHarmony PC 官方源提供移植产物",
         "target_status_model": "unknown"
@@ -1031,9 +1031,9 @@
       {
         "id": "ta:cocoa_port",
         "capability": "pyobjc-framework-Cocoa（Foundation/CoreFoundation 绑定）或等价基础类型系统在鸿蒙 PC 可用",
-        "capability_key": null,
+        "capability_key": "macos_objc_bridge",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "CoreText 通过 CoreFoundation 进行内存管理（CFRetain/CFRelease）和基础类型（CFString/CFArray/CFDictionary）操作",
         "source": "model analysis: pyobjc-framework-Cocoa 为 Apple Cocoa 框架绑定，未在 OpenHarmony PC 官方源提供移植产物",
         "target_status_model": "unknown"
@@ -1072,7 +1072,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 3.12 运行时上）。本库本质上是 Apple CoreText 框架的 Python 绑定层——其全部公共 API 为 macOS CoreText C API 的一对一封装。鸿蒙 PC 有独立的文本排版 API（@ohos.graphics.text），但 API 形状、函数名、类型系统与 CoreText 完全不同，且 PC 形态下的 @ohos.graphics.text 完整性与可用性尚未核实（target_status=unknown）。适配工作不是'修改个别函数'而是'更换整个绑定目标'——相当于在鸿蒙上重新实现一个等效的文本排版 Python 绑定层。confidence 因 4 项 required target_assumptions 均为 unknown 而下调至 medium。归一将据 unadaptable_apis(仅含 1 项 platform_specific) 和 code_partition needs_adaptation 桶派生 adaptation_assessment:needs_adaptation_platform_partial、overall:adaptable_with_tailoring。若目标是 ArkTS 沙箱应用（模型 B），Python 运行时不可用，整个方案需换为 N-API 桥接 + ArkTS 层调用，工作量显著上升。若鸿蒙 PC 的 @ohos.graphics.text 被证实不可用（unavailable），target_assumptions 翻转为 blocker，porting_class 维持 needs_adaptation 但需要从零实现文本排版引擎，person_days 大幅上调。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation_platform_partial",
       "overall": "adaptable_with_tailoring",
@@ -1103,15 +1103,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "gui",
-        "kind": "caps_gap",
-        "value": "鸿蒙 PC 文本排版与字体管理 API（@ohos.graphics.text 或等价）",
-        "rationale": "pyobjc-framework-CoreText 作为文本排版绑定库需要鸿蒙 PC 提供文本排版 API 作为替代目标。当前 harmony-pc-capabilities.json 未覆盖文本排版/字体管理能力（仅有 GUI 通用行如 Qt/GTK/Swing），建议在 gui 段或新增 text_layout 段补充鸿蒙 PC 文本排版 API 的可用性状态"
-      }
-    ],
+    "observations": [],
     "notes": "confidence_overall 因 4 项 required target_assumptions（pyobjc-core/Quartz/Cocoa 的鸿蒙可用性及鸿蒙 PC 文本排版 API）均为 unknown 而下调至 medium。若这些假设被核实（target_status 翻为 available 或 unavailable），置信度可相应调整。",
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",

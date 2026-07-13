@@ -827,9 +827,9 @@
       {
         "id": "ta:udp_multicast",
         "capability": "UDP 多播套接字 API（.NET UdpClient 下的 MulticastOption）",
-        "capability_key": null,
+        "capability_key": "dotnet",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "mDNS 核心依赖 UDP 多播（224.0.0.251/ff02::fb 端口 5353），若运行时未暴露或系统层不支持多播，协议无法工作",
         "source": "模型推断（未在 caps 中找到直接匹配行）",
         "target_status_model": "unknown"
@@ -840,10 +840,10 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "mDNS 服务发现需要发送和接收 UDP 多播/单播数据报",
         "source_capability": "network",
-        "harmony_status": "unknown",
         "evidence": [
           "src/MulticastClient.cs:149"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "critical_dependencies": [],
@@ -851,7 +851,7 @@
     "notes": "核心风险点：#1 .NET 运行时在鸿蒙 PC 的可用性（当前 unknown），若不可用则整体不可移植需 complete rewrite；#2 UDP 多播支持依赖 OS 网络栈，鸿蒙自研内核需验证。net-mdns 本身代码优良——纯托管、无原生依赖、按平台条件编译。",
     "porting_class_model": "no_adaptation",
     "confidence_model": "low",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "no_adaptation",
       "overall": "adaptable",
@@ -898,6 +898,11 @@
     "observations": [],
     "harmony_warnings": [
       {
+        "code": "ta_unref:ta:udp_multicast",
+        "class": "actionable",
+        "message": "target_assumption ta:udp_multicast 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      },
+      {
         "code": "perm_dangling_cap:ohos.permission.INTERNET",
         "class": "actionable",
         "message": "required_permission ohos.permission.INTERNET 的 source_capability=network 不在已标记场景中"
@@ -917,7 +922,7 @@
       "shape coerced: build_env.compiler_extensions[0].evidence string→array"
     ],
     "confidence_overall_model": null,
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "net-mdns 是纯网络协议库，不涉及 GUI、3D 渲染、媒体或硬件设备交互。",
@@ -933,7 +938,7 @@
     "coverage": {
       "production_code": 1887,
       "partitioned_code": 1887,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

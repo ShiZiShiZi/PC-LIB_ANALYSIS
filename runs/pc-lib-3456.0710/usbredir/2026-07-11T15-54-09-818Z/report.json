@@ -764,9 +764,9 @@
       {
         "id": "ta:usb_stack",
         "capability": "OHOS USB 栈（USB 设备访问的 NDK 层接口 / @ohos.usbManager）",
-        "capability_key": null,
+        "capability_key": "usb_serial",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若无 USB NDK 接口，usbredirhost 的 USB 设备访问层无法直接替换，需通过宿主应用间接控制 USB（工作量大增，可能无法实现完整功能）",
         "source": "harmony-pc-capabilities.json 无 USB 栈行；需核实 OHOS 原生 USB API 可用性",
         "target_status_model": "unknown"
@@ -872,15 +872,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "hardware_devices",
-        "kind": "caps_gap",
-        "value": "OHOS USB NDK 接口 / libusb 鸿蒙 PC 可用性",
-        "rationale": "harmony-pc-capabilities.json 的 hardware_devices section 有 usb_serial 行，但状态为 unknown，且未单独列出原始 USB 设备访问（非串口）的 NDK 接口。usbredirhost 对 libusb 的依赖是核心 gating factor——若 OHOS 有 USB 原生 API，适配工作量在估算区间低端；若无，需要重评估或通过宿主间接访问。"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "builtin",
@@ -989,7 +981,7 @@
       {
         "class": "unadaptable",
         "loc": 0,
-        "pct": 0.0,
+        "pct": 0,
         "modules": [],
         "basis": "无明确不可适配点；USB 设备访问可通过鸿蒙 USB 框架（@ohos.usbManager / OHOS Native USB API）重建，场景归为 needs_adaptation 而非 unadaptable"
       }

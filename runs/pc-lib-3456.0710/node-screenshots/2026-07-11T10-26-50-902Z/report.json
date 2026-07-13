@@ -47,7 +47,7 @@
         "language": "TypeScript",
         "files": 5,
         "code": 130,
-        "pct": 10.0,
+        "pct": 10,
         "production": {
           "files": 2,
           "code": 85
@@ -893,16 +893,16 @@
       ],
       "level": "low"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "confidence_model": "high",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
         "id": "ta:xcap_ohos",
         "capability": "xcap 库是否需要新增 HarmonyOS 显示系统后端以支持屏幕捕获",
-        "capability_key": null,
+        "capability_key": "screen_capture",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "xcap 目前仅实现 Windows DXGI / macOS CoreGraphics / Linux X11 三平台捕获，鸿蒙 PC 若使用非 X11 显示系统则需新增后端；现有各平台后端完全不兼容鸿蒙",
         "source": "xcap 仓库源码结构（github.com/nashaofu/xcap）；鸿蒙 PC 显示系统能力",
         "target_status_model": "unknown"
@@ -910,9 +910,9 @@
       {
         "id": "ta:ohos_display",
         "capability": "鸿蒙 PC 是否提供显示捕获 API 或可通过 X11 兼容层运行图形窗口",
-        "capability_key": null,
+        "capability_key": "screen_capture",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若鸿蒙 PC 有显示捕获 API 或 X11 兼容层，则 xcap 可复用现有 Linux 后端或新增 OHOS 后端；若完全无则 xcap 无法工作，本库核心功能（屏幕/窗口截图）完全不可用",
         "source": "harmony-pc-capabilities.json（显示系统/窗口捕获能力未知）",
         "target_status_model": "unknown"
@@ -997,7 +997,7 @@
     ],
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 24 运行时上）。node-screenshots 自身 JS 接口层已预置鸿蒙平台分支（index.js L454），移植难度极低。主要风险在 xcap 依赖：xcap 当前仅支持 Windows DXGI、macOS CoreGraphics、Linux X11+RandR+SHM 三种显示捕获路径，若鸿蒙 PC 不支持 X11 协议则需要为 xcap 新增 OHOS 显示后端（鸿蒙原生 API），这是本库移植的唯一实质性工作。当前 target_assumptions 中有 2 项 unknown，confidence 下调至 medium。",
     "porting_class_model": "recompile_only",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "recompile_only",
       "overall": "adaptable",
@@ -1038,13 +1038,6 @@
         "kind": "classification",
         "value": "library",
         "rationale": "node-screenshots 通过 npm 分发，以 API 方式被别的 Node.js 代码通过 import/require 调用（主要 export 类 Monitor/Window/Image），即使可能用于 Electron 桌面应用，其自身定位是库而非应用"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "caps_gap",
-        "value": "鸿蒙 PC 显示捕获能力（屏幕/窗口截图）",
-        "rationale": "harmony-pc-capabilities.json 目前未覆盖显示捕获/图形系统领域的能力条目；建议在 caps 中新增显示系统相关行（至少含 X11 兼容性、原生捕获 API 可用性），供后续分析引用"
       }
     ],
     "schema_version": "1.0",
@@ -1054,13 +1047,6 @@
       "Neither cloc nor tokei found; using crude builtin line counter."
     ],
     "confidence_overall_model": "medium",
-    "harmony_warnings": [
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      }
-    ],
     "normalized_version": 6
   },
   "capability_profile": {
@@ -1077,7 +1063,7 @@
     "coverage": {
       "production_code": 1154,
       "partitioned_code": 1154,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

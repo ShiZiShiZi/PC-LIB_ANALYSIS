@@ -970,9 +970,9 @@
       {
         "id": "ta:bare_runtime",
         "capability": "Bare JavaScript 运行时支持",
-        "capability_key": null,
+        "capability_key": "bare_runtime",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "Bare 运行时不可用则 C 扩展无宿主导入，整个模块不可用",
         "source": "harmony-pc-capabilities.json 中未收录 Bare 运行时",
         "target_status_model": "unknown"
@@ -1015,7 +1015,7 @@
     "notes": "评估按模型 A（库跑在 Bare 运行时上）。该模块本质上是对 libuv 系统 API 的薄封装，C 代码约 1175 行（纯 libuv 调用）、JS 代码约 634 行（纯 JavaScript 封装）。核心风险不在代码本身，而在 Bare 运行时和 libuv 在 OHOS 的可用性。若 Bare 未移植，建议改用已确认移植的 Node.js 作为替代运行时。若目标为 ArkTS 沙箱应用（模型 B），须整体重写为 @ohos.* API 调用，工作量大幅提升。",
     "porting_class_model": "recompile_only",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "recompile_only",
       "overall": "adaptable",
@@ -1050,13 +1050,6 @@
         "kind": "unknown_target",
         "value": "Bare 运行时和 libuv 在 OHOS 的可用性未在 harmony-pc-capabilities.json 中记录",
         "rationale": "bare-os 是 Bare 运行时的 C 扩展，其可用性完全取决于宿主运行时的移植状态。已知 Node.js 已在 OHOS 可用（含 libuv），但 Bare 和 Node.js 的 libuv 集成方式可能不同。"
-      },
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "Bare JavaScript 运行时",
-        "rationale": "bare-os 依赖 Bare 运行时和 libuv，当前 harmony-pc-capabilities.json 未记录这两个能力的状态。建议在 runtimes 段或新增段补充。"
       }
     ],
     "schema_version": "1.0",
@@ -1066,7 +1059,14 @@
       "Neither cloc nor tokei found; using crude builtin line counter."
     ],
     "confidence_overall_model": "medium",
-    "normalized_version": 6
+    "normalized_version": 6,
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:bare_runtime",
+        "class": "actionable",
+        "message": "target_assumption ta:bare_runtime 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本模块为 Bare 运行时的系统工具层封装，不涉及任何图形界面、三维渲染、音视频媒体或特定硬件设备操作。该模块功能——平台信息查询、进程监控、用户/组信息、网络接口枚举、环境变量操作——均为操作系统基础抽象，适用于纯计算场景。",
@@ -1082,7 +1082,7 @@
     "coverage": {
       "production_code": 1809,
       "partitioned_code": 1809,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

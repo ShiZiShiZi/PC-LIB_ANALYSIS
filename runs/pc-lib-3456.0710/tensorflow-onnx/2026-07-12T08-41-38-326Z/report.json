@@ -978,9 +978,9 @@
       {
         "id": "ta:tensorflow",
         "capability": "TensorFlow 2.x Python API + 原生运行时（libtensorflow）在鸿蒙 PC 可用",
-        "capability_key": null,
+        "capability_key": "tensorflow",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "转换管线的全部入口（convert/tf_loader/tf_utils/tflite_utils/tfjs_utils）都 import tensorflow：加载 SavedModel/GraphDef/checkpoint/Keras、函数追踪与图冻结都依赖 TF 的 Python+C API。无 TF 则核心功能整体不可运行，且无法用 protobuf 直连等低成本方案替代（SavedModel 签名解析、concrete function 追踪、Keras 反序列化深度耦合 TF 运行时）。OpenHarmony PC PyPI 镜像查询无 tensorflow 的 ohos 构建，社区亦无公开鸿蒙移植信息，故记 unknown——不得据 unknown 臆断可行",
         "source": "scripts/harmony_adapted.js 镜像查询（tensorflow: 未命中 ohos wheel）；caps JSON 无对应行（已记 caps_gap 观察）",
         "target_status_model": "unknown"
@@ -1086,7 +1086,7 @@
     "notes": "两层结论务必分开读：①代码轴 no_adaptation——本库不需要任何源码适配（与 nmap 类 shell-out 库同型：代码可跑、受阻于外部前提）；②运行前提轴——ta:tensorflow 为 required+unknown，functional_viability 由归一派生为 unverified，confidence 因 required+unknown 下调至 medium。unadaptable_apis 为空（库本体无任何不可适配 API），故归一后 porting_class 保持 no_adaptation。effort 不含 TensorFlow 本体移植。示例/测试中的 tfhub.dev 下载等网络用法不进结论（生产范围口径）。",
     "porting_class_model": "no_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "no_adaptation",
       "overall": "adaptable",
@@ -1173,13 +1173,13 @@
     "coverage": {
       "production_code": 31444,
       "partitioned_code": 31444,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "reuse_direct",
         "loc": 31444,
-        "pct": 100.0,
+        "pct": 100,
         "modules": [
           {
             "path": "tf2onnx",

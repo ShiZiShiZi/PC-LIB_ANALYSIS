@@ -1244,9 +1244,9 @@
       {
         "id": "ta:global_input_permission",
         "capability": "鸿蒙 PC 是否允许应用/进程获取全局键盘/鼠标输入事件（非前台窗口也拦截）",
-        "capability_key": null,
+        "capability_key": "input_automation",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若沙箱安全模型禁止全局输入钩子，则 iohook 的核心功能完全不可实现，整个库变为 unadaptable（core_blocked）。",
         "source": "鸿蒙 PC 安全模型待核实（references/harmony-pc-capabilities.json 中尚无对应条目）",
         "target_status_model": "unknown"
@@ -1254,9 +1254,9 @@
       {
         "id": "ta:input_event_api",
         "capability": "鸿蒙 NDK 是否提供 C/C++ 级原始输入事件拦截 API（类似 Linux input 子系统 / evdev）",
-        "capability_key": null,
+        "capability_key": "input_automation",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若无 NDK 级输入拦截接口，则需通过 ArkTS @ohos.multimodalInput 桥接（大幅增加复杂度），或完全无法实现原生钩子。",
         "source": "鸿蒙 NDK 能力范围待核实",
         "target_status_model": "unknown"
@@ -1298,7 +1298,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙 Node.js 24 上）。核心技术风险：鸿蒙 PC 安全模型是否允许全局输入钩子——若禁止则整个库变为 unadaptable、core_blocked。该风险来自目标能力不足（runtime 层级禁止），非代码层面不可移植——porting_class 仍可标 needs_adaptation。建议先核实鸿蒙 PC 安全策略对输入事件拦截的态度再启动适配。如需 npm install 阶段的 INTERNET 权限，运行时不需要。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",

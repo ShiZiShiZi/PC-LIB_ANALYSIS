@@ -1536,7 +1536,7 @@
       ],
       "level": "medium"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "critical_dependencies": [],
     "summary": "该库为 Node.js monorepo 工具库集，鸿蒙 PC 已移植 Node.js 24 运行时。98.5% 代码为纯 TypeScript/JavaScript（27,262 行），直接在鸿蒙 Node.js 上运行，无需改动。0.8% 代码（386 行）为 native-machine-id 包，含 N-API C++ 原生扩展（binding.cc），需用 OHOS NDK 交叉编译 .so 并新增鸿蒙平台后端获取机器 ID。无 GUI/3D/媒体/硬件依赖，无外部未移植原生库。整体适配工作量轻。",
     "blockers": [
@@ -1619,9 +1619,9 @@
       },
       {
         "capability": "鸿蒙 PC 提供设备唯一标识获取接口（如系统属性/文件/D-Bus 等效）",
-        "capability_key": null,
+        "capability_key": "device_id",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "native-machine-id 需要在鸿蒙上实现 ID 获取的后端；若无可用接口则需回退到随机/持久化方案",
         "source": "harmony-pc-capabilities.json#hardware",
         "id": "ta:3",
@@ -1649,7 +1649,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。适配核心在 native-machine-id C++ 原生扩展（约 213 行 C++）的 OHOS NDK 重编译与平台后端新增。其余纯 JS 模块（98.5%）直接运行。无不可适配的核心功能，所有用到功能均可适配。porting_class 由归一据 code_partition needs_adaptation 桶非空推导为 needs_adaptation；adaptation_assessment 由归一推导（无 unadaptable_apis → overall:adaptable）。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1723,17 +1723,12 @@
     ],
     "harmony_warnings": [
       {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      },
-      {
         "code": "cloud_miss:aws",
         "class": "actionable",
         "message": "依赖/网络出现 aws 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
       }
     ],
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [],
     "confidence_overall_model": "high",
     "normalized_version": 6

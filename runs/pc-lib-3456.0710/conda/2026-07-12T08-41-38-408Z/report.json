@@ -2268,9 +2268,9 @@
       {
         "id": "ta:sys_platform",
         "capability": "鸿蒙 Python 的 sys.platform 取值，及 conda 平台/subdir 识别（compat.py on_* 与 context._platform_map/KNOWN_SUBDIRS）能否正确识别鸿蒙",
-        "capability_key": null,
+        "capability_key": "python",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "conda 需识别鸿蒙平台才能选对 subdir（应新增 ohos-arm64/ohos-x86_64）；若 sys.platform 被误判为 linux，会安装不兼容的 linux-64 二进制包（鸿蒙无 Linux ABI），导致运行失败。",
         "source": "references/harmony-pc-capabilities.json（无对应行，已提案 caps_gap）",
         "target_status_model": "unknown"
@@ -2472,7 +2472,7 @@
     "notes": "评估按模型 C（整包 CLI 应用、跑在已移植鸿蒙 Python 运行时）口径，GUI-free，故无 GUI/3D/媒体阻碍。结论依赖两个未核实的 required 目标能力（ta:posix_links 硬链接/符号链接语义、ta:sys_platform 鸿蒙平台识别）——caps 无对应行、标 unknown，故 confidence 下调为 medium，不臆断为可行；若实测鸿蒙 POSIX FS 完整且 sys.platform 可识别，则移植顺利、工作量趋近区间下界。needs_adaptation 桶（约 2.2k 行）多为「换鸿蒙方案或裁剪」而非逐行重写，api_adaptation 工作量由归一据桶 LOC 派生。dim-12 已将约 32,968 行非产品代码（durations 时长缓存、docs、.github CI、仓根配置）并入 reuse_direct 默认桶凑对账。可选 AWS S3 channel（boto3 惰性加载）为云服务路径，已在 cloud_services 登记，需 INTERNET 权限；默认走 HTTP(S) channel、非必需。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -2508,13 +2508,6 @@
   "meta": {
     "confidence_overall": "medium",
     "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "鸿蒙 Python 的 sys.platform 取值与平台识别",
-        "rationale": "conda 需据 sys.platform 识别鸿蒙以选择 ohos-arm64/ohos-x86_64 subdir（误判为 linux 会装不兼容二进制包），caps 未记录该取值；建议补入 runtimes.python 或新增平台识别行。"
-      },
       {
         "dimension": "code_partition",
         "field": "buckets",

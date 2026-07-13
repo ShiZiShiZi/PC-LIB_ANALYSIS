@@ -14,7 +14,13 @@
 | Rust | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.89+，有 ohos target |
 | Go | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.24+ / 1.22 |
 | Julia | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.10.6 |
-| .NET / CLR 运行时（C#/F#） | ⬜ 未核实 | 人工核实(无移植证据)：遍历 harmony-pc 知识库 + 社区已移植运行时清单 + 真机设备 HNP 实测，均无 .NET/CLR/Mono | 2026-07-13 | 截至 2026-07-13 无 .NET/CLR/Mono/CoreCLR 任何移植或运行证据；社区已移植运行时清单(Java/Node/Python/Rust/Go/Julia)不含 .NET；**真机设备 3BT0124820000152 HNP 实测无 dotnet/mono**。本组 30 个 C#/.NET 库(26 必需)依赖此——高需求研究缺口，禁据无证据臆断为可行。 |
+| .NET / CLR 运行时（C#/F#） | ❌ 不支持 | 用户确认 .NET 当前鸿蒙不支持 + 真机 HNP 无 dotnet/mono | 2026-07-13 | .NET / CLR / Mono 运行时当前**鸿蒙 PC 不支持**（用户确认；真机设备 3BT0124820000152 HNP 无 dotnet/mono；社区已移植运行时清单不含 .NET）。C#/.NET 库运行前提=不支持（functional_viability=blocked_external）；若社区后续提供 .NET 移植可翻转。 |
+| PyTorch / libtorch | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机 HNP 无 libtorch；无 PyTorch 移植证据；FBGEMM 等依赖无法运行。 |
+| TensorFlow / libtensorflow | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机 HNP 无 libtensorflow；无 TF 移植证据；tensorflow-onnx 依赖无法运行。 |
+| Bare JavaScript 运行时 | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机无 Bare 运行时；bare-fs/bare-os 依赖（libuv 本身经 Node 可用，但 Bare 运行时缺）。 |
+| Tauri (Rust webview 框架) | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机无 Tauri webview/窗口/事件循环支持；plugins-workspace 依赖（系统 ArkWeb 存在但非 Tauri 绑定）。 |
+| MPI (MPICH) | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机 HNP 无 MPICH；MPICH_jll 需 arm64 交叉编译产物，当前无。 |
+| libjulia 嵌入 + CPython/Julia 双运行时共存 | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机 HNP 无 julia；jnumpy 需可嵌入 libjulia(jl_init_with_image)+ 与 CPython 同进程双 GC 共存，未证。基座 Julia 运行时另见 runtimes.julia（社区版可装）。 |
 
 ## 命令行工具 / 外部二进制（shell-out 型库/应用依赖的独立可执行程序在鸿蒙 PC 的可用性）
 
@@ -58,6 +64,9 @@
 | HiDPI / 多显示器 | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机) + HarmonyOS SDK 文档：@ohos.display(屏幕属性)、oh_display_manager.h/oh_display_info.h | 2026-07-13 | @ohos.display(densityDPI/densityPixels/多屏 getAllDisplays)+ C API OH_DisplayManager 具备，MateBook HiDPI 真机；Win GetDpiForWindow 无 drop-in、须换 @ohos.display。 |
 | 字体 / 输入法 (IME) / i18n | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机) + HarmonyOS SDK 文档：字体 freetype/fontconfig/harfbuzz 交叉编译(Qt/VLC 真机渲字)；@ohos.inputMethod(IME Kit) | 2026-07-13 | 字体渲染真机可用(freetype/fontconfig/harfbuzz + Qt/VLC 渲字)；IME 走 @ohos.inputMethod(IME Kit)、i18n 走 ICU。需集成、非直接替换。 |
 | 打印 | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机) + HarmonyOS SDK 文档：@ohos.print(打印)、ohprint.h/OH_Print(Basic Services Kit) | 2026-07-13 | @ohos.print(ArkTS)+ ohprint.h/OH_Print(C API)+ PrintExtensionAbility 具备打印框架 API；Ghostscript/CUPS 式打印管线非 drop-in、须经其 API 适配，PC 形态实际可用性待核实。 |
+| 屏幕截图 / 显示捕获 | 🟡 部分支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) + KB | 2026-07-13 | root 域 snapshot_display 真机可截屏；native AVScreenCapture NDK 存在；app 域受限、需权限。napi_screenshot/node-screenshots 依赖。 |
+| 全局输入注入 / UI 自动化 | 🟡 部分支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) + KB | 2026-07-13 | root/host 域 uinput/uitest 可注入键鼠、驱动 native 控件（GPU-surface UI 除外）；第三方 app 经无障碍/UiTest 向他应用注入受安全策略限制。iohook/pywinauto 依赖。 |
+| 设备唯一标识获取 | 🟡 部分支持 | HarmonyOS SDK @ohos.deviceInfo | 2026-07-13 | @ohos.deviceInfo(serial/ODID)提供设备标识；非 D-Bus/getprop drop-in，Node 库需经该 API 适配。devtools-shared 依赖。 |
 
 ## 进程 / 安全模型
 
@@ -109,9 +118,11 @@
 |------|------|------|----------|------|
 | GPU 通用计算 CUDA | ❌ 不支持 |  |  | CUDA 为 NVIDIA 专有，鸿蒙无等价——相关功能无法移植 |
 | OpenCL | ✅ 已支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-OpenCL-SDK-适配要点.md | 2026-07-13 | OpenCL 3.0 真机(HUAWEI Maleoon 916 GPU；"HUAWEI OpenCL 3.0 B301")，KhronosGroup/OpenCL-SDK 零改编译、SAXPY 内核跑通(~23GB/s)。须设 OCL_ICD_FILENAMES=/vendor/lib64/passthrough/libOpenCL.so(无标准 ICD 配置)，CL_DEVICE_TYPE 返回非标值。 |
-| USB / 串口 | ⬜ 未核实 | 人工核实(无移植证据)：harmony-pc 知识库无 USB/串口设备访问端口；libusb 编译撞墙(E091) | 2026-07-13 | 截至 2026-07-13 无 USB/串口/HID/NFC/GPIO 设备访问的移植或真机证据；libusb 类代码交叉编译撞 musl/内核头墙(<linux/socket.h> sockaddr_storage 重定义)为负面信号。libserialport/libusb/openocd/python-fido2/usbmuxd/avrdude 需——待核实(@ohos.usbManager 存在但 PC 设备访问未验)。 |
+| USB / 串口 | 🟡 部分支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) + KB | 2026-07-13 | libusb **cmd-pkgs 已预编译**→用户态 USB 访问库可用；USB HID/串口设备**访问权限 app 域受限**(kernel 权限非普通 HAP 可授)、root 域可枚举。@ohos.usbManager 提供 app 层 USB API。libusb/libmtp/usbmuxd/openocd/python-fido2/avrdude/libserialport 依赖。 |
 | 蓝牙 | ⬜ 未核实 |  |  | 蓝牙栈与权限待核实 |
 | 传感器 | ⬜ 未核实 |  |  | PC 形态传感器可用性待核实 |
+| GPU 驱动框架 / DRM-KMS / VAAPI | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 鸿蒙无 Linux DRM/KMS 子系统与 VAAPI；GPU 走 OpenCL/Vulkan/ArkGraphics，libva 类 Linux 显存/显示抽象无等价。 |
+| 智能卡 / PC-SC | ⬜ 未核实 | 待查 | 2026-07-13 | @ohos 未见 PC/SC 等价智能卡服务 API；OpenSC 依赖——待查文档确认。 |
 
 ## 权限模型（鸿蒙化后需申请的 ohos.permission.*）
 
@@ -147,3 +158,21 @@
 | 进程自省 (/proc/self/mem·maps) | 🟡 部分支持 | 真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13) | 2026-07-13 | root 域 /proc/self/mem、/proc/self/maps 真机可读(崩溃处理/backtrace/自省)；app 域 /proc 部分 SELinux 受限(KB E031)、**跨进程 ptrace/mach_vm_read 未证**(crashpad/breakpad 自崩溃处理可用、他进程调试受限)→partial。 |
 | libffi (FFI 动态调用) | ✅ 已支持 | 真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13) | 2026-07-13 | 设备 HNP 已装 libffi.org；dlopen/闭包(CFUNCTYPE)真机可用(W^X 于 1.12.0 放开, KB E045)。pyobjc-core 等 FFI 库依赖。 |
 | GLib / GObject / GIO / GModule | ✅ 已支持 | 真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13) | 2026-07-13 | 设备 HNP 已装 glib.org；gstreamer 等依赖 GLib 栈可用(注:GTK 场景另见 gui.gtk，cmd-pkgs 预编译 GTK 栈不可用须源码编, KB)。 |
+| macOS Objective-C 运行时桥 (Cocoa/Quartz/CoreText) | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | pyobjc 依赖 macOS ObjC 运行时 + Foundation/CoreGraphics/CoreText，鸿蒙无等价 ObjC 桥；文本排版须改 @ohos.graphics.text，属重写而非移植。 |
+
+## 原生 C/C++ 库移植状态（cmd-pkgs 预编译 / 需交叉编译）
+
+| 能力 | 状态 | 来源 | 核对时间 | 说明 |
+|------|------|------|----------|------|
+| SDL2 / SDL3 | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 SDL2/SDL3；SDL_image/mixer/ttf 等依赖其运行时（音频/IO/互斥/原子后端随 SDL3）。 |
+| Cairo / Pango / HarfBuzz | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 cairo/pango/harfbuzz 图形排版栈。 |
+| FreeType / FontConfig | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 freetype/fontconfig 字体栈。 |
+| ncurses / readline | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 ncurses/readline。 |
+| libogg (Ogg 容器) | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 libogg/ogg；theora 等依赖。 |
+| APR (Apache Portable Runtime) | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 apr；apr-util/apr-iconv 依赖。 |
+| BoringSSL (Chromium) | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（openssl 已预编译可替代部分；cronet 需 BoringSSL 特定实现，Chromium //base //net 一并较重）。 |
+| Apache Xerces-C++ (XML) | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（libE57Format 依赖 XercesC 3.2）。 |
+| Lua / liblua | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（NLua/KeraLua 需原生 liblua5x；库小、交叉编译成本低）。 |
+| OpenCASCADE (几何引擎) | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（IfcOpenShell 依赖；OCCT 依赖链庞大、交叉编译重）。 |
+| Ghostscript | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（ghostpdl/Ghostscript_jll 需 gs 二进制/库）。 |
+| glibmm / libxml++ | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（libepub 依赖；C++ 绑定层需 glib 之上再编）。 |

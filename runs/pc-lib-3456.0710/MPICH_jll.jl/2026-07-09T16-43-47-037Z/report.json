@@ -491,7 +491,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "critical_dependencies": [
       {
         "name": "Hwloc_jll",
@@ -513,11 +513,11 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "1) 验证现有 aarch64-linux-musl-mpi+mpich 预编译二进制在鸿蒙上能否加载运行；2) 若不能，在 Yggdrasil（BinaryBuilder.jl 社区构建树）中新增 OHOS 交叉编译目标，产出 ohos-aarch64 平台的 MPICH .so；3) Julia Artifacts.toml 注册新平台三元组即可自动生效。",
         "evidence": [
           "Artifacts.toml（当前无 ohos 平台条目）"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:hwloc_ohos",
@@ -526,11 +526,11 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "如果 OpenHarmony PC 的 cmd-pkgs 预编译清单已包含 hwloc，则直接复用；否则通过 BinaryBuilder.jl 为 Hwloc_jll 新增 OHOS 交叉编译。",
         "evidence": [
           "Artifacts.toml（Hwloc_jll 为依赖）"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "unadaptable_apis": [],
@@ -547,9 +547,9 @@
       },
       {
         "capability": "MPICH OHOS arm64 交叉编译产物",
-        "capability_key": null,
+        "capability_key": "mpi",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "无对应 OHOS 预编译 .so 则 JLL 加载失败，需在 Yggdrasil 社区构建树中新增目标",
         "source": "自身分析——MPICH 尚未覆盖 OHOS 三目标",
         "id": "ta:2",
@@ -584,15 +584,15 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "MPI 并行计算需跨节点网络通信",
         "source_capability": null,
-        "harmony_status": "available",
         "evidence": [
           "MPICH 自身的网络通信需要，非 JLL wrapper 控制"
-        ]
+        ],
+        "grantability": "available"
       }
     ],
     "porting_class_model": "no_adaptation",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "no_adaptation",
       "overall": "adaptable",
@@ -634,12 +634,12 @@
     "confidence_overall_model": null,
     "harmony_warnings": [
       {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
+        "code": "ta_unref:ta:2",
+        "class": "actionable",
+        "message": "target_assumption ta:2 为 required+unavailable 但无对应 blocker/unadaptable_api"
       }
     ],
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "MPICH_jll 是纯 Julia JLL 封装包，不涉及 GUI、3D 渲染、媒体解码或特定硬件场景。",
@@ -655,13 +655,13 @@
     "coverage": {
       "production_code": 856,
       "partitioned_code": 856,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "reuse_direct",
         "loc": 856,
-        "pct": 100.0,
+        "pct": 100,
         "modules": [
           {
             "path": "src/wrappers",

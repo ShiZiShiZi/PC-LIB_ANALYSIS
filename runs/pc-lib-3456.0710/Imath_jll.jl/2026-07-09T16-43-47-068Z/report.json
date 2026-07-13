@@ -380,9 +380,9 @@
       {
         "id": "ta:julia_runtime",
         "capability": "Julia 运行时在鸿蒙 PC 可用（含 Libdl 动态库加载能力）",
-        "capability_key": null,
+        "capability_key": "libjulia_embed",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "Julia 运行时是 JLL 包的执行宿主，不可用则本包无法运行。Libdl 的 dlopen 能力是 JLLWrappers 动态加载 Imath 共享库的前提。",
         "source": "默认假设：Julia 运行时已移植到鸿蒙 PC（LLVM JIT 以 OHOS NDK 编译）",
         "target_status_model": "unknown"
@@ -430,7 +430,7 @@
     "confidence": "medium",
     "porting_class_model": "no_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "no_adaptation",
       "overall": "adaptable",
@@ -457,13 +457,20 @@
     "analyzed_at": "2026-07-09T18:20:23Z"
   },
   "meta": {
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "high",
-    "normalized_version": 5
+    "normalized_version": 6,
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:julia_runtime",
+        "class": "actionable",
+        "message": "target_assumption ta:julia_runtime 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "本项目为 Julia JLL 纯包装层，不涉及 GUI、3D 渲染、媒体处理或特定硬件。被包装的 Imath 库是 2D/3D 数学向量/矩阵计算库，计算本身不依赖特定 GPU 或硬件加速。",
@@ -479,13 +486,13 @@
     "coverage": {
       "production_code": 418,
       "partitioned_code": 418,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "reuse_direct",
         "loc": 418,
-        "pct": 100.0,
+        "pct": 100,
         "modules": [
           {
             "path": ".",

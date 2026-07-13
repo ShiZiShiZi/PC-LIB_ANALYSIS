@@ -688,9 +688,9 @@
       {
         "id": "ta:ohos_platform_macro",
         "capability": "OHOS NDK 编译宏（__OHOS__ 或自动定义 __linux__），使现有 POSIX 代码路径自动生效",
-        "capability_key": null,
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若 OHOS NDK 编译时自动定义 __linux__，则 Socket.c/Thread.c/MQTTTime.c 的 POSIX 路径无需修改即可生效（代码中用 #if !defined(_WIN32) 判断为 POSIX 路径）；否则需新增 #ifdef __OHOS__ 分支或调整条件编译。",
         "source": "Socket.c:55-75, Thread.c:39-48, MQTTTime.c:20-25",
         "target_status_model": "unknown"
@@ -717,7 +717,7 @@
     "notes": "1. 代码中 #if defined(_WIN32) / #else 的分支策略天然支持新的 POSIX 兼容平台，只要 OHOS NDK 提供了 musl 的 socket/pthread/文件 I/O 实现，POSIX 路径可直接工作。2. 若需 Unix 域套接字支持（非必要），需确认鸿蒙 PC 是否支持 AF_UNIX。3. WebSocket 实现（Base64/SHA1）为自实现，无需额外依赖。4. 此库是 C 库而非应用，适用模型 A：交叉编译 + 链接 OHOS NDK，产出 .so/.a 供 C/C++ 应用或通过 FFI 调用。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": null,
-    "functional_viability": "unverified"
+    "functional_viability": "viable_with_work"
   },
   "library": {
     "name": "paho.mqtt.c",
@@ -740,7 +740,7 @@
     "bindings": []
   },
   "meta": {
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [],
     "harmony_warnings_dismissed": [],
     "schema_version": "1.0",

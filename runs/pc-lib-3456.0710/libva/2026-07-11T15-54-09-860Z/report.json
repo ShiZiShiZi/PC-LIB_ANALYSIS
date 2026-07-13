@@ -1108,9 +1108,9 @@
       {
         "id": "ta:gpu_driver_framework",
         "capability": "鸿蒙 PC 的 GPU 驱动框架/硬件抽象层（替代 Linux DRM 子系统——设备发现、认证、显存管理）",
-        "capability_key": null,
+        "capability_key": "gpu_drm",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "libva 的所有后端（DRM/X11/Wayland）都依赖底层 GPU 接口层。若鸿蒙无等价 GPU 驱动接口，libva 无法在任何后端模式下运行硬件加速。这是移植的核心前提条件。",
         "source": "未在 harmony-pc-capabilities.json 中找到对应条目",
         "target_status_model": "unknown"
@@ -1165,7 +1165,7 @@
     "notes": "libva 的多后端插件架构是移植的主要优势：核心层和厂商驱动层分离，移植只需换一个后端。若鸿蒙提供了标准化的 GPU 驱动接口，适配工作聚焦在编写一个新的 `libva-ohos` 后端即可。最坏情况下，若无 GPU 硬件加速接口，libva 只能退化为纯软件编解码，此时移植意义大打折扣——因为 libva 的价值在于 GPU 硬件加速调度。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified"
+    "functional_viability": "blocked_external"
   },
   "library": {
     "name": "libva",
@@ -1197,22 +1197,21 @@
     "confidence_overall": "medium",
     "schema_version": "1.0",
     "notes": "libva 核心库移植性良好（POSIX API 为主），主要挑战在 GPU 后端适配。硬依赖 libdrm 的替代方案是关键未知项。tx_platform_branches:0，无运行时平台分支信号。tx_platform_adaptation:39 行（极小），说明核心代码的编译宏隔离很少——进一步佐证代码主要中立。",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "kind": "caps_gap",
-        "field": "gpu_driver_framework",
-        "value": "鸿蒙 PC GPU 驱动接口/硬件抽象层",
-        "rationale": "libva 的 DRM/X11/Wayland 后端均依赖操作系统级的 GPU 驱动接口。harmony-pc-capabilities.json 目前未提供鸿蒙 PC 的 GPU 驱动框架（对标 Linux DRM 子系统）的可用性信息，建议补充此项——对多媒体/图形库的移植评估至关重要。"
-      }
-    ],
+    "observations": [],
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "builtin",
     "warnings": [
       "Neither cloc nor tokei found; using crude builtin line counter."
     ],
     "confidence_overall_model": "medium",
-    "normalized_version": 6
+    "normalized_version": 6,
+    "harmony_warnings": [
+      {
+        "code": "ta_unref:ta:gpu_driver_framework",
+        "class": "actionable",
+        "message": "target_assumption ta:gpu_driver_framework 为 required+unavailable 但无对应 blocker/unadaptable_api"
+      }
+    ]
   },
   "capability_profile": {
     "summary": "libva 是一个纯多媒体硬件加速库，触及**媒体（视频编解码/处理）**和**GPU 图形接口（DRM/GLX）**两大鸿蒙适配重点场景。它不涉及 3D 渲染（仅是提供解码帧给 OpenGL 做零拷贝纹理映射），也无独立 GUI 或特定硬件（USB/传感器等）依赖。",
@@ -1275,20 +1274,20 @@
     "coverage": {
       "production_code": 30935,
       "partitioned_code": 30935,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "reuse_direct",
         "loc": 0,
-        "pct": 0.0,
+        "pct": 0,
         "modules": [],
         "basis": "libva 全部为编译型 C/C++ 代码（无脚本/解释型语言），无直接复用桶——所有代码需经 OHOS NDK 交叉编译。"
       },
       {
         "class": "recompile_reuse",
         "loc": 25364,
-        "pct": 82.0,
+        "pct": 82,
         "modules": [
           {
             "path": "va",

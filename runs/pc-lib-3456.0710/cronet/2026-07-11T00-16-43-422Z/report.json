@@ -772,7 +772,7 @@
       {
         "id": "ta:chromium_base",
         "capability": "Chromium //base 基础库在鸿蒙 NDK（musl）下的编译可用性",
-        "capability_key": null,
+        "capability_key": "boringssl",
         "required": true,
         "target_status": "unknown",
         "impact": "Cronet 的 C++ 层完全依赖 //base 的跨平台抽象（线程管理、文件 I/O、同步原语、字符串等），若 //base 在鸿蒙 NDK 下不能编译或关键功能缺失，则整个 C++ 核心无法运行。",
@@ -782,7 +782,7 @@
       {
         "id": "ta:chromium_net",
         "capability": "Chromium //net 网络栈在鸿蒙 NDK 下的编译可用性",
-        "capability_key": null,
+        "capability_key": "boringssl",
         "required": true,
         "target_status": "unknown",
         "impact": "Cronet 的网络请求核心逻辑完全依赖 //net 栈（URLRequest、HTTP/2、QUIC、DNS、代理、Socket 等），若 //net 不能在鸿蒙 NDK 下编译，Cronet 的核心功能完全丧失。",
@@ -792,7 +792,7 @@
       {
         "id": "ta:boringssl",
         "capability": "BoringSSL 在鸿蒙 NDK 下的编译可用性",
-        "capability_key": null,
+        "capability_key": "boringssl",
         "required": true,
         "target_status": "unknown",
         "impact": "Cronet 通过 //net 间接依赖 BoringSSL 作为 TLS/加密后端。虽然鸿蒙可能有自己的加密框架，但如果 //net 要求 BoringSSL API 兼容的加密库，需要评估替换或移植可行性。",
@@ -958,14 +958,7 @@
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "kind": "caps_gap",
-        "value": "Chromium //base, //net, //third_party/boringssl 在鸿蒙 NDK 的编译可用性",
-        "rationale": "Chromium 内部库不是标准三方软件包，Cronet 强依赖它们且非独立编译单元。需要在 caps 中增补 Chromium 内部模块（//base/ //net/）在鸿蒙 NDK 下的可行性与兼容性记录，这类 Web 引擎/网络栈内部模块的移植对浏览器类应用的鸿蒙化是基础性问题。"
-      }
-    ],
+    "observations": [],
     "harmony_warnings_dismissed": [],
     "counter_tool": "builtin",
     "warnings": [
@@ -1027,7 +1020,7 @@
     "coverage": {
       "production_code": 42479,
       "partitioned_code": 42479,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

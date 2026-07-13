@@ -26,6 +26,12 @@ from openpyxl.utils import get_column_letter
 # normalize a legacy (unstamped) report on load so the export matches the panel exactly.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import report_normalize  # noqa: E402
+import orig_names  # noqa: E402  — 把 handle(克隆仓名) 映射回原始名称（据 .orig-name-tables.json）
+
+try:
+    _ORIG_NAMES = orig_names.load()      # None（配置缺失）→「原始名称」列优雅置空
+except Exception:  # noqa: BLE001
+    _ORIG_NAMES = None
 
 JOIN = "；"
 
@@ -310,6 +316,13 @@ def _circled(i):
 
 def _v_name(name, r):
     return _g(r, "library", "name", default="") or name
+
+
+def _v_orig_name(name, r):
+    """原始名称 —— 据源表(URL/名)把本分析(handle=克隆仓名)映射回用户的原始库名；无配置/无匹配→空。"""
+    if not _ORIG_NAMES:
+        return ""
+    return orig_names.match(r.get("library") if isinstance(r, dict) else None, name, _ORIG_NAMES)[0]
 
 
 def _v_source(name, r):
@@ -626,7 +639,7 @@ def _v_critical_deps(name, r):
 # top_title None → standalone column, header merged vertically across the two header rows.
 GROUPS = [
     ("基本信息", [
-        ("名称", _v_name), ("源码仓地址", _v_source), ("类型", _v_kind_form),
+        ("名称", _v_name), ("原始名称", _v_orig_name), ("源码仓地址", _v_source), ("类型", _v_kind_form),
         ("描述", _v_desc), ("生态", _v_eco), ("主语言", _v_primary),
     ]),
     ("开源协议", [("协议类型", _v_license_name), ("协议友好类型", _v_license_cat)]),
