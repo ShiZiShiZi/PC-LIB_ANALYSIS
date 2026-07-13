@@ -387,7 +387,7 @@
       ],
       "level": "very_low"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "critical_dependencies": [
       {
         "name": "github.com/go-rod/rod",
@@ -411,12 +411,12 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "① rod 用 GOOS=ohos 交叉编译（纯 Go 库、预期无阻碍）；② 确认鸿蒙 PC 上 Chromium/CEF 或鸿蒙 WebView 可用并可被 CDP 连接控制；③ 如无 Chromium，需确认鸿蒙 WebView 是否暴露 DevTools 端口（如 `--remote-debugging-port`），或改用鸿蒙浏览器自动化方案",
         "evidence": [
           "go.mod:5 (rod v0.113.0)",
           "main.go:12 (rod.Browser.Page)"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "unadaptable_apis": [],
@@ -434,9 +434,9 @@
       {
         "id": "ta:chromium_harmony",
         "capability": "鸿蒙 PC 上有可用的 Chromium 或兼容浏览器（可经 CDP WebSocket 被 rod 远程控制）",
-        "capability_key": null,
+        "capability_key": "chromium_cdp",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "rod 框架依赖 Chromium 浏览器运行，如鸿蒙 PC 无 CDP 兼容浏览器，rod 无法工作→本库无法运行。但此非本库代码的适配问题：rod 与 Chromium 可用性独立于 stealth 库本身",
         "source": "harmony-pc-capabilities.json（无对应条目，需补充浏览器/CDP 可用性）",
         "target_status_model": "unknown"
@@ -465,7 +465,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Go 运行时上）。porting_class 为 no_adaptation：纯 Go 库、零平台 API、仅交叉编译。唯一不确定性来自运行时依赖 rod 的鸿蒙可用性（`ta:chromium_harmony` unknown），但由于此影响不在 stealth 代码本身（即使 rod 不可用，stealth 代码也无需改动——问题是运行时环境而非库代码），confidence 仍维持 high。如需将评估按「rod 不可用」悲观口径，effort.person_days 不变（stealth 代码仍需改动 0 行），但整体功能不可用。实际上，由于 rod 也是纯 Go 库，其鸿蒙 PC 移植主要取决于 Chromium 浏览器在鸿蒙 PC 的可用性——这是一个目标平台能力缺口，已在 meta.observations 提案补入 caps 行。",
     "porting_class_model": "no_adaptation",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "no_adaptation",
       "overall": "adaptable",
@@ -498,28 +498,13 @@
     "analyzed_at": "2026-07-10T01:30:09Z"
   },
   "meta": {
-    "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "cli_tools",
-        "kind": "caps_gap",
-        "value": "Chromium/CDP 兼容浏览器在鸿蒙 PC 的可用性",
-        "rationale": "stealth 库依赖 rod 框架，rod 通过 CDP（Chrome DevTools Protocol）WebSocket 控制 Chromium 浏览器。当前 harmony-pc-capabilities.json 中无浏览器/CDP 相关能力条目。建议补充：鸿蒙 PC 是否有 Chromium/Chromium-like 浏览器？如有，是否暴露 `--remote-debugging-port` 供 CDP 连接？这影响整个「浏览器自动化」类 Go/JS/Python 库的可移植性。"
-      }
-    ],
+    "confidence_overall": "high",
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "high",
-    "harmony_warnings": [
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      }
-    ],
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "纯 Go 库，仅封装 rod 框架的页面创建 API 并注入 JavaScript 反检测脚本，不涉及 GUI/3D 渲染/媒体/特定硬件等鸿蒙适配重点场景。浏览器界面与渲染由 rod 所控制的 Chromium 浏览器进程承担，非本库职责范围。",
@@ -535,13 +520,13 @@
     "coverage": {
       "production_code": 105,
       "partitioned_code": 105,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "reuse_direct",
         "loc": 105,
-        "pct": 100.0,
+        "pct": 100,
         "modules": [
           {
             "path": ".",

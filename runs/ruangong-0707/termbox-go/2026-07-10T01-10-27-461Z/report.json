@@ -899,9 +899,9 @@
     "target_assumptions": [
       {
         "capability": "POSIX 终端子系统（/dev/tty 设备文件、termios ioctl 接口、SIGWINCH/SIGIO 信号、ANSI 转义序列支持）",
-        "capability_key": null,
+        "capability_key": "terminal_tty",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "决定 Unix 端终端的 Init()/Close()/Flush()/PollEvent() 能否直接工作——若鸿蒙 PC 不提供这些，则需编写 OHOS 专用终端后端",
         "source": "api.go:37 (/dev/tty 打开), api.go:70-71 (SIGWINCH/SIGIO), termbox.go:220 (TIOCGWINSZ ioctl), termbox.go:359-369 (TCGETS/TCSETS ioctl)",
         "id": "ta:1",
@@ -909,9 +909,9 @@
       },
       {
         "capability": "golang.org/x/sys/unix 包对 OHOS 的终端相关 API 支持（Open、IoctlGetWinsize、IoctlGetTermios、IoctlSetTermios、FcntlInt）",
-        "capability_key": null,
+        "capability_key": "terminal_tty",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若 x/sys/unix 在 GOOS=ohos 未提供终端相关函数，编译即失败——需上游补 OHOS 支持或本库改用其他方式访问终端",
         "source": "go.mod:golang.org/x/sys v0.31.0，api.go/tembox.go/async_nonaix.go 多处调用 unix.* 终端 API",
         "id": "ta:2",
@@ -934,7 +934,6 @@
         "category": "terminal_subsystem",
         "severity": "high",
         "adaptability": "adaptable",
-        "harmony_status": "unknown",
         "description": "Unix 后端依赖 POSIX 终端接口（/dev/tty + termios ioctl + SIGWINCH/SIGIO），鸿蒙 PC 是否提供等价终端子系统未知",
         "remediation": "方案 A（若鸿蒙提供 POSIX 终端）：无需改动，GOOS=ohos 交叉编译即运行。方案 B（若鸿蒙不提供）：编写 OHOS 终端后端，使用鸿蒙终端 API（需调研具体 API）替代 termios/ioctl 调用；或 port 到 x/sys/unix 的 OHOS 分支以提供 drop-in 兼容层。",
         "evidence": [
@@ -946,14 +945,14 @@
         ],
         "caused_by": [],
         "manifests_as": [],
-        "source_dimension": "native_api"
+        "source_dimension": "native_api",
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:go_x_sys_ohos",
         "category": "dependency_support",
         "severity": "high",
         "adaptability": "adaptable",
-        "harmony_status": "unknown",
         "description": "依赖 golang.org/x/sys/unix 的终端相关函数（IoctlGetWinsize/IoctlGetTermios/IoctlSetTermios/FcntlInt），需确认这些函数在 GOOS=ohos 上的可用性",
         "remediation": "检查 x/sys 在 GOOS=ohos 上是否提供终端相关定义；若未提供，可向 x/sys 上游贡献 OHOS 终端 API 支持，或本库实现 OHOS 原生后端绕过 x/sys",
         "evidence": [
@@ -964,7 +963,8 @@
         ],
         "caused_by": [],
         "manifests_as": [],
-        "source_dimension": "dependencies"
+        "source_dimension": "dependencies",
+        "remediation_status": "unknown"
       }
     ],
     "unadaptable_apis": [],
@@ -1037,7 +1037,7 @@
     "notes": "库已不再活跃维护（README 声明），但仍可编译运行。所有依赖均为纯 Go 模块，均可交叉编译到 GOOS=ohos。由于鸿蒙 PC 自研内核并非 Linux ABI，POSIX 终端接口的可用性是最大未知数——这是本库能否在鸿蒙 PC 运行的根本条件。若确认可用，porting_class 可从 needs_adaptation 降为 no_adaptation（零改动交叉编译即跑）。_demos 目录为示例代码，不做适配评估。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": null,
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1084,13 +1084,6 @@
         "kind": "new_value",
         "value": "terminal_console",
         "rationale": "推荐的四个场景（gui/rendering_3d/media/hardware）不覆盖文本终端界面场景——termbox-go 的核心能力完全依赖 POSIX 终端子系统，在鸿蒙评估中是决定性因素，故自造 terminal_console 场景"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "caps_gap",
-        "value": "终端子系统（/dev/tty、termios ioctl、ANSI 转义序列）",
-        "rationale": "harmony-pc-capabilities.json 未覆盖终端/TTY 子系统能力——这是纯文本终端界面库能否在鸿蒙 PC 运行的根本条件，建议在 caps 中新增 terminal/console 相关行"
       }
     ],
     "schema_version": "1.0",
@@ -1107,7 +1100,7 @@
         "message": "代码分区桶 LOC 之和(2785)与生产代码(4629)偏差超过 15%（覆盖不足或重复计入）"
       }
     ],
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "本项目为纯文本终端界面库，不涉及 GUI、3D 渲染、媒体或特定硬件。核心适配关注点是鸿蒙 PC 的终端子系统（/dev/tty、termios ioctl、ANSI 转义序列支持）对 POSIX 终端接口的兼容性。",
@@ -1165,13 +1158,13 @@
     "coverage": {
       "production_code": 2785,
       "partitioned_code": 2785,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
         "class": "reuse_direct",
         "loc": 836,
-        "pct": 30.0,
+        "pct": 30,
         "modules": [
           {
             "path": ".",
@@ -1191,7 +1184,7 @@
       {
         "class": "needs_adaptation",
         "loc": 1949,
-        "pct": 70.0,
+        "pct": 70,
         "modules": [
           {
             "path": ".",

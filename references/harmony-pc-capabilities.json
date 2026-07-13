@@ -65,9 +65,9 @@
           "id": "dotnet",
           "capability": ".NET / CLR 运行时（C#/F#）",
           "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "鸿蒙 PC 是否已移植 .NET/CLR 运行时——待核实；未列入官方已移植运行时清单，.NET 库/应用能否运行取决于此（模型反哺高频缺口）",
+          "source": "人工核实(无移植证据)：遍历 harmony-pc 真机知识库 + 社区已移植运行时清单，均无 .NET/CLR/Mono",
+          "checked_at": "2026-07-13",
+          "note": "截至 2026-07-13 遍历真机知识库(harmony-pc)无 .NET/CLR/Mono/CoreCLR 任何移植或运行证据；社区已移植运行时清单仅 Java(BiSheng 17/8)/Node 24.13/Python 3.12·3.9/Rust/Go/Julia 1.10.6、不含 .NET。本组 30 个 C#/.NET 库(26 必需，Newtonsoft.Json/AutoMapper/RestSharp/MQTTnet/NLua…)依赖此——高需求研究缺口，禁据无证据臆断为可行。",
           "check": null
         }
       ]
@@ -84,6 +84,24 @@
           "checked_at": "2026-07-09",
           "note": "shell-out 型库(如 Ullaakut/nmap 的 Go 封装)依赖此外部二进制：库代码本身纯语言、可交叉编译(porting_class 可为 no_adaptation)，但目标缺此工具则功能受阻(functional_viability=blocked_external)。check 置 null 为人工策展——不因 cmd-pkgs 是否收录该包而自动翻转(能否运行还取决于 raw socket 能力)。若鸿蒙后续提供等价网络探测工具，可经使用端 WithBinaryPath 指定替代二进制",
           "check": null
+        },
+        {
+          "id": "chromium_cdp",
+          "capability": "Chromium / CDP 可控浏览器(远程调试自动化)",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-electron-vite-React应用-OHElectron-HAP.md",
+          "checked_at": "2026-07-13",
+          "note": "Chromium 114 内核存在(OH-Electron 25;系统 ArkWeb 亦 Chromium 系)。但独立 Chromium 暴露 --remote-debugging-port / CDP 自动化端点(rod/puppeteer 式)未确认——浏览器自动化库依赖此外部端点。",
+          "check": null
+        },
+        {
+          "id": "build_toolchain",
+          "capability": "设备端构建工具链 (CMake/ninja/make/git/binutils/clang-llvm)",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-HNP包与PATH.md、memory/adaptation/鸿蒙PC-git-适配要点.md；pc-knowledge-lookup platform-notes §1",
+          "checked_at": "2026-07-13",
+          "note": "设备以 HNP 提供 cmake/ninja/make/gawk/grep/binutils/bash/gdb/ohos-sdk(clang-llvm)/node/python/git(2.49.0 交叉编译端口)；设备端 aarch64 原生编译(clang+cmake+ninja+make)可行，是整套错误/案例知识库的运行前提。git CLI 可用(setuptools-scm 类库需)。注:on-device autoconf/automake 未单独确认为 HNP。",
+          "check": null
         }
       ]
     },
@@ -94,46 +112,46 @@
         {
           "id": "jdk_attach",
           "capability": "jdk.attach / sun.tools.attach（进程 attach）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "ported JDK 是否随附该模块、是否允许 --add-exports/allowAttachSelf —— 待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "OH-AWT JDK 为 JRE(无 tools.jar)须补 com.sun.tools.attach；OH libattach.so 已导出 attach 所需 native；attach socket 目录为沙箱路径。VisualVM 真机 attach 验证。",
           "check": null
         },
         {
           "id": "jdk_jvmstat",
           "capability": "jdk.internal.jvmstat / sun.jvmstat（性能计数器）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "jstat/jvmstat 监控依赖 —— 待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "jvmstat/hsperfdata 本地进程发现真机可用(纯 Java)；完整计数器读取随 attach 通道。",
           "check": null
         },
         {
           "id": "jdk_management",
           "capability": "java.management / jdk.management（JMX）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "JMX 依赖 attach/management-agent 通道，须匹配 OH tools.jar/provider；随 attach 一并可用。",
           "check": null
         },
         {
           "id": "jvmti",
           "capability": "JVMTI（native agent 接口）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "profiler/调试 agent 依赖 —— 待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "JVMTI native agent 接口——OH libattach.so 导出所需 native；profiler/调试 agent 可挂载(受签名/权限约束)。",
           "check": null
         },
         {
           "id": "add_opens",
           "capability": "--add-opens / --add-exports 启动参数支持",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "BishengJDK 基于 OpenJDK，--add-opens/--add-exports/allowAttachSelf 启动参数标准支持。",
           "check": null
         }
       ]
@@ -145,10 +163,10 @@
         {
           "id": "awt_headful",
           "capability": "Headful AWT (java.awt)",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "鸿蒙 PC JDK 是否带 headful 桌面后端 —— 待核实",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "OH-AWT BishengJDK 8 带 headful 桌面后端(AWT 后端 X11→原生 libawt_xawt.so，XComponent/EGL/GLES 渲染)，VisualVM(Swing/AWT)真机运行。",
           "check": null
         },
         {
@@ -182,9 +200,9 @@
           "id": "qt",
           "capability": "Qt (C/C++ GUI)",
           "status": "available",
-          "source": "https://gitcode.com/OpenHarmonyPCDeveloper (人工核实)",
-          "checked_at": "2026-07-08",
-          "note": "社区已提供 Qt 鸿蒙版，只提供了Qt5，如果使用Qt6需要降级（2026-07-08 未在cmd-pkgs 列出，不代表不支持）",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-Qt6-CMake-GUI应用移植.md、鸿蒙PC-Qt6-qtdeclarative-QtQuick交叉编译.md；third_party_adapters/notepadnext",
+          "checked_at": "2026-07-13",
+          "note": "社区已提供 Qt 鸿蒙版；Qt6(6.5.6, ohos23)已真机验证——QPA 插件 libplugins_platforms_qopenharmony.so，NotepadNext(Qt6/CMake)已发布，QtQuick 需禁 JIT(QV4_FORCE_INTERPRETER)；Qt5 亦可用。桌面 Qt6/CMake 应用可移植(此前\"仅 Qt5\"结论已更正)。",
           "check": {
             "via": "cmd-pkgs",
             "names": [
@@ -202,9 +220,9 @@
           "id": "gtk",
           "capability": "GTK (C GUI)",
           "status": "available",
-          "source": "OpenHarmony PC C/C++ 预编译包 (gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) — gtk",
-          "checked_at": "2026-07-08",
-          "note": "需要使用鸿蒙化方案",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-GTK应用broadway-ArkWeb-HAP.md、鸿蒙PC-cmd-pkgs预编译GTK栈不可用.md",
+          "checked_at": "2026-07-13",
+          "note": "broadway→ArkWeb(broadwayd HTTP/WS + Web 组件)或源码构建 gdk-ohos(XComponent CPU-blit)路线已真机(nmap GTK GUI .hap)；仅需 ohos.permission.INTERNET(broadway)。⚠ cmd-pkgs 预编译 GTK 栈不可用(glib 静态烘焙冲突/64KB 页崩)，须源码编 glib+GTK。",
           "check": {
             "via": "cmd-pkgs",
             "names": [
@@ -222,18 +240,18 @@
           "id": "electron",
           "capability": "Electron / CEF (Chromium)",
           "status": "available",
-          "source": "",
-          "checked_at": "2026-07-07",
-          "note": "Electron已有鸿蒙版本",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-electron-vite-React应用-OHElectron-HAP.md、鸿蒙PC-opencode-HAP化-Electron壳.md",
+          "checked_at": "2026-07-13",
+          "note": "OH-Electron 25(引擎 25.3.2, Chromium 114, Node 18.15)真机；纯 JS 应用可直接嵌(appium-inspector 已发)、重应用配 Node24 sidecar(opencode 已发)。注意:<28 无 ESM main/preload、多 BrowserWindow 合成不稳(用单窗)。",
           "check": null
         },
         {
           "id": "wm",
           "capability": "桌面窗口管理器 / 显示服务（是否存在桌面级多窗口环境）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "鸿蒙 PC 是否提供传统桌面窗口环境 —— 待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-窗口几何控制无native只ArkTS.md、鸿蒙PC-XComponent-CPU像素渲染与输入缝.md；memory/adaptation/Qt6/VLC/VisualVM",
+          "checked_at": "2026-07-13",
+          "note": "@ohos.window/Rosen 提供桌面级多窗口环境，Qt6/VLC/VisualVM 已真机多窗运行；无 X11/Wayland，原生窗口几何(resize/move/min/max)无 NDK 通路、须反向桥 ArkTS @ohos.window。",
           "check": null
         }
       ]
@@ -254,55 +272,55 @@
         {
           "id": "file_dialog",
           "capability": "原生文件对话框",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机) + HarmonyOS SDK 文档：@ohos.file.picker(选择器,DocumentViewPicker,Core File Kit)",
+          "checked_at": "2026-07-13",
+          "note": "@ohos.file.picker(DocumentViewPicker/文档选择器)API 具备；非 Win/GTK 原生文件对话框 drop-in，须经其 picker 适配。",
           "check": null
         },
         {
           "id": "dnd_clipboard",
           "capability": "拖拽 (DnD) / 剪贴板",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机) + HarmonyOS SDK 文档：@ohos.pasteboard/oh_pasteboard.h(剪贴板)、@ohos.data.unifiedDataChannel/udmf.h(UDMF 拖拽)",
+          "checked_at": "2026-07-13",
+          "note": "剪贴板经 @ohos.pasteboard(ArkTS)/oh_pasteboard.h(C) API；拖拽经 ArkUI dragController + UDMF(@ohos.data.unifiedDataChannel/udmf.h)。API 具备但非 Qt/GTK 剪贴板/DnD drop-in，须适配。",
           "check": null
         },
         {
           "id": "docking",
           "capability": "多窗口 / docking（如 NetBeans RCP TopComponent）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-Qt6-CMake-GUI应用移植.md、鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "Qt6 Advanced Docking System / NetBeans RCP TopComponent docking 真机运行(NotepadNext/VisualVM)，须绕开 X11 路径改走工具包非 X11 通路。",
           "check": null
         },
         {
           "id": "hidpi",
           "capability": "HiDPI / 多显示器",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机) + HarmonyOS SDK 文档：@ohos.display(屏幕属性)、oh_display_manager.h/oh_display_info.h",
+          "checked_at": "2026-07-13",
+          "note": "@ohos.display(densityDPI/densityPixels/多屏 getAllDisplays)+ C API OH_DisplayManager 具备，MateBook HiDPI 真机；Win GetDpiForWindow 无 drop-in、须换 @ohos.display。",
           "check": null
         },
         {
           "id": "font_ime",
           "capability": "字体 / 输入法 (IME) / i18n",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机) + HarmonyOS SDK 文档：字体 freetype/fontconfig/harfbuzz 交叉编译(Qt/VLC 真机渲字)；@ohos.inputMethod(IME Kit)",
+          "checked_at": "2026-07-13",
+          "note": "字体渲染真机可用(freetype/fontconfig/harfbuzz + Qt/VLC 渲字)；IME 走 @ohos.inputMethod(IME Kit)、i18n 走 ICU。需集成、非直接替换。",
           "check": null
         },
         {
           "id": "printing",
           "capability": "打印",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机) + HarmonyOS SDK 文档：@ohos.print(打印)、ohprint.h/OH_Print(Basic Services Kit)",
+          "checked_at": "2026-07-13",
+          "note": "@ohos.print(ArkTS)+ ohprint.h/OH_Print(C API)+ PrintExtensionAbility 具备打印框架 API；Ghostscript/CUPS 式打印管线非 drop-in、须经其 API 适配，PC 形态实际可用性待核实。",
           "check": null
         }
       ]
@@ -314,37 +332,37 @@
         {
           "id": "cross_attach",
           "capability": "跨进程 attach / 检视其他进程 (Attach API / JVMTI)",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "沙箱/权限是否允许 —— profiler 类应用核心依赖，待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "VisualVM 跨进程 JVM attach 真机：本地进程发现(hsperfdata)纯 Java 即可；完整 attach(堆/线程 dump)须 OH 匹配 tools.jar(LinuxVirtualMachine/LinuxAttachProvider)，OH libattach.so 已导出所需 10 native；attach socket 目录为沙箱路径(非 /tmp)。",
           "check": null
         },
         {
           "id": "ptrace",
           "capability": "ptrace / 调试其他进程",
           "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "source": "人工核实(无 app 可用证据)：harmony-pc 知识库仅平台 faultlogger、无 ptrace/minidump 端口",
+          "checked_at": "2026-07-13",
+          "note": "截至 2026-07-13 无 app 可用 ptrace / minidump / crashpad / breakpad / libunwind 的真机证据；平台 faultlogger(/data/log/faultlog/faultlogger/cppcrash-*，含信号+syscall#+符号化栈)为独立崩溃捕获手段、非 ptrace 等价。libunwind 需——待核实。",
           "check": null
         },
         {
           "id": "spawn",
           "capability": "启动外部进程 (exec/ProcessBuilder)",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实是否受限",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app域执行二进制与JIT限制.md、鸿蒙PC-HNP二进制SELinux-exec限制.md",
+          "checked_at": "2026-07-13",
+          "note": "fork()+execv() 私有 HNP(hnpPackages type=private)内二进制真机可用；公有 HNP node 可直接 spawn。app 域仅能执行私有 HNP 路径 ELF(其余 /data/local/tmp、libs/ 受 XPM/dmverity 非执行限制)；root(hdc shell)域可执行 PIE ELF。",
           "check": null
         },
         {
           "id": "sandbox",
           "capability": "沙箱 / 权限模型 (ACL，需声明权限)",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "桌面应用的权限申请机制 —— 待核实",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app访问PC用户目录.md",
+          "checked_at": "2026-07-13",
+          "note": "HAP ACL/权限模型完备:module.json5 声明权限 + 运行时 requestPermissionsFromUser 弹窗授予；atm dump -t -b <bundle> 查授予状态。system_grant/user_grant/system_basic 分级。",
           "check": null
         }
       ]
@@ -356,28 +374,28 @@
         {
           "id": "desktop_app",
           "capability": "传统桌面应用（JVM + launcher + system JDK，zip 分发）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "鸿蒙 PC 是否支持此形态 —— 决定整条打包路径，待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-Qt6-CMake-GUI应用移植.md §9、鸿蒙PC-VisualVM-JVM-Swing应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "传统「JVM+launcher+system JDK, zip 分发」形态不支持，须重打包为 HAP(hvigor assembleHap)；但桌面 GUI 应用确能以 HAP 交付并真机运行(NotepadNext/VLC/VisualVM)。改造=重打包、非阻断。",
           "check": null
         },
         {
           "id": "arkts_hap",
           "capability": "ArkTS ability (.hap，签名安装)",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "若只支持此形态，则非 ArkTS 应用需重打包/重写 —— 待核实",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-Qt6-CMake-GUI应用移植.md §9、memory/platform/鸿蒙PC-HNP包与PATH.md",
+          "checked_at": "2026-07-13",
+          "note": "HAP 是鸿蒙 PC 应用交付形态:hvigorw assembleHap 打包、hdc install -r 安装、aa start -b <bundle> -a EntryAbility 启动；原生 .so/资源随包。非 ArkTS 应用亦经 HAP 承载(壳+native/HNP)。",
           "check": null
         },
         {
           "id": "signing",
           "capability": "安装 / 签名要求",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md、鸿蒙PC-Qt6-CMake-GUI应用移植.md §9",
+          "checked_at": "2026-07-13",
+          "note": "DevEco 调试签名(~/.ohos/config profile)绑 bundleName、须注册设备 UDID；CLI 签名可行(VisualVM)。第三方 HAP 从任意源安装受限。受约束但可用。",
           "check": null
         }
       ]
@@ -400,8 +418,8 @@
           "capability": "x86_64",
           "status": "unknown",
           "source": null,
-          "checked_at": null,
-          "note": "待核实覆盖情况",
+          "checked_at": "2026-07-13",
+          "note": "待核实覆盖情况。现有 OHOS NDK 工具链仅 aarch64-unknown-linux-ohos、已知设备均 arm64(Maleoon/Kunpeng)，未见 x86_64 正/负证据——保持 unknown，勿据此臆断，勿依赖 x86 专有汇编/intrinsics。",
           "check": null
         }
       ]
@@ -414,27 +432,27 @@
           "id": "opengl",
           "capability": "OpenGL / OpenGL ES",
           "status": "partial",
-          "source": null,
-          "checked_at": null,
-          "note": "鸿蒙图形栈含 OpenGL ES/EGL；桌面完整 OpenGL 覆盖与扩展程度待核实",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-GLFW视窗后端-EGL-XComponent.md",
+          "checked_at": "2026-07-13",
+          "note": "GLES 3.2 真机确认(GL_VERSION=OpenGL ES 3.2)，设备提供 libEGL.so+libGLESv3.so(非 .so.1/GLESv2)。桌面完整 OpenGL(desktop GL)不可用——仅 GLES 子集；GLEW 等 desktop-GL loader 不适用，须直连 GLES。",
           "check": null
         },
         {
           "id": "egl",
           "capability": "EGL",
-          "status": "partial",
-          "source": null,
-          "checked_at": null,
-          "note": "随 GLES 提供；具体版本/扩展待核实",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-GLFW视窗后端-EGL-XComponent.md",
+          "checked_at": "2026-07-13",
+          "note": "EGL 真机可用:eglCreateWindowSurface 于 XComponent 的 OHNativeWindow，用 EGL_DEFAULT_DISPLAY；GLFW 的 EGL/GLES 后端已真机(旋转三角形)。",
           "check": null
         },
         {
           "id": "vulkan",
           "capability": "Vulkan",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "鸿蒙 PC 上的 Vulkan 可用性与版本待核实",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-GLFW视窗后端-EGL-XComponent.md",
+          "checked_at": "2026-07-13",
+          "note": "Vulkan 真机可用，带 VK_OHOS_surface 扩展(vkCreateSurfaceOHOS，VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS，NDK vulkan/vulkan_ohos.h)，非 stub。",
           "check": null
         },
         {
@@ -453,6 +471,15 @@
           "source": null,
           "checked_at": null,
           "note": "鸿蒙原生 3D 能力——但需用其 API 重写，非 drop-in",
+          "check": null
+        },
+        {
+          "id": "coin3d",
+          "capability": "Coin3D (Open Inventor 场景图)",
+          "status": "unknown",
+          "source": null,
+          "checked_at": "2026-07-13",
+          "note": "Coin3D(coin3d.org)未见鸿蒙移植记录，且其依赖桌面完整 OpenGL(当前鸿蒙 PC 仅 GLES 子集)——须端口 + desktop-GL→GLES 适配，可行性待核实。Quarter(Qt↔Coin 胶合)随之。",
           "check": null
         }
       ]
@@ -473,19 +500,19 @@
         {
           "id": "video_codec",
           "capability": "通用视频编解码（FFmpeg/x264 等三方）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "三方编解码库在鸿蒙 PC 的可用/移植情况待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VLC-autotools媒体应用移植.md",
+          "checked_at": "2026-07-13",
+          "note": "社区 ohos_FFmpeg(FFmpeg 8.0.1, 非 stub, 4KB 页对齐)可用；VLC 289 插件+libavcodec 交叉编译、h264 播放真机。须交叉编译、非 drop-in；DVD/蓝光与专有硬解(VAAPI/VDPAU/NVDEC/DXVA)不可用。",
           "check": null
         },
         {
           "id": "audio_io",
           "capability": "音频 I/O（ALSA/PulseAudio/WASAPI 等价）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "底层音频 I/O 后端待核实；建议走 @ohos.multimedia.audio",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VLC-autotools媒体应用移植.md §8-9",
+          "checked_at": "2026-07-13",
+          "note": "OHAudio NDK(<ohaudio/*.h>, libohaudio.so, pull/callback 模型)真机出声，裸 root CLI 进程亦可发声；非 ALSA/PulseAudio/WASAPI drop-in，须走 @ohos.multimedia.audio/OHAudio。",
           "check": null
         },
         {
@@ -515,19 +542,19 @@
         {
           "id": "opencl",
           "capability": "OpenCL",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "鸿蒙 PC 上 OpenCL 可用性待核实",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-OpenCL-SDK-适配要点.md",
+          "checked_at": "2026-07-13",
+          "note": "OpenCL 3.0 真机(HUAWEI Maleoon 916 GPU；\"HUAWEI OpenCL 3.0 B301\")，KhronosGroup/OpenCL-SDK 零改编译、SAXPY 内核跑通(~23GB/s)。须设 OCL_ICD_FILENAMES=/vendor/lib64/passthrough/libOpenCL.so(无标准 ICD 配置)，CL_DEVICE_TYPE 返回非标值。",
           "check": null
         },
         {
           "id": "usb_serial",
           "capability": "USB / 串口",
           "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "设备访问与权限模型待核实",
+          "source": "人工核实(无移植证据)：harmony-pc 知识库无 USB/串口设备访问端口；libusb 编译撞墙(E091)",
+          "checked_at": "2026-07-13",
+          "note": "截至 2026-07-13 无 USB/串口/HID/NFC/GPIO 设备访问的移植或真机证据；libusb 类代码交叉编译撞 musl/内核头墙(<linux/socket.h> sockaddr_storage 重定义)为负面信号。libserialport/libusb/openocd/python-fido2/usbmuxd/avrdude 需——待核实(@ohos.usbManager 存在但 PC 设备访问未验)。",
           "check": null
         },
         {
@@ -557,10 +584,10 @@
         {
           "id": "perm_internet",
           "capability": "ohos.permission.INTERNET",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "网络访问权限在 PC 形态的授予方式待核实",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-GTK应用broadway-ArkWeb-HAP.md、鸿蒙PC-VisualVM-JVM-Swing应用移植.md、鸿蒙PC-opencode-HAP化-Electron壳.md",
+          "checked_at": "2026-07-13",
+          "note": "ohos.permission.INTERNET 为 system_grant(常授)，网络访问恒可用；本地 loopback HTTP/WS(broadwayd/opencode)真机。",
           "check": null
         },
         {
@@ -593,10 +620,10 @@
         {
           "id": "perm_storage",
           "capability": "读写存储（文件访问）",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "文件/存储权限模型待核实",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app访问PC用户目录.md",
+          "checked_at": "2026-07-13",
+          "note": "app 沙箱数据目录恒可读写；用户目录 READ_WRITE_DOCUMENTS_DIRECTORY/READ_WRITE_DOWNLOAD_DIRECTORY 为 normal 级、运行时申请授予后按物理路径直接读写；DESKTOP(READ_WRITE_DESKTOP_DIRECTORY)为 system_basic、普通签名不可授；任意路径需 FILE_ACCESS_MANAGER/更高 APL。",
           "check": null
         },
         {
@@ -615,6 +642,102 @@
           "source": null,
           "checked_at": null,
           "note": "通知权限待核实",
+          "check": null
+        }
+      ]
+    },
+    {
+      "id": "native_ndk",
+      "title": "原生 / NDK 层（POSIX 子集 · 系统调用 · 工具链 · 常用原生库）",
+      "rows": [
+        {
+          "id": "posix_sockets",
+          "capability": "POSIX/BSD Socket API (socket/bind/connect/send/recv)",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-nmap-autotools交叉编译与真机扫描.md",
+          "checked_at": "2026-07-13",
+          "note": "musl NDK 提供 BSD Socket API，__linux__+__OHOS__ 双宏、多数网络代码零改编译；nmap connect-scan 真机。raw socket/PF_PACKET 仅 root 域(app 域 kernel.net.raw 不可授)。",
+          "check": null
+        },
+        {
+          "id": "epoll",
+          "capability": "epoll (epoll_create1/ctl/wait)",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app域执行二进制与JIT限制.md",
+          "checked_at": "2026-07-13",
+          "note": "libuv epoll 后端真机(opencode 运行)；io_uring 被 seccomp 杀(SIGSYS)须回落 epoll(app 域 LD_PRELOAD 强制 ENOSYS)。",
+          "check": null
+        },
+        {
+          "id": "timerfd_eventfd",
+          "capability": "timerfd / eventfd",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app域执行二进制与JIT限制.md",
+          "checked_at": "2026-07-13",
+          "note": "libuv epoll 回落路径依赖 timerfd(定时器)+eventfd(异步唤醒)，随 epoll 后端真机可用。",
+          "check": null
+        },
+        {
+          "id": "terminal_tty",
+          "capability": "POSIX 终端 / TTY / termios(raw-mode 控制台输入)",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：third_party_adapters/node-pty、memory/platform/鸿蒙PC-HNP包与PATH.md",
+          "checked_at": "2026-07-13",
+          "note": "termios/tty/raw-mode 真机(node-pty 仅 4 行 __linux__‖__OHOS__ 守卫即通；hdc shell=交互终端/Toybox)；PTY(openpty/forkpty)经 node-pty 真机验证；但 HAP GUI 无 TTY、纯 TUI 无标准窗口交付形态，setsid/TIOCSCTTY 于 app 沙箱待确认(回退 posix_openpt+ioctl)。Go GOOS=ohos 的 x/sys/unix 终端绑定随 Go 运行时。",
+          "check": null
+        },
+        {
+          "id": "openmp",
+          "capability": "OpenMP (clang -fopenmp / libomp)",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-C++库交叉编译要点.md",
+          "checked_at": "2026-07-13",
+          "note": "OHOS NDK clang 支持 -fopenmp；libomp 运行时可随应用打包(可移植 C)。NDK 是否预置 libomp 待实测——可静态链接/自带。",
+          "check": null
+        },
+        {
+          "id": "blas_lapack",
+          "capability": "BLAS / LAPACK (OpenBLAS)",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-设备Python运行时.md(numpy 预装)",
+          "checked_at": "2026-07-13",
+          "note": "numpy 2.2.1(内置 OpenBLAS)预装且真机可跑——证 BLAS 数值栈运行。独立 OpenBLAS 未入 cmd-pkgs，须交叉编译(C/汇编 aarch64 kernel 可行；LAPACK 需 Fortran，OHOS NDK Fortran 支持待实测)。",
+          "check": null
+        },
+        {
+          "id": "libpcap",
+          "capability": "libpcap (数据包抓取)",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-nmap-autotools交叉编译与真机扫描.md",
+          "checked_at": "2026-07-13",
+          "note": "nmap raw socket 抓包扫描(-sS/-O/-sV)真机——root 域可用；app 域缺 raw-capture 权限(kernel.net.raw system 级不可授)。离线 pcap 解析不受限。",
+          "check": null
+        },
+        {
+          "id": "musl_libc",
+          "capability": "musl libc / POSIX 子集 (NDK 原生基座)",
+          "status": "partial",
+          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-C++库交叉编译要点.md、memory/platform/鸿蒙PC-app域执行二进制与JIT限制.md、鸿蒙PC-64KB页对齐so崩溃.md；pc-knowledge-lookup errors/E045,E051,E014,E026,E085,E024,E086",
+          "checked_at": "2026-07-13",
+          "note": "OHOS NDK=musl(子集)+libc++；__linux__+__OHOS__+__MUSL__ 三宏、多数 C/C++ 零改编译(triple aarch64-unknown-linux-ohos)。真机细节:fork()+execv() 私有 HNP 可用(app 域仅私有 HNP、公有 HNP 经 /bin/sh 被 SELinux 拒；root 不限)、Python 默认 posix_spawn；thread_local/__thread 可用但 pthread_cancel/setcancelstate、pthread_attr_setaffinity_np 缺(需 __OHOS__ 守卫/复用 android impl)；mmap RWX、mprotect RW→RX 于 1.12.0 放开(但 app 域 spawn 的非系统进程仍不能 JIT→node --jitless、WASM 不可用)；getrandom 1.12.0 已补；io_uring app 域被 seccomp SIGSYS 杀→回落 epoll；POSIX shm(QSharedMemory/dev/shm tmpfs)真机、sem 可用(sem_unlink 差异);AF_UNIX bind app 域 SELinux EPERM→TCP 回退、SO_PEERCRED/struct ucred 缺;未实现 syscall→SIGSYS(setreuid/setregid 不可捕获，须源码守卫);open_memstream 静默丢写;🔴 64KB 页对齐 .so 于 4KB 页设备 dlopen 崩→链接 -Wl,-z,max-page-size=0x1000。",
+          "check": null
+        },
+        {
+          "id": "node_napi",
+          "capability": "Node N-API / 原生 .node 插件加载 (node-gyp/node-addon-api)",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：third_party_adapters/node-pty、parcel-watcher；plugin/shared/skills/pc-knowledge-lookup case-studies §2-3",
+          "checked_at": "2026-07-13",
+          "note": "原生 C/C++ Node 插件(.node)经 OHOS NDK+CMake 直编真机(node-pty→node.napi.node、parcel-watcher→watcher.node；绕过无 OHOS 分支的 node-gyp，PREFIX ''/SUFFIX .node + node-addon-api 头)、process.dlopen 加载。注意:app 域内 spawn 的 node 需 --jitless(禁 WASM)，但 N-API 插件加载本身不受影响。",
+          "check": null
+        },
+        {
+          "id": "cpython_capi",
+          "capability": "CPython C-API / ctypes / libpython 嵌入",
+          "status": "available",
+          "source": "人工核实：harmony-pc 工程实践(真机)：third_party_adapters/9LIBS-ACCEPTANCE.md、TEST-RESULTS.md、memory/adaptation/鸿蒙PC-pyGLFW-Python绑定库迁移.md；pc-knowledge-lookup errors/E045,E068",
+          "checked_at": "2026-07-13",
+          "note": "Python C 扩展交叉编译真机(pycosat 30/30、PyWavelets 1031 pass、pyzmq、PyCxx)；libpython3.12 可嵌入(pyGLFW HAP 内 Py_Initialize+PyRun 端到端真机)；ctypes 可用(pyGLFW 纯 ctypes 绑定、OpenCL-SDK 经 ctypes dlopen libOpenCL)。坑:ctypes.util.find_library 崩(无 /sbin/ldconfig)→打补丁返回 None；CFUNCTYPE/libffi 闭包需 W^X，1.12.0 内核已放开。PyTorch/libtensorflow 无证据、不含。",
           "check": null
         }
       ]

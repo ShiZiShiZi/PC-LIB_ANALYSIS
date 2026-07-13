@@ -622,9 +622,13 @@ function activeJobFor(name, group) {
       return { id: j.id, type: j.type, status: j.status, startedAt: j.startedAt };
   return null;
 }
-function reportSummary(name, run, group) {
+function reportSummary(name, run, group, statusById) {
   try {
     const r = JSON.parse(fs.readFileSync(path.join(runLibDir(group, name), run, 'report.json'), 'utf8'));
+    // Live caps re-projection (口径同 /api/report) so the 仪表盘「运行前提」列 reflects curated
+    // caps, not the stale persisted snapshot. statusById is built once per /api/libraries request
+    // (listLibraries) and passed in; fall back to a fresh load for any other caller.
+    reprojectCaps(r, statusById || capsStatusById());
     // dim-9 鸿蒙适配结论（serve-time 派生，口径同 /api/report 的 normalizeHarmony）：
     // 仪表盘徽章按 5 档 effective_class 上色；overall = 是否可适配总判。
     const ha = r.harmony_adaptation || null;
@@ -645,7 +649,7 @@ function reportSummary(name, run, group) {
       subpath: (r.library && r.library.source_subpath) || null,
       analyzedAt: r.library && r.library.analyzed_at,
       portingClass, difficultyLevel, personDays, overall,
-      functionalViability: (ha && ha.functional_viability) || null,   // 快照口径（详情页才 caps live 回投）
+      functionalViability: (ha && ha.functional_viability) || null,   // caps live 回投后（口径同详情页）
     };
   } catch { return null; }
 }
@@ -697,6 +701,7 @@ function listLibraries(group) {
     for (const n of fs.readdirSync(runsBase))
       try { if (fs.statSync(path.join(runsBase, n)).isDirectory()) names.add(n); } catch (_) {}
   const allTags = loadTags();
+  const statusById = capsStatusById();   // live caps loaded once per request; reused by every reportSummary
   return [...names].sort().map((name) => {
     const runs = runsForLib(name, g);
     const latest = runs[0] || null;
@@ -716,7 +721,7 @@ function listLibraries(group) {
       name, group: g, cloned: repos.has(name), runCount: runs.length, cloneUrl,
       latest, active: activeJobFor(name, g), subpath: (ident && ident.subpath) || null,
       analyzedAt: analyzedAt || null, addedAt, tags: allTags[tagKey(g, name)] || [],
-      summary: latest && latest.reportAvailable ? reportSummary(name, latest.run, g) : null,
+      summary: latest && latest.reportAvailable ? reportSummary(name, latest.run, g, statusById) : null,
     };
   });
 }
@@ -1094,6 +1099,43 @@ function deriveFunctionalViability(ha) {
     if (VIABILITY_RANK[v] > VIABILITY_RANK[worst]) worst = v;
   }
   return worst;
+}
+// Live caps id→status map (built once per request), feeding the serve-time re-projection below.
+// Pass a pre-loaded caps object to reuse it (e.g. the demand handler already has one); else it loads.
+function capsStatusById(caps) {
+  try {
+    if (!caps) caps = harmonyCaps.load();
+    const m = new Map();
+    for (const s of (caps && Array.isArray(caps.sections) ? caps.sections : []))
+      for (const row of (s && Array.isArray(s.rows) ? s.rows : []))
+        if (row && row.id && row.status) m.set(row.id, row.status);
+    return m;
+  } catch (_) { return new Map(); }
+}
+// Serve-time caps re-projection — the ONE implementation shared by /api/report (detail),
+// reportSummary (dashboard list) and the /api/harmony-caps demand rollup. Overwrite each
+// target_assumption.target_status from live caps (by capability_key; caps is the authoritative
+// target-side source, the model's value kept in target_status_model), then re-derive
+// functional_viability + the required+unknown confidence cap. Read-time only (mutates the
+// in-memory report), so curating a caps row refreshes every consumer with no re-analysis.
+function reprojectCaps(rep, statusById) {
+  try {
+    const ha = rep && rep.harmony_adaptation;
+    const ta = ha && Array.isArray(ha.target_assumptions) ? ha.target_assumptions : null;
+    if (!ta || !ta.length || !statusById || !statusById.size) return rep;
+    for (const a of ta) {
+      if (!a || typeof a !== 'object' || !a.capability_key || !statusById.has(a.capability_key)) continue;
+      if (!('target_status_model' in a)) a.target_status_model = (a.target_status ?? null);
+      a.target_status = statusById.get(a.capability_key);
+    }
+    ha.functional_viability = deriveFunctionalViability(ha);
+    const reqUnknown = ta.some((a) => a && a.required && a.target_status === 'unknown');
+    if (ha.confidence_model != null)
+      ha.confidence = (reqUnknown && ha.confidence_model === 'high') ? 'medium' : ha.confidence_model;
+    if (rep.meta && rep.meta.confidence_overall_model != null)
+      rep.meta.confidence_overall = (reqUnknown && rep.meta.confidence_overall_model === 'high') ? 'medium' : rep.meta.confidence_overall_model;
+  } catch (_) { /* caps unavailable → leave the report un-reprojected */ }
+  return rep;
 }
 // overall 是否可适配 verdict as a pure function of the 5-way effective_class (matches
 // deriveAdaptationAssessment) — for deriving it on raw/unnormalized reports (topology/summary).
@@ -2719,33 +2761,11 @@ const server = http.createServer(async (req, res) => {
         if (reviewed.length) rep.meta.harmony_warnings_reviewed = reviewed; else delete rep.meta.harmony_warnings_reviewed;
       }
       // Serve-time caps re-projection — runs for EVERY report regardless of the version stamp (like
-      // the topology rollup). Overwrite each target_assumption.target_status from the LIVE caps (by
-      // capability_key; caps is the authoritative target-side source, the model's value kept in
-      // target_status_model), then re-derive functional_viability + the required+unknown confidence
-      // cap from the projected statuses. So curating a caps row refreshes every dependent report on
-      // read — no re-analysis. Graceful degrade: any caps failure serves the report un-reprojected.
-      try {
-        const ha = rep && rep.harmony_adaptation;
-        const ta = ha && Array.isArray(ha.target_assumptions) ? ha.target_assumptions : null;
-        if (ta && ta.length) {
-          const caps = harmonyCaps.load();
-          const statusById = new Map();
-          for (const s of (caps && Array.isArray(caps.sections) ? caps.sections : []))
-            for (const row of (s && Array.isArray(s.rows) ? s.rows : []))
-              if (row && row.id && row.status) statusById.set(row.id, row.status);
-          for (const a of ta) {
-            if (!a || typeof a !== 'object' || !a.capability_key || !statusById.has(a.capability_key)) continue;
-            if (!('target_status_model' in a)) a.target_status_model = (a.target_status ?? null);
-            a.target_status = statusById.get(a.capability_key);
-          }
-          ha.functional_viability = deriveFunctionalViability(ha);
-          const reqUnknown = ta.some((a) => a && a.required && a.target_status === 'unknown');
-          if (ha.confidence_model != null)
-            ha.confidence = (reqUnknown && ha.confidence_model === 'high') ? 'medium' : ha.confidence_model;
-          if (rep.meta && rep.meta.confidence_overall_model != null)
-            rep.meta.confidence_overall = (reqUnknown && rep.meta.confidence_overall_model === 'high') ? 'medium' : rep.meta.confidence_overall_model;
-        }
-      } catch (_) { /* caps unavailable → serve report as-is (no re-projection) */ }
+      // the topology rollup): overwrite each target_assumption.target_status from the LIVE caps and
+      // re-derive functional_viability + the confidence cap, so curating a caps row refreshes every
+      // dependent report on read (no re-analysis). Shared with reportSummary (dashboard list) and the
+      // demand rollup. Graceful degrade: any caps failure serves the report un-reprojected.
+      reprojectCaps(rep, capsStatusById());
       return send(res, 200, rep);
     }
 
@@ -2764,12 +2784,14 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && pathname === '/api/harmony-caps') {
       try {
         const caps = harmonyCaps.load();
+        const statusById = capsStatusById(caps);   // reuse the just-loaded caps for the re-projection below
         // 反哺研究优先级：跨所有已分析报告聚合每个目标能力行「被 N 个分析需要」
         // （经 harmony_adaptation.target_assumptions[].capability_key）。遍历范式同 /api/observations。
+        // 先按 live caps 重投影每个报告的 target_status（口径同 /api/report），已核实的能力 unknown 计数归零。
         const demand = {};   // rowId -> {count, unknown, libs:[]}
         for (const grp of listGroups()) for (const lib of listLibraries(grp)) {
           if (!lib.latest || !lib.latest.reportAvailable) continue;
-          const rep = latestReport(lib.name, grp);
+          const rep = reprojectCaps(latestReport(lib.name, grp), statusById);
           const tas = (rep && rep.harmony_adaptation && rep.harmony_adaptation.target_assumptions) || [];
           const seen = new Set();   // 同一报告对同一行只计一次
           for (const ta of tas) {
@@ -2881,9 +2903,13 @@ const server = http.createServer(async (req, res) => {
         let buf;
         try { buf = fs.readFileSync(tmp); } catch (e) { return send(res, 500, { error: 'export read failed', detail: String(e) }); }
         finally { fs.unlink(tmp, () => {}); }
+        const now = new Date();   // 本地时区，文件名用 YYYY-MM-DD_HH-MM-SS（冒号在 Windows 非法，用 -）
+        const pad2 = (n) => String(n).padStart(2, '0');
+        const stamp = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`
+          + `_${pad2(now.getHours())}-${pad2(now.getMinutes())}-${pad2(now.getSeconds())}`;
         res.writeHead(200, {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'Content-Disposition': `attachment; filename="pc-lib-analysis-${new Date().toISOString().slice(0, 10)}.xlsx"`,
+          'Content-Disposition': `attachment; filename="pc-lib-analysis-${stamp}.xlsx"`,
           'Content-Length': buf.length,
         });
         res.end(buf);

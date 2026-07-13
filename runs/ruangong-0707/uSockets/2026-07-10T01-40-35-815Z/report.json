@@ -1327,9 +1327,9 @@
       {
         "id": "ta:ohos_ndk_posix_socket",
         "capability": "OHOS NDK 提供完整的 BSD Socket API（socket/bind/listen/accept/connect/send/recv/setsockopt/getaddrinfo/getpeername 等）",
-        "capability_key": null,
+        "capability_key": "posix_sockets",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "uSockets 核心 TCP/UDP 功能完全依赖 BSD Socket API。若无完整支持则无法运行",
         "source": "OHOS NDK 文档（鸿蒙 NDK 宣称提供 POSIX 子集 + musl libc，包含 socket/arpa/inet 头文件）。待核实具体 API 覆盖度",
         "target_status_model": "unknown"
@@ -1337,9 +1337,9 @@
       {
         "id": "ta:ohos_ndk_epoll",
         "capability": "OHOS NDK 提供 epoll 事件通知机制（epoll_create1/epoll_ctl/epoll_wait）",
-        "capability_key": null,
+        "capability_key": "epoll",
         "required": false,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "epoll 是 uSockets 在 Linux 上的默认事件后端。若无 epoll，可改用 libuv 后端（已鸿蒙化）替代——核心功能不受影响，仅性能特性可能不同",
         "source": "由于 OHOS 内核为自研（非 Linux），epoll 的可用性不确定",
         "target_status_model": "unknown"
@@ -1347,9 +1347,9 @@
       {
         "id": "ta:ohos_ndk_timerfd_eventfd",
         "capability": "OHOS NDK 提供 timerfd_create/timerfd_settime 和 eventfd 接口",
-        "capability_key": null,
+        "capability_key": "timerfd_eventfd",
         "required": false,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "epoll 事件后端中定时器和异步唤醒依赖 timerfd/eventfd。若不可用，epoll 后端定时器和 us_wakeup_loop 无法工作——但可通过切换到 libuv 事件后端完全规避（libuv 用自有 uv_timer/uv_async 实现等价功能）",
         "source": "timerfd 和 eventfd 是 Linux 专有系统调用，musl 通常提供但不保证内核支持",
         "target_status_model": "unknown"
@@ -1380,12 +1380,12 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "uSockets 的所有网络传输（TCP/UDP 连接和监听、DNS 解析）需要网络访问权限",
         "source_capability": "runtime_surface.network",
-        "harmony_status": "unknown",
         "evidence": [
           "src/libusockets.h:189-207 (listen/connect API)",
           "src/bsd.c:468-540 (create_listen_socket)",
           "src/bsd.c:712-748 (create_connect_socket)"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "critical_dependencies": [],
@@ -1397,7 +1397,6 @@
         "source_dimension": "native_api",
         "adaptability": "adaptable",
         "category": "linux_kernel_api",
-        "harmony_status": "unavailable",
         "remediation": "uSockets 有 5 种事件后端可供选择。编译时排除 io_uring（不定义 LIBUS_USE_IO_URING），使用 epoll 或 libuv 作为事件后端。io_uring 模块本身已被 #ifndef 守卫保护，默认不编译",
         "evidence": [
           "src/loop.c:18 (#ifndef LIBUS_USE_IO_URING)",
@@ -1406,7 +1405,8 @@
           "code_partition.buckets[needs_adaptation].modules[src/io_uring]"
         ],
         "caused_by": [],
-        "id": "bk:1"
+        "id": "bk:1",
+        "remediation_status": "unavailable"
       },
       {
         "issue": "epoll 事件后端的 timerfd_create/eventfd 依赖（Linux 专有系统调用），OHOS 内核可能不支持",
@@ -1414,7 +1414,6 @@
         "source_dimension": "native_api",
         "adaptability": "adaptable",
         "category": "linux_kernel_api",
-        "harmony_status": "unknown",
         "remediation": "若 OHOS NDK 不提供 timerfd/eventfd，可改用 libuv 事件后端（libuv 已鸿蒙化，自带定时器和异步唤醒实现）。epoll_kqueue.c 中的 timerfd/eventfd 调用受 #ifdef LIBUS_USE_EPOLL 守卫——只需不定义此宏或选择 libuv 构建即可",
         "evidence": [
           "src/eventing/epoll_kqueue.c:291 (timerfd_create)",
@@ -1425,7 +1424,8 @@
         "caused_by": [
           "ta:ohos_ndk_timerfd_eventfd"
         ],
-        "id": "bk:2"
+        "id": "bk:2",
+        "remediation_status": "unknown"
       },
       {
         "issue": "bsd.c 中 Linux 特有的套接字选项（SO_REUSEPORT、TCP_CORK、IP_PKTINFO/IP_RECVDSTADDR/IP_RECVTOS 等）在 OHOS 内核可能不可用",
@@ -1433,7 +1433,6 @@
         "source_dimension": "native_api",
         "adaptability": "adaptable",
         "category": "posix_porting",
-        "harmony_status": "unknown",
         "remediation": "这些选项在 bsd.c 中均有 #ifdef 守卫——编译时若未定义对应宏则自动回退到基础行为。SO_REUSEPORT 非必需（有 SO_REUSEADDR 回退），TCP_CORK 是性能优化（MSG_MORE 已提供等价语义），ECN/PKTINFO 是高级 UDP 特性（基础 UDP 收发不受影响）。核心 TCP/UDP 功能不依赖这些选项",
         "evidence": [
           "src/bsd.c:294-297 (TCP_CORK #ifdef)",
@@ -1442,7 +1441,8 @@
           "code_metrics.platform_adaptation.by_platform"
         ],
         "caused_by": [],
-        "id": "bk:3"
+        "id": "bk:3",
+        "remediation_status": "unknown"
       },
       {
         "issue": "QUIC/HTTP3 支持依赖 lsquic 库（未鸿蒙化），且 lsquic 自身依赖 BoringSSL（未鸿蒙化）",
@@ -1450,7 +1450,6 @@
         "source_dimension": "dependencies",
         "adaptability": "adaptable",
         "category": "dependency_unported",
-        "harmony_status": "unavailable",
         "remediation": "QUIC 是 uSockets 的实验性可选功能，默认不编译（需要 WITH_QUIC=1）。鸿蒙移植第一步可排除 QUIC 支持，核心 TCP/TLS/UDP 功能不受影响。后续若要支持 QUIC，需先移植 lsquic（C 库，理论可移植，可改用 OpenSSL 替代 BoringSSL）",
         "evidence": [
           "Makefile:61-67 (WITH_QUIC)",
@@ -1459,7 +1458,8 @@
           "dependencies.lsquic.harmony_adapted: false"
         ],
         "caused_by": [],
-        "id": "bk:4"
+        "id": "bk:4",
+        "remediation_status": "unavailable"
       },
       {
         "issue": "OHOS NDK BSD Socket API 覆盖度未核实——socket/bind/listen/accept/connect/send/recv/setsockopt 等核心 API 是否完整可用",
@@ -1467,7 +1467,6 @@
         "source_dimension": "native_api",
         "adaptability": "adaptable",
         "category": "platform_verification",
-        "harmony_status": "unknown",
         "remediation": "此为前提性阻碍——需核实 OHOS NDK 的 musl 实现是否包含完整的 <sys/socket.h>, <netinet/in.h>, <netinet/tcp.h>, <netdb.h>, <sys/un.h> 等头文件。POSIX 子集通常包含这些，但需确认。若完整支持，其余阻碍均为低严重度的可选功能",
         "evidence": [
           "src/bsd.c:30-39 (POSIX socket headers)",
@@ -1478,7 +1477,8 @@
         "caused_by": [
           "ta:ohos_ndk_posix_socket"
         ],
-        "id": "bk:5"
+        "id": "bk:5",
+        "remediation_status": "unknown"
       }
     ],
     "effort": {
@@ -1542,7 +1542,7 @@
     "notes": "置信度为中等的核心原因：OHOS NDK 的 BSD Socket API 和 epoll/timerfd 覆盖度尚未有明确文档核实（5 项 target_assumptions 中 3 项为 unknown）。这是前提性未知——若 OHOS NDK 提供完整的 POSIX socket + epoll（不含 timerfd），uSockets 可近乎零改动移植（仅排除 io_uring，使用 epoll 后端的 kqueue 风格定时器）。若只提供基础 socket 但无 epoll，则切换到 libuv 后端同样零代码改动。整体适配风险低——uSockets 设计为高度可配置、后端可替换的库。由于 target_assumptions 中存在必需但 unknown 的假设（OHOS NDK socket API），confidence 下调至 medium。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1600,13 +1600,6 @@
         "kind": "coverage",
         "value": "代表性的 BSD Socket API 调用已完整覆盖。io_uring 相关系统调用（io_uring_setup/io_uring_enter）未单独列出因为 io_uring 模块整体标记为可排除",
         "rationale": "io_uring 的 4 个源文件包含 ~537 LOC 的 io_uring 专用 API，但这些属于可排除模块"
-      },
-      {
-        "dimension": "harmony_adaptation",
-        "field": "target_assumptions",
-        "kind": "caps_gap",
-        "value": "OHOS NDK 的 POSIX socket API 覆盖度、epoll 支持状态、timerfd/eventfd 支持状态",
-        "rationale": "harmony-pc-capabilities.json 目前没有 'native_ndk' 段来描述 NDK 原生层的 POSIX API 覆盖度和内核特性支持。建议新增 NDK 能力画像段：sys/socket.h、netinet/in.h、sys/epoll.h、sys/timerfd.h、sys/eventfd.h 等关键头文件及其底层系统调用的可用性"
       }
     ],
     "schema_version": "1.0",
@@ -1620,7 +1613,7 @@
         "rationale": "INTERNET 权限是网络库 uSockets 的固有需求——所有网络传输（TCP/UDP 连接与监听）均需网络访问。但网络库不涉及 capability_profile 覆盖的 GUI/3D/媒体/硬件四大场景，也不属于 cloud_services 云端服务。source_capability 指向 runtime_surface.network 准确表达了权限来源，校验器因 network 未在 capability_profile.scenarios 中注册而误报。此为良性假阳"
       }
     ],
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "uSockets 是一个纯网络传输层库，不涉及 GUI 桌面界面、3D 图形渲染、音视频媒体处理或任何特定硬件设备访问。其全部功能围绕 TCP/TLS/UDP/QUIC 网络传输和事件循环，属于系统网络基础设施范畴，不触发鸿蒙适配中 GUI/3D/媒体/硬件四大重点场景。",
@@ -1636,7 +1629,7 @@
     "coverage": {
       "production_code": 4989,
       "partitioned_code": 4989,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

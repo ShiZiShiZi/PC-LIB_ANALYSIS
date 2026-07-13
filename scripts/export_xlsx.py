@@ -29,6 +29,63 @@ import report_normalize  # noqa: E402
 
 JOIN = "；"
 
+# ── live caps re-projection (mirror of web/server.js reprojectCaps) ───────────
+# The panel re-projects each report's target_assumptions[].target_status from the LIVE caps
+# (references/harmony-pc-capabilities.json) at read time, so curating a caps row refreshes the
+# 运行前提/target_status without re-analysis. The export must do the same or it shows the stale
+# persisted snapshot. Read-time only (mutates the in-memory report). Keep in sync with server.js.
+_CAPS_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "references", "harmony-pc-capabilities.json")
+_CAPS_STATUS_CACHE = None
+
+
+def _caps_status():
+    """Live caps id→status map (loaded once). Mirrors web/server.js capsStatusById()."""
+    global _CAPS_STATUS_CACHE
+    if _CAPS_STATUS_CACHE is None:
+        m = {}
+        try:
+            with open(_CAPS_JSON, encoding="utf-8") as fh:
+                caps = json.load(fh)
+            for sec in caps.get("sections") or []:
+                for row in (sec or {}).get("rows") or []:
+                    if isinstance(row, dict) and row.get("id") and row.get("status"):
+                        m[row["id"]] = row["status"]
+        except Exception:  # noqa: BLE001 — export must not fail if caps missing/unreadable
+            m = {}
+        _CAPS_STATUS_CACHE = m
+    return _CAPS_STATUS_CACHE
+
+
+def _reproject_caps(rep, status):
+    """Overwrite target_status from live caps (by capability_key; keep model value in
+    target_status_model), then re-derive functional_viability + the required+unknown confidence cap.
+    Mirror of web/server.js reprojectCaps; reuses report_normalize.derive_functional_viability."""
+    try:
+        ha = rep.get("harmony_adaptation") if isinstance(rep, dict) else None
+        ta = ha.get("target_assumptions") if isinstance(ha, dict) else None
+        if not isinstance(ta, list) or not ta or not status:
+            return rep
+        for a in ta:
+            if not isinstance(a, dict):
+                continue
+            key = a.get("capability_key")
+            if not key or key not in status:
+                continue
+            if "target_status_model" not in a:
+                a["target_status_model"] = a.get("target_status")
+            a["target_status"] = status[key]
+        ha["functional_viability"] = report_normalize.derive_functional_viability(ha)
+        req_unknown = any(isinstance(a, dict) and a.get("required") and a.get("target_status") == "unknown" for a in ta)
+        if ha.get("confidence_model") is not None:
+            ha["confidence"] = "medium" if (req_unknown and ha.get("confidence_model") == "high") else ha.get("confidence_model")
+        meta = rep.get("meta") if isinstance(rep, dict) else None
+        if isinstance(meta, dict) and meta.get("confidence_overall_model") is not None:
+            meta["confidence_overall"] = ("medium" if (req_unknown and meta.get("confidence_overall_model") == "high")
+                                          else meta.get("confidence_overall_model"))
+    except Exception:  # noqa: BLE001 — export must not fail on a re-projection hiccup
+        pass
+    return rep
+
 
 # ── report loading (reused verbatim) ─────────────────────────────────────────
 
@@ -58,6 +115,10 @@ def _latest_report(lib_dir: str):
             report_normalize.normalize_report(rep)
         except Exception:  # noqa: BLE001 — export must not fail on a normalize hiccup
             pass
+    # Live caps re-projection (口径同面板 /api/report + reportSummary) so the exported 运行前提/
+    # target_status reflect curated caps, not the stale persisted snapshot. After normalize so
+    # confidence_model/target_status_model are present.
+    _reproject_caps(rep, _caps_status())
     return rep
 
 
@@ -199,8 +260,8 @@ _OVERALL_LABELS = {"adaptable": "可适配", "adaptable_with_tailoring": "可适
 _VIABILITY_LABELS = {"viable": "前提齐备", "viable_with_work": "有条件可用",
                      "blocked_external": "功能受阻·依赖外部前提", "unverified": "前提未核实"}
 
-# ── 语义配色映射（列值 → _SEMANTIC_FILL 色键）─────────────────────────────────
-# 与面板 app.js 的 TOPO_STATUS / *_CLS 语义一致；未知值 .get()→None → 不上色。
+# ── 语义配色映射（列值 → 语义键 → _SEMANTIC_FONT 字体色）───────────────────────
+# 与面板 app.js 的 TOPO_STATUS / *_CLS 语义一致；未知值 .get()→None → 字体默认深色（不上色）。
 _PCLASS_FILL = {"no_adaptation": "blue", "recompile_only": "teal",
                 "needs_adaptation": "amber",
                 "needs_adaptation_platform_partial": "orange",
@@ -211,6 +272,15 @@ _VIABILITY_FILL = {"viable": "green", "viable_with_work": "amber",
                    "blocked_external": "red", "unverified": "gray"}
 _LEVEL_FILL = {"very_low": "green", "low": "green", "medium": "amber",
                "high": "orange", "very_high": "red"}
+# 三方能力地图「是否能AI鸿蒙化」——综合代码轴 effective_class + 前提轴 functional_viability 的 6 档结论。
+# effective_class 的直接映射（前提轴 blocked_external/unverified 及 core_partial 在 _v_ai_harmonize 里优先短路）。
+_AI_HARMONIZE = {"no_adaptation": ("无需适配", "green"),
+                 "recompile_only": ("仅需交叉编译", "teal"),
+                 "needs_adaptation": ("全量功能可适配", "blue"),
+                 "needs_adaptation_platform_partial": ("核心功能可适配", "amber"),
+                 "needs_adaptation_core_partial": ("无法适配（核心不可适配或前提不具备）", "red")}
+_AI_BLOCKED = ("无法适配（核心不可适配或前提不具备）", "red")
+_AI_UNVERIFIED = ("待核实（前提未核实）", "gray")
 # target_assumptions.target_status —— 只对 required 项统计（元组顺序＝由严重到轻）
 _TGT_ORDER = ("unavailable", "partial", "unknown")   # available 视为无阻碍
 _TGT_FILL = {"unavailable": "red", "partial": "amber", "unknown": "gray"}
@@ -383,6 +453,35 @@ def _v_days(name, r):
     return f"{fmt(lo)}–{fmt(hi)}"
 
 
+def _v_months(name, r):
+    """工作量(人月) = effort.person_days ÷ 22（1 人月=22 人天），1 位小数去尾零。"""
+    d = _effort_days(r.get("harmony_adaptation") or {})
+    if not d:
+        return ""
+    lo, hi = d[0] / 22.0, d[1] / 22.0
+    fmt = lambda x: (str(int(x)) if float(round(x, 1)).is_integer() else f"{x:.1f}")
+    return f"{fmt(lo)}–{fmt(hi)}"
+
+
+def _v_ai_harmonize(name, r):
+    """是否能AI鸿蒙化 —— 6 档结论。确定性负面优先(核心不可适配/前提不具备)，其次不确定(前提未核实)，
+    再按代码轴 effective_class。见 _AI_HARMONIZE。"""
+    ec = (_g(r, "harmony_adaptation", "adaptation_assessment", "effective_class", default="")
+          or _g(r, "harmony_adaptation", "porting_class", default=""))
+    fv = _g(r, "harmony_adaptation", "functional_viability", default="")
+    if not ec and not fv:
+        return ""
+    if ec == "needs_adaptation_core_partial":       # 核心确定不可适配
+        label, fill = _AI_BLOCKED
+    elif fv == "blocked_external":                  # 前提确定不具备
+        label, fill = _AI_BLOCKED
+    elif fv == "unverified":                        # 前提未核实
+        label, fill = _AI_UNVERIFIED
+    else:
+        label, fill = _AI_HARMONIZE.get(ec, _AI_UNVERIFIED)
+    return _Styled(label, fill)
+
+
 def _v_summary(name, r):
     return _g(r, "harmony_adaptation", "summary", default="")
 
@@ -519,12 +618,18 @@ GROUPS = [
     ("云服务", [("厂商", _v_cloud_vendors), ("用途", _v_cloud_cats)]),
     ("鸿蒙适配评估", [
         ("移植分级", _v_pclass), ("代码适配", _v_overall), ("运行前提", _v_viability),
-        ("难度", _v_level), ("工作量(人天)", _v_days), ("评估总结", _v_summary),
+        ("评估总结", _v_summary),
     ]),
     ("鸿蒙移植·阻碍/假设/关键路径", [
         ("目标能力假设(阻碍分布)", _v_target_assumptions),
         ("移植阻碍点(严重度分布)", _v_blockers),
         ("关键路径依赖(建议移植顺序)", _v_critical_deps),
+    ]),
+    # 三方能力地图 —— 面向业务的结论抬头：AI 鸿蒙化结论 + 复杂度(=难度) + 工作量(人月=人天÷22)。
+    ("三方能力地图", [
+        ("是否能AI鸿蒙化", _v_ai_harmonize),
+        ("复杂度", _v_level),
+        ("工作量(人月)", _v_months),
     ]),
 ]
 
@@ -535,22 +640,18 @@ WRAP_WIDTH = {"描述": 58, "评估总结": 58, "源码仓地址": 42, "用途":
 
 # ── styling ──────────────────────────────────────────────────────────────────
 FONT_NAME = "微软雅黑"
+# 单元格底色只保留 2 种（表头一级/二级）；数据区全白、行靠细边框区分；语义配色改由字体色承载（见 _SEMANTIC_FONT）。
 _TOP_FILL = PatternFill("solid", fgColor="B7C9E2")   # 一级表头（深）
 _SUB_FILL = PatternFill("solid", fgColor="DDE6F0")    # 二级表头（浅）
-_PART_TOP_FILL = PatternFill("solid", fgColor="E8D9B5")  # 代码分区组用暖色区分
-_PART_SUB_FILL = PatternFill("solid", fgColor="F3ECD8")
-_PORT_TOP_FILL = PatternFill("solid", fgColor="F0D9D2")  # 鸿蒙移植·阻碍组用淡红区分
-_PORT_SUB_FILL = PatternFill("solid", fgColor="F7E9E4")
-_ZEBRA_FILL = PatternFill("solid", fgColor="F7F9FC")
-# 数据格语义软色（与面板 badge 底色一致）——由 _Styled.fill_key 选取
-_SEMANTIC_FILL = {
-    "green":  PatternFill("solid", fgColor="E3F6EA"),
-    "teal":   PatternFill("solid", fgColor="DCEFEF"),
-    "blue":   PatternFill("solid", fgColor="E4ECFB"),
-    "amber":  PatternFill("solid", fgColor="FBF0D9"),
-    "orange": PatternFill("solid", fgColor="FDEBD0"),
-    "red":    PatternFill("solid", fgColor="FBE6E4"),
-    "gray":   PatternFill("solid", fgColor="F0F3F7"),
+# 数据格语义 → 字体色（与面板 badge 语义一致，取可读深色；数量不限、不占底色）——由 _Styled.sem_key 选取
+_SEMANTIC_FONT = {
+    "green":  "1B7A3D",   # 支持/无需适配/前提齐备/友好协议
+    "teal":   "0F6E6E",   # 仅交叉编译
+    "blue":   "1F5FBF",   # 全量功能可适配
+    "amber":  "B45309",   # 部分/中/有条件可用
+    "orange": "C2570A",   # 较重/高
+    "red":    "C0392B",   # 不支持/无法适配/阻塞/极高
+    "gray":   "6B7280",   # 待核实/未知/次要
 }
 _THIN = Side(style="thin", color="B0B8C4")
 _BORDER = Border(left=_THIN, right=_THIN, top=_THIN, bottom=_THIN)
@@ -560,10 +661,11 @@ _WRAP_ALIGN = Alignment(horizontal="left", vertical="top", wrap_text=True)
 
 
 class _Styled(str):
-    """带语义色键的单元格值；作为 str 子类，可原样流经 _cell() 与列宽测量。"""
-    def __new__(cls, text, fill=None):
+    """带语义色键的单元格值；作为 str 子类，可原样流经 _cell() 与列宽测量。
+    sem_key 驱动**字体色**（_SEMANTIC_FONT），不再作单元格底色。"""
+    def __new__(cls, text, sem=None):
         s = super().__new__(cls, "" if text is None else str(text))
-        s.fill_key = fill
+        s.sem_key = sem
         return s
 
 
@@ -586,14 +688,9 @@ def build(entries, out_path):
     cols, spans = _flat_columns()
     ncols = len(cols)
 
-    # header rows 1 (一级) + 2 (二级)
+    # header rows 1 (一级) + 2 (二级) —— 所有组统一底色（分组靠合并标题格 + 边框区分，不再各用一色）
     for top, c1, c2 in spans:
-        if top and top.startswith("代码分区"):
-            top_fill, sub_fill = _PART_TOP_FILL, _PART_SUB_FILL
-        elif top and top.startswith("鸿蒙移植"):
-            top_fill, sub_fill = _PORT_TOP_FILL, _PORT_SUB_FILL
-        else:
-            top_fill, sub_fill = _TOP_FILL, _SUB_FILL
+        top_fill, sub_fill = _TOP_FILL, _SUB_FILL
         if top is None:                       # standalone → vertical merge over both header rows
             ws.merge_cells(start_row=1, start_column=c1, end_row=2, end_column=c1)
             cell = ws.cell(row=1, column=c1, value=cols[c1 - 1][0])
@@ -629,14 +726,12 @@ def build(entries, out_path):
                 print(f"warn: {name} 列 {sub!r}: {e}", file=sys.stderr)
                 val = ""
             cell = ws.cell(row=r, column=ci, value=val)
-            cell.font = Font(name=FONT_NAME, size=10)
+            sem = getattr(val, "sem_key", None)            # _Styled 携带的语义键 → 字体色
+            sem_color = _SEMANTIC_FONT.get(sem)
+            cell.font = Font(name=FONT_NAME, size=10, color=sem_color) if sem_color else Font(name=FONT_NAME, size=10)
             cell.border = _BORDER
             cell.alignment = _WRAP_ALIGN if sub in WRAP_WIDTH else _CELL_ALIGN
-            fill_key = getattr(val, "fill_key", None)      # _Styled 携带的语义色键
-            if fill_key in _SEMANTIC_FILL:
-                cell.fill = _SEMANTIC_FILL[fill_key]
-            elif ri % 2 == 1 and sub not in WRAP_WIDTH:
-                cell.fill = _ZEBRA_FILL
+            # 数据格不设底色（全白）；语义已由字体色承载，行靠细边框区分。
 
     ws.freeze_panes = "C3"                     # freeze both header rows + 名称/源码仓 两列
     last_col = get_column_letter(ncols)

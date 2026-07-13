@@ -286,7 +286,7 @@
         "language": "Dockerfile",
         "files": 1,
         "code": 9,
-        "pct": 0.0,
+        "pct": 0,
         "production": {
           "files": 1,
           "code": 9
@@ -304,7 +304,7 @@
         "language": "JSON",
         "files": 1,
         "code": 7,
-        "pct": 0.0,
+        "pct": 0,
         "production": {
           "files": 1,
           "code": 7
@@ -2069,9 +2069,9 @@
       {
         "id": "ta:blas-lapack-ndk",
         "capability": "BLAS/LAPACK 线性代数库在 OHOS NDK 上的可用性（经交叉编译 OpenBLAS 提供）",
-        "capability_key": null,
+        "capability_key": "blas_lapack",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "Faiss 核心计算依赖 BLAS 的 sgemm 矩阵乘法。未核实时假设 OpenBLAS 可交叉编译为 OHOS .so（OpenBLAS 为纯 C + 汇编，有 aarch64 后端，交叉编译成熟）。若 OHOS NDK 不提供 BLAS，需将 OpenBLAS 列为关键路径依赖一并移植。",
         "source": "OpenBLAS 社区判断（非 caps 条目）",
         "target_status_model": "unknown"
@@ -2079,9 +2079,9 @@
       {
         "id": "ta:openmp-ndk",
         "capability": "OpenMP 在 OHOS NDK 编译器中的支持（clang -fopenmp）",
-        "capability_key": null,
+        "capability_key": "openmp",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "Faiss 广泛使用 #pragma omp parallel for 并行化距离计算与聚类。OHOS NDK 使用 clang 编译器，理论上支持 -fopenmp（需随附 libomp runtime library）。未核实时假设 OHOS NDK clang 支持 OpenMP；若不支持，需消除 ~30 处 omp 使用（退单线程）或移植 libomp 到 OHOS。",
         "source": "clang/OHOS NDK 编译器判断（非 caps 条目）",
         "target_status_model": "unknown"
@@ -2155,7 +2155,6 @@
         "adaptability": "unadaptable",
         "category": "gpu_compute_unavailable",
         "source_dimension": "capability_profile",
-        "harmony_status": "unavailable",
         "remediation": "鸿蒙构建时设置 FAISS_ENABLE_GPU=OFF 排除 CUDA 代码路径。CPU 核心功能不受影响，GPU 加速为可选增强能力。",
         "manifests_as": [
           "ua:cuda-runtime"
@@ -2164,7 +2163,8 @@
         "evidence": [
           "faiss/gpu/GpuIndex.cu:100",
           "CMakeLists.txt:27-33"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:metal-unadaptable",
@@ -2173,7 +2173,6 @@
         "adaptability": "unadaptable",
         "category": "gpu_compute_unavailable",
         "source_dimension": "capability_profile",
-        "harmony_status": "unavailable",
         "remediation": "鸿蒙构建时不启用 FAISS_ENABLE_METAL，Metal 后端本为 macOS 专有，不影响其他平台。",
         "manifests_as": [
           "ua:metal-backend"
@@ -2182,7 +2181,8 @@
         "evidence": [
           "faiss/gpu_metal/MetalIndexFlat.h:16",
           "CMakeLists.txt:36-38"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:platform-adaptation-minor",
@@ -2191,12 +2191,12 @@
         "adaptability": "adaptable",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "simd_levels.cpp 的 getauxval 用 OHOS NDK 的 CPU 特性检测 API 或编译宏替代（NEON 在 aarch64 上恒定可用，无需运行时探测）；pthread_setaffinity 在 OHOS 上可能缺失，用条件编译排除或退化为无亲和性绑定。改动量约 30-80 行源码。",
         "evidence": [
           "faiss/utils/simd_levels.cpp:27",
           "faiss/utils/utils.cpp:50"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:cmake-toolchain",
@@ -2205,17 +2205,17 @@
         "adaptability": "adaptable",
         "category": "build_system",
         "source_dimension": "build_env",
-        "harmony_status": "available",
         "remediation": "设置 CMAKE_TOOLCHAIN_FILE 为 OHOS NDK 的 ohos.toolchain.cmake，启用 -fopenmp（clang 内置支持），调整 OpenBLAS/OpenMP 的 find_package 路径指向 OHOS 交叉编译产物。",
         "evidence": [
           "faiss/CMakeLists.txt:699"
-        ]
+        ],
+        "remediation_status": "available"
       }
     ],
     "notes": "评估按模型 A（库跑在已移植的 Python 运行时上）。target_assumptions 含 2 条 required+unknown 项（ta:blas-lapack-ndk/ta:openmp-ndk），均非 caps 已有条目但为 C++ 生态通用问题。若 OHOS NDK 不提供 OpenMP 则需要消除 omp 使用或移植 libomp，工作量将上升 2-5 人天；若无 BLAS 则需要完整移植 OpenBLAS（约 3-5 人天）。GPU 代码为可选能力且非各平台功能交集，标 platform_specific 合理。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation_platform_partial",
       "overall": "adaptable_with_tailoring",
@@ -2258,20 +2258,6 @@
     "confidence_overall": "medium",
     "observations": [
       {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "OHOS NDK OpenMP 支持（clang -fopenmp / libomp）",
-        "rationale": "Faiss 广泛依赖 OpenMP 并行。OHOS NDK 基于 clang，理论上支持 -fopenmp，但 caps JSON 未登记 NDK 工具链级别的编译器特性支持情况。建议在 caps 增补 ndk_tools 段记录编译器特性（-fopenmp/-stdlib/-fexceptions 等）。"
-      },
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "BLAS/LAPACK 在 OHOS NDK 上的可用性（OpenBLAS 交叉编译）",
-        "rationale": "Faiss 核心依赖 BLAS sgemm。caps JSON 无 BLAS/LAPACK 条目（OpenBLAS 在 cmd-pkgs 中尚未收录）。建议增补或人工核实 OpenBLAS 在 OHOS 的移植状态。"
-      },
-      {
         "dimension": "code_partition",
         "field": "buckets",
         "kind": "ambiguity",
@@ -2283,7 +2269,7 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "medium",
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "本项目为高效向量检索与聚类计算库，涉及 GPU 通用计算加速与多架构 CPU SIMD 优化两大鸿蒙适配重点场景。不涉及 GUI 界面、3D 渲染或音视频媒体。",
@@ -2340,7 +2326,7 @@
     "coverage": {
       "production_code": 155760,
       "partitioned_code": 155760,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
@@ -2440,7 +2426,7 @@
       {
         "class": "unadaptable",
         "loc": 34261,
-        "pct": 22.0,
+        "pct": 22,
         "modules": [
           {
             "path": "faiss/gpu",

@@ -1257,12 +1257,12 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 SARibbonBar 为 arm64/x86_64 .so；Qt5 鸿蒙移植版社区已提供（harmony-pc-capabilities.json: gui.qt = available）；需确认 Qt Svg 模块在鸿蒙 Qt5 移植中随附可用",
         "evidence": [
           "CMakeLists.txt:48-55",
           "src/SARibbonBar/CMakeLists.txt:153-157"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:darkmode-platform",
@@ -1271,11 +1271,11 @@
         "adaptability": "adaptable",
         "category": "platform_branch",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "在 SARibbonUtil.cpp:isOperatingSystemInDarkMode() 新增 #elif defined(Q_OS_HARMONY) 分支，调用鸿蒙桌面系统能力（或通过 Qt 6.5+ 的 QStyleHints::colorScheme() 统一走已有通用路径）；改动量约 10 行",
         "evidence": [
           "src/SARibbonBar/SARibbonUtil.cpp:347-382"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:python-bindings-tooling",
@@ -1284,12 +1284,12 @@
         "adaptability": "partial",
         "category": "build_tooling",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "若 SIP/Shiboken6 可交叉编译到 OHOS，则 Python 绑定可继续构建分发（PyQtSARibbon/PySideSARibbon）；若不可用，Python 绑定部分暂时跳过，仅提供 C++ 库",
         "evidence": [
           "pyproject.toml:3",
           "pyside6/CMakeLists.txt"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:ps1-build-script",
@@ -1298,11 +1298,11 @@
         "adaptability": "adaptable",
         "category": "build_tooling",
         "source_dimension": "build_env",
-        "harmony_status": "replace_with_ohos",
         "remediation": "鸿蒙构建完全走 CMake + ohos.toolchain.cmake 标准流程，PowerShell 脚本无需移植；可在 scripts/ 新增 linux-build-ohos.sh",
         "evidence": [
           "scripts/build.ps1"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "unadaptable_apis": [],
@@ -1320,9 +1320,9 @@
       {
         "id": "ta:qt6-ohos",
         "capability": "Qt6 鸿蒙移植版",
-        "capability_key": null,
+        "capability_key": "qt",
         "required": false,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "Qt6 鸿蒙版未确认——若仅提供 Qt5，则 Qt6 路径（C++17/frameless）需降级到 Qt5；非阻塞，SARibbon 同时支持 Qt5.12+",
         "source": "references/harmony-pc-capabilities.json#gui.qt note: 只提供了Qt5，Qt6需降级",
         "target_status_model": "unknown"
@@ -1471,7 +1471,7 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "medium",
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "本项目是纯 Qt Widgets 桌面 GUI 控件库，触及 gui 场景（Qt6/Qt5 Widgets + SVG）。不涉及 3D 渲染、音视频媒体、特定硬件或 GPU 加速。Qt 在鸿蒙 PC 上社区已有 Qt5 移植版本（available），核心 GUI 场景具备移植基础；但 Qt6 鸿蒙版尚未确认、Qt SVG 模块的可用性待核实。",

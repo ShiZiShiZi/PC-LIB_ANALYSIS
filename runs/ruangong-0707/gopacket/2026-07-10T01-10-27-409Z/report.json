@@ -1216,7 +1216,6 @@
         "severity": "medium",
         "adaptability": "adaptable",
         "category": "external_dependency",
-        "harmony_status": "unknown",
         "caused_by": [
           "ta:pcap_ndk"
         ],
@@ -1226,14 +1225,14 @@
           "pcap/pcap.go: Handle.cptr pcapTPtr"
         ],
         "detail": "pcap 子模块通过 CGo 动态链接 libpcap。若 OHOS NDK 已提供 libpcap（或可从源码交叉编译），则 pcap 后端可直接重编译启用；若否，实时抓包功能需退用纯 Go 的 pcapgo 文件读取（离线分析）——核心解码能力不受影响。libpcap 是标准 POSIX 库，在 musl 环境下移植难度低。",
-        "id": "bk:1"
+        "id": "bk:1",
+        "remediation_status": "unknown"
       },
       {
         "issue": "AF_PACKET / PF_RING / BSD BPF 平台特有抓包后端在鸿蒙无等价机制",
         "severity": "low",
         "adaptability": "adaptable_with_tailoring",
         "category": "platform_api",
-        "harmony_status": "unavailable",
         "caused_by": [],
         "manifests_as": [
           "ua:afpacket",
@@ -1249,14 +1248,14 @@
           "routing/routing.go:7 // +build linux"
         ],
         "detail": "这些模块为平台差异化高级功能（高速 mmap 零拷贝抓包、内核模块加速、BSD BPF 设备、netlink 路由）。其代码受 Go 构建标签保护，在鸿蒙上不会被编译，不影响核心解码功能。若未来鸿蒙提供等价原生网络捕捉接口，可按新 API 适配；当前可用 pcap 后端作为功能回退。",
-        "id": "bk:2"
+        "id": "bk:2",
+        "remediation_status": "unavailable"
       },
       {
         "issue": "原始套接字/网络抓包是否需要鸿蒙特有权限",
         "severity": "low",
         "adaptability": "adaptable",
         "category": "permission_model",
-        "harmony_status": "unknown",
         "caused_by": [],
         "source_dimension": "runtime_surface",
         "evidence": [
@@ -1264,7 +1263,8 @@
           "pcapgo/capture.go: AF_PACKET socket",
           "pcap/pcap_unix.go: libpcap"
         ],
-        "id": "bk:3"
+        "id": "bk:3",
+        "remediation_status": "unknown"
       }
     ],
     "unadaptable_apis": [
@@ -1334,9 +1334,9 @@
       {
         "id": "ta:pcap_ndk",
         "capability": "libpcap C 库可在 OHOS NDK 上交叉编译并链接",
-        "capability_key": null,
+        "capability_key": "libpcap",
         "required": false,
-        "target_status": "unknown",
+        "target_status": "partial",
         "target_status_model": "unknown",
         "impact": "决定 pcap 后端（实时网络抓包）能否启用。若不可用，实时抓包功能受限（只能用 pcapgo 离线文件分析），但核心协议解码能力完全不受影响。libpcap 依赖标准 POSIX 套接字接口，属可移植 C 库。",
         "source": "OHOS NDK 能力对照 + libpcap 移植经验"
@@ -1357,10 +1357,10 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "实时网络抓包（pcap 后端）需要访问网卡原始数据包；离线文件分析无需网络权限。作为库，权限申请由宿主应用决定。",
         "source_capability": "network_capture",
-        "harmony_status": "unknown",
         "evidence": [
           "pcap/pcap.go: 实时抓包 API"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "critical_dependencies": [
@@ -1519,7 +1519,7 @@
         "rationale": "unadaptable_apis 中 4 项（ua:afpacket/ua:pfring/ua:bsdbpf/ua:routing）全部标记为 functionality_class=platform_specific，意味着它们需要适配但非不可适配——可通过 pcap（libpcap）或 Go 标准库替代方案来解决。因此 code_partition 中这些模块正确归入 needs_adaptation 桶（而非 unadaptable 桶），因为它们的根本问题不是无法适配，而是需要替换底层捕获/路由机制。afpacket 可退用 pcap、pfring 可退用 pcap、bsdbpf 可退用 pcap、routing 可用 Go net.Interface 替代。无真正的 unadaptable 代码，故 unadaptable 桶 loc=0 是合理的。"
       }
     ],
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "gopacket 是纯 Go 网络包处理库，不涉及 GUI/3D 渲染/媒体编码/特定硬件等鸿蒙适配重点场景。核心解码与文件 I/O 无平台依赖；抓包子系统依赖操作系统原始套接字能力，属于平台网络栈层面（非硬件/GPU/图形）——鸿蒙 PC 的 OHOS NDK 若提供 POSIX 套接字子集（AF_PACKET/BPF 等价接口或替代网络捕获机制），则抓包功能有望适配。",
@@ -1535,7 +1535,7 @@
     "coverage": {
       "production_code": 68386,
       "partitioned_code": 68386,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
@@ -1704,7 +1704,7 @@
       {
         "class": "unadaptable",
         "loc": 0,
-        "pct": 0.0,
+        "pct": 0,
         "modules": [],
         "basis": "无无法适配的代码——所有 Linux/BSD 专有模块均可通过替换捕获后端来适配，不涉及专有硬件或闭源二进制依赖。libpcap 本身为可移植的 POSIX C 库，可在 OHOS NDK 上重编译。"
       }

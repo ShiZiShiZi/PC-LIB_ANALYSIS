@@ -1,0 +1,587 @@
+{
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python",
+      "reStructuredText",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 3,
+        "code": 213,
+        "pct": 86.94,
+        "production": {
+          "files": 2,
+          "code": 116
+        },
+        "test": {
+          "files": 1,
+          "code": 97
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "reStructuredText",
+        "files": 1,
+        "code": 25,
+        "pct": 10.2,
+        "production": {
+          "files": 1,
+          "code": 25
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 1,
+        "code": 7,
+        "pct": 2.86,
+        "production": {
+          "files": 1,
+          "code": 7
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 5,
+      "code": 245,
+      "comment": 17,
+      "blank": 67,
+      "total_lines": 329
+    },
+    "production": {
+      "files": 4,
+      "code": 148,
+      "comment": 17,
+      "blank": 40,
+      "total_lines": 205
+    },
+    "test": {
+      "files": 1,
+      "code": 97,
+      "comment": 0,
+      "blank": 27,
+      "total_lines": 124
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 245,
+        "category": "production",
+        "by_category": {
+          "production": 148,
+          "test": 97
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 4,
+        "code": 148
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "python": {
+          "files": 1,
+          "hits": 1
+        }
+      },
+      "by_platform": {},
+      "samples": [
+        {
+          "language": "python",
+          "file": "win_inet_pton.py",
+          "line": 125,
+          "text": "if os.name == \"nt\" and not hasattr(socket, \"inet_pton\"):"
+        }
+      ],
+      "total": 1,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 5,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 1,
+        "cases": 5
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "win_inet_pton 是一个极简的单文件 Python 补丁库：导入时（仅当 os.name == \"nt\" 且 socket 模块尚无 inet_pton 时）通过 ctypes 调用 Windows ws2_32.dll 的 InetPtonW/InetNtopW，把 socket.inet_pton 与 socket.inet_ntop 两个函数注入到标准库 socket 模块，为缺少它们的旧版 Python（如 Windows 上的 Python 2.7/3.3 早期版本）补齐 IPv4/IPv6 地址在文本与二进制之间的转换能力。面向需要在旧 Windows 环境运行依赖 socket.inet_pton 代码的开发者（README 说明作者为 cahoots 项目获取 Windows 支持而发布）。",
+    "categories": [
+      {
+        "name": "IP 地址文本/二进制转换",
+        "description": "提供 socket.inet_pton（文本地址→packed 二进制）与 socket.inet_ntop（packed 二进制→文本地址），支持 AF_INET 与 AF_INET6，错误语义对齐标准库（非法地址抛 socket.error、未知地址族抛 OSError/ValueError）",
+        "evidence": [
+          "win_inet_pton.py:47-79 (inet_pton)",
+          "win_inet_pton.py:81-118 (inet_ntop)",
+          "test_win_inet_pton.py:27-61 (有效/非法地址用例)"
+        ]
+      },
+      {
+        "name": "标准库 monkey-patch 注入",
+        "description": "inject_into_socket() 把实现好的两个函数赋给 socket.inet_pton/socket.inet_ntop；模块导入时按 os.name == \"nt\" 且 socket 缺 inet_pton 自动触发，非 Windows 平台完全无副作用",
+        "evidence": [
+          "win_inet_pton.py:11-122 (inject_into_socket)",
+          "win_inet_pton.py:125-126 (导入时条件注入)"
+        ]
+      }
+    ],
+    "domain": "网络编程 / 平台兼容补丁（IP 地址转换）",
+    "target_users": "在旧版 Windows Python（缺 socket.inet_pton/inet_ntop 的 2.7/3.x 早期版本）上运行网络代码的 Python 开发者"
+  },
+  "license": {
+    "spdx": "Unlicense",
+    "name": "The Unlicense（公有领域贡献声明）",
+    "confidence": "medium",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE",
+      "win_inet_pton.py:1-4"
+    ],
+    "evidence": "LICENSE 全文与 win_inet_pton.py 文件头一致：\"This software released into the public domain. Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.\"——与 Unlicense 首段措辞基本相同（仅开头少 \"This is free and unencumbered\"），setup.py classifiers 亦标 \"License :: Public Domain\"。",
+    "notes": "SPDX 识别为 Unlicense 但置信 medium：措辞是 Unlicense 模板的常见变体而非逐字原文；setup.py 把整个 LICENSE 文件内容作为 license 字段传入（setup.py:19）。"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": [
+      "setup.py",
+      "setup.cfg"
+    ],
+    "by_ecosystem": {
+      "python": 2
+    },
+    "dependencies": [
+      {
+        "name": "setuptools",
+        "ecosystem": "python",
+        "scope": "build",
+        "version": null,
+        "purpose": "构建与打包后端：setup.py 用 setuptools.setup 声明单模块包（py_modules=[\"win_inet_pton\"]），setup.cfg 配置 universal wheel",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI（pip 安装构建环境时拉取）",
+        "declared_in": [
+          "setup.py:2",
+          "setup.cfg:1-2"
+        ],
+        "source_repo": "https://github.com/pypa/setuptools",
+        "registry_name": "setuptools",
+        "used_symbols": [
+          "setuptools.setup"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "pytest",
+        "ecosystem": "python",
+        "scope": "test",
+        "version": null,
+        "purpose": "测试框架：test_win_inet_pton.py 用 pytest.fixture/parametrize 与 pytest.raises 组织用例（未在任何 manifest 中声明，仅测试文件 import）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "test_win_inet_pton.py:1"
+        ],
+        "source_repo": "https://github.com/pytest-dev/pytest",
+        "registry_name": "pytest",
+        "used_symbols": [
+          "pytest.fixture",
+          "pytest.mark.parametrize",
+          "pytest.raises"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "运行时零第三方依赖：生产代码只 import Python 标准库 socket/os/sys/ctypes（win_inet_pton.py:6-12）。pytest 为测试用、setuptools 为构建用，均未在 setup.py 中以 install_requires/tests_require 显式声明版本。"
+  },
+  "native_api": {
+    "summary": "库本体只用 Python 标准库（socket/os/sys）；其 Windows 路径通过 ctypes FFI 动态调用 ws2_32.dll 的 InetPtonW/InetNtopW/WSAGetLastError 三个 Winsock2 API，该路径由 hasattr(ctypes, \"windll\") 守卫且整个注入由 os.name == \"nt\" 条件触发，非 Windows 平台完全不触碰。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "socket",
+            "purpose": "引用 AF_INET/AF_INET6 常量与 socket.error，并把实现注入 socket.inet_pton/socket.inet_ntop",
+            "count": 12,
+            "evidence": [
+              "win_inet_pton.py:6",
+              "win_inet_pton.py:51-56",
+              "win_inet_pton.py:121-122"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.name",
+            "purpose": "平台判断：仅 Windows(nt) 且 socket 缺 inet_pton 时触发注入",
+            "count": 1,
+            "evidence": [
+              "win_inet_pton.py:125"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys.version_info",
+            "purpose": "Python 2/3 兼容：Py3 下 inet_pton 拒绝 bytes 参数",
+            "count": 1,
+            "evidence": [
+              "win_inet_pton.py:48"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "ctypes_ffi",
+        "category": "ffi",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "ctypes.windll",
+            "purpose": "加载 Windows 系统 DLL（ws2_32）的 WinDLL 入口；非 Windows 上不存在该属性，由 hasattr 守卫降级为抛 SystemError 的占位函数",
+            "count": 4,
+            "evidence": [
+              "win_inet_pton.py:20",
+              "win_inet_pton.py:27",
+              "win_inet_pton.py:34",
+              "win_inet_pton.py:37"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ctypes.Structure/c_ubyte/c_wchar_p/c_int/byref/string_at/wstring_at/memmove/create_unicode_buffer",
+            "purpose": "构造 in_addr/in6_addr C 结构体、封送字符串与缓冲区，完成 Python↔Win32 ABI 参数/返回值转换",
+            "count": 20,
+            "evidence": [
+              "win_inet_pton.py:14-18",
+              "win_inet_pton.py:60-67",
+              "win_inet_pton.py:87-118"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "InetPtonW",
+            "purpose": "Winsock2 API：把 IPv4/IPv6 文本地址转换为网络字节序二进制（inet_pton 的底层实现）",
+            "count": 1,
+            "evidence": [
+              "win_inet_pton.py:34 (绑定), 61 (调用)"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "InetNtopW",
+            "purpose": "Winsock2 API：把二进制地址转换为 Unicode 文本（inet_ntop 的底层实现）",
+            "count": 1,
+            "evidence": [
+              "win_inet_pton.py:27 (绑定), 104-109 (调用)"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "WSAGetLastError",
+            "purpose": "Winsock2 错误码获取：转换失败时取错误码映射为 Python 异常（10047→unknown address family 等）",
+            "count": 2,
+            "evidence": [
+              "win_inet_pton.py:37 (绑定), 71-79, 111-117 (调用)"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "ws2_32.dll",
+        "mechanism": "ctypes.windll (ctypes.WinDLL)",
+        "acquisition": "system",
+        "source": "Windows 操作系统自带的 Winsock2 系统库（Windows Vista+）",
+        "description": "Windows 套接字系统库，提供 InetPtonW/InetNtopW/WSAGetLastError，是本库全部功能的底层实现来源",
+        "optional": true,
+        "evidence": [
+          "win_inet_pton.py:27",
+          "win_inet_pton.py:34",
+          "win_inet_pton.py:37"
+        ]
+      }
+    ],
+    "platform_dependence": "mixed"
+  },
+  "runtime_surface": {
+    "summary": "运行时对宿主环境几乎无依赖：本库只做内存中的 IP 地址文本↔二进制转换，不打开任何套接字、不访问网络/文件系统/环境变量/子进程/设备；唯一的运行时外部接触是 Windows 上经 ctypes 加载系统库 ws2_32.dll（已在 native_api.dynamic_libraries 登记）。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Python（兼容 2.7 与 3.x，含 bytes/unicode 差异分支：win_inet_pton.py:48）",
+    "runtime_version": "声明支持 Python 2.7 与 Python 3.3+（setup.py:27-30 classifiers）；无 install_requires，仅依赖标准库",
+    "build_system": "setuptools（setup.py，py_modules 单模块包；setup.cfg 配 universal wheel）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "Windows",
+        "arch": "any",
+        "evidence": [
+          "setup.py:24 (Operating System :: Microsoft :: Windows)",
+          "win_inet_pton.py:20-37 (ctypes.windll/ws2_32 路径)"
+        ]
+      },
+      {
+        "os": "其他（POSIX 等）",
+        "arch": "any",
+        "evidence": [
+          "setup.py:23 (Operating System :: OS Independent)",
+          "win_inet_pton.py:125 (os.name == \"nt\" 守卫，非 Windows 上导入为 no-op)"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "纯 Python 单模块包，经 PyPI 以 universal wheel/sdist 分发（pip install win_inet_pton），无 C 扩展、不捆绑运行时。",
+    "notes": "纯解释型库：构建无编译步骤，功能价值集中在 Windows 旧版 Python；现代 Python（3.x 全平台、2.7 非 Windows）的 socket 已自带 inet_pton/inet_ntop，此时本库导入即 no-op。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核 + 已移植的 Python 运行时；库走模型 A/B 口径）",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "breakdown": [
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0,
+            1
+          ],
+          "basis": "reuse_direct 桶 148 LOC 全量直接复用，无 recompile/api_adaptation 分项；唯一工作是在鸿蒙 PC 的 Python 上跑一遍 5 个 pytest 用例确认导入无副作用（注入被 os.name 守卫跳过）"
+        }
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python_runtime",
+        "capability": "HarmonyOS NEXT PC 上已移植的 Python 运行时（且其 socket 模块自带 inet_pton/inet_ntop）",
+        "capability_key": "python",
+        "required": true,
+        "target_status": "available",
+        "impact": "Python 运行时可用 ⇒ 本库可直接 import；鸿蒙 Python 的 socket 自带 inet_pton/inet_ntop，使本库的 ctypes 补丁路径（os.name == \"nt\" 且 socket 缺 inet_pton 才触发）永不执行，库在鸿蒙上空转且功能由运行时原生覆盖",
+        "source": "references/harmony-pc-capabilities.json runtimes.python（status: available）；win_inet_pton.py:125-126",
+        "target_status_model": "available"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [],
+    "summary": "无需适配（no_adaptation）。这是纯 Python 标准库单文件库，生产代码 148 LOC 全部直接复用；其核心功能（IP 地址文本↔二进制转换）在鸿蒙 PC 已移植的 Python 运行时中由 socket 模块原生提供，本库特有的 Windows ctypes→ws2_32 补丁路径被 os.name == \"nt\" 与 hasattr(ctypes, \"windll\") 双重守卫，在鸿蒙上导入即 no-op，不产生任何平台 API 缺口、权限需求或构建改动。工作量上限 1 人天，仅为跑通既有 pytest 用例做验证。",
+    "blockers": [],
+    "compatible": [
+      {
+        "aspect": "纯 Python 标准库实现",
+        "note": "生产代码仅 import socket/os/sys/ctypes，无 C 扩展、无第三方运行时依赖，跑在已移植的 Python 运行时上零改动",
+        "evidence": [
+          "win_inet_pton.py:6-12"
+        ]
+      },
+      {
+        "aspect": "平台特有路径自带守卫",
+        "note": "Windows 专用的 ctypes.windll/ws2_32 调用被 hasattr(ctypes, \"windll\") 与 os.name == \"nt\" 守卫，非 Windows 平台（含鸿蒙）完全不执行，不会触发缺 API 异常",
+        "evidence": [
+          "win_inet_pton.py:20",
+          "win_inet_pton.py:125-126"
+        ]
+      },
+      {
+        "aspect": "功能等价物由鸿蒙 Python 原生提供",
+        "note": "本库补的 socket.inet_pton/inet_ntop 是现代 Python（含鸿蒙移植版）socket 模块的内建函数，库的迁移价值在鸿蒙上自然归零但不影响可移植性",
+        "evidence": [
+          "win_inet_pton.py:121-122",
+          "test_win_inet_pton.py:10-24 (与原生实现并列测试)"
+        ]
+      },
+      {
+        "aspect": "无运行时环境依赖",
+        "note": "不开套接字、不访问文件系统/环境变量/子进程/设备/外部服务，鸿蒙化后无需申请任何权限",
+        "evidence": [
+          "runtime_surface（全空）",
+          "win_inet_pton.py:47-118"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 的 Python 上 pip 安装并 import win_inet_pton，确认注入逻辑被 os.name 守卫跳过、无异常",
+      "运行 test_win_inet_pton.py 的 5 个 pytest 用例，验证 socket.inet_pton/inet_ntop（运行时原生实现）行为正确"
+    ],
+    "notes": "范围口径：结论覆盖生产代码（win_inet_pton.py）；test_win_inet_pton.py 的 97 LOC 为测试不计入。ws2_32.dll 这一 Windows 系统动态库（native_api.dynamic_libraries）仅在该守卫路径内被加载，鸿蒙上不会触达，故不作为 blocker/依赖登记。code_metrics.platform_branches 的 1 处 os.name 判断即上述守卫，已追踪确认其下游无鸿蒙不等价调用。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "win_inet_pton",
+    "kind": "library",
+    "package_name": "win_inet_pton",
+    "aliases": [],
+    "import_names": [
+      "win_inet_pton"
+    ],
+    "source_url": "https://github.com/hickeroar/win_inet_pton.git",
+    "monorepo": false,
+    "commit": "57e35581c4b2c25650d931fe6d4b6c80cbb7fd27",
+    "one_liner": "用 ctypes 封装 ws2_32 的 InetPtonW/InetNtopW，为旧版 Python 在 Windows 上补 socket.inet_pton/inet_ntop 的单文件补丁库",
+    "ecosystem": "python",
+    "bindings": [],
+    "analyzed_at": "2026-07-12T08:47:50Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "native_api",
+        "field": "platform_dependence",
+        "kind": "ambiguity",
+        "value": "mixed",
+        "rationale": "库的全部价值在 Windows 特有路径（ctypes→ws2_32），但该路径被 os.name == \"nt\" 守卫、非 Windows 完全无副作用且模块可跨平台导入；既非 windows-only（可在任意平台安装运行）也非纯 cross-platform（功能只在 Windows 生效），取 mixed 并在各维度说明守卫机制。"
+      },
+      {
+        "dimension": "license",
+        "field": "spdx",
+        "kind": "ambiguity",
+        "value": "Unlicense",
+        "rationale": "LICENSE 文本是 Unlicense 模板的常见变体（开头为 \"This software released into the public domain\" 而非 \"This is free and unencumbered software released into the public domain\"），映射到 Unlicense + category=permissive，置信 medium 并在 notes 说明变体差异。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "本项目是纯网络工具类补丁库，完全不涉及 GUI、3D 渲染、媒体或特定硬件场景；生产代码只触及 Python 标准库与 Windows Winsock2 地址转换 API。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "不涉及任何云端服务：生产代码无第三方依赖（仅 Python 标准库）、无硬编码域名/主机、不发起任何网络请求，也无动态加载的云厂商 SDK。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部生产代码（148 LOC：单 Python 模块 116 + 文档/元数据 32）归入 reuse_direct——纯 Python 标准库代码，无 C 扩展、无汇编、无平台编译宏；唯一的 Windows 特有 ctypes/ws2_32 调用路径由 os.name == \"nt\" 与 hasattr(ctypes, \"windll\") 双重守卫，在鸿蒙 PC 已移植的 Python 运行时下导入即 no-op，而鸿蒙 Python 的 socket 模块自带 inet_pton/inet_ntop，库的功能等价物由运行时原生提供，零源码改动即可直接复用。",
+    "coverage": {
+      "production_code": 148,
+      "partitioned_code": 148,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 148,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 148,
+            "reason": "纯 Python 单模块库（win_inet_pton.py 116 LOC）+ README/元数据（32 LOC）；全部逻辑仅用 Python 标准库；Windows 特有的 ctypes.windll→ws2_32 调用被 os.name == \"nt\" 守卫（win_inet_pton.py:125），鸿蒙上不触发且 socket 已自带等价函数，无需任何改动",
+            "evidence": [
+              "win_inet_pton.py:6-12 (仅 import socket/os/sys/ctypes)",
+              "win_inet_pton.py:20 (hasattr(ctypes, \"windll\") 守卫)",
+              "win_inet_pton.py:125-126 (os.name == \"nt\" 条件注入)"
+            ]
+          }
+        ],
+        "basis": "code_metrics.dir_loc（'.' = 148 LOC 生产代码）；platform_adaptation total=0（无 C/C++ 编译宏守卫代码）；platform_branches 仅 1 处 os.name == \"nt\" 运行时判断（metrics.json platform_branches.samples），其下游平台调用在鸿蒙 Python 上有原生等价（socket.inet_pton/inet_ntop）；arch_specific total=0。"
+      }
+    ],
+    "notes": "无 needs_adaptation/unadaptable 桶：本库在鸿蒙上的角色是「可导入但空转的兼容垫片」，功能由鸿蒙 Python 运行时原生覆盖；即使保守地把 Windows ctypes 路径视为死代码，它也不会被执行，不构成适配工作量。"
+  }
+}

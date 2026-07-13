@@ -1018,7 +1018,7 @@
       {
         "id": "ta:coin_port",
         "capability": "Coin 3D 库可在鸿蒙 PC 移植",
-        "capability_key": null,
+        "capability_key": "coin3d",
         "required": true,
         "target_status": "unknown",
         "impact": "Quarter 的核心存在意义是 Coin 与 Qt 的胶水层，若 Coin 无法移植到鸿蒙，Quarter 整体失去存在价值。Coin 自身是跨平台 C++ 库（基于 OpenGL），理论上可通过 OHOS NDK 移植，但社区尚无实际验证。此假设为 unknown 导致 confidence 下调至 medium。",
@@ -1050,11 +1050,11 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unavailable_on_ohos",
         "remediation": "将 Coin 3D 本身用 OHOS NDK 交叉编译移植到鸿蒙 PC（Coin 为开源 C++ 库，基于 OpenGL，理论上可移植）。先评估 Coin 对 OpenGL 的使用在鸿蒙 GLES/EGL 限制下的覆盖度，必要时裁剪或替换部分 GL 特性。移植完成后 Quarter 可直接在其基础上用 OHOS NDK 交叉编译。",
         "evidence": [
           "CMakeLists.txt:99"
-        ]
+        ],
+        "remediation_status": "unavailable_on_ohos"
       },
       {
         "id": "bk:opengl_partial",
@@ -1063,11 +1063,11 @@
         "adaptability": "partial",
         "category": "graphics_partial",
         "source_dimension": "capability_profile",
-        "harmony_status": "partial",
         "remediation": "若 Coin 在鸿蒙上所需的 GL 特性缺失，需在 Coin 移植层做适配（降级为 GLES、裁剪特征或用 ArkGraphics 3D 替代）。Quarter 自身仅直接调用 glEnable(GL_DEPTH_TEST)，不成问题。",
         "evidence": [
           "src/Quarter/QuarterWidget.cpp:686"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:spacenav_unavailable",
@@ -1076,12 +1076,12 @@
         "adaptability": "adaptable",
         "category": "platform_specific",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "X11/Spacenav 代码全在 #ifdef HAVE_SPACENAV_LIB 守卫内——鸿蒙构建时不定义该宏，相关功能自然不编译。如需空间输入设备支持，可在鸿蒙上用 @ohos 的 HID/传感器能力另行实现可选后端。",
         "evidence": [
           "src/Quarter/SpaceNavigatorDevice.cpp:45-48",
           "src/Quarter/NativeEvent.h:40"
-        ]
+        ],
+        "remediation_status": "unavailable"
       }
     ],
     "compatible": [
@@ -1151,13 +1151,6 @@
     "confidence_overall": "medium",
     "observations": [
       {
-        "dimension": "harmony_caps",
-        "field": "graphics_3d",
-        "kind": "caps_gap",
-        "value": "Coin 3D library (coin3d.org)",
-        "rationale": "Quarter 唯一核心依赖 Coin，但 harmony-pc-capabilities.json 尚无 Coin 行。Coin 是跨平台 C++ 3D 可视化库（github.com/coin3d/coin），类似 OpenSceneGraph，建议在 graphics_3d 段新增 coin 能力行（status 初始 unknown），跟踪鸿蒙移植状态以供依赖 Coin 的库（Quarter 等）使用。"
-      },
-      {
         "dimension": "function_summary",
         "field": "domain",
         "kind": "ambiguity",
@@ -1176,7 +1169,7 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "medium",
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "Quarter 作为 Coin3D+Qt 的胶水库，触及两大鸿蒙适配重点场景：GUI（依赖 Qt Widgets/OpenGL Widget）和 3D 渲染（经 Coin 间接使用 OpenGL）。Qt 在鸿蒙 PC 已有社区移植（Qt5，available）；OpenGL 为 partial（有 GLES/EGL 但完整桌面 OpenGL 覆盖待核实）。可选 Spacenav 输入设备依赖 X11，在鸿蒙上不可用（X11 不存在）——但完全可选、不影响核心功能。",
