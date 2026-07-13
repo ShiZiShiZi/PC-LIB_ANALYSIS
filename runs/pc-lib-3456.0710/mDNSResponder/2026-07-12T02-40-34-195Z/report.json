@@ -993,7 +993,7 @@
       ],
       "level": "very_high"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "critical_dependencies": [
       {
         "name": "mbedtls",
@@ -1081,9 +1081,9 @@
     "target_assumptions": [
       {
         "capability": "OHOS NDK musl libc 对 POSIX socket/fork/setsid/select 的支持",
-        "capability_key": null,
+        "capability_key": "posix_sockets",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "如果 OHOS musl 不支持 fork 或 select，需要将事件循环和守护进程化改为非 POSIX 方式，工作量增加约 2-3 人天",
         "source": "需在 OHOS NDK 环境实测验证",
         "id": "ta:1",
@@ -1129,7 +1129,7 @@
     "notes": "评估按模型 A（原生 C 库/守护进程经 OHOS NDK 编译运行）。纯本地服务无需网络权限声明。mDNSPosix 的 macOS 和 Linux 特定路径通过编译宏隔离，不影响 OHOS 端口。核心协议引擎零依赖，最轻量配置可仅编译 mDNSCore + mDNSShared + mDNSPosix（剔除 SRP/mbedTLS 和 OpenThread 子系统）。无 GUI/图形/媒体/硬件依赖，适配难度低。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1153,7 +1153,7 @@
     "analyzed_at": "2026-07-12T03:01:31Z"
   },
   "meta": {
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [
       {
         "dimension": "harmony_caps",
@@ -1179,11 +1179,6 @@
     ],
     "confidence_overall_model": "high",
     "harmony_warnings": [
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      },
       {
         "code": "critical_dep_notfound:mbedtls",
         "class": "actionable",

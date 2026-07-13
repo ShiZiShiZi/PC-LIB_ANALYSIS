@@ -2406,9 +2406,9 @@
     "target_assumptions": [
       {
         "capability": "OHOS NDK POSIX 子集(pthread/socket/mmap/stat/epoll/dlopen)覆盖度",
-        "capability_key": null,
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "source": "caps JSON 尚无 NDK POSIX 覆盖清单",
         "impact": "覆盖不足则需大量加 #ifdef 鸿蒙分支——根本影响移植可行性；覆盖充分则 ~95% 代码零改动重编",
         "id": "ta:1",
@@ -2458,7 +2458,7 @@
     "notes": "评估按模型 A（库跑在 OHOS NDK 原生层）。POCO 的 POSIX 后端在 OHOS NDK 下理论可直接交叉编译——需实测验证 musl POSIX 子集覆盖度。最大不确定性是 OHOS NDK 的 POSIX 完整度，若覆盖不足需加平台分支适配。OpenHarmony-PC 社区已预编译大量依赖（OpenSSL/zlib/pcre2/expat/sqlite3/libpng），移植阻力显著降低。核心策略：POSIX 后端→OHOS NDK 重编译 + Win32 后端→构建开关禁用，~95% 代码仅需重编译无需改写。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -2492,13 +2492,6 @@
   "meta": {
     "confidence_overall": "medium",
     "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "OHOS NDK POSIX 子集覆盖度清单",
-        "rationale": "POCO 大量依赖 POSIX (pthread/socket/mmap/stat/epoll/ioctl/dlopen)——评估移植可行性的根本前提，caps JSON 尚无此段"
-      },
       {
         "dimension": "harmony_caps",
         "field": "runtimes",

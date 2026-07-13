@@ -744,9 +744,9 @@
       {
         "id": "ta:fs_events",
         "capability": "OHOS 文件系统事件通知机制（等效于 inotify/FSEvents/ReadDirectoryChangesW）",
-        "capability_key": null,
+        "capability_key": "fs_watch",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "若无等效文件监控 API，则库核心功能无法在鸿蒙高效重建，须退化为轮询（性能大幅降低但功能仍可实现）",
         "source": "未在 harmony-pc-capabilities.json 中找到对应条目",
         "target_status_model": "unknown"
@@ -837,7 +837,7 @@
     "summary": "fsevents 是 macOS 单平台原生文件监控模块，C 代码完全依赖 macOS 专有框架（FSEvents / CoreFoundation / CoreServices）。移植到鸿蒙需重写 C 原生后端为 OHOS 等效实现，JS 包装层需移除 darwin 守卫并适配新模块。功能可通过 OHOS 文件监控 API 重建（adaptable），但开源代码无直接复用或重编译的部分。最大不确定性在 OHOS 是否有等效内核级文件事件通知接口；若无则须退化为轮询（性能降低但功能仍可实现）。",
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库是 macOS 单平台专用模块，无多平台后端抽象；移植等于在 OHOS 上重建一个文件监控功能。target_assumptions 中 fs_events 的 unknown 状态导致 confidence 降到 medium。若目标为 ArkTS 沙箱应用则 Node.js 不可用，须完全重写为 ArkTS/NAPI。",
     "porting_class_model": "needs_adaptation",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -865,15 +865,7 @@
   },
   "meta": {
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "filesystem_events",
-        "kind": "caps_gap",
-        "value": "OHOS 文件系统事件通知 API",
-        "rationale": "harmony-pc-capabilities.json 缺少文件系统事件监控接口（等效于 inotify/FSEvents/ReadDirectoryChangesW）的条目。fsevents 移植核心依赖此能力，建议在 caps 中增补该项状态"
-      }
-    ],
+    "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "builtin",

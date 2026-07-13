@@ -105,7 +105,7 @@
         "language": "Swift",
         "files": 1,
         "code": 11,
-        "pct": 0.0,
+        "pct": 0,
         "production": {
           "files": 0,
           "code": 0
@@ -123,7 +123,7 @@
         "language": "TOML",
         "files": 1,
         "code": 3,
-        "pct": 0.0,
+        "pct": 0,
         "production": {
           "files": 1,
           "code": 3
@@ -1149,7 +1149,7 @@
   "harmony_adaptation": {
     "summary": "pyobjc-core 是 macOS 平台紧耦合的 Python↔Objective-C 双向桥接核心库。其全部核心功能（消息派发、类注册、协议实现、block 调用、类型桥接）依赖 Objective-C 运行时与 Foundation/CoreFoundation Cocoa 框架——这些在 HarmonyOS PC 自研内核上均不存在且无等价实现。Python 运行时虽已在鸿蒙 PC 可用，但库的 C 扩展层完全不可移植；纯 Python 桥接层可部分复用但需完全替换后端。整体判定为核心不可适配 (core_blocked)，无法通过交叉编译或局部适配实现——需要进行全面的跨平台重设计（如用 ctypes/cffi + N-API 替代 libffi+objc 运行时，桥接目标从 Cocoa 改为 ArkUI/HMOS API）。",
     "porting_class": "needs_adaptation",
-    "confidence": "medium",
+    "confidence": "high",
     "target_assumptions": [
       {
         "capability": "Python 3.12 运行时",
@@ -1203,9 +1203,9 @@
       },
       {
         "capability": "libffi (FFI 动态调用库)",
-        "capability_key": null,
+        "capability_key": "libffi",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "FFI 闭包机制是消息派发的底层实现；libffi 是高度可移植的库，理论上可通过 OHOS NDK 交叉编译，但需核实 (1) OHOS 的内存保护模型是否允许 FFI 闭包的 W^X 执行，(2) 是否有 arm64 的 OHOS 构建配置",
         "source": "libffi 为独立开源库，高度可移植，鸿蒙支持状态待核实",
         "id": "ta:6",
@@ -1467,7 +1467,7 @@
     "warnings": [
       "shape coerced: harmony_adaptation.compatible boolean→array"
     ],
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "harmony_warnings_dismissed": [
       {
         "code": "ta_unref:ta:3",
@@ -1483,13 +1483,6 @@
       }
     ],
     "confidence_overall_model": "high",
-    "harmony_warnings": [
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      }
-    ],
     "harmony_warnings_reviewed": [
       {
         "code": "ta_unref:ta:3",
@@ -1648,7 +1641,7 @@
       {
         "class": "needs_adaptation",
         "loc": 7780,
-        "pct": 12.0,
+        "pct": 12,
         "modules": [
           {
             "path": "Lib/objc/__init__.py",

@@ -1067,7 +1067,7 @@
       ],
       "level": "high"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "critical_dependencies": [],
     "summary": "UnRAR 为 C++ 本地库，核心解压算法跨平台无依赖，约 78% 代码可 OHOS NDK 重编译直接复用；约 22% 代码涉及平台抽象层（Win32/POSIX 文件/控制台操作），需新增 OHOS 路径（多数可复用现有 POSIX 分支）或禁掉 Windows 特有安全功能（NTFS ACL/DPAPI/MOTW）。x86 SSE BLAKE2sp 加速在 arm64 有标量回退，性能略降但不影响正确性。移植工作量约 3-6 人天，核心功能可完整适配。",
     "blockers": [
@@ -1135,9 +1135,9 @@
     "target_assumptions": [
       {
         "capability": "OHOS NDK musl libc 提供标准 POSIX 文件/目录操作（open/chdir/readdir/stat/fcntl/mkdir/symlink）",
-        "capability_key": "musl_posix_file",
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "file.cpp/filefn.cpp/find.cpp 的 POSIX 分支可工作；不满足则需用 @ohos.file.fs 重写——约 2000 行代码",
         "source": "鸿蒙 PC 能力参考未覆盖 POSIX 子系统级别；musl 标准 POSIX 在 OHOS NDK 的支持程度待核实",
         "id": "ta:1",
@@ -1145,9 +1145,9 @@
       },
       {
         "capability": "OHOS NDK 提供标准 C++11 STL（thread/mutex/原子操作/chrono）",
-        "capability_key": "musl_cpp11_stl",
+        "capability_key": "build_toolchain",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "线程池/并发解压/时间操作可工作；否则需重写为 @ohos.taskpool/eventHandler",
         "source": "鸿蒙 NDK 声称支持 C++11，应可用但架构级待核实",
         "id": "ta:2",
@@ -1155,9 +1155,9 @@
       },
       {
         "capability": "OHOS NDK 提供 pthread 线程库（ThreadPool 线程调度）",
-        "capability_key": "musl_pthread",
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "threadpool.cpp 的并发解压可工作；否则单线程退化",
         "source": "鸿蒙 NDK musl 包含 pthread，应可用但架构级待核实",
         "id": "ta:3",
@@ -1189,7 +1189,7 @@
     "notes": "评估按模型 A（库经 OHOS NDK 重编后直接为鸿蒙原生应用所用）。UnRAR 无外部依赖、无网络/设备调用，移植障碍仅在于平台抽象层的 OHOS 路径注册（多数可用 POSIX 分支）。Windows 特有安全功能（DPAPI/NTFS ACL）可安全禁掉不影响核心解压。target_assumptions 中的 posix/STL/pthread 是 OHOS NDK 的基础能力，预期可用但 caps 参考中未逐项覆盖，评估设为 unknown 以降低置信度。若实际可用则无任何实质性障碍，工作量还能缩减。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1219,7 +1219,7 @@
     "analyzed_at": "2026-07-11T05:41:09Z"
   },
   "meta": {
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [
       {
         "dimension": "function_summary",
@@ -1236,13 +1236,6 @@
       "Neither cloc nor tokei found; using crude builtin line counter."
     ],
     "confidence_overall_model": "high",
-    "harmony_warnings": [
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      }
-    ],
     "normalized_version": 6
   },
   "capability_profile": {
@@ -1295,7 +1288,7 @@
     "coverage": {
       "production_code": 28620,
       "partitioned_code": 28620,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

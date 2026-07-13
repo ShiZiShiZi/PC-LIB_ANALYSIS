@@ -1405,9 +1405,9 @@
       {
         "id": "ta:musl_posix",
         "capability": "OHOS musl libc 支持基础 POSIX 接口（fork/sigaction/mmap/pipe/open/read/write/stat）",
-        "capability_key": null,
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "Breakpad 的崩溃捕获流程依赖 fork+信号处理器+文件写入流程——缺少任一 POSIX 标准接口将无法实现 OHOS 后端",
         "source": "harmony-pc-capabilities.json 未覆盖 musl POSIX 子集覆盖度",
         "target_status_model": "unknown"
@@ -1415,9 +1415,9 @@
       {
         "id": "ta:procfs",
         "capability": "OHOS 内核支持 /proc/self/mem 和 /proc/self/maps 伪文件系统",
-        "capability_key": null,
+        "capability_key": "proc_introspect",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "替代 ptrace 读取崩溃进程内存状态的关键依赖——OHOS 自研内核若不支持 /proc/self/mem 则 minidump 无法捕获完整内存快照",
         "source": "harmony-pc-capabilities.json 未覆盖 /proc 支持",
         "target_status_model": "unknown"
@@ -1458,7 +1458,7 @@
     "notes": "评估按模型 A（库作为 NDK 原生库运行在 OHOS 原生层）。Breakpad 本身架构就是多平台后端，新增 OHOS 平台路径完全可行；不可移植的闭源或硬件绑定组件不存在。confidence 调为 medium 是因为 OHOS musl 的 /proc/self/mem 支持与 LSS 兼容性这两个关键假设尚未核实；一旦确认，confidence 可回升 high。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1515,7 +1515,7 @@
     "coverage": {
       "production_code": 141412,
       "partitioned_code": 141412,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

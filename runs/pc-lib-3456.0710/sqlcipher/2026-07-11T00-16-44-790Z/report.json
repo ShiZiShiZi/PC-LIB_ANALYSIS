@@ -1061,7 +1061,7 @@
       ],
       "level": "very_high"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "critical_dependencies": [],
     "summary": "SQLCipher 为 C 语言加密数据库库，以 OHOS NDK（musl libc）重编译即可运行，核心适配点是为 OS 抽象层新增 __OHOS__ 平台分支。OpenSSL 在 OpenHarmony PC 的 cmd-pkgs 已有适配，直接链接无需额外移植。无 GUI/3D/特定硬件依赖，全部核心功能均可适配。",
     "blockers": [
@@ -1111,9 +1111,9 @@
     "target_assumptions": [
       {
         "capability": "musl libc POSIX 子集（pthread/mmap/fcntl/pread/pwrite/文件锁）在 OHOS NDK 中可用且与 glibc 签名/语义兼容",
-        "capability_key": "posix pthread",
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "OS 抽象层中使用的 POSIX API 多数应为兼容，差异需逐项验证；不确定性不影响核心功能整体可移植",
         "source": "harmony-pc-capabilities.json 中 POSIX 子集可用性未逐项列出",
         "id": "ta:1",
@@ -1161,7 +1161,7 @@
     "notes": "评估按模型 A（库用 OHOS NDK 重编译给鸿蒙原生应用链接）。OpenSSL 已在 OpenHarmony PC cmd-pkgs 预置（https://gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs），直接链接其 libcrypto.so 即可。hwtime.h 的 arm64 rdtsc 替代 (cntvct_el0) 已内建，适配量极低。总体移植难度低。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1200,13 +1200,6 @@
       "Neither cloc nor tokei found; using crude builtin line counter."
     ],
     "confidence_overall_model": null,
-    "harmony_warnings": [
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      }
-    ],
     "normalized_version": 6
   },
   "capability_profile": {
@@ -1327,7 +1320,7 @@
       {
         "class": "needs_adaptation",
         "loc": 16287,
-        "pct": 4.0,
+        "pct": 4,
         "modules": [
           {
             "path": "src/os_unix.c",

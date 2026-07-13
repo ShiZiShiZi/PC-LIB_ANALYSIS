@@ -1294,9 +1294,9 @@
       {
         "id": "ta:posix_sem_open",
         "capability": "OHOS NDK 支持 POSIX 命名信号量（sem_open/sem_close/sem_unlink）",
-        "capability_key": null,
+        "capability_key": "posix_sem",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "_billiard C 扩展的 SemLock 在 POSIX 路径上依赖 sem_open 系列 API 实现跨进程同步原语。若 OHOS NDK 不支持，需基于 pthread 或 OHOS 原生同步 API 重写信号量后端——额外增加改造工作量但不导致功能不可用。",
         "source": "参考 OHOS NDK musl libc POSIX 支持范围，当前未核实",
         "target_status_model": "unknown"
@@ -1392,7 +1392,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。billiard 的核心优势是其设计本身就已是跨平台抽象层——三种启动方式（fork/spawn/forkserver）和两套同步后端（POSIX sem_open/Win32 Semaphore）天然支持平台适配。即使 C 扩展完全无法编译，billiard 内置回退机制（导入标准库 _multiprocessing）可保证基本功能可用。code_metrics.platform_adaptation 仅 2 行（macOS 守卫）反映 C 代码主要通过 MS_WINDOWS 宏分支而非单平台编译宏，实际平台差异代码量远大于此信号。Win32 路径（约 1200 loc）在鸿蒙可整体排除，是适配中最确定的部分。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1428,13 +1428,6 @@
   "meta": {
     "confidence_overall": "medium",
     "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "OHOS NDK POSIX semaphore support (sem_open/sem_close/sem_unlink)",
-        "rationale": "billiard C 扩展 SemLock 后端在 POSIX 路径依赖 POSIX 命名信号量，其 OHOS NDK 可用性未知，建议在 harmony-pc-capabilities.json 的 runtimes 或新 ndk_posix 段增加此项供后续分析对号入座。"
-      },
       {
         "dimension": "harmony_caps",
         "field": "runtimes",

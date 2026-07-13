@@ -1189,7 +1189,7 @@
     "porting_class": "needs_adaptation",
     "overall": "adaptable",
     "difficulty": "极低",
-    "confidence": "medium",
+    "confidence": "high",
     "feasible_func": [
       "数据库打开/关闭（Open/Close）",
       "单键读写与删除（Put/Get/Del）",
@@ -1218,9 +1218,9 @@
       },
       {
         "capability": "musl libc POSIX 支持（mmap/fcntl/fdatasync/pthread）",
-        "capability_key": null,
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "底层 LevelDB 依赖这些 POSIX API 做内存映射 IO（mmap/munmap）、文件锁（fcntl F_SETLK）、强制刷盘（fdatasync）和线程同步（pthread）。OHOS NDK 基于 musl libc 应支援大部分 POSIX，但需要在 OHOS PC arm64 环境上实际验证各 API 的行为一致性和权限要求。若不支持 mmap，LevelDB 需实现 posix_mmapfile 替代（已有接口可替换）；若不支持 fcntl 文件锁，需确认 OHOS 的文件锁机制替代。",
         "source": "推理（OHOS NDK = musl libc，POSIX 子集；未在 caps JSON 找到 mmap/fcntl 级别的精确条目）",
         "id": "ta:2",
@@ -1289,7 +1289,7 @@
       "to": "needs_adaptation"
     },
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1319,7 +1319,7 @@
   "meta": {
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [],
     "counter_tool": "builtin",
     "warnings": [
@@ -1339,11 +1339,6 @@
         "code": "pclass_adjusted",
         "class": "info",
         "message": "porting_class 模型原判 recompile_only，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation"
-      },
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
     "normalized_version": 6

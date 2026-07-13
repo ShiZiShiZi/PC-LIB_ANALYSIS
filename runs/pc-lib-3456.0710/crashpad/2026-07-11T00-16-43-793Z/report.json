@@ -1413,9 +1413,9 @@
     "target_assumptions": [
       {
         "capability": "进程检视/调试接口（等价于 ptrace / mach_vm_read / ReadProcessMemory）",
-        "capability_key": null,
+        "capability_key": "proc_introspect",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若鸿蒙提供完整进程检视 API，可用标准方式读取崩溃进程的内存和寄存器，工作量＜5 人日；若不提供，需降级为仅捕获本进程，受限但仍有适用场景（同进程嵌入）。",
         "source": "harmony-pc-capabilities.json 中无对应行；需确认鸿蒙 NDK/调试框架的进程检视能力",
         "id": "ta:1",
@@ -1423,9 +1423,9 @@
       },
       {
         "capability": "POSIX socket API (AF_UNIX/AF_INET) 在鸿蒙内核的可用性和兼容性",
-        "capability_key": null,
+        "capability_key": "af_unix",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "Unix domain socket 是 handler IPC 的基础，TCP socket 是 HTTP 上传的基础；若 musl socket 在鸿蒙上可用，IPC/HTTP 层无需开源修改。",
         "source": "harmony-pc-capabilities.json 中无对应行；但 musl libc 通常提供标准 socket API",
         "id": "ta:2",
@@ -1485,7 +1485,7 @@
     "notes": "评估按模型 A（C/C++ 库经 OHOS NDK 交叉编译为 .so，由鸿蒙原生进程或通过 FFI 调用）。如果鸿蒙 PC 的进程检视 API 完备，适配工作量可压缩到 15-25 人日；若只能做同进程内自捕获，则下降 5-10 人日但功能受限。mini_chromium（Chromium base 库子集）也需一并在 OHOS 上重编，但它是纯跨平台代码，预计问题不大。zlib 已有鸿蒙移植版本。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",

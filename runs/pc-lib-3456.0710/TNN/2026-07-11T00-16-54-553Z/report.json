@@ -1295,9 +1295,9 @@
       {
         "id": "ta:posix_shm",
         "capability": "POSIX 共享内存（shm_open / mmap / pthread_mutex PTHREAD_PROCESS_SHARED）",
-        "capability_key": null,
+        "capability_key": "posix_shm",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "TNN 使用 shm_open + mmap + pthread_mutex 实现多进程模型缓存互斥——若鸿蒙 musl 不支持这些 API，需替换为纯文件锁方案",
         "source": "未在 harmony-pc-capabilities.json 中查到对应项，需查验鸿蒙 musl API 清单",
         "target_status_model": "unknown"
@@ -1364,7 +1364,7 @@
     "confidence": "medium",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation_platform_partial",
       "overall": "adaptable_with_tailoring",
@@ -1409,13 +1409,6 @@
   "meta": {
     "confidence_overall": "medium",
     "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "posix_subset",
-        "kind": "caps_gap",
-        "value": "POSIX 共享内存同步 API (shm_open + mmap + pthread_mutex PTHREAD_PROCESS_SHARED) 在鸿蒙 musl 中的支持状态",
-        "rationale": "TNN 的 exclusive_file.cc 使用这些 API 实现跨进程模型缓存互斥——建议在 harmony-pc-capabilities.json 新增 'posix_capabilities' 段或 'runtime' 段补充 musl API 覆盖清单"
-      },
       {
         "dimension": "dependency-analysis",
         "field": "acquisition",

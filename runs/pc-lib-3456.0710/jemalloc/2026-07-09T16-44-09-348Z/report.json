@@ -232,7 +232,7 @@
         "language": "SVG",
         "files": 1,
         "code": 1,
-        "pct": 0.0,
+        "pct": 0,
         "production": {
           "files": 1,
           "code": 1
@@ -1173,15 +1173,15 @@
       ],
       "level": "high"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "unadaptable_apis": [],
     "target_assumptions": [
       {
         "id": "ta:posix_mman",
         "capability": "OHOS NDK musl 提供 mmap/munmap/madvise/mprotect 等 POSIX mman API 子集",
-        "capability_key": null,
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "jemalloc 的核心内存分配路径依赖 mmap 获取大块内存、madvise 管理去提交与大页，若 OHOS musl 缺少这些调用则需替代方案或禁用特性。",
         "source": "OHOS NDK 文档声称基于 musl 的 POSIX 子集，但子集具体覆盖范围需验证。",
         "target_status_model": "unknown"
@@ -1208,12 +1208,12 @@
         "adaptability": "adaptable",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "unknown",
         "remediation": "在 OHOS NDK 上编译测试 pages.c 中的 POSIX 路径；若部分 API 缺失则用 #ifdef __OHOS__ 做条件编译回退（如缺失 MADV_FREE 改用 MADV_DONTNEED、syscall 不可用时改用标准 write/read）。修改量小，不影响整体架构。",
         "evidence": [
           "src/pages.c:140-200",
           "src/malloc_io.c:762-808"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1252,7 +1252,7 @@
     "notes": "纯 C 内存库，移植工作量极低。预计 2–5 人-天即可完成编译验证与测试。conflictWith/person_days 归一由 scripts/report_normalize.py 确定性派生。若目标为 ArkTS GUI 应用（模型 B），jemalloc 仍作为原生 .so 通过 Node-API 桥接使用，不改变移植难度。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1286,15 +1286,8 @@
     "analyzed_at": "2026-07-09T21:51:03Z"
   },
   "meta": {
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "OHOS NDK musl libc 的 POSIX 子集具体覆盖范围",
-        "rationale": "jemalloc 的 pages.c 依赖 mmap/madvise 系列，需编译验证确认——当前 OHOS NDK 文档仅声称\"POSIX 子集\"但无明细列表。建议在 harmony-pc-capabilities.json 的 runtimes 或新辟 POSIX 段中维护常见 POSIX API 的支持矩阵。"
-      },
       {
         "dimension": "native_api",
         "field": "arch_specific",
@@ -1307,14 +1300,7 @@
     "analyzer": "pc-lib-analyzer",
     "counter_tool": "cloc",
     "confidence_overall_model": "high",
-    "harmony_warnings": [
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
-      }
-    ],
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "jemalloc 是纯 C 内存分配器库，无 GUI、无 3D 渲染、无音视频媒体、无特定硬件依赖。仅含少量 GCC 编译器 barrier 内联汇编（atomic_gcc_sync.h 中的 asm volatile），属于跨架构通用的编译器原语，不影响鸿蒙移植。",
@@ -1372,7 +1358,7 @@
       {
         "class": "recompile_reuse",
         "loc": 54800,
-        "pct": 99.0,
+        "pct": 99,
         "modules": [
           {
             "path": "src",

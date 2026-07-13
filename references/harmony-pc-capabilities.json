@@ -65,9 +65,9 @@
           "id": "dotnet",
           "capability": ".NET / CLR 运行时（C#/F#）",
           "status": "unknown",
-          "source": "人工核实(无移植证据)：遍历 harmony-pc 真机知识库 + 社区已移植运行时清单，均无 .NET/CLR/Mono",
+          "source": "人工核实(无移植证据)：遍历 harmony-pc 知识库 + 社区已移植运行时清单 + 真机设备 HNP 实测，均无 .NET/CLR/Mono",
           "checked_at": "2026-07-13",
-          "note": "截至 2026-07-13 遍历真机知识库(harmony-pc)无 .NET/CLR/Mono/CoreCLR 任何移植或运行证据；社区已移植运行时清单仅 Java(BiSheng 17/8)/Node 24.13/Python 3.12·3.9/Rust/Go/Julia 1.10.6、不含 .NET。本组 30 个 C#/.NET 库(26 必需，Newtonsoft.Json/AutoMapper/RestSharp/MQTTnet/NLua…)依赖此——高需求研究缺口，禁据无证据臆断为可行。",
+          "note": "截至 2026-07-13 无 .NET/CLR/Mono/CoreCLR 任何移植或运行证据；社区已移植运行时清单(Java/Node/Python/Rust/Go/Julia)不含 .NET；**真机设备 3BT0124820000152 HNP 实测无 dotnet/mono**。本组 30 个 C#/.NET 库(26 必需)依赖此——高需求研究缺口，禁据无证据臆断为可行。",
           "check": null
         }
       ]
@@ -98,9 +98,9 @@
           "id": "build_toolchain",
           "capability": "设备端构建工具链 (CMake/ninja/make/git/binutils/clang-llvm)",
           "status": "available",
-          "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-HNP包与PATH.md、memory/adaptation/鸿蒙PC-git-适配要点.md；pc-knowledge-lookup platform-notes §1",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13) + memory/platform/鸿蒙PC-HNP包与PATH.md",
           "checked_at": "2026-07-13",
-          "note": "设备以 HNP 提供 cmake/ninja/make/gawk/grep/binutils/bash/gdb/ohos-sdk(clang-llvm)/node/python/git(2.49.0 交叉编译端口)；设备端 aarch64 原生编译(clang+cmake+ninja+make)可行，是整套错误/案例知识库的运行前提。git CLI 可用(setuptools-scm 类库需)。注:on-device autoconf/automake 未单独确认为 HNP。",
+          "note": "设备端 HNP 实测已装:cmake/ninja/make/gawk/grep/binutils/bash/gdb/git(2.49.0)/ohos-sdk(clang-llvm)/node/python/ruby/perl/pkg-config/patchelf/**autoconf/bison/flex/m4/gettext/gperf/groff**——故 **on-device autotools 完整可用**(crosstool-NG 类 configure+make 可跑，纠正旧「autoconf/automake 未确认」)；aarch64 端上原生编译(clang+cmake+ninja)可行。",
           "check": null
         }
       ]
@@ -681,9 +681,9 @@
           "id": "terminal_tty",
           "capability": "POSIX 终端 / TTY / termios(raw-mode 控制台输入)",
           "status": "partial",
-          "source": "人工核实：harmony-pc 工程实践(真机)：third_party_adapters/node-pty、memory/platform/鸿蒙PC-HNP包与PATH.md",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13) + third_party_adapters/node-pty",
           "checked_at": "2026-07-13",
-          "note": "termios/tty/raw-mode 真机(node-pty 仅 4 行 __linux__‖__OHOS__ 守卫即通；hdc shell=交互终端/Toybox)；PTY(openpty/forkpty)经 node-pty 真机验证；但 HAP GUI 无 TTY、纯 TUI 无标准窗口交付形态，setsid/TIOCSCTTY 于 app 沙箱待确认(回退 posix_openpt+ioctl)。Go GOOS=ohos 的 x/sys/unix 终端绑定随 Go 运行时。",
+          "note": "termios/tty/raw-mode 真机可用；**PTY 完整:posix_openpt/grantpt/unlockpt/openpty/forkpty 真机 OK**(node-pty 已跑)。但 HAP GUI 无 TTY、纯 TUI 无标准窗口交付形态；setsid/TIOCSCTTY 于 app 沙箱待确认。Go GOOS=ohos 的 x/sys/unix 终端绑定随 Go 运行时。",
           "check": null
         },
         {
@@ -717,9 +717,9 @@
           "id": "musl_libc",
           "capability": "musl libc / POSIX 子集 (NDK 原生基座)",
           "status": "partial",
-          "source": "人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-C++库交叉编译要点.md、memory/platform/鸿蒙PC-app域执行二进制与JIT限制.md、鸿蒙PC-64KB页对齐so崩溃.md；pc-knowledge-lookup errors/E045,E051,E014,E026,E085,E024,E086",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13) + memory/adaptation/鸿蒙PC-C++库交叉编译要点.md、memory/platform/鸿蒙PC-app域执行二进制与JIT限制.md",
           "checked_at": "2026-07-13",
-          "note": "OHOS NDK=musl(子集)+libc++；__linux__+__OHOS__+__MUSL__ 三宏、多数 C/C++ 零改编译(triple aarch64-unknown-linux-ohos)。真机细节:fork()+execv() 私有 HNP 可用(app 域仅私有 HNP、公有 HNP 经 /bin/sh 被 SELinux 拒；root 不限)、Python 默认 posix_spawn；thread_local/__thread 可用但 pthread_cancel/setcancelstate、pthread_attr_setaffinity_np 缺(需 __OHOS__ 守卫/复用 android impl)；mmap RWX、mprotect RW→RX 于 1.12.0 放开(但 app 域 spawn 的非系统进程仍不能 JIT→node --jitless、WASM 不可用)；getrandom 1.12.0 已补；io_uring app 域被 seccomp SIGSYS 杀→回落 epoll；POSIX shm(QSharedMemory/dev/shm tmpfs)真机、sem 可用(sem_unlink 差异);AF_UNIX bind app 域 SELinux EPERM→TCP 回退、SO_PEERCRED/struct ucred 缺;未实现 syscall→SIGSYS(setreuid/setregid 不可捕获，须源码守卫);open_memstream 静默丢写;🔴 64KB 页对齐 .so 于 4KB 页设备 dlopen 崩→链接 -Wl,-z,max-page-size=0x1000。",
+          "note": "OHOS NDK=musl(子集)+libc++；__linux__+__OHOS__+__MUSL__ 三宏、多数 C/C++ 零改编译(triple aarch64-unknown-linux-ohos)。【root 域真机探针 45/46 OK】fork/exec/setsid/posix_spawn、mmap-RWX/mprotect→EXEC/madvise/mlock(W^X 于 1.12.0 放开)、getrandom/getentropy、signals(sigaction/sigaltstack/sigprocmask/SIGWINCH)、thread_local、进程共享互斥锁、AF_INET/AF_UNIX(含抽象)+SCM_RIGHTS、epoll/timerfd/eventfd/signalfd/memfd_create、statx/inotify、文件 I/O(fdatasync/fcntl-lock/flock/hardlink/symlink) 全 OK。**纠正旧记录:pthread_cancel 与 pthread_attr_setaffinity_np 符号在 1.12.0 存在(旧 musl 缺)**；**仍缺:robust mutex(pthread_mutexattr_setrobust)**、open_memstream 静默丢写、SO_PEERCRED/ucred。**app 域叠加限制(KB)**:io_uring 被 seccomp 杀→回落 epoll、raw socket 需系统权限、AF_UNIX bind SELinux EPERM、exec 仅私有 HNP、非系统进程不能 JIT(mprotect EXEC EINVAL→node --jitless/禁 WASM)。🔴 64KB 页对齐 .so dlopen 崩→链接 -Wl,-z,max-page-size=0x1000。",
           "check": null
         },
         {
@@ -738,6 +738,78 @@
           "source": "人工核实：harmony-pc 工程实践(真机)：third_party_adapters/9LIBS-ACCEPTANCE.md、TEST-RESULTS.md、memory/adaptation/鸿蒙PC-pyGLFW-Python绑定库迁移.md；pc-knowledge-lookup errors/E045,E068",
           "checked_at": "2026-07-13",
           "note": "Python C 扩展交叉编译真机(pycosat 30/30、PyWavelets 1031 pass、pyzmq、PyCxx)；libpython3.12 可嵌入(pyGLFW HAP 内 Py_Initialize+PyRun 端到端真机)；ctypes 可用(pyGLFW 纯 ctypes 绑定、OpenCL-SDK 经 ctypes dlopen libOpenCL)。坑:ctypes.util.find_library 崩(无 /sbin/ldconfig)→打补丁返回 None；CFUNCTYPE/libffi 闭包需 W^X，1.12.0 内核已放开。PyTorch/libtensorflow 无证据、不含。",
+          "check": null
+        },
+        {
+          "id": "posix_shm",
+          "capability": "POSIX 共享内存 (shm_open/mmap/进程共享互斥锁)",
+          "status": "available",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13)",
+          "checked_at": "2026-07-13",
+          "note": "shm_open+ftruncate+mmap(MAP_SHARED)、pthread process-shared mutex(PTHREAD_PROCESS_SHARED)真机 OK；app 域 /dev/shm 可写(1GB tmpfs, KB 已证)。崩溃/卸载残留段不自动清理。",
+          "check": null
+        },
+        {
+          "id": "posix_sem",
+          "capability": "POSIX 命名信号量 (sem_open/sem_close)",
+          "status": "available",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13)",
+          "checked_at": "2026-07-13",
+          "note": "sem_open(O_CREAT)/sem_close/sem_unlink 真机 OK；sem_unlink 偶报 FileNotFound(KB E022，小差异)。",
+          "check": null
+        },
+        {
+          "id": "af_unix",
+          "capability": "AF_UNIX 域套接字 (含抽象命名空间 / SCM_RIGHTS)",
+          "status": "partial",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13)",
+          "checked_at": "2026-07-13",
+          "note": "root 域真机 OK：pathname bind+listen、**抽象命名空间(\\0 前缀)bind、SCM_RIGHTS fd 传递(sendmsg/recvmsg)** 全通过(纠正 KB「抽象/fd 传递无证据」)。**app 域** bind 受 SELinux EPERM(KB E024)→需 TCP 回退；SO_PEERCRED/struct ucred 仍缺(E086)。故整体 partial。",
+          "check": null
+        },
+        {
+          "id": "dlopen",
+          "capability": "动态加载 (dlopen/dlsym/dlclose)",
+          "status": "available",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13)",
+          "checked_at": "2026-07-13",
+          "note": "dlopen(libc.so/libc++_shared.so, RTLD_NOW)+dlsym+dlclose 真机 OK(ctypes/原生插件/延迟加载依赖)。注:ctypes.util.find_library 需补丁(无 /sbin/ldconfig, KB E068)。",
+          "check": null
+        },
+        {
+          "id": "fs_watch",
+          "capability": "文件系统事件通知 (inotify)",
+          "status": "available",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13)",
+          "checked_at": "2026-07-13",
+          "note": "inotify_init1(IN_NONBLOCK)+inotify_add_watch 真机 OK(fsevents/ReadDirectoryChanges 等价)。",
+          "check": null
+        },
+        {
+          "id": "proc_introspect",
+          "capability": "进程自省 (/proc/self/mem·maps)",
+          "status": "partial",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13)",
+          "checked_at": "2026-07-13",
+          "note": "root 域 /proc/self/mem、/proc/self/maps 真机可读(崩溃处理/backtrace/自省)；app 域 /proc 部分 SELinux 受限(KB E031)、**跨进程 ptrace/mach_vm_read 未证**(crashpad/breakpad 自崩溃处理可用、他进程调试受限)→partial。",
+          "check": null
+        },
+        {
+          "id": "libffi",
+          "capability": "libffi (FFI 动态调用)",
+          "status": "available",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13)",
+          "checked_at": "2026-07-13",
+          "note": "设备 HNP 已装 libffi.org；dlopen/闭包(CFUNCTYPE)真机可用(W^X 于 1.12.0 放开, KB E045)。pyobjc-core 等 FFI 库依赖。",
+          "check": null
+        },
+        {
+          "id": "glib",
+          "capability": "GLib / GObject / GIO / GModule",
+          "status": "available",
+          "source": "真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13)",
+          "checked_at": "2026-07-13",
+          "note": "设备 HNP 已装 glib.org；gstreamer 等依赖 GLib 栈可用(注:GTK 场景另见 gui.gtk，cmd-pkgs 预编译 GTK 栈不可用须源码编, KB)。",
           "check": null
         }
       ]

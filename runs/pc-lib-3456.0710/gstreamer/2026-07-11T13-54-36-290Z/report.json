@@ -2132,9 +2132,9 @@
       {
         "id": "ta:openharmony_ndk_posix",
         "capability": "OHOS NDK musl libc 完整 POSIX 支持（pthread/mmap/clock_gettime/poll/文件 I/O/socket 等）",
-        "capability_key": "ohos_ndk",
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "target_status_model": "unknown",
         "impact": "GStreamer 核心与所有编解码库依赖标准 POSIX API——若 OHOS NDK 在 musl 环境下完整支持，即可重编译运行；若部分 API 不可用（如 clock_gettime/线程栈设置差异），需适配层或配置调整。",
         "source": "OpenHarmonyPCDeveloper 文档未覆盖 NDK POSIX 详尽列表"
@@ -2142,9 +2142,9 @@
       {
         "id": "ta:glib_ohos_support",
         "capability": "GLib >= 2.64 / GObject / GIO / GModule 在鸿蒙 PC 的移植状态",
-        "capability_key": null,
+        "capability_key": "glib",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "target_status_model": "unknown",
         "impact": "GStreamer 整个运行时框架（事件循环、对象系统、插件动态加载、网络 I/O）完全依赖 GLib——GLib 必须已有鸿蒙移植或可成功交叉编译。若 GLib 不可用则整个 GStreamer 核心无法启动。",
         "source": "caps JSON 未列出 GLib，需查 OpenHarmonyPCDeveloper 是否提供 GLib 移植。"
@@ -2336,7 +2336,7 @@
     "notes": "置信度设为 medium（非 high）原因：GLib/GObject 在鸿蒙 PC 的移植状态、@ohos.multimedia 等 API 的 PC 形态可用性、以及 FFmpeg 等重要依赖能否交叉编译——这几项均为未核实（unknown）项，对结论影响大。需在 OpenHarmonyPCDeveloper 社区跟进这些依赖的移植进展后提升置信度。好消息：GStreamer 本身就是为多平台设计的——其 #ifdef + 多后端体系结构对此类移植天然友好，不是「Linux 专有代码重写」而是「加一个 OHOS 后端」。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation_platform_partial",
       "overall": "adaptable_with_tailoring",
@@ -2376,13 +2376,6 @@
       }
     ],
     "observations": [
-      {
-        "dimension": "harmony_caps",
-        "field": "runtimes",
-        "kind": "caps_gap",
-        "value": "GLib / GObject / GIO / GModule 在鸿蒙 PC 的移植状态",
-        "rationale": "GStreamer 整个框架完全依赖 GLib 家族——需在 caps JSON 中增加 GLib 移植状态条目供后续分析引用。"
-      },
       {
         "dimension": "function_summary",
         "field": "kind",

@@ -1252,7 +1252,7 @@
       ],
       "level": "very_high"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "critical_dependencies": [],
     "summary": "Botan 是高度可移植的 C++ 密码学库。鸿蒙 PC 上需 OHOS NDK（clang + musl-libc，ohos.toolchain.cmake）交叉编译为 .so。arm64 架构已有 NEON 和 AArch64 Crypto Extensions SIMD 实现（765 行），无需新增架构适配。平台条件编译仅 17 行 Win32 #ifdef。大部分 POSIX 接口（socket、文件 IO、内存管理）在 musl-libc 中可直接使用。TPM2/PKCS#11 硬件模块为可选，可禁用。整体为 recompile_only——零源码改动即可通过 OHOS NDK 编译为 arm64/x86_64 目标。",
     "blockers": [
@@ -1306,9 +1306,9 @@
     "target_assumptions": [
       {
         "capability": "OHOS NDK 提供 POSIX 子集（getentropy/getrandom / /dev/urandom / mlock / sysconf 等）",
-        "capability_key": null,
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若 /dev/urandom 不可用则需为熵源添加鸿蒙 CryptoFramework Kit 备选路径；mlock 不可用则安全内存池回退为非锁定模式",
         "source": "OHOS NDK musl-libc 文档待核实",
         "id": "ta:1",
@@ -1352,7 +1352,7 @@
       "to": "needs_adaptation"
     },
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1421,15 +1421,10 @@
         "code": "blocker_ref:bk:arm_neon_compile:cp:cpu_simd",
         "class": "actionable",
         "message": "blocker bk:arm_neon_compile 的引用 cp:cpu_simd 不存在（悬空引用）"
-      },
-      {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
       }
     ],
     "normalized_version": 6,
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "confidence_breakdown": {
       "license": "high",
       "function_summary": "high",
@@ -1490,7 +1485,7 @@
     "coverage": {
       "production_code": 237919,
       "partitioned_code": 237919,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

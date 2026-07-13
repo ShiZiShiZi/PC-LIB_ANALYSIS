@@ -502,7 +502,7 @@
         "language": "ASP.NET",
         "files": 1,
         "code": 4,
-        "pct": 0.0,
+        "pct": 0,
         "production": {
           "files": 1,
           "code": 4
@@ -520,7 +520,7 @@
         "language": "Bazel",
         "files": 1,
         "code": 1,
-        "pct": 0.0,
+        "pct": 0,
         "production": {
           "files": 1,
           "code": 1
@@ -2609,9 +2609,9 @@
       {
         "id": "ta:posix_subset",
         "capability": "OHOS NDK POSIX 子集覆盖度：epoll/timerfd/eventfd、inotify、unix 域 socket 与 SCM_RIGHTS fd 传递、进程共享 robust pthread 锁、setuid/setgid/chroot",
-        "capability_key": null,
+        "capability_key": "epoll",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "事件循环、文件监控、降权与 worker 间协作全部依赖这些接口；缺失项需逐条找替代（poll 回退/@ohos 能力）或降级裁剪，决定 needs_adaptation 桶约 1.6 万行核心平台代码的实际改造量",
         "source": "native_api: core/event.c:503, core/fsmon.c:16, core/socket.c:53, core/lock.c:88-116；caps 参考无 POSIX 子集专段（已提案 caps_gap）",
         "target_status_model": "unknown"
@@ -2913,13 +2913,6 @@
     "observations": [
       {
         "dimension": "harmony_caps",
-        "field": "process_security",
-        "kind": "caps_gap",
-        "value": "OHOS NDK POSIX 子集覆盖度（epoll/timerfd/eventfd/inotify、unix socket SCM_RIGHTS、进程共享 robust pthread 锁、setuid/chroot、prctl）",
-        "rationale": "C 服务器/守护进程类项目的移植评估反复需要该能力（本报告 ta:posix_subset）；建议在 process_security 段新增一行，核实 musl/OHOS NDK 对上述接口的支持清单"
-      },
-      {
-        "dimension": "harmony_caps",
         "field": "hardware_devices",
         "kind": "caps_gap",
         "value": "TUN/TAP 虚拟网络设备（/dev/net/tun + CAP_NET_ADMIN）",
@@ -3096,7 +3089,7 @@
     "coverage": {
       "production_code": 101266,
       "bucketed_loc": 101266,
-      "pct": 100.0,
+      "pct": 100,
       "basis": "code_metrics.dir_loc（80 条目，合计 97310，占 96.1%）+ 文件级 wc 细分 core/ 与 lib/；剩余按目录归入 recompile_reuse"
     },
     "buckets": [

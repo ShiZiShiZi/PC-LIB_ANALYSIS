@@ -1313,7 +1313,6 @@
         "severity": "major",
         "source_dimension": "native_api",
         "category": "platform",
-        "harmony_status": "replace_with_ohos",
         "description": "libdispatch 的事件源框架依赖 OS 内核的多路复用机制——Darwin 用 kqueue/kevent + Mach 内核端口，Linux 用 epoll/eventfd/signalfd/timerfd。鸿蒙自研内核不是 Linux 内核，epoll syscall 不可用。需基于 OHOS NDK 的 POSIX 子集（poll/select/pipe + POSIX 定时器 + 信号）为 dispatch_kevent 接口编写新的后端实现，工作量集中在 src/event/ 目录（约 5700 行需重写或新增）。",
         "remediation": "采用 poll/select I/O 多路复用 + pipe 内部事件通知 + POSIX timer 定时器 + sigwait 信号处理组合，替代 epoll/eventfd/timerfd/signalfd 四个系统调用。该方案在 OHOS NDK (musl) 上全可用，虽性能不如内核级 epoll，但功能等价。也可调研鸿蒙是否提供 I/O 多路复用系统能力（如 libohosevent 等）。",
         "evidence": [
@@ -1325,7 +1324,8 @@
           "src/event/event_epoll.c",
           "src/event/event.c"
         ],
-        "source_capability": null
+        "source_capability": null,
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:mach_code",
@@ -1334,14 +1334,14 @@
         "severity": "minor",
         "source_dimension": "native_api",
         "category": "platform",
-        "harmony_status": "unavailable",
         "description": "src/mach.c（Mach 端口创建/消息收发）和 src/voucher.c（Mach voucher QoS 调度凭证）完全绑定 Darwin 内核，鸿蒙无任何等价机制。好在非 Darwin 平台（Linux）已有 #if !HAVE_MACH 和 #if !HAVE_PTHREAD_WORKQUEUE_QOS 的条件排除路径，鸿蒙走相同路径即可。src/firehose/firehose_buffer.c 中 mach_vm_allocate 等 Darwin VM 调用同理，已有 malloc 通用回退。",
         "remediation": "在 CMake 或 config.h 中为 __ohos__ 目标定义 HAVE_MACH=0、HAVE_PTHREAD_WORKQUEUE_QOS=0，走现有的非 Darwin 条件编译路径（已由 Linux 构建验证），代码改动量很小。",
         "evidence": [
           "src/mach.c",
           "src/voucher.c",
           "src/firehose/firehose_buffer.c"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:pthread_extensions",
@@ -1350,13 +1350,13 @@
         "severity": "minor",
         "source_dimension": "native_api",
         "category": "platform",
-        "harmony_status": "replace_with_ohos",
         "description": "libdispatch 在 src/shims/tsd.h 中使用 pthread_key_init_np（Darwin 专属 TSD 优化）和在 src/init.c 中使用 pthread_workqueue_setdispatch_np（Darwin 专属 kernel workqueue 对接）。musl libc 不提供这些非标准扩展，需走回退路径。",
         "remediation": "pthread_key_init_np 在非 Darwin 平台已有 pthread_key_create 标准回退；pthread_workqueue_setdispatch_np 仅在 USE_INTERNAL_WORKQUEUE=1 时不需要，已在 Linux 路径验证。",
         "evidence": [
           "src/shims/tsd.h:36-59",
           "src/init.c:1723"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "unadaptable_apis": [],
@@ -1364,9 +1364,9 @@
       {
         "id": "ta:pthreads_ohos",
         "capability": "OHOS NDK 的 pthreads 支持程度（POSIX 线程标准）",
-        "capability_key": null,
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "libdispatch 的线程池、互斥锁、条件变量、TSD 完全依赖 pthreads。OHOS NDK 基于 musl libc，理论支持完整的 POSIX pthreads 接口（pthread_create/mutex/cond/key）。但实际完整性、性能、stack size 语义等需在 OHOS 目标上实测验证。若 pthreads 支持不完整，libdispatch 不可运行。",
         "source": "评估分析 — musl libc 的 pthreads 实现已知完整，但 OHOS NDK 的具体裁剪情况待验证",
         "target_status_model": "unknown"
@@ -1374,9 +1374,9 @@
       {
         "id": "ta:signals_ohos",
         "capability": "OHOS NDK 的 POSIX 信号支持（sigaction/sigprocmask/sigwait）",
-        "capability_key": null,
+        "capability_key": "musl_libc",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "dispatch source 的 SIGNAL 类型依赖 sigaction/sigprocmask，内部事件通知可能需要 signal + sigwait 替代 signalfd。OHOS NDK (musl) 理论支持 POSIX 信号，但实际完整性需验证。",
         "source": "评估分析",
         "target_status_model": "unknown"
@@ -1452,7 +1452,7 @@
     "notes": "该项目在 OpenHarmony PC C/C++ 预编译包（cmd-pkgs）中已注册为已适配（harmony_adapted:true），说明社区已有鸿蒙移植版本。本评估基于源码分析给出的适配方案和估算，实际已适配程度以社区移植版本为准。libdispatch 作为 Swift 核心库，其鸿蒙移植对 Swift 生态在鸿蒙 PC 上的可用性至关重要。因为核心算法与数据结构完全平台无关（仅依赖 POSIX pthreads + 标准 C），适配的主要难度在于事件后端的性能调优（poll 的性能不如 epoll/kqueue），功能层面无不可逾越的障碍。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": null,
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1490,7 +1490,7 @@
     "source_url": "https://github.com/apple/swift-corelibs-libdispatch"
   },
   "meta": {
-    "confidence_overall": "medium",
+    "confidence_overall": "high",
     "observations": [],
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",
@@ -1542,7 +1542,7 @@
       "shape coerced: harmony_adaptation.compatible boolean→array"
     ],
     "confidence_overall_model": "high",
-    "normalized_version": 5
+    "normalized_version": 6
   },
   "capability_profile": {
     "summary": "纯并发调度基础库——无 GUI、无 3D 渲染、无音视频媒体处理、无特定硬件依赖。所有涉及的系统 API（POSIX 线程、文件 I/O、事件复用）通过条件编译已在各平台有抽象实现。",
@@ -1575,7 +1575,7 @@
     "coverage": {
       "production_code": 46995,
       "partitioned_code": 46995,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {
@@ -1728,7 +1728,7 @@
       {
         "class": "unadaptable",
         "loc": 0,
-        "pct": 0.0,
+        "pct": 0,
         "modules": [],
         "basis": "无不可适配的功能。所有平台特定代码（Mach voucher、Mach 端口 IPC 等）在非 Darwin 平台已有简洁的条件排除路径，鸿蒙走相同路径即可，不丢核心功能。dispatch queue/data/source/timer/semaphore 是通用算法，与平台无关。"
       }

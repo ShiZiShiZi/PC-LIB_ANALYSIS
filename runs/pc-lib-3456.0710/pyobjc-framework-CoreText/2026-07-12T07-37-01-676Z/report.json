@@ -1001,9 +1001,9 @@
       {
         "id": "ta:pyobjc_core_port",
         "capability": "pyobjc-core 在鸿蒙 PC 上可用（Python C 扩展经 OHOS NDK 重编 + libffi 可用）",
-        "capability_key": null,
+        "capability_key": "cpython_capi",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "pyobjc-core 是本库及所有 pyobjc-framework-* 包的底层桥接基础设施——不移植则本库完全无法运行",
         "source": "model analysis: pyobjc-core 为 CPython C 扩展 + libffi，未在 OpenHarmony PC 官方源提供移植产物",
         "target_status_model": "unknown"
@@ -1110,13 +1110,6 @@
         "kind": "caps_gap",
         "value": "鸿蒙 PC 文本排版与字体管理 API（@ohos.graphics.text 或等价）",
         "rationale": "pyobjc-framework-CoreText 作为文本排版绑定库需要鸿蒙 PC 提供文本排版 API 作为替代目标。当前 harmony-pc-capabilities.json 未覆盖文本排版/字体管理能力（仅有 GUI 通用行如 Qt/GTK/Swing），建议在 gui 段或新增 text_layout 段补充鸿蒙 PC 文本排版 API 的可用性状态"
-      },
-      {
-        "dimension": "harmony_caps",
-        "field": "gui",
-        "kind": "caps_gap",
-        "value": "PyObjC 桥接框架（pyobjc-core）在鸿蒙 PC 的可移植性",
-        "rationale": "pyobjc-core 是 Python↔Objective-C 的运行时代理（libffi + CPython C API），不是 GUI 框架本身而是桥接基础设施。harmony-pc-capabilities.json 当前未覆盖此类跨语言桥接层——建议在 new 段补充或评估是否能通过 cmd-pkgs/pypi 自动核对。对 pyobjc-framework-* 全系列（约 100+ 个包）的鸿蒙适配评估都以它为前置条件"
       }
     ],
     "notes": "confidence_overall 因 4 项 required target_assumptions（pyobjc-core/Quartz/Cocoa 的鸿蒙可用性及鸿蒙 PC 文本排版 API）均为 unknown 而下调至 medium。若这些假设被核实（target_status 翻为 available 或 unavailable），置信度可相应调整。",
@@ -1140,7 +1133,7 @@
     "coverage": {
       "production_code": 2755,
       "partitioned_code": 2755,
-      "pct": 100.0
+      "pct": 100
     },
     "buckets": [
       {

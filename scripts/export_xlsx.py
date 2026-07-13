@@ -276,10 +276,10 @@ _LEVEL_FILL = {"very_low": "green", "low": "green", "medium": "amber",
 # effective_class 的直接映射（前提轴 blocked_external/unverified 及 core_partial 在 _v_ai_harmonize 里优先短路）。
 _AI_HARMONIZE = {"no_adaptation": ("无需适配", "green"),
                  "recompile_only": ("仅需交叉编译", "teal"),
-                 "needs_adaptation": ("全量功能可适配", "blue"),
-                 "needs_adaptation_platform_partial": ("核心功能可适配", "amber"),
-                 "needs_adaptation_core_partial": ("无法适配（核心不可适配或前提不具备）", "red")}
-_AI_BLOCKED = ("无法适配（核心不可适配或前提不具备）", "red")
+                 "needs_adaptation": ("可适配（全量功能）", "blue"),
+                 "needs_adaptation_platform_partial": ("可适配（核心功能）", "amber"),
+                 "needs_adaptation_core_partial": ("无法适配（核心不可适配）", "red")}
+_AI_BLOCKED = ("无法适配（前提不具备）", "red")     # functional_viability == blocked_external
 _AI_UNVERIFIED = ("待核实（前提未核实）", "gray")
 # target_assumptions.target_status —— 只对 required 项统计（元组顺序＝由严重到轻）
 _TGT_ORDER = ("unavailable", "partial", "unknown")   # available 视为无阻碍
@@ -293,6 +293,7 @@ _SEV_FILL = {"blocker": "red", "major": "orange", "minor": "gray"}
 _SEV_MARK = {"blocker": "🔴阻塞", "major": "🟠主要", "minor": "⚪次要"}
 # 富文本明细用：可适配性标签 + 目标状态 emoji/标签 + 圈号序号
 _ADAPT_LABELS = {"adaptable": "可适配", "partial": "部分可适配", "unadaptable": "不可适配"}
+_FCLASS_LABELS = {"core": "核心功能", "platform_specific": "平台差异"}   # unadaptable_apis 功能类
 _TGT_EMOJI = {"available": "🟢", "partial": "🟡", "unavailable": "🔴", "unknown": "⚪", "restricted": "🟠"}
 _TGT_STATUS_LABEL = {"available": "已支持", "partial": "部分支持", "unavailable": "不支持",
                      "unknown": "未核实", "restricted": "受限"}
@@ -471,9 +472,9 @@ def _v_ai_harmonize(name, r):
     fv = _g(r, "harmony_adaptation", "functional_viability", default="")
     if not ec and not fv:
         return ""
-    if ec == "needs_adaptation_core_partial":       # 核心确定不可适配
-        label, fill = _AI_BLOCKED
-    elif fv == "blocked_external":                  # 前提确定不具备
+    if ec == "needs_adaptation_core_partial":       # 核心确定不可适配 → 无法适配（核心不可适配）
+        label, fill = _AI_HARMONIZE["needs_adaptation_core_partial"]
+    elif fv == "blocked_external":                  # 前提确定不具备 → 无法适配（前提不具备）
         label, fill = _AI_BLOCKED
     elif fv == "unverified":                        # 前提未核实
         label, fill = _AI_UNVERIFIED
@@ -554,6 +555,37 @@ def _v_blockers(name, r):
     return _Styled(head + "\n──────\n" + "\n".join(items), _SEV_FILL[worst])
 
 
+def _v_unadaptable_apis(name, r):
+    """无法适配的功能点 —— dim-9 unadaptable_apis 逐条（API·功能类·原因·阻塞底层API·证据）；
+    色＝有核心项红、仅平台差异橙、无则绿。"""
+    uas = [u for u in (_g(r, "harmony_adaptation", "unadaptable_apis", default=[]) or []) if isinstance(u, dict)]
+    if not uas:
+        return _Styled("无", "green")
+    core_n = sum(1 for u in uas if u.get("functionality_class") == "core")
+    plat_n = sum(1 for u in uas if u.get("functionality_class") == "platform_specific")
+    head = " ".join(p for p in [f"🔴核心{core_n}" if core_n else "",
+                                f"🟠平台差异{plat_n}" if plat_n else ""] if p) or f"共{len(uas)}项"
+    uas.sort(key=lambda u: 0 if u.get("functionality_class") == "core" else 1)   # 核心优先
+    items = []
+    for i, u in enumerate(uas, start=1):
+        fc = _FCLASS_LABELS.get(u.get("functionality_class"), u.get("functionality_class") or "")
+        api = u.get("api") or u.get("public_entry") or ""
+        lines = [f"{_circled(i)} {api}" + (f" <{fc}>" if fc else "")]
+        pe = u.get("public_entry")
+        if pe and pe != api:
+            lines.append(f"   公共入口: {pe}")
+        if u.get("reason"):
+            lines.append(f"   原因: {u['reason']}")
+        if u.get("blocking_native_api"):
+            lines.append(f"   阻塞底层API: {u['blocking_native_api']}")
+        ev = [str(x) for x in (u.get("evidence") or []) if x]
+        if ev:
+            lines.append("   证据: " + "、".join(ev))
+        items.append("\n".join(lines))
+    fill = "red" if core_n else ("orange" if plat_n else "amber")
+    return _Styled(head + "\n──────\n" + "\n".join(items), fill)
+
+
 def _v_critical_deps(name, r):
     """迁移关键路径依赖 —— 按 order 升序逐条（顺序/名称/人天/为何关键/关联）；中性无色。"""
     cds = [c for c in (_g(r, "harmony_adaptation", "critical_dependencies", default=[]) or [])
@@ -618,6 +650,7 @@ GROUPS = [
     ("云服务", [("厂商", _v_cloud_vendors), ("用途", _v_cloud_cats)]),
     ("鸿蒙适配评估", [
         ("移植分级", _v_pclass), ("代码适配", _v_overall), ("运行前提", _v_viability),
+        ("无法适配的功能点", _v_unadaptable_apis),
         ("评估总结", _v_summary),
     ]),
     ("鸿蒙移植·阻碍/假设/关键路径", [
@@ -635,6 +668,7 @@ GROUPS = [
 
 # per-column presentation overrides keyed by sub-title
 WRAP_WIDTH = {"描述": 58, "评估总结": 58, "源码仓地址": 42, "用途": 22,
+              "无法适配的功能点": 52,
               "移植阻碍点(严重度分布)": 62, "目标能力假设(阻碍分布)": 50,
               "关键路径依赖(建议移植顺序)": 46}
 
@@ -647,7 +681,7 @@ _SUB_FILL = PatternFill("solid", fgColor="DDE6F0")    # 二级表头（浅）
 _SEMANTIC_FONT = {
     "green":  "1B7A3D",   # 支持/无需适配/前提齐备/友好协议
     "teal":   "0F6E6E",   # 仅交叉编译
-    "blue":   "1F5FBF",   # 全量功能可适配
+    "blue":   "1F5FBF",   # 可适配（全量功能）
     "amber":  "B45309",   # 部分/中/有条件可用
     "orange": "C2570A",   # 较重/高
     "red":    "C0392B",   # 不支持/无法适配/阻塞/极高
