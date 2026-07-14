@@ -1,0 +1,959 @@
+{
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 59,
+        "code": 10345,
+        "pct": 100.0,
+        "production": {
+          "files": 51,
+          "code": 7492
+        },
+        "test": {
+          "files": 8,
+          "code": 2853
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 59,
+      "code": 10345,
+      "comment": 0,
+      "blank": 1864,
+      "total_lines": 12209
+    },
+    "production": {
+      "files": 51,
+      "code": 7492,
+      "comment": 0,
+      "blank": 1532,
+      "total_lines": 9024
+    },
+    "test": {
+      "files": 8,
+      "code": 2853,
+      "comment": 0,
+      "blank": 332,
+      "total_lines": 3185
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 7104,
+        "category": "production",
+        "by_category": {
+          "production": 7104
+        }
+      },
+      {
+        "dir": "tests",
+        "code": 2853,
+        "category": "test",
+        "by_category": {
+          "test": 2853
+        }
+      },
+      {
+        "dir": "doc",
+        "code": 211,
+        "category": "production",
+        "by_category": {
+          "production": 211
+        }
+      },
+      {
+        "dir": "scripts",
+        "code": 177,
+        "category": "production",
+        "by_category": {
+          "production": 177
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tests"
+      ],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "src/pyreadline3",
+        "files": 45,
+        "code": 7027
+      },
+      {
+        "dir": "scripts/py",
+        "files": 3,
+        "code": 177
+      },
+      {
+        "dir": "doc/source",
+        "files": 1,
+        "code": 140
+      },
+      {
+        "dir": "src",
+        "files": 1,
+        "code": 77
+      },
+      {
+        "dir": "doc",
+        "files": 1,
+        "code": 71
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "python": {
+          "files": 1,
+          "hits": 1
+        }
+      },
+      "by_platform": {
+        "windows": 1
+      },
+      "samples": [
+        {
+          "language": "python",
+          "file": "doc/do_sphinx.py",
+          "line": 23,
+          "text": "if sys.platform != 'win32':"
+        }
+      ],
+      "total": 1,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 8,
+    "test_cases": 167,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 8,
+        "cases": 167
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "pyreadline3 是 GNU readline 的纯 Python 实现，为 Windows 命令行程序提供终端行编辑能力，包括命令历史、自动补全、键盘快捷键（Emacs/Vi 风格）、文本选择与复制粘贴。它通过 Python 标准库 ctypes 直接调用 Win32 控制台 API（kernel32.dll / user32.dll），替代 Unix 上原生 readline 库的角色，让 Python 的交互式环境（如 cmd.py、pdb、IPython 等）在 Windows 上也能获得完整的行编辑体验。",
+    "categories": [
+      {
+        "name": "终端行编辑",
+        "description": "提供与 GNU readline 兼容的终端行编辑功能，包括光标移动、字符插入/删除、行首/行尾导航、字符交换等基础编辑操作，支持多行输入与自动换行处理。",
+        "evidence": [
+          "src/pyreadline3/rlmain.py",
+          "src/pyreadline3/modes/basemode.py"
+        ]
+      },
+      {
+        "name": "命令历史管理",
+        "description": "记录命令历史并持久化到文件（~/.history），支持历史记录浏览、搜索、追加与清除，兼容 GNU readline 的历史 API（get_history_item、get_history_length 等）。",
+        "evidence": [
+          "src/pyreadline3/lineeditor/history.py",
+          "src/pyreadline3/rlmain.py"
+        ]
+      },
+      {
+        "name": "自动补全",
+        "description": "实现 GNU readline 的 Tab 补全机制（completer / completer_delims / get_begidx / get_endidx），可与 Python 标准库 rlcompleter 无缝配合，支持文件名补全和自定义补全器。",
+        "evidence": [
+          "src/pyreadline3/rlmain.py",
+          "src/pyreadline3/modes/basemode.py"
+        ]
+      },
+      {
+        "name": "按键绑定与编辑模式",
+        "description": "提供 Emacs 和 Vi 两种编辑模式，支持按键绑定（parse_and_bind），预定义了大量 readline 标准快捷键（如 Ctrl-A/E/N/P/F/B/D/K/U/W 等），也支持用户自定义绑定。",
+        "evidence": [
+          "src/pyreadline3/modes/emacs.py",
+          "src/pyreadline3/modes/vi.py",
+          "src/pyreadline3/modes/notemacs.py"
+        ]
+      },
+      {
+        "name": "文本选择与剪贴板",
+        "description": "实现 Shift-方向键文本选择、Ctrl-C 复制到剪贴板（可配置 allow_ctrl_c）、Ctrl-V 粘贴等功能，通过 Win32 剪贴板 API（OpenClipboard/GetClipboardData/SetClipboardData）与系统剪贴板交互。",
+        "evidence": [
+          "src/pyreadline3/clipboard/win32_clipboard.py",
+          "src/pyreadline3/modes/basemode.py"
+        ]
+      },
+      {
+        "name": "控制台 I/O 控制",
+        "description": "通过 ctypes 调用 KERNEL32 和 USER32 的 console API 实现低层控制台输入输出，包括设置控制台模式、读写控制台缓冲区、光标定位与控制、文本颜色属性等。同时也提供 IronPython 的 .NET 控制台备选实现。",
+        "evidence": [
+          "src/pyreadline3/console/console.py",
+          "src/pyreadline3/console/ironpython_console.py"
+        ]
+      }
+    ],
+    "domain": "终端与命令行工具",
+    "target_users": "需要交互式行编辑的 Python CLI 应用开发者（命令行工具、交互式 Shell、调试器、IPython/IPython Notebook 等）"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.md"
+    ],
+    "evidence": "LICENSE.md 文本为标准的 BSD 3-Clause 条款（含禁止背书条款第三条），pyproject.toml 声明 license.text='BSD'，源码文件头部有 BSD 版权声明。",
+    "notes": "宽松许可；需保留版权声明与免责声明。pyproject.toml 仅记为 BSD，实际条款含第三条不背书禁令，对应 SPDX 标识符 BSD-3-Clause。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "pyreadline3 为零依赖（zero-dependency）纯 Python 库。pyproject.toml 声明 dependencies=[]，仅依赖 Python 标准库（ctypes、os、sys、socket、re、glob、time 等），对 Python>=3.8 解释器无额外三方包要求。开发依赖（build/flake8/mypy/pytest/twine）仅用于测试与构建，不列入运行时依赖。"
+  },
+  "native_api": {
+    "summary": "Windows 专有实现：基于 Python ctypes 直接调用 Win32 KERNEL32/USER32 控制台与剪贴板 API；同时包含 IronPython 备选实现。不使用 Linux/macOS 平台 API，无可移植性覆盖。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ctypes",
+            "purpose": "作为 FFI 桥梁，调用 kernel32.dll / user32.dll 中的 Win32 函数，是核心实现机制",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:33"
+            ]
+          },
+          {
+            "name": "ctypes.windll",
+            "purpose": "加载 Windows 用户与内核 DLL（kernel32/user32），获取控制台与剪贴板 API 函数指针",
+            "count": 3,
+            "evidence": [
+              "src/pyreadline3/console/console.py:641",
+              "src/pyreadline3/clipboard/win32_clipboard.py:47",
+              "src/pyreadline3/keysyms/keysyms.py:12"
+            ]
+          },
+          {
+            "name": "ctypes.Structure",
+            "purpose": "定义 Win32 结构体映射（COORD、SMALL_RECT、CONSOLE_SCREEN_BUFFER_INFO、KEY_EVENT_RECORD 等）",
+            "count": 7,
+            "evidence": [
+              "src/pyreadline3/console/console.py:73"
+            ]
+          },
+          {
+            "name": "os.environ",
+            "purpose": "检测 EMACS 环境变量以切换控制台行为",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:413"
+            ]
+          },
+          {
+            "name": "os.path.expanduser",
+            "purpose": "展开用户主目录路径（~/.history 历史文件）",
+            "count": 2,
+            "evidence": [
+              "src/pyreadline3/lineeditor/history.py:28",
+              "src/pyreadline3/rlmain.py:292"
+            ]
+          },
+          {
+            "name": "sys.platform",
+            "purpose": "运行时判断操作系统平台（仅限 Windows 的 assert 检查）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/__init__.py:26"
+            ]
+          },
+          {
+            "name": "sys.version",
+            "purpose": "检测 IronPython 运行时以选择 .NET 控制台实现",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/py3k_compat.py:5"
+            ]
+          },
+          {
+            "name": "platform.system",
+            "purpose": "确认平台为 Windows，非 Windows 则拒绝运行",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/__init__.py:12"
+            ]
+          },
+          {
+            "name": "socket",
+            "purpose": "日志模块中用于创建 UDP socket 发送调试日志（可选）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/logger/socket_stream.py:23"
+            ]
+          },
+          {
+            "name": "importlib.metadata.version",
+            "purpose": "从包元数据获取版本号",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/__init__.py:13"
+            ]
+          },
+          {
+            "name": "glob.glob",
+            "purpose": "文件匹配操作（用于文件系统相关自动补全）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/modes/basemode.py:12"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "win32_console",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "GetStdHandle",
+            "purpose": "获取标准输入/输出句柄（STD_INPUT_HANDLE / STD_OUTPUT_HANDLE），控制台 I/O 的入口",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:50"
+            ]
+          },
+          {
+            "name": "SetConsoleMode",
+            "purpose": "设置控制台输入模式（禁用行缓冲、启用窗口/鼠标事件）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:226"
+            ]
+          },
+          {
+            "name": "GetConsoleMode",
+            "purpose": "获取当前控制台模式以支持后续恢复",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:225"
+            ]
+          },
+          {
+            "name": "ReadConsoleInputW",
+            "purpose": "读取控制台输入事件（键盘/鼠标/窗口变化），是核心按键读取机制",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:544"
+            ]
+          },
+          {
+            "name": "PeekConsoleInputW",
+            "purpose": "检查控制台输入队列是否有待处理事件",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:589"
+            ]
+          },
+          {
+            "name": "GetNumberOfConsoleInputEvents",
+            "purpose": "查询控制台输入事件数量",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:542"
+            ]
+          },
+          {
+            "name": "WriteConsoleW",
+            "purpose": "向控制台输出缓冲区写入宽字符串",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:388"
+            ]
+          },
+          {
+            "name": "WriteConsoleOutputCharacterW",
+            "purpose": "在指定坐标写字符到控制台输出缓冲区",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:467"
+            ]
+          },
+          {
+            "name": "SetConsoleCursorPosition",
+            "purpose": "设置控制台光标位置",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:288"
+            ]
+          },
+          {
+            "name": "SetConsoleCursorInfo",
+            "purpose": "设置光标可见性与大小",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:628"
+            ]
+          },
+          {
+            "name": "GetConsoleCursorInfo",
+            "purpose": "获取当前光标状态",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:623"
+            ]
+          },
+          {
+            "name": "GetConsoleScreenBufferInfo",
+            "purpose": "获取控制台屏幕缓冲区信息（窗口尺寸/位置等）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:228"
+            ]
+          },
+          {
+            "name": "SetConsoleTextAttribute",
+            "purpose": "设置后续输出的文字颜色属性",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:386"
+            ]
+          },
+          {
+            "name": "FillConsoleOutputAttribute",
+            "purpose": "填充控制台区域的属性（颜色）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:451"
+            ]
+          },
+          {
+            "name": "FillConsoleOutputCharacterW",
+            "purpose": "填充控制台区域的字符",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:454"
+            ]
+          },
+          {
+            "name": "ScrollConsoleScreenBufferW",
+            "purpose": "滚动控制台屏幕缓冲区内容",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:502"
+            ]
+          },
+          {
+            "name": "SetConsoleWindowInfo",
+            "purpose": "设置控制台窗口信息",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:529"
+            ]
+          },
+          {
+            "name": "CreateConsoleScreenBuffer",
+            "purpose": "创建新控制台屏幕缓冲区（newbuffer 模式）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:216"
+            ]
+          },
+          {
+            "name": "SetConsoleActiveScreenBuffer",
+            "purpose": "激活控制台屏幕缓冲区",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:218"
+            ]
+          },
+          {
+            "name": "VkKeyScanA (user32)",
+            "purpose": "将字符映射为虚拟键码与修饰符",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/keysyms/keysyms.py:20"
+            ]
+          },
+          {
+            "name": "WriteFile",
+            "purpose": "EMACS 模式下的原始写文件操作（绕过控制台颜色处理）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:418"
+            ]
+          },
+          {
+            "name": "AllocConsole",
+            "purpose": "分配控制台（pythonw 等无控制台进程场景）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:213"
+            ]
+          },
+          {
+            "name": "FreeConsole",
+            "purpose": "释放控制台（清理时的逆操作）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:256"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "win32_clipboard",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "OpenClipboard",
+            "purpose": "打开系统剪贴板供读取/写入",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/clipboard/win32_clipboard.py:56"
+            ]
+          },
+          {
+            "name": "GetClipboardData",
+            "purpose": "读取剪贴板 Unicode 文本数据（CF_UNICODETEXT）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/clipboard/win32_clipboard.py:62"
+            ]
+          },
+          {
+            "name": "SetClipboardData",
+            "purpose": "将文本写入系统剪贴板",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/clipboard/win32_clipboard.py:69"
+            ]
+          },
+          {
+            "name": "EmptyClipboard",
+            "purpose": "清空剪贴板内容",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/clipboard/win32_clipboard.py:60"
+            ]
+          },
+          {
+            "name": "CloseClipboard",
+            "purpose": "关闭剪贴板（释放锁）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/clipboard/win32_clipboard.py:76"
+            ]
+          },
+          {
+            "name": "GlobalAlloc",
+            "purpose": "分配全局内存块（HGLOBAL，供 SetClipboardData 使用的数据缓冲区）",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/clipboard/win32_clipboard.py:80"
+            ]
+          },
+          {
+            "name": "GlobalLock",
+            "purpose": "锁定全局内存块以获取可写指针",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/clipboard/win32_clipboard.py:83"
+            ]
+          },
+          {
+            "name": "GlobalUnlock",
+            "purpose": "解锁全局内存块",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/clipboard/win32_clipboard.py:86"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "python_ffi",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ctypes.CDLL / windll.kernel32 / windll.user32",
+            "purpose": "动态加载 Windows 系统 DLL 并暴露其 C 函数供 Python 调用",
+            "count": 1,
+            "evidence": [
+              "src/pyreadline3/console/console.py:641"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "kernel32.dll",
+        "mechanism": "ctypes (windll.kernel32)",
+        "acquisition": "system",
+        "source": "Windows 操作系统核心 DLL，提供控制台 I/O 函数（GetStdHandle、ReadConsoleInputW、WriteConsoleW 等）",
+        "description": "Windows 系统 DLL，提供控制台读写、缓冲区管理、字色控制与全局内存分配等 Win32 API",
+        "optional": false,
+        "evidence": [
+          "src/pyreadline3/console/console.py:641"
+        ]
+      },
+      {
+        "name": "user32.dll",
+        "mechanism": "ctypes (windll.user32)",
+        "acquisition": "system",
+        "source": "Windows 操作系统用户界面 DLL，提供键盘映射（VkKeyScanA）与剪贴板操作函数",
+        "description": "Windows 系统 DLL，提供键盘虚拟键映射与系统剪贴板操作（OpenClipboard/GetClipboardData/SetClipboardData 等）",
+        "optional": false,
+        "evidence": [
+          "src/pyreadline3/console/console.py:641",
+          "src/pyreadline3/clipboard/win32_clipboard.py:47"
+        ]
+      }
+    ],
+    "platform_dependence": "windows-only"
+  },
+  "runtime_surface": {
+    "summary": "仅访问本地文件系统（历史文件、配置文件），无网络监听/连接，无外部服务依赖。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "~/.history 文件，用于持久化命令行历史记录",
+        "purpose": "保存和读取用户命令历史",
+        "evidence": [
+          "src/pyreadline3/lineeditor/history.py:28"
+        ]
+      },
+      {
+        "detail": "~/pyreadlineconfig.ini 配置文件",
+        "purpose": "读取用户自定义的按键绑定和模式配置",
+        "evidence": [
+          "src/pyreadline3/rlmain.py:292",
+          "src/pyreadline3/configuration/startup.py"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "EMACS",
+        "purpose": "检测运行时是否在 Emacs 终端中，以切换到适合 Emacs 的控制台输出模式",
+        "evidence": [
+          "src/pyreadline3/console/console.py:413"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.8",
+    "runtime_version": "Python >= 3.8（声明 requires-python = \">=3.8\"）",
+    "build_system": "setuptools（pyproject.toml 声明 setuptools + setuptools-scm 构建）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "Windows",
+        "arch": "x86_64 / x86 / ARM64",
+        "evidence": [
+          "pyproject.toml 声明仅 Windows 平台（内含 IronPython 备选分支）",
+          "src/pyreadline3/__init__.py:28-29 运行时检查仅 Windows 可运行"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "PyPI wheel（纯 Python，无原生扩展，`pip install pyreadline3` 直接安装）。无捆绑运行时需求。",
+    "notes": "声明仅支持 Windows（系统依赖 Win32 kernel32/user32）。实际有 IronPython 备选实现通过 .NET CLR 访问控制台，但仍仅 Windows。不支持 Linux/macOS 的 X11/Wayland/termios 等。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；原 Win32 console/clipboard API 需替换为鸿蒙终端 API）",
+    "porting_class": "needs_adaptation",
+    "effort": {
+      "person_days": [
+        5,
+        12
+      ],
+      "breakdown": [
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            4,
+            8
+          ],
+          "basis": "替换 console.py 中约 906 行 Win32 控制台 I/O 调用（GetStdHandle/ReadConsoleInputW/WriteConsoleW/SetConsoleMode 等约 18 个 kernel32 API）为鸿蒙终端 API / POSIX termios；替换 clipboard/win32_clipboard.py 中约 156 行 Win32 剪贴板 API 为鸿蒙剪贴板能力。I/O 路径改造涉及约 1.1k 行核心逻辑的 API 替换和调试。"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            1,
+            4
+          ],
+          "basis": "在鸿蒙 PC 的 Python 3.12 上运行 pytest 测试套件（约 167 个测试用例），尤其需要验证终端输入输出在鸿蒙终端的表现（包括 Emacs/Vi 模式按键绑定和 Ctrl 组合键映射差异）。"
+        }
+      ],
+      "level": "medium"
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python_runtime",
+        "capability": "Python 3.12 运行时在鸿蒙 PC 已移植可用",
+        "capability_key": "python",
+        "required": true,
+        "target_status": "available",
+        "impact": "纯 Python 代码可直接在鸿蒙 Python 上运行；唯一需要改造的是 ctypes 调用的 Win32 API 通路",
+        "source": "references/harmony-pc-capabilities.json #runtimes.python",
+        "target_status_model": "available"
+      },
+      {
+        "id": "ta:posix_terminal",
+        "capability": "鸿蒙 PC 终端对 POSIX termios raw-mode 控制台交互的支持程度",
+        "capability_key": "terminal_tty",
+        "required": true,
+        "target_status": "partial",
+        "impact": "替换 Win32 console API 后，需要鸿蒙终端支持非行缓冲的逐个按键读取（raw input mode），目前鸿蒙 termios 基本好用但部分功能受限",
+        "source": "references/harmony-pc-capabilities.json #native_ndk.terminal_tty",
+        "target_status_model": "partial"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [],
+    "summary": "pyreadline3 为纯 Python 库（约 7.5k 行），鸿蒙 PC 已有 Python 3.12 运行时，代码可直接运行。核心适配工作在于：库的整个 I/O 通路基于 ctypes 直接调用 Win32 控制台 API（GetStdHandle / ReadConsoleInputW / WriteConsoleW / SetConsoleMode 等约 18 个 kernel32/user32 函数）和 Win32 剪贴板 API（OpenClipboard / GetClipboardData / SetClipboardData 等），这些 API 在鸿蒙 PC 上不存在。适配需将 console.py 和 clipboard/win32_clipboard.py 的 Win32 调用替换为鸿蒙终端 API（@ohos 或 POSIX termios），约 1.1k 行核心逻辑需要改造。其余算法逻辑（按键绑定、历史管理、自动补全、编辑模式）均可直接复用。功能上不存在无法适配的硬阻——终端 raw input 和剪贴板在鸿蒙平台均有等价能力，只是 API 不同。",
+    "blockers": [
+      {
+        "id": "bk:win32_console",
+        "issue": "Win32 控制台 I/O 通路（console.py 约 18 个 kernel32 API：GetStdHandle / ReadConsoleInputW / WriteConsoleW / SetConsoleMode / PeekConsoleInputW / GetConsoleScreenBufferInfo / ScrollConsoleScreenBufferW 等）在鸿蒙 PC 不存在",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "remediation_status": "replace_with_ohos",
+        "remediation": "用 POSIX termios raw-mode 替换控制台输入（tcgetattr/tcsetattr + read），兼容按键扫描码差异；用标准 write/print 替代 WriteConsoleW；颜色使用 ANSI 控制序列（鸿蒙终端预期支持）；SetConsoleMode 等控制台模式配置去掉（鸿蒙终端默认支持 UTF-8/raw 模式）。脚本/自动补全接口不变。",
+        "evidence": [
+          "src/pyreadline3/console/console.py:33-258"
+        ]
+      },
+      {
+        "id": "bk:win32_clipboard",
+        "issue": "Win32 剪贴板 API（OpenClipboard / GetClipboardData / SetClipboardData / EmptyClipboard / CloseClipboard / GlobalAlloc / GlobalLock / GlobalUnlock）在鸿蒙 PC 不存在",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "remediation_status": "replace_with_ohos",
+        "remediation": "用鸿蒙剪贴板能力（或 open source clipboard 库如 pyperclip）替代 Win32 剪贴板调用；clipboard.py 模块封装良好，替换接口即可。若无鸿蒙剪贴板 API，可降级为仅内存内部粘贴（非核心功能）。",
+        "evidence": [
+          "src/pyreadline3/clipboard/win32_clipboard.py:56-91"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "行编辑逻辑（光标移动、插入/删除、选区、自动换行）",
+        "note": "纯 Python 算法与状态机，鸿蒙 Python 3.12 可直接跑",
+        "evidence": [
+          "src/pyreadline3/lineeditor/lineobj.py"
+        ]
+      },
+      {
+        "aspect": "命令历史管理（~/.history 持久化）",
+        "note": "标准文件 I/O，跨平台无需改动",
+        "evidence": [
+          "src/pyreadline3/lineeditor/history.py"
+        ]
+      },
+      {
+        "aspect": "自动补全框架（completer / completer_delims）",
+        "note": "接口与逻辑完全兼容，与 Python rlcompleter 配合不受影响",
+        "evidence": [
+          "src/pyreadline3/rlmain.py"
+        ]
+      },
+      {
+        "aspect": "Emacs / Vi 按键映射引擎",
+        "note": "按键绑定解析与状态机不涉及平台 API，可直接复用",
+        "evidence": [
+          "src/pyreadline3/modes/emacs.py",
+          "src/pyreadline3/modes/vi.py"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "用 POSIX termios raw-mode 替换 console.py 的 Win32 控制台输入层（ReadConsoleInputW → tcgetattr/tcsetattr + raw read 循环）",
+      "用标准 ANSI 控制序列 + stdout write 替换 Win32 控制台输出层（WriteConsoleW / FillConsoleOutputAttribute）",
+      "用鸿蒙剪贴板 API 或 pyperclip 替换 clipboard/win32_clipboard.py 的 Win32 剪贴板调用",
+      "适配输入扫描码映射（Ctrl/S-键组合等在不同终端的表示差异需逐键验证）",
+      "在鸿蒙 PC Python 3.12 上跑通 pytest 测试套件（167 个测试用例），关注终端 I/O 相关测试"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。库本身为零依赖纯 Python，适配集中在 Win32 API 替换；功能等价均可实现（POSIX termios 替代控制台 raw input、ANSI 序列替代颜色输出、系统剪贴板用鸿蒙能力），无无法适配的硬阻。confidence=medium 因鸿蒙终端 termios 支持尚在验证中（terminal_tty 状态 partial）。",
+    "porting_class_model": "needs_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "viable_with_work",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "pyreadline3",
+    "kind": "library",
+    "package_name": "pyreadline3",
+    "aliases": [
+      "pyreadline"
+    ],
+    "import_names": [
+      "readline",
+      "pyreadline3"
+    ],
+    "source_url": "https://github.com/pyreadline3/pyreadline3",
+    "commit": null,
+    "one_liner": "Python 实现的 GNU readline 终端行编辑功能，专为 Windows 设计，基于 ctypes 调用 Win32 控制台 API",
+    "ecosystem": "python",
+    "bindings": [],
+    "analyzed_at": "2026-07-13T20:51:41Z"
+  },
+  "meta": {
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "categories",
+        "kind": "classification",
+        "value": "控制台I/O控制",
+        "rationale": "库的核心差异是平台控制台 API 层：Win32 console 和 IronPython .NET console，非标准跨平台终端库，需整体评估可移植性而非仅按功能分类。"
+      },
+      {
+        "dimension": "native_api",
+        "field": "platform_dependence",
+        "kind": "classification",
+        "value": "windows-only",
+        "rationale": "整个库 I/O 通道依赖 Win32 kernel32/user32 API，无可移植抽象层，IronPython 路径也仅 Windows .NET。"
+      },
+      {
+        "dimension": "code_partition",
+        "field": "needs_adaptation",
+        "kind": "gap",
+        "value": "console.py 和 clipboard/win32_clipboard.py 约 1.1k 行 Win32 调用代码在 reuse_direct 桶中",
+        "rationale": "从代码语言角度是 Python（直接复用），但从功能角度依赖 Win32 API 不在鸿蒙存在。dim-9 以 unadaptable_apis 记录需替换的 Win32 API 调用，code_partition 仅按语言分桶——适配工作量体现在 dim-9 blocker 而非分桶。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "medium",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯终端/命令行库，不涉及任何桌面 GUI 框架、3D 渲染、音视频媒体或特定硬件。所有功能通过 Windows 控制台 API 实现文字终端的行编辑交互。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "不涉及任何云端服务。pyreadline3 是纯本地终端行编辑库，仅通过 Win32 控制台 API 与本地系统交互，无需网络连接、无远程服务依赖、无云厂商 SDK。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "纯 Python 代码（约 7.5k 行），全部可直接复用（reuse_direct），但底层依赖 Win32 控制台 API 使得整个库功能上无法在非 Windows 环境运行——代码自身可直接运行，但功能通路需要从 Win32 console API 整体改写为鸿蒙终端 API。分区按代码层/功能模块视角：Python 层代码全部可复用，适配集中在 Win32 API 调用点的替换。",
+    "coverage": {
+      "production_code": 7492,
+      "partitioned_code": 7492,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 7492,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "src/pyreadline3",
+            "loc": 7027,
+            "reason": "纯 Python 逻辑层（行编辑算法、按键绑定、历史管理、自动补全）。代码语法在鸿蒙 Python 3.12 可直接运行，但功能上依赖下层 ctypes 调用的 Win32 API（console/console.py、clipboard/win32_clipboard.py），该适配点单列。",
+            "evidence": []
+          },
+          {
+            "path": "scripts/py",
+            "loc": 177,
+            "reason": "辅助/调试脚本（tk_gui.py / log_server.py / callback_example.py），非核心功能，展示性。tk_gui.py 依赖 tkinter 作为 GUI 示例，不计入核心库评估。",
+            "evidence": []
+          },
+          {
+            "path": "doc/source",
+            "loc": 140,
+            "reason": "文档源码，非生产代码。",
+            "evidence": []
+          },
+          {
+            "path": "src",
+            "loc": 77,
+            "reason": "readline.py 兼容垫片，纯 Python，直接复用。",
+            "evidence": []
+          },
+          {
+            "path": "doc",
+            "loc": 71,
+            "reason": "文档，非生产代码。",
+            "evidence": []
+          }
+        ],
+        "basis": "全部代码为 Python 语言，鸿蒙 PC 已有 Python 3.12 运行时，语法可直接运行。适配集中在 Win32 API 调用点的功能等价替换——见 ua:win32_console 与 ua:win32_clipboard（在 dim-9 登记），不影响代码分桶。"
+      }
+    ],
+    "notes": "整个库为纯 Python（约 7.5k 行），没有 C 或 Rust 原生代码。按代码语言全部归 reuse_direct；但库的 Windows 专有属性由 Win32 console/clipboard API 深度绑定造成（src/pyreadline3/console/console.py 约 906 行含 ctypes+Win32 调用、src/pyreadline3/clipboard/win32_clipboard.py 约 156 行也全为 Win32），适配工作量体现在 dim-9 的 API 替换而非法分区。scripts/py/tk_gui.py（tkinter GUI 示例）不计入核心库评估。"
+  }
+}

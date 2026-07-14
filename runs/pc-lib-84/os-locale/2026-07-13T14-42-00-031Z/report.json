@@ -1,0 +1,413 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript",
+      "TypeScript"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 3,
+        "code": 67,
+        "pct": 82.72,
+        "production": {
+          "files": 3,
+          "code": 67
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "TypeScript",
+        "files": 2,
+        "code": 14,
+        "pct": 17.28,
+        "production": {
+          "files": 2,
+          "code": 14
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 5,
+      "code": 81,
+      "comment": 0,
+      "blank": 29,
+      "total_lines": 110
+    },
+    "production": {
+      "files": 5,
+      "code": 81,
+      "comment": 0,
+      "blank": 29,
+      "total_lines": 110
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 81,
+        "category": "production",
+        "by_category": {
+          "production": 81
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 5,
+        "code": 81
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "os-locale 是一个轻量级 Node.js 工具库，用于获取操作系统的区域设置（locale）。它按优先级读取 POSIX 环境变量 LC_ALL、LC_MESSAGES、LANG、LANGUAGE，并规范化格式（替换下划线为短横线、去除字符编码后缀与修饰符后缀）；若环境变量均未设置，则回退到 Intl.DateTimeFormat API 获取浏览器/运行时默认区域。主要用于需要本地化消息输出的 CLI 工具。",
+    "categories": [
+      {
+        "name": "环境变量读取与标准化",
+        "description": "按 POSIX 约定优先级读取系统区域设置相关环境变量（LC_ALL > LC_MESSAGES > LANG > LANGUAGE），并对值做规范化处理——去掉编码后缀（如 .UTF-8）、修饰符后缀（如 @euro）、将 POSIX 下划线格式转为 BCP 47 连字符格式。",
+        "evidence": [
+          "index.js:2-6"
+        ]
+      },
+      {
+        "name": "Intl API 兜底回退",
+        "description": "当所有区域环境变量均未设置时，通过 Intl.DateTimeFormat().resolvedOptions().locale 获取运行时默认区域设置作为最终兜底。",
+        "evidence": [
+          "index.js:8"
+        ]
+      }
+    ],
+    "domain": "国际化/本地化支持",
+    "target_users": "需要获取系统当前区域设置的 Node.js CLI 工具和应用开发者",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "license"
+    ],
+    "evidence": "license 文件包含标准 MIT License 全文，版权标注 Sindre Sorhus；package.json 中 license 字段为 'MIT'。",
+    "notes": "宽松许可，仅需保留版权声明和许可声明。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "零生产依赖。devDependencies (ava、tsd、xo) 仅为测试与代码检查工具，不计入运行时依赖。"
+  },
+  "native_api": {
+    "summary": "纯 JavaScript 实现，无原生绑定或平台特定系统调用。仅使用 Node.js core 的 process.env 读取环境变量与 ECMAScript Intl API 作为区域设置源。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "process.env",
+            "purpose": "读取操作系统环境变量(LOCALE 相关：LC_ALL/LC_MESSAGES/LANG/LANGUAGE)",
+            "count": 1,
+            "evidence": [
+              "index.js:1-2"
+            ]
+          },
+          {
+            "name": "globalThis.process",
+            "purpose": "跨环境安全访问 Node.js process 对象（可选链，允许浏览器环境返回 undefined）",
+            "count": 1,
+            "evidence": [
+              "index.js:1"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ecmascript_intl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Intl.DateTimeFormat().resolvedOptions().locale",
+            "purpose": "获取运行时默认区域设置（BCP 47 格式），作为环境变量均未设置时的兜底方案",
+            "count": 1,
+            "evidence": [
+              "index.js:8"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ecmascript_string",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "String.prototype.replace",
+            "purpose": "规范化 locale 字符串——去除编码后缀、修饰符后缀、替换下划线为短横线",
+            "count": 3,
+            "evidence": [
+              "index.js:5"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "仅通过 Node.js 的 process.env 读取环境变量；无网络、文件系统或子进程访问。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [
+      {
+        "name": "LC_ALL",
+        "purpose": "POSIX 区域设置最高优先级环境变量",
+        "evidence": [
+          "index.js:2"
+        ]
+      },
+      {
+        "name": "LC_MESSAGES",
+        "purpose": "POSIX 消息类别区域设置（第二优先级）",
+        "evidence": [
+          "index.js:2"
+        ]
+      },
+      {
+        "name": "LANG",
+        "purpose": "POSIX 默认区域设置（第三优先级）",
+        "evidence": [
+          "index.js:2"
+        ]
+      },
+      {
+        "name": "LANGUAGE",
+        "purpose": "GNU gettext 区域设置（第四优先级，最低）",
+        "evidence": [
+          "index.js:2"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "ES2022 (Node.js ESM)",
+    "runtime_version": "Node.js >= 20",
+    "build_system": "npm",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "*",
+        "evidence": [
+          "package.json engines 仅要求 Node >= 20，无平台限定"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "*",
+        "evidence": [
+          "package.json engines 仅要求 Node >= 20，无平台限定"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "*",
+        "evidence": [
+          "package.json engines 仅要求 Node >= 20，无平台限定"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "纯 JavaScript ESM 模块，无原生扩展或编译依赖；Node.js >= 20 即可，无 OS/arch 限制。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Node.js 24.13.0 运行时上；纯 JS，无原生扩展；arm64/x86_64；自研内核, 无 Linux ABI)",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "breakdown": [
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0,
+            1
+          ],
+          "basis": "在鸿蒙 Node.js 上跑通单元测试（纯 JS 无原生依赖，仅验证环境变量读取与 Intl 行为一致即可）"
+        }
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "os-locale 为纯 JavaScript Node.js 模块，零生产依赖、零原生扩展、零平台特定系统调用，仅读取 process.env 环境变量与调用标准 ECMAScript Intl API。鸿蒙 PC 已移植 Node.js 24.13.0 运行时，该模块可直接运行，无需任何源码修改或适配工作。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [],
+    "compatible": [
+      {
+        "aspect": "全部代码（环境变量读取 + Intl API 调用）",
+        "note": "纯 JS，Node.js 24 在鸿蒙 PC 已移植，所有 API 均标准可用，零修改运行",
+        "evidence": [
+          "index.js:1-8"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC Node.js 上运行 npm test 验证环境变量读取与 locale 格式化行为一致"
+    ],
+    "required_permissions": [],
+    "notes": "按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）评估。该模块无网络/文件/子进程操作，无需申请任何鸿蒙权限。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "os-locale",
+    "one_liner": "获取操作系统区域设置（locale）的 Node.js 工具模块，读取 LC_ALL/LC_MESSAGES/LANG/LANGUAGE 环境变量并回退到浏览器 Intl API。",
+    "kind": "library",
+    "ecosystem": "nodejs",
+    "package_name": "os-locale",
+    "bindings": [],
+    "source_url": "https://github.com/sindresorhus/os-locale.git",
+    "analyzed_at": "2026-07-13T16:13:16Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯 JavaScript 工具模块，不涉及 GUI、3D 渲染、媒体处理或特定硬件。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "纯本地工具模块，不依赖任何云端服务。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 81 行生产代码为纯 JavaScript，可直接在鸿蒙 Node.js 上复用，无需任何修改。",
+    "coverage": {
+      "production_code": 81,
+      "partitioned_code": 81,
+      "pct": 100
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 81,
+        "pct": 100,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 81,
+            "reason": "纯 JavaScript 代码，仅使用 process.env 和 Intl API，在已移植的鸿蒙 Node.js 上直接运行无需改动",
+            "evidence": []
+          }
+        ],
+        "basis": "代码仅使用 Node.js 标准库 (process.env) 与标准 ECMAScript Intl API，无原生扩展，无平台/系统调用"
+      }
+    ],
+    "notes": "全部生产代码可零改动在鸿蒙 Node.js 上运行。零原生扩展、零平台特定 API、零 C 依赖。"
+  }
+}

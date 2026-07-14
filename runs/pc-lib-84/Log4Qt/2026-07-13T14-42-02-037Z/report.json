@@ -1,0 +1,922 @@
+{
+  "languages": {
+    "primary": "C++",
+    "all": [
+      "C++",
+      "C/C++ Header"
+    ],
+    "breakdown": [
+      {
+        "language": "C++",
+        "files": 89,
+        "code": 17024,
+        "pct": 65.32,
+        "production": {
+          "files": 69,
+          "code": 9627
+        },
+        "test": {
+          "files": 12,
+          "code": 6837
+        },
+        "example": {
+          "files": 8,
+          "code": 560
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 83,
+        "code": 9039,
+        "pct": 34.68,
+        "production": {
+          "files": 74,
+          "code": 8594
+        },
+        "test": {
+          "files": 3,
+          "code": 243
+        },
+        "example": {
+          "files": 6,
+          "code": 202
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 172,
+      "code": 26063,
+      "comment": 0,
+      "blank": 4613,
+      "total_lines": 30676
+    },
+    "production": {
+      "files": 143,
+      "code": 18221,
+      "comment": 0,
+      "blank": 3069,
+      "total_lines": 21290
+    },
+    "test": {
+      "files": 15,
+      "code": 7080,
+      "comment": 0,
+      "blank": 1400,
+      "total_lines": 8480
+    },
+    "example": {
+      "files": 14,
+      "code": 762,
+      "comment": 0,
+      "blank": 144,
+      "total_lines": 906
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 18221,
+        "category": "production",
+        "by_category": {
+          "production": 18221
+        }
+      },
+      {
+        "dir": "tests",
+        "code": 7080,
+        "category": "test",
+        "by_category": {
+          "test": 7080
+        }
+      },
+      {
+        "dir": "examples",
+        "code": 762,
+        "category": "example",
+        "by_category": {
+          "example": 762
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tests"
+      ],
+      "example": [
+        "examples"
+      ]
+    },
+    "dir_loc": [
+      {
+        "dir": "src/log4qt",
+        "files": 143,
+        "code": 18221
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 1,
+          "code": 1,
+          "macros": [
+            "_MSC_VER"
+          ]
+        }
+      },
+      "total": 1,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 15,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {
+      "C++": {
+        "files": 12,
+        "cases": 0
+      },
+      "C/C++ Header": {
+        "files": 3,
+        "cases": 0
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "Log4Qt 是 Apache Log4j 日志框架的 C++ 移植版本，基于 Qt 6.5+ 构建。它将 Log4j 的分层日志模型（Logger/Hierarchy/Appender/Layout/Filter）完整移植到 C++/Qt 生态，支持日志级别过滤、多输出端（控制台、文件、滚动文件、数据库、Telnet、系统日志）、灵活的输出格式（Pattern/TTCC/XML/JSON）以及插件化组件注册。新增 Log4j2 风格的滚动策略架构（触发策略 + 滚动策略解耦），支持 Properties/JSON/XML 三种配置文件格式，适合需要结构化日志的 Qt 桌面或服务端应用。",
+    "categories": [
+      {
+        "name": "分层日志模型",
+        "description": "Logger/Hierarchy 树形日志器继承 Log4j 的命名层次模型，支持级别继承、可加性（additivity）和运行时重新配置。",
+        "evidence": [
+          "src/log4qt/logger.h",
+          "src/log4qt/hierarchy.h",
+          "src/log4qt/logmanager.h"
+        ]
+      },
+      {
+        "name": "多输出端（Appender）",
+        "description": "内置 ConsoleAppender、FileAppender、RollingFileAppender、DailyRollingFileAppender、DatabaseAppender、TelnetAppender、SystemLogAppender、AsyncAppender 等，输出端可通过配置文件或代码灵活组合。",
+        "evidence": [
+          "src/log4qt/consoleappender.h",
+          "src/log4qt/fileappender.h",
+          "src/log4qt/rollingfileappender.h",
+          "src/log4qt/databaseappender.h",
+          "src/log4qt/telnetappender.h",
+          "src/log4qt/systemlogappender.h",
+          "src/log4qt/asyncappender.h"
+        ]
+      },
+      {
+        "name": "可配置布局格式（Layout）",
+        "description": "支持 PatternLayout（自定义转换模式）、TTCCLayout（时间/线程/类/上下文）、SimpleLayout、SimpleTimeLayout、XMLLayout、JsonLayout（NDJSON）等多种输出格式。",
+        "evidence": [
+          "src/log4qt/patternlayout.h",
+          "src/log4qt/ttcclayout.h",
+          "src/log4qt/xmllayout.h",
+          "src/log4qt/jsonlayout.h"
+        ]
+      },
+      {
+        "name": "多格式配置",
+        "description": "支持 Properties（Java风格）、JSON 和 XML 三种配置文件格式，均映射到同一套平铺键值模型由 PropertyConfigurator 统一处理。",
+        "evidence": [
+          "src/log4qt/propertyconfigurator.h",
+          "src/log4qt/jsonconfigurator.h",
+          "src/log4qt/xmlconfigurator.h",
+          "Configuration.md"
+        ]
+      },
+      {
+        "name": "滚动策略框架",
+        "description": "Log4j2 风格的拆解设计：TriggeringPolicy（何时滚动：按大小/按时间/Cron/启动时）与 RolloverStrategy（如何滚动：编号备份/日期命名）解耦，支持多个触发策略 OR 组合，可扩展。",
+        "evidence": [
+          "src/log4qt/rollingfileappender.h",
+          "src/log4qt/helpers/triggeringpolicy.h",
+          "src/log4qt/helpers/rolloverstrategy.h"
+        ]
+      },
+      {
+        "name": "异步日志与过滤",
+        "description": "AsyncAppender 通过有界阻塞队列实现异步日志，支持阻塞/丢弃/同步三种队列满策略；Filter 体系支持级别匹配/范围/字符串过滤。",
+        "evidence": [
+          "src/log4qt/asyncappender.h",
+          "src/log4qt/varia/levelmatchfilter.h",
+          "src/log4qt/varia/levelrangefilter.h"
+        ]
+      }
+    ],
+    "domain": "日志/诊断基础设施",
+    "target_users": "Qt C++ 应用开发者，需要结构化、可配置日志的 Qt 桌面/服务端项目"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件包含完整 Apache-2.0 协议文本；src/log4qt/logger.h 等源文件头部均有 Apache-2.0 协议声明。",
+    "notes": "宽松许可，需保留 NOTICE 与版权声明。"
+  },
+  "dependencies": {
+    "count": 3,
+    "manifests": [
+      "CMakeLists.txt",
+      "cmake/Log4QtConfig.cmake.in"
+    ],
+    "by_ecosystem": {
+      "cpp": [
+        "Qt6"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "Qt6::Core",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">= 6.5",
+        "purpose": "Qt 核心库，提供 QObject/QString/QFile/QIODevice 等基础类",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装 Qt 6.5+)",
+        "declared_in": [
+          "CMakeLists.txt:73"
+        ],
+        "used_symbols": [
+          "QObject",
+          "QString",
+          "QFile",
+          "QIODevice",
+          "QMutex",
+          "QRecursiveMutex",
+          "QSettings",
+          "QDateTime"
+        ]
+      },
+      {
+        "name": "Qt6::Concurrent",
+        "ecosystem": "cpp",
+        "scope": "runtime",
+        "version": ">= 6.5",
+        "purpose": "Qt 并发库，用于 QtConcurrent::run 等异步操作",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装 Qt 6.5+)",
+        "declared_in": [
+          "CMakeLists.txt:81"
+        ]
+      },
+      {
+        "name": "Qt6::Network",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">= 6.5",
+        "purpose": "Qt 网络库，TelnetAppender 需此支持 TCP 服务端",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装 Qt 6.5+)",
+        "declared_in": [
+          "CMakeLists.txt:87"
+        ]
+      },
+      {
+        "name": "Qt6::Sql",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">= 6.5",
+        "purpose": "Qt SQL 库，DatabaseAppender 需此支持数据库日志写入",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装 Qt 6.5+)",
+        "declared_in": [
+          "CMakeLists.txt:84"
+        ]
+      },
+      {
+        "name": "Qt6::Qml",
+        "ecosystem": "cpp",
+        "scope": "optional",
+        "version": ">= 6.5",
+        "purpose": "Qt QML 库，QmlLogger 需此支持从 QML 调用日志",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统(find_package，需预装 Qt 6.5+)",
+        "declared_in": [
+          "CMakeLists.txt:90"
+        ]
+      }
+    ],
+    "notes": "所有依赖均为 Qt 框架组件（系统级依赖，需预装）；无独立第三方库依赖。Qt6::Network、Qt6::Sql、Qt6::Qml 为可选功能（通过 CMake 选项 BUILD_WITH_DB_LOGGING/BUILD_WITH_TELNET_LOGGING/BUILD_WITH_QML_LOGGING 控制），核心功能只需 Qt6::Core 和 Qt6::Concurrent。"
+  },
+  "native_api": {
+    "summary": "重度依赖 Qt 框架的跨平台抽象层；少量 Win32 直接调用（ColorConsoleAppender 的 Windows 控制台颜色/OutputDebugString 与 SystemLogAppender 的事件日志）有条件编译隔离，非 Windows 平台走 Qt 抽象或 POSIX syslog。",
+    "groups": [
+      {
+        "type": "cpp_stl",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "std::atomic<T>",
+            "purpose": "线程安全的原子操作（如 Logger::mLevel）",
+            "count": 5,
+            "evidence": [
+              "src/log4qt/logger.h:443",
+              "src/log4qt/telnetappender.h:171"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "std::source_location",
+            "purpose": "C++20 源码位置捕获（条件启用）",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/logger.h:167"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "std::unique_ptr<T>",
+            "purpose": "独占所有权智能指针",
+            "count": 4,
+            "evidence": [
+              "src/log4qt/fileappender.h:167",
+              "src/log4qt/randomaccessfileappender.h:216"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "windows_console",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "WriteConsoleW",
+            "purpose": "Windows 控制台彩色输出",
+            "count": 2,
+            "evidence": [
+              "src/log4qt/colorconsoleappender.cpp:114",
+              "src/log4qt/colorconsoleappender.cpp:202"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetStdHandle",
+            "purpose": "获取控制台标准输出/错误句柄",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/colorconsoleappender.cpp:266"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetConsoleScreenBufferInfo",
+            "purpose": "获取控制台缓冲信息（保存/恢复颜色）",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/colorconsoleappender.cpp:94"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "SetConsoleTextAttribute",
+            "purpose": "设置控制台文本颜色属性",
+            "count": 2,
+            "evidence": [
+              "src/log4qt/colorconsoleappender.cpp:196",
+              "src/log4qt/colorconsoleappender.cpp:205"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "GetConsoleWindow",
+            "purpose": "检测控制台是否存在（回退到 OutputDebugString）",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/consoleappender.cpp:134"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "OutputDebugString",
+            "purpose": "调试器输出/控制台不可用时回退输出",
+            "count": 2,
+            "evidence": [
+              "src/log4qt/consoleappender.cpp:142",
+              "src/log4qt/colorconsoleappender.cpp:97"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "CloseHandle",
+            "purpose": "关闭控制台句柄",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/colorconsoleappender.cpp:286"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "windows_event_log",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "RegisterEventSource",
+            "purpose": "注册 Windows 事件日志源",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/systemlogappender.cpp:126"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "ReportEvent",
+            "purpose": "写入 Windows 事件日志",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/systemlogappender.cpp:134"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "DeregisterEventSource",
+            "purpose": "注销 Windows 事件日志源",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/systemlogappender.cpp:136"
+            ],
+            "conditional": true
+          }
+        ]
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "openlog",
+            "purpose": "打开 syslog 连接",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/systemlogappender.cpp:156"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "syslog",
+            "purpose": "向 syslog 写入日志消息",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/systemlogappender.cpp:159"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "closelog",
+            "purpose": "关闭 syslog 连接",
+            "count": 1,
+            "evidence": [
+              "src/log4qt/systemlogappender.cpp:160"
+            ],
+            "conditional": true
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "advapi32",
+        "mechanism": "QLibrary::resolve",
+        "optional": false,
+        "acquisition": "system",
+        "source": "Windows 系统库，提供事件日志 API (RegisterEventSource/ReportEvent/DeregisterEventSource)",
+        "description": "Windows 系统 DLL，用于 SystemLogAppender 写入事件日志；在非 Windows 平台条件排除此代码路径。",
+        "evidence": [
+          "src/log4qt/systemlogappender.cpp:52"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行时仅需文件系统读写；无网络、外部进程或特殊设备依赖。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "日志文件写入与配置读取",
+        "purpose": "FileAppender/RollingFileAppender/DailyRollingFileAppender 写入日志文件；PropertyConfigurator 从文件系统读取 Properties/JSON/XML 配置",
+        "evidence": [
+          "src/log4qt/fileappender.cpp",
+          "src/log4qt/propertyconfigurator.cpp:111"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "LOG4QT_CONFIGURATION",
+        "purpose": "指定 Log4Qt 配置文件路径",
+        "evidence": [
+          "src/log4qt/logmanager.cpp:279"
+        ]
+      },
+      {
+        "name": "QT_ASSUME_STDERR_HAS_CONSOLE",
+        "purpose": "Qt 环境变量，控制 stderr 是否视为有控制台",
+        "evidence": [
+          "src/log4qt/consoleappender.cpp:135"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C++20",
+    "runtime_version": "Qt >= 6.5",
+    "build_system": "CMake >= 3.28",
+    "compiler_extensions": [
+      {
+        "detail": "Q_OS_WIN 条件编译宏，隔离 Windows 平台特定代码",
+        "evidence": [
+          "src/log4qt/systemlogappender.cpp:29",
+          "src/log4qt/colorconsoleappender.cpp:51"
+        ]
+      },
+      {
+        "detail": "__cpp_lib_source_location 特性检测宏，条件启用 C++20 源码位置",
+        "evidence": [
+          "src/log4qt/logger.h:166"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/cmake-ubuntu.yml"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/cmake-windows.yml"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/cmake-macos.yml"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "CPack (RPM/DEB for Linux, NSIS installer for Windows)",
+    "notes": "跨三大桌面平台；C++20 要求 MSVC 19.29 / GCC 10 / Clang 10+；Qt 6.5 为最低版本，不再支持 Qt 5。无 ARM 架构 CI 测试。可选依赖通过 CMake 选项控制，可按需裁剪。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Qt 6 框架上；原生 C++ 经 OHOS NDK/musl 重编；arm64/x86_64；自研内核，非 Linux ABI)",
+    "porting_class": "needs_adaptation",
+    "effort": {
+      "person_days": [
+        11.2,
+        14.2
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            5.6,
+            5.6
+          ],
+          "basis": "重编译复用 16900 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            2.6,
+            2.6
+          ],
+          "basis": "需适配 1321 行 ÷ 500 行/天"
+        },
+        {
+          "component": "build_system",
+          "person_days": [
+            1,
+            2
+          ],
+          "basis": "CMake 工程需为 OHOS 平台新增 toolchain 文件配置及条件编译分支。"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            2,
+            4
+          ],
+          "basis": "在鸿蒙 PC Qt 环境上编译运行 15 个测试文件、验证日志输出端在 OHOS 下行为正确。"
+        }
+      ],
+      "level": "medium"
+    },
+    "confidence": "high",
+    "critical_dependencies": [
+      {
+        "name": "Qt6::Core",
+        "order": 1,
+        "why": "框架核心依赖，Qt 6 已在鸿蒙 PC 真机验证可用",
+        "refs": [
+          "bk:qt_deps"
+        ]
+      }
+    ],
+    "summary": "Log4Qt 是 C++ 日志库，完全基于 Qt 6 框架的跨平台抽象。Qt 6 已在鸿蒙 PC 真机验证可用（社区 QPA 插件 libplugins_platforms_qopenharmony.so），核心日志能力可通过 OHOS NDK 交叉编译直接运行。仅有约 1,300 行 Windows 特定代码（控制台彩色输出、事件日志、调试输出）需添加 OHOS 条件编译路径或暂时禁用，工作量可控。无需任何第三方独立 C 库，无网络/硬件/媒体依赖，是一个相对低风险的移植目标。",
+    "blockers": [
+      {
+        "id": "bk:qt_deps",
+        "issue": "依赖 Qt 6 框架在鸿蒙 PC 上可用",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "remediation_status": "available",
+        "remediation": "Qt 6（6.5.6, ohos23）已在鸿蒙 PC 真机验证——QPA 插件可用（NotepadNext/Qt6 已发布），可正常重编。需确保 Qt6::Core 和 Qt6::Concurrent 模块在目标环境就绪。",
+        "evidence": [
+          "references/harmony-pc-capabilities.json#gui.qt"
+        ]
+      },
+      {
+        "id": "bk:win_console",
+        "issue": "Windows 控制台彩色输出（WriteConsoleW/SetConsoleTextAttribute）在鸿蒙不可用",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "platform_api",
+        "source_dimension": "native_api",
+        "remediation_status": "replace_with_ohos",
+        "remediation": "ColorConsoleAppender 的 Win32 彩色控制台路径需替换为 ANSI/VT100 转义序列支持（多数现代终端已支持），或使用 @ohos 终端相关 API。非关键功能，可先以纯文本模式降级。",
+        "evidence": [
+          "src/log4qt/colorconsoleappender.cpp:114",
+          "src/log4qt/colorconsoleappender.cpp:266"
+        ]
+      },
+      {
+        "id": "bk:syslog",
+        "issue": "SystemLogAppender 的 syslog/openlog/closelog 在鸿蒙 musl 环境可能不同",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "remediation_status": "partial",
+        "remediation": "非 Windows 路径使用 POSIX syslog，需验证鸿蒙 musl 是否提供 syslog 接口。若缺失可改用 @ohos.hilog 或文件日志替代。非核心功能。",
+        "evidence": [
+          "src/log4qt/systemlogappender.cpp:156"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "Qt (C/C++ GUI)",
+        "capability_key": "qt",
+        "required": true,
+        "target_status": "available",
+        "impact": "Qt 已就绪则整个库可重编运行",
+        "source": "harmony-pc-capabilities.json#gui.qt",
+        "id": "ta:1",
+        "target_status_model": "available"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "Qt 跨平台抽象层（QObject/QString/QFile/QIODevice/QMutex/QTextStream）",
+        "note": "这些是 Qt 框架的标准抽象，已在鸿蒙 Qt 移植中验证可用",
+        "evidence": []
+      },
+      {
+        "aspect": "Logger/Hierarchy/Level/Appender 核心日志逻辑",
+        "note": "纯数据结构和算法，不依赖任何平台 API，交叉编译即可运行",
+        "evidence": [
+          "src/log4qt/logger.h",
+          "src/log4qt/hierarchy.h"
+        ]
+      },
+      {
+        "aspect": "配置文件解析（Properties/JSON/XML）",
+        "note": "基于 Qt 文件 IO 和文本处理，无平台依赖",
+        "evidence": [
+          "src/log4qt/propertyconfigurator.h",
+          "src/log4qt/jsonconfigurator.h"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "为 OHOS 平台添加 CMake toolchain 配置（ohos.toolchain.cmake）",
+      "为 ColorConsoleAppender 添加 OHOS 条件编译路径（ANSI 转义序列或降级为纯文本）",
+      "验证鸿蒙 musl 的 syslog 接口可用性，缺失则改用文件日志或 hilog",
+      "在鸿蒙 PC Qt 6 环境下编译并运行单元测试验证功能完整"
+    ],
+    "notes": "评估按模型 A（库跑在已移植 Qt 6 框架上）。Qt 6 已在鸿蒙 PC 真机验证可用（社区 QPA 插件），移植风险低。Windows 特定代码均已通过 Q_OS_WIN 条件编译隔离，非 Windows 路径已有 POSIX 实现可参照。整体移植工作量较轻，仅需添加 OHOS 条件分支和 minor 适配。",
+    "porting_class_model": "needs_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "Log4Qt",
+    "one_liner": "基于 Qt 框架的 Apache Log4j C++ 移植日志库，支持多输出端、滚动策略与多格式配置",
+    "kind": "library",
+    "ecosystem": "cpp",
+    "package_name": "Log4Qt",
+    "aliases": [
+      "log4qt",
+      "Log4Qt::Log4Qt"
+    ],
+    "bindings": [],
+    "source_url": "https://github.com/MEONMedical/Log4Qt",
+    "version": "2.0.0",
+    "analyzed_at": "2026-07-13T18:20:25Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [
+      {
+        "dimension": "function_summary",
+        "field": "domain",
+        "kind": "classification",
+        "value": "logging/diagnostics",
+        "rationale": "全库聚焦日志功能，不包含 GUI/图形/网络等外延，归类为日志/诊断基础设施。"
+      },
+      {
+        "dimension": "code_partition",
+        "field": "buckets",
+        "kind": "gap",
+        "value": "单目录工程，按文件分桶而非按目录",
+        "rationale": "Log4Qt 所有代码在 src/log4qt/ 单目录下，无子目录分割，因此 code_partition 按文件粒度分桶而非按目录。"
+      }
+    ],
+    "harmony_warnings_dismissed": [
+      {
+        "code": "cap_miss:gui",
+        "rationale": "Lib4Qt 依赖的 Qt6::Core 是 Qt 基础模块（提供 QObject/QString/QFile 等非 GUI 类），并非 GUI 模块（Qt6::Widgets/Qt6::Gui）。Log4Qt 是纯日志库，不包含任何窗口/控件/渲染功能，标记 GUI 为 present=false 是正确的。validator 的规则将 Qt 依赖名泛化为 GUI 信号属于误判。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "harmony_warnings_reviewed": [
+      {
+        "code": "cap_miss:gui",
+        "message": "依赖/native_api 出现 gui 强信号，但 capability_profile 未标记该场景（可能漏判）",
+        "rationale": "Lib4Qt 依赖的 Qt6::Core 是 Qt 基础模块（提供 QObject/QString/QFile 等非 GUI 类），并非 GUI 模块（Qt6::Widgets/Qt6::Gui）。Log4Qt 是纯日志库，不包含任何窗口/控件/渲染功能，标记 GUI 为 present=false 是正确的。validator 的规则将 Qt 依赖名泛化为 GUI 信号属于误判。"
+      }
+    ],
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯日志库，不涉及 GUI、3D 渲染、媒体或特定硬件。仅依赖 Qt 框架的跨平台日志能力。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "Log4Qt 是本地日志库，不依赖任何云端服务。日志仅写入本地文件/控制台/系统日志/数据库，无网络传输、无远程存储、无第三方云平台集成。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "约 93% 代码可直接重编译复用（基于 Qt 跨平台抽象），约 7% 需为鸿蒙适配调整（Windows 特定代码需加 OHOS 分支或禁用）。全部生产代码 18,221 行。",
+    "coverage": {
+      "production_code": 18221,
+      "partitioned_code": 18221,
+      "pct": 100
+    },
+    "buckets": [
+      {
+        "class": "recompile_reuse",
+        "loc": 16900,
+        "pct": 92.7,
+        "modules": [
+          {
+            "path": "src/log4qt",
+            "loc": 16900,
+            "reason": "核心日志框架代码基于 Qt 跨平台抽象（QObject/QFile/QTextStream/QMutex），通过 OHOS NDK 重编译即可运行。剔除以下需适配的文件后剩余行数。",
+            "evidence": []
+          }
+        ],
+        "basis": "依赖项均为 Qt 框架组件（Qt 6 已在鸿蒙 PC 可用），无独立第三方 C 库。代码主要使用 Qt 跨平台 API，无 POSIX/Win32 专有调用。"
+      },
+      {
+        "class": "needs_adaptation",
+        "loc": 1321,
+        "pct": 7.3,
+        "modules": [
+          {
+            "path": "src/log4qt/colorconsoleappender.cpp",
+            "loc": 293,
+            "reason": "使用 Win32 控制台 API（WriteConsoleW/GetStdHandle/SetConsoleTextAttribute），需添加 OHOS 分支或禁用 Windows 彩色控制台功能。",
+            "evidence": [
+              "src/log4qt/colorconsoleappender.cpp:114",
+              "src/log4qt/colorconsoleappender.cpp:266"
+            ]
+          },
+          {
+            "path": "src/log4qt/consoleappender.cpp",
+            "loc": 150,
+            "reason": "包含 Q_OS_WIN 分支使用 GetConsoleWindow/OutputDebugString，需适配或添加 OHOS 条件编译路径。",
+            "evidence": [
+              "src/log4qt/consoleappender.cpp:134"
+            ]
+          },
+          {
+            "path": "src/log4qt/systemlogappender.cpp",
+            "loc": 182,
+            "reason": "Win32 分支使用 advapi32 事件日志 API，非 Windows 分支用 syslog/openlog/closelog；需评估鸿蒙的日志系统并提供对应实现。",
+            "evidence": [
+              "src/log4qt/systemlogappender.cpp:52",
+              "src/log4qt/systemlogappender.cpp:156"
+            ]
+          },
+          {
+            "path": "src/log4qt/wdcappender.cpp",
+            "loc": 63,
+            "reason": "使用 OutputDebugString（Windows 调试器 API），非 Windows 下为空实现；需评估鸿蒙是否有等价调试输出 API。",
+            "evidence": [
+              "src/log4qt/wdcappender.cpp:26"
+            ]
+          },
+          {
+            "path": "src/log4qt/helpers/factory.cpp",
+            "loc": 633,
+            "reason": "部分条件编译依赖于 Windows/Linux 分支，需在 OHOS 分支补齐对应实现。",
+            "evidence": [
+              "src/log4qt/helpers/factory.cpp:50"
+            ]
+          }
+        ],
+        "basis": "这些文件包含 Q_OS_WIN 条件编译的分支，使用 Win32 API（控制台、事件日志、调试输出），在鸿蒙 PC 上需要添加 OHOS 编译路径或禁用这些平台特有功能。"
+      }
+    ],
+    "notes": "全库代码均在 src/log4qt/ 下（单一目录），按文件粒度分桶。所有需要适配的代码都已通过条件编译隔离（#ifdef Q_OS_WIN），非 Windows 平台有对应的 Unix/POSIX 路径（如 syslog），鸿蒙适配可参照现有非 Windows 路径实现。"
+  }
+}

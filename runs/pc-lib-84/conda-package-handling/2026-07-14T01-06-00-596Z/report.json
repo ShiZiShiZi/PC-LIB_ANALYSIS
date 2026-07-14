@@ -1,0 +1,702 @@
+{
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 22,
+        "code": 1819,
+        "pct": 100.0,
+        "production": {
+          "files": 12,
+          "code": 970
+        },
+        "test": {
+          "files": 10,
+          "code": 849
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 22,
+      "code": 1819,
+      "comment": 0,
+      "blank": 420,
+      "total_lines": 2239
+    },
+    "production": {
+      "files": 12,
+      "code": 970,
+      "comment": 0,
+      "blank": 205,
+      "total_lines": 1175
+    },
+    "test": {
+      "files": 10,
+      "code": 849,
+      "comment": 0,
+      "blank": 215,
+      "total_lines": 1064
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "src",
+        "code": 929,
+        "category": "production",
+        "by_category": {
+          "production": 929
+        }
+      },
+      {
+        "dir": "tests",
+        "code": 849,
+        "category": "test",
+        "by_category": {
+          "test": 849
+        }
+      },
+      {
+        "dir": "docs",
+        "code": 41,
+        "category": "production",
+        "by_category": {
+          "production": 41
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tests"
+      ],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "src/conda_package_handling",
+        "files": 11,
+        "code": 929
+      },
+      {
+        "dir": "docs",
+        "files": 1,
+        "code": 41
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "python": {
+          "files": 1,
+          "hits": 1
+        }
+      },
+      "by_platform": {
+        "windows": 1
+      },
+      "samples": [
+        {
+          "language": "python",
+          "file": "src/conda_package_handling/utils.py",
+          "line": 9,
+          "text": "on_win = sys.platform == \"win32\""
+        }
+      ],
+      "total": 1,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 10,
+    "test_cases": 43,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 10,
+        "cases": 43
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "conda-package-handling 是一个供 conda 与 conda-build 调用的 Python 库，负责创建、提取和在不同格式间转换 conda 软件包。支持传统的 .tar.bz2 格式及新版 Zstandard 压缩的 .conda 格式，并提供命令行工具 cph 供用户直接操作。",
+    "categories": [
+      {
+        "name": "软件包提取",
+        "description": "从 .tar.bz2 和 .conda 格式的 conda 软件包中提取文件到目标目录，支持按组件（info/pkg）选择性提取。",
+        "evidence": [
+          "src/conda_package_handling/api.py:extract()",
+          "src/conda_package_handling/tarball.py:CondaTarBZ2.extract()",
+          "src/conda_package_handling/conda_fmt.py:CondaFormat_v2.extract()"
+        ]
+      },
+      {
+        "name": "软件包创建",
+        "description": "将指定目录中的文件列表打包为 .tar.bz2 或 .conda 格式的 conda 软件包，支持 bzip2 和 Zstandard 压缩。",
+        "evidence": [
+          "src/conda_package_handling/api.py:create()",
+          "src/conda_package_handling/tarball.py:_create_no_libarchive()",
+          "src/conda_package_handling/conda_fmt.py:CondaFormat_v2.create()"
+        ]
+      },
+      {
+        "name": "格式转换（transmute）",
+        "description": "在 .tar.bz2 和 .conda 格式之间进行转换，支持多进程并行处理，并通过校验确保转换后的包内容一致。",
+        "evidence": [
+          "src/conda_package_handling/api.py:_convert() / transmute()",
+          "src/conda_package_handling/validate.py:validate_converted_files_match_streaming()"
+        ]
+      },
+      {
+        "name": "命令行接口（CLI）",
+        "description": "提供 cph 命令行工具，支持 extract/create/transmute/list 子命令，方便用户在终端直接操作 conda 包。",
+        "evidence": [
+          "src/conda_package_handling/cli.py:main()"
+        ]
+      },
+      {
+        "name": "包文件列表与信息查询",
+        "description": "列出 conda 软件包内的文件内容，支持远程 .conda 包的元数据访问（仅读取 info 组件得出文件清单）。",
+        "evidence": [
+          "src/conda_package_handling/api.py:list_contents() / get_pkg_details()",
+          "src/conda_package_handling/conda_fmt.py:_list_remote_contents()"
+        ]
+      }
+    ],
+    "domain": "软件包管理",
+    "target_users": "conda 生态系统工具开发者及 conda 软件包维护者"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause",
+    "name": "BSD 3-Clause License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件内容与 BSD-3-Clause 模板完全一致；pyproject.toml 标注 License :: OSI Approved :: BSD License；conda.recipe/meta.yaml 标注 BSD-3-Clause。",
+    "notes": "宽松许可，仅要求保留版权声明与免责声明。"
+  },
+  "dependencies": {
+    "count": 3,
+    "manifests": [
+      "pyproject.toml",
+      "conda.recipe/meta.yaml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "conda-package-streaming",
+        "requests",
+        "zstandard"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "conda-package-streaming",
+        "ecosystem": "python",
+        "registry_name": null,
+        "source_repo": "https://github.com/conda/conda-package-streaming",
+        "scope": "runtime",
+        "version": ">= 0.13.0",
+        "purpose": "高效读取新旧格式的 .conda 和 .tar.bz2 conda 软件包，提供流式提取与 transmute 能力",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (pip install)",
+        "declared_in": [
+          "pyproject.toml",
+          "conda.recipe/meta.yaml"
+        ],
+        "used_symbols": [
+          "conda_package_streaming.transmute.transmute",
+          "conda_package_streaming.transmute.transmute_tar_bz2",
+          "conda_package_streaming.extract.extract_stream",
+          "conda_package_streaming.package_streaming.stream_conda_component",
+          "conda_package_streaming.url.conda_reader_for_url"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "requests",
+        "ecosystem": "python",
+        "registry_name": null,
+        "source_repo": "https://github.com/psf/requests",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "HTTP 客户端库，可能由 conda-package-streaming 的 URL 读取功能间接依赖，本包源码中未直接 import",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (pip install)",
+        "declared_in": [
+          "pyproject.toml",
+          "conda.recipe/meta.yaml"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      },
+      {
+        "name": "zstandard",
+        "ecosystem": "python",
+        "registry_name": null,
+        "source_repo": "https://github.com/indygreg/python-zstandard",
+        "scope": "runtime",
+        "version": ">= 0.15",
+        "purpose": "Zstandard 压缩/解压缩的 Python 绑定，.conda 格式的核心压缩后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI (pip install)",
+        "declared_in": [
+          "pyproject.toml",
+          "conda.recipe/meta.yaml"
+        ],
+        "used_symbols": [
+          "zstandard.ZstdCompressor"
+        ],
+        "harmony_adapted": true,
+        "harmony_adapted_source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)"
+      }
+    ],
+    "notes": "requests 在 pyproject.toml 和 conda.recipe 中声明为 runtime 依赖但本库源码中未直接 import；可能由 conda-package-streaming 间接需要。zstandard 已有鸿蒙 PC 官方预编译包。"
+  },
+  "native_api": {
+    "summary": "纯 Python 标准库级 API 使用，无系统/平台特有 API。仅使用 os/sys/glob/hashlib/logging/tarfile/zipfile/concurrent.futures 等跨平台标准库模块，无 Win32/POSIX 特有调用、无 FFI/native 扩展。一个已定义但未使用的 sys.platform == 'win32' 检测变量无实际影响。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "os.walk",
+            "purpose": "遍历目录树收集待打包文件列表",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:35"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path.join",
+            "purpose": "跨平台路径拼接",
+            "count": 5,
+            "evidence": [
+              "src/conda_package_handling/api.py:37"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path.isabs",
+            "purpose": "判断路径是否绝对路径",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:57"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path.isdir",
+            "purpose": "判断路径是否为目录",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:71"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path.isfile",
+            "purpose": "判断路径是否为文件",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:113"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path.basename",
+            "purpose": "获取路径的基名",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:51"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path.dirname",
+            "purpose": "获取路径的目录部分",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:67"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path.relpath",
+            "purpose": "计算相对路径",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:37"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.path.lexists",
+            "purpose": "检查路径是否存在（含符号链接）",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:150"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.makedirs",
+            "purpose": "递归创建目标提取目录",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:72"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.unlink",
+            "purpose": "删除已损坏/不完整的输出文件",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:114"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "os.stat",
+            "purpose": "获取文件大小等元数据用于校验",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/tarball.py:90"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys.platform",
+            "purpose": "运行时平台检测（定义变量 on_win，但生产代码中未使用）",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/utils.py:9"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "hashlib.md5",
+            "purpose": "计算软件包的 MD5 校验和",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/utils.py:92"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "hashlib.sha256",
+            "purpose": "计算软件包的 SHA256 校验和",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/utils.py:88"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "tarfile.TarFile",
+            "purpose": "读写 tar 格式归档，用于 .tar.bz2 包和 .conda 包内部结构",
+            "count": 2,
+            "evidence": [
+              "src/conda_package_handling/tarball.py:38",
+              "src/conda_package_handling/conda_fmt.py:131"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "zipfile.ZipFile",
+            "purpose": "读写 .conda 文件的外层 zip 容器",
+            "count": 2,
+            "evidence": [
+              "src/conda_package_handling/conda_fmt.py:112",
+              "src/conda_package_handling/streaming.py:40"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "concurrent.futures.ProcessPoolExecutor",
+            "purpose": "多进程并行执行 transmute 格式转换",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/utils.py:21"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "concurrent.futures.ThreadPoolExecutor",
+            "purpose": "多线程并行计算多个校验和",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/utils.py:108"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "glob.glob",
+            "purpose": "展开输入文件的通配符模式，支持批量转换",
+            "count": 1,
+            "evidence": [
+              "src/conda_package_handling/api.py:6"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "运行期仅进行本地文件读写操作（读取 conda 包文件、写入提取的目标目录）；无网络访问、无环境变量依赖、无子进程调用、无硬件设备访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "读取源 conda 包文件（本地路径或 URL），写入提取到目标目录的文件",
+        "purpose": "解包和打包操作的核心 I/O",
+        "evidence": [
+          "src/conda_package_handling/api.py:55-82 (extract)",
+          "src/conda_package_handling/api.py:85-122 (create)"
+        ]
+      }
+    ],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Python >= 3.10",
+    "runtime_version": "Python >= 3.10",
+    "build_system": "flit (flit_core >=3.2,<4)",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/tests.yml (ubuntu-latest)"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          ".github/workflows/tests.yml (windows-latest)"
+        ]
+      }
+    ],
+    "entry_points": [
+      {
+        "type": "console_script",
+        "name": "cph",
+        "command": "通过命令行的 cph 子命令（extract/create/transmute/list）操作 conda 软件包",
+        "evidence": [
+          "pyproject.toml:24"
+        ]
+      }
+    ],
+    "packaging": "pip/wheel 分发包（Python 库，通过 PyPI 分发）",
+    "notes": "CI 覆盖 ubuntu 和 windows。纯 Python 库，无编译步骤，flit 用于打包发布。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Python 3.12 运行时上；纯 Python 库无原生扩展；arm64/x86_64)",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "breakdown": [
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0,
+            1
+          ],
+          "basis": "在鸿蒙 Python 3.12 上跑通 43 个单元测试（tests/ 目录）验证功能完整。纯 Python 标准库实现无平台依赖，预计零改动即可通过。"
+        }
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "本库为纯 Python 库（970 行生产代码），仅使用跨平台 Python 标准库（os/sys/tarfile/zipfile/hashlib/concurrent.futures），无原生 C 扩展、无平台特有 API 调用、无外部命令调用。鸿蒙 PC 已移植 Python 3.12 运行时，全部代码可直接运行（porting_class: no_adaptation），核心功能（conda 包创建/提取/格式转换/列表查看）完整保留。唯一需要验证的是依赖 conda-package-streaming（同为纯 Python 库）能否在鸿蒙 Python 上正常运行；zstandard 依赖已有鸿蒙 PC 官方移植产物。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:python_runtime",
+        "capability": "鸿蒙 PC 上 Python 3.12 运行时可用",
+        "capability_key": "python",
+        "required": true,
+        "target_status": "available",
+        "impact": "python 运行时是纯 Python 库运行的唯一前提；已确认鸿蒙 PC 有移植版（OpenHarmony PC pypi）。",
+        "source": "references/harmony-pc-capabilities.json#runtimes.python",
+        "target_status_model": "available"
+      },
+      {
+        "id": "ta:zstandard_ohos",
+        "capability": "zstandard Python binding for OHOS",
+        "capability_key": null,
+        "required": true,
+        "target_status": "available",
+        "impact": "zstandard 是 .conda 格式的压缩后端；已确认鸿蒙 PC PyPI 有 ohos_aarch64 轮子。",
+        "source": "OpenHarmony PC PyPI 镜像 (pypi.cnb.cool/OpenHarmonyPCDeveloper)",
+        "target_status_model": "available"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "conda 包格式读写（.tar.bz2 / .conda）",
+        "note": "底层使用 Python 标准库 tarfile/zipfile，跨平台无依赖，零改动即可在鸿蒙 Python 上运行。",
+        "evidence": [
+          "src/conda_package_handling/tarball.py",
+          "src/conda_package_handling/conda_fmt.py"
+        ]
+      },
+      {
+        "aspect": "命令行接口 cph（extract/create/transmute/list）",
+        "note": "基于 Python argparse，标准库组件不依赖平台，直接用。",
+        "evidence": [
+          "src/conda_package_handling/cli.py"
+        ]
+      },
+      {
+        "aspect": "多进程并行 transmute（ProcessPoolExecutor）",
+        "note": "Python concurrent.futures 跨平台，鸿蒙 Python 已支持。注意 Linux/Windows 的 fork/spawn 差异在鸿蒙上可能需确认默认模式。",
+        "evidence": [
+          "src/conda_package_handling/utils.py:21"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC Python 3.12 上安装 conda-package-handling（pip install）并跑通其单元测试（43 个用例）",
+      "确认 conda-package-streaming 在鸿蒙 Python 上的兼容性（同为纯 Python 库，预计无阻碍）",
+      "验证 zstandard ohos_aarch64 轮子在目标架构上的可用性"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。代码全为 Python 标准库调用，不存在平台特定路径。一个已定义但未使用的 sys.platform == 'win32' 变量（utils.py:9）无实际影响。唯一依赖链上的 conda-package-streaming 同为纯 Python 库；zstandard 已有 OHOS PC 预编译轮子。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "conda-package-handling",
+    "kind": "library",
+    "package_name": "conda-package-handling",
+    "aliases": [],
+    "import_names": [
+      "conda_package_handling"
+    ],
+    "source_url": "https://github.com/conda/conda-package-handling.git",
+    "monorepo": false,
+    "commit": "be1e18b5cc2280190006b104a5684d5a3c8b1f9d",
+    "one_liner": "创建和提取多种格式的 conda 软件包（.tar.bz2 与 .conda），供 conda/conda-build 调用",
+    "ecosystem": "python",
+    "bindings": [],
+    "analyzed_at": "2026-07-14T01:23:42Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯 Python CLI/库，不涉及 GUI 桌面界面、3D 渲染、音视频媒体与特定硬件设备。conda 软件包格式处理，仅本地文件 I/O。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "不涉及任何云端服务。本库仅进行本地 conda 软件包的创建、提取和格式转换操作，无网络通信、无云 SDK、无远程服务依赖。虽 pyproject.toml 声明了 requests 依赖，但本库源码中未直接使用，可能由 conda-package-streaming 间接需要。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 970 行生产代码为纯 Python，仅依赖 Python 标准库（os/sys/tarfile/zipfile/hashlib/concurrent.futures/glob/logging），无原生扩展、无平台特有 API、无外部 C 依赖。鸿蒙 PC 已移植 Python 3.12 运行时，全部代码可直接运行（reuse_direct，100%）。",
+    "coverage": {
+      "production_code": 970,
+      "partitioned_code": 970,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 970,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "src/conda_package_handling",
+            "loc": 929,
+            "reason": "纯 Python 实现：API 封装、CLI 命令行、conda 包格式读写、tar.bz2/zip 处理、校验和计算。仅用 Python 标准库（os/sys/tarfile/zipfile/hashlib/concurrent.futures/glob/logging），无 Win32/POSIX 特有调用、无 FFI/native 扩展。鸿蒙 Python 已移植，零改动运行。",
+            "evidence": []
+          },
+          {
+            "path": "docs",
+            "loc": 41,
+            "reason": "文档构建脚本（Sphinx conf.py），纯 Python 配置，无平台依赖。",
+            "evidence": []
+          }
+        ],
+        "basis": "native_api 无 platform/system/hardware/ffi 组（仅 python_stdlib）；platform_adaptation 为 0；platform_branches 仅 1 个未使用的 sys.platform 检测变量；arch_specific 为 0；dependencies 无需要本库主动编译的原生依赖。"
+      }
+    ],
+    "notes": "代码量小（970 行），纯 Python 标准库实现，是最简单的移植场景。docs/ 目录为 Sphinx 文档构建脚本，属构建辅助不涉及运行时。"
+  }
+}

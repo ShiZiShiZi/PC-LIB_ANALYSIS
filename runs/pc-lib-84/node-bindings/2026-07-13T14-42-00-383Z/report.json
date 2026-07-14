@@ -1,0 +1,571 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 1,
+        "code": 203,
+        "pct": 100.0,
+        "production": {
+          "files": 1,
+          "code": 203
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 1,
+      "code": 203,
+      "comment": 0,
+      "blank": 20,
+      "total_lines": 223
+    },
+    "production": {
+      "files": 1,
+      "code": 203,
+      "comment": 0,
+      "blank": 20,
+      "total_lines": 223
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 203,
+        "category": "production",
+        "by_category": {
+          "production": 203
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 1,
+        "code": 203
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {
+        "javascript": {
+          "files": 1,
+          "hits": 4
+        }
+      },
+      "by_platform": {},
+      "samples": [
+        {
+          "language": "javascript",
+          "file": "bindings.js",
+          "line": 25,
+          "text": "platform: process.platform,"
+        },
+        {
+          "language": "javascript",
+          "file": "bindings.js",
+          "line": 26,
+          "text": "arch: process.arch,"
+        },
+        {
+          "language": "javascript",
+          "file": "bindings.js",
+          "line": 31,
+          "text": "process.platform +"
+        },
+        {
+          "language": "javascript",
+          "file": "bindings.js",
+          "line": 33,
+          "text": "process.arch,"
+        }
+      ],
+      "total": 4,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "bindings 是一个 Node.js 辅助模块，面向原生扩展（native addon）开发者。它的核心功能是在模块根目录及其子目录中自动搜索 .node 编译插件文件，按预定义优先级尝试加载各可能路径，并返回第一个成功加载的结果。这解决了原生扩展在不同构建工具(gyp/node-gyp/waf/node-pre-gyp)和编译模式(Release/Debug)下输出路径不统一的问题——开发者只需 `require('bindings')('foo')` 即可加载，无需硬编码路径。",
+    "categories": [
+      {
+        "name": "原生插件路径解析与加载",
+        "description": "遍历 node-gyp 的 build 目录、node-pre-gyp 的 lib/binding 目录、node-waf 的 build/default 目录等共 10 多种可能的输出位置，按顺序尝试加载 .node 文件，返回首个成功者。覆盖 Release/Debug 两种模式及 windows(darwin)/linux 平台目录。",
+        "evidence": [
+          "bindings.js:36-58"
+        ]
+      },
+      {
+        "name": "模块根目录推导",
+        "description": "基于 V8 Error 栈帧的 `getFileName()` 获取调用者源文件路径，再向上搜索 package.json 或 node_modules 目录来定位模块根目录，以此作为所有可能搜索路径的基准。",
+        "evidence": [
+          "bindings.js:81-83",
+          "bindings.js:147-185",
+          "bindings.js:196-222"
+        ]
+      },
+      {
+        "name": "友好的加载失败提示",
+        "description": "当所有候选路径均加载失败时，抛出包含完整尝试列表的 Error 对象，并附 `tries` 数组属性让调用者可编程地获取已尝试的全部路径，便于调试。",
+        "evidence": [
+          "bindings.js:128-137"
+        ]
+      }
+    ],
+    "domain": "原生扩展加载",
+    "target_users": "Node.js 原生扩展 (native addon) 包的开发者",
+    "ecosystem": "nodejs"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.md"
+    ],
+    "evidence": "LICENSE.md 包含完整 MIT 许可文本；package.json `license` 字段为 MIT。",
+    "notes": "宽松许可，允许自由使用、修改、分发，仅需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": [
+        "file-uri-to-path"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "file-uri-to-path",
+        "ecosystem": "nodejs",
+        "scope": "runtime",
+        "version": "1.0.0",
+        "purpose": "将 file:// URI 转换为文件系统路径，用于处理 V8 栈帧返回的以 file:// 开头的文件名。",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 包 file-uri-to-path@1.0.0",
+        "declared_in": [
+          "package.json:26"
+        ],
+        "used_symbols": [
+          "fileUriToPath"
+        ]
+      }
+    ],
+    "notes": "唯一的第三方依赖，功能简单且为纯 JS。在 bindings.js 中仅用于 `getFileName()` 里把 V8 Error 栈帧返回的 file:// 路径转成普通文件路径。"
+  },
+  "native_api": {
+    "summary": "纯 Node.js 标准库调用；仅使用 fs、path、process 与 V8 Error API，无平台特有 API 或 FFI。",
+    "groups": [
+      {
+        "type": "node_fs",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "fs.accessSync",
+            "purpose": "同步检查文件是否可访问，用于探测 .node 文件是否存在",
+            "count": 1,
+            "evidence": [
+              "bindings.js:14"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "fs.existsSync",
+            "purpose": "同步检查文件是否存在，用于搜索 package.json 或 node_modules",
+            "count": 1,
+            "evidence": [
+              "bindings.js:20"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "node_path",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "path.join",
+            "purpose": "拼接路径片段，构造候选 .node 文件路径",
+            "count": 3,
+            "evidence": [
+              "bindings.js:8",
+              "bindings.js:104"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "path.dirname",
+            "purpose": "提取父目录，用于向上查找 package.json",
+            "count": 1,
+            "evidence": [
+              "bindings.js:9"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "path.extname",
+            "purpose": "检查文件扩展名是否为 .node",
+            "count": 1,
+            "evidence": [
+              "bindings.js:86"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "node_process",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "process.platform",
+            "purpose": "获取当前操作系统平台标识(win32/darwin/linux)，用于构造平台特定子路径",
+            "count": 3,
+            "evidence": [
+              "bindings.js:25",
+              "bindings.js:31"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.arch",
+            "purpose": "获取当前 CPU 架构标识(x64/ia32/arm64)，用于构造架构特定子路径",
+            "count": 3,
+            "evidence": [
+              "bindings.js:26",
+              "bindings.js:33"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.versions.modules",
+            "purpose": "获取 Node.js 模块版本号，用于 node-pre-gyp 的 ABI 字符串",
+            "count": 1,
+            "evidence": [
+              "bindings.js:29"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.versions.node",
+            "purpose": "获取 Node.js 版本号",
+            "count": 1,
+            "evidence": [
+              "bindings.js:34"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.env",
+            "purpose": "读取环境变量 NODE_BINDINGS_ARROW 和 NODE_BINDINGS_COMPILED_DIR",
+            "count": 2,
+            "evidence": [
+              "bindings.js:23-24"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "process.cwd",
+            "purpose": "获取当前工作目录，用于根目录推导的兜底路径",
+            "count": 1,
+            "evidence": [
+              "bindings.js:202"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "v8_error",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Error.stackTraceLimit",
+            "purpose": "设置栈帧收集深度，辅助 getFileName() 定位调用者源文件",
+            "count": 1,
+            "evidence": [
+              "bindings.js:153"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Error.prepareStackTrace",
+            "purpose": "自定义栈帧格式化回调，用于提取调用者的文件名",
+            "count": 1,
+            "evidence": [
+              "bindings.js:155"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Error.captureStackTrace",
+            "purpose": "创建虚拟 Error 实例触发 prepareStackTrace 回调",
+            "count": 1,
+            "evidence": [
+              "bindings.js:171"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "纯本地操作，仅读取模块根目录的 package.json 和 .node 文件，无网络、无子进程、无设备访问。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "模块根目录下的 package.json",
+        "purpose": "定位模块根目录（搜索 package.json 或 node_modules 目录作为根目录标识）",
+        "evidence": [
+          "bindings.js:204-207"
+        ]
+      },
+      {
+        "detail": "模块根目录下的各 .node 编译插件文件",
+        "purpose": "探测并加载原生扩展模块",
+        "evidence": [
+          "bindings.js:36-58"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "NODE_BINDINGS_ARROW",
+        "purpose": "自定义加载失败提示中的箭头前缀符号",
+        "evidence": [
+          "bindings.js:23"
+        ]
+      },
+      {
+        "name": "NODE_BINDINGS_COMPILED_DIR",
+        "purpose": "自定义编译输出目录名（覆盖默认的 'compiled'）",
+        "evidence": [
+          "bindings.js:24"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "JavaScript (ES5/ES6 兼容，Node.js CommonJS)",
+    "runtime_version": "Node.js（使用 fs.accessSync 等 Node API，需较新版本但无明显下限）",
+    "build_system": "npm",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "process.platform 动态判断支持 win32"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "process.platform 动态判断支持 linux"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "process.platform 动态判断支持 darwin"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "process.arch 动态判断支持 arm64"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "纯 JavaScript，无编译步骤，跨平台。通过 npm 发布为 CommonJS 模块。运行时只依赖 Node.js 内置模块(fs/path)，无原生依赖。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC (跑在已移植的 Node.js 24 运行时上; 纯 JS 辅助库，无原生扩展; arm64/x86_64; 自研内核，非 Linux ABI)",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "纯 JavaScript 辅助库，仅使用 Node.js 标准库 (fs/path/process)，无原生扩展、无平台特有 API 调用、无外部命令、无 GUI/3D/媒体/硬件依赖。鸿蒙 PC 已移植 Node.js 24.13.0 运行时，该库源码无需任何修改即可在鸿蒙 PC 上运行；唯一工作量为 npm 安装后在鸿蒙 Node.js 上验证其原生插件加载逻辑适配鸿蒙的 .so 文件路径约定（通常自动兼容）。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "Node.js 运行时",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "该库唯一所需运行时；available 则无阻碍。",
+        "source": "harmony-pc-capabilities.json#runtimes.nodejs",
+        "id": "ta:1",
+        "target_status_model": "available"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "全部 JavaScript 代码（路径拼接、文件探测、Error 栈帧解析）",
+        "note": "纯 Node.js 标准库操作，无平台依赖，在鸿蒙 Node.js 上直接运行。",
+        "evidence": [
+          "bindings.js"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 PC 的 Node.js 运行时上用 `npm install bindings` 安装依赖",
+      "用鸿蒙 PC 上的一个原生 .node 插件验证该库的路径搜索与加载逻辑行为一致",
+      "（可选）将验证结果反馈到参考数据中"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）。该库功能非常简单——只做文件路径拼接与 fs.accessSync 探测——属于最易移植的一类纯 JS 库。唯一运行时依赖 file-uri-to-path 同为纯 JS 模块，无额外移植负担。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "bindings",
+    "kind": "library",
+    "package_name": "bindings",
+    "source_url": "https://github.com/TooTallNate/node-bindings.git",
+    "analyzed_at": "2026-07-13T14:42:00.383Z",
+    "commit": null,
+    "one_liner": "一个 Node.js 辅助模块，用于自动搜索并加载原生 .node 编译插件的正确路径。",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "model": "deepseek-v4-pro",
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯 Node.js 辅助库，无 GUI、3D 渲染、媒体或硬件依赖，不涉及鸿蒙适配重点场景。",
+    "scenarios": []
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "纯本地库，无任何网络调用或云端服务依赖。dependency 仅 file-uri-to-path（纯 JS 文件路径转换），无云厂商 SDK。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部 203 行生产代码均为纯 JavaScript，运行在已移植的 Node.js 运行时上，无原生扩展、无平台 API 依赖，可直接复用，无需任何适配工作。",
+    "coverage": {
+      "production_code": 203,
+      "partitioned_code": 203,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 203,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 203,
+            "reason": "纯 JavaScript，仅使用 fs/path/process 等 Node.js 标准库，无原生扩展，在鸿蒙 PC 已移植的 Node.js 24 上可直接运行。",
+            "evidence": [
+              "bindings.js"
+            ]
+          }
+        ],
+        "basis": "全量 JS 代码，native_api 无 platform/system/hardware 类别调用；platform_adaptation/platform_branches/arch_specific 均为空。依赖 file-uri-to-path 同为纯 JS。"
+      }
+    ]
+  }
+}

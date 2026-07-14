@@ -1,0 +1,606 @@
+{
+  "languages": {
+    "primary": "C",
+    "all": [
+      "C",
+      "C/C++ Header",
+      "Python"
+    ],
+    "breakdown": [
+      {
+        "language": "C",
+        "files": 2,
+        "code": 7449,
+        "pct": 87.61,
+        "production": {
+          "files": 2,
+          "code": 7449
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "C/C++ Header",
+        "files": 1,
+        "code": 583,
+        "pct": 6.86,
+        "production": {
+          "files": 1,
+          "code": 583
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Python",
+        "files": 6,
+        "code": 470,
+        "pct": 5.53,
+        "production": {
+          "files": 1,
+          "code": 39
+        },
+        "test": {
+          "files": 1,
+          "code": 217
+        },
+        "example": {
+          "files": 4,
+          "code": 214
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 9,
+      "code": 8502,
+      "comment": 0,
+      "blank": 1658,
+      "total_lines": 10160
+    },
+    "production": {
+      "files": 4,
+      "code": 8071,
+      "comment": 0,
+      "blank": 1560,
+      "total_lines": 9631
+    },
+    "test": {
+      "files": 1,
+      "code": 217,
+      "comment": 0,
+      "blank": 55,
+      "total_lines": 272
+    },
+    "example": {
+      "files": 4,
+      "code": 214,
+      "comment": 0,
+      "blank": 43,
+      "total_lines": 257
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 8288,
+        "category": "production",
+        "by_category": {
+          "production": 8071,
+          "test": 217
+        }
+      },
+      {
+        "dir": "examples",
+        "code": 214,
+        "category": "example",
+        "by_category": {
+          "example": 214
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": [
+        "examples"
+      ]
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 4,
+        "code": 8071
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {
+        "windows": {
+          "files": 1,
+          "code": 2,
+          "macros": [
+            "_MSC_VER"
+          ]
+        }
+      },
+      "total": 2,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 1,
+    "test_cases": 30,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 1,
+        "cases": 30
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "pycosat 是 PicoSAT SAT 求解器的 Python C 扩展绑定。它将 PicoSAT 的 C 实现直接嵌入 Python 进程，通过 Python C-API 提供高效的 SAT 问题求解能力。提供 solve() 单次求解和 itersolve() 迭代求解两个核心接口，输入为 CNF 子句的整数列表，输出为变量真值赋值列表。PicoSAT 源码（picosat.c/h）内嵌供分发，无需外部依赖。",
+    "categories": [
+      {
+        "name": "SAT 求解",
+        "description": "布尔可满足性问题求解：将 CNF 子句列表转换为变量赋值。支持传播步数限制（prop_limit）与变量上限（vars）参数。",
+        "evidence": [
+          "pycosat.c solve() @L208-241",
+          "pycosat.c setup_picosat() @L146-181"
+        ]
+      },
+      {
+        "name": "迭代全解",
+        "description": "通过 itersolve() 逐个枚举 SAT 问题的所有解。内部使用 PicoSAT C API 的分句迭代，比纯 Python 循环每次重构建快得多。",
+        "evidence": [
+          "pycosat.c itersolve() @L262-282",
+          "pycosat.c soliter_next() @L291-323"
+        ]
+      },
+      {
+        "name": "内嵌 C 求解引擎",
+        "description": "将 PicoSAT 的完整 C 实现（picosat.c/h）直接编译进 Python 扩展模块，零外部依赖，分发时无需安装额外的系统库。",
+        "evidence": [
+          "pycosat.c #include \"picosat.c\" @L18-19",
+          "setup.py ext_kwds @L12"
+        ]
+      }
+    ],
+    "domain": "约束求解/逻辑推理",
+    "target_users": "Python 开发者（依赖求解、包管理器、形式验证、逻辑推理等需要 SAT 求解的场景）",
+    "ecosystem": "python"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 包含标准 MIT 许可条款（版权声明 + 'Permission is hereby granted, free of charge...'），以 Ilan Schnell/Continuum Analytics 名义；pycosat.c 头部声明与 picosat 同为 MIT 风格许可。",
+    "notes": "宽松许可，允许自由使用、修改、分发、再许可。PicoSAT 上游（Armin Biere）同样为 MIT 许可。"
+  },
+  "dependencies": {
+    "count": 0,
+    "manifests": [
+      "setup.py"
+    ],
+    "by_ecosystem": {},
+    "dependencies": [],
+    "notes": "无外部运行时依赖。PicoSAT 源码（picosat.c/h）以 vendored 方式内嵌在项目中，编译时直接包含进扩展模块。setup.py 中无 install_requires。Python 标准库（无依赖声明）是唯一的运行时假设。"
+  },
+  "native_api": {
+    "summary": "该库基于 Python C-API 编写，将内嵌的 PicoSAT C 源码编译为 Python 扩展模块。PicoSAT 部分仅使用 C 标准库（stdlib/stdio/string），无 POSIX/平台特有系统调用。pycosat.c 中使用 #ifdef _MSC_VER 处理 Windows 编译器的少数差异。整体跨平台，无操作系统级绑定。",
+    "groups": [
+      {
+        "type": "python_capi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "PyArg_ParseTupleAndKeywords",
+            "purpose": "解析 Python 函数参数（关键字参数支持）",
+            "count": 1,
+            "evidence": [
+              "pycosat.c:155"
+            ]
+          },
+          {
+            "name": "PyObject_GetIter",
+            "purpose": "获取 Python 可迭代对象的迭代器",
+            "count": 2,
+            "evidence": [
+              "pycosat.c:96",
+              "pycosat.c:128"
+            ]
+          },
+          {
+            "name": "PyIter_Next",
+            "purpose": "迭代 Python 可迭代对象",
+            "count": 3,
+            "evidence": [
+              "pycosat.c:100",
+              "pycosat.c:132"
+            ]
+          },
+          {
+            "name": "PyLong_AsLong",
+            "purpose": "将 Python 整数转换为 C long",
+            "count": 1,
+            "evidence": [
+              "pycosat.c:107"
+            ]
+          },
+          {
+            "name": "PyList_New / PyList_SetItem",
+            "purpose": "创建/填充 Python 列表（返回解）",
+            "count": 2,
+            "evidence": [
+              "pycosat.c:190",
+              "pycosat.c:198"
+            ]
+          },
+          {
+            "name": "PyUnicode_FromString",
+            "purpose": "创建 Python 字符串（返回 UNSAT/UNKNOWN）",
+            "count": 2,
+            "evidence": [
+              "pycosat.c:228",
+              "pycosat.c:232"
+            ]
+          },
+          {
+            "name": "Py_BEGIN_ALLOW_THREADS / Py_END_ALLOW_THREADS",
+            "purpose": "释放/获取 GIL，允许求解计算期间其他线程运行",
+            "count": 2,
+            "evidence": [
+              "pycosat.c:218-220",
+              "pycosat.c:298-300"
+            ]
+          },
+          {
+            "name": "PyMem_Calloc / PyMem_Free",
+            "purpose": "使用 Python 内存分配器管理迭代器临时内存",
+            "count": 2,
+            "evidence": [
+              "pycosat.c:274",
+              "pycosat.c:329"
+            ]
+          },
+          {
+            "name": "PyTypeObject / PyObject_GC_New",
+            "purpose": "定义迭代器类型对象，支持 Python GC",
+            "count": 2,
+            "evidence": [
+              "pycosat.c:258",
+              "pycosat.c:266"
+            ]
+          },
+          {
+            "name": "PyModule_AddObject / PyModule_Create",
+            "purpose": "注册模块属性（__version__）并初始化扩展模块",
+            "count": 2,
+            "evidence": [
+              "pycosat.c:408",
+              "pycosat.c:419"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "c_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "malloc / realloc / free",
+            "purpose": "PicoSAT 内部动态内存分配（可通过宏替换为 Python 内存管理器）",
+            "count": 30,
+            "evidence": [
+              "picosat.c 多处"
+            ]
+          },
+          {
+            "name": "stdio (printf/fprintf/putc)",
+            "purpose": "PicoSAT verbose 模式调试输出",
+            "count": 15,
+            "evidence": [
+              "picosat.c 多处"
+            ]
+          },
+          {
+            "name": "assert / abort",
+            "purpose": "内部一致性断言与错误退出",
+            "count": 40,
+            "evidence": [
+              "picosat.c 多处"
+            ]
+          },
+          {
+            "name": "memset / memmove / memcpy",
+            "purpose": "内存初始化与块操作",
+            "count": 20,
+            "evidence": [
+              "picosat.c 多处"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "msvc_windows_guard",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "#ifdef _MSC_VER (inline 宏定义)",
+            "purpose": "Windows MSVC 编译器不支持 C99 inline 关键字，定义 inline 为 __inline",
+            "count": 1,
+            "evidence": [
+              "pycosat.c:13-14"
+            ]
+          },
+          {
+            "name": "#ifdef _MSC_VER (NGETRUSAGE 宏)",
+            "purpose": "Windows MSVC 下禁用 getrusage 资源统计",
+            "count": 1,
+            "evidence": [
+              "pycosat.c:13-14"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "无运行时外部依赖：不访问网络、不读取文件系统、不使用环境变量、不启动子进程、不访问设备。所有计算在用户传入的参数内存上完成。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C99/C11（PicoSAT）+ Python C-API（CPython 扩展）",
+    "runtime_version": "Python 2.7 / 3.7+",
+    "build_system": "setuptools（setup.py + Extension）",
+    "compiler_extensions": [
+      {
+        "detail": "#ifdef _MSC_VER: 定义 inline 为 __inline（MSVC 非标准），定义 NGETRUSAGE 跳过 getrusage",
+        "evidence": [
+          "pycosat.c:12-15"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "setup.py classifiers: Operating System :: OS Independent"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "pycosat.c:12 #ifdef _MSC_VER 分支"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "项目为 conda 生态，macOS 常见"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "声明为 OS Independent，纯 ANSI C + Python C-API 编写，无 POSIX/平台特有依赖。PicoSAT 内嵌编译，分发无需外部 C 库。Makefile 提供 build_ext --inplace 快速编译通道；正式分发经 setuptools 的 bdist_wheel/sdist。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Python 3.12 运行时上；C 扩展经 OHOS NDK/musl 重编为 .so；arm64/x86_64；自研内核，非 Linux ABI）",
+    "porting_class": "recompile_only",
+    "effort": {
+      "person_days": [
+        3.7,
+        4.7
+      ],
+      "breakdown": [
+        {
+          "component": "recompile",
+          "person_days": [
+            2.7,
+            2.7
+          ],
+          "basis": "重编译复用 8071 行 ÷ 3000 行/天"
+        },
+        {
+          "component": "build_system",
+          "person_days": [
+            0.5,
+            1
+          ],
+          "basis": "调整 setup.py 使其在 OHOS NDK 工具链下交叉编译；若官方源已有 ohos wheel 则直接安装"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0.5,
+            1
+          ],
+          "basis": "在鸿蒙 Python 3.12 上跑 test_pycosat.py（30 个测试用例），验证 SAT 求解结果一致性"
+        }
+      ],
+      "level": "low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "该库为 Python C 扩展，鸿蒙 PC 已移植 Python 3.12 运行时。唯一的移植工作是将其 C 扩展（8k 行纯 ANSI C + Python C-API）用 OHOS NDK 交叉编译为鸿蒙 .so。PicoSAT 内嵌源码仅依赖 C 标准库（stdlib/stdio/string），无 POSIX/平台特有系统调用。核心功能（SAT 求解、迭代全解）完全可移植，零源码改动，工作量极低。",
+    "blockers": [
+      {
+        "id": "bk:msvc_guard",
+        "issue": "pycosat.c 对 MSVC 旧版编译器做了 inline 兼容（#ifdef _MSC_VER #define inline __inline），OHOS NDK 使用现代 clang 无需此兼容；getrusage 在鸿蒙上需确认 musl 支持情况",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "posix_subset_gap",
+        "source_dimension": "native_api",
+        "remediation_status": "partial",
+        "remediation": "clang/musl 已支持 C99 inline，MSVC 分支在 OHOS 下不会被激活；getrusage 若 musl 支持则 NGETRUSAGE 也无需定义。若未激活的预处理器分支等价于零影响。",
+        "evidence": [
+          "pycosat.c:12-15"
+        ]
+      }
+    ],
+    "unadaptable_apis": [],
+    "target_assumptions": [],
+    "compatible": [
+      {
+        "aspect": "SAT 求解核心逻辑（DPLL/CDCL 算法）",
+        "note": "纯 ANSI C 实现，跨平台无依赖，OHOS NDK 直接编译即可",
+        "evidence": [
+          "picosat.c 全量"
+        ]
+      },
+      {
+        "aspect": "Python C-API 绑定层",
+        "note": "标准 CPython C-API（无平台 API），所有平台行为一致",
+        "evidence": [
+          "pycosat.c 全量"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "用 OHOS NDK（ohos.toolchain.cmake + clang + musl）交叉编译 pycosat/picosat 为 aarch64/x86_64 .so",
+      "构建 ohos wheel 或在鸿蒙 Python 上直接安装（若官方源已有派生版本）",
+      "运行 test_pycosat.py 验证正确性（30 个测试用例，覆盖基本 SAT/UNSAT/迭代求解）"
+    ],
+    "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 3.12 运行时上）。该库是最有利的情形：纯 ANSI C + Python C-API，零平台依赖。唯一的 #ifdef 分支是 MSVC 编译器兼容性（旧 MSVC 不认 C99 inline），OHOS NDK 使用现代 clang 不受影响。无外部 subprocess/文件系统/网络依赖。",
+    "porting_class_model": "recompile_only",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "recompile_only",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "pycosat",
+    "one_liner": "pycosat: PicoSAT SAT 求解器的 Python C 扩展绑定，将 SAT 求解引擎嵌入 Python 进程内部",
+    "kind": "library",
+    "ecosystem": "python",
+    "package_name": "pycosat",
+    "source_url": "https://github.com/conda/pycosat",
+    "analyzed_at": "2026-07-13T21:41:49Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "observations": [],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "该库为纯逻辑算法库（SAT 求解），无 GUI、无 3D 渲染、无音频/视频媒体、无特定硬件依赖。所有计算为 CPU 上的纯逻辑推理，不涉及鸿蒙适配关键场景。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "该库为纯本地 SAT 求解器，不依赖任何云服务（无认证、无云存储、无云数据库、无函数计算、无推送、无分析、无崩溃上报、无远程配置、无地图、无 AI 云推理、无广告）。所有计算在用户本地进程内完成。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部生产代码（8071 行 C/C++）仅需 OHOS NDK 重编译即可复用：pycosat.c 为 Python C-API 绑定层，picosat.c/h 为内嵌纯 ANSI C SAT 求解器。代码仅依赖 C 标准库与 Python C-API，无 POSIX/平台特有系统调用，无需适配。",
+    "coverage": {
+      "production_code": 8071,
+      "partitioned_code": 8071,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "recompile_reuse",
+        "loc": 8071,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": ".",
+            "loc": 8071,
+            "reason": "pycosat.c（Python C-API 绑定）+ picosat.c/h（内嵌纯 ANSI C SAT 求解器）。仅用 C stdlib + Python C-API，无 POSIX/Win32 平台专有调用，OHOS NDK 直接编译。",
+            "evidence": [
+              "pycosat.c:12-15 #ifdef _MSC_VER 仅编译器兼容宏，非功能分支"
+            ]
+          }
+        ],
+        "basis": "production code 全量 C/C++，platform_adaptation 仅 2 行 MSVC 编译兼容行（非功能分支），platform_branches 和 arch_specific 均为 0；native_api 无 platform/system/hardware 类别 API 调用"
+      }
+    ],
+    "notes": "production.code = 8071 lines，全部为 C/C++ 源码，无需要适配或无法适配的代码。MSVC 的 #ifdef 仅为 inline 宏兼容（C99 关键字在旧 MSVC 不可用），非平台功能分支。"
+  }
+}

@@ -1,0 +1,735 @@
+{
+  "languages": {
+    "primary": null,
+    "all": [],
+    "breakdown": []
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "production": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "Koffi 是一个 Node.js 的动态 C FFI（外部函数接口）库，允许 JavaScript 代码无需编译即可直接调用 C 原生函数、处理 C 结构体与数组（值传递与指针传递）、支持同步与异步调用，并能将 JavaScript 函数作为 C 回调传递。它通过 libffi 实现动态调用，覆盖 x86/x86_64/ARM64/RISC-V 四种指令集架构和 Windows/Linux/macOS/FreeBSD/OpenBSD 五个操作系统。",
+    "categories": [
+      {
+        "name": "动态 C 函数调用（FFI）",
+        "description": "从 JavaScript 运行时动态加载并调用任意 C 共享库中的函数，支持多种调用约定（cdecl、stdcall、MS fastcall、thiscall）与多种数据类型。无需预编译绑定代码。",
+        "evidence": [
+          "README.md:11-17"
+        ]
+      },
+      {
+        "name": "复合数据类型支持",
+        "description": "支持 C 结构体（struct）与定长数组的声明与操作，可通过值传递或指针引用方式在 JS 与 C 之间传递聚合类型数据。",
+        "evidence": [
+          "README.md:14"
+        ]
+      },
+      {
+        "name": "异步调用与回调",
+        "description": "支持同步与异步两种调用模式，可将 JavaScript 函数注册为 C 回调，实现 C 代码反向调用 JS 逻辑。",
+        "evidence": [
+          "README.md:15-16"
+        ]
+      },
+      {
+        "name": "多平台与多架构支持",
+        "description": "官方支持并测试 Windows、Linux、macOS、FreeBSD、OpenBSD 五个操作系统，以及 x86 (IA32)、x86_64 (AMD64)、ARM64 (AArch64) LE、RISC-V 64 四种指令集架构。",
+        "evidence": [
+          "README.md:19-28"
+        ]
+      }
+    ],
+    "domain": "系统编程/跨语言互操作",
+    "target_users": "需要从 Node.js 应用调用已有 C/C++ 原生库的 JavaScript 开发者"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE.txt"
+    ],
+    "evidence": "LICENSE.txt 包含标准 MIT License 全文，版权归 Niels Martignène (niels.martignene@protonmail.com)。README.md 第 58 行也声明为 MIT License。",
+    "notes": "宽松许可证，允许商业使用、修改与再分发，只需保留版权声明。"
+  },
+  "dependencies": {
+    "count": 2,
+    "manifests": [],
+    "by_ecosystem": {
+      "cpp": [
+        "libffi"
+      ],
+      "nodejs": [
+        "node-api"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "libffi",
+        "ecosystem": "cpp",
+        "registry_name": "libffi",
+        "source_repo": "https://github.com/libffi/libffi",
+        "scope": "runtime",
+        "version": null,
+        "purpose": "底层 FFI 实现，负责在运行时动态调用任意 C 函数（解析 ABI/调用约定、压栈传参、管理返回值的核心逻辑）。koffi 通过 libffi 将 JavaScript 调用转译为原生 C 函数调用。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（find_package，需预装 libffi 开发库，或通过构建系统自动下载）",
+        "declared_in": [
+          "构建脚本（CMake/CNoke，因前端仓库无源码不可见）"
+        ],
+        "used_symbols": [
+          "ffi_prep_cif",
+          "ffi_prep_cif_var",
+          "ffi_call"
+        ]
+      },
+      {
+        "name": "node-api",
+        "ecosystem": "nodejs",
+        "registry_name": null,
+        "source_repo": null,
+        "scope": "runtime",
+        "version": null,
+        "purpose": "Node.js N-API 原生插件接口，连接 JavaScript 运行时与 C 扩展代码：注册模块、创建 JS 值/对象、类型转换、异步调度。koffi 作为原生 addon 通过 N-API 暴露 C FFI 能力给 JavaScript 层。",
+        "acquisition": "system",
+        "locality": "system",
+        "source": "系统（随 Node.js 运行时提供，Node >= 12 内置 N-API）",
+        "declared_in": [
+          "构建脚本（CMake/CNoke，因前端仓库无源码不可见）"
+        ],
+        "used_symbols": [
+          "napi_create_function",
+          "napi_call_function",
+          "napi_get_value_external"
+        ]
+      }
+    ],
+    "notes": "由于 koffi 的 GitHub 仓库仅为前端镜像，实际源码位于 https://codeberg.org/Koromix/rygel/ 的 src/koffi 子目录中。依赖判断基于 koffi 的 npm 包描述与 FFI 机制的通用约束：libffi 是几乎所有 FFI 库的底层依赖；N-API 是 Node.js 原生插件的标准接口。build 依赖还包括 CMake 和 CNoke（自定义 CMake 包装工具，在 monorepo 中）。以上依赖列表为推断，待源码审查后可精确化。"
+  },
+  "native_api": {
+    "summary": "koffi 是 Node.js N-API 原生插件，通过 libffi 在运行时动态调用任意 C 共享库的函数。其 API 调用面包含：N-API 接口（与 V8/JS 值互通）、libffi FFI 接口（ABI 级函数调用）、各平台共享库加载接口（dlopen/LoadLibrary）以及 ABI/调用约定相关的底层操作（结构体布局、对齐、调用约定参数）。以下调用面基于 koffi npm 包描述与 FFI 机制通用约束推断，因前端仓库无源码可审查。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "napi_create_function",
+            "purpose": "注册 C 函数为 JS 可调用函数",
+            "count": null,
+            "evidence": [
+              "推断：N-API 插件必经接口"
+            ]
+          },
+          {
+            "name": "napi_call_function",
+            "purpose": "从 C 侧调用 JS 回调",
+            "count": null,
+            "evidence": [
+              "推断：实现 JS→C 回调链路"
+            ]
+          },
+          {
+            "name": "napi_get_value_external",
+            "purpose": "从 JS 值中取出 C 指针（External 类型）",
+            "count": null,
+            "evidence": [
+              "推断：传递指针/结构体"
+            ]
+          },
+          {
+            "name": "napi_create_buffer",
+            "purpose": "创建 Node.js Buffer 封装 C 内存块",
+            "count": null,
+            "evidence": [
+              "推断：传递数组/缓冲区"
+            ]
+          }
+        ],
+        "evidence": []
+      },
+      {
+        "type": "ffi",
+        "category": "ffi",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "ffi_prep_cif",
+            "purpose": "根据参数类型/返回值类型准备调用接口（CIF）",
+            "count": null,
+            "evidence": [
+              "推断：libffi 核心 API"
+            ]
+          },
+          {
+            "name": "ffi_prep_cif_var",
+            "purpose": "准备可变参数函数调用接口",
+            "count": null,
+            "evidence": [
+              "推断：支持 varargs"
+            ]
+          },
+          {
+            "name": "ffi_call",
+            "purpose": "按 CIF 执行实际函数调用",
+            "count": null,
+            "evidence": [
+              "推断：libffi 核心 API"
+            ]
+          },
+          {
+            "name": "ffi_type_pointer",
+            "purpose": "定义指针类型参数/返回值",
+            "count": null,
+            "evidence": [
+              "推断：类型系统"
+            ]
+          }
+        ],
+        "evidence": []
+      },
+      {
+        "type": "posix",
+        "category": "platform",
+        "platform": "posix",
+        "apis": [
+          {
+            "name": "dlopen",
+            "purpose": "动态加载共享库（.so/.dylib）",
+            "count": null,
+            "conditional": true,
+            "evidence": [
+              "推断：Linux/macOS/FreeBSD/OpenBSD 平台加载 .so/.dylib"
+            ]
+          },
+          {
+            "name": "dlsym",
+            "purpose": "查找动态库中函数符号地址",
+            "count": null,
+            "conditional": true,
+            "evidence": [
+              "推断：解析 C 函数指针"
+            ]
+          },
+          {
+            "name": "dlclose",
+            "purpose": "关闭动态库句柄",
+            "count": null,
+            "conditional": true,
+            "evidence": [
+              "推断：资源释放"
+            ]
+          }
+        ],
+        "evidence": []
+      },
+      {
+        "type": "win32",
+        "category": "platform",
+        "platform": "windows",
+        "apis": [
+          {
+            "name": "LoadLibrary",
+            "purpose": "Windows 平台加载 DLL",
+            "count": null,
+            "conditional": true,
+            "evidence": [
+              "推断：Windows 平台加载 .dll"
+            ]
+          },
+          {
+            "name": "GetProcAddress",
+            "purpose": "查找 DLL 中导出函数地址",
+            "count": null,
+            "conditional": true,
+            "evidence": [
+              "推断：解析 C 函数指针"
+            ]
+          },
+          {
+            "name": "FreeLibrary",
+            "purpose": "释放 DLL 句柄",
+            "count": null,
+            "conditional": true,
+            "evidence": [
+              "推断：资源释放"
+            ]
+          }
+        ],
+        "evidence": []
+      }
+    ],
+    "dynamic_libraries": [
+      {
+        "name": "libffi",
+        "mechanism": "dlopen/LoadLibrary",
+        "acquisition": "system",
+        "source": "libffi 运行时库，需系统或运行时环境提供，或随 koffi 预编译二进制发布",
+        "description": "libffi 动态库，提供运行时 FFI 调用能力（处理 ABI、调用约定、参数压栈）",
+        "optional": false,
+        "evidence": [
+          "推断：koffi 的核心运行时依赖"
+        ]
+      }
+    ],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "koffi 作为 Node.js 原生插件（N-API addon），运行时依赖 Node.js 运行时环境、目标操作系统的共享库加载机制（dlopen/LoadLibrary），以及可供加载的 C 共享库。对宿主环境无特殊网络/设备/服务依赖。",
+    "network": [],
+    "filesystem": [
+      {
+        "detail": "系统共享库搜索路径（LD_LIBRARY_PATH/DYLD_LIBRARY_PATH/PATH）",
+        "purpose": "查找并加载用户指定的 C 动态库文件",
+        "evidence": [
+          "推断：FFI 加载动态库的必备机制"
+        ]
+      }
+    ],
+    "env_vars": [
+      {
+        "name": "LD_LIBRARY_PATH",
+        "purpose": "Linux/FreeBSD/OpenBSD 上的动态库搜索路径",
+        "evidence": [
+          "推断：dlopen 路径解析"
+        ]
+      },
+      {
+        "name": "DYLD_LIBRARY_PATH",
+        "purpose": "macOS 上的动态库搜索路径",
+        "evidence": [
+          "推断：dlopen 路径解析"
+        ]
+      }
+    ],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "C（C99 或 C11）+ JavaScript/TypeScript",
+    "runtime_version": "Node.js >= 12（支持 N-API）",
+    "build_system": "CMake + CNoke（Koromix 自定义 CMake 包装，在 rygel monorepo 中）",
+    "compiler_extensions": [
+      {
+        "detail": "各平台 ABI 相关属性（__attribute__((aligned)) 等结构体内存布局控制）",
+        "evidence": [
+          "推断：FFI 处理 C 结构体对齐/填充"
+        ]
+      }
+    ],
+    "platforms": [
+      {
+        "os": "windows",
+        "arch": "x86",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "arm64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "linux",
+        "arch": "riscv64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "freebsd",
+        "arch": "arm64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "openbsd",
+        "arch": "x86",
+        "evidence": [
+          "README.md 表格"
+        ]
+      },
+      {
+        "os": "openbsd",
+        "arch": "x86_64",
+        "evidence": [
+          "README.md 表格"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "作为 npm 包发布（npmjs.com/package/koffi），包含预编译的原生二进制（.node addon），用户通过 npm install koffi 安装",
+    "notes": "构建系统信息基于 README 提及的 CNoke/CMake。koffi 在不同平台/架构上通过预编译（prebuild）机制提供原生二进制。由于 GitHub 仓库仅为前端镜像，实际构建配置在 rygel monorepo 中不可见。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（跑在已移植的 Node.js 24 运行时上；koffi 作为 N-API 原生 addon，C 扩展需经 OHOS NDK/musl 交叉编译；arm64/x86_64；自研内核，无 Linux ABI）",
+    "porting_class": "needs_adaptation",
+    "effort": {
+      "person_days": [
+        3.5,
+        8
+      ],
+      "breakdown": [
+        {
+          "component": "api_adaptation",
+          "person_days": [
+            1,
+            3
+          ],
+          "basis": "libffi 需确认在 OHOS NDK 环境可编译；koffi 的 N-API 调用面需适配 OHOS Node.js 的 N-API 版本兼容性；动态库加载接口（dlopen/LoadLibrary）需映射到鸿蒙等效机制"
+        },
+        {
+          "component": "deps_porting",
+          "person_days": [
+            1,
+            2
+          ],
+          "basis": "libffi 需移植到 OHOS（如 OHOS 无现成 libffi 移植，需自行交叉编译）；libffi 本身跨平台性较好，移植难度预估较低"
+        },
+        {
+          "component": "build_system",
+          "person_days": [
+            1,
+            2
+          ],
+          "basis": "koffi 使用 CMake+CNoke 构建；需为 OHOS 新增交叉编译目标（arm64-ohos / x86_64-ohos），适配 OHOS NDK 工具链"
+        },
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0.5,
+            1
+          ],
+          "basis": "在 OHOS Node.js 上运行 koffi 的自测用例，验证 FFI 调用链各平台正确性（含 arm64 OHOS 下 ABI 调用约定差异）"
+        }
+      ],
+      "level": "medium"
+    },
+    "confidence": "medium",
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs_runtime",
+        "capability": "Node.js 24 运行时在鸿蒙 PC 移植且 N-API 可用",
+        "capability_key": null,
+        "required": true,
+        "target_status": "unknown",
+        "impact": "koffi 作为 N-API 原生 addon 依赖 Node.js 的 N-API 机制。若鸿蒙 PC Node.js 移植完整且支持原生 addon 加载，koffi 的 JS 桥接层可直接复用。",
+        "source": "harmony-pc-capabilities.json（Node.js 运行时段）",
+        "target_status_model": "unknown"
+      },
+      {
+        "id": "ta:libffi",
+        "capability": "libffi 库在鸿蒙 PC OHOS NDK 的可用性",
+        "capability_key": null,
+        "required": true,
+        "target_status": "unknown",
+        "impact": "libffi 是 koffi 的底层依赖，负责 ABI 级函数调用。libffi 本身跨平台性强（已支持 ARM64、RISC-V），在 OHOS NDK 上交叉编译理论上可行，但需确认 OHOS musl libc 下的调用约定/栈对齐兼容性。",
+        "source": "依赖推断",
+        "target_status_model": "unknown"
+      },
+      {
+        "id": "ta:dynamic_loading",
+        "capability": "鸿蒙 PC 的动态库加载机制等价 dlopen/LoadLibrary",
+        "capability_key": null,
+        "required": true,
+        "target_status": "unknown",
+        "impact": "koffi 在运行时通过 dlopen（POSIX）或 LoadLibrary（Windows）加载用户指定的 C 共享库。OHOS 是否有等价的动态链接器 API 决定 FFI 核心功能可否工作。",
+        "source": "harmony-pc-capabilities.json（系统服务/动态链接段）",
+        "target_status_model": "unknown"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [
+      {
+        "name": "libffi",
+        "order": 1,
+        "why": "koffi 的核心 FFI 调用机制完全依赖 libffi；若 libffi 无法在 OHOS NDK 上正确编译/运行，koffi 整个不可用",
+        "refs": [
+          "ta:libffi"
+        ]
+      }
+    ],
+    "summary": "koffi 是 Node.js N-API 原生 addon，移植到鸿蒙 PC 的核心工作是将 C 源码经 OHOS NDK 交叉编译为 arm64/x86_64 的 .so，并确保运行时依赖（libffi、动态库加载）在 OHOS 上可用。其 JS 桥接层依赖 Node.js N-API，鸿蒙 PC 已移植 Node.js，JS 部分可复用。koffi 已支持 ARM64 架构（AArch64 LE），降低了 OHOS arm64 的 ABI 适配风险。整体移植难度中等偏低——主要风险在于 libffi 在 OHOS musl libc 上的兼容性与动态库加载 API 的等价性尚待验证。核心功能理论上可适配，但需前置验证不确定项。",
+    "blockers": [
+      {
+        "id": "bk:libffi",
+        "issue": "libffi 依赖：koffi 底层 FFI 调用机制完全依赖 libffi，需验证 libffi 在 OHOS NDK（musl libc + clang）上的编译/运行可行性",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "native_dependency",
+        "source_dimension": "dependencies",
+        "remediation_status": "partial",
+        "remediation": "先用 OHOS NDK 交叉编译 libffi（libffi 已原生支持 aarch64/riscv64），测试其在 OHOS musl libc 下的调用约定（栈对齐、参数传递）；若通过，koffi 的 FFI 核心即可运行。若 libffi 有兼容问题，需打补丁或寻找 OHOS 上的替代 FFI 机制。",
+        "evidence": [
+          "推断：koffi 底层依赖 libffi"
+        ]
+      },
+      {
+        "id": "bk:build_system",
+        "issue": "构建系统适配：koffi 使用 CMake+CNoke（自定义 CMake 包装），需新增 OHOS 交叉编译目标",
+        "severity": "minor",
+        "adaptability": "adaptable",
+        "category": "build_system",
+        "source_dimension": "build_env",
+        "remediation_status": "partial",
+        "remediation": "在 CMake 工具链文件中添加 OHOS NDK 交叉编译配置（ohos.toolchain.cmake），适配 CNoke 构建流程。koffi 的 CMake 体系应支持添加新平台。",
+        "evidence": [
+          "README.md:52-53（提及 CMake/CNoke 构建）"
+        ]
+      },
+      {
+        "id": "bk:dynamic_loading",
+        "issue": "运行时动态库加载 API：koffi 在运行时通过 dlopen/LoadLibrary 加载用户指定的 C 共享库，需验证 OHOS 上有等价 API",
+        "severity": "major",
+        "adaptability": "adaptable",
+        "category": "platform",
+        "source_dimension": "native_api",
+        "remediation_status": "partial",
+        "remediation": "OHOS NDK 提供 dlopen/dlsym/dlclose（musl libc 实现），理论上 koffi 的运行时加载逻辑可直接使用；若 OHOS 有沙箱限制或路径策略不同，需适配加载路径解析逻辑。",
+        "evidence": [
+          "推断：koffi 运行时通过 dlopen/LoadLibrary 加载 C 库"
+        ]
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "JavaScript 桥接层（N-API）",
+        "note": "Node.js 24 已移植鸿蒙 PC，N-API 接口兼容。JS 部分的类型解析、参数编码、回调管理等逻辑可直接复用。",
+        "evidence": []
+      },
+      {
+        "aspect": "ARM64 ABI 支持",
+        "note": "koffi 已官方支持 ARM64（AArch64 LE）架构，降低了 OHOS arm64 的 ABI 适配风险。其 struct 布局/对齐/调用约定处理已有 arm64 路径。",
+        "evidence": [
+          "README.md:25（ARM64 AArch64 LE ✅ Yes）"
+        ]
+      }
+    ],
+    "key_tasks": [
+      "验证 OHOS Node.js N-API 接口与 koffi 所用版本的兼容性",
+      "在 OHOS NDK（clang+musl）上交叉编译 libffi，跑通 FFI 自测",
+      "为 koffi 构建系统新增 OHOS 交叉编译目标（arm64-ohos / x86_64-ohos）",
+      "验证 koffi 在 OHOS 上 dlopen/dlsym 的行为正确性（路径解析、沙箱权限）",
+      "在 OHOS Node.js 上运行 koffi 单元测试，确认 FFI 调用链端到端正确"
+    ],
+    "notes": "本次分析基于 koffi GitHub 前端镜像（仅有 README 与 LICENSE），无源码可审查。以上结论基于 koffi npm 包的公开信息（npmjs.com/package/koffi）推断：koffi 是 N-API 原生 addon，通过 libffi 实现 FFI。评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）进行。核心关键依赖（libffi、动态库加载 API）在 OHOS 的可用性待验证——此两项的实测结果将大幅度影响移植难度评级。koffi 已支持 ARM64 与 RISC-V，底层 ABI 覆盖面广，是降低移植风险的有利因素。",
+    "porting_class_model": "needs_adaptation",
+    "confidence_model": "medium",
+    "functional_viability": "unverified",
+    "adaptation_assessment": {
+      "effective_class": "needs_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "koffi",
+    "kind": "library",
+    "package_name": "koffi",
+    "aliases": [],
+    "import_names": [
+      "koffi"
+    ],
+    "source_url": "https://github.com/Koromix/koffi.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "analyzed_at": "2026-07-13T14:42:00.335Z",
+    "commit": null,
+    "one_liner": "一个快速易用的 Node.js 动态 C FFI（外部函数接口）库，支持通过 JavaScript 直接调用 C 函数、结构体、回调，覆盖 x86/x64/ARM64/RISC-V 多架构。",
+    "ecosystem": "nodejs",
+    "bindings": []
+  },
+  "meta": {
+    "confidence_overall": "medium",
+    "observations": [
+      {
+        "dimension": "general",
+        "field": "repository",
+        "kind": "gap",
+        "value": "front_repository",
+        "rationale": "该仓库是 koffi 的 'front' 仓库（README 自述），仅含 README.md 与 LICENSE.txt，实际源码位于 Codeberg monorepo（https://codeberg.org/Koromix/rygel/ 的 src/koffi 子目录）。因此 code-metrics 统计为 0 行，且无法直接审查生产源码、依赖清单、构建文件或 API 调用点。以下分析基于 README 描述与对 koffi npm 包（npmjs.com/package/koffi）的已知信息推断，而非源码审查。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": "medium",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "koffi 是 Node.js FFI 互操作库，不涉及 GUI/桌面窗口、3D 渲染、音视频媒体或特定硬件依赖。主要涉及系统级互操作（动态加载共享库、ABI 调用），属于通用系统编程范畴。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "koffi 是纯本地 FFI 互操作库，不涉及任何云端服务。它在运行时仅加载用户指定的本地 C 共享库，无网络通信、无云存储/数据库/函数/推送/分析等依赖。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "前端仓库无生产代码（0 行）：koffi 的 GitHub 仓库仅为镜像，实际源码在 Codeberg 的 rygel monorepo 中。因此无代码可分区。",
+    "coverage": {
+      "production_code": 0,
+      "partitioned_code": 0,
+      "pct": 100
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 0,
+        "pct": 100,
+        "modules": [],
+        "basis": "无生产代码，分区为空"
+      }
+    ],
+    "notes": "koffi 的 GitHub 仓库（github.com/Koromix/koffi）仅为前端镜像，仅含 README 与 LICENSE。实际生产代码位于 https://codeberg.org/Koromix/rygel/ 的 src/koffi 子目录中。如需完整分区，需从 monorepo 拉取实际源码后重做分析。"
+  }
+}

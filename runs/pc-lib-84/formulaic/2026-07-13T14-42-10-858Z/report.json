@@ -1,0 +1,658 @@
+{
+  "languages": {
+    "primary": "Python",
+    "all": [
+      "Python"
+    ],
+    "breakdown": [
+      {
+        "language": "Python",
+        "files": 113,
+        "code": 14974,
+        "pct": 100.0,
+        "production": {
+          "files": 58,
+          "code": 8558
+        },
+        "test": {
+          "files": 55,
+          "code": 6416
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "builtin",
+    "total": {
+      "files": 113,
+      "code": 14974,
+      "comment": 0,
+      "blank": 2405,
+      "total_lines": 17379
+    },
+    "production": {
+      "files": 58,
+      "code": 8558,
+      "comment": 0,
+      "blank": 1452,
+      "total_lines": 10010
+    },
+    "test": {
+      "files": 55,
+      "code": 6416,
+      "comment": 0,
+      "blank": 953,
+      "total_lines": 7369
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": "formulaic",
+        "code": 9034,
+        "category": "production",
+        "by_category": {
+          "production": 8336,
+          "test": 698
+        }
+      },
+      {
+        "dir": "tests",
+        "code": 5718,
+        "category": "test",
+        "by_category": {
+          "test": 5718
+        }
+      },
+      {
+        "dir": "benchmarks",
+        "code": 222,
+        "category": "production",
+        "by_category": {
+          "production": 222
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [
+        "tests"
+      ],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": "formulaic/parser",
+        "files": 16,
+        "code": 2022
+      },
+      {
+        "dir": "formulaic/utils",
+        "files": 15,
+        "code": 1965
+      },
+      {
+        "dir": "formulaic/transforms",
+        "files": 10,
+        "code": 1915
+      },
+      {
+        "dir": "formulaic/materializers",
+        "files": 10,
+        "code": 1537
+      },
+      {
+        "dir": "formulaic",
+        "files": 5,
+        "code": 897
+      },
+      {
+        "dir": "benchmarks",
+        "files": 2,
+        "code": 222
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 55,
+    "test_cases": 263,
+    "frameworks": [
+      "pytest/unittest"
+    ],
+    "by_language": {
+      "Python": {
+        "files": 55,
+        "cases": 263
+      }
+    },
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "Formulaic 是一个高性能的 Wilkinson 公式解析与模型矩阵生成库，提供类似 R 语言中 formula 语法的 Python 实现。它将统计建模中常用的公式字符串（如 \"y ~ x + z\"）转换为数值化的模型矩阵（设计矩阵），供 statsmodels、glum、lifelines 等统计建模库使用。核心特点是高性能（对标 R 并远超 patsy）、支持稀疏矩阵输出、可复用编码规则、以及支持符号微分求导。",
+    "categories": [
+      {
+        "name": "Wilkinson 公式解析",
+        "description": "将类似 R 语言的统计公式字符串（如 \"y ~ a + b + a:b\"）解析为抽象语法树（AST），支持因子交叉（:）、嵌套（/）、交互（*）等语法。",
+        "evidence": [
+          "formulaic/parser/parser.py",
+          "formulaic/parser/algos/tokenize.py",
+          "formulaic/parser/algos/tokens_to_ast.py"
+        ]
+      },
+      {
+        "name": "模型矩阵生成",
+        "description": "将解析后的公式与输入数据框结合，生成模型矩阵（设计矩阵）——将分类变量进行对比编码（contrast coding），数值变量按原样输出，支持 dense（numpy/pandas）和 sparse（scipy.sparse）两种输出格式。",
+        "evidence": [
+          "formulaic/model_matrix.py",
+          "formulaic/model_spec.py",
+          "formulaic/materializers/pandas.py"
+        ]
+      },
+      {
+        "name": "状态型变换与编码复用",
+        "description": "支持 stateful transforms——将一次数据拟合产生的编码规则固化保存，后续对新数据应用完全相同的编码（如同训练集→测试集的嵌入保持一致），避免数据泄露。",
+        "evidence": [
+          "formulaic/utils/stateful_transforms.py",
+          "formulaic/model_spec.py:ModelSpec.get_model_matrix"
+        ]
+      },
+      {
+        "name": "多数据框后端支持",
+        "description": "通过 narwhals 抽象层，除 pandas 外还支持 polars、pyarrow 等数据框库作为输入，并可选择 narwhals 原生输出或输出为 numpy/scipy 稀疏矩阵。",
+        "evidence": [
+          "formulaic/materializers/narwhals.py",
+          "formulaic/materializers/base.py"
+        ]
+      },
+      {
+        "name": "公式符号微分",
+        "description": "支持对公式进行符号求导（differentiate_term），可对公式中的项相对于指定变量求偏导数，用于统计模型中的梯度计算。",
+        "evidence": [
+          "formulaic/utils/calculus.py"
+        ]
+      }
+    ],
+    "domain": "科学计算/统计建模",
+    "target_users": "Python 统计建模与数据科学开发者（statsmodels、glum、lifelines 等库的用户和开发者）",
+    "ecosystem": "python"
+  },
+  "license": {
+    "spdx": "MIT",
+    "name": "MIT License",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE"
+    ],
+    "evidence": "LICENSE 文件为 MIT License 原文，版权归属 Matthew Wardrop and contributors (2019)。",
+    "notes": "宽松许可，允许商用、修改、再分发，只需保留版权声明和免责声明。"
+  },
+  "dependencies": {
+    "count": 7,
+    "manifests": [
+      "pyproject.toml"
+    ],
+    "by_ecosystem": {
+      "python": [
+        "interface-meta",
+        "narwhals",
+        "numpy",
+        "pandas",
+        "scipy",
+        "wrapt",
+        "typing-extensions"
+      ],
+      "python-optional": [
+        "pyarrow",
+        "polars",
+        "sympy"
+      ]
+    },
+    "dependencies": [
+      {
+        "name": "interface-meta",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.2.0",
+        "purpose": "接口与实现分离的元类框架，用于材料器（materializer）的接口定义和实现注册",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "used_symbols": [
+          "interface_meta.InterfaceMeta",
+          "interface_meta.override"
+        ]
+      },
+      {
+        "name": "narwhals",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.17",
+        "purpose": "数据框抽象层，提供统一接口适配 pandas、polars、pyarrow 等多种数据框后端",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "used_symbols": [
+          "narwhals.stable.v1.from_native",
+          "narwhals.stable.v1.from_dict",
+          "narwhals.stable.v1.to_native"
+        ]
+      },
+      {
+        "name": "numpy",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.20.0",
+        "purpose": "数值计算与矩阵运算基础库，用于模型矩阵的数值操作、矩阵乘法和向量化计算",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "used_symbols": [
+          "numpy.array",
+          "numpy.ones",
+          "numpy.empty",
+          "numpy.multiply",
+          "numpy.stack",
+          "numpy.isscalar"
+        ]
+      },
+      {
+        "name": "pandas",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.3",
+        "purpose": "数据框操作库，作为默认数据输入格式的核心支持（DataFrame/Series/Categorical）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "used_symbols": [
+          "pandas.DataFrame",
+          "pandas.Series",
+          "pandas.Categorical",
+          "pandas.get_dummies",
+          "pandas.CategoricalDtype"
+        ]
+      },
+      {
+        "name": "scipy",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.6",
+        "purpose": "科学计算库，用于稀疏矩阵（scipy.sparse.csc_matrix）的构建与矩阵求逆（编码矩阵）",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "used_symbols": [
+          "scipy.sparse.csc_matrix",
+          "scipy.sparse.hstack",
+          "scipy.sparse.linalg.inv"
+        ]
+      },
+      {
+        "name": "wrapt",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=1.0；>=1.17.0rc1 (Python≥3.13)",
+        "purpose": "对象代理（ObjectProxy）框架，用于 ModelMatrix 的透明包装——让矩阵结果保留原有接口的同时附加 model_spec 元数据",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "used_symbols": [
+          "wrapt.ObjectProxy"
+        ]
+      },
+      {
+        "name": "typing-extensions",
+        "ecosystem": "python",
+        "scope": "runtime",
+        "version": ">=4.2.0",
+        "purpose": "提供向后兼容的类型注解功能（Self、TypeAlias 等），兼容旧版 Python",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "PyPI",
+        "declared_in": [
+          "pyproject.toml"
+        ],
+        "used_symbols": [
+          "typing_extensions.Self",
+          "typing_extensions.TypeAlias"
+        ]
+      }
+    ],
+    "notes": "可选依赖：pyarrow (≥1，arrow 后端)、polars (≥1，polars 后端)、sympy (≥1.3,≠1.10，公式符号微分)。开发依赖：pytest (7.4.3)、pytest-cov (4.1.0)、mypy (2.1.0)、ruff (0.15.15)。无第三方 vendored 代码。无系统级依赖。"
+  },
+  "native_api": {
+    "summary": "纯 Python 科学计算库，无平台特定 API 调用，无 FFI/原生扩展。所有底层运算委托给 numpy、scipy、pandas 等跨平台库。仅使用 Python 标准库的基础工具（sys 元信息、hashlib MD5、functools 工具函数）。",
+    "groups": [
+      {
+        "type": "python_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "sys.version_info",
+            "purpose": "Python 版本检测，用于条件性继承 MutableSequence",
+            "count": 1,
+            "evidence": [
+              "formulaic/formula.py:332"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "sys._getframe",
+            "purpose": "获取调用栈帧，用于 capture_context 函数捕获调用者的变量上下文",
+            "count": 2,
+            "evidence": [
+              "formulaic/utils/context.py:39"
+            ],
+            "conditional": true
+          },
+          {
+            "name": "hashlib.md5",
+            "purpose": "MD5 哈希，用于 hashed 变换中特征值到整数索引的确定性映射",
+            "count": 2,
+            "evidence": [
+              "formulaic/transforms/hashed.py:19"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "numpy_api",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "numpy.array",
+            "purpose": "创建 numpy 数组，用于矩阵构建和中间结果",
+            "count": 10,
+            "evidence": [
+              "formulaic/materializers/pandas.py:35-61",
+              "formulaic/utils/sparse.py:41-49"
+            ]
+          },
+          {
+            "name": "numpy.ones",
+            "purpose": "创建全 1 数组作为常量编码列",
+            "count": 3,
+            "evidence": [
+              "formulaic/materializers/pandas.py:62"
+            ]
+          },
+          {
+            "name": "scipy.sparse.csc_matrix",
+            "purpose": "稀疏矩阵（CSC 格式）作为模型矩阵输出的稀疏表示",
+            "count": 8,
+            "evidence": [
+              "formulaic/materializers/pandas.py:61",
+              "formulaic/utils/sparse.py:33-49"
+            ]
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": [],
+    "platform_dependence": "cross-platform"
+  },
+  "runtime_surface": {
+    "summary": "纯 Python 科学计算库，无网络访问、无外部命令调用、无设备访问、无子进程。运行期仅需 Python 标准库，不依赖环境变量或文件系统路径。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "Python 3.9+",
+    "runtime_version": "Python >= 3.9",
+    "build_system": "hatchling (PEP 517)",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "linux",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml 分类器 OS Independent"
+        ]
+      },
+      {
+        "os": "windows",
+        "arch": "x86_64",
+        "evidence": [
+          "pyproject.toml 分类器 OS Independent"
+        ]
+      },
+      {
+        "os": "macos",
+        "arch": "arm64",
+        "evidence": [
+          "pyproject.toml 分类器 OS Independent"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "",
+    "notes": "纯 Python 项目，声明 OS Independent，无编译扩展、无原生依赖，pip install 直接可用。构建系统为 hatchling（hatch-vcs 版本控制）。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS PC（已移植 Python 3.12 运行时，纯 Python 库可直跑；架构 arm64/x86_64）",
+    "porting_class": "no_adaptation",
+    "effort": {
+      "person_days": [
+        0,
+        2
+      ],
+      "breakdown": [
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0,
+            2
+          ],
+          "basis": "在鸿蒙 Python 上跑通单元测试（263 个 test case），验证 numpy/scipy/pandas 依赖在鸿蒙行为一致"
+        }
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "critical_dependencies": [],
+    "summary": "Formulaic 是纯 Python 库，无任何原生扩展、FFI、或平台特定 API。鸿蒙 PC 已移植 Python 3.12 运行时，所有依赖（numpy/scipy/pandas/narwhals/wrapt/interface-meta/typing-extensions）在鸿蒙 PyPI 均有 ohos wheel 或为纯 Python 包，无需适配即可运行。唯一工作是验证测试在鸿蒙环境通过。",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "capability": "Python 运行时（含 pip 安装、依赖解析与纯 Python 导入链）",
+        "capability_key": "python",
+        "required": true,
+        "target_status": "available",
+        "impact": "运行时直接可用，纯 Python 代码可直跑",
+        "source": "harmony-pc-capabilities.json#runtimes.python",
+        "id": "ta:1",
+        "target_status_model": "available"
+      }
+    ],
+    "compatible": [
+      {
+        "aspect": "全部生产代码（公式解析、矩阵构建、变换编码）",
+        "note": "纯 Python 逻辑，在鸿蒙 Python 3.12 上直接运行",
+        "evidence": []
+      }
+    ],
+    "key_tasks": [
+      "在鸿蒙 Python 3.12 上 pip install formulaic 并验证导入成功",
+      "运行 pytest 测试套件（263 个 test case）验证功能完整",
+      "确认 numpy/scipy/pandas 依赖版本在鸿蒙 PyPI 上可用且行为一致"
+    ],
+    "notes": "按模型 A（纯 Python 库跑在已移植 Python 运行时上）；porting_class=no_adaptation 因零原生扩展、零平台 API、全依赖已鸿蒙化。归一据此派生 effective_class=no_adaptation、overall=adaptable、effort.level=极低。",
+    "required_permissions": [],
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "formulaic",
+    "one_liner": "高性能 Wilkinson 公式解析与模型矩阵生成 Python 库",
+    "kind": "library",
+    "ecosystem": "python",
+    "package_name": "formulaic",
+    "aliases": [],
+    "import_names": [
+      "formulaic"
+    ],
+    "bindings": [],
+    "language": "Python",
+    "source_url": "https://github.com/matthewwardrop/formulaic",
+    "description": "高性能 Wilkinson 公式解析与模型矩阵生成 Python 库",
+    "analyzed_at": "2026-07-13T22:05:06Z"
+  },
+  "meta": {
+    "observations": [],
+    "notes": "纯 Python 库，无平台特定代码，分析简单直接。",
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "builtin",
+    "warnings": [
+      "Neither cloc nor tokei found; using crude builtin line counter."
+    ],
+    "confidence_overall_model": null,
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯 Python 数据分析库，不涉及 GUI/桌面界面、3D 渲染、音视频媒体、或特定硬件交互。全部为 CPU 上的数值计算，委托 numpy/scipy/pandas 完成。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "纯本地公式解析与矩阵生成库，无网络/远程服务调用，不依赖任何云端服务。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "纯 Python 库，生产代码 8558 行全部可直接复用——运行在鸿蒙已移植 Python 3.12 运行时上，无原生扩展、无平台特定代码、无 FFI。所有底层计算委托给已鸿蒙化的 numpy/scipy/pandas。",
+    "coverage": {
+      "production_code": 8558,
+      "partitioned_code": 8558,
+      "pct": 100.0
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 8558,
+        "pct": 100.0,
+        "modules": [
+          {
+            "path": "formulaic/parser",
+            "loc": 1810,
+            "reason": "纯 Python 的公式解析器（词法分析/语法解析/AST 构建），无平台依赖",
+            "evidence": []
+          },
+          {
+            "path": "formulaic/transforms",
+            "loc": 1915,
+            "reason": "纯 Python 的变换函数库（对比编码/样条/哈希/标准化），委托 numpy/scipy 计算",
+            "evidence": []
+          },
+          {
+            "path": "formulaic/utils",
+            "loc": 1965,
+            "reason": "纯 Python 工具模块（结构化/空值处理/上下文/微分），委托 numpy 计算",
+            "evidence": []
+          },
+          {
+            "path": "formulaic/materializers",
+            "loc": 1537,
+            "reason": "纯 Python 材料器（将公式树转为 numpy/scipy/pandas 矩阵），底层全委托已移植库",
+            "evidence": []
+          },
+          {
+            "path": "formulaic",
+            "loc": 897,
+            "reason": "顶层 API 封装（Formula 类/ModelMatrix/ModelSpec），纯 Python 逻辑",
+            "evidence": []
+          }
+        ],
+        "basis": "全部生产代码为纯 Python，无 C 扩展、无 ctypes/cffi 调用、无平台特定 API；numpy/scipy/pandas 已在鸿蒙 PyPI 提供 ohos wheel"
+      }
+    ],
+    "notes": "生产代码 100% 为纯 Python；benchmarks 目录 222 行不参与分区（示例性质）；构建配置 pyproject.toml 标 OS Independent，确认无原生扩展。"
+  }
+}
