@@ -15,12 +15,13 @@
 | Go | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.24+ / 1.22 |
 | Julia | ✅ 已支持 | OpenHarmonyPCDeveloper/docs | 2026-06-23 | 1.10.6 |
 | .NET / CLR 运行时（C#/F#） | ❌ 不支持 | 用户确认 .NET 当前鸿蒙不支持 + 真机 HNP 无 dotnet/mono | 2026-07-13 | .NET / CLR / Mono 运行时当前**鸿蒙 PC 不支持**（用户确认；真机设备 3BT0124820000152 HNP 无 dotnet/mono；社区已移植运行时清单不含 .NET）。C#/.NET 库运行前提=不支持（functional_viability=blocked_external）；若社区后续提供 .NET 移植可翻转。 |
-| PyTorch / libtorch | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机 HNP 无 libtorch；无 PyTorch 移植证据；FBGEMM 等依赖无法运行。 |
-| TensorFlow / libtensorflow | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机 HNP 无 libtensorflow；无 TF 移植证据；tensorflow-onnx 依赖无法运行。 |
+| PyTorch / libtorch | ❌ 不支持 | 真机复核(设备 3BT0124820000152, HAD-W32, 2026-07-14) + OpenHarmony PC PyPI 镜像 | 2026-07-14 | 真机复核(2026-07-14)解 caps↔镜像冲突:镜像存在 torch-2.11.0a0+git70d99e9-cp312-cp312-**ohos_aarch64**.whl(alpha)，但设备 community Python 3.12.8 的 pip 支持标签为 **harmonyos_aarch64**(42 tags)、不接受 ohos_aarch64 → `pip install torch --index-url <镜像>` 报 “No matching distribution found”;torch 亦未预装(find_spec=None)。镜像 harmony_adapted=true 仅表示“页面存在 ohos wheel”，**不等于可 pip 安装/可运行**——同款 numpy 镜像亦仅 ohos_aarch64 wheel，其在设备可用是靠**预装(bundled 2.2.1)**而非镜像 pip。故 torch 真机不可用(无 libtorch 运行证据、FBGEMM 依赖无法运行的旧结论维持)。若上游重打 harmonyos_aarch64 标签(或 pip 支持 ohos 标签)且 wheel 真机可导入运行，可翻转 partial/available。sentence-transformers/transformers/vision/torchvision 均受阻。 |
+| TensorFlow / libtensorflow | ❌ 不支持 | 真机复核(设备 3BT0124820000152, 2026-07-14) + OpenHarmony PC PyPI 镜像(harmony_adapted=false) | 2026-07-14 | 真机复核(2026-07-14):镜像**无 tensorflow 的 ohos/harmonyos wheel**(harmony_adapted=false)、设备未预装;无 libtensorflow 移植证据。tensorflow-onnx 及 TF 后端依赖无法运行。(对比 torch:torch 有 ohos wheel 但标签不匹配不可装;tensorflow 连 wheel 都无。) |
 | Bare JavaScript 运行时 | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机无 Bare 运行时；bare-fs/bare-os 依赖（libuv 本身经 Node 可用，但 Bare 运行时缺）。 |
 | Tauri (Rust webview 框架) | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机无 Tauri webview/窗口/事件循环支持；plugins-workspace 依赖（系统 ArkWeb 存在但非 Tauri 绑定）。 |
 | MPI (MPICH) | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机 HNP 无 MPICH；MPICH_jll 需 arm64 交叉编译产物，当前无。 |
 | libjulia 嵌入 + CPython/Julia 双运行时共存 | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 真机 HNP 无 julia；jnumpy 需可嵌入 libjulia(jl_init_with_image)+ 与 CPython 同进程双 GC 共存，未证。基座 Julia 运行时另见 runtimes.julia（社区版可装）。 |
+| MindSpore 深度学习框架（华为自研，训练/推理） | ❌ 不支持 | OpenHarmony PC PyPI 镜像 + 真机(设备 3BT0124820000152, 2026-07-14) | 2026-07-14 | OpenHarmony PC PyPI 镜像 mindspore 2.9.0 仅 manylinux1_x86_64 / win_amd64 / macosx 二进制 wheel + 一个 none-any(纯前端、无 aarch64 原生 _c_expression 后端 .so)，**无 ohos_aarch64 wheel**；设备 import mindspore=未安装。与 pytorch/tensorflow 同口径(镜像有 wheel≠可装可跑)。MindSpore Lite(端侧推理运行时 .so)是另一独立产品，非 mindcv 训练/建模所依赖的完整 MindSpore 框架替代。mindcv/mindspore 分析对象。 |
 
 ## 命令行工具 / 外部二进制（shell-out 型库/应用依赖的独立可执行程序在鸿蒙 PC 的可用性）
 
@@ -46,12 +47,13 @@
 |------|------|------|----------|------|
 | Headful AWT (java.awt) | ✅ 已支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md | 2026-07-13 | OH-AWT BishengJDK 8 带 headful 桌面后端(AWT 后端 X11→原生 libawt_xawt.so，XComponent/EGL/GLES 渲染)，VisualVM(Swing/AWT)真机运行。 |
 | Swing (javax.swing) | ✅ 已支持 |  | 2026-07-07 | swing已有鸿蒙版本 |
-| JavaFX | ⬜ 未核实 |  |  | 待核实（是否随附/可装） |
-| SWT | ⬜ 未核实 |  |  | 待核实 |
+| JavaFX | ❌ 不支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: 无 javafx 条目) | 2026-07-14 | HarmonyOS SDK 无 JavaFX 后端/移植记录(api-references/docs 均无 javafx)。鸿蒙应用层为 ArkTS/ArkUI + C/C++ NDK，无 JVM 桌面 GUI 工具包;JavaFX GUI 须改 ArkUI 或走 OH-AWT/Swing(swing 已 available)。 |
+| SWT | ❌ 不支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: 无 swt 条目) | 2026-07-14 | HarmonyOS SDK 无 SWT 后端(SWT 依赖 GTK/Win32/Cocoa 原生窗口后端，鸿蒙无等价 org.eclipse.swt 原生实现)。Java GUI 须改 ArkUI 或 OH-AWT/Swing。 |
 | Qt (C/C++ GUI) | ✅ 已支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-Qt6-CMake-GUI应用移植.md、鸿蒙PC-Qt6-qtdeclarative-QtQuick交叉编译.md；third_party_adapters/notepadnext | 2026-07-13 | 社区已提供 Qt 鸿蒙版；Qt6(6.5.6, ohos23)已真机验证——QPA 插件 libplugins_platforms_qopenharmony.so，NotepadNext(Qt6/CMake)已发布，QtQuick 需禁 JIT(QV4_FORCE_INTERPRETER)；Qt5 亦可用。桌面 Qt6/CMake 应用可移植(此前"仅 Qt5"结论已更正)。 |
 | GTK (C GUI) | ✅ 已支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-GTK应用broadway-ArkWeb-HAP.md、鸿蒙PC-cmd-pkgs预编译GTK栈不可用.md | 2026-07-13 | broadway→ArkWeb(broadwayd HTTP/WS + Web 组件)或源码构建 gdk-ohos(XComponent CPU-blit)路线已真机(nmap GTK GUI .hap)；仅需 ohos.permission.INTERNET(broadway)。⚠ cmd-pkgs 预编译 GTK 栈不可用(glib 静态烘焙冲突/64KB 页崩)，须源码编 glib+GTK。 |
 | Electron / CEF (Chromium) | ✅ 已支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-electron-vite-React应用-OHElectron-HAP.md、鸿蒙PC-opencode-HAP化-Electron壳.md | 2026-07-13 | OH-Electron 25(引擎 25.3.2, Chromium 114, Node 18.15)真机；纯 JS 应用可直接嵌(appium-inspector 已发)、重应用配 Node24 sidecar(opencode 已发)。注意:<28 无 ESM main/preload、多 BrowserWindow 合成不稳(用单窗)。 |
 | 桌面窗口管理器 / 显示服务（是否存在桌面级多窗口环境） | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-窗口几何控制无native只ArkTS.md、鸿蒙PC-XComponent-CPU像素渲染与输入缝.md；memory/adaptation/Qt6/VLC/VisualVM | 2026-07-13 | @ohos.window/Rosen 提供桌面级多窗口环境，Qt6/VLC/VisualVM 已真机多窗运行；无 X11/Wayland，原生窗口几何(resize/move/min/max)无 NDK 通路、须反向桥 ArkTS @ohos.window。 |
+| XComponent OHNativeWindow C API（原生渲染表面 + NDK 输入事件） | ✅ 已支持 | harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-XComponent-CPU像素渲染与输入缝.md、鸿蒙PC-通用视窗桥ohos_window_bridge.md、鸿蒙PC-GLFW视窗后端-EGL-XComponent.md;third_party_adapters/glfw、ohos_window_bridge | 2026-07-14 | 普通签名 app 域 HAP、无 root/特殊权限真机验证。OH_NativeXComponent 的 OnSurfaceCreated(comp, void* window) 直接给出 OHNativeWindow*;CPU-blit 路径(RequestBuffer→mmap→写 stride→FlushBuffer)与 GPU 路径(eglCreateWindowSurface / vkCreateSurfaceOHOS)双通;输入经 RegisterMouseEventCallback/RegisterKeyEventCallbackWithResult/RegisterUIInputEventCallback/DispatchTouchEvent。GLFW 全 _GLFW_OHOS 后端跑旋转三角(GL_VERSION=OpenGL ES 3.2);ohos_window_bridge 的 owb_ohos_app.h 线程壳可跑未改的桌面 int main() 循环。⚠ 窗口几何控制(resize/move/min/max/全屏)**无 native NDK 通路**，须经 napi_threadsafe_function 反向桥 ArkTS @ohos.window(与 Qt OHOS QPA 一致);仅 cursor-lock/window-props 为纯 native(OH_WindowManager_*)。坑:EGL/GLESv2 soname 不匹配、64KB 页对齐(-Wl,-z,max-page-size=0x1000)。⇒ GLUT/GLFW/SDL 式窗口+输入后端可移植(FreeGLUT/freeglut/pyGLFW/pygame/mujoco/scintilla/framelesshelper)。 |
 
 ## 桌面集成子能力
 
@@ -67,15 +69,22 @@
 | 屏幕截图 / 显示捕获 | 🟡 部分支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) + KB | 2026-07-13 | root 域 snapshot_display 真机可截屏；native AVScreenCapture NDK 存在；app 域受限、需权限。napi_screenshot/node-screenshots 依赖。 |
 | 全局输入注入 / UI 自动化 | 🟡 部分支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) + KB | 2026-07-13 | root/host 域 uinput/uitest 可注入键鼠、驱动 native 控件（GPU-surface UI 除外）；第三方 app 经无障碍/UiTest 向他应用注入受安全策略限制。iohook/pywinauto 依赖。 |
 | 设备唯一标识获取 | 🟡 部分支持 | HarmonyOS SDK @ohos.deviceInfo | 2026-07-13 | @ohos.deviceInfo(serial/ODID)提供设备标识；非 D-Bus/getprop drop-in，Node 库需经该 API 适配。devtools-shared 依赖。 |
+| 系统凭据库 / 密钥保险箱（Keychain/libsecret/Credential Vault 等价） | 🟡 部分支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: @ohos.security.asset / @ohos.security.huks) | 2026-07-14 | 系统凭据库等价物具备但非 drop-in:@ohos.security.asset(关键资产存储 Asset Store Kit + C API asset_api.h，SysCap Security.Asset)专为短敏感数据(密码/账号、应用凭据 Token、银行卡号)——最接近 keytar/macOS Keychain/libsecret 等价;@ohos.security.huks(通用密钥库 HUKS)管密钥材料。须经其 API 适配(非 keytar N-API drop-in)，PC 真机未测。google-workspace-mcp 的 keytar 有 AES-256-GCM 加密文件回退(可强制启用)，故 required=false。 |
+| 桌面文件类型图标 / 缩略图查询（SHGetFileInfo / NSWorkspace iconForFile 等价） | 🟡 部分支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: fileManagerService.getFileIcon / photoAccessHelper) | 2026-07-14 | 桌面文件类型图标查询:File Manager Service Kit 的 fileManagerService.getFileIcon(fileType)/getFileIconSync 具备，但**需 ohos.permission.GET_FILE_ICON(system_grant，面向文件管理/系统类应用)**、普通应用授予受限;缩略图另有 @ohos.file.photoAccessHelper PhotoAsset.getThumbnail 与 AVImageGenerator(视频帧)。非 Win32 SHGetFileInfoW / macOS NSWorkspace iconForFile drop-in、须经其 API 适配，PC 真机未测。extract-file-icon 依赖:无等价则降级为扩展名→图标映射表(功能退化)。 |
+| 系统 / 硬件 / 进程信息采集 API（/proc·ps·lspci·lsusb 等价） | 🟡 部分支持 | harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-systeminformation-平台分支.md、third_party_adapters/systeminformation | 2026-07-14 | 系统/进程信息采集(替代 /proc、ps)真机可用:systeminformation 5.31.7 的 13/13 核心函数真机 OK——CPU(20 核+实时频率/负载)、内存(33.46GB)、fsSize(23 挂载 via /proc+/proc/mounts)、networkStats/interfaces(真实 wlan0)、processes(all=189)、model(HUAWEI KIRINX90 via /sys)、osInfo(kernel HongMeng 1.12.0 arch arm64)。**但缺 lspci/lsusb/dmidecode/lscpu/getprop → PCI/USB/GPU 枚举与 graphics()、CPU 厂商/发行版/主板/用户信息不可得(平台固有)**;须把 process.platform===linux 分支放行 openharmony(17 文件)。systeminformation 依赖。 |
+| 硬件设备枚举 API（PCI/USB/GPU/磁盘/网络接口） | 🟡 部分支持 | 真机实测(systeminformation, 设备 3BT0124820000152) + HarmonyOS SDK 文档 | 2026-07-14 | 磁盘/网络接口/内存/CPU 核数等基础信息经 /proc + /sys 可得(systeminformation 真机 13/13 核心项 OK)；@ohos.deviceInfo 提供设备型号/品牌/OS 版本。**但缺 lspci/lsusb/dmidecode** → PCI 设备、USB 设备枚举、独立 GPU 型号、主板/BIOS/DMI 信息不可得；@ohos 无对等公开的完整硬件设备枚举 API。故 partial：基础设备信息可得、深度硬件枚举缺失。systeminformation ta:2 对象。 |
+| 进程 / 服务管理 API（枚举/状态/控制） | 🟡 部分支持 | 真机实测(systeminformation, 设备 3BT0124820000152) + HarmonyOS SDK 文档 | 2026-07-14 | 进程列表/状态/资源占用经 /proc + ps 真机可读(systeminformation processes/services 项 OK)；@ohos.app.ability 提供受限的本应用运行态查询。**但无 systemctl/service 系统服务管理等价**，跨应用进程控制(kill 他应用/查全局服务)受 SELinux 沙箱限制(app 域只能管自身进程树)。故 partial：进程信息读取可得(root/自身域)、系统级服务管理与跨应用控制受限。systeminformation ta:3 对象。 |
 
 ## 进程 / 安全模型
 
 | 能力 | 状态 | 来源 | 核对时间 | 说明 |
 |------|------|------|----------|------|
 | 跨进程 attach / 检视其他进程 (Attach API / JVMTI) | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VisualVM-JVM-Swing应用移植.md | 2026-07-13 | VisualVM 跨进程 JVM attach 真机：本地进程发现(hsperfdata)纯 Java 即可；完整 attach(堆/线程 dump)须 OH 匹配 tools.jar(LinuxVirtualMachine/LinuxAttachProvider)，OH libattach.so 已导出所需 10 native；attach socket 目录为沙箱路径(非 /tmp)。 |
-| ptrace / 调试其他进程 | ⬜ 未核实 | 人工核实(无 app 可用证据)：harmony-pc 知识库仅平台 faultlogger、无 ptrace/minidump 端口 | 2026-07-13 | 截至 2026-07-13 无 app 可用 ptrace / minidump / crashpad / breakpad / libunwind 的真机证据；平台 faultlogger(/data/log/faultlog/faultlogger/cppcrash-*，含信号+syscall#+符号化栈)为独立崩溃捕获手段、非 ptrace 等价。libunwind 需——待核实。 |
+| ptrace / 调试其他进程 | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0) + memory/platform/鸿蒙PC-POSIX-NDK能力探针矩阵.md | 2026-07-14 | root 域 /proc/self/mem·/proc/self/maps 可读(自崩溃处理/backtrace)；但**跨进程 ptrace 探针矩阵明确「未证」**、列在「无对应实现/门槛」。app 域 seccomp 激进(io_uring 425/426/427 被 SIGSYS 杀)、/proc 部分 SELinux 受限、W^X/XPM 挡可写执行内存;无 breakpad/crashpad/minidump 真机证据，平台崩溃捕获走 faultlogger(/data/log/faultlog/…cppcrash-*，非 ptrace 等价)。⇒ 调试/注入其他进程(gecko-dev 多进程沙箱、跨进程原生调试)在 app 域不可行;自进程崩溃处理见 native_ndk.proc_introspect(partial)。 |
 | 启动外部进程 (exec/ProcessBuilder) | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app域执行二进制与JIT限制.md、鸿蒙PC-HNP二进制SELinux-exec限制.md | 2026-07-13 | fork()+execv() 私有 HNP(hnpPackages type=private)内二进制真机可用；公有 HNP node 可直接 spawn。app 域仅能执行私有 HNP 路径 ELF(其余 /data/local/tmp、libs/ 受 XPM/dmverity 非执行限制)；root(hdc shell)域可执行 PIE ELF。 |
 | 沙箱 / 权限模型 (ACL，需声明权限) | ✅ 已支持 | 人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app访问PC用户目录.md | 2026-07-13 | HAP ACL/权限模型完备:module.json5 声明权限 + 运行时 requestPermissionsFromUser 弹窗授予；atm dump -t -b <bundle> 查授予状态。system_grant/user_grant/system_basic 分级。 |
+| D-Bus 消息总线 / dbus-daemon（IPC 总线守护进程） | 🟡 部分支持 | cmd-pkgs 预编译 + 真机探针(设备 3BT0124820000152, 2026-07-14) + HarmonyOS SDK 文档 | 2026-07-14 | unavailable→partial(2026-07-14 核实)。**系统层无** dbus-daemon/session bus 服务(系统 IPC = binder @ohos.rpc/IPCSkeleton + @ohos.commonEventManager 广播，非 D-Bus)。**但**：dbus 1.14.10(daemon+libdbus+全套工具+session.conf)已由 cmd-pkgs 预编译(见 native_libs.libdbus)，AF_UNIX 域套接字(含抽象命名空间/SCM_RIGHTS)第三轮真机可用 → 应用可**自带私有会话总线**(bundle dbus-daemon、经签名 HAP 私有 HNP 分发并 exec、dbus-glib/dbus-python 连该本地 socket)。**验证边界**：2026-07-14 设备已收紧 XPM(dmverity 强制)，从 /data 直接 exec 未签名 dbus-daemon 被内核拒(xpm 日志 `dbus-daemon is not protected by dmverity`)，故独立守护进程未端到端跑通；签名 HAP 私有 HNP 是文档化正路(见 app 域执行二进制)。综合「系统总线无 + 私有总线可行但需打包适配」→ partial。dbus-glib/dbus-python 对象。 |
+| 第三方 GUI 进程注入 / API 挂钩 / 跨进程内存改写 | ❌ 不支持 | harmony-pc 工程实践(真机) + 沙箱模型推断 | 2026-07-14 | 对第三方 GUI 进程的 DLL/代码注入、API 挂钩、跨进程内存改写无真机证据且架构受阻:app 沙箱进程隔离 + 跨进程 ptrace 未证(见 process_security.ptrace) + W^X/XPM 挡可写执行内存。唯一「注入」原语是**全局输入事件注入**(OH_Input_InjectMouseEventGlobal、uinput/uitest;INTERCEPT_INPUT_EVENT/INPUT_MONITORING 为 system_basic 受限权限)，属输入事件而非进程/内存注入。⇒ OBS 游戏采集式钩子注入不可行。 |
 
 ## 应用交付模型
 
@@ -90,7 +99,7 @@
 | 能力 | 状态 | 来源 | 核对时间 | 说明 |
 |------|------|------|----------|------|
 | arm64 (aarch64) | ✅ 已支持 | OpenHarmonyPCDeveloper | 2026-06-23 | 主力架构 |
-| x86_64 | ⬜ 未核实 |  | 2026-07-13 | 待核实覆盖情况。现有 OHOS NDK 工具链仅 aarch64-unknown-linux-ohos、已知设备均 arm64(Maleoon/Kunpeng)，未见 x86_64 正/负证据——保持 unknown，勿据此臆断，勿依赖 x86 专有汇编/intrinsics。 |
+| x86_64 | ⬜ 未核实 |  | 2026-07-14 | 待核实覆盖情况。KB 全部真机产物与设备均 aarch64/arm64-v8a(本机 HAD-W32 / KIRINX90，KB 另证 Maleoon/Kunpeng)，OHOS NDK 工具链仅 aarch64-unknown-linux-ohos，未见 x86_64 正/负证据——保持 unknown，按 **arm64-only** 对待:勿依赖 x86 专有汇编/intrinsics;dgl 等预编译 x86_64 产物不可用、须 aarch64 重编。 |
 
 ## 3D / 图形栈（GUI/渲染应用关注）
 
@@ -102,6 +111,7 @@
 | Skia 2D 绘制 | 🟡 部分支持 |  |  | ArkUI 绘制基于 Skia；作为三方库直接链接的覆盖待核实 |
 | ArkGraphics 3D（原生 3D API） | ✅ 已支持 |  |  | 鸿蒙原生 3D 能力——但需用其 API 重写，非 drop-in |
 | Coin3D (Open Inventor 场景图) | ⬜ 未核实 |  | 2026-07-13 | Coin3D(coin3d.org)未见鸿蒙移植记录，且其依赖桌面完整 OpenGL(当前鸿蒙 PC 仅 GLES 子集)——须端口 + desktop-GL→GLES 适配，可行性待核实。Quarter(Qt↔Coin 胶合)随之。 |
+| Vulkan ICD 装载模型（loader + VK_ICD_FILENAMES / icd.d 第三方驱动注册） | ✅ 已支持 | 真机探针(设备 3BT0124820000152, 2026-07-14) + cmd-pkgs 预编译清单 | 2026-07-14 | 真机 /system/lib64/libvulkan.so 为标准 Khronos loader：strings 含 `VK_ICD_FILENAMES`、`vulkan/icd.d`、`vk_icdNegotiateLoaderICDInterfaceVersion` → 支持标准 ICD 发现(扫 icd.d 目录)+ 环境变量指定 ICD。系统已装硬件 ICD /vendor/etc/vulkan/icd.d/vulkan_driver_v210.json → /vendor/lib64/passthrough/vulkan.hvgr_v210.so(api 1.3.231)。cmd-pkgs 另预编译 vulkan-loader/vulkan-headers/vulkan-tools。故应用可经 VK_ICD_FILENAMES 注册软件 ICD(如 SwiftShader)。**SwiftShader 特有注意**：其默认 LLVM JIT 着色器后端在 app 域撞 W^X/XPM(见 process_security)，须用其 Subzero/预编译 reactor 路径规避——ICD 装载模型本身 available，SwiftShader 落地另需绕 JIT。 |
 
 ## 媒体（音视频编解码/播放/采集）
 
@@ -110,7 +120,8 @@
 | @ohos.multimedia（系统媒体能力） | ✅ 已支持 |  |  | 系统提供播放/采集/编解码——但需用鸿蒙 API，非 FFmpeg drop-in |
 | 通用视频编解码（FFmpeg/x264 等三方） | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VLC-autotools媒体应用移植.md | 2026-07-13 | 社区 ohos_FFmpeg(FFmpeg 8.0.1, 非 stub, 4KB 页对齐)可用；VLC 289 插件+libavcodec 交叉编译、h264 播放真机。须交叉编译、非 drop-in；DVD/蓝光与专有硬解(VAAPI/VDPAU/NVDEC/DXVA)不可用。 |
 | 音频 I/O（ALSA/PulseAudio/WASAPI 等价） | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-VLC-autotools媒体应用移植.md §8-9 | 2026-07-13 | OHAudio NDK(<ohaudio/*.h>, libohaudio.so, pull/callback 模型)真机出声，裸 root CLI 进程亦可发声；非 ALSA/PulseAudio/WASAPI drop-in，须走 @ohos.multimedia.audio/OHAudio。 |
-| 摄像头采集 | ⬜ 未核实 |  |  | PC 形态摄像头采集与权限待核实 |
+| 摄像头采集 | 🟡 部分支持 | 真机实测(设备 3BT0124820000152, HAD-W32, API23, 2026-07-14) + HarmonyOS SDK 文档 | 2026-07-14 | 真机具备摄像头硬件(/dev/video0-2 + /dev/video_param, camera_host)与相机服务(camera_service/CameraDaemon 运行)，const.SystemCapability.Multimedia.Camera.Core=true、多摄开启。@ohos.multimedia.camera(Camera Kit)+ C API + CAMERA 权限(user_grant)具备。应用级采集管线(预览/拍照/录像)未端到端实测——但硬件+服务+API+权限齐备判 partial。obs-studio 摄像头输入源依赖。 |
+| 硬件视频编码（AVCodec NDK OH_VideoEncoder） | 🟡 部分支持 | 真机实测(设备 3BT0124820000152, HAD-W32, API23, 2026-07-14) + HarmonyOS SDK 文档 | 2026-07-14 | 真机具备硬件视频编码栈:/system/lib64/libnative_media_venc.so(OH_VideoEncoder NDK 实现)+ 厂商硬编驱动 libomxvenc.so/libcodec_driver.z.so/libvcodecbase.so。NDK 接口 native_avcodec_videoencoder.h/OH_VideoEncoder(CreateByMime/Configure/Prepare/Start，MIMETYPE_VIDEO_AVC/HEVC/VVC = H.264/265/266)。厂商专有硬编(NVENC/QSV/AMF/VideoToolbox/VAAPI)不可用。实时 1080p60/4K 性能与 app 域编码器暴露未端到端实测 → partial;OBS 实时编码强依赖，软件 x264 兜底但 ohos_FFmpeg 禁 asm 较慢。 |
 
 ## 硬件 / 设备访问
 
@@ -119,22 +130,23 @@
 | GPU 通用计算 CUDA | ❌ 不支持 |  |  | CUDA 为 NVIDIA 专有，鸿蒙无等价——相关功能无法移植 |
 | OpenCL | ✅ 已支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-OpenCL-SDK-适配要点.md | 2026-07-13 | OpenCL 3.0 真机(HUAWEI Maleoon 916 GPU；"HUAWEI OpenCL 3.0 B301")，KhronosGroup/OpenCL-SDK 零改编译、SAXPY 内核跑通(~23GB/s)。须设 OCL_ICD_FILENAMES=/vendor/lib64/passthrough/libOpenCL.so(无标准 ICD 配置)，CL_DEVICE_TYPE 返回非标值。 |
 | USB / 串口 | 🟡 部分支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) + KB | 2026-07-13 | libusb **cmd-pkgs 已预编译**→用户态 USB 访问库可用；USB HID/串口设备**访问权限 app 域受限**(kernel 权限非普通 HAP 可授)、root 域可枚举。@ohos.usbManager 提供 app 层 USB API。libusb/libmtp/usbmuxd/openocd/python-fido2/avrdude/libserialport 依赖。 |
-| 蓝牙 | ⬜ 未核实 |  |  | 蓝牙栈与权限待核实 |
-| 传感器 | ⬜ 未核实 |  |  | PC 形态传感器可用性待核实 |
+| 蓝牙 | 🟡 部分支持 | 真机实测(设备 3BT0124820000152, HAD-W32, API23, 2026-07-14) + HarmonyOS SDK 文档 | 2026-07-14 | 真机蓝牙栈运行(blue_host/bluetooth_service 进程 + const.bluetooth.* 配置)。@ohos.bluetooth.* 分模块 API 具备，**含蓝牙 HID Host profile(@ohos.bluetooth.hid.createHidHostProfile())** + C API oh_bluetooth.h;SysCap Communication.Bluetooth.Core。ACCESS_BLUETOOTH=user_grant。HID 主机端到端(hidapi 连接蓝牙 HID 设备)未做应用级实测——hidapi 以 USB HID 为核心、蓝牙 HID 次要(required=false)。 |
+| 传感器 | ⬜ 未核实 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: @ohos.sensor) | 2026-07-14 | @ohos.sensor(Sensor Service Kit)+ C API oh_sensor.h 具备;权限 ACCELEROMETER/GYROSCOPE=system_grant/normal(v7)、ACTIVITY_MOTION=user_grant，多数传感器无需权限。PC(HAD-W32)形态实际搭载哪些传感器依硬件、未真机枚举——未被本批报告引用，保持 unknown。 |
 | GPU 驱动框架 / DRM-KMS / VAAPI | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | 鸿蒙无 Linux DRM/KMS 子系统与 VAAPI；GPU 走 OpenCL/Vulkan/ArkGraphics，libva 类 Linux 显存/显示抽象无等价。 |
-| 智能卡 / PC-SC | ⬜ 未核实 | 待查 | 2026-07-13 | @ohos 未见 PC/SC 等价智能卡服务 API；OpenSC 依赖——待查文档确认。 |
+| 智能卡 / PC-SC | ❌ 不支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup) | 2026-07-14 | 无 PC/SC(pcsc-lite/WinSCard)等价服务 API。@ohos.secureElement 为 OMAPI(Open Mobile API / GlobalPlatform)仅提供到**内置 eSE/SIM** 的 APDU 通道(SEService/Reader/Session/Channel)，非外接接触/非接触读卡器;@ohos.nfc.*(controller/tag/cardEmulation)具备但非 PC/SC。OpenSC/PC-SC 智能卡中间件依赖无鸿蒙等价 → 相关功能不可移植。 |
+| 内核 evdev 输入子系统（/dev/input/event*、libevdev） | 🟡 部分支持 | 真机探针(设备 3BT0124820000152, root 域, 2026-07-14) + cmd-pkgs 预编译清单 | 2026-07-14 | 真机 /dev/input/event0–event16 齐全，/proc/bus/input/devices 枚举出 键盘(uart_hid 14F3:1400)、指纹、consumer-control、super_privacy、soundtrigger 等设备；root 域可读 event 节点(660 root:input)。libevdev 1.13.3 已由 cmd-pkgs 预编译(sh -s -- libevdev 1.13.3)。**但 app(HAP)域**对 /dev/input 的直接读取受 SELinux/权限限制，跨应用全局输入事件走 @ohos.multimodalInput(受 INTERCEPT_INPUT_EVENT system_basic 限)——故 partial：内核 evdev 层+库具备(root 可)，应用域直读设备节点受限。libevdev 服务对象。 |
 
 ## 权限模型（鸿蒙化后需申请的 ohos.permission.*）
 
 | 能力 | 状态 | 来源 | 核对时间 | 说明 |
 |------|------|------|----------|------|
 | ohos.permission.INTERNET | ✅ 已支持 | 人工核实：harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-GTK应用broadway-ArkWeb-HAP.md、鸿蒙PC-VisualVM-JVM-Swing应用移植.md、鸿蒙PC-opencode-HAP化-Electron壳.md | 2026-07-13 | ohos.permission.INTERNET 为 system_grant(常授)，网络访问恒可用；本地 loopback HTTP/WS(broadwayd/opencode)真机。 |
-| ohos.permission.CAMERA | ⬜ 未核实 |  |  | 摄像头权限授予与 PC 形态可用性待核实 |
-| ohos.permission.MICROPHONE | ⬜ 未核实 |  |  | 麦克风权限待核实 |
-| ohos.permission.LOCATION | ⬜ 未核实 |  |  | 定位权限在 PC 形态待核实 |
+| ohos.permission.CAMERA | ✅ 已支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: permissions_full.json + @ohos.multimedia.camera) | 2026-07-14 | ohos.permission.CAMERA = user_grant/normal(开放, v9起)，运行时 requestPermissionsFromUser 弹窗授予;@ohos.multimedia.camera(SysCap Multimedia.Camera.Core)。权限可申请;PC 形态摄像头硬件可用性另见 media.camera_capture(真机有 /dev/video0-2 + camera_service)。obs-studio 依赖。 |
+| ohos.permission.MICROPHONE | ✅ 已支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: permissions_full.json + @ohos.multimedia.audio) | 2026-07-14 | ohos.permission.MICROPHONE = user_grant/normal(v8起)，运行时授予;音频采集 @ohos.multimedia.audio AudioCapturer(SysCap Multimedia.Audio.Capturer)。 |
+| ohos.permission.LOCATION | ✅ 已支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: permissions_full.json + @ohos.geoLocationManager) | 2026-07-14 | ohos.permission.LOCATION + APPROXIMATELY_LOCATION = user_grant/normal(v7/v9，通常一并申请)、LOCATION_IN_BACKGROUND=user_grant;@ohos.geoLocationManager(Location Kit)+ C API oh_location.h。GNSS 硬件依设备。 |
 | 读写存储（文件访问） | 🟡 部分支持 | 人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app访问PC用户目录.md | 2026-07-13 | app 沙箱数据目录恒可读写；用户目录 READ_WRITE_DOCUMENTS_DIRECTORY/READ_WRITE_DOWNLOAD_DIRECTORY 为 normal 级、运行时申请授予后按物理路径直接读写；DESKTOP(READ_WRITE_DESKTOP_DIRECTORY)为 system_basic、普通签名不可授；任意路径需 FILE_ACCESS_MANAGER/更高 APL。 |
-| ohos.permission.USE_BLUETOOTH | ⬜ 未核实 |  |  | 蓝牙权限待核实 |
-| 通知权限 | ⬜ 未核实 |  |  | 通知权限待核实 |
+| ohos.permission.USE_BLUETOOTH | ✅ 已支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: permissions_full.json + @ohos.bluetooth.*) + 真机 BT 栈 | 2026-07-14 | ohos.permission.ACCESS_BLUETOOTH = user_grant/normal(v10，使用蓝牙);USE_BLUETOOTH/DISCOVER_BLUETOOTH = system_grant/normal(v8)。@ohos.bluetooth.*(Connectivity Kit)。真机蓝牙栈运行(blue_host/bluetooth_service)。 |
+| 通知权限 | ✅ 已支持 | HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: @ohos.notificationManager + 请求通知授权) | 2026-07-14 | 发通知**无需 manifest 权限**——运行时 @ohos.notificationManager + requestEnableNotification() 用户授权即可 publish()(SysCap Notification.Notification)。ohos.permission.NOTIFICATION_CONTROLLER 为系统权限(管理/订阅侧，普通应用不可授);ACCESS_NOTIFICATION_POLICY=system_grant。 |
 
 ## 原生 / NDK 层（POSIX 子集 · 系统调用 · 工具链 · 常用原生库）
 
@@ -159,6 +171,9 @@
 | libffi (FFI 动态调用) | ✅ 已支持 | 真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13) | 2026-07-13 | 设备 HNP 已装 libffi.org；dlopen/闭包(CFUNCTYPE)真机可用(W^X 于 1.12.0 放开, KB E045)。pyobjc-core 等 FFI 库依赖。 |
 | GLib / GObject / GIO / GModule | ✅ 已支持 | 真机实测(设备 3BT0124820000152, HarmonyOS HongMeng 1.12.0, root 域探针, 2026-07-13) | 2026-07-13 | 设备 HNP 已装 glib.org；gstreamer 等依赖 GLib 栈可用(注:GTK 场景另见 gui.gtk，cmd-pkgs 预编译 GTK 栈不可用须源码编, KB)。 |
 | macOS Objective-C 运行时桥 (Cocoa/Quartz/CoreText) | ❌ 不支持 | 真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13) | 2026-07-13 | pyobjc 依赖 macOS ObjC 运行时 + Foundation/CoreGraphics/CoreText，鸿蒙无等价 ObjC 桥；文本排版须改 @ohos.graphics.text，属重写而非移植。 |
+| 进程 locale 环境变量（LC_ALL/LANG）+ musl locale 支持 | 🟡 部分支持 | harmony-pc 工程实践(真机)：plugin/shared/skills/pc-native-build/references/musl-quickref.md | 2026-07-14 | 进程 locale 环境变量 + musl locale 支持有限:设备 musl locale 限 C/C.UTF-8(1.12.0+ 扩展了常见 locale)，指南建议勿依赖复杂 locale 切换;设备 Node/Python 进程环境是否注入 LANG/LC_ALL/LC_MESSAGES/LANGUAGE 无证据(KB 中 LC_ALL 均为 Mac host 构建期设置) → os-locale 类库可能返回空/C。非阻碍(os-locale 有 Intl.DateTimeFormat 回退)。required=false。 |
+| POSIX pthread 完整 API（mutex/cond/rwlock/tls/once/attr） | ✅ 已支持 | 真机探针(设备 3BT0124820000152, HongMeng 1.12.0, root 域) + P7 交叉编译(2026-07-14) | 2026-07-14 | 第三轮综合 POSIX/NDK 探针 45/46 OK：pthread create/join/detach、mutex(普通/递归/errorcheck)、cond、rwlock、进程共享互斥锁(process-shared, MAP_SHARED)、TLS(pthread_key)、pthread_once、pthread_cancel/setaffinity 符号 1.12.0 已存在——**唯一缺 robust mutex(PTHREAD_MUTEX_ROBUST)**。P7 PROJ 交叉编译 CMake 亦确认 `pthread_create in pthread - found`。cpprestsdk/node-sqlcipher 的 pthread 互斥锁前提满足；用到 robust mutex 的需回退普通 mutex+手动状态恢复。 |
+| POSIX 进程组 / 信号模型（setsid/getpgid/setpgid/killpg/kill/sigaction/sigprocmask/waitpid） | ✅ 已支持 | 真机探针(设备 3BT0124820000152, community Python 3.12.8, 2026-07-14) | 2026-07-14 | 设备 Python 进程组/信号自测 11/11 OK：os.getpgid/getsid、subprocess+preexec_fn=os.setsid 建新会话、os.kill(SIGTERM)、os.killpg(SIGKILL)、os.waitpid、signal.signal(SIGUSR1/SIGCHLD) 注册+自投递+接收、signal.pthread_sigmask(SIG_BLOCK)。口径=root/shell 域(hdc)。app(HAP 沙箱)域跨进程信号受 SELinux/seccomp 限制(只能对自身进程树)——ipykernel 的父子进程组信号(内核转发/中断)在自身进程树内可用。 |
 
 ## 原生 C/C++ 库移植状态（cmd-pkgs 预编译 / 需交叉编译）
 
@@ -170,9 +185,14 @@
 | ncurses / readline | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 ncurses/readline。 |
 | libogg (Ogg 容器) | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 libogg/ogg；theora 等依赖。 |
 | APR (Apache Portable Runtime) | ✅ 已支持 | OpenHarmony PC C/C++ 预编译包(cmd-pkgs: gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) | 2026-07-13 | cmd-pkgs 已预编译 apr；apr-util/apr-iconv 依赖。 |
-| BoringSSL (Chromium) | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（openssl 已预编译可替代部分；cronet 需 BoringSSL 特定实现，Chromium //base //net 一并较重）。 |
+| BoringSSL (Chromium) | ✅ 已支持 | harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-Rust-BoringSSL-quiche.md、third_party_adapters/quiche | 2026-07-14 | quiche 0.29.1 默认 boring crate(=BoringSSL，含 C/C++/汇编)从 Mac 零补丁交叉编译(aarch64-unknown-linux-ohos)，真机 loopback QUIC 握手 + HTTP/3 body 拉取通过(cargo test 949 transport 通过)。三处必需技巧:BINDGEN_EXTRA_CLANG_ARGS 给 sysroot、libstdc++.so→libc++.so 链接脚本 shim、CC_/CXX_/AR_ triple 环境变量。root 域 ELF 运行(无需签名)，app 域打包未验。⇒ quiche/BoringSSL 不再是 blocker(openssl 已预编译可作部分替代)。 |
 | Apache Xerces-C++ (XML) | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（libE57Format 依赖 XercesC 3.2）。 |
 | Lua / liblua | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（NLua/KeraLua 需原生 liblua5x；库小、交叉编译成本低）。 |
 | OpenCASCADE (几何引擎) | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（IfcOpenShell 依赖；OCCT 依赖链庞大、交叉编译重）。 |
 | Ghostscript | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（ghostpdl/Ghostscript_jll 需 gs 二进制/库）。 |
 | glibmm / libxml++ | ⬜ 未核实 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实 | 2026-07-13 | cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（libepub 依赖；C++ 绑定层需 glib 之上再编）。 |
+| OpenSSL / libcrypto（加密算法库） | ✅ 已支持 | harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-git-适配要点.md、鸿蒙PC-pyGLFW-Python绑定库迁移.md、memory/platform/鸿蒙PC-设备Python运行时.md;cmd-pkgs | 2026-07-14 | 设备 community Python HNP 已附 libssloh/libcryptooh(OpenSSL .so 在设备)，cryptography 44 预装;亦可交叉编译(./Configure no-asm linux-aarch64 规避 arm64 汇编);cmd-pkgs 亦收录 openssl。nmap libssh2 自动链接交叉编译的 OpenSSL。node-sqlcipher 的 SQLCIPHER_CRYPTO_OPENSSL(AES-256-CBC via libcrypto)前提可满足(node-sqlcipher 本体未单测)。 |
+| libLLVM 可链接运行时库（llvmlite / JIT 后端） | ❌ 不支持 | OpenHarmony PC PyPI 镜像 wheel 剖析 + 真机(设备 3BT0124820000152, 2026-07-14) | 2026-07-14 | unknown→unavailable(2026-07-14 核实)。镜像存在 llvmlite 0.47.0 / 0.43.0 ohos_aarch64 wheel，但其 llvmlite/binding/libllvmlite.so 的 DT_NEEDED **硬编构建机绝对路径** `/storage/Users/currentUser/migrate_oh/port_ohos/wip/llvm/20.1.0/llvm-project-20.1.0.src/llvm/ohos-build/lib/libLLVM.so`(设备上不存在)；设备遍历 /system·/vendor·HNP 无任何 libLLVM*.so；真机 import llvmlite → OSError 加载 libllvmlite.so 失败，内核 `xpm:1010 libllvmlite.so is not protected by dmverity` → map(PROT_EXEC) 被拒(2026-07 设备已收紧 XPM/dmverity 强制)。须自行为 aarch64-ohos 交叉编译 libLLVM 20.x/22.x(依赖链重)并经签名 HAP 分发方可能——未证 → unavailable。llvmlite(numba 后端)对象。 |
+| Expat（纯 C XML 解析） | ✅ 已支持 | harmony-pc 工程实践(真机)：third_party_adapters/nmap、memory/adaptation/鸿蒙PC-cmd-pkgs预编译GTK栈不可用.md | 2026-07-14 | Expat XML 解析(纯 C)可用:expat-2.6.2 源码 clang 交叉编译、真机加载运行(nmap GTK broadway 应用栈的一部分)。cmd-pkgs 亦有预编译 libexpat.so 但缺 SONAME 须 patchelf --set-soname;git 构建可 NO_EXPAT=1 绕过。dbus-glib 的 dbus-binding-tool 依赖 Expat 解析内省 XML。 |
+| libdbus C 库（D-Bus 客户端库，含 dbus-daemon 二进制） | ✅ 已支持 | cmd-pkgs 预编译清单(gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) 2026-07-14 | 2026-07-14 | dbus 1.14.10 已由 cmd-pkgs 预编译(sh -s -- dbus 1.14.10；tar 内含 bin/dbus-daemon·dbus-send·dbus-monitor 全套 + lib/libdbus-1.so + etc/dbus-1/{session,system}.conf + include)。libdbus 基于标准 POSIX socket/poll/AF_UNIX 交叉编译无碍。**注意「库可用」≠「有总线可连」**——运行期是否有 D-Bus 消息总线见 process_security.dbus_ipc_bus。dbus-python/dbus-glib 的 libdbus 依赖满足。 |
+| PROJ 坐标转换库（cartographic projections / CRS） | ✅ 已支持 | host 侧 OHOS NDK 交叉编译实测(2026-07-14) | 2026-07-14 | PROJ 9.4.1 用 OHOS NDK(DevEco native, aarch64-unknown-linux-ohos-clang++ 15 + ohos.toolchain.cmake, OHOS_ARCH=arm64-v8a) CMake+Ninja 交叉编译**成功** → libproj.so.25.9.4.1(llvm-readelf: ELF64 AArch64 DYN；NEEDED=libsqlite3.so.0 + libc++_shared.so + libc.so，全部标准 OHOS 库)。依赖 SQLite3(cmd-pkgs 预编译 sqlite3 3.49.1 提供 lib+头)；ENABLE_TIFF/CURL=OFF(仅关"读部分网格/远程网格"可选功能，核心投影不受影响)。不在 cmd-pkgs 预编译清单，但可干净交叉编译。PDAL 的 PROJ 依赖前提满足(recompile)。 |

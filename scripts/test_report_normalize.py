@@ -154,6 +154,33 @@ e = norm(E)["harmony_adaptation"]
 check("E.porting_class(materiality)", e.get("porting_class"), "no_adaptation")
 check("E.overall", (e.get("adaptation_assessment") or {}).get("overall"), "adaptable")
 
+# ── Fixture F: the esptool case — model says no_adaptation (lib's own .py needs zero change),
+#    with only PARTIAL, target-side blockers (caused_by target_assumptions: serial/permission
+#    prerequisites), no needs_adaptation bucket, no unadaptable_apis. porting_class (code axis)
+#    must STAY no_adaptation — partial/target-side blockers surface via functional_viability
+#    (viable_with_work), orthogonal to the code axis. Guards against a regression that would
+#    clamp on partial blockers (the SKILL.md overstatement we corrected).
+F = {
+    "code_metrics": {"production": {"code": 34000}},
+    "code_partition": {"buckets": [{"class": "reuse_direct", "loc": 34000}]},
+    "harmony_adaptation": {"porting_class": "no_adaptation", "effort": {"person_days": [6, 13]},
+                           "unadaptable_apis": [],
+                           "target_assumptions": [
+                               {"id": "ta:usb_serial", "required": True, "target_status": "partial"},
+                               {"id": "ta:terminal_tty", "required": True, "target_status": "partial"}],
+                           "blockers": [
+                               {"id": "bk:pyserial", "severity": "major", "adaptability": "partial",
+                                "category": "native_dependency", "caused_by": ["ta:usb_serial", "ta:terminal_tty"]},
+                               {"id": "bk:modem_control", "severity": "minor", "adaptability": "adaptable",
+                                "category": "posix_subset_gap", "caused_by": ["ta:terminal_tty"]}]},
+    "library": {"ecosystem": "python"},
+}
+f = norm(F)["harmony_adaptation"]
+check("F.porting_class(partial blocker no clamp)", f.get("porting_class"), "no_adaptation")
+check("F.effective_class", (f.get("adaptation_assessment") or {}).get("effective_class"), "no_adaptation")
+check("F.overall", (f.get("adaptation_assessment") or {}).get("overall"), "adaptable")
+check("F.functional_viability", f.get("functional_viability"), "viable_with_work")
+
 # ── Idempotency: normalizing an already-normalized report changes nothing material.
 A_once = norm(A)
 A_twice = norm(A_once)

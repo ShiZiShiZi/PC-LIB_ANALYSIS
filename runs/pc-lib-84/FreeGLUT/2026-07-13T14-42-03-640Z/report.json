@@ -1101,11 +1101,11 @@
     "target_assumptions": [
       {
         "capability": "OHOS XComponent NativeWindow（原生GL/EGL渲染表面）",
-        "capability_key": null,
+        "capability_key": "xcomponent_native_window",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "OHOS 后端需要 XComponent 提供的 OHNativeWindow 来创建 EGL 渲染表面，若此 API 不可用则无法实现窗口渲染",
-        "source": "harmony-pc-capabilities.json 未收录 XComponent C API 状态（需补充）",
+        "source": "harmony-pc-capabilities.json#xcomponent_native_window 核实(2026-07-14): XComponent OHNativeWindow C API 真机可用",
         "id": "ta:1",
         "target_status_model": "unknown"
       }
@@ -1136,7 +1136,7 @@
     "notes": "评估按模型 A（库，经 OHOS NDK 重编译为 .so 供其他应用/库链接使用）。鸿蒙 PC 已确认提供 GLES 3.2+EGL（libEGL.so+libGLESv3.so）的真实图形渲染能力，无 GPU 驱动缺失风险。主要新增工作集中在 OHOS 后端的事件循环和窗口管理——Android NDK 后端的现有实现（ANativeWindow→XComponent、android_native_app_glue 事件循环→OHOS 事件循环）可以大大降低开发量。porting_class_model 设为 needs_adaptation（需编写新平台后端），归一将据 code_partition needs_adaptation 桶（16,104 行）确认此分类。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1181,13 +1181,6 @@
         "kind": "new_value",
         "value": "library",
         "rationale": "FreeGLUT 是供开发者链接调用（link-time dependency）的 C 语言库，产物为 .so/.a/.dll，无独立启动器或可执行程序，属典型 library"
-      },
-      {
-        "dimension": "capability_profile",
-        "field": "target_assumptions",
-        "kind": "caps_gap",
-        "value": "OHOS XComponent NativeWindow C API 状态",
-        "rationale": "harmony-pc-capabilities.json 未收录 XComponent（OHNativeWindow）C API 在鸿蒙 PC 上的可用性状态和权限要求，建议补充到 hardware_devices 或新增 native_graphics 节"
       }
     ],
     "harmony_warnings_dismissed": [

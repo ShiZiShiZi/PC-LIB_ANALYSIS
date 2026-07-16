@@ -986,10 +986,10 @@
         "permission": "ohos.permission.MICROPHONE",
         "reason": "OpenAL 音频采集功能需要麦克风访问权限",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "src/java/jogamp/openal/ALDynamicLibraryBundleInfo.java:100-143"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "JOAL 是 Java 对 OpenAL 的绑定库，核心工作是用 OHOS NDK 交叉编译 OpenAL-Soft 原生库和 JOAL JNI 胶水库（libjoal + libopenal），确保鸿蒙 JDK 的 JNI 可正常加载。OpenAL-Soft 在 Linux 上默认使用 ALSA/PulseAudio/PipeWire 后端，鸿蒙 PC 是否有兼容音频后端是最大不确定性。若无兼容后端，需改写 OpenAL-Soft 的音频后端层对接鸿蒙音频 API，或整体替换为 @ohos.multimedia.audio。",
@@ -1001,7 +1001,6 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "1) 确认鸿蒙 PC 是否提供 ALSA/PulseAudio 兼容层 → 可直接链接；2) 否则需修改 OpenAL-Soft 的音频后端模块对接 @ohos.multimedia.audio；3) 或替换整个音频层",
         "caused_by": [
           "ta:audio_io"
@@ -1009,7 +1008,8 @@
         "manifests_as": [],
         "evidence": [
           "README.md:36-68"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:gluegen_jni",
@@ -1018,7 +1018,6 @@
         "adaptability": "adaptable",
         "category": "ffi_bridge",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 OHOS NDK 重新编译 GlueGen 生成的 JNI 原生库（libjoal），确保鸿蒙 JDK 的 JNI 可正常调用",
         "caused_by": [
           "ta:jni"
@@ -1027,7 +1026,8 @@
         "evidence": [
           "src/native/almisc.c",
           "src/java/jogamp/openal/ALDynamicLibraryBundleInfo.java:60"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "compatible": [
@@ -1078,7 +1078,7 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

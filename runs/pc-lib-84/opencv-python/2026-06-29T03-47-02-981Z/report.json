@@ -1150,19 +1150,19 @@
         "permission": "ohos.permission.CAMERA",
         "reason": "cv2.VideoCapture 可能访问摄像头采集视频",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "tests/test.py:16"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "ohos.permission.INTERNET",
         "reason": "OpenCV videoio 可能读取网络视频流；wheel 构建/分发本身不依赖网络",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "README.md:55-56"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "opencv-python 本体是纯 Python 打包层，可直接跑在鸿蒙已移植 Python 上；真正工作量在于将 OpenCV C++ 核心与 Python 绑定用 OHOS NDK 交叉编译为鸿蒙 .so，并把 Linux/Windows 专有的视频 I/O（V4L/MSMF）和 GUI 后端替换为鸿蒙原生能力或 headless 配置。OpenHarmony PC PyPI 镜像中已存在 opencv-python 的 ohos wheel，说明该路径已被社区验证。因 OpenCV 子模块未检出，具体 C++ 平台 API 清单无法穷尽，置信度评为 medium。",
@@ -1174,7 +1174,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 ohos.toolchain.cmake 配置 OpenCV CMake 构建，输出 arm64/x86_64 .so，并启用 Python3 绑定；参考社区已有的 ohos wheel 构建脚本。",
         "caused_by": [
           "ta:ohos_ndk"
@@ -1183,7 +1182,8 @@
         "evidence": [
           "setup.py:163-207",
           ".gitmodules:1-3"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:videoio_backend",
@@ -1192,7 +1192,6 @@
         "adaptability": "partial",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "构建时关闭 WITH_V4L/WITH_MSMF，改由 @ohos.multimedia 实现视频/摄像头采集；headless 场景可进一步裁剪 videoio。",
         "caused_by": [
           "ta:multimedia"
@@ -1201,7 +1200,8 @@
         "evidence": [
           "setup.py:217",
           "setup.py:258-259"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:gui_backend",
@@ -1210,7 +1210,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "优先构建 headless 变体以完全规避 GUI；如需 GUI，则使用鸿蒙已适配的 Qt5 后端并移除 X11/XCB/Win32 平台相关补丁与路径设置。",
         "caused_by": [
           "ta:qt"
@@ -1219,7 +1218,8 @@
         "evidence": [
           "setup.py:211-215",
           "setup.py:235-256"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:camera_permission",
@@ -1228,7 +1228,6 @@
         "adaptability": "partial",
         "category": "needs_permission",
         "source_dimension": "runtime_surface",
-        "harmony_status": "needs_permission",
         "remediation": "在应用/库的使用方声明 ohos.permission.CAMERA，并验证鸿蒙 PC 上摄像头设备与权限模型的实际可用性。",
         "caused_by": [
           "ta:camera_perm"
@@ -1236,7 +1235,8 @@
         "manifests_as": [],
         "evidence": [
           "tests/test.py:16"
-        ]
+        ],
+        "remediation_status": "needs_permission"
       }
     ],
     "compatible": [
@@ -1297,7 +1297,7 @@
       "opencv-python 已出现在 OpenHarmony PC PyPI 镜像中（含 ohos wheel），说明社区已完成或正在维护鸿蒙化构建；本报告仍按源码现状给出评估。"
     ],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

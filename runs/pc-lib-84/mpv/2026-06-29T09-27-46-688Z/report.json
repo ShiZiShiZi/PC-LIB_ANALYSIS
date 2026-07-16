@@ -2127,20 +2127,20 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "网络流媒体播放",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "stream/stream_curl.c"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储",
         "reason": "读取本地媒体文件与配置",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "stream/stream_file.c",
           "options/path.c"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "mpv 作为重度依赖 FFmpeg/GPU 渲染/桌面窗口系统的 C 原生媒体播放器应用，移植到鸿蒙 PC 面临多重阻碍：核心 FFmpeg 依赖的鸿蒙可用性未核实、窗口系统（Wayland/X11/Win32）需替换为鸿蒙窗口 API、音频 I/O 后端需改写走 @ohos.multimedia.audio、Linux 特有硬件加速（VAAPI/DRM/CUDA）需放弃。推荐路径：用 OHOS NDK 交叉编译 mpv 核心 + 编写鸿蒙窗口/音频适配层 + 依赖鸿蒙版 FFmpeg（若可用）。",
@@ -2152,7 +2152,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "用 OHOS NDK 交叉编译 FFmpeg 或使用社区鸿蒙版 FFmpeg",
         "caused_by": [
           "ta:ffmpeg",
@@ -2161,7 +2160,8 @@
         "manifests_as": [],
         "evidence": [
           "meson.build:23-28"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:window_system",
@@ -2170,7 +2170,6 @@
         "adaptability": "partial",
         "category": "win32_api",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "编写鸿蒙窗口适配层，替代 wayland_common.c/x11_common.c/w32_common.c",
         "caused_by": [
           "ta:wm"
@@ -2182,7 +2181,8 @@
           "video/out/wayland_common.c",
           "video/out/x11_common.c",
           "video/out/w32_common.c"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:audio_backend",
@@ -2191,7 +2191,6 @@
         "adaptability": "partial",
         "category": "platform",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 @ohos.multimedia.audio API 编写新的音频输出后端 ao_ohos.c",
         "caused_by": [
           "ta:audio_io"
@@ -2202,7 +2201,8 @@
         "evidence": [
           "audio/out/ao_alsa.c",
           "audio/out/ao_pulse.c"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:gpu_rendering",
@@ -2211,7 +2211,6 @@
         "adaptability": "partial",
         "category": "platform",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "使用鸿蒙 OpenGL ES/EGL 后端；需验证 libplacebo 能否在 GLES 环境编译",
         "caused_by": [
           "ta:opengl_egl"
@@ -2220,7 +2219,8 @@
         "evidence": [
           "video/out/gpu/context.c",
           "video/out/placebo/ra_pl.c"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:hw_accel",
@@ -2229,7 +2229,6 @@
         "adaptability": "unadaptable",
         "category": "hardware",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "放弃 CUDA/VAAPI/D3D11VA/DRM 硬件加速；探索鸿蒙 NDK 媒体 API 的硬件解码能力",
         "caused_by": [
           "ta:gpu_cuda"
@@ -2242,7 +2241,8 @@
         "evidence": [
           "video/out/hwdec/hwdec_cuda.c",
           "video/vaapi.c"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:app_delivery",
@@ -2251,7 +2251,6 @@
         "adaptability": "adaptable",
         "category": "toolchain",
         "source_dimension": "build_env",
-        "harmony_status": "unknown",
         "remediation": "确认鸿蒙 PC 是否支持原生 C 应用打包；若仅支持 .hap 则需适配",
         "caused_by": [
           "ta:desktop_app"
@@ -2259,7 +2258,8 @@
         "manifests_as": [],
         "evidence": [
           "meson.build:1871"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -2333,7 +2333,7 @@
     "warnings": [],
     "confidence_overall": "low",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "low",
     "harmony_warnings": [
       {

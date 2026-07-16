@@ -1641,10 +1641,10 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "freshclam 需要网络访问下载特征库更新",
         "source_capability": "",
-        "harmony_status": "available",
         "evidence": [
           "libfreshclam/libfreshclam_internal.c"
-        ]
+        ],
+        "grantability": "available"
       }
     ],
     "summary": "ClamAV 是典型的 C/C++ 守护进程应用，核心扫描引擎（libclamav）主要依赖 POSIX 标准API，理论上可通过 OHOS NDK 交叉编译移植。主要障碍：1) clamonacc 依赖 Linux 专有 fanotify/inotify，在鸿蒙上无替代，该模块不可移植；2) 外部依赖（OpenSSL、libcurl、zlib 等）需确认鸿蒙端可用性；3) Rust 子组件需 ohos target 支持。建议路径：使用 OHOS NDK 交叉编译核心组件（libclamav + clamd + clamscan + freshclam），放弃 clamonacc 实时监控功能，其余子系统逐项验证依赖可用性。",
@@ -1656,7 +1656,6 @@
         "adaptability": "unadaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "clamonacc 模块整体不可移植，放弃该功能或使用鸿蒙文件访问通知 API（如有）重写监控层",
         "caused_by": [
           "ta:fanotify_inotify"
@@ -1669,7 +1668,8 @@
           "clamonacc/clamonacc.c:349",
           "clamonacc/fanotif/fanotif.c:105",
           "clamonacc/inotif/inotif.c:432"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:native_deps",
@@ -1678,7 +1678,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "通过 cmd-pkgs 安装已移植版本或使用 OHOS NDK 从源码编译静态链接",
         "caused_by": [
           "ta:openssl_availability",
@@ -1687,7 +1686,8 @@
         "manifests_as": [],
         "evidence": [
           "CMakeLists.txt:471-541"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:rust_ohos",
@@ -1696,14 +1696,14 @@
         "adaptability": "adaptable",
         "category": "toolchain",
         "source_dimension": "build_env",
-        "harmony_status": "partial",
         "remediation": "Rust 已有 ohos target 支持，需配置交叉编译工具链",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "libclamav_rust/Cargo.toml",
           "CMakeOptions.cmake:127"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "compatible": [
@@ -1802,7 +1802,7 @@
         "message": "unadaptable_api ua:prctl 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

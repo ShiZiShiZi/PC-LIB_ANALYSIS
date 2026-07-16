@@ -1886,12 +1886,12 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "使用 ohos.toolchain.cmake 交叉编译 pydevd 的 .pyx 扩展，并在鸿蒙 Python 上验证 import 与功能；缺失内部 pycore 头文件时需要按 Python 版本做条件编译降级",
         "evidence": [
           "setup.py:81",
           "src/debugpy/_vendored/pydevd/setup_pydevd_cython.py"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:attach_binaries",
@@ -1900,13 +1900,13 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "用 OHOS NDK 编译 linux_and_mac/attach.cpp 为 attach_linux_*.so；Windows 专用 DLL 注入器在鸿蒙上无需使用。若鸿蒙不支持 ptrace/gdb/lldb，则 --pid 功能需条件禁用",
         "evidence": [
           "build_attach_binaries.py",
           "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/linux_and_mac/attach.cpp",
           "src/debugpy/_vendored/pydevd/pydevd_attach_to_process/windows/inject_dll.cpp"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:win32_branches",
@@ -1915,13 +1915,13 @@
         "adaptability": "adaptable",
         "category": "win32_api",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "保持现有 sys.platform/os.name 条件分支；OHOS 下按 POSIX 处理，避免调用 kernel32/CreateProcess flags 等 Windows 专用 API",
         "evidence": [
           "src/debugpy/server/api.py:199",
           "src/debugpy/_vendored/pydevd/pydevd_file_utils.py:214",
           "src/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_utils.py:405"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "unadaptable_apis": [],
@@ -1968,11 +1968,11 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "DAP 适配器监听 TCP 端口并接受客户端连接（通常绑定 localhost，但也支持 0.0.0.0）",
         "source_capability": "dap_network",
-        "harmony_status": "unknown",
         "evidence": [
           "src/debugpy/common/sockets.py",
           "src/debugpy/adapter/__main__.py:60"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "compatible": [
@@ -2038,7 +2038,7 @@
     "confidence_overall": "medium",
     "warnings": [],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

@@ -74,18 +74,18 @@
           "id": "pytorch",
           "capability": "PyTorch / libtorch",
           "status": "unavailable",
-          "source": "真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13)",
-          "checked_at": "2026-07-13",
-          "note": "真机 HNP 无 libtorch；无 PyTorch 移植证据；FBGEMM 等依赖无法运行。",
+          "source": "真机复核(设备 3BT0124820000152, HAD-W32, 2026-07-14) + OpenHarmony PC PyPI 镜像",
+          "checked_at": "2026-07-14",
+          "note": "真机复核(2026-07-14)解 caps↔镜像冲突:镜像存在 torch-2.11.0a0+git70d99e9-cp312-cp312-**ohos_aarch64**.whl(alpha)，但设备 community Python 3.12.8 的 pip 支持标签为 **harmonyos_aarch64**(42 tags)、不接受 ohos_aarch64 → `pip install torch --index-url <镜像>` 报 “No matching distribution found”;torch 亦未预装(find_spec=None)。镜像 harmony_adapted=true 仅表示“页面存在 ohos wheel”，**不等于可 pip 安装/可运行**——同款 numpy 镜像亦仅 ohos_aarch64 wheel，其在设备可用是靠**预装(bundled 2.2.1)**而非镜像 pip。故 torch 真机不可用(无 libtorch 运行证据、FBGEMM 依赖无法运行的旧结论维持)。若上游重打 harmonyos_aarch64 标签(或 pip 支持 ohos 标签)且 wheel 真机可导入运行，可翻转 partial/available。sentence-transformers/transformers/vision/torchvision 均受阻。",
           "check": null
         },
         {
           "id": "tensorflow",
           "capability": "TensorFlow / libtensorflow",
           "status": "unavailable",
-          "source": "真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13)",
-          "checked_at": "2026-07-13",
-          "note": "真机 HNP 无 libtensorflow；无 TF 移植证据；tensorflow-onnx 依赖无法运行。",
+          "source": "真机复核(设备 3BT0124820000152, 2026-07-14) + OpenHarmony PC PyPI 镜像(harmony_adapted=false)",
+          "checked_at": "2026-07-14",
+          "note": "真机复核(2026-07-14):镜像**无 tensorflow 的 ohos/harmonyos wheel**(harmony_adapted=false)、设备未预装;无 libtensorflow 移植证据。tensorflow-onnx 及 TF 后端依赖无法运行。(对比 torch:torch 有 ohos wheel 但标签不匹配不可装;tensorflow 连 wheel 都无。)",
           "check": null
         },
         {
@@ -122,6 +122,15 @@
           "source": "真机实测(设备 3BT0124820000152, HongMeng 1.12.0, 2026-07-13)",
           "checked_at": "2026-07-13",
           "note": "真机 HNP 无 julia；jnumpy 需可嵌入 libjulia(jl_init_with_image)+ 与 CPython 同进程双 GC 共存，未证。基座 Julia 运行时另见 runtimes.julia（社区版可装）。",
+          "check": null
+        },
+        {
+          "id": "mindspore",
+          "capability": "MindSpore 深度学习框架（华为自研，训练/推理）",
+          "status": "unavailable",
+          "source": "OpenHarmony PC PyPI 镜像 + 真机(设备 3BT0124820000152, 2026-07-14)",
+          "checked_at": "2026-07-14",
+          "note": "OpenHarmony PC PyPI 镜像 mindspore 2.9.0 仅 manylinux1_x86_64 / win_amd64 / macosx 二进制 wheel + 一个 none-any(纯前端、无 aarch64 原生 _c_expression 后端 .so)，**无 ohos_aarch64 wheel**；设备 import mindspore=未安装。与 pytorch/tensorflow 同口径(镜像有 wheel≠可装可跑)。MindSpore Lite(端侧推理运行时 .so)是另一独立产品，非 mindcv 训练/建模所依赖的完整 MindSpore 框架替代。mindcv/mindspore 分析对象。",
           "check": null
         }
       ]
@@ -235,19 +244,19 @@
         {
           "id": "javafx",
           "capability": "JavaFX",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实（是否随附/可装）",
+          "status": "unavailable",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: 无 javafx 条目)",
+          "checked_at": "2026-07-14",
+          "note": "HarmonyOS SDK 无 JavaFX 后端/移植记录(api-references/docs 均无 javafx)。鸿蒙应用层为 ArkTS/ArkUI + C/C++ NDK，无 JVM 桌面 GUI 工具包;JavaFX GUI 须改 ArkUI 或走 OH-AWT/Swing(swing 已 available)。",
           "check": null
         },
         {
           "id": "swt",
           "capability": "SWT",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "待核实",
+          "status": "unavailable",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: 无 swt 条目)",
+          "checked_at": "2026-07-14",
+          "note": "HarmonyOS SDK 无 SWT 后端(SWT 依赖 GTK/Win32/Cocoa 原生窗口后端，鸿蒙无等价 org.eclipse.swt 原生实现)。Java GUI 须改 ArkUI 或 OH-AWT/Swing。",
           "check": null
         },
         {
@@ -306,6 +315,15 @@
           "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-窗口几何控制无native只ArkTS.md、鸿蒙PC-XComponent-CPU像素渲染与输入缝.md；memory/adaptation/Qt6/VLC/VisualVM",
           "checked_at": "2026-07-13",
           "note": "@ohos.window/Rosen 提供桌面级多窗口环境，Qt6/VLC/VisualVM 已真机多窗运行；无 X11/Wayland，原生窗口几何(resize/move/min/max)无 NDK 通路、须反向桥 ArkTS @ohos.window。",
+          "check": null
+        },
+        {
+          "id": "xcomponent_native_window",
+          "capability": "XComponent OHNativeWindow C API（原生渲染表面 + NDK 输入事件）",
+          "status": "available",
+          "source": "harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-XComponent-CPU像素渲染与输入缝.md、鸿蒙PC-通用视窗桥ohos_window_bridge.md、鸿蒙PC-GLFW视窗后端-EGL-XComponent.md;third_party_adapters/glfw、ohos_window_bridge",
+          "checked_at": "2026-07-14",
+          "note": "普通签名 app 域 HAP、无 root/特殊权限真机验证。OH_NativeXComponent 的 OnSurfaceCreated(comp, void* window) 直接给出 OHNativeWindow*;CPU-blit 路径(RequestBuffer→mmap→写 stride→FlushBuffer)与 GPU 路径(eglCreateWindowSurface / vkCreateSurfaceOHOS)双通;输入经 RegisterMouseEventCallback/RegisterKeyEventCallbackWithResult/RegisterUIInputEventCallback/DispatchTouchEvent。GLFW 全 _GLFW_OHOS 后端跑旋转三角(GL_VERSION=OpenGL ES 3.2);ohos_window_bridge 的 owb_ohos_app.h 线程壳可跑未改的桌面 int main() 循环。⚠ 窗口几何控制(resize/move/min/max/全屏)**无 native NDK 通路**，须经 napi_threadsafe_function 反向桥 ArkTS @ohos.window(与 Qt OHOS QPA 一致);仅 cursor-lock/window-props 为纯 native(OH_WindowManager_*)。坑:EGL/GLESv2 soname 不匹配、64KB 页对齐(-Wl,-z,max-page-size=0x1000)。⇒ GLUT/GLFW/SDL 式窗口+输入后端可移植(FreeGLUT/freeglut/pyGLFW/pygame/mujoco/scintilla/framelesshelper)。",
           "check": null
         }
       ]
@@ -403,6 +421,51 @@
           "checked_at": "2026-07-13",
           "note": "@ohos.deviceInfo(serial/ODID)提供设备标识；非 D-Bus/getprop drop-in，Node 库需经该 API 适配。devtools-shared 依赖。",
           "check": null
+        },
+        {
+          "id": "credential_store",
+          "capability": "系统凭据库 / 密钥保险箱（Keychain/libsecret/Credential Vault 等价）",
+          "status": "partial",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: @ohos.security.asset / @ohos.security.huks)",
+          "checked_at": "2026-07-14",
+          "note": "系统凭据库等价物具备但非 drop-in:@ohos.security.asset(关键资产存储 Asset Store Kit + C API asset_api.h，SysCap Security.Asset)专为短敏感数据(密码/账号、应用凭据 Token、银行卡号)——最接近 keytar/macOS Keychain/libsecret 等价;@ohos.security.huks(通用密钥库 HUKS)管密钥材料。须经其 API 适配(非 keytar N-API drop-in)，PC 真机未测。google-workspace-mcp 的 keytar 有 AES-256-GCM 加密文件回退(可强制启用)，故 required=false。",
+          "check": null
+        },
+        {
+          "id": "file_icon_api",
+          "capability": "桌面文件类型图标 / 缩略图查询（SHGetFileInfo / NSWorkspace iconForFile 等价）",
+          "status": "partial",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: fileManagerService.getFileIcon / photoAccessHelper)",
+          "checked_at": "2026-07-14",
+          "note": "桌面文件类型图标查询:File Manager Service Kit 的 fileManagerService.getFileIcon(fileType)/getFileIconSync 具备，但**需 ohos.permission.GET_FILE_ICON(system_grant，面向文件管理/系统类应用)**、普通应用授予受限;缩略图另有 @ohos.file.photoAccessHelper PhotoAsset.getThumbnail 与 AVImageGenerator(视频帧)。非 Win32 SHGetFileInfoW / macOS NSWorkspace iconForFile drop-in、须经其 API 适配，PC 真机未测。extract-file-icon 依赖:无等价则降级为扩展名→图标映射表(功能退化)。",
+          "check": null
+        },
+        {
+          "id": "system_info_api",
+          "capability": "系统 / 硬件 / 进程信息采集 API（/proc·ps·lspci·lsusb 等价）",
+          "status": "partial",
+          "source": "harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-systeminformation-平台分支.md、third_party_adapters/systeminformation",
+          "checked_at": "2026-07-14",
+          "note": "系统/进程信息采集(替代 /proc、ps)真机可用:systeminformation 5.31.7 的 13/13 核心函数真机 OK——CPU(20 核+实时频率/负载)、内存(33.46GB)、fsSize(23 挂载 via /proc+/proc/mounts)、networkStats/interfaces(真实 wlan0)、processes(all=189)、model(HUAWEI KIRINX90 via /sys)、osInfo(kernel HongMeng 1.12.0 arch arm64)。**但缺 lspci/lsusb/dmidecode/lscpu/getprop → PCI/USB/GPU 枚举与 graphics()、CPU 厂商/发行版/主板/用户信息不可得(平台固有)**;须把 process.platform===linux 分支放行 openharmony(17 文件)。systeminformation 依赖。",
+          "check": null
+        },
+        {
+          "id": "device_info_api",
+          "capability": "硬件设备枚举 API（PCI/USB/GPU/磁盘/网络接口）",
+          "status": "partial",
+          "source": "真机实测(systeminformation, 设备 3BT0124820000152) + HarmonyOS SDK 文档",
+          "checked_at": "2026-07-14",
+          "note": "磁盘/网络接口/内存/CPU 核数等基础信息经 /proc + /sys 可得(systeminformation 真机 13/13 核心项 OK)；@ohos.deviceInfo 提供设备型号/品牌/OS 版本。**但缺 lspci/lsusb/dmidecode** → PCI 设备、USB 设备枚举、独立 GPU 型号、主板/BIOS/DMI 信息不可得；@ohos 无对等公开的完整硬件设备枚举 API。故 partial：基础设备信息可得、深度硬件枚举缺失。systeminformation ta:2 对象。",
+          "check": null
+        },
+        {
+          "id": "process_info_api",
+          "capability": "进程 / 服务管理 API（枚举/状态/控制）",
+          "status": "partial",
+          "source": "真机实测(systeminformation, 设备 3BT0124820000152) + HarmonyOS SDK 文档",
+          "checked_at": "2026-07-14",
+          "note": "进程列表/状态/资源占用经 /proc + ps 真机可读(systeminformation processes/services 项 OK)；@ohos.app.ability 提供受限的本应用运行态查询。**但无 systemctl/service 系统服务管理等价**，跨应用进程控制(kill 他应用/查全局服务)受 SELinux 沙箱限制(app 域只能管自身进程树)。故 partial：进程信息读取可得(root/自身域)、系统级服务管理与跨应用控制受限。systeminformation ta:3 对象。",
+          "check": null
         }
       ]
     },
@@ -422,10 +485,10 @@
         {
           "id": "ptrace",
           "capability": "ptrace / 调试其他进程",
-          "status": "unknown",
-          "source": "人工核实(无 app 可用证据)：harmony-pc 知识库仅平台 faultlogger、无 ptrace/minidump 端口",
-          "checked_at": "2026-07-13",
-          "note": "截至 2026-07-13 无 app 可用 ptrace / minidump / crashpad / breakpad / libunwind 的真机证据；平台 faultlogger(/data/log/faultlog/faultlogger/cppcrash-*，含信号+syscall#+符号化栈)为独立崩溃捕获手段、非 ptrace 等价。libunwind 需——待核实。",
+          "status": "unavailable",
+          "source": "真机实测(设备 3BT0124820000152, HongMeng 1.12.0) + memory/platform/鸿蒙PC-POSIX-NDK能力探针矩阵.md",
+          "checked_at": "2026-07-14",
+          "note": "root 域 /proc/self/mem·/proc/self/maps 可读(自崩溃处理/backtrace)；但**跨进程 ptrace 探针矩阵明确「未证」**、列在「无对应实现/门槛」。app 域 seccomp 激进(io_uring 425/426/427 被 SIGSYS 杀)、/proc 部分 SELinux 受限、W^X/XPM 挡可写执行内存;无 breakpad/crashpad/minidump 真机证据，平台崩溃捕获走 faultlogger(/data/log/faultlog/…cppcrash-*，非 ptrace 等价)。⇒ 调试/注入其他进程(gecko-dev 多进程沙箱、跨进程原生调试)在 app 域不可行;自进程崩溃处理见 native_ndk.proc_introspect(partial)。",
           "check": null
         },
         {
@@ -444,6 +507,24 @@
           "source": "人工核实：harmony-pc 工程实践(真机)：memory/platform/鸿蒙PC-app访问PC用户目录.md",
           "checked_at": "2026-07-13",
           "note": "HAP ACL/权限模型完备:module.json5 声明权限 + 运行时 requestPermissionsFromUser 弹窗授予；atm dump -t -b <bundle> 查授予状态。system_grant/user_grant/system_basic 分级。",
+          "check": null
+        },
+        {
+          "id": "dbus_ipc_bus",
+          "capability": "D-Bus 消息总线 / dbus-daemon（IPC 总线守护进程）",
+          "status": "partial",
+          "source": "cmd-pkgs 预编译 + 真机探针(设备 3BT0124820000152, 2026-07-14) + HarmonyOS SDK 文档",
+          "checked_at": "2026-07-14",
+          "note": "unavailable→partial(2026-07-14 核实)。**系统层无** dbus-daemon/session bus 服务(系统 IPC = binder @ohos.rpc/IPCSkeleton + @ohos.commonEventManager 广播，非 D-Bus)。**但**：dbus 1.14.10(daemon+libdbus+全套工具+session.conf)已由 cmd-pkgs 预编译(见 native_libs.libdbus)，AF_UNIX 域套接字(含抽象命名空间/SCM_RIGHTS)第三轮真机可用 → 应用可**自带私有会话总线**(bundle dbus-daemon、经签名 HAP 私有 HNP 分发并 exec、dbus-glib/dbus-python 连该本地 socket)。**验证边界**：2026-07-14 设备已收紧 XPM(dmverity 强制)，从 /data 直接 exec 未签名 dbus-daemon 被内核拒(xpm 日志 `dbus-daemon is not protected by dmverity`)，故独立守护进程未端到端跑通；签名 HAP 私有 HNP 是文档化正路(见 app 域执行二进制)。综合「系统总线无 + 私有总线可行但需打包适配」→ partial。dbus-glib/dbus-python 对象。",
+          "check": null
+        },
+        {
+          "id": "gui_process_injection",
+          "capability": "第三方 GUI 进程注入 / API 挂钩 / 跨进程内存改写",
+          "status": "unavailable",
+          "source": "harmony-pc 工程实践(真机) + 沙箱模型推断",
+          "checked_at": "2026-07-14",
+          "note": "对第三方 GUI 进程的 DLL/代码注入、API 挂钩、跨进程内存改写无真机证据且架构受阻:app 沙箱进程隔离 + 跨进程 ptrace 未证(见 process_security.ptrace) + W^X/XPM 挡可写执行内存。唯一「注入」原语是**全局输入事件注入**(OH_Input_InjectMouseEventGlobal、uinput/uitest;INTERCEPT_INPUT_EVENT/INPUT_MONITORING 为 system_basic 受限权限)，属输入事件而非进程/内存注入。⇒ OBS 游戏采集式钩子注入不可行。",
           "check": null
         }
       ]
@@ -499,8 +580,8 @@
           "capability": "x86_64",
           "status": "unknown",
           "source": null,
-          "checked_at": "2026-07-13",
-          "note": "待核实覆盖情况。现有 OHOS NDK 工具链仅 aarch64-unknown-linux-ohos、已知设备均 arm64(Maleoon/Kunpeng)，未见 x86_64 正/负证据——保持 unknown，勿据此臆断，勿依赖 x86 专有汇编/intrinsics。",
+          "checked_at": "2026-07-14",
+          "note": "待核实覆盖情况。KB 全部真机产物与设备均 aarch64/arm64-v8a(本机 HAD-W32 / KIRINX90，KB 另证 Maleoon/Kunpeng)，OHOS NDK 工具链仅 aarch64-unknown-linux-ohos，未见 x86_64 正/负证据——保持 unknown，按 **arm64-only** 对待:勿依赖 x86 专有汇编/intrinsics;dgl 等预编译 x86_64 产物不可用、须 aarch64 重编。",
           "check": null
         }
       ]
@@ -562,6 +643,15 @@
           "checked_at": "2026-07-13",
           "note": "Coin3D(coin3d.org)未见鸿蒙移植记录，且其依赖桌面完整 OpenGL(当前鸿蒙 PC 仅 GLES 子集)——须端口 + desktop-GL→GLES 适配，可行性待核实。Quarter(Qt↔Coin 胶合)随之。",
           "check": null
+        },
+        {
+          "id": "vulkan_icd_loading",
+          "capability": "Vulkan ICD 装载模型（loader + VK_ICD_FILENAMES / icd.d 第三方驱动注册）",
+          "status": "available",
+          "source": "真机探针(设备 3BT0124820000152, 2026-07-14) + cmd-pkgs 预编译清单",
+          "checked_at": "2026-07-14",
+          "note": "真机 /system/lib64/libvulkan.so 为标准 Khronos loader：strings 含 `VK_ICD_FILENAMES`、`vulkan/icd.d`、`vk_icdNegotiateLoaderICDInterfaceVersion` → 支持标准 ICD 发现(扫 icd.d 目录)+ 环境变量指定 ICD。系统已装硬件 ICD /vendor/etc/vulkan/icd.d/vulkan_driver_v210.json → /vendor/lib64/passthrough/vulkan.hvgr_v210.so(api 1.3.231)。cmd-pkgs 另预编译 vulkan-loader/vulkan-headers/vulkan-tools。故应用可经 VK_ICD_FILENAMES 注册软件 ICD(如 SwiftShader)。**SwiftShader 特有注意**：其默认 LLVM JIT 着色器后端在 app 域撞 W^X/XPM(见 process_security)，须用其 Subzero/预编译 reactor 路径规避——ICD 装载模型本身 available，SwiftShader 落地另需绕 JIT。",
+          "check": null
         }
       ]
     },
@@ -599,10 +689,19 @@
         {
           "id": "camera_capture",
           "capability": "摄像头采集",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "PC 形态摄像头采集与权限待核实",
+          "status": "partial",
+          "source": "真机实测(设备 3BT0124820000152, HAD-W32, API23, 2026-07-14) + HarmonyOS SDK 文档",
+          "checked_at": "2026-07-14",
+          "note": "真机具备摄像头硬件(/dev/video0-2 + /dev/video_param, camera_host)与相机服务(camera_service/CameraDaemon 运行)，const.SystemCapability.Multimedia.Camera.Core=true、多摄开启。@ohos.multimedia.camera(Camera Kit)+ C API + CAMERA 权限(user_grant)具备。应用级采集管线(预览/拍照/录像)未端到端实测——但硬件+服务+API+权限齐备判 partial。obs-studio 摄像头输入源依赖。",
+          "check": null
+        },
+        {
+          "id": "hw_video_encode",
+          "capability": "硬件视频编码（AVCodec NDK OH_VideoEncoder）",
+          "status": "partial",
+          "source": "真机实测(设备 3BT0124820000152, HAD-W32, API23, 2026-07-14) + HarmonyOS SDK 文档",
+          "checked_at": "2026-07-14",
+          "note": "真机具备硬件视频编码栈:/system/lib64/libnative_media_venc.so(OH_VideoEncoder NDK 实现)+ 厂商硬编驱动 libomxvenc.so/libcodec_driver.z.so/libvcodecbase.so。NDK 接口 native_avcodec_videoencoder.h/OH_VideoEncoder(CreateByMime/Configure/Prepare/Start，MIMETYPE_VIDEO_AVC/HEVC/VVC = H.264/265/266)。厂商专有硬编(NVENC/QSV/AMF/VideoToolbox/VAAPI)不可用。实时 1080p60/4K 性能与 app 域编码器暴露未端到端实测 → partial;OBS 实时编码强依赖，软件 x264 兜底但 ohos_FFmpeg 禁 asm 较慢。",
           "check": null
         }
       ]
@@ -641,19 +740,19 @@
         {
           "id": "bluetooth",
           "capability": "蓝牙",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "蓝牙栈与权限待核实",
+          "status": "partial",
+          "source": "真机实测(设备 3BT0124820000152, HAD-W32, API23, 2026-07-14) + HarmonyOS SDK 文档",
+          "checked_at": "2026-07-14",
+          "note": "真机蓝牙栈运行(blue_host/bluetooth_service 进程 + const.bluetooth.* 配置)。@ohos.bluetooth.* 分模块 API 具备，**含蓝牙 HID Host profile(@ohos.bluetooth.hid.createHidHostProfile())** + C API oh_bluetooth.h;SysCap Communication.Bluetooth.Core。ACCESS_BLUETOOTH=user_grant。HID 主机端到端(hidapi 连接蓝牙 HID 设备)未做应用级实测——hidapi 以 USB HID 为核心、蓝牙 HID 次要(required=false)。",
           "check": null
         },
         {
           "id": "sensors",
           "capability": "传感器",
           "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "PC 形态传感器可用性待核实",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: @ohos.sensor)",
+          "checked_at": "2026-07-14",
+          "note": "@ohos.sensor(Sensor Service Kit)+ C API oh_sensor.h 具备;权限 ACCELEROMETER/GYROSCOPE=system_grant/normal(v7)、ACTIVITY_MOTION=user_grant，多数传感器无需权限。PC(HAD-W32)形态实际搭载哪些传感器依硬件、未真机枚举——未被本批报告引用，保持 unknown。",
           "check": null
         },
         {
@@ -668,10 +767,19 @@
         {
           "id": "smartcard",
           "capability": "智能卡 / PC-SC",
-          "status": "unknown",
-          "source": "待查",
-          "checked_at": "2026-07-13",
-          "note": "@ohos 未见 PC/SC 等价智能卡服务 API；OpenSC 依赖——待查文档确认。",
+          "status": "unavailable",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup)",
+          "checked_at": "2026-07-14",
+          "note": "无 PC/SC(pcsc-lite/WinSCard)等价服务 API。@ohos.secureElement 为 OMAPI(Open Mobile API / GlobalPlatform)仅提供到**内置 eSE/SIM** 的 APDU 通道(SEService/Reader/Session/Channel)，非外接接触/非接触读卡器;@ohos.nfc.*(controller/tag/cardEmulation)具备但非 PC/SC。OpenSC/PC-SC 智能卡中间件依赖无鸿蒙等价 → 相关功能不可移植。",
+          "check": null
+        },
+        {
+          "id": "evdev_input",
+          "capability": "内核 evdev 输入子系统（/dev/input/event*、libevdev）",
+          "status": "partial",
+          "source": "真机探针(设备 3BT0124820000152, root 域, 2026-07-14) + cmd-pkgs 预编译清单",
+          "checked_at": "2026-07-14",
+          "note": "真机 /dev/input/event0–event16 齐全，/proc/bus/input/devices 枚举出 键盘(uart_hid 14F3:1400)、指纹、consumer-control、super_privacy、soundtrigger 等设备；root 域可读 event 节点(660 root:input)。libevdev 1.13.3 已由 cmd-pkgs 预编译(sh -s -- libevdev 1.13.3)。**但 app(HAP)域**对 /dev/input 的直接读取受 SELinux/权限限制，跨应用全局输入事件走 @ohos.multimodalInput(受 INTERCEPT_INPUT_EVENT system_basic 限)——故 partial：内核 evdev 层+库具备(root 可)，应用域直读设备节点受限。libevdev 服务对象。",
           "check": null
         }
       ]
@@ -692,28 +800,28 @@
         {
           "id": "perm_camera",
           "capability": "ohos.permission.CAMERA",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "摄像头权限授予与 PC 形态可用性待核实",
+          "status": "available",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: permissions_full.json + @ohos.multimedia.camera)",
+          "checked_at": "2026-07-14",
+          "note": "ohos.permission.CAMERA = user_grant/normal(开放, v9起)，运行时 requestPermissionsFromUser 弹窗授予;@ohos.multimedia.camera(SysCap Multimedia.Camera.Core)。权限可申请;PC 形态摄像头硬件可用性另见 media.camera_capture(真机有 /dev/video0-2 + camera_service)。obs-studio 依赖。",
           "check": null
         },
         {
           "id": "perm_microphone",
           "capability": "ohos.permission.MICROPHONE",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "麦克风权限待核实",
+          "status": "available",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: permissions_full.json + @ohos.multimedia.audio)",
+          "checked_at": "2026-07-14",
+          "note": "ohos.permission.MICROPHONE = user_grant/normal(v8起)，运行时授予;音频采集 @ohos.multimedia.audio AudioCapturer(SysCap Multimedia.Audio.Capturer)。",
           "check": null
         },
         {
           "id": "perm_location",
           "capability": "ohos.permission.LOCATION",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "定位权限在 PC 形态待核实",
+          "status": "available",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: permissions_full.json + @ohos.geoLocationManager)",
+          "checked_at": "2026-07-14",
+          "note": "ohos.permission.LOCATION + APPROXIMATELY_LOCATION = user_grant/normal(v7/v9，通常一并申请)、LOCATION_IN_BACKGROUND=user_grant;@ohos.geoLocationManager(Location Kit)+ C API oh_location.h。GNSS 硬件依设备。",
           "check": null
         },
         {
@@ -728,19 +836,19 @@
         {
           "id": "perm_bluetooth",
           "capability": "ohos.permission.USE_BLUETOOTH",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "蓝牙权限待核实",
+          "status": "available",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: permissions_full.json + @ohos.bluetooth.*) + 真机 BT 栈",
+          "checked_at": "2026-07-14",
+          "note": "ohos.permission.ACCESS_BLUETOOTH = user_grant/normal(v10，使用蓝牙);USE_BLUETOOTH/DISCOVER_BLUETOOTH = system_grant/normal(v8)。@ohos.bluetooth.*(Connectivity Kit)。真机蓝牙栈运行(blue_host/bluetooth_service)。",
           "check": null
         },
         {
           "id": "perm_notification",
           "capability": "通知权限",
-          "status": "unknown",
-          "source": null,
-          "checked_at": null,
-          "note": "通知权限待核实",
+          "status": "available",
+          "source": "HarmonyOS SDK 文档(opencode harmonyos-sdk-api-lookup: @ohos.notificationManager + 请求通知授权)",
+          "checked_at": "2026-07-14",
+          "note": "发通知**无需 manifest 权限**——运行时 @ohos.notificationManager + requestEnableNotification() 用户授权即可 publish()(SysCap Notification.Notification)。ohos.permission.NOTIFICATION_CONTROLLER 为系统权限(管理/订阅侧，普通应用不可授);ACCESS_NOTIFICATION_POLICY=system_grant。",
           "check": null
         }
       ]
@@ -919,6 +1027,33 @@
           "checked_at": "2026-07-13",
           "note": "pyobjc 依赖 macOS ObjC 运行时 + Foundation/CoreGraphics/CoreText，鸿蒙无等价 ObjC 桥；文本排版须改 @ohos.graphics.text，属重写而非移植。",
           "check": null
+        },
+        {
+          "id": "posix_locale_env",
+          "capability": "进程 locale 环境变量（LC_ALL/LANG）+ musl locale 支持",
+          "status": "partial",
+          "source": "harmony-pc 工程实践(真机)：plugin/shared/skills/pc-native-build/references/musl-quickref.md",
+          "checked_at": "2026-07-14",
+          "note": "进程 locale 环境变量 + musl locale 支持有限:设备 musl locale 限 C/C.UTF-8(1.12.0+ 扩展了常见 locale)，指南建议勿依赖复杂 locale 切换;设备 Node/Python 进程环境是否注入 LANG/LC_ALL/LC_MESSAGES/LANGUAGE 无证据(KB 中 LC_ALL 均为 Mac host 构建期设置) → os-locale 类库可能返回空/C。非阻碍(os-locale 有 Intl.DateTimeFormat 回退)。required=false。",
+          "check": null
+        },
+        {
+          "id": "pthread",
+          "capability": "POSIX pthread 完整 API（mutex/cond/rwlock/tls/once/attr）",
+          "status": "available",
+          "source": "真机探针(设备 3BT0124820000152, HongMeng 1.12.0, root 域) + P7 交叉编译(2026-07-14)",
+          "checked_at": "2026-07-14",
+          "note": "第三轮综合 POSIX/NDK 探针 45/46 OK：pthread create/join/detach、mutex(普通/递归/errorcheck)、cond、rwlock、进程共享互斥锁(process-shared, MAP_SHARED)、TLS(pthread_key)、pthread_once、pthread_cancel/setaffinity 符号 1.12.0 已存在——**唯一缺 robust mutex(PTHREAD_MUTEX_ROBUST)**。P7 PROJ 交叉编译 CMake 亦确认 `pthread_create in pthread - found`。cpprestsdk/node-sqlcipher 的 pthread 互斥锁前提满足；用到 robust mutex 的需回退普通 mutex+手动状态恢复。",
+          "check": null
+        },
+        {
+          "id": "posix_process_signals",
+          "capability": "POSIX 进程组 / 信号模型（setsid/getpgid/setpgid/killpg/kill/sigaction/sigprocmask/waitpid）",
+          "status": "available",
+          "source": "真机探针(设备 3BT0124820000152, community Python 3.12.8, 2026-07-14)",
+          "checked_at": "2026-07-14",
+          "note": "设备 Python 进程组/信号自测 11/11 OK：os.getpgid/getsid、subprocess+preexec_fn=os.setsid 建新会话、os.kill(SIGTERM)、os.killpg(SIGKILL)、os.waitpid、signal.signal(SIGUSR1/SIGCHLD) 注册+自投递+接收、signal.pthread_sigmask(SIG_BLOCK)。口径=root/shell 域(hdc)。app(HAP 沙箱)域跨进程信号受 SELinux/seccomp 限制(只能对自身进程树)——ipykernel 的父子进程组信号(内核转发/中断)在自身进程树内可用。",
+          "check": null
         }
       ]
     },
@@ -983,10 +1118,10 @@
         {
           "id": "boringssl",
           "capability": "BoringSSL (Chromium)",
-          "status": "unknown",
-          "source": "cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实",
-          "checked_at": "2026-07-13",
-          "note": "cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（openssl 已预编译可替代部分；cronet 需 BoringSSL 特定实现，Chromium //base //net 一并较重）。",
+          "status": "available",
+          "source": "harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-Rust-BoringSSL-quiche.md、third_party_adapters/quiche",
+          "checked_at": "2026-07-14",
+          "note": "quiche 0.29.1 默认 boring crate(=BoringSSL，含 C/C++/汇编)从 Mac 零补丁交叉编译(aarch64-unknown-linux-ohos)，真机 loopback QUIC 握手 + HTTP/3 body 拉取通过(cargo test 949 transport 通过)。三处必需技巧:BINDGEN_EXTRA_CLANG_ARGS 给 sysroot、libstdc++.so→libc++.so 链接脚本 shim、CC_/CXX_/AR_ triple 环境变量。root 域 ELF 运行(无需签名)，app 域打包未验。⇒ quiche/BoringSSL 不再是 blocker(openssl 已预编译可作部分替代)。",
           "check": null
         },
         {
@@ -1032,6 +1167,51 @@
           "source": "cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实",
           "checked_at": "2026-07-13",
           "note": "cmd-pkgs 未预编译，需 OHOS NDK 交叉编译核实（libepub 依赖；C++ 绑定层需 glib 之上再编）。",
+          "check": null
+        },
+        {
+          "id": "openssl",
+          "capability": "OpenSSL / libcrypto（加密算法库）",
+          "status": "available",
+          "source": "harmony-pc 工程实践(真机)：memory/adaptation/鸿蒙PC-git-适配要点.md、鸿蒙PC-pyGLFW-Python绑定库迁移.md、memory/platform/鸿蒙PC-设备Python运行时.md;cmd-pkgs",
+          "checked_at": "2026-07-14",
+          "note": "设备 community Python HNP 已附 libssloh/libcryptooh(OpenSSL .so 在设备)，cryptography 44 预装;亦可交叉编译(./Configure no-asm linux-aarch64 规避 arm64 汇编);cmd-pkgs 亦收录 openssl。nmap libssh2 自动链接交叉编译的 OpenSSL。node-sqlcipher 的 SQLCIPHER_CRYPTO_OPENSSL(AES-256-CBC via libcrypto)前提可满足(node-sqlcipher 本体未单测)。",
+          "check": null
+        },
+        {
+          "id": "llvm_lib",
+          "capability": "libLLVM 可链接运行时库（llvmlite / JIT 后端）",
+          "status": "unavailable",
+          "source": "OpenHarmony PC PyPI 镜像 wheel 剖析 + 真机(设备 3BT0124820000152, 2026-07-14)",
+          "checked_at": "2026-07-14",
+          "note": "unknown→unavailable(2026-07-14 核实)。镜像存在 llvmlite 0.47.0 / 0.43.0 ohos_aarch64 wheel，但其 llvmlite/binding/libllvmlite.so 的 DT_NEEDED **硬编构建机绝对路径** `/storage/Users/currentUser/migrate_oh/port_ohos/wip/llvm/20.1.0/llvm-project-20.1.0.src/llvm/ohos-build/lib/libLLVM.so`(设备上不存在)；设备遍历 /system·/vendor·HNP 无任何 libLLVM*.so；真机 import llvmlite → OSError 加载 libllvmlite.so 失败，内核 `xpm:1010 libllvmlite.so is not protected by dmverity` → map(PROT_EXEC) 被拒(2026-07 设备已收紧 XPM/dmverity 强制)。须自行为 aarch64-ohos 交叉编译 libLLVM 20.x/22.x(依赖链重)并经签名 HAP 分发方可能——未证 → unavailable。llvmlite(numba 后端)对象。",
+          "check": null
+        },
+        {
+          "id": "expat",
+          "capability": "Expat（纯 C XML 解析）",
+          "status": "available",
+          "source": "harmony-pc 工程实践(真机)：third_party_adapters/nmap、memory/adaptation/鸿蒙PC-cmd-pkgs预编译GTK栈不可用.md",
+          "checked_at": "2026-07-14",
+          "note": "Expat XML 解析(纯 C)可用:expat-2.6.2 源码 clang 交叉编译、真机加载运行(nmap GTK broadway 应用栈的一部分)。cmd-pkgs 亦有预编译 libexpat.so 但缺 SONAME 须 patchelf --set-soname;git 构建可 NO_EXPAT=1 绕过。dbus-glib 的 dbus-binding-tool 依赖 Expat 解析内省 XML。",
+          "check": null
+        },
+        {
+          "id": "libdbus",
+          "capability": "libdbus C 库（D-Bus 客户端库，含 dbus-daemon 二进制）",
+          "status": "available",
+          "source": "cmd-pkgs 预编译清单(gitcode.com/OpenHarmonyPCDeveloper/cmd-pkgs) 2026-07-14",
+          "checked_at": "2026-07-14",
+          "note": "dbus 1.14.10 已由 cmd-pkgs 预编译(sh -s -- dbus 1.14.10；tar 内含 bin/dbus-daemon·dbus-send·dbus-monitor 全套 + lib/libdbus-1.so + etc/dbus-1/{session,system}.conf + include)。libdbus 基于标准 POSIX socket/poll/AF_UNIX 交叉编译无碍。**注意「库可用」≠「有总线可连」**——运行期是否有 D-Bus 消息总线见 process_security.dbus_ipc_bus。dbus-python/dbus-glib 的 libdbus 依赖满足。",
+          "check": null
+        },
+        {
+          "id": "proj",
+          "capability": "PROJ 坐标转换库（cartographic projections / CRS）",
+          "status": "available",
+          "source": "host 侧 OHOS NDK 交叉编译实测(2026-07-14)",
+          "checked_at": "2026-07-14",
+          "note": "PROJ 9.4.1 用 OHOS NDK(DevEco native, aarch64-unknown-linux-ohos-clang++ 15 + ohos.toolchain.cmake, OHOS_ARCH=arm64-v8a) CMake+Ninja 交叉编译**成功** → libproj.so.25.9.4.1(llvm-readelf: ELF64 AArch64 DYN；NEEDED=libsqlite3.so.0 + libc++_shared.so + libc.so，全部标准 OHOS 库)。依赖 SQLite3(cmd-pkgs 预编译 sqlite3 3.49.1 提供 lib+头)；ENABLE_TIFF/CURL=OFF(仅关\"读部分网格/远程网格\"可选功能，核心投影不受影响)。不在 cmd-pkgs 预编译清单，但可干净交叉编译。PDAL 的 PROJ 依赖前提满足(recompile)。",
           "check": null
         }
       ]

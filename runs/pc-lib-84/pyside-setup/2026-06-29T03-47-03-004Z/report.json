@@ -1210,7 +1210,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 ohos.toolchain.cmake + clang/musl 交叉编译整个 super-project，链接鸿蒙 PC 版 Qt6 与 Python 3.12 开发头文件；按模块逐步验证导入。",
         "caused_by": [
           "ta:python_runtime",
@@ -1220,7 +1219,8 @@
           "CMakeLists.txt:18-26",
           "sources/pyside6/libpyside/CMakeLists.txt:113-114",
           "sources/shiboken6/libshiboken/CMakeLists.txt"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:platform_branches",
@@ -1229,7 +1229,6 @@
         "adaptability": "partial",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "在 build_scripts 中为 sys.platform 增加鸿蒙分支；在 C++ 层使用 Qt 跨平台抽象并在无 Qt 抽象处新增 OHOS 条件编译分支；优先保证核心路径，可选平台特性可裁剪。",
         "caused_by": [
           "ta:ohos_platform"
@@ -1238,7 +1237,8 @@
           "build_scripts/main.py:514-1166",
           "sources/shiboken6/libshiboken/helper.cpp:463-609",
           "sources/pyside6/PySide6/glue/qtgui.cpp:928-937"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:opengl_gles",
@@ -1247,7 +1247,6 @@
         "adaptability": "partial",
         "category": "graphics_backend",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "构建时检测鸿蒙 Qt6 提供的 OpenGL ES/EGL 能力；缺失完整 OpenGL 的模块跳过或降级为 GLES 路径。",
         "caused_by": [
           "ta:opengl_gles"
@@ -1255,7 +1254,8 @@
         "evidence": [
           "sources/pyside6/PySide6/glue/qtopengl.cpp:20-69",
           "sources/pyside6/PySide6/QtGui/CMakeLists.txt:335 find_package(GLESv2 REQUIRED)"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:optional_qt_modules",
@@ -1264,7 +1264,6 @@
         "adaptability": "partial",
         "category": "optional_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "通过 -DSKIP_MODULES 在构建时跳过鸿蒙 Qt6 未提供的可选模块；待相关 Qt 模块在鸿蒙 PC 可用后再启用。",
         "caused_by": [
           "ta:qt_module_coverage"
@@ -1272,7 +1271,8 @@
         "evidence": [
           "sources/pyside6/cmake/PySideHelpers.cmake:134-137 列出可选模块",
           "sources/pyside6/cmake/PySideSetup.cmake:187-189 支持 SKIP_MODULES"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:libclang",
@@ -1281,14 +1281,14 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "若鸿蒙 PC 未提供 libclang，可先在宿主 x86_64/aarch64 Linux 上交叉生成绑定代码，再随源码带入鸿蒙构建；或移植 libclang 到 OHOS。",
         "caused_by": [
           "ta:libclang"
         ],
         "evidence": [
           "sources/shiboken6_generator/ApiExtractor/CMakeLists.txt:114 target_link_libraries(apiextractor PRIVATE libclang)"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "unadaptable_apis": [],
@@ -1408,7 +1408,7 @@
       "源文件 SPDX 标头与顶层 COPYING 文件存在 LGPL 版本差异，报告以源文件 SPDX 标头为准。"
     ],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

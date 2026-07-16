@@ -1497,14 +1497,14 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 C++ 源码和 libffi 为 arm64/x86_64 .so；libffi 已有鸿蒙预编译包可作为参考或直接复用",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "binding.gyp:2-17",
           "src/ffi.cc:1"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:posix_dlfcn",
@@ -1513,7 +1513,6 @@
         "adaptability": "adaptable",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "OHOS NDK musl libc 通常包含 dlfcn 支持（需链接 -ldl）；若 musl 不含 dlopen，需调查鸿蒙是否提供替代的动态库加载机制",
         "caused_by": [
           "ta:posix_dlfcn"
@@ -1522,7 +1521,8 @@
         "evidence": [
           "src/ffi.cc:43-46",
           "src/ffi.h:17"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:ffi_closure_execmem",
@@ -1531,7 +1531,6 @@
         "adaptability": "adaptable",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "unknown",
         "remediation": "核实鸿蒙是否允许 mmap PROT_EXEC 分配可执行内存；若不允许，需寻找替代方案（如预编译 trampoline）；此问题影响 Callback API 功能",
         "caused_by": [
           "ta:ffi_closure_exec"
@@ -1540,7 +1539,8 @@
         "evidence": [
           "src/callback_info.cc:102",
           "deps/libffi/src/closures.c"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:ref_napi_porting",
@@ -1549,14 +1549,14 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "ref-napi 需用 OHOS NDK 重新编译其原生 addon；其源码结构与 ffi-napi 类似（N-API + C++），适配方式相同",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "package.json:33",
           "lib/bindings.js:3-4"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "compatible": [
@@ -1616,7 +1616,7 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

@@ -872,7 +872,7 @@
       ],
       "level": "medium"
     },
-    "confidence": "medium",
+    "confidence": "high",
     "critical_dependencies": [
       {
         "name": "LLVM",
@@ -907,11 +907,11 @@
     "target_assumptions": [
       {
         "capability": "LLVM 22.x 运行时库在鸿蒙 PC 可用",
-        "capability_key": null,
+        "capability_key": "llvm_lib",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "若 LLVM 在鸿蒙 PC 不可用且无法交叉编译部署，则 libllvmlite.so 无法加载，整个 llvmlite 项目在鸿蒙上不可运行——这是核心功能的前提依赖",
-        "source": "harmony-pc-capabilities.json 中未列出 LLVM 运行时库；cmd-pkgs 中 clang/ohos-sdk 存在（NDK 编译工具链），但目标设备侧的 llvm-libs 运行时库需单独确认",
+        "source": "harmony-pc-capabilities.json#llvm_lib 核实(2026-07-14): ohos wheel 存在但硬编 libLLVM.so 缺 + XPM map 拒 → 未证",
         "id": "ta:1",
         "target_status_model": "unknown"
       }
@@ -939,7 +939,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 3.12 运行时上）。llvmlite 的移植工作量极低：纯 Python 直接运行，C++ 桥接层零改重编译。唯有 LLVM 自身在鸿蒙 PC 的可用性是个前提——若已提供则整体为 recompile_only；若需自行交叉编译 LLVM 则工作量增加（但仍属可适配）。无平台特有 API、无 GUI、无硬件依赖，不涉及网络或云服务。建议优先从 cmd-pkgs 或系统包查询 llvm-libs 可用性。",
     "porting_class_model": "recompile_only",
     "confidence_model": "high",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "recompile_only",
       "overall": "adaptable",
@@ -984,9 +984,9 @@
     "confidence_overall_model": null,
     "harmony_warnings": [
       {
-        "code": "confidence_capped_unknown",
-        "class": "info",
-        "message": "存在 required 且 unknown 的目标假设，confidence 已由 high 确定性下调至 medium"
+        "code": "ta_unref:ta:1",
+        "class": "actionable",
+        "message": "target_assumption ta:1 为 required+unavailable 但无对应 blocker/unadaptable_api"
       },
       {
         "code": "critical_dep_ref:LLVM:ta:llvm_on_ohos",

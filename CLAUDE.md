@@ -453,6 +453,17 @@ and `opencode` with a configured model. Excel export additionally needs
   `{repoPath}` 指向子目录、新增 `{repoRoot}`=克隆根、codegraph 只索引子树，prompt `{monorepoNote}` 告知 agent：
   metrics/native_api/依赖以子目录为范围、可读仓根 manifests、git commit 用仓根、写 `library.source_subpath`/`monorepo`。
   metrics.py 无需改动（`--repo` 接受任意目录）。非 monorepo 路径逐字不变（无 subpath 时 `{repoPath}=={repoRoot}`）。
+- **手动添加源码（无 git 仓 / 直接下载分发的库，如 QScintilla）**：库发现**纯靠文件系统**
+  （`listLibraries` = `readdir repos/<group>/` 非 `.` 开头子目录 ∪ `runs/<group>/`），故把解压好的源码树
+  直接 `cp -R <源码> repos/<group>/<handle>/` 即算「已克隆」，**无需 clone/`.git`**；只要没有
+  `runs/<group>/<handle>/report.json`，面板即判**未分析**、`分析`按钮可点，点分析后 `createAnalyzeJob`
+  **就地**在该目录跑（零 git 调用——无 `.git` 是既有路径，分析后本就会 prune 掉 `.git`）。可选增强
+  （**均非必需**，不影响列出/分析，仅为溯源+UI 标签）：① 写 `repos/<group>/<handle>/.identity.json`
+  （镜像 `writeIdentity`：`{handle,url,canonicalKey,subpath,ref}`；无仓库 URL 时 `url` 填官方下载主页或
+  `null`、`canonicalKey`/`subpath`/`ref` 置 `null`）；② 经 `POST /api/library-tags`（body
+  `{name,group,tags:["primary"|"passive"]}`，走接口而非手改 JSON、避免与运行中 server 的内存态竞争）打来源标签。
+  handle=目录名（限 `[A-Za-z0-9._-]`；与既有 handle 撞名即视作**不同库**、大小写敏感 `QScintilla`≠`scintilla`）；
+  分组 `repos/<group>`+`runs/<group>` 存在即已注册、无需额外操作。
 - The `languages` / `code_metrics` / `tests` report blocks come verbatim from
   `metrics.py`; don't recompute them by hand. Everything else is model-reasoned.
 - To extend: test idioms → `code-metrics/scripts/tests.py`; classification rules

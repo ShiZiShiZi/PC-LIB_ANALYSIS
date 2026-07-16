@@ -1299,19 +1299,19 @@
         "permission": "ohos.permission.USE_USB",
         "reason": "访问 USB HID 设备需要 USB 设备访问权限",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "hidapi/hidapi.h:hid_open"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "ohos.permission.USE_BLUETOOTH",
         "reason": "访问蓝牙 HID 设备需要蓝牙权限",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "README.md:37"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "hidapi 的全部平台后端（Win32/Linux hidraw+libusb/macOS IOKit/NetBSD）都依赖操作系统专有 HID API，无法直接在鸿蒙 PC 上编译运行。需编写新的 OHOS 后端实现：若鸿蒙提供类似 hidraw 的设备节点或 NDK HID API，可参照 Linux hidraw 后端模式实现；若 libusb-1.0 已移植到鸿蒙 PC，则 libusb 后端可直接使用。公共 API 层（hidapi.h）无需修改。",
@@ -1323,7 +1323,6 @@
         "adaptability": "unadaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "编写新的 OHOS HID 后端替代 Linux 后端；若 libusb 可用则可直接使用 libusb 后端",
         "caused_by": [
           "ta:usb_hid_access"
@@ -1335,7 +1334,8 @@
         "evidence": [
           "linux/hid.c:553",
           "linux/hid.c:43"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:macos_backend",
@@ -1344,7 +1344,6 @@
         "adaptability": "unadaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "编写新的 OHOS HID 后端替代 macOS 后端",
         "caused_by": [
           "ta:usb_hid_access"
@@ -1354,7 +1353,8 @@
         ],
         "evidence": [
           "mac/hid.c:446"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:windows_backend",
@@ -1363,7 +1363,6 @@
         "adaptability": "unadaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "编写新的 OHOS HID 后端替代 Windows 后端",
         "caused_by": [],
         "manifests_as": [
@@ -1371,7 +1370,8 @@
         ],
         "evidence": [
           "windows/hid.c:841"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:libusb_dep",
@@ -1380,7 +1380,6 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "确认 libusb 是否已适配鸿蒙 PC（cmd-pkgs）；若可用则 libusb 后端可直接编译使用",
         "caused_by": [
           "ta:libusb_ohos"
@@ -1388,7 +1387,8 @@
         "manifests_as": [],
         "evidence": [
           "src/CMakeLists.txt:165"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1451,7 +1451,7 @@
     "warnings": [],
     "confidence_overall": "low",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "low",
     "harmony_warnings": [
       {

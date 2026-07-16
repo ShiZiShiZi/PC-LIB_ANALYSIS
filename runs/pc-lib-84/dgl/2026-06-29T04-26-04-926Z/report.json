@@ -2657,11 +2657,11 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "分布式训练 socket 通信与数据集下载需要网络访问",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "src/rpc/network/tcp_socket.cc:29",
           "python/dgl/graphbolt/internal_utils.py:253"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "blockers": [
@@ -2672,7 +2672,6 @@
         "adaptability": "unadaptable",
         "category": "hardware_unavailable",
         "source_dimension": "capability_profile",
-        "harmony_status": "unavailable",
         "remediation": "构建时关闭 USE_CUDA，运行时强制使用 CPU 设备；评估 CPU 路径性能是否满足场景需求。",
         "caused_by": [
           "ta:cuda"
@@ -2683,7 +2682,8 @@
         "evidence": [
           "src/runtime/cuda/cuda_common.h:9",
           "CMakeLists.txt:22"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:io_uring",
@@ -2692,7 +2692,6 @@
         "adaptability": "partial",
         "category": "linux_only_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "在 HAVE_LIBRARY_LIBURING 未定义时回退到现有同步 read / 线程池实现；当前 IsAvailable() 已返回 false，需验证 fallback 覆盖完整。",
         "caused_by": [
           "ta:io_uring"
@@ -2703,7 +2702,8 @@
         "evidence": [
           "graphbolt/src/io_uring.cc:22",
           "graphbolt/src/cnumpy.cc:66"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:epoll",
@@ -2712,7 +2712,6 @@
         "adaptability": "partial",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "使用 USE_EPOLL=OFF 编译，启用单连接 fallback 路径；或对鸿蒙内核实现 poll/select 多路复用。",
         "caused_by": [
           "ta:epoll"
@@ -2720,7 +2719,8 @@
         "evidence": [
           "src/rpc/network/socket_pool.cc:12",
           "CMakeLists.txt:60"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:arch_unknown",
@@ -2729,14 +2729,14 @@
         "adaptability": "adaptable",
         "category": "toolchain",
         "source_dimension": "build_env",
-        "harmony_status": "unknown",
         "remediation": "确认目标设备架构；arm64 已确认支持，x86_64 需核实后决定是否提供预编译包或仅支持 arm64。",
         "caused_by": [
           "ta:x86_64"
         ],
         "evidence": [
           "harmony-pc-capabilities.json#arch.x86_64"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:native_rebuild",
@@ -2745,13 +2745,13 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 ohos.toolchain.cmake + clang/musl 交叉编译所有 C++17 模块；链接鸿蒙版 PyTorch、OpenMP、METIS/GKlib 等未鸿蒙化依赖。",
         "evidence": [
           "CMakeLists.txt:8",
           "tensoradapter/pytorch/CMakeLists.txt:1",
           "graphbolt/CMakeLists.txt:1"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:unadapted_deps",
@@ -2760,12 +2760,12 @@
         "adaptability": "adaptable",
         "category": "dependency_availability",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "这些包多为纯 Python 实现，可继续在已移植 Python 上安装；必要时随包携带或源码安装。",
         "evidence": [
           "python/setup.py:222",
           "scripts/harmony_adapted.js output"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:libxsmm_arch",
@@ -2774,12 +2774,12 @@
         "adaptability": "adaptable",
         "category": "arch_specific",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "在 arm64 构建中设置 USE_LIBXSMM=OFF，回退到通用 OpenMP/BLAS 路径。",
         "evidence": [
           "CMakeLists.txt:188",
           "src/runtime/config.cc:21"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "compatible": [
@@ -2847,7 +2847,7 @@
     "confidence_overall": "medium",
     "warnings": [],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium",
     "harmony_warnings": [
       {

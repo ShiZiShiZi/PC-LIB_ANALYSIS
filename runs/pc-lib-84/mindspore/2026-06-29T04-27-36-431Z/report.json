@@ -1514,19 +1514,19 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "分布式训练 gRPC 通信、模型下载/上传",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "mindspore/python/mindspore/parallel/cluster/process_entity/_api.py:122-123"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储",
         "reason": "数据集、checkpoint、MindRecord、日志与性能文件读写",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "mindspore/python/mindspore/train/serialization.py:529-1588"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "blockers": [
@@ -1537,7 +1537,6 @@
         "adaptability": "unadaptable",
         "category": "hardware",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "在鸿蒙 PC 上仅保留 CPU 后端，GPU 训练/推理功能需裁剪或用户改用其他云侧 GPU 服务",
         "caused_by": [
           "ta:cuda"
@@ -1549,7 +1548,8 @@
         "evidence": [
           "mindspore/ccsrc/plugin/device/gpu/",
           "mindspore/lite/src/extendrt/delegate/tensorrt/"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:ascend",
@@ -1558,7 +1558,6 @@
         "adaptability": "unadaptable",
         "category": "hardware",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "裁剪 Ascend 后端；若未来鸿蒙 PC 支持 Ascend 硬件需另行评估",
         "caused_by": [
           "ta:ascend"
@@ -1569,7 +1568,8 @@
         "evidence": [
           "mindspore/ccsrc/plugin/device/ascend/",
           "mindspore/python/mindspore/communication/_comm_helper.py:31-40"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:onednn",
@@ -1578,11 +1578,11 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "用 OHOS NDK 交叉编译 oneDNN 2.2；或回退到框架自研 CPU 算子实现",
         "evidence": [
           "cmake/external_libs/mkl_dnn.cmake"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:ffmpeg_media",
@@ -1591,7 +1591,6 @@
         "adaptability": "partial",
         "category": "media",
         "source_dimension": "capability_profile",
-        "harmony_status": "unknown",
         "remediation": "验证 FFmpeg 鸿蒙版可用性；若不可用，将多媒体数据源改用 @ohos.multimedia 媒体能力重写",
         "caused_by": [
           "ta:ffmpeg"
@@ -1599,7 +1598,8 @@
         "evidence": [
           "cmake/external_libs/ffmpeg.cmake",
           "mindspore/python/mindspore/dataset/"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:sqlite",
@@ -1608,11 +1608,11 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "用 OHOS NDK 交叉编译 sqlite 3.36.0，或改用鸿蒙系统提供的 SQLite 能力",
         "evidence": [
           "cmake/external_libs/sqlite.cmake"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:subprocess_tools",
@@ -1621,12 +1621,12 @@
         "adaptability": "partial",
         "category": "subprocess_unavailable",
         "source_dimension": "runtime_surface",
-        "harmony_status": "partial",
         "remediation": "将版本检查改为读取环境变量/系统属性或调用鸿蒙 API；/proc/cpuinfo 替换为读取在线 CPU 数 API",
         "evidence": [
           "mindspore/python/mindspore/run_check/_check_version.py:170-225",
           "mindspore/python/mindspore/parallel/cluster/process_entity/_api.py:229"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "compatible": [
@@ -1688,7 +1688,7 @@
     "confidence_overall": "medium",
     "warnings": [],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium",
     "harmony_warnings": [
       {

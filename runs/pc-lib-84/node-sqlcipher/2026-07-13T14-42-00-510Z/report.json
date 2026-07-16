@@ -819,29 +819,29 @@
         "capability_key": "node_napi",
         "capability": "Node.js N-API（native addon 编译和加载）",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "该库为纯 N-API 原生插件，N-API 不可用则无法编译加载，核心功能完全受阻",
-        "source": "caps node_napi=unknown",
+        "source": "harmony-pc-capabilities.json#node_napi 核实(2026-07-14): Node 24 N-API + .node 真机加载",
         "target_status_model": "unknown"
       },
       {
         "id": "ta:pthread_mutex",
-        "capability_key": "pthread_mutex",
+        "capability_key": "pthread",
         "capability": "POSIX pthread 互斥锁 API",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "SQLCipher 的多线程模式和多连接并发访问依赖 pthread 互斥锁（threading.h pthread 路径）；若不支持则需回退到单线程模式",
-        "source": "caps 未显式列 pthread_mutex；musl_libc=available 隐含支持但需确认",
+        "source": "harmony-pc-capabilities.json#pthread 核实(2026-07-14): pthread 互斥锁真机 OK",
         "target_status_model": "unknown"
       },
       {
         "id": "ta:openssl_libcrypto",
-        "capability_key": "openssl_libcrypto",
+        "capability_key": "openssl",
         "capability": "OpenSSL libcrypto 库（AES-256 等加密算法）",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "Linux 编译路径上 SQLCipher 通过 SQLCIPHER_CRYPTO_OPENSSL 宏链接 libcrypto 实现 AES-256-CBC 加密；若 libcrypto 不可用，加密功能将走纯软件实现，需评估性能影响",
-        "source": "caps 未显式列 openssl/libcrypto；需确认鸿蒙 OHOS NDK 是否提供 libcrypto",
+        "source": "harmony-pc-capabilities.json#openssl 核实(2026-07-14): OpenSSL libcrypto 真机(设备 Python HNP 附 + 可交叉编译)",
         "target_status_model": "unknown"
       },
       {
@@ -965,7 +965,7 @@
       ]
     },
     "confidence_model": null,
-    "functional_viability": "unverified"
+    "functional_viability": "viable"
   },
   "library": {
     "name": "@journeyapps/sqlcipher",
@@ -985,13 +985,6 @@
   "meta": {
     "confidence_overall": "medium",
     "observations": [
-      {
-        "dimension": "harmony_caps",
-        "kind": "caps_gap",
-        "field": "target_assumptions",
-        "value": "node_napi、pthread_mutex、openssl_libcrypto 在鸿蒙 PC 上的状态未在 caps 文件中明确登记，建议补充",
-        "rationale": "该库高度依赖 N-API（node-addon-api）编译原生插件，pthread mutex 用于多线程并发，libcrypto 用于加密——三项均为核心功能必备，其 target_status 当前在 caps 中缺失或为 unknown"
-      },
       {
         "dimension": "function_summary",
         "kind": "classification",

@@ -1353,11 +1353,11 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "HTTP 客户端/服务端和 WebSocket 通信需要网络访问权限",
         "source_capability": "",
-        "harmony_status": "unknown",
         "evidence": [
           "Release/include/cpprest/http_client.h",
           "Release/include/cpprest/http_listener.h"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "cpprestsdk 在鸿蒙 PC 上的适配核心在于使用 OHOS NDK 交叉编译。Linux/macOS 后端（Boost.Asio + OpenSSL + POSIX 文件 I/O）是主要适配路径。Boost 和 OpenSSL 已在鸿蒙 PC 预编译包中提供，zlib 和 brotli 同样已适配。主要工作量在于：1) 确保 Boost.Asio 在 OHOS NDK 上正确编译和运行；2) 适配 POSIX 文件 I/O（musl libc 应提供所需 API）；3) websocketpp 需随主库一起编译（header-only，依赖 Boost 和 OpenSSL）。Windows 专用后端（WinHTTP/HTTP.sys/BCrypt）在鸿蒙上不适用，但编译路径通过 CPPREST_FORCE_HTTP_CLIENT_ASIO/CPPREST_FORCE_HTTP_LISTENER_ASIO 宏可以切换。",
@@ -1369,13 +1369,13 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "websocketpp 是 header-only 库，作为 git submodule 引入，可直接包含在源码中编译，无需独立适配",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "Release/cmake/cpprest_find_websocketpp.cmake:10-14"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:boost_asio_compat",
@@ -1384,7 +1384,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "needs_permission",
         "remediation": "Boost 整体已在鸿蒙 PC cmd-pkgs 中提供，但需验证 Asio 模块在 OHOS NDK 上的 epoll/kqueue 等底层机制是否正常工作",
         "caused_by": [
           "ta:boost_asio_ohos"
@@ -1393,7 +1392,8 @@
         "evidence": [
           "Release/src/http/client/http_client_asio.cpp",
           "Release/src/http/listener/http_server_asio.cpp"
-        ]
+        ],
+        "remediation_status": "needs_permission"
       },
       {
         "id": "bk:posix_pread_pwrite",
@@ -1402,7 +1402,6 @@
         "adaptability": "adaptable",
         "category": "posix_api",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "musl libc 通常提供 pread/pwrite，但需在 OHOS NDK 上实测验证；若不可用可回退到 lseek+read/write 组合",
         "caused_by": [
           "ta:posix_file_io"
@@ -1411,7 +1410,8 @@
         "evidence": [
           "Release/src/streams/fileio_posix.cpp:272",
           "Release/src/streams/fileio_posix.cpp:322"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "compatible": [
@@ -1490,7 +1490,7 @@
     "confidence_overall": "medium",
     "warnings": [],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

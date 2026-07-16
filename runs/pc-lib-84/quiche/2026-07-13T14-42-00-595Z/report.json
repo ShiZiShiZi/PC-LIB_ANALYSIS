@@ -1272,9 +1272,9 @@
         "capability": "BoringSSL C 库在 ohos 目标的编译支持",
         "capability_key": "boringssl",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "quiche 通过 boring-sys 编译时构建 BoringSSL；如果 BoringSSL 无法为 aarch64-linux-ohos 交叉编译，则整个库无法链接运行。OpenSSL 已在 cmd-pkgs 中预编译（可作为潜在替代），但 quiche 目前只支持 BoringSSL",
-        "source": "references/harmony-pc-capabilities.json",
+        "source": "harmony-pc-capabilities.json#boringssl 核实(2026-07-14): quiche 0.29.1 boring crate 零补丁交叉编译+真机 QUIC",
         "target_status_model": "unknown"
       }
     ],
@@ -1301,7 +1301,7 @@
     "summary": "quiche 是 Rust 编写的 QUIC/HTTP3 协议库，鸿蒙 PC 移植基本路径为交叉编译。Rust 社区已提供 ohos target（aarch64-unknown-linux-ohos），大部分 quiche 代码（包括 tokio-quiche、qlog、datagram-socket 等 crate）为纯 Rust，零改编译。主要风险点在 BoringSSL C 依赖：boring-sys 需要为 ohos 目标交叉编译 BoringSSL，该 C 库在 ohos 上的编译可行性尚不明确（caps 标记 unknown）。如果 BoringSSL 可交叉编译，整体工作量极低（配置交叉编译工具链并执行 cargo build --target aarch64-unknown-linux-ohos）；如果不可行，则需要评估为 quiche 添加 OpenSSL 或 rustls 后端（中等工作量）。cfg(target_os=\"linux\") 守卫的 Linux 批量 I/O 优化（recvmmsg/sendmmsg，~200 行）在 ohos 上默认不触发，不影响功能。",
     "notes": "1) BoringSSL 是核心不确定性，建议优先验证其在 ohos 的编译可行性；2) OpenSSL（已有 cmd-pkgs 预编译）可作后备但 quiche 尚无对应后端；3) rustls（纯 Rust TLS）理论上也可行但 quiche 不支持；4) 平台守卫 cfg(target_os=\"linux\") 块在 ohos 自动走通用路径无需改动；5) datagram-socket 可选的批量 I/O 优化不强制",
     "porting_class_model": "recompile_only",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "recompile_only",
       "overall": "adaptable",

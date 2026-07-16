@@ -1997,27 +1997,27 @@
       {
         "permission": "ohos.permission.INTERNET",
         "reason": "默认从 Hugging Face Hub 拉取模型权重与配置",
-        "harmony_status": "unknown",
         "evidence": [
           "src/transformers/utils/hub.py:29-41"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储",
         "reason": "缓存下载的模型、分词器与配置文件到本地文件系统",
-        "harmony_status": "unknown",
         "evidence": [
           "src/transformers/utils/hub.py:107"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "ohos.permission.MICROPHONE",
         "reason": "audio_utils 实时采集麦克风输入用于语音 pipeline",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "src/transformers/pipelines/audio_utils.py:91-106"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "blockers": [
@@ -2028,7 +2028,6 @@
         "adaptability": "unadaptable",
         "category": "hardware/cuda",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "模型加载/训练默认使用 CPU（或 torch 在鸿蒙支持的其它后端）；涉及 CUDA 的量化器与训练特性需禁用或做条件降级",
         "caused_by": [
           "ta:cuda"
@@ -2039,7 +2038,8 @@
         "evidence": [
           "src/transformers/utils/import_utils.py:238",
           "src/transformers/trainer.py:3175"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:media",
@@ -2048,7 +2048,6 @@
         "adaptability": "partial",
         "category": "media/ffmpeg",
         "source_dimension": "runtime_surface",
-        "harmony_status": "partial",
         "remediation": "音频采集/解码可替换为 @ohos.multimedia.audio/video；或确认 ffmpeg/PyAV 能在 OHOS NDK 上交叉编译；非核心文本/视觉路径不受影响",
         "caused_by": [
           "ta:media"
@@ -2056,7 +2055,8 @@
         "evidence": [
           "src/transformers/pipelines/audio_utils.py:33",
           "src/transformers/pipelines/audio_utils.py:91-106"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:internet",
@@ -2065,14 +2065,14 @@
         "adaptability": "partial",
         "category": "permission/network",
         "source_dimension": "runtime_surface",
-        "harmony_status": "needs_permission",
         "remediation": "声明 ohos.permission.INTERNET；若权限受限则预下载模型到本地缓存并设置 local_files_only=True",
         "caused_by": [
           "ta:internet"
         ],
         "evidence": [
           "src/transformers/utils/hub.py:29-41"
-        ]
+        ],
+        "remediation_status": "needs_permission"
       },
       {
         "id": "bk:storage",
@@ -2081,14 +2081,14 @@
         "adaptability": "partial",
         "category": "permission/storage",
         "source_dimension": "runtime_surface",
-        "harmony_status": "needs_permission",
         "remediation": "声明读写存储权限或使用鸿蒙沙箱允许的缓存目录；预置资源可降低运行期依赖",
         "caused_by": [
           "ta:storage"
         ],
         "evidence": [
           "src/transformers/utils/hub.py:107"
-        ]
+        ],
+        "remediation_status": "needs_permission"
       }
     ],
     "compatible": [
@@ -2149,7 +2149,7 @@
     "confidence_overall": "medium",
     "warnings": [],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium",
     "harmony_warnings": [
       {

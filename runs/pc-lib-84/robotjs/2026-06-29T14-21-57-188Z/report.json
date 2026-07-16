@@ -1389,11 +1389,11 @@
         "permission": "输入事件注入权限（鼠标/键盘模拟）",
         "reason": "核心功能需要模拟鼠标和键盘输入事件",
         "source_capability": "gui",
-        "harmony_status": "unknown",
         "evidence": [
           "src/mouse.c",
           "src/keypress.c"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "RobotJS 的核心功能（鼠标/键盘输入注入、屏幕捕获）完全依赖 macOS/Windows/Linux 三大平台的专有 GUI 输入 API，没有任何标准/可移植替代。移植到鸿蒙 PC 需要：(1) 用 OHOS NDK 输入事件 API 完全重写鼠标/键盘事件层；(2) 用 OHOS 屏幕捕获 API 重写截图层；(3) 保留 N-API 绑定层和纯计算逻辑。由于鸿蒙 PC 是否提供对等的输入事件注入和屏幕像素读取 API 尚属未知，整体可行性高度不确定。",
@@ -1405,7 +1405,6 @@
         "adaptability": "unadaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "需确认鸿蒙 PC OHOS NDK 是否提供输入事件注入 API（如 OH_InputMethod 或无障碍服务），若可用则针对该 API 重写 mouse.c/keypress.c 的条件编译分支",
         "caused_by": [
           "ta:input_injection"
@@ -1418,7 +1417,8 @@
         "evidence": [
           "src/mouse.c:114-145",
           "src/keypress.c:112-180"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:screen_capture",
@@ -1427,7 +1427,6 @@
         "adaptability": "unadaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "需确认鸿蒙 PC 是否提供屏幕像素读取 API（如 OH 屏幕截图/录屏 API），若可用则重写 screengrab.c 的条件编译分支",
         "caused_by": [
           "ta:screen_access"
@@ -1437,7 +1436,8 @@
         ],
         "evidence": [
           "src/screengrab.c:28-201"
-        ]
+        ],
+        "remediation_status": "unavailable"
       }
     ],
     "compatible": [
@@ -1512,7 +1512,7 @@
     "warnings": [],
     "confidence_overall": "low",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "low",
     "harmony_warnings": [
       {

@@ -1712,21 +1712,21 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "datasets/utils.py 与 models/_api.py 运行期下载数据集与预训练权重",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "torchvision/datasets/utils.py:28-32",
           "torchvision/models/_api.py:91"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储（文件访问）",
         "reason": "数据集缓存、图像文件读写、压缩包解压需要本地文件系统访问",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "torchvision/_internally_replaced_utils.py:7",
           "torchvision/csrc/io/image/cpu/read_write_file.cpp:37-110"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "blockers": [
@@ -1737,7 +1737,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 ohos.toolchain.cmake + clang/musl 交叉编译 torchvision 的 C++ 扩展；关闭 WITH_CUDA/WITH_MPS，链接鸿蒙已适配的 libjpeg/libpng/libwebp；通过 pip install -e . 在鸿蒙 Python 上重新构建。",
         "caused_by": [
           "ta:libtorch_ohos"
@@ -1746,7 +1745,8 @@
         "evidence": [
           "setup.py:526-531",
           "CMakeLists.txt:1-196"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:cuda_acceleration_unavailable",
@@ -1755,7 +1755,6 @@
         "adaptability": "unadaptable",
         "category": "specific_hardware",
         "source_dimension": "capability_profile",
-        "harmony_status": "unavailable",
         "remediation": "编译时关闭 WITH_CUDA 与 USE_NVJPEG，所有 JPEG 解码/算子回退到 CPU 路径；模型训练推理仍可通过 CPU 或鸿蒙支持的其它后端（如未来 OpenCL/NPU）运行，但当前 CUDA 代码无法复用。",
         "caused_by": [
           "ta:no_cuda"
@@ -1764,7 +1763,8 @@
         "evidence": [
           "torchvision/csrc/ops/cuda/*.cu",
           "torchvision/csrc/io/image/cuda/decode_jpegs_cuda.cpp"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:mps_macos_only",
@@ -1773,14 +1773,14 @@
         "adaptability": "unadaptable",
         "category": "platform_specific_backend",
         "source_dimension": "capability_profile",
-        "harmony_status": "unavailable",
         "remediation": "关闭 WITH_MPS，相关算子使用 CPU 或 PyTorch 鸿蒙支持的其它后端实现。",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "torchvision/csrc/ops/mps/nms_kernel.mm",
           "CMakeLists.txt:22-25"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:extra_decoders_linux_only",
@@ -1789,13 +1789,13 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "若需要 AVIF/HEIC 支持，裁剪该功能或使用鸿蒙 @ohos.multimedia 媒体能力重新实现；默认可关闭该可选功能。",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "torchvision/io/image.py:434-455"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:x86_64_uncertain",
@@ -1804,7 +1804,6 @@
         "adaptability": "adaptable",
         "category": "toolchain",
         "source_dimension": "build_env",
-        "harmony_status": "partial",
         "remediation": "优先在 arm64 鸿蒙 PC 上验证与分发；如需要 x86_64，需先确认 OHOS NDK 与 PyTorch 对该架构的支持状态。",
         "caused_by": [
           "ta:x86_64"
@@ -1813,7 +1812,8 @@
         "evidence": [
           ".github/workflows/build-wheels-linux.yml",
           ".github/workflows/build_wheel_windows_arm64.yml"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "compatible": [
@@ -1892,7 +1892,7 @@
         "message": "porting_class 模型原判 needs_adaptation_full，但代码分区(dim-12)存在需适配模块或不可适配 API/阻碍点，已按\"不矛盾\"校正为 needs_adaptation_partial"
       }
     ],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

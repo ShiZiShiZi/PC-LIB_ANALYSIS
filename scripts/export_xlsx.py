@@ -278,8 +278,8 @@ _VIABILITY_FILL = {"viable": "green", "viable_with_work": "amber",
                    "blocked_external": "red", "unverified": "gray"}
 _LEVEL_FILL = {"very_low": "green", "low": "green", "medium": "amber",
                "high": "orange", "very_high": "red"}
-# 三方能力地图「是否能AI鸿蒙化」——综合代码轴 effective_class + 前提轴 functional_viability 的 6 档结论。
-# effective_class 的直接映射（前提轴 blocked_external/unverified 及 core_partial 在 _v_ai_harmonize 里优先短路）。
+# 三方能力地图「是否能AI鸿蒙化」——综合代码轴 effective_class + 前提轴 functional_viability 的 7 档结论。
+# effective_class 的直接映射（前提轴 core_partial/blocked_external/unverified/viable_with_work 在 _v_ai_harmonize 里优先短路）。
 _AI_HARMONIZE = {"no_adaptation": ("无需适配", "green"),
                  "recompile_only": ("仅需交叉编译", "teal"),
                  "needs_adaptation": ("可适配（全量功能）", "blue"),
@@ -287,6 +287,9 @@ _AI_HARMONIZE = {"no_adaptation": ("无需适配", "green"),
                  "needs_adaptation_core_partial": ("无法适配（核心不可适配）", "red")}
 _AI_BLOCKED = ("无法适配（前提不具备）", "red")     # functional_viability == blocked_external
 _AI_UNVERIFIED = ("待核实（前提未核实）", "gray")
+# 代码轴零改动/仅重编（no_adaptation/recompile_only）但目标前提需适配（functional_viability == viable_with_work）——
+# 代码可 AI 转换、真机前提有条件需落地（如 esptool：串口依赖 pyserial + 权限），不塌缩成"无需适配"而单独成档。
+_AI_CONDITIONAL = ("可适配（前提有条件）", "amber")
 # target_assumptions.target_status —— 只对 required 项统计（元组顺序＝由严重到轻）
 _TGT_ORDER = ("unavailable", "partial", "unknown")   # available 视为无阻碍
 _TGT_FILL = {"unavailable": "red", "partial": "amber", "unknown": "gray"}
@@ -478,8 +481,8 @@ def _v_months(name, r):
 
 
 def _v_ai_harmonize(name, r):
-    """是否能AI鸿蒙化 —— 6 档结论。确定性负面优先(核心不可适配/前提不具备)，其次不确定(前提未核实)，
-    再按代码轴 effective_class。见 _AI_HARMONIZE。"""
+    """是否能AI鸿蒙化 —— 7 档结论。确定性负面优先(核心不可适配/前提不具备)，其次不确定(前提未核实)，
+    再看代码轴干净但前提有条件(viable_with_work)，最后按代码轴 effective_class。见 _AI_HARMONIZE。"""
     ec = (_g(r, "harmony_adaptation", "adaptation_assessment", "effective_class", default="")
           or _g(r, "harmony_adaptation", "porting_class", default=""))
     fv = _g(r, "harmony_adaptation", "functional_viability", default="")
@@ -491,6 +494,9 @@ def _v_ai_harmonize(name, r):
         label, fill = _AI_BLOCKED
     elif fv == "unverified":                        # 前提未核实
         label, fill = _AI_UNVERIFIED
+    elif fv == "viable_with_work" and ec in ("no_adaptation", "recompile_only"):
+        # 代码轴零改动/仅重编，但目标前提需适配 → 不塌缩成"无需适配/仅交叉编译"，单独成"前提有条件"档
+        label, fill = _AI_CONDITIONAL
     else:
         label, fill = _AI_HARMONIZE.get(ec, _AI_UNVERIFIED)
     return _Styled(label, fill)

@@ -2531,11 +2531,11 @@
       },
       {
         "capability": "OpenMP / libomp 在鸿蒙 musl + clang 工具链上可用",
-        "capability_key": null,
+        "capability_key": "openmp",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若 OpenMP 不可用则 CPU 并行训练/推理大幅降速——需交叉编译验证。OHOS NDK clang 打包了 libomp 但 musl 运行时行为未充分验证。",
-        "source": "交叉编译经验",
+        "source": "harmony-pc-capabilities.json#openmp 核实(2026-07-14): OHOS NDK clang 支持 -fopenmp、libomp 可随应用打包",
         "id": "ta:2",
         "target_status_model": "unknown"
       }
@@ -2578,7 +2578,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 3.12 运行时上）。GPU 加速（CUDA/ROCm）无法适配——这是 PyTorch 最大的鸿蒙适配瓶颈。GPU 通路涉及约 42k LOC 代码无法复用，但 CPU 通路（约 935k LOC C++ + 1074k LOC Python）可在 OHOS NDK 交叉编译后运行。CPU 模式训练/推理功能完整但性能受 OpenMP 可用性制约（OpenMP 在 musl 的可用性是关键 risk）。核心能力（train/predict/autograd/nn）均可在 CPU 模式工作，未列为 core_blocked——GPU 加速是性能提升手段而非核心功能不可剥离的硬依赖。复杂度整体中等偏高（~55-75 人天），主要来自 935k LOC C++的 NDK 编译验证 + 32k LOC SIMD 适配 + 50k 测试用例验证 + OpenMP musl 行为验证。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation_platform_partial",
       "overall": "adaptable_with_tailoring",

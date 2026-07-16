@@ -1691,37 +1691,41 @@
         "id": "ta:sdl2",
         "capability": "SDL2 已在鸿蒙 PC 移植并具备可用的视频/音频/窗口后端",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "pygame 核心显示、事件、音频依赖 SDL2；cmd-pkgs 已列出 SDL2 适配包，但视频/音频后端细节未在参考中单独核实",
-        "source": "scripts/harmony_adapted.js 检测到 SDL2 已在 cmd-pkgs；harmony-pc-capabilities.json 无 SDL2 专门条目",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#sdl3 核实(2026-07-14): SDL2/SDL3 cmd-pkgs 预编译",
+        "target_status_model": "unknown",
+        "capability_key": "sdl3"
       },
       {
         "id": "ta:audio",
         "capability": "音频输出/采集后端（等价 ALSA/PulseAudio/WASAPI）",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "SDL2_mixer 音频后端若缺失，需接入 @ohos.multimedia.audio",
-        "source": "harmony-pc-capabilities.json#media.audio_io",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#audio_io 核实(2026-07-14): OHAudio 音频输出/采集后端",
+        "target_status_model": "unknown",
+        "capability_key": "audio_io"
       },
       {
         "id": "ta:camera",
         "capability": "摄像头采集能力",
         "required": false,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "camera 模块为可选功能；默认 V4L2 不适用，可改用 OpenCV 或 @ohos.multimedia.camera",
-        "source": "harmony-pc-capabilities.json#media.camera_capture",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#camera_capture 核实(2026-07-14): 摄像头硬件+服务+API+权限齐备(真机)",
+        "target_status_model": "unknown",
+        "capability_key": "camera_capture"
       },
       {
         "id": "ta:clipboard",
         "capability": "剪贴板/桌面集成",
         "required": false,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "scrap 模块可选；可改用 SDL2 clipboard 后端或鸿蒙桌面剪贴板能力",
-        "source": "harmony-pc-capabilities.json#desktop_integration.dnd_clipboard",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#dnd_clipboard 核实(2026-07-14): @ohos.pasteboard 剪贴板",
+        "target_status_model": "unknown",
+        "capability_key": "dnd_clipboard"
       },
       {
         "id": "ta:arm64",
@@ -1738,20 +1742,20 @@
         "permission": "ohos.permission.CAMERA",
         "reason": "camera 模块访问摄像头设备",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "src_py/camera.py:172"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储",
         "reason": "加载字体、图片、音频资源及保存游戏截图/数据",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "src_py/pkgdata.py",
           "src_py/sysfont.py"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "pygame 是纯 Python + C 扩展库，鸿蒙 PC 已移植 Python 运行时，核心障碍在于用 OHOS NDK 交叉编译其原生扩展及未官方适配的 SDL2 卫星库（SDL2_image/SDL2_mixer/SDL2_ttf），并调整 Linux 特有的 V4L2 摄像头、X11 剪贴板、系统字体枚举等平台后端。无核心不可适配的硬件/专有 API，整体可行但工作量较高。",
@@ -1763,7 +1767,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "下载 SDL2_image/SDL2_mixer/SDL2_ttf 源码，用 ohos.toolchain.cmake 交叉编译为 arm64/x86_64 .so；mixer 音频后端若缺失则接入 @ohos.multimedia.audio",
         "caused_by": [
           "ta:sdl2",
@@ -1773,7 +1776,8 @@
         "evidence": [
           "buildconfig/Setup.SDL2.in:11-13",
           "buildconfig/config_unix.py:223-225"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:camera_v4l2",
@@ -1782,7 +1786,6 @@
         "adaptability": "partial",
         "category": "posix_api",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "构建时禁用 V4L2 或默认选择 OpenCV 后端（opencv-python 已鸿蒙化），亦可接入 @ohos.multimedia.camera",
         "caused_by": [
           "ta:camera"
@@ -1791,7 +1794,8 @@
         "evidence": [
           "src_c/camera_v4l2.c:20",
           "src_py/camera.py:145-146"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:scrap_x11",
@@ -1800,7 +1804,6 @@
         "adaptability": "adaptable",
         "category": "x11_api",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "构建时改用 src_c/scrap_sdl2.c（SDL_Clipboard）作为后端，或接入鸿蒙桌面剪贴板能力",
         "caused_by": [
           "ta:clipboard"
@@ -1809,7 +1812,8 @@
         "evidence": [
           "src_c/scrap_x11.c:22",
           "src_c/scrap_sdl2.c:1-2"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:sysfont",
@@ -1818,14 +1822,14 @@
         "adaptability": "partial",
         "category": "platform_integration",
         "source_dimension": "runtime_surface",
-        "harmony_status": "partial",
         "remediation": "为鸿蒙增加系统字体扫描路径，或回退到内置 freesansbold.ttf",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "src_py/sysfont.py:58-65",
           "src_py/sysfont.py:204-205"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:simd",
@@ -1834,7 +1838,6 @@
         "adaptability": "adaptable",
         "category": "toolchain",
         "source_dimension": "build_env",
-        "harmony_status": "replace_with_ohos",
         "remediation": "在 ohos/arm64 上关闭 AVX2，开启 ARM NEON（-enable-arm-neon）或使用 C 语言回退实现",
         "caused_by": [
           "ta:arm64"
@@ -1844,7 +1847,8 @@
           "src_c/simd_blitters_avx2.c:3-5",
           "src_c/simd_blitters_sse2.c:3-6",
           "setup.py:222-229"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "compatible": [
@@ -1890,7 +1894,7 @@
     "notes": "评估按模型 A（库跑在已移植 Python 运行时上）。pygame 的 camera/scrap/sysfont 等平台后端可通过条件编译或运行时后端选择适配，无核心不可移植功能；SDL2 卫星库和音频后端是当前最大不确定点。",
     "porting_class_model": "needs_adaptation_full",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1914,7 +1918,7 @@
       "camera/scrap/sysfont 等平台后端在不同 OS 上实现不同，鸿蒙化需新增平台分支。"
     ],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

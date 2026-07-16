@@ -682,21 +682,21 @@
       },
       {
         "capability": "D-Bus 守护进程（dbus-daemon / dbus-broker）",
-        "capability_key": null,
+        "capability_key": "dbus_ipc_bus",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "dbus-glib 的核心依赖是运行时的 D-Bus 守护进程——如果鸿蒙 PC 没有 dbus-daemon 或等效 IPC 总线，库即使编译通过也无法实际使用。D-Bus 守护进程在 caps 中无映射条目，需额外确认。",
-        "source": "runtime_surface.services",
+        "source": "harmony-pc-capabilities.json#dbus_ipc_bus 核实(2026-07-14): 系统总线无、私有会话总线可行(需打包适配)",
         "id": "ta:2",
         "target_status_model": "unknown"
       },
       {
         "capability": "Expat XML 解析库",
-        "capability_key": null,
+        "capability_key": "expat",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "dbus-binding-tool 工具依赖 Expat 解析 D-Bus 内省 XML。Expat 在 caps 中无映射条目。Expat 本身是纯 C 库、应可 OHOS NDK 交叉编译，但需要确认。注意这只是 dbus-binding-tool 工具依赖，库主体不使用。",
-        "source": "native_api",
+        "source": "harmony-pc-capabilities.json#expat 核实(2026-07-14): Expat XML 交叉编译+真机加载运行",
         "id": "ta:3",
         "target_status_model": "unknown"
       }
@@ -763,7 +763,7 @@
     "summary": "dbus-glib 为纯 C + GLib 包装层，无平台特有代码、无架构相关代码（无 SSE/SIMD）、无 GUI/图形/硬件依赖。唯一实际障碍是运行时 D-Bus 守护进程是否在鸿蒙 PC 上可用——如不可用，库本身可编译但无运行时功能。综合评估为仅交叉编译（recompile_only），工作量约 2-5 人天。",
     "notes": "dbus-glib 已废弃（上游推荐使用 GLib 内置 GDBus），不建议在新项目中移植。本评估仅针对旧项目（如 NetworkManager）维护场景。",
     "confidence_model": null,
-    "functional_viability": "unverified"
+    "functional_viability": "viable_with_work"
   },
   "library": {
     "name": "dbus-glib",
@@ -782,20 +782,7 @@
   "meta": {
     "tool_version": "pc-lib-analyzer",
     "confidence_overall": "medium",
-    "observations": [
-      {
-        "dimension": "harmony_caps",
-        "kind": "caps_gap",
-        "value": "D-Bus 守护进程（dbus-daemon / dbus-broker）未在 harmony-pc-capabilities.json 中映射",
-        "rationale": "dbus-glib 运行时依赖 D-Bus 守护进程进行 IPC。当前 caps 无此映射，需人工确认鸿蒙 PC D-Bus 守护进程可用性并补行到 caps。"
-      },
-      {
-        "dimension": "harmony_caps",
-        "kind": "caps_gap",
-        "value": "Expat XML 解析库未在 harmony-pc-capabilities.json 中映射",
-        "rationale": "dbus-binding-tool 依赖 Expat 解析 XML。Expat 是标准纯 C 库，应可交叉编译，但 caps 缺少条目。"
-      }
-    ],
+    "observations": [],
     "notes": "commit 为 null 是因为仓库在分析完成后被 prune 了 .git 目录。所有特征点已基于源码验证完成。",
     "schema_version": "1.0",
     "analyzer": "pc-lib-analyzer",

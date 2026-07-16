@@ -1484,7 +1484,6 @@
         "adaptability": "partial",
         "category": "hardware",
         "source_dimension": "capability_profile",
-        "harmony_status": "unknown",
         "remediation": "在鸿蒙 PC 上实测 pySerial 对 /dev/tty* 类设备的枚举与读写；若系统 API 不同，需用 @ohos.usb 或相应系统能力重写串口抽象层，或为 pySerial 提供鸿蒙后端补丁。",
         "caused_by": [
           "ta:usb_serial"
@@ -1493,7 +1492,8 @@
           "esptool/loader.py:291",
           "esptool/loader.py:433",
           "esptool/cli_util.py:546-600"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:posix_reset",
@@ -1502,12 +1502,12 @@
         "adaptability": "partial",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "验证 OHOS POSIX 子集对 TIOCMSET/TIOCMGET 与 termios HUPCL 的支持；缺失时回退到 ClassicReset（仅使用 pySerial setDTR/setRTS），或针对鸿蒙实现 CustomReset 序列。",
         "evidence": [
           "esptool/reset.py:15-101",
           "esptool/loader.py:852-858"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:cryptography_native",
@@ -1516,12 +1516,12 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "使用 OHOS NDK 交叉编译 cryptography 及其 OpenSSL 依赖为鸿蒙 arm64/x86_64 平台 wheel，或确认 OpenHarmony PC PyPI 镜像已提供 ohos 版本。",
         "evidence": [
           "pyproject.toml:36-37",
           "espsecure/__init__.py:16-21"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "unadaptable_apis": [],
@@ -1559,19 +1559,19 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "esp_rfc2217_server 提供 TCP 网络串口转发服务",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "esp_rfc2217_server/__init__.py:44-45"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "USB/串口访问权限",
         "reason": "esptool 需要打开并读写 USB/串口设备以与 ESP 芯片通信",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "esptool/loader.py:433"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "compatible": [
@@ -1631,7 +1631,7 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

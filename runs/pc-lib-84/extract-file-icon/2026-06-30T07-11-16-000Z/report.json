@@ -886,11 +886,11 @@
         "permission": "读写存储（文件访问）",
         "reason": "需要读取传入文件路径的元信息以获取关联图标",
         "source_capability": "gui",
-        "harmony_status": "unknown",
         "evidence": [
           "lib/addon.cc:224",
           "lib/addon.mm:20"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "该库的核心功能——从操作系统获取文件关联图标——完全依赖 Windows Shell API（SHGetFileInfoW/SHGetImageList/GDI+）和 macOS AppKit（NSWorkspace），这些 API 在鸿蒙 PC 上均无等价实现。Node.js + N-API 层面可正常运行，但原生 C++ 层需要全面重写。推荐路径：寻找鸿蒙文件图标 API（@ohos.file 相关接口）替代，若无则需自行实现 MIME 类型→图标映射表，使用 libpng 或 stb_image_write 替代 GDI+ 做 PNG 编码。",
@@ -902,7 +902,6 @@
         "adaptability": "unadaptable",
         "category": "win32_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "替换为鸿蒙文件图标查询 API（如 @ohos.file.icon）或自行维护 MIME→图标映射",
         "caused_by": [
           "ta:shell_icon_api"
@@ -914,7 +913,8 @@
         "evidence": [
           "lib/addon.cc:224",
           "lib/addon.cc:236"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:appkit_icon",
@@ -923,7 +923,6 @@
         "adaptability": "unadaptable",
         "category": "platform",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "替换为鸿蒙文件图标查询 API 或自行维护 MIME→图标映射",
         "caused_by": [
           "ta:appkit_icon_api"
@@ -933,7 +932,8 @@
         ],
         "evidence": [
           "lib/addon.mm:20"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:gdiplus",
@@ -942,7 +942,6 @@
         "adaptability": "adaptable",
         "category": "win32_api",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 libpng / stb_image_write / OHOS 原生图像 API 替代 GDI+ 做 PNG 编码",
         "caused_by": [
           "ta:gdiplus"
@@ -951,7 +950,8 @@
         "evidence": [
           "lib/addon.cc:16",
           "lib/addon.cc:163"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "compatible": [
@@ -1008,7 +1008,7 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium",
     "harmony_warnings": [
       {

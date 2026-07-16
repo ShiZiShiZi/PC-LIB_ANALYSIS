@@ -1016,7 +1016,6 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "方案一：推动/协助 torchcodec（及其底层 FFmpeg）在 OHOS NDK 上交叉编译并发布 ohos wheel；方案二：将 load/save 回退路径改为 @ohos.multimedia.audio 或 soundfile（soundfile 已有 ohos wheel），但需重写 _torchcodec.py 的 AudioDecoder/AudioEncoder 封装。",
         "caused_by": [
           "ta:torchcodec"
@@ -1026,7 +1025,8 @@
           "src/torchaudio/_torchcodec.py:82",
           "src/torchaudio/_torchcodec.py:246",
           "requirements.txt:5"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:cpp_ext_rebuild",
@@ -1035,7 +1035,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "使用 ohos.toolchain.cmake + clang/musl 交叉编译 libtorchaudio/_torchaudio 等扩展为 .so；验证 PyTorch 稳定 C++ ABI 在鸿蒙上的可用性；关闭 USE_CUDA/CUDA CTC decoder 构建开关。",
         "caused_by": [
           "ta:ohos_ndk_pytorch"
@@ -1044,7 +1043,8 @@
         "evidence": [
           "tools/setup_helpers/extension.py:58-138",
           "src/libtorchaudio/_torchaudio.cpp:4"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:cuda_unavailable",
@@ -1053,7 +1053,6 @@
         "adaptability": "unadaptable",
         "category": "hardware",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "编译时关闭 USE_CUDA / BUILD_CUDA_CTC_DECODER，仅提供 CPU 实现；已在代码中通过 #ifdef USE_CUDA 隔离，降级路径明确。",
         "caused_by": [
           "ta:cuda"
@@ -1065,7 +1064,8 @@
           "src/libtorchaudio/cuda_utils.h:3",
           "src/libtorchaudio/utils.cpp:17-23",
           "tools/setup_helpers/extension.py:70-73"
-        ]
+        ],
+        "remediation_status": "unavailable"
       }
     ],
     "unadaptable_apis": [
@@ -1131,21 +1131,21 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "下载预训练模型权重与示例资源时需要访问网络",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "src/torchaudio/utils/download.py:21",
           "src/torchaudio/pipelines/_tts/utils.py:171"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储（文件访问）",
         "reason": "音频文件读写与 torch.hub 缓存目录访问需要文件系统权限",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "src/torchaudio/_torchcodec.py:116",
           "src/torchaudio/utils/download.py:14"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "compatible": [
@@ -1211,7 +1211,7 @@
         "message": "依赖/网络出现 aws 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
       }
     ],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

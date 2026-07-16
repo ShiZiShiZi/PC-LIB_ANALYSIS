@@ -2241,21 +2241,21 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "下载 Chrome、连接 CDP/远程 provider、AI Gateway 等网络访问",
         "source_capability": "runtime_network",
-        "harmony_status": "unknown",
         "evidence": [
           "cli/src/install.rs:185",
           "cli/src/native/providers.rs:620"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储（文件访问）",
         "reason": "保存会话状态、截图、录像、配置文件与浏览器缓存",
         "source_capability": "filesystem",
-        "harmony_status": "unknown",
         "evidence": [
           "cli/src/connection.rs:97",
           "cli/src/native/recording.rs:82"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "blockers": [
@@ -2266,7 +2266,6 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "提供 HarmonyOS 版 Chrome/Lightpanda，或调整 open 默认走 --cdp/--provider 远程浏览器；新增 ohos 平台浏览器发现分支",
         "caused_by": [
           "ta:chrome_binary"
@@ -2274,7 +2273,8 @@
         "evidence": [
           "cli/src/native/cdp/chrome.rs:576-637",
           "cli/src/install.rs:101-182"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:platform_branches",
@@ -2283,13 +2283,13 @@
         "adaptability": "adaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "将 Unix 通用逻辑复用到 ohos；新增 #[cfg(target_os = \"ohos\")] 浏览器路径/用户数据目录；Windows 专有分支在鸿蒙构建中忽略",
         "evidence": [
           "cli/src/native/cdp/chrome.rs:576",
           "cli/src/install.rs:102",
           "cli/src/native/actions.rs:3245"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:install_system_deps",
@@ -2298,11 +2298,11 @@
         "adaptability": "partial",
         "category": "subprocess_unavailable",
         "source_dimension": "runtime_surface",
-        "harmony_status": "unavailable",
         "remediation": "在鸿蒙上提供 ohos 依赖安装脚本，或将 install --with-deps 标记为不支持",
         "evidence": [
           "cli/src/install.rs:596-688"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:recording_ffmpeg",
@@ -2311,14 +2311,14 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "runtime_surface",
-        "harmony_status": "unknown",
         "remediation": "提供鸿蒙 ffmpeg 或改用 @ohos.multimedia 视频编码",
         "caused_by": [
           "ta:ffmpeg"
         ],
         "evidence": [
           "cli/src/native/recording.rs:82"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:macos_only_features",
@@ -2327,7 +2327,6 @@
         "adaptability": "unadaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "在鸿蒙构建中禁用这些命令，返回清晰错误",
         "manifests_as": [
           "ua:xcrun",
@@ -2336,7 +2335,8 @@
         "evidence": [
           "cli/src/native/webdriver/ios.rs:14",
           "cli/src/native/webdriver/safari.rs:50"
-        ]
+        ],
+        "remediation_status": "unavailable"
       }
     ],
     "compatible": [
@@ -2423,7 +2423,7 @@
         "message": "required_permission 读写存储（文件访问） 的 source_capability=filesystem 不在已标记场景中"
       }
     ],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

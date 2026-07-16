@@ -1099,13 +1099,13 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 OHOS NDK（ohos.toolchain.cmake / clang + musl）交叉编译 _cffi_backend.c 及内嵌 libffi 源码为 arm64/x86_64 .so；鸿蒙 cmd-pkgs 已提供 libffi 预编译包，可直接链接或参考其构建参数。",
         "evidence": [
           "setup.py:10-15",
           "setup.py:113-155",
           "src/c/_cffi_backend.c:1-18"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:build_probe",
@@ -1114,12 +1114,12 @@
         "adaptability": "adaptable",
         "category": "toolchain",
         "source_dimension": "build_env",
-        "harmony_status": "partial",
         "remediation": "在 OHOS NDK 环境下验证 try_compile/try_link 探测逻辑；如 musl 不支持 __thread 可回退到 pthread TLS；pkg-config 路径指向鸿蒙 sysroot 中的 libffi.pc。",
         "evidence": [
           "setup.py:80-104",
           "setup.py:113-121"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:linux_procfs",
@@ -1128,11 +1128,11 @@
         "adaptability": "adaptable",
         "category": "sysfs_procfs",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "鸿蒙非 Linux ABI，__linux__ 分支大概率不启用；如启用后 /proc/self/status 不存在，可改为直接尝试 PROT_EXEC mmap 并捕获失败降级到非执行页，保持现有回退语义。",
         "evidence": [
           "src/c/malloc_closure.h:28-62"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "unadaptable_apis": [],
@@ -1215,7 +1215,7 @@
     "warnings": [],
     "confidence_overall": "high",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "high"
   }
 }

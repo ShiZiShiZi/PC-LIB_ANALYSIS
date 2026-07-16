@@ -1390,7 +1390,6 @@
         "adaptability": "unadaptable",
         "category": "native_dependency",
         "source_dimension": "runtime_surface",
-        "harmony_status": "unknown",
         "remediation": "若鸿蒙 PC 无法运行 usbmuxd 或缺少 Apple USB 协议实现，则 USB 路径不可用；只能依赖 WiFi sync 且需确保网络可达。",
         "caused_by": [
           "ta:usbmuxd"
@@ -1400,7 +1399,8 @@
         ],
         "evidence": [
           "src/idevice.c:261-526"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:deps-port",
@@ -1409,7 +1409,6 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "使用 OHOS NDK 交叉编译 libusbmuxd、libplist、libimobiledevice-glue、libtatsu；SSL 后端优先使用已鸿蒙化的 OpenSSL/MbedTLS，readline/ed25519 可直接使用鸿蒙预编译包。",
         "caused_by": [
           "ta:libusbmuxd-deps"
@@ -1417,7 +1416,8 @@
         "evidence": [
           "configure.ac:44-58",
           "dependencies[].harmony_adapted"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:macos-frameworks",
@@ -1426,14 +1426,14 @@
         "adaptability": "adaptable",
         "category": "platform_specific",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "鸿蒙构建不启用 DARWIN 分支，相关代码被 #ifdef __APPLE__ 条件编译隔离，无需移植。",
         "evidence": [
           "src/lockdown-cu.c:65-70",
           "src/lockdown-cu.c:656",
           "src/lockdown-cu.c:672",
           "common/userpref.c:174-175"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:windows-winsock",
@@ -1442,14 +1442,14 @@
         "adaptability": "adaptable",
         "category": "win32_api",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "鸿蒙构建不启用 WIN32 分支，相关代码被 #ifdef _WIN32 隔离。",
         "evidence": [
           "src/idevice.c:33-36",
           "src/idevice.c:1348",
           "common/userpref.c:72-74",
           "common/userpref.c:159-172"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:internet-perm",
@@ -1458,14 +1458,14 @@
         "adaptability": "partial",
         "category": "permission",
         "source_dimension": "capability_profile",
-        "harmony_status": "unknown",
         "remediation": "在鸿蒙应用配置中声明 ohos.permission.INTERNET；具体 PC 形态授予方式待核实。",
         "caused_by": [
           "ta:network"
         ],
         "evidence": [
           "src/idevice.c:549-571"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "unadaptable_apis": [
@@ -1529,11 +1529,11 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "WiFi sync 与 reverse_proxy 通过 TCP 与 iOS 设备或外部主机通信",
         "source_capability": "network",
-        "harmony_status": "unknown",
         "evidence": [
           "src/idevice.c:549-571",
           "src/reverse_proxy.c:191"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "compatible": [
@@ -1602,7 +1602,7 @@
     ],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium",
     "harmony_warnings": [
       {

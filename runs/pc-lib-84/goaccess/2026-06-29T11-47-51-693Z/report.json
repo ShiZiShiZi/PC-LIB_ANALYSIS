@@ -1394,11 +1394,11 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "WebSocket 服务器监听网络端口，向浏览器推送实时数据",
         "source_capability": "gui",
-        "harmony_status": "unknown",
         "evidence": [
           "src/websocket.c:ws_socket",
           "src/gwsocket.c"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "GoAccess 核心是纯 C 写的日志分析应用，主要依赖 POSIX API（pthread/socket/mmap/poll/signal）和可选的 ncurses/OpenSSL/zlib/GeoIP。用 OHOS NDK 交叉编译是最直接的适配路径。核心日志解析和 HTML 输出功能与 POSIX 兼容性高，预计可顺利编译。主要工作在于：1）验证 mkfifo 等 POSIX IPC 在 OHOS NDK musl 中的可用性并做替代；2）ncurses TUI 模式需终端模拟器环境，若不可用可退化为纯 HTML 输出模式；3）可选依赖（OpenSSL/zlib/GeoIP）需确认鸿蒙移植状态或自行编译。",
@@ -1410,7 +1410,6 @@
         "adaptability": "adaptable",
         "category": "posix_ipc",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "将 mkfifo 替换为 Unix 域套接字（AF_UNIX）或 pipe() 匿名管道，代码改动量较小",
         "caused_by": [
           "ta:posix_ipc"
@@ -1420,7 +1419,8 @@
         ],
         "evidence": [
           "src/websocket.c:2333"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:ncurses_tui",
@@ -1429,7 +1429,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "若 ncurses 不可用，可跳过 TUI 编译（--disable-curses），仅保留 HTML/JSON/CSV 输出模式；或自行交叉编译 ncurses",
         "caused_by": [
           "ta:ncurses",
@@ -1439,7 +1438,8 @@
         "evidence": [
           "src/ui.c:initscr",
           "configure.ac:122-181"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:app_delivery",
@@ -1448,7 +1448,6 @@
         "adaptability": "partial",
         "category": "toolchain",
         "source_dimension": "build_env",
-        "harmony_status": "unknown",
         "remediation": "若鸿蒙支持传统桌面应用（原生二进制 + 命令行启动），可直接安装；若仅支持 .hap 包，需打包为应用或提供命令行工具兼容层",
         "caused_by": [
           "ta:desktop_app"
@@ -1456,7 +1455,8 @@
         "manifests_as": [],
         "evidence": [
           "src/goaccess.c:main"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1543,7 +1543,7 @@
         "message": "unadaptable_api ua:mkfifo 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

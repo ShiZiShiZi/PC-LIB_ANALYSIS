@@ -532,31 +532,31 @@
       {
         "id": "ta:nodejs_runtime",
         "capability": "Node.js 24 运行时在鸿蒙 PC 移植且 N-API 可用",
-        "capability_key": null,
+        "capability_key": "node_napi",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "koffi 作为 N-API 原生 addon 依赖 Node.js 的 N-API 机制。若鸿蒙 PC Node.js 移植完整且支持原生 addon 加载，koffi 的 JS 桥接层可直接复用。",
-        "source": "harmony-pc-capabilities.json（Node.js 运行时段）",
+        "source": "harmony-pc-capabilities.json#node_napi 核实(2026-07-14): Node 24 N-API + .node 原生插件真机加载",
         "target_status_model": "unknown"
       },
       {
         "id": "ta:libffi",
         "capability": "libffi 库在鸿蒙 PC OHOS NDK 的可用性",
-        "capability_key": null,
+        "capability_key": "libffi",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "libffi 是 koffi 的底层依赖，负责 ABI 级函数调用。libffi 本身跨平台性强（已支持 ARM64、RISC-V），在 OHOS NDK 上交叉编译理论上可行，但需确认 OHOS musl libc 下的调用约定/栈对齐兼容性。",
-        "source": "依赖推断",
+        "source": "harmony-pc-capabilities.json#libffi 核实(2026-07-14): libffi 真机(CFUNCTYPE 闭包可用，W^X 1.12.0 放开)",
         "target_status_model": "unknown"
       },
       {
         "id": "ta:dynamic_loading",
         "capability": "鸿蒙 PC 的动态库加载机制等价 dlopen/LoadLibrary",
-        "capability_key": null,
+        "capability_key": "dlopen",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "koffi 在运行时通过 dlopen（POSIX）或 LoadLibrary（Windows）加载用户指定的 C 共享库。OHOS 是否有等价的动态链接器 API 决定 FFI 核心功能可否工作。",
-        "source": "harmony-pc-capabilities.json（系统服务/动态链接段）",
+        "source": "harmony-pc-capabilities.json#dlopen 核实(2026-07-14): dlopen/dlsym/dlclose 真机可用",
         "target_status_model": "unknown"
       }
     ],
@@ -637,7 +637,7 @@
     "notes": "本次分析基于 koffi GitHub 前端镜像（仅有 README 与 LICENSE），无源码可审查。以上结论基于 koffi npm 包的公开信息（npmjs.com/package/koffi）推断：koffi 是 N-API 原生 addon，通过 libffi 实现 FFI。评估按模型 A（库跑在鸿蒙已移植 Node.js 运行时上）进行。核心关键依赖（libffi、动态库加载 API）在 OHOS 的可用性待验证——此两项的实测结果将大幅度影响移植难度评级。koffi 已支持 ARM64 与 RISC-V，底层 ABI 覆盖面广，是降低移植风险的有利因素。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",

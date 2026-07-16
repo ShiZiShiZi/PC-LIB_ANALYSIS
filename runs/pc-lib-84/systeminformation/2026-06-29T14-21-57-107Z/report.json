@@ -1384,19 +1384,19 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "网络延迟检测功能需访问外部站点",
         "source_capability": "",
-        "harmony_status": "unknown",
         "evidence": [
           "lib/internet.js"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "ohos.permission.USE_BLUETOOTH",
         "reason": "蓝牙设备查询功能",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "lib/bluetooth.js"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "systeminformation 的核心机制是执行平台专有的系统命令和读取 procfs/sysfs/注册表，这些与特定 OS 内核和用户态工具链深度绑定。鸿蒙 PC 自研内核不提供 Linux ABI（/proc、/sys 不存在），也无 Windows WMI/注册表/macOS ioreg 等接口。因此不能简单重编译或替换少量 API，需要为鸿蒙平台重写每个信息采集模块，使用 @ohos 系统管理 API（如 @ohos.systemParameter、@ohos.bluetooth、@ohos.usbManager、@ohos.wifiManager 等）替代原来的 shell 命令/文件读取。由于大量模块需重写（且部分鸿蒙 API 可用性未核实），整体为部分可适配。",
@@ -1408,7 +1408,6 @@
         "adaptability": "unadaptable",
         "category": "sysfs_procfs",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "需替换为鸿蒙原生 API（@ohos.systemParameter 等）或等价 shell 命令",
         "caused_by": [
           "ta:harmony_sysinfo_api"
@@ -1421,7 +1420,8 @@
           "lib/memory.js:164",
           "lib/network.js:943",
           "lib/system.js:57"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:win32_cim_registry",
@@ -1430,7 +1430,6 @@
         "adaptability": "unadaptable",
         "category": "win32_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "Windows 分支在鸿蒙上不会执行，无需处理；鸿蒙分支需用 @ohos API 重写等价功能",
         "caused_by": [],
         "manifests_as": [
@@ -1442,7 +1441,8 @@
           "lib/system.js:280",
           "lib/cpu.js:1132",
           "lib/osinfo.js:367"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:macos_cmds",
@@ -1451,7 +1451,6 @@
         "adaptability": "unadaptable",
         "category": "platform",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "macOS 分支在鸿蒙上不会执行；鸿蒙分支需用 @ohos API 重写",
         "caused_by": [],
         "manifests_as": [
@@ -1461,7 +1460,8 @@
           "lib/graphics.js:776",
           "lib/usb.js:268",
           "lib/battery.js:195"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:child_process_unknown",
@@ -1470,7 +1470,6 @@
         "adaptability": "partial",
         "category": "node_core_module",
         "source_dimension": "runtime_surface",
-        "harmony_status": "unknown",
         "remediation": "确认鸿蒙 PC Node.js 是否支持完整的子进程能力；若受限需改用 @ohos API 直接获取信息",
         "caused_by": [
           "ta:spawn"
@@ -1480,7 +1479,8 @@
           "lib/util.js:19",
           "lib/util.js:20",
           "lib/util.js:21"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:harmony_sysinfo_gap",
@@ -1489,7 +1489,6 @@
         "adaptability": "partial",
         "category": "sysfs_procfs",
         "source_dimension": "native_api",
-        "harmony_status": "unknown",
         "remediation": "需逐一确认鸿蒙 API 覆盖度，对缺失信息提供降级返回或标记不可用",
         "caused_by": [
           "ta:harmony_sysinfo_api"
@@ -1501,7 +1500,8 @@
           "lib/cpu.js:1336",
           "lib/filesystem.js:847",
           "lib/processes.js:264"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:shell_tools",
@@ -1510,7 +1510,6 @@
         "adaptability": "partial",
         "category": "subprocess_unavailable",
         "source_dimension": "runtime_surface",
-        "harmony_status": "unknown",
         "remediation": "改用鸿蒙原生 API 或接受部分功能不可用",
         "caused_by": [
           "ta:harmony_shell_tools"
@@ -1520,7 +1519,8 @@
           "lib/system.js:48",
           "lib/cpu.js:959",
           "lib/filesystem.js:1040"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1587,7 +1587,7 @@
     ],
     "confidence_overall": "low",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "low",
     "harmony_warnings": [
       {

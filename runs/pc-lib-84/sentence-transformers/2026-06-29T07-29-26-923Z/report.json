@@ -1356,21 +1356,21 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "首次使用及更新模型时需从 Hugging Face Hub 下载权重",
         "source_capability": "network",
-        "harmony_status": "unknown",
         "evidence": [
           "sentence_transformers/util/file_io.py:116",
           "sentence_transformers/util/file_io.py:234"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储（文件访问）",
         "reason": "缓存下载的模型文件、保存本地模型与临时下载文件",
         "source_capability": "filesystem",
-        "harmony_status": "unknown",
         "evidence": [
           "sentence_transformers/base/model.py:182",
           "sentence_transformers/util/file_io.py:231"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "blockers": [
@@ -1381,7 +1381,6 @@
         "adaptability": "partial",
         "category": "optional_native_backend",
         "source_dimension": "dependencies",
-        "harmony_status": "unavailable",
         "remediation": "默认使用 PyTorch 后端；如需 ONNX 加速，需等待/自行用 OHOS NDK 交叉编译 onnxruntime，或寻找 @ohos 推理替代。",
         "manifests_as": [
           "ua:onnxruntime"
@@ -1389,7 +1388,8 @@
         "evidence": [
           "sentence_transformers/backend/load.py:26-58",
           "pyproject.toml:project.optional-dependencies.onnx"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:openvino",
@@ -1398,7 +1398,6 @@
         "adaptability": "partial",
         "category": "optional_native_backend",
         "source_dimension": "dependencies",
-        "harmony_status": "unavailable",
         "remediation": "默认使用 PyTorch 后端；OpenVINO 路径在鸿蒙上暂不可用。",
         "manifests_as": [
           "ua:openvino"
@@ -1406,7 +1405,8 @@
         "evidence": [
           "sentence_transformers/backend/load.py:104-130",
           "pyproject.toml:project.optional-dependencies.openvino"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:media-extras",
@@ -1415,11 +1415,11 @@
         "adaptability": "partial",
         "category": "optional_native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "文本模态完全可用；多模态模型需单独验证相关解码库是否已有鸿蒙 wheel，缺失时禁用对应功能。",
         "evidence": [
           "pyproject.toml:project.optional-dependencies.image/audio/video"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1501,7 +1501,7 @@
         "message": "required_permission 读写存储（文件访问） 的 source_capability=filesystem 不在已标记场景中"
       }
     ],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

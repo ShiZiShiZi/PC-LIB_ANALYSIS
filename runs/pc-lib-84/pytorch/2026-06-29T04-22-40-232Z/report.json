@@ -2056,7 +2056,6 @@
         "adaptability": "unadaptable",
         "category": "hardware",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "构建时设置 USE_CUDA=OFF、USE_CUDNN=OFF、USE_NCCL=OFF、USE_NVRTC=OFF，禁用全部 NVIDIA GPU 路径；仅保留 CPU 后端。",
         "caused_by": [
           "ta:cuda"
@@ -2068,7 +2067,8 @@
           "aten/src/ATen/cuda/CUDADevice.h:6",
           "torch/csrc/cuda/shared/cudart.cpp:2",
           "torch/csrc/cuda/nccl.cpp:12"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:rocm",
@@ -2077,7 +2077,6 @@
         "adaptability": "unadaptable",
         "category": "hardware",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "设置 USE_ROCM=OFF，禁用 HIP 后端。",
         "manifests_as": [
           "ua:rocm_hip"
@@ -2085,7 +2084,8 @@
         "evidence": [
           "cmake/public/LoadHIP.cmake",
           "torch/csrc/hip/"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:mps",
@@ -2094,14 +2094,14 @@
         "adaptability": "unadaptable",
         "category": "hardware",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "设置 USE_MPS=OFF，禁用 MPS 后端。",
         "manifests_as": [
           "ua:metal_mps"
         ],
         "evidence": [
           "aten/src/ATen/mps/MPSDevice.h:13"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:posix_fork",
@@ -2110,12 +2110,12 @@
         "adaptability": "partial",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "musl 支持 fork/exec，但鸿蒙进程模型可能受限；需验证 fork 在目标桌面形态可用性，或改用 posix_spawn/多线程方案并条件编译。",
         "evidence": [
           "torch/lib/libshm/core.cpp:29",
           "torch/csrc/profiler/unwind/communicate.h:11-27"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:linux_perf",
@@ -2124,12 +2124,12 @@
         "adaptability": "partial",
         "category": "linux_specific_api",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "perf_event_open 与 /proc 在鸿蒙 PC 可能受限；需条件编译禁用 Linux perf profiler，或接入鸿蒙原生性能分析能力。",
         "evidence": [
           "torch/csrc/profiler/perf-inl.h:8-34",
           "torch/csrc/dynamo/guards.cpp:54"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:win32",
@@ -2138,12 +2138,12 @@
         "adaptability": "adaptable",
         "category": "win32_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "已有 #ifdef _WIN32 守卫，鸿蒙走 POSIX 分支即可，无需额外改动。",
         "evidence": [
           "torch/csrc/stable/macros.h:62",
           "torch/headeronly/util/win32-headers.h:39"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:distributed",
@@ -2152,12 +2152,12 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "构建时关闭 USE_DISTRIBUTED=OFF；如必须分布式，需将 Gloo/TensorPipe 用 OHOS NDK 移植并替换 socket/IPC 实现。",
         "evidence": [
           "cmake/Dependencies.cmake:1283-1394",
           "torch/csrc/distributed/c10d/"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:blas",
@@ -2166,11 +2166,11 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "优先使用 Eigen（header-only）作为 BLAS 回退；或验证 OpenBLAS/oneDNN 是否已提供鸿蒙预编译包。",
         "evidence": [
           "cmake/Dependencies.cmake:183-292"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:openmp",
@@ -2179,12 +2179,12 @@
         "adaptability": "adaptable",
         "category": "toolchain",
         "source_dimension": "build_env",
-        "harmony_status": "partial",
         "remediation": "如 OHOS NDK 不支持 OpenMP，设置 USE_OPENMP=OFF 并改用 ATEN_THREADING=NATIVE 原生线程池。",
         "evidence": [
           "CMakeLists.txt:322",
           "setup.py:205-209"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:subprocess",
@@ -2193,12 +2193,12 @@
         "adaptability": "partial",
         "category": "subprocess_unavailable",
         "source_dimension": "runtime_surface",
-        "harmony_status": "partial",
         "remediation": "确保鸿蒙 PC 提供 clang/gcc/ninja；沙箱环境下需调整 PATH 与权限；collect_env 的平台命令需做鸿蒙适配或禁用。",
         "evidence": [
           "torch/utils/cpp_extension.py:2893",
           "torch/utils/collect_env.py:537-586"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "unadaptable_apis": [
@@ -2334,19 +2334,19 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "分布式训练与 RPC 需要网络 socket 通信",
         "source_capability": "rendering_3d",
-        "harmony_status": "unknown",
         "evidence": [
           "torch/csrc/distributed/c10d/socket.cpp:22"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储",
         "reason": "kernel 缓存、AOTI 模型包、checkpoint 需要文件系统访问",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "torch/csrc/inductor/aoti_runtime/model_base.h:1451"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "compatible": [
@@ -2417,7 +2417,7 @@
       "鸿蒙 PC 上 OHOS NDK 对 C++20、OpenMP、BLAS、POSIX fork/perf_event 的支持程度尚未全部核实，影响最终 person_days 区间。"
     ],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium",
     "harmony_warnings": [
       {

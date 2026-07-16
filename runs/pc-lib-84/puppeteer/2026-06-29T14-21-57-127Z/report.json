@@ -1310,11 +1310,11 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "需与浏览器建立 WebSocket 连接、下载浏览器二进制",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "packages/puppeteer-core/src/node/NodeWebSocketTransport.ts:21",
           "packages/browsers/src/install.ts"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "Puppeteer 本身是纯 JavaScript/TypeScript 库，可运行在已移植的 Node.js 24 上，无需编译原生代码。但核心依赖是可运行的 Chromium/Firefox 浏览器二进制——这是决定性前提。若鸿蒙 PC 有 Chromium（如通过 cmd-pkgs 或 Electron 环境提供），则 Puppeteer 可直接使用；否则需等待浏览器移植。平台特定代码（Windows taskkill、macOS hdiutil、Linux unzip）需替换为鸿蒙等价工具。ffmpeg 录屏为可选功能。",
@@ -1326,7 +1326,6 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "runtime_surface",
-        "harmony_status": "unavailable",
         "remediation": "等待 Chromium/Firefox 鸿蒙 PC 移植，或通过 cmd-pkgs 确认可用浏览器；作为过渡可使用远程浏览器连接（connect() 模式）",
         "caused_by": [
           "ta:chromium_binary"
@@ -1335,7 +1334,8 @@
         "evidence": [
           "packages/browsers/src/launch.ts:338",
           "packages/puppeteer-core/src/node/BrowserLauncher.ts:164"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:spawn",
@@ -1344,7 +1344,6 @@
         "adaptability": "adaptable",
         "category": "subprocess_unavailable",
         "source_dimension": "runtime_surface",
-        "harmony_status": "unknown",
         "remediation": "需核实鸿蒙 PC 是否允许 Node.js 应用 spawn 子进程；若受限需改用远程浏览器连接模式",
         "caused_by": [
           "ta:spawn_process"
@@ -1352,7 +1351,8 @@
         "manifests_as": [],
         "evidence": [
           "packages/browsers/src/launch.ts:338"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:platform_tools",
@@ -1361,7 +1361,6 @@
         "adaptability": "adaptable",
         "category": "platform_tools",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "为鸿蒙 PC 平台添加对应的文件操作和进程管理实现（OHOS NDK musl 环境通常有 tar/unzip）；或提供预安装浏览器绕过安装步骤",
         "caused_by": [],
         "manifests_as": [],
@@ -1370,7 +1369,8 @@
           "packages/browsers/src/fileUtil.ts:158",
           "packages/browsers/src/fileUtil.ts:195",
           "packages/browsers/src/fileUtil.ts:232"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "compatible": [
@@ -1436,7 +1436,7 @@
         "message": "依赖/网络出现 gcp 云服务强信号，但 cloud_services 未标记该厂商（可能漏判）"
       }
     ],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

@@ -1427,10 +1427,11 @@
         "id": "ta:posix_spawn",
         "capability": "POSIX 进程组/信号模型（os.getpgid/os.killpg/os.kill/SIGKILL 等）",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "内核中断子进程、优雅关机等核心功能依赖；OHOS POSIX 子集是否完整支持待核实",
-        "source": "references/harmony-pc-capabilities.json#process_security.spawn（类推）",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#posix_process_signals 核实(2026-07-14): 进程组/信号自测 11/11 真机 OK",
+        "target_status_model": "unknown",
+        "capability_key": "posix_process_signals"
       },
       {
         "id": "ta:qt",
@@ -1461,7 +1462,6 @@
         "adaptability": "partial",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "在鸿蒙 Python 上实测 os.getpgid/os.killpg/os.kill/SIGKILL 行为；缺失处改用 psutil 提供的跨进程接口或条件化降级（跳过进程组信号，仅向目标进程发信号）。",
         "caused_by": [
           "ta:posix_spawn"
@@ -1470,7 +1470,8 @@
         "evidence": [
           "ipykernel/kernelbase.py:1041-1055",
           "ipykernel/kernelbase.py:1473-1511"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:optional_gui_toolkits",
@@ -1479,7 +1480,6 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "capability_profile",
-        "harmony_status": "unknown",
         "remediation": "主推 Qt/GTK 路径（已有鸿蒙版）；对 wx/tk/Cocoa 路径在鸿蒙上条件化禁用或提供友好错误提示。",
         "caused_by": [],
         "manifests_as": [],
@@ -1487,7 +1487,8 @@
           "ipykernel/eventloops.py:184",
           "ipykernel/eventloops.py:253",
           "ipykernel/eventloops.py:382"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1525,7 +1526,7 @@
     "notes": "评估按模型 A（库跑在鸿蒙已移植 Python 运行时上）。Windows/macOS 专有代码路径均为 sys.platform/os.name 条件分支，在鸿蒙（非 win32/darwin）上不会执行，因此不构成 unadaptable_apis。POSIX 进程组/信号为唯一需要核实的核心能力，若目标平台支持度不足会降级为 needs_adaptation_partial。",
     "porting_class_model": "needs_adaptation_full",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1546,7 +1547,7 @@
     "confidence_overall": "medium",
     "warnings": [],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

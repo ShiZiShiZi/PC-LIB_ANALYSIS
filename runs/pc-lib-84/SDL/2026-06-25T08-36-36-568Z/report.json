@@ -2247,7 +2247,6 @@
         "adaptability": "adaptable",
         "category": "platform_backend",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "为鸿蒙 PC 实现新的 video/ohos 后端，使用 ArkUI/ArkGraphics 或鸿蒙原生窗口 API 创建窗口、处理显示模式与事件。",
         "caused_by": [
           "ta:desktop_wm"
@@ -2256,7 +2255,8 @@
           "src/video/x11/SDL_x11video.c",
           "src/video/wayland/SDL_waylandvideo.c",
           "CMakeLists.txt:466"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:audio_backend",
@@ -2265,7 +2265,6 @@
         "adaptability": "adaptable",
         "category": "platform_backend",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "实现基于 @ohos.multimedia.audio 的 OHOS 音频驱动后端，替代现有 Linux 音频后端。",
         "caused_by": [
           "ta:audio_io"
@@ -2274,7 +2273,8 @@
           "src/audio/alsa/SDL_alsa_audio.c",
           "src/audio/pulseaudio/SDL_pulseaudio.c",
           "CMakeLists.txt:444"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:input_backend",
@@ -2283,7 +2283,6 @@
         "adaptability": "adaptable",
         "category": "platform_backend",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用鸿蒙输入设备 API 或 HID 能力重写 joystick/hidapi 后端，权限受控场景下申请 ohos.permission 相关权限。",
         "caused_by": [
           "ta:usb_hid"
@@ -2292,7 +2291,8 @@
           "src/core/linux/SDL_udev.c",
           "src/joystick/linux/SDL_sysjoystick.c",
           "src/hidapi/libusb/hid.c"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:graphics_api",
@@ -2301,7 +2301,6 @@
         "adaptability": "partial",
         "category": "graphics_api",
         "source_dimension": "capability_profile",
-        "harmony_status": "partial",
         "remediation": "优先使用 OpenGL ES 2/EGL 路径；若需完整 OpenGL 或 Vulkan，需核实鸿蒙 PC 图形栈能力并按情况裁剪功能。",
         "caused_by": [
           "ta:opengl_egl",
@@ -2310,7 +2309,8 @@
         "evidence": [
           "src/video/SDL_egl.c",
           "src/video/SDL_vulkan.c"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:dbus_inotify",
@@ -2319,12 +2319,12 @@
         "adaptability": "adaptable",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "屏保抑制、IME 集成等功能改用鸿蒙对应系统能力；inotify 可用鸿蒙文件事件 API 替代或在配置中禁用 IBus 路径。",
         "evidence": [
           "src/core/linux/SDL_dbus.c",
           "src/core/linux/SDL_ibus.c:589"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:procfs_sysfs",
@@ -2333,11 +2333,11 @@
         "adaptability": "adaptable",
         "category": "sysfs_procfs",
         "source_dimension": "runtime_surface",
-        "harmony_status": "replace_with_ohos",
         "remediation": "电源信息改用鸿蒙电池/电源管理 API，或在 OHOS 后端中提供降级实现。",
         "evidence": [
           "src/power/linux/SDL_syspower.c:39"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "unadaptable_apis": [],
@@ -2393,20 +2393,20 @@
         "permission": "ohos.permission.MICROPHONE",
         "reason": "SDL 音频采集（SDL_OpenAudioDevice 录音模式）需要麦克风访问",
         "source_capability": "media",
-        "harmony_status": "unknown",
         "evidence": [
           "include/SDL_audio.h",
           "src/audio/SDL_audio.c"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储（文件访问）",
         "reason": "SDL 文件系统 API 需要读取/写入用户数据与配置目录",
         "source_capability": "gui",
-        "harmony_status": "unknown",
         "evidence": [
           "src/filesystem/unix/SDL_sysfilesystem.c:281"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "compatible": [
@@ -2469,7 +2469,7 @@
       "本仓库 AGENTS.md 声明：AI 不得用于生成贡献代码。本次分析仅产出报告，未修改仓库代码。"
     ],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

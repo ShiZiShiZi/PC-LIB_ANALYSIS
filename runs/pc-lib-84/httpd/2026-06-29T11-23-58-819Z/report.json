@@ -1803,10 +1803,10 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "HTTP/Web 服务器核心功能——监听端口并接受客户端连接",
         "source_capability": "",
-        "harmony_status": "unknown",
         "evidence": [
           "server/listen.c"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "httpd 是一个高度依赖 POSIX 进程模型（fork/signal/shared memory/setuid）的大型 C 语言网络服务器应用。鸿蒙 PC 的 OHOS NDK 提供 musl + POSIX 子集，fork/sigaction 等基础调用理论上可用，但 MPM 多进程架构深度依赖的信号驱动优雅重启、setuid 权限降级、跨进程共享内存记分板等机制，在鸿蒙沙箱/权限模型下的行为尚未核实。核心挑战不在 API 缺失，而在进程管理模型的差异。推荐路径：用 OHOS NDK 交叉编译，先以简单 MPM（单进程或线程模型）跑通，再逐步适配 event MPM。",
@@ -1818,7 +1818,6 @@
         "adaptability": "partial",
         "category": "posix_process_model",
         "source_dimension": "native_api",
-        "harmony_status": "unknown",
         "remediation": "需为鸿蒙编写专用 MPM 或大幅改造现有 MPM——可能需改为线程池模型或单进程事件驱动",
         "caused_by": [
           "ta:process_model"
@@ -1832,7 +1831,8 @@
           "server/mpm/event/event.c",
           "server/mpm/worker/worker.c",
           "os/unix/unixd.c"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:apr_port",
@@ -1841,13 +1841,13 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "partial",
         "remediation": "APR 理论上支持通过 autoconf 检测平台能力并适配——需验证 musl/ohos 目标下的配置和编译",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "configure.in:87"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:app_delivery",
@@ -1856,7 +1856,6 @@
         "adaptability": "partial",
         "category": "app_delivery_model",
         "source_dimension": "build_env",
-        "harmony_status": "unknown",
         "remediation": "需确认鸿蒙 PC 是否允许原生系统服务；若只支持 .hap 包则需将 httpd 封装为 NativeAbility",
         "caused_by": [
           "ta:desktop_app"
@@ -1864,7 +1863,8 @@
         "manifests_as": [],
         "evidence": [
           "server/main.c"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1929,7 +1929,7 @@
     "warnings": [],
     "confidence_overall": "low",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "low",
     "harmony_warnings": [
       {

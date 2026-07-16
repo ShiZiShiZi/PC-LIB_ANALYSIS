@@ -699,11 +699,11 @@
       {
         "id": "ta:ohos_desktop_icon",
         "capability": "鸿蒙 PC 桌面文件图标查询 API（等价于 Win32 SHGetFileInfoW / macOS NSWorkspace iconForFile）",
-        "capability_key": null,
+        "capability_key": "file_icon_api",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若无等价 API，核心的「获取系统文件图标」功能无法实现——需降级为自维护的扩展名→图标映射表（功能退化），或该库在鸿蒙 PC 上整体不可用。有则增加 OHOS 后端即可。",
-        "source": "harmony-pc-capabilities.json 当前无桌面文件图标查询能力的记录（不同于 GUI 窗口/应用进程模型），建议补入 gui 段。",
+        "source": "harmony-pc-capabilities.json#file_icon_api 核实(2026-07-14): fileManagerService.getFileIcon(需 GET_FILE_ICON system_grant)",
         "target_status_model": "unknown"
       },
       {
@@ -762,7 +762,7 @@
     "notes": "① 按模型 A（库运行于已移植 Node.js 24 运行时）评估。② capability_profile 未标记 gui 存在——本库虽依赖桌面 Shell，但这是图标查询而非 GUI 渲染窗口系统，是独立的桌面集成能力，目前 harmony-pc-capabilities.json 无该能力的记录（建议补充）。③ confidence=low 因核心依赖的 target_assumption 全为 unknown——核实后可按实情调整为 medium/high 并收紧工作量。④ 若鸿蒙 PC 确实无图标查询 API，需评估「内核文件类型图标映射表 + 文件扩展名回退」能否满足下游需求（功能降级但部分可用）。⑤ macOS 的 addon.mm（约 37 行）同理需 OHOS 后端替换。",
     "porting_class_model": "needs_adaptation",
     "confidence_model": "low",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -799,13 +799,6 @@
         "kind": "info",
         "value": "addon.mm",
         "rationale": "addon.mm（macOS AppKit 实现，约 37 行）未被 metrics.py 单独计数（可能被计入 C++ 的 1 文件），但确实存在且同样归入 needs_adaptation 桶。example.js 被 metrics 统计为生产代码，实为示例文件但保留在分区中。"
-      },
-      {
-        "dimension": "harmony_caps",
-        "field": "gui",
-        "kind": "caps_gap",
-        "value": "鸿蒙 PC 桌面文件图标查询 API",
-        "rationale": "本库依赖操作系统的桌面文件图标查询能力（Win32 SHGetFileInfoW / macOS NSWorkspace iconForFile），这是独立于 GUI 窗口系统的桌面集成能力。当前 harmony-pc-capabilities.json 无此记录，建议补入 gui 段或新增 desktop_integration 段。"
       }
     ],
     "schema_version": "1.0",

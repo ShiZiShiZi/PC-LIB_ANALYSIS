@@ -1543,28 +1543,31 @@
         "id": "ta:ohos_drawing",
         "capability": "OHOS NDK 绘图 API（2D 文本/图形绘制等价能力）",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "若 Qt 后端不够完整，需直接用 OHOS NDK 绘图 API 实现新的 Platform 层，此时 NDK 绘图能力完整性决定可行性",
-        "source": "references/harmony-pc-capabilities.json → graphics_3d.skia_2d",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#skia_2d 核实(2026-07-14): ArkGraphics 2D / drawing NDK 文本图形绘制",
+        "target_status_model": "unknown",
+        "capability_key": "skia_2d"
       },
       {
         "id": "ta:ohos_ime",
         "capability": "鸿蒙输入法框架（IME）集成能力",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "源代码编辑器必须支持 IME（中文/日文/韩文输入），鸿蒙 IME 集成方式待核实",
-        "source": "references/harmony-pc-capabilities.json → desktop_integration.font_ime",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#font_ime 核实(2026-07-14): @ohos.inputMethod IME 集成",
+        "target_status_model": "unknown",
+        "capability_key": "font_ime"
       },
       {
         "id": "ta:ohos_clipboard_dnd",
         "capability": "鸿蒙剪贴板与拖放",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "编辑器的复制/粘贴/拖放功能依赖系统剪贴板和拖放协议",
-        "source": "references/harmony-pc-capabilities.json → desktop_integration.dnd_clipboard",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#dnd_clipboard 核实(2026-07-14): @ohos.pasteboard 剪贴板+拖放",
+        "target_status_model": "unknown",
+        "capability_key": "dnd_clipboard"
       }
     ],
     "required_permissions": [],
@@ -1577,7 +1580,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "复用 Qt 后端（ScintillaEditBase）链接 Qt 鸿蒙版；或新建 PlatOHOS 后端对接 OHOS NDK 绘图 API",
         "caused_by": [
           "ta:qt_ohos",
@@ -1587,7 +1589,8 @@
         "evidence": [
           "src/Platform.h",
           "qt/ScintillaEditBase/PlatQt.cpp"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:ime_integration",
@@ -1596,7 +1599,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "native_api",
-        "harmony_status": "unknown",
         "remediation": "对接鸿蒙 IME 框架（通过 Qt 输入法插件或 OHOS NDK 原生接口）",
         "caused_by": [
           "ta:ohos_ime"
@@ -1606,7 +1608,8 @@
           "win32/ScintillaWin.cxx:441",
           "gtk/ScintillaGTK.cxx:218",
           "cocoa/ScintillaCocoa.h"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:clipboard_dnd",
@@ -1615,7 +1618,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "native_api",
-        "harmony_status": "unknown",
         "remediation": "通过 Qt 剪贴板 API（QClipboard）或鸿蒙系统剪贴板接口实现",
         "caused_by": [
           "ta:ohos_clipboard_dnd"
@@ -1624,7 +1626,8 @@
         "evidence": [
           "win32/ScintillaWin.cxx:2725",
           "gtk/ScintillaGTK.cxx:1398"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1666,7 +1669,7 @@
     "notes": "核心编辑引擎的平台无关性是最大优势——约 70% 的代码（src/ + include/）无需修改。风险集中在 GUI 后端适配：Qt 鸿蒙版功能完整性尚需验证，特别是自定义绘制（QPainter）、字体度量（QFontMetrics）、输入法、剪贴板等方面。若 Qt 鸿蒙版功能充足，工作量主要在交叉编译配置和测试验证（约 1-2 人月）；若需新建原生 OHOS 后端，工作量显著增加（约 2-3 人月）。confidence 为 medium 因为 ta:ohos_ime、ta:ohos_drawing、ta:ohos_clipboard_dnd 的 target_status 为 unknown",
     "porting_class_model": "needs_adaptation_full",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -1687,7 +1690,7 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

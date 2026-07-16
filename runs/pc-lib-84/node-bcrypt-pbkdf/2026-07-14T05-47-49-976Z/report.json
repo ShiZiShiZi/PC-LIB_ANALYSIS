@@ -1,0 +1,477 @@
+{
+  "languages": {
+    "primary": "JavaScript",
+    "all": [
+      "JavaScript",
+      "Markdown",
+      "JSON"
+    ],
+    "breakdown": [
+      {
+        "language": "JavaScript",
+        "files": 1,
+        "code": 442,
+        "pct": 87.87,
+        "production": {
+          "files": 1,
+          "code": 442
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "Markdown",
+        "files": 2,
+        "code": 39,
+        "pct": 7.75,
+        "production": {
+          "files": 2,
+          "code": 39
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      },
+      {
+        "language": "JSON",
+        "files": 2,
+        "code": 22,
+        "pct": 4.37,
+        "production": {
+          "files": 2,
+          "code": 22
+        },
+        "test": {
+          "files": 0,
+          "code": 0
+        },
+        "example": {
+          "files": 0,
+          "code": 0
+        }
+      }
+    ]
+  },
+  "code_metrics": {
+    "tool": "cloc",
+    "total": {
+      "files": 5,
+      "code": 503,
+      "comment": 76,
+      "blank": 54,
+      "total_lines": 633
+    },
+    "production": {
+      "files": 5,
+      "code": 503,
+      "comment": 76,
+      "blank": 54,
+      "total_lines": 633
+    },
+    "test": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "example": {
+      "files": 0,
+      "code": 0,
+      "comment": 0,
+      "blank": 0,
+      "total_lines": 0
+    },
+    "top_dirs": [
+      {
+        "dir": ".",
+        "code": 503,
+        "category": "production",
+        "by_category": {
+          "production": 503
+        }
+      }
+    ],
+    "test_example_dirs": {
+      "test": [],
+      "example": []
+    },
+    "dir_loc": [
+      {
+        "dir": ".",
+        "files": 5,
+        "code": 503
+      }
+    ],
+    "platform_adaptation": {
+      "by_platform": {},
+      "total": 0,
+      "notes": "机械计数：仅生产代码中 C/C++/ObjC 文件、被平台编译宏(#ifdef _WIN32/__APPLE__/__linux__…)正向包裹的代码行；#ifndef/!defined 不计；嵌套/多平台守卫按命中平台分别计；空行与注释行已剔除。"
+    },
+    "platform_branches": {
+      "by_language": {},
+      "by_platform": {},
+      "samples": [],
+      "total": 0,
+      "notes": "机械计数（启发式）：生产代码中运行时平台判断惯用法(sys.platform/os.name、process.platform、System.getProperty(\"os.name\")、runtime.GOOS、cfg!(target_os)、RuntimeInformation…)的出现次数与样例位置；C/C++ 编译宏由 platform_adaptation 覆盖，本项不计；by_platform 依命中行平台关键字启发式归类，可能漏判/多判；注释与字符串字面量内的命中已剔除。"
+    },
+    "arch_specific": {
+      "by_arch": {},
+      "asm_files": [],
+      "inline_asm_hits": 0,
+      "intrinsics_headers": [],
+      "samples": [],
+      "total": 0,
+      "simd_total": 0,
+      "notes": "机械计数（启发式）：生产代码中的架构相关代码——独立汇编文件(.s/.asm，LOC 按路径关键字归 x86/arm/riscv/generic)、SIMD intrinsics 头(#include <immintrin.h/arm_neon.h…>)、SIMD intrinsic 使用行(_mm*/__m256/vld1q_f32/…，含仅 transitive include 的文件，计入 by_arch.simd_loc 与 simd_total)、C/C++/Rust 内联汇编(__asm__/asm!/…)命中；注释与字符串内命中已剔除；total=汇编文件 LOC 之和、simd_total=SIMD 使用行之和。仅 x86 有 simd_loc/汇编而无 arm 回退的部分是 arm64 鸿蒙 PC 上的适配点（补 NEON 或退标量），供 dim-9/dim-12 判读（samples 可作 codegraph 追踪种子）。"
+    }
+  },
+  "tests": {
+    "test_files": 0,
+    "test_cases": 0,
+    "frameworks": [],
+    "by_language": {},
+    "note": "Counts are regex-based idiom matches; treat as close estimates."
+  },
+  "function_summary": {
+    "summary": "bcrypt-pbkdf 是 OpenBSD `bcrypt_pbkdf` 密钥派生函数的纯 JavaScript 移植，组合 Blowfish 分组密码与 SHA-512，从密码和盐派生任意长度的密钥。全库只有一个文件 index.js（约 440 行生产代码），通过 `pbkdf()` 与 `hash()` 两个公开 API 供 Node.js 程序调用；SHA-512 由唯一的运行时依赖 tweetnacl 的 lowlevel.crypto_hash 提供。典型用途是实现 SSH 私钥的 bcrypt KDF（OpenSSH 新格式私钥保护）等需要 bcrypt_pbkdf 的场景。",
+    "categories": [
+      {
+        "name": "密钥派生（PBKDF）",
+        "description": "实现 OpenBSD bcrypt_pbkdf 算法：对密码与盐先做 SHA-512，再以 bcrypt_hash 为内层轮函数迭代指定轮数，按 stride 交错输出任意长度密钥；含参数校验（轮数≥1、盐长上限 1<<20 等）。",
+        "evidence": [
+          "index.js:497-549",
+          "README.md:10-27"
+        ]
+      },
+      {
+        "name": "Blowfish 分组密码",
+        "description": "从 OpenBSD blowfish.c 1:1 移植的 Blowfish 实现：S/P 盒初始化、encipher/decipher、expand0state/expandstate 密钥扩展、按块 enc/dec，构成 bcrypt_hash 的核心。",
+        "evidence": [
+          "index.js:86-466",
+          "README.md:29-38"
+        ]
+      },
+      {
+        "name": "bcrypt 哈希内层轮函数",
+        "description": "bcrypt_hash：以 SHA-512 后的密码/盐扩展 Blowfish 状态，对常量密文 \"OxychromaticBlowfishSwatDynamite\" 反复加密，输出 32 字节哈希，是 PBKDF 每轮的内层函数。",
+        "evidence": [
+          "index.js:471-495"
+        ]
+      }
+    ],
+    "domain": "密码学 / 安全（密钥派生函数）",
+    "target_users": "需要在 Node.js 中使用 OpenBSD bcrypt_pbkdf 的开发者，最典型是实现 OpenSSH 私钥 bcrypt KDF 的 SSH/密钥管理工具（如 sshpk）"
+  },
+  "license": {
+    "spdx": "BSD-3-Clause AND ISC",
+    "name": "BSD 3-Clause（Blowfish 部分）与 ISC（bcrypt_pbkdf 部分及 Joyent 性能改进）组合",
+    "confidence": "high",
+    "category": "permissive",
+    "is_dual_licensed": false,
+    "license_files": [
+      "LICENSE",
+      "package.json"
+    ],
+    "evidence": "package.json:14 声明 \"license\": \"BSD-3-Clause\"；LICENSE 文件按代码来源分段：Blowfish 部分为 Niels Provos 1997 年 BSD-3-Clause（LICENSE:1-29，对应 index.js:15-45），bcrypt_pbkdf 部分为 Ted Unangst 2013 年 ISC 许可文本（LICENSE:33-47，对应 index.js:47-63），Joyent 2016 年性能改进同为 ISC 许可文本（LICENSE:51-66，对应 index.js:65-82）；README.md:40-45 说明因 1:1 移植而保留原版权与许可。",
+    "notes": "非双重许可（dual licensing），而是不同来源代码段各自保留原许可的组合：BSD-3-Clause 与两份 ISC 文本均为宽松许可、互相兼容；package.json 仅声明 BSD-3-Clause，未完整表达 ISC 部分，SPDX 表达式按实际 LICENSE 内容补全。无任何 copyleft 义务。"
+  },
+  "dependencies": {
+    "count": 1,
+    "manifests": [
+      "package.json"
+    ],
+    "by_ecosystem": {
+      "nodejs": 1
+    },
+    "dependencies": [
+      {
+        "name": "tweetnacl",
+        "ecosystem": "nodejs",
+        "registry_name": "tweetnacl",
+        "source_repo": "https://github.com/dchest/tweetnacl-js",
+        "scope": "runtime",
+        "version": "^0.14.3",
+        "purpose": "提供 lowlevel.crypto_hash（SHA-512）实现，bcrypt_pbkdf 每一轮及密码/盐预处理均调用它；库自身不含 SHA-512 实现",
+        "acquisition": "package_manager",
+        "locality": "remote",
+        "source": "npm 注册表（package.json dependencies）",
+        "declared_in": [
+          "package.json:10-12"
+        ],
+        "used_symbols": [
+          "lowlevel.crypto_hash"
+        ],
+        "harmony_adapted": false,
+        "harmony_adapted_source": null
+      }
+    ],
+    "notes": "唯一的运行时依赖是 tweetnacl（纯 JavaScript 实现，无原生扩展）。devDependencies 为空，仓库不含任何测试。nodejs 生态在 OpenHarmony PC 镜像中无对应探测源（镜像仅覆盖 python/cpp），harmony_adapted 字段为脚本返回的默认值 false，非经镜像核实的结果；tweetnacl 为纯 JS 包，在已移植的 Node.js 运行时上可直接运行。"
+  },
+  "native_api": {
+    "summary": "纯 JavaScript 密码学库，不调用任何操作系统/平台专有 API、无系统调用、无 FFI、无动态加载的原生库。唯一的外部接触面是 CommonJS 的 require/module.exports（Node.js 标准模块机制）与 JS 标准类型化数组（Uint8Array/Uint32Array），均为跨平台标准能力。code_metrics 的 platform_adaptation/platform_branches/arch_specific 三项机械信号全部为 0，与人工判读一致。",
+    "groups": [
+      {
+        "type": "node_core",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "require",
+            "purpose": "CommonJS 模块加载，引入 tweetnacl 的 lowlevel.crypto_hash",
+            "count": 1,
+            "evidence": [
+              "index.js:3"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "module.exports",
+            "purpose": "CommonJS 模块导出，对外暴露 pbkdf/hash/BLOCKS/HASHSIZE",
+            "count": 1,
+            "evidence": [
+              "index.js:551-556"
+            ],
+            "conditional": false
+          }
+        ]
+      },
+      {
+        "type": "js_stdlib",
+        "category": "standard",
+        "platform": "portable",
+        "apis": [
+          {
+            "name": "Uint8Array",
+            "purpose": "字节级密码运算的输入/输出缓冲区（密码、盐、密钥、哈希）",
+            "count": 15,
+            "evidence": [
+              "index.js:367-370",
+              "index.js:498-502"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Uint32Array",
+            "purpose": "Blowfish S 盒/P 盒与 64 位分组的双 32 位字表示",
+            "count": 8,
+            "evidence": [
+              "index.js:90",
+              "index.js:351",
+              "index.js:406"
+            ],
+            "conditional": false
+          },
+          {
+            "name": "Math.floor",
+            "purpose": "PBKDF 输出 stride/amt 分块的整数除法",
+            "count": 2,
+            "evidence": [
+              "index.js:512-513"
+            ],
+            "conditional": false
+          }
+        ]
+      }
+    ],
+    "dynamic_libraries": []
+  },
+  "runtime_surface": {
+    "summary": "纯计算型密码学库：运行时只做内存中的 Blowfish/SHA-512 运算，不触碰网络、文件系统、环境变量、子进程或任何设备，也不集成外部服务。唯一的运行时外部接触面是通过 require 加载 npm 依赖 tweetnacl（同为纯 JS）。",
+    "network": [],
+    "filesystem": [],
+    "env_vars": [],
+    "subprocess": [],
+    "devices": [],
+    "services": []
+  },
+  "build_env": {
+    "language_standard": "JavaScript（ES5 风格，'use strict'，CommonJS 模块）",
+    "runtime_version": "Node.js（未在 package.json 声明 engines；仅用到 require 与类型化数组，任何支持 Uint8Array/Uint32Array 的 Node.js 版本均可）",
+    "build_system": "npm（package.json，无构建/编译步骤，纯 JS 直装即用）",
+    "compiler_extensions": [],
+    "platforms": [
+      {
+        "os": "跨平台（任何可运行 Node.js 的 OS）",
+        "arch": "跨架构（纯 JS，无架构相关代码；arch_specific 机械信号为 0）",
+        "evidence": [
+          "package.json",
+          "index.js"
+        ]
+      }
+    ],
+    "entry_points": [],
+    "packaging": "以 npm 包形式分发（package.json main: index.js），无构建步骤、不捆绑运行时；作为库被其他 Node.js 项目通过 npm 安装依赖",
+    "notes": "仓库无测试、无 CI 配置、无示例目录；全部生产代码集中在单个 index.js。"
+  },
+  "harmony_adaptation": {
+    "target": "HarmonyOS NEXT PC（自研内核，ArkTS 应用层 + OHOS NDK 原生层 + Node-API 桥；默认口径：Node.js 等语言运行时已移植）",
+    "porting_class": "no_adaptation",
+    "blockers": [],
+    "unadaptable_apis": [],
+    "target_assumptions": [
+      {
+        "id": "ta:nodejs",
+        "capability": "HarmonyOS PC 上可用的 Node.js 运行时（CommonJS require、类型化数组、ES5 语义）",
+        "capability_key": "nodejs",
+        "required": true,
+        "target_status": "available",
+        "impact": "本库为纯 JavaScript，全部功能依赖 Node.js 运行时执行；运行时可用则库整体零改动运行，不可用则无法运行。caps 标记为 available，不构成阻碍。",
+        "source": "references/harmony-pc-capabilities.json runtimes 段 nodejs 行（available）",
+        "target_status_model": "available"
+      }
+    ],
+    "required_permissions": [],
+    "critical_dependencies": [],
+    "effort": {
+      "person_days": [
+        0,
+        1
+      ],
+      "breakdown": [
+        {
+          "component": "testing_verification",
+          "person_days": [
+            0,
+            1
+          ],
+          "basis": "code_partition 全部 503 行属 reuse_direct 桶，无重编译/适配工作；仅需在鸿蒙 PC 的 Node.js 环境上做功能冒烟验证（仓库本身不含测试，验证用例需自备）"
+        }
+      ],
+      "level": "very_low"
+    },
+    "confidence": "high",
+    "notes": "模型 A/B 口径（库）：纯 JavaScript 库 + 唯一依赖 tweetnacl 同为纯 JS，在已移植的 Node.js 运行时（caps: nodejs=available）上直接运行，无需交叉编译、无原生扩展、无平台 API、无任何运行时环境接触面（runtime_surface 全空），故 porting_class=no_adaptation、工作量仅验证性质。capability_profile 四类场景均 present:false、cloud_services 不涉及，故无 GUI/媒体/硬件类阻碍、无需 INTERNET 等权限。critical_dependencies 为空：tweetnacl 未在鸿蒙镜像中盖章（nodejs 生态无镜像探测源，非经核实的否定），但它是纯 JS 包、同样走 Node.js 运行时，不构成迁移关键路径。唯一遗留风险：库依赖 tweetnacl.lowlevel.crypto_hash 的 SHA-512 正确性，移植验证时应附带已知答案测试向量（仓库未自带测试）。",
+    "porting_class_model": "no_adaptation",
+    "confidence_model": "high",
+    "functional_viability": "viable",
+    "adaptation_assessment": {
+      "effective_class": "no_adaptation",
+      "overall": "adaptable",
+      "core": {
+        "adaptable": true,
+        "unadaptable": []
+      },
+      "platform_specific": {
+        "adaptable": true,
+        "unadaptable": []
+      }
+    }
+  },
+  "library": {
+    "name": "node-bcrypt-pbkdf",
+    "kind": "library",
+    "package_name": "bcrypt-pbkdf",
+    "aliases": [],
+    "import_names": [
+      "bcrypt-pbkdf"
+    ],
+    "source_url": "https://github.com/joyent/node-bcrypt-pbkdf.git",
+    "monorepo": false,
+    "source_subpath": null,
+    "commit": "9ae4b4912099b2dc2ff38ab34934324523ab8025",
+    "one_liner": "OpenBSD bcrypt_pbkdf 密钥派生函数的纯 JavaScript 移植（Blowfish + SHA-512），供 Node.js 程序做密码学密钥派生。",
+    "ecosystem": "nodejs",
+    "bindings": [],
+    "analyzed_at": "2026-07-14T05:53:41Z"
+  },
+  "meta": {
+    "confidence_overall": "high",
+    "warnings": [
+      "nodejs 生态在 OpenHarmony PC 镜像（harmony-mirror.js）中无探测源（镜像仅覆盖 python/cpp），dependencies[].harmony_adapted 为脚本默认返回 false，未经镜像核实；tweetnacl 本身为纯 JS 包，对结论无实质影响。"
+    ],
+    "observations": [
+      {
+        "dimension": "dependencies",
+        "field": "harmony_adapted",
+        "kind": "gap",
+        "value": "nodejs-mirror-missing",
+        "rationale": "harmony-mirror.js 仅支持 python（simple 探测 ohos wheel）与 cpp（cmd-pkgs 清单）两个生态，nodejs 包无法核实是否已鸿蒙化；npm 生态的鸿蒙移植核实缺少事实源。"
+      },
+      {
+        "dimension": "license",
+        "field": "spdx",
+        "kind": "ambiguity",
+        "value": "BSD-3-Clause AND ISC",
+        "rationale": "package.json 仅声明 BSD-3-Clause，但 LICENSE/index.js 头注释显示 bcrypt_pbkdf 部分与 Joyent 改进为 ISC 文本；这是按代码来源分段的多许可组合（非双许可），SPDX 用 AND 表达式补全，可能与仅读 manifest 的工具结论不同。"
+      }
+    ],
+    "schema_version": "1.0",
+    "analyzer": "pc-lib-analyzer",
+    "counter_tool": "cloc",
+    "confidence_overall_model": "high",
+    "normalized_version": 6
+  },
+  "capability_profile": {
+    "summary": "纯计算型密码学库，不触及 GUI、3D 渲染、媒体、特定硬件任何一类鸿蒙适配重点场景——全部 4 个场景均 present:false。",
+    "scenarios": [
+      {
+        "key": "gui",
+        "present": false
+      },
+      {
+        "key": "rendering_3d",
+        "present": false
+      },
+      {
+        "key": "media",
+        "present": false
+      },
+      {
+        "key": "hardware",
+        "present": false
+      }
+    ]
+  },
+  "cloud_services": {
+    "present": false,
+    "summary": "不涉及任何云端服务：生产代码为纯本地密码学计算，dependencies 中无云厂商 SDK（唯一依赖 tweetnacl 是纯 JS 密码库），runtime_surface.network 为空，源码无任何硬编码域名/端点。",
+    "services": []
+  },
+  "code_partition": {
+    "summary": "全部生产代码（503 行）归入 reuse_direct 桶：index.js 的 442 行是纯 JavaScript 密码学算法（Blowfish/bcrypt_pbkdf），package.json 与文档为清单/说明文件，均可在已移植的 Node.js 运行时上零改动直接运行；无 C/C++ 原生代码、无平台 API、无平台分支、无架构相关代码。",
+    "coverage": {
+      "production_code": 503,
+      "partitioned_code": 503,
+      "pct": 100
+    },
+    "buckets": [
+      {
+        "class": "reuse_direct",
+        "loc": 503,
+        "pct": 100,
+        "modules": [
+          {
+            "path": "index.js",
+            "loc": 442,
+            "reason": "纯 JavaScript 算法实现（Blowfish 分组密码 + bcrypt_pbkdf 密钥派生），仅用 JS 标准类型化数组与 Math，无任何平台/系统/硬件 API 调用，跑已移植的 Node.js 运行时零改动",
+            "evidence": [
+              "index.js:88-556"
+            ]
+          },
+          {
+            "path": "package.json + README.md + CONTRIBUTING.md",
+            "loc": 61,
+            "reason": "npm 清单与文档（dir_loc 仅有根目录一条 503 行记录，此 61 行为 metrics 语言分解中 Markdown 39 + JSON 22 之和）",
+            "evidence": [
+              "package.json"
+            ]
+          }
+        ],
+        "basis": "code_metrics.dir_loc（根目录 503 行全生产）+ platform_adaptation/platform_branches/arch_specific 三项机械信号全为 0 + native_api 仅 node_core/js_stdlib 标准组 + dependencies 唯一依赖 tweetnacl 为纯 JS"
+      }
+    ],
+    "notes": "dir_loc 只给出根目录一条聚合记录（503 行），模块级拆分据 metrics.json 的 languages.breakdown（JavaScript 442 / Markdown 39 / JSON 22）估算；拆分不影响桶归属——全部属直接复用。"
+  }
+}

@@ -808,19 +808,21 @@
         "id": "ta:mindspore_port",
         "capability": "MindSpore 框架在鸿蒙 PC 上的可用性",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "unavailable",
         "impact": "MindCV 完全依赖 MindSpore，若 MindSpore 未移植则 MindCV 无法运行；需 MindSpore 提供鸿蒙 PC 的计算后端（至少 CPU，理想为 NPU/GPU）",
-        "source": "模型判断：MindSpore 是深度学习框架，包含 C++/CUDA/Ascend 原生代码，需专门移植",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#mindspore 核实(2026-07-14): 镜像无 ohos wheel、设备未预装",
+        "target_status_model": "unknown",
+        "capability_key": "mindspore"
       },
       {
         "id": "ta:numpy_port",
         "capability": "numpy 在鸿蒙 PC 上的可用性",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "numpy 含 C/Fortran 原生扩展，需有鸿蒙 PC 编译版本；若不可用则推理与数据处理功能受影响",
-        "source": "模型判断：numpy 含原生扩展，需有 ohos wheel 或从源码编译",
-        "target_status_model": "unknown"
+        "source": "harmony-pc-capabilities.json#dep:available 核实(2026-07-14): numpy 真机预装 2.2.1 + 镜像 ohos wheel",
+        "target_status_model": "unknown",
+        "capability_key": null
       }
     ],
     "required_permissions": [],
@@ -833,7 +835,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "需先完成 MindSpore 框架在鸿蒙 PC 上的移植（至少 CPU 计算后端），MindCV 方可在其上运行",
         "caused_by": [
           "ta:mindspore_port"
@@ -842,7 +843,8 @@
         "evidence": [
           "setup.py:29-31",
           "mindcv/data/dataset_factory.py:9"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:numpy",
@@ -851,7 +853,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "需从源码编译 numpy 的 ohos wheel 或等待社区提供预编译版本",
         "caused_by": [
           "ta:numpy_port"
@@ -860,7 +861,8 @@
         "evidence": [
           "setup.py:29",
           "requirements.txt:1"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -890,7 +892,7 @@
     "notes": "本评估置信度为 medium，因 MindSpore（核心依赖）和 numpy 的鸿蒙适配状态均为 unknown。MindCV 自身代码零平台依赖，porting_class 取 needs_adaptation_full 是因为核心依赖 MindSpore 需要大量适配工作（而非 MindCV 本身）。若 MindSpore 已适配则 MindCV 的 porting_class 可降为 no_adaptation。",
     "porting_class_model": "needs_adaptation_full",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "blocked_external",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
@@ -911,7 +913,7 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

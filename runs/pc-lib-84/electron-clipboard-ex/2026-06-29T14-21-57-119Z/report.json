@@ -1040,10 +1040,10 @@
         "permission": "ohos.permission.READ_WRITE_CLIPBOARD",
         "reason": "核心功能——读写系统剪贴板数据（文件路径与图像）",
         "source_capability": "gui",
-        "harmony_status": "unknown",
         "evidence": [
           "src/export.cc:165-179"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "本库的核心功能（剪贴板读写）完全依赖 Windows Win32 / macOS Cocoa 平台专有 API，需用鸿蒙剪贴板 API (@ohos.pasteboard) 重写原生层。N-API 绑定层（export.cc / general_async_worker.h）可完整复用；JS 接口层（index.js）无需修改；图像编解码可使用鸿蒙 @ohos.multimedia.image 或链接 libjpeg/libpng 替代 GDI+。工作量主要在于用鸿蒙 NDK/ArkTS 剪贴板 API 重写 clipboard_harmony.cpp。",
@@ -1055,7 +1055,6 @@
         "adaptability": "adaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 @ohos.pasteboard（ArkTS 层）或鸿蒙 NDK 剪贴板 API 重写 clipboard_mac.mm / clipboard_win.cc → clipboard_harmony.cpp",
         "caused_by": [
           "ta:clipboard"
@@ -1065,7 +1064,8 @@
           "src/clipboard_win.cc:22-26",
           "src/clipboard_win.cc:42-57",
           "src/clipboard_mac.mm:5-34"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:gdiplus_image",
@@ -1074,7 +1074,6 @@
         "adaptability": "adaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "使用 @ohos.multimedia.image（ArkTS）或在 NDK 层链接 libjpeg-turbo / libpng 替代 GDI+",
         "caused_by": [
           "ta:image_codec"
@@ -1082,7 +1081,8 @@
         "manifests_as": [],
         "evidence": [
           "src/clipboard_win.cc:146-242"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       },
       {
         "id": "bk:clipboard_image_format",
@@ -1091,7 +1091,6 @@
         "adaptability": "partial",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unknown",
         "remediation": "需核实鸿蒙剪贴板 API 对图像数据的支持能力；若不支持直接图像格式，可能需要通过像素数据中转",
         "caused_by": [
           "ta:clipboard",
@@ -1101,7 +1100,8 @@
         "evidence": [
           "src/clipboard_win.cc:251-274",
           "src/clipboard_mac.mm:58-97"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1159,7 +1159,7 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

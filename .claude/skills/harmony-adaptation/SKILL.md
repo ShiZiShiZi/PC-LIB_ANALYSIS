@@ -38,7 +38,7 @@ step 10 据其定 `person_days`，`arch_specific.by_arch.<arch>.simd_loc` 即 SI
 
 | 你（模型）产出 | 归一确定性派生 + 覆盖（单一真相源） |
 |---|---|
-| `porting_class`（三档**下限**） | `porting_class`：**只升不降**（据 dim-12 `needs_adaptation`/`unadaptable` 桶、`unadaptable_apis`、任一 `blockers[].adaptability` partial/unadaptable）；你的原判留存 `porting_class_model` |
+| `porting_class`（三档**下限**） | `porting_class`：**只升不降**，仅据**源码侧硬信号**（dim-12 `needs_adaptation`/`unadaptable` 桶、`unadaptable_apis` 非空、任一 `blockers[].adaptability` 为 **`unadaptable`**）抬到 `needs_adaptation`；**`adaptability:partial` 与"目标侧前提"型 blocker（库自身代码零改动、`caused_by` 指向 `target_assumptions`）不抬 `porting_class`**——它们走 `functional_viability`（与代码轴正交）；你的原判留存 `porting_class_model` |
 | `unadaptable_apis[].functionality_class`（core/platform_specific，**必填**） | `adaptation_assessment`：核心/平台差异两维小结 + `effective_class`（5 档，拓扑上色 / 难度 floor）+ `overall`（是否可适配总判） |
 | `effort.person_days:[lo,hi]` | `effort.level`（5 档：`effective_class` floor × person_days 上界分桶，取高） |
 | `effort.breakdown` 的 gui/deps_porting/build_system/testing_verification/packaging 分项 | `effort.breakdown` 的 **recompile** & **api_adaptation**（= 桶 LOC ÷ 速率）；**⚠️ 一旦你产出 breakdown，`person_days` 总量即被丢弃、重算为各分项之和** |
@@ -297,8 +297,14 @@ caps JSON，并在 `meta.warnings` 记「未能访问鸿蒙文档技能」。技
    逐个把用到的功能分核心/平台差异两维、判可适配/不可适配，据判据填 `unadaptable_apis`（step 7）并标 `functionality_class`。
    `scripts/report_normalize.py` 组装时据 dim-12 `code_partition` 桶 + `unadaptable_apis` 把它**只升不降**并写回
    `report.json`（`adaptation_assessment`/`effort.level` 同为派生；web/server.js 是等价镜像；你的原判留存 `porting_class_model`）。
-   **构造上不可能落盘自相矛盾的值**：dim-12 有 `needs_adaptation`/`unadaptable` 桶、或 `unadaptable_apis` 非空、
-   或任一 blocker `adaptability` 为 partial/unadaptable → 归一自动升到 `needs_adaptation`。
+   **代码轴只由源码侧硬信号抬档**：dim-12 有 `needs_adaptation`/`unadaptable` 桶、或 `unadaptable_apis` 非空、
+   或任一 blocker `adaptability` 为 **`unadaptable`** → 归一自动升到 `needs_adaptation`。**但 `adaptability:partial`
+   与"目标侧前提"型 blocker（库自身代码零改动、`caused_by` 指向 `target_assumptions`，如串口/权限受限、某依赖未鸿蒙化）
+   不抬 `porting_class`**——它们经 `functional_viability`（viable_with_work / blocked_external）反映，与代码轴**正交**，
+   故 `porting_class=no_adaptation` 与"有 partial blocker / functional_viability≠viable"可合法共存（例：**esptool** 串口
+   经 pyserial 依赖 + reset.py 已有 ENOTTY/EINVAL 回退、自身 `.py` 零改动 → `no_adaptation` + `viable_with_work`；
+   **sentence-transformers** 依赖未移植的 pytorch → `no_adaptation` + `blocked_external`）。真正需改源码的适配请落进
+   dim-12 `needs_adaptation` 桶或 `unadaptable_apis`（那才抬档），别只发一条 partial blocker 就期待抬档。
    - **应用（模型 C）下重新诠释**：`no_adaptation`=纯运行时应用且 GUI 工具包鸿蒙已具备、直接跑；
      `recompile_only`=仅原生启动器/JNI agent 需重编；`needs_adaptation`=GUI/窗口/桌面集成需改——若都能适配则两维皆 `adaptable`，
      若部分功能（如依赖无 OHOS 版的预编译 agent、特定桌面能力）无法适配则列入 `unadaptable_apis` 并按核心/平台差异标 `functionality_class`。

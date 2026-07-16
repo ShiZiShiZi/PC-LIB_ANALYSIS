@@ -933,9 +933,9 @@
         "capability": "系统信息查询 API（设备型号/制造商/CPU 信息/内存信息）",
         "capability_key": "system_info_api",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "替代 /proc/cpuinfo、/proc/meminfo、dmidecode 等 Linux 采集路径的基础——没有等效 API 则 CPU/内存/系统信息采集功能无法工作",
-        "source": "harmony-adaptation",
+        "source": "harmony-pc-capabilities.json#system_info_api 核实(2026-07-14): /proc+/sys 真机 13/13 核心项 OK",
         "target_status_model": "unknown"
       },
       {
@@ -943,9 +943,9 @@
         "capability": "硬件设备枚举 API（PCI/USB/GPU/磁盘/网络接口）",
         "capability_key": "device_info_api",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "替代 lspci/lsusb/nvidia-smi 等工具的基础——没有等效 API 则 GPU/磁盘/外设信息模块无法工作",
-        "source": "harmony-adaptation",
+        "source": "harmony-pc-capabilities.json#device_info_api 核实(2026-07-14): 缺 lspci/lsusb/dmidecode → PCI/USB/GPU 枚举不可得",
         "target_status_model": "unknown"
       },
       {
@@ -953,19 +953,19 @@
         "capability": "进程和服务管理 API",
         "capability_key": "process_info_api",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "替代 ps/systemctl 等工具的基础——没有等效 API 则进程/服务监控模块无法工作",
-        "source": "harmony-adaptation",
+        "source": "harmony-pc-capabilities.json#process_info_api 核实(2026-07-14): /proc+ps 可读、系统服务管理受限",
         "target_status_model": "unknown"
       },
       {
         "id": "ta:4",
         "capability": "鸿蒙 Node.js 运行时",
-        "capability_key": "nodejs_runtime",
+        "capability_key": "nodejs",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "systeminformation 完全依赖 Node.js 运行时（os/fs/child_process 等内置模块），鸿蒙 PC Node.js 必须支持这些核心 API",
-        "source": "harmony-adaptation",
+        "source": "harmony-pc-capabilities.json#nodejs 核实(2026-07-14): Node 24.13.0 真机",
         "target_status_model": "unknown"
       }
     ],
@@ -1071,7 +1071,7 @@
     ],
     "notes": "移植难度适中——因 systeminformation 为纯 JavaScript 且零依赖，难点不在代码本身而在调研鸿蒙 PC 平台提供了哪些系统信息查询能力。建议优先验证鸿蒙 Node.js 运行时的 os.cpus/os.freemem/os.totalmem/os.networkInterfaces 等核心 API 是否返回有效数据——这些直接决定基础模块是否能正常工作。",
     "confidence_model": null,
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation_platform_partial",
       "overall": "adaptable_with_tailoring",

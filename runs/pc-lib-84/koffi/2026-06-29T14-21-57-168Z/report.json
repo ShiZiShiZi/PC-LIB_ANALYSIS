@@ -835,7 +835,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "在 OHOS NDK 环境下逐架构编译并运行 ABI 测试：验证 ARM64 AAPCS 和 x86_64 System V 调用约定在 musl/clang 下的行为是否与 glibc/gcc 一致，特别关注结构体按值传递、浮点寄存器使用和可变参数函数的 ABI 细节。不一致处需修改汇编代码。",
         "caused_by": [
           "ta:ohos_clang_asm"
@@ -843,7 +842,8 @@
         "manifests_as": [],
         "evidence": [
           "https://koffi.dev/contribute — 'Koffi is programmed in a mix of C++ and assembly code (architecture-specific code)'"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:dlopen_flags",
@@ -852,7 +852,6 @@
         "adaptability": "partial",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "partial",
         "remediation": "逐项测试 RTLD_GLOBAL/RTLD_DEEPBIND 在 OHOS musl 中的可用性。不支持的标志需条件编译降级（跳过该选项或用 RTLD_NOW 替代），并在文档中注明鸿蒙上的功能限制。",
         "caused_by": [
           "ta:ohos_dlopen"
@@ -860,7 +859,8 @@
         "manifests_as": [],
         "evidence": [
           "https://koffi.dev/load — koffi.load() 支持 RTLD_LAZY/RTLD_GLOBAL/RTLD_DEEPBIND 选项"
-        ]
+        ],
+        "remediation_status": "partial"
       },
       {
         "id": "bk:pthread_mmap",
@@ -869,7 +869,6 @@
         "adaptability": "adaptable",
         "category": "posix_subset_gap",
         "source_dimension": "native_api",
-        "harmony_status": "unknown",
         "remediation": "验证 OHOS NDK musl 是否支持 mmap 的 MAP_STACK 标志（不支持则改用标准 mmap + 手动保护页方案）；pthread_create 在 OHOS 上基本可用，但线程信号处理需适配（Koffi 曾需特殊处理 Node.js 信号冲突）。参考 Koffi 已有的 OpenBSD 适配经验做条件编译。",
         "caused_by": [
           "ta:ohos_mmap"
@@ -878,7 +877,8 @@
         "evidence": [
           "CHANGELOG — Koffi 1.3.4: 'Fix crashes on OpenBSD caused by missing MAP_STACK flag'",
           "CHANGELOG — Koffi 2.5.0: 'Don't mess with Node.js signal handling on POSIX systems'"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:win32_removal",
@@ -887,13 +887,13 @@
         "adaptability": "adaptable",
         "category": "toolchain",
         "source_dimension": "native_api",
-        "harmony_status": "replace_with_ohos",
         "remediation": "Win32 代码已有 #ifdef _WIN32 守卫，OHOS NDK 编译时自然排除。需确认 OHOS 编译宏（如 __OHOS__ 或等效）不会意外触发 Win32/Apple 分支。必要时添加 __OHOS__ 特定守卫。",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "https://koffi.dev/contribute — 多平台 #ifdef 条件编译"
-        ]
+        ],
+        "remediation_status": "replace_with_ohos"
       }
     ],
     "compatible": [
@@ -948,7 +948,7 @@
       "code_metrics 的 language/code 体积数据仅反映前端仓库（Markdown 37 行 + Text 18 行 + JSON 5 行 + YAML 3 行），不代表实际 Koffi 项目（C++/ASM/JS 约 28.7 MB 解压后 npm 包）。"
     ],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

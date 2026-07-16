@@ -2346,14 +2346,14 @@
         "adaptability": "unadaptable",
         "category": "desktop_app_model",
         "source_dimension": "build_env",
-        "harmony_status": "unavailable",
         "remediation": "若目标平台仅支持 ArkTS .hap 应用，则 Firefox 现有 C++ 主程序无法直接打包运行，需整体换用鸿蒙原生浏览器方案。",
         "caused_by": [
           "ta:desktop_app"
         ],
         "evidence": [
           "browser/app/nsBrowserApp.cpp:281"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:gui_windowing",
@@ -2362,7 +2362,6 @@
         "adaptability": "unadaptable",
         "category": "gui_toolkit",
         "source_dimension": "capability_profile",
-        "harmony_status": "unavailable",
         "remediation": "需将整套 UI 层迁移到 ArkUI 或确认鸿蒙 PC 提供兼容的 GTK/X11 桌面环境；后者当前未知。",
         "caused_by": [
           "ta:gui",
@@ -2371,7 +2370,8 @@
         "evidence": [
           "widget/gtk/nsWindow.cpp:292",
           "toolkit/moz.configure:640"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:graphics_stack",
@@ -2380,7 +2380,6 @@
         "adaptability": "unadaptable",
         "category": "graphics_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "鸿蒙 OpenGL ES 仅部分可用，Vulkan 可用性未知；WebRender/ANGLE 等渲染器需针对鸿蒙图形栈重写。",
         "caused_by": [
           "ta:opengl",
@@ -2392,7 +2391,8 @@
         "evidence": [
           "toolkit/xre/glxtest/glxtest.cpp:475",
           "gfx/webrender_bindings/RenderCompositorANGLE.cpp:82"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:media_codecs",
@@ -2401,7 +2401,6 @@
         "adaptability": "unadaptable",
         "category": "media_stack",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "需将媒体流水线迁移到 @ohos.multimedia 或鸿蒙原生编解码接口；Linux V4L2/VAAPI 不可用。",
         "caused_by": [
           "ta:media"
@@ -2414,7 +2413,8 @@
           "media/ffvpx/",
           "widget/gtk/v4l2test/v4l2test.cpp:58",
           "widget/gtk/vaapitest/vaapitest.cpp:114"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:sandbox_security",
@@ -2423,7 +2423,6 @@
         "adaptability": "unadaptable",
         "category": "sandbox_model",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "需使用鸿蒙进程/安全模型与 ACL 重新设计沙箱；seccomp-bpf 与 Linux ptrace 模型无法直接沿用。",
         "caused_by": [
           "ta:ptrace",
@@ -2432,7 +2431,8 @@
         "evidence": [
           "security/sandbox/linux/Sandbox.cpp:240",
           "security/sandbox/linux/SandboxFilter.cpp:136"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:platform_native_apis",
@@ -2441,7 +2441,6 @@
         "adaptability": "unadaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "需为每个平台分支提供鸿蒙等价实现或裁剪功能；代码量巨大，无法短期完成。",
         "caused_by": [
           "ta:procfs",
@@ -2450,7 +2449,8 @@
         "evidence": [
           "xpcom/io/SpecialSystemDirectory.cpp:83",
           "xpcom/base/nsSystemInfo.cpp:848"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:runtime_services",
@@ -2459,12 +2459,12 @@
         "adaptability": "partial",
         "category": "runtime_services",
         "source_dimension": "runtime_surface",
-        "harmony_status": "partial",
         "remediation": "部分可替换为鸿蒙原生等价服务（网络、推送、更新），但崩溃报告 minidump 与沙箱 broker 架构需重做。",
         "evidence": [
           "toolkit/xre/nsUpdateDriver.cpp:594",
           "toolkit/crashreporter/nsExceptionHandler.cpp"
-        ]
+        ],
+        "remediation_status": "partial"
       }
     ],
     "unadaptable_apis": [
@@ -2649,37 +2649,37 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "浏览器核心功能：HTTP/HTTPS/QUIC 网络访问",
         "source_capability": "gui",
-        "harmony_status": "unknown",
         "evidence": [
           "netwerk/protocol/"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "ohos.permission.CAMERA",
         "reason": "WebRTC getUserMedia 视频采集",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "widget/gtk/v4l2test/v4l2test.cpp"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "ohos.permission.MICROPHONE",
         "reason": "WebRTC getUserMedia 音频采集",
         "source_capability": "hardware",
-        "harmony_status": "unknown",
         "evidence": [
           "media/libcubeb/"
-        ]
+        ],
+        "grantability": "unknown"
       },
       {
         "permission": "读写存储（文件访问）",
         "reason": "用户配置、缓存、下载文件读写",
         "source_capability": "gui",
-        "harmony_status": "unknown",
         "evidence": [
           "toolkit/xre/nsXREDirProvider.cpp"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "compatible": [
@@ -2739,7 +2739,7 @@
       "harmony_adapted 仅对少量 C/C++ 系统依赖做了抽样核对，未覆盖全部 vendored 子树。"
     ],
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium",
     "harmony_warnings": [
       {

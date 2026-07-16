@@ -792,10 +792,10 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "需要与 Cloudflare API 通信进行部署和管理操作",
         "source_capability": "",
-        "harmony_status": "available",
         "evidence": [
           "packages/wrangler/src/"
-        ]
+        ],
+        "grantability": "available"
       }
     ],
     "summary": "Workers SDK 的 TypeScript 代码可运行在鸿蒙 PC 已移植的 Node.js 上，但核心依赖 workerd（C++ Workers 运行时）和 esbuild（Go 打包器）需要为鸿蒙 PC 重新编译原生二进制。主要工作量在：(1) workerd 的 OHOS NDK 编译适配；(2) esbuild 的 Go 交叉编译；(3) 44 处 process.platform 平台分支的鸿蒙兼容处理；(4) sharp/libvips 等图像处理依赖的移植或替代。",
@@ -807,7 +807,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unavailable",
         "remediation": "使用 OHOS NDK 交叉编译 workerd，或寻找替代的 Workers 运行时模拟方案",
         "caused_by": [
           "ta:native_npm_bins"
@@ -816,7 +815,8 @@
         "evidence": [
           "packages/wrangler/package.json",
           "packages/miniflare/package.json"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:esbuild_native",
@@ -825,7 +825,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unavailable",
         "remediation": "使用 Go 的 OHOS target 交叉编译 esbuild，或用其他打包器替代",
         "caused_by": [
           "ta:native_npm_bins"
@@ -834,7 +833,8 @@
         "evidence": [
           "packages/wrangler/package.json",
           "package.json"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:sharp_native",
@@ -843,7 +843,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unavailable",
         "remediation": "编译 libvips 为 OHOS NDK 后重编 sharp，或使用纯 JS 图像处理库替代",
         "caused_by": [
           "ta:native_npm_bins"
@@ -851,7 +850,8 @@
         "manifests_as": [],
         "evidence": [
           "packages/miniflare/package.json"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:subprocess_spawn",
@@ -860,7 +860,6 @@
         "adaptability": "adaptable",
         "category": "subprocess_unavailable",
         "source_dimension": "runtime_surface",
-        "harmony_status": "unknown",
         "remediation": "确认鸿蒙 PC Node.js 对 child_process 的支持；若受限需改为内嵌方式",
         "caused_by": [
           "ta:subprocess_spawn"
@@ -869,7 +868,8 @@
         "evidence": [
           "packages/wrangler/src/pages/deploy.ts",
           "packages/workers-utils/src/cloudflared.ts"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:platform_branches",
@@ -878,14 +878,14 @@
         "adaptability": "adaptable",
         "category": "platform_branch",
         "source_dimension": "native_api",
-        "harmony_status": "needs_adaptation",
         "remediation": "在各 process.platform 判断中补充鸿蒙平台的处理逻辑（通常与 Linux/macOS 行为一致）",
         "caused_by": [],
         "manifests_as": [],
         "evidence": [
           "packages/workers-utils/src/config/validation.ts:723",
           "packages/miniflare/src/plugins/core/index.ts:98"
-        ]
+        ],
+        "remediation_status": "needs_adaptation"
       }
     ],
     "compatible": [
@@ -946,7 +946,7 @@
     "warnings": [],
     "confidence_overall": "medium",
     "observations": [],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   },
   "languages": {

@@ -1517,11 +1517,11 @@
         "permission": "ohos.permission.INTERNET",
         "reason": "QUIC 协议库需要 UDP 网络访问权限",
         "source_capability": "",
-        "harmony_status": "unknown",
         "evidence": [
           "quiche/examples/server.rs",
           "quiche/examples/client.rs"
-        ]
+        ],
+        "grantability": "unknown"
       }
     ],
     "summary": "quiche 的核心 QUIC 协议实现是纯 Rust 跨平台代码，可编译到鸿蒙 OHOS target。主要工作集中在：(1) 适配 BoringSSL 编译（boring-sys 需要支持 ohos target 的交叉编译）；(2) Linux 特有 socket 选项（GSO/GRO/SO_TXTIME）在鸿蒙不可用时的降级处理（已有 cfg(target_os) 条件守卫，降级路径已存在）；(3) 确保 tokio 在 OHOS 上运行（异步封装层需要）。核心库（同步 API）可独立于 tokio 使用。",
@@ -1533,7 +1533,6 @@
         "adaptability": "partial",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "需验证 boring-sys 在 aarch64-unknown-linux-ohos target 下的编译；可能需要修改 boring-sys 的构建脚本以支持 OHOS 交叉编译；替代方案是使用 ring crate（已有依赖）作为 crypto 后端，但需重写 tls/ 模块",
         "caused_by": [
           "ta:boringssl_build"
@@ -1542,7 +1541,8 @@
         "evidence": [
           "quiche/Cargo.toml:71",
           "quiche/src/build.rs:48-49"
-        ]
+        ],
+        "remediation_status": "unknown"
       },
       {
         "id": "bk:linux_socket_opts",
@@ -1551,7 +1551,6 @@
         "adaptability": "adaptable",
         "category": "platform_api",
         "source_dimension": "native_api",
-        "harmony_status": "unavailable",
         "remediation": "已有 cfg(target_os = \"linux\") 条件守卫，非 Linux 平台自动降级到标准 POSIX socket 路径；性能下降但功能完整",
         "caused_by": [
           "ta:linux_socket"
@@ -1567,7 +1566,8 @@
           "tokio-quiche/src/socket/capabilities.rs:27",
           "datagram-socket/src/mmsg.rs",
           "tokio-quiche/src/quic/io/gso.rs:34"
-        ]
+        ],
+        "remediation_status": "unavailable"
       },
       {
         "id": "bk:tokio_ohos",
@@ -1576,7 +1576,6 @@
         "adaptability": "adaptable",
         "category": "native_dependency",
         "source_dimension": "dependencies",
-        "harmony_status": "unknown",
         "remediation": "若 tokio 不支持 OHOS，可使用核心 quiche 库（同步 API）+ mio 事件循环作为替代；或贡献 tokio OHOS 支持",
         "caused_by": [
           "ta:tokio_ohos"
@@ -1584,7 +1583,8 @@
         "manifests_as": [],
         "evidence": [
           "tokio-quiche/Cargo.toml:69-101"
-        ]
+        ],
+        "remediation_status": "unknown"
       }
     ],
     "compatible": [
@@ -1692,7 +1692,7 @@
         "message": "unadaptable_api ua:so_txtime 未标 functionality_class，已默认按 platform_specific 归类——请据实标 core/platform_specific"
       }
     ],
-    "normalized_version": 5,
+    "normalized_version": 6,
     "confidence_overall_model": "medium"
   }
 }

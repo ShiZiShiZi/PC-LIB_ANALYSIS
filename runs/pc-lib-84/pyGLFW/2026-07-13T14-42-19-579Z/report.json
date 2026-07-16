@@ -648,21 +648,21 @@
     "target_assumptions": [
       {
         "capability": "GLFW3 HarmonyOS 后端存在性（社区移植或可自行移植）",
-        "capability_key": null,
+        "capability_key": "xcomponent_native_window",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "available",
         "impact": "GLFW3 是 pyGLFW 的唯一底层依赖——无 HarmonyOS 后端则所有窗口/上下文创建功能均不可用（仅事件处理/输入轮询等纯 Python 部分可运行）",
-        "source": "repos\\pc-lib-84\\pyGLFW\\glfw\\library.py (ctypes.CDLL 加载过程)",
+        "source": "harmony-pc-capabilities.json#xcomponent_native_window 核实(2026-07-14): GLFW 全 _GLFW_OHOS 后端真机(GLES3.2)",
         "id": "ta:1",
         "target_status_model": "unknown"
       },
       {
         "capability": "OpenGL/EGL/GLES 在鸿蒙 PC 的可用性",
-        "capability_key": null,
+        "capability_key": "opengl",
         "required": true,
-        "target_status": "unknown",
+        "target_status": "partial",
         "impact": "GLFW3 使用 OpenGL/Vulkan 进行渲染——鸿蒙 PC 需提供 GLES/EGL NDK 接口；若仅有 ArkUI 渲染通道则需重新适配渲染路径",
-        "source": "references\\harmony-pc-capabilities.json 缺少 graphics_3d.opengl/egl 明确条目",
+        "source": "harmony-pc-capabilities.json#opengl 核实(2026-07-14): GLES 3.2 + EGL 真机确认",
         "id": "ta:2",
         "target_status_model": "unknown"
       }
@@ -691,7 +691,7 @@
     ],
     "notes": "评估基于模型 A（库跑在鸿蒙已移植的 Python 3.12 上）。pyGLFW 的 Python 代码（架构层、绑定层）本身无平台依赖且可直接运行；唯一工作是底层 GLFW3 C 库需 HarmonyOS 后端——且这属于外部依赖移植，并非 pyGLFW 自身代码改动。如果社区已有类似 Qt6 的 GLFW3 OHOS 移植，本次迁移工作量上限约 1 人天（路径适配+验证）。若需自行实现 GLFW3 OHOS 后端，则工作量集中在 GLFW3 C 代码而非 pyGLFW 自身",
     "confidence_model": "medium",
-    "functional_viability": "unverified",
+    "functional_viability": "viable_with_work",
     "adaptation_assessment": {
       "effective_class": "needs_adaptation",
       "overall": "adaptable",
